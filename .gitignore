@@ -1,0 +1,4 @@
+venv/
+backend/config/firebase-credentials.json
+backend/.env
+frontend/node_modules/

@@ -1,0 +1,30 @@
+.customButton {
+  font-size: calc(0.8rem + 0.2vw);
+  min-height: 30px;
+  min-width: 100px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5rem;
+  line-height: 1;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: background-color 0.3s ease, font-size 0.1s ease;
+  font-weight: 500;
+  border: 1px solid var(--button-border-color, inherit);
+  cursor: pointer;
+}
+
+.customButton:hover {
+  opacity: 0.9;
+}
+
+.customButton:focus {
+  background-color: var(--button-focus-color, inherit);
+  outline: none;
+}
+
+.customButton:active {
+  font-size: calc(0.8rem + 0.2vw);
+  border: 2px solid var(--button-border-color, inherit);
+}

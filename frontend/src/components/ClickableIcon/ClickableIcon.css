@@ -1,0 +1,43 @@
+.clickable-icon {
+  position: relative;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  transition: all 0.1s ease-in-out;
+  padding: 20px;
+  text-align: center;
+  height: 200px;
+  margin: 0 20px; /* Add horizontal margin */
+}
+
+.clickable-icon:hover {
+  border-color: #767676;
+}
+
+.clickable-icon:active {
+  background-color: rgb(247, 247, 247);
+  border-color: black;
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+}
+
+.clickable-icon img {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.1s ease-in-out;
+}
+
+.clickable-icon:active img {
+  transform: scale(0.95);
+}

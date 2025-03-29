@@ -1,0 +1,359 @@
+{
+  "navigation": {
+    "home": "Accueil",
+    "about": "À propos",
+    "faqs": "FAQs",
+    "support": "Support",
+    "dashboard": "Tableau de bord",
+    "marketplace": "Marketplace",
+    "calendar": "Calendrier"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "learnMore": "En savoir plus"
+  },
+  "auth": {
+    "welcome": "Bienvenue !",
+    "loginPrompt": "Pour vous connecter à Linky, connectez-vous à votre compte.",
+    "forgotPassword": "Mot de passe oublié ?",
+    "signupPrompt": "Pas encore de compte ? Inscrivez-vous",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "login": "Se connecter",
+    "signup": {
+      "welcome": "S'inscrire",
+      "getStarted": "Bonjour, faisons connaissance ?",
+      "hiring": "Je recrute",
+      "lookingForWork": "Je cherche du travail !!",
+      "employeeInfo": "Informations sur l'employé",
+      "basicDetails": "Commençons par vos informations de base",
+      "requiredFields": "Champs obligatoires*",
+      "steps": {
+        "userType": "Type d'utilisateur",
+        "basicInfo": "Informations de base",
+        "professional": "Professionnel",
+        "verification": "Vérification",
+        "password": "Mot de passe",
+        "complete": "Terminé"
+      },
+      "forms": {
+        "name": "Prénom",
+        "namePlaceholder": "Entrez votre prénom",
+        "surname": "Nom de famille",
+        "surnamePlaceholder": "Entrez votre nom de famille",
+        "email": "Adresse e-mail",
+        "phone": "Numéro de téléphone",
+        "country": "Pays",
+        "city": "Ville",
+        "address": "Adresse",
+        "profession": {
+          "title": "Profession",
+          "pharmacist": "Pharmacien",
+          "assistant": "Assistant pharmacien",
+          "intern": "Stagiaire"
+        },
+        "experience": {
+          "title": "Années d'expérience",
+          "lessThan1": "Moins d'un an",
+          "1to3": "1-3 ans",
+          "3to5": "3-5 ans",
+          "moreThan5": "Plus de 5 ans"
+        },
+        "password": {
+          "create": "Créer un mot de passe",
+          "confirm": "Confirmer le mot de passe",
+          "requirements": {
+            "title": "Exigences du mot de passe",
+            "length": "Au moins 8 caractères",
+            "uppercase": "Une lettre majuscule",
+            "lowercase": "Une lettre minuscule",
+            "number": "Un chiffre",
+            "special": "Un caractère spécial"
+          }
+        },
+        "validation": {
+          "title": "Presque terminé !",
+          "subtitle": "Nous avons envoyé un code de vérification à votre email",
+          "code": "Code de vérification",
+          "resend": "Renvoyer le code",
+          "timer": "Renvoyer le code dans {{seconds}} secondes"
+        },
+        "birthdate": {
+          "label": "Date de naissance",
+          "day": {
+            "label": "Jour",
+            "placeholder": "Sélectionner le jour"
+          },
+          "month": {
+            "label": "Mois",
+            "placeholder": "Sélectionner le mois"
+          },
+          "year": {
+            "label": "Année",
+            "placeholder": "Sélectionner l'année"
+          },
+          "error": {
+            "required": "La date de naissance est requise",
+            "invalid": "Veuillez entrer une date valide",
+            "underage": "Vous devez avoir au moins 18 ans"
+          }
+        }
+      }
+    },
+    "errors": {
+      "invalidCredentials": "Email ou mot de passe invalide",
+      "emailRequired": "L'email est requis",
+      "passwordRequired": "Le mot de passe est requis"
+    },
+    "placeholders": {
+      "email": "Entrez votre email",
+      "password": "Entrez votre mot de passe"
+    }
+  },
+  "homepage": {
+    "hero": {
+      "find": "Trouvez",
+      "roles": {
+        "pharmacist": "un pharmacien",
+        "assistant": "un assistant",
+        "pharmacy": "une pharmacie",
+        "internship": "un stage"
+      },
+      "subtitle": "Votre plateforme de confiance pour le recrutement en santé",
+      "cta": {
+        "hire": "Recruter un professionnel",
+        "find": "Trouver un emploi"
+      }
+    },
+    "services": {
+      "title": "Nos Services",
+      "temp": {
+        "title": "Personnel Temporaire",
+        "description": "Trouvez des professionnels de santé qualifiés pour des missions courtes"
+      },
+      "permanent": {
+        "title": "Recrutement Permanent",
+        "description": "Embauchez du personnel de santé à temps plein"
+      },
+      "workforce": {
+        "title": "Gestion du Personnel",
+        "description": "Optimisez la planification et la gestion de votre personnel de santé"
+      }
+    },
+    "features": {
+      "title": "Pourquoi Nous Choisir",
+      "quickMatch": {
+        "title": "Mise en Relation Rapide",
+        "description": "Trouvez le bon professionnel de santé en 24 heures"
+      },
+      "verified": {
+        "title": "Professionnels Vérifiés",
+        "description": "Toutes les qualifications et licences sont soigneusement vérifiées"
+      },
+      "compliance": {
+        "title": "Conformité Assurée",
+        "description": "Restez conforme à toutes les réglementations de santé"
+      },
+      "support": {
+        "title": "Support 24/7",
+        "description": "Assistance disponible 24h/24 pour les besoins urgents"
+      }
+    }
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "Besoin d'aide ? Nous sommes là pour vous.",
+    "search": "Rechercher dans l'aide...",
+    "contact": {
+      "title": "Contactez-nous",
+      "subtitle": "Notre équipe est là pour répondre à vos questions",
+      "form": {
+        "name": "Nom (optionnel)",
+        "email": "Email (obligatoire)",
+        "message": "Message",
+        "submit": "Envoyer la demande",
+        "confirmation": "Merci ! Notre équipe vous répondra sous 24 heures."
+      }
+    }
+  },
+  "dashboard": {
+    "sidebar": {
+      "dashboard": "Tableau de bord",
+      "calendar": "Calendrier",
+      "messages": "Messages",
+      "hrCore": "RH Core",
+      "marketplace": "Marketplace",
+      "settings": "Paramètres",
+      "logout": "Déconnexion"
+    },
+    "calendar": {
+      "today": "Aujourd'hui",
+      "week": "Semaine",
+      "month": "Mois",
+      "categories": {
+        "title": "Calendriers",
+        "personal": "Personnel",
+        "missing_employees": "Employés manquants",
+        "waiting_for_confirmation": "En attente de confirmation",
+        "approved_employee": "Employé approuvé"
+      },
+      "createEvent": "Créer un événement",
+      "datetime": {
+        "month": "Mois",
+        "day": "Jour",
+        "year": "Année",
+        "hour": "Heure",
+        "minute": "Minute"
+      },
+      "deleteConfirmation": {
+        "title": "Suppression de l'événement :",
+        "message": "Voulez-vous supprimer cet événement ?",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "deleteThisOnly": "Supprimer uniquement cet événement",
+        "deleteAllFuture": "Supprimer toutes les occurrences futures"
+      },
+      "eventDetails": {
+        "title": "Titre de l'événement",
+        "location": "Lieu",
+        "notes": "Notes",
+        "employees": "Employés",
+        "time": {
+          "start": "Heure de début",
+          "end": "Heure de fin"
+        },
+        "repeat": {
+          "label": "Répéter",
+          "never": "Jamais",
+          "everyDay": "Chaque jour",
+          "everyWeek": "Chaque semaine",
+          "everyMonth": "Chaque mois",
+          "custom": "Personnalisé...",
+          "frequency": "Fréquence",
+          "days": "Jours",
+          "endRepeat": {
+            "never": "Jamais",
+            "on": "Le",
+            "after": "Après",
+            "occurrences": "occurrences",
+            "days": "jours",
+            "weeks": "semaines",
+            "months": "mois"
+          }
+        },
+        "delete": "Supprimer l'événement",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+      }
+    },
+    "messages": {
+      "title": "Messages",
+      "newMessage": "Nouveau message",
+      "search": "Rechercher des conversations...",
+      "writeMessage": "Écrivez quelque chose...",
+      "send": "Envoyer"
+    },
+    "hrCore": {
+      "title": "RH Core",
+      "stats": {
+        "totalEmployees": "Total des employés",
+        "departments": "Départements",
+        "openPositions": "Postes ouverts"
+      }
+    },
+    "marketplace": {
+      "filters": {
+        "canton": "Canton",
+        "city": "Ville",
+        "area": "Zone",
+        "experience": "Expérience",
+        "software": "Software",
+        "workAmount": "Volume de travail",
+        "duration": "Durée"
+      },
+      "buttons": {
+        "findEmployees": "Trouver des employés",
+        "findJob": "Trouver un emploi"
+      },
+      "noListings": "Aucune annonce de {{type}} disponible pour le moment."
+    },
+    "settings": {
+      "title": "Paramètres",
+      "account": {
+        "title": "Paramètres du compte",
+        "email": "Email",
+        "password": "Mot de passe",
+        "saveChanges": "Enregistrer les modifications"
+      },
+      "preferences": "Préférences"
+    },
+    "pharmacist": {
+      "welcome": "Bienvenue, {{name}}",
+      "subtitle": "Trouvez de nouvelles opportunités et gérez vos candidatures",
+      "stats": {
+        "applications": "Candidatures actives",
+        "applied": "Postes postulés",
+        "upcoming": "Prochains services"
+      },
+      "search": {
+        "title": "Rechercher des emplois",
+        "placeholder": "Rechercher par lieu, titre..."
+      }
+    }
+  },
+  "about": {
+    "meta": {
+      "title": "À propos de PharmaSoft - Révolutionner le recrutement et les solutions pharmaceutiques",
+      "description": "PharmaSoft connecte les professionnels de la santé avec les pharmacies, offrant des offres d'emploi, des solutions de recrutement et une plateforme de collaboration.",
+      "ogTitle": "À propos de PharmaSoft - Révolutionner le recrutement et les solutions pharmaceutiques",
+      "ogDescription": "Découvrez la mission, les valeurs et les services de PharmaSoft dans le domaine du recrutement pharmaceutique et des offres d'emploi."
+    },
+    "title": "À propos de PharmaSoft",
+    "introduction": "PharmaSoft est une plateforme innovante qui connecte les professionnels de la santé avec les pharmacies, offrant des solutions fiables de recrutement pharmaceutique, des offres d'emploi et des opportunités de marché. Notre équipe, composée de pharmaciens dévoués, est passionnée par la création d'un environnement prospère où les pharmaciens peuvent exceller et les professionnels de la santé peuvent trouver des opportunités de travail épanouissantes. Nous nous engageons à favoriser une culture qui valorise la liberté de travail, permettant aux professionnels de choisir les rôles qui correspondent le mieux à leurs compétences et à leurs aspirations.",
+    "mission": {
+      "title": "Notre Mission",
+      "description": "Notre mission est de fournir à l'industrie pharmaceutique les meilleurs talents, en simplifiant le recrutement pour les pharmacies et les professionnels de la santé. Nous favorisons une main-d'œuvre fiable, conforme et bien gérée pour améliorer la prestation des soins de santé dans le monde entier."
+    },
+    "vision": {
+      "title": "Notre Vision",
+      "description": "Nous visons à créer un écosystème fluide où les pharmacies et les professionnels de la santé peuvent facilement se connecter, collaborer et construire des relations à long terme. Notre vision est de devenir la plateforme leader pour les solutions de recrutement pharmaceutique et les offres d'emploi à l'échelle mondiale."
+    },
+    "services": {
+      "title": "Ce que nous offrons",
+      "jobListings": {
+        "title": "Offres d'emploi",
+        "description": "Parcourez les dernières offres d'emploi dans l'industrie pharmaceutique. Que vous soyez pharmacien, assistant en pharmacie ou à la recherche d'un stage, PharmaSoft a des opportunités pour tous."
+      },
+      "staffing": {
+        "title": "Recrutement Temporaire & Permanent",
+        "description": "Trouvez des solutions de recrutement temporaires ou permanentes adaptées aux besoins de votre pharmacie. Nous fournissons une mise en relation rapide et fiable de professionnels pour répondre à vos exigences opérationnelles."
+      },
+      "marketplace": {
+        "title": "Marketplace",
+        "description": "PharmaSoft offre une marketplace pour les pharmacies et les pharmaciens pour interagir, collaborer et élargir leurs réseaux professionnels. C'est une plateforme tout-en-un pour favoriser les relations d'affaires."
+      }
+    },
+    "coreValues": {
+      "title": "Nos Valeurs Fondamentales",
+      "integrity": {
+        "title": "Intégrité",
+        "description": "Nous nous engageons à la transparence, à l'éthique et à l'honnêteté dans tout ce que nous faisons."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "Nous innovons continuellement pour garantir que notre plateforme offre la meilleure expérience à nos utilisateurs."
+      },
+      "excellence": {
+        "title": "Excellence",
+        "description": "Nous visons les plus hauts standards de qualité et de prestation de services, assurant la satisfaction de toutes les parties prenantes."
+      }
+    },
+    "team": {
+      "title": "Rencontrez Notre Équipe",
+      "description": "Notre équipe est composée de pharmaciens expérimentés et d'experts de l'industrie profondément engagés à révolutionner le paysage du recrutement pharmaceutique. Avec une compréhension approfondie des défis auxquels sont confrontés les pharmacies et les professionnels de la santé, nous nous efforçons de fournir des solutions innovantes qui améliorent la satisfaction au travail et l'efficacité opérationnelle. Nous croyons en l'autonomisation des pharmaciens et des professionnels de la santé en offrant des arrangements de travail flexibles et des opportunités de croissance professionnelle, assurant un parcours de carrière équilibré et gratifiant."
+    }
+  }
+} 

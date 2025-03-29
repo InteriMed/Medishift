@@ -1,0 +1,7 @@
+PHARMASOFT APPLICATION URLS
+=========================
+
+FRONTEND: https://0884-31-164-254-8.ngrok-free.app
+BACKEND: https://816d-31-164-254-8.ngrok-free.app
+
+Last updated: 2025-03-29 16:03:23

@@ -1,0 +1,78 @@
+.filter-bar {
+  background: white;
+  padding: 5px 20px !important;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #eeeeee !important;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  overflow: visible;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Header styles for the collapsible filter bar */
+.filter-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Filter content visibility */
+.filter-content {
+  opacity: 0;
+  max-height: 0;
+  padding-bottom: 0px;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
+.filter-content.visible {
+  opacity: 1;
+  max-height: 800px;
+  transform: translateY(0);
+  padding-top: 10px;
+  padding-bottom: 0px;
+}
+
+.filter-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+/* Filter actions container for Apply and Clear buttons */
+.filter-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding-top: 25px;
+  padding-bottom: 5px;
+}
+
+.filter-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.filter-summary {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #555;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px 0;
+}
+
+
+.filter-bar.expanded .toggle-button-container{
+  visibility: hidden;
+}

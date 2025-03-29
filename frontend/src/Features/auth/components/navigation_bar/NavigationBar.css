@@ -1,0 +1,79 @@
+.navigation-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  max-width: var(--max-content-width, 533px);
+  padding: 0 5px;
+  box-sizing: border-box;
+  background-color: white;
+  position: var(--nav-position, fixed);
+  bottom: 5vw;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.nav-button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #000000;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 10px;
+  transition: opacity 0.3s ease;
+}
+
+.nav-button:disabled {
+  color: #000000;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.nav-button svg {
+  font-size: 24px;
+}
+
+.nav-button.hidden {
+  display: none;
+}
+
+.nav-button:not(.hidden) {
+  display: flex;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dot.clickable {
+  cursor: pointer;
+}
+
+.dot.non-clickable {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 500px) {
+  .navigation-bar {
+    width: 90%;
+  }
+
+  .nav-button span {
+    display: none;
+  }
+}

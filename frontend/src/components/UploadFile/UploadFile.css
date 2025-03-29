@@ -1,0 +1,95 @@
+.upload-container {
+  width: 100%;
+  margin: 20px 0;
+}
+
+.upload-form {
+  width: 100%;
+  min-height: 80px;
+  max-height: 120px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 10px;
+}
+
+.upload-form.drag-active {
+  border-color: #000;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.upload-content {
+  text-align: center;
+  width: 100%;
+}
+
+.upload-content p {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.upload-button {
+  background: none;
+  border: none;
+  color: #000;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin: 4px;
+}
+
+.file-name {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.error-message {
+  color: #ff0000;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.loading-spinner {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: none;
+}
+
+.loading-spinner.visible {
+  display: block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.upload-form.uploaded {
+  pointer-events: none !important;
+  opacity: 0.7;
+  background-color: rgba(0, 0, 0, 0.05);
+  cursor: default !important;
+}
+
+.upload-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  text-decoration: none;
+}

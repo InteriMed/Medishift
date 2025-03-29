@@ -1,0 +1,16 @@
+{
+  "auth": {
+    "signup": {
+      "forms": {
+        "name": {
+          "label": "Nom",
+          "placeholder": "Entrez votre nom"
+        },
+        "surname": {
+          "label": "Prénom",
+          "placeholder": "Entrez votre prénom"
+        }
+      }
+    }
+  }
+} 

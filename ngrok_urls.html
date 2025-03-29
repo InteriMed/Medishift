@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PharmaSoft Application URLs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background: #f7f9fc;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #3949ab;
+        }
+        .url-box {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 5px;
+            border-left: 5px solid #2196f3;
+        }
+        .url-box h2 {
+            margin-top: 0;
+            color: #0d47a1;
+        }
+        a {
+            color: #1565c0;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .timestamp {
+            color: #757575;
+            font-size: 0.8em;
+            margin-top: 30px;
+        }
+        .qr-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .qr-box {
+            margin: 10px;
+            text-align: center;
+        }
+        img.qr {
+            max-width: 200px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PharmaSoft Application</h1>
+        <p>Access your application through these public URLs:</p>
+        
+        <div class="url-box">
+            <h2>Frontend</h2>
+            <p>Use this link to access the application interface:</p>
+            <a href="https://0884-31-164-254-8.ngrok-free.app" target="_blank">https://0884-31-164-254-8.ngrok-free.app</a>
+        </div>
+        
+        <div class="url-box">
+            <h2>Backend API</h2>
+            <p>API endpoint (for developers):</p>
+            <a href="https://816d-31-164-254-8.ngrok-free.app" target="_blank">https://816d-31-164-254-8.ngrok-free.app</a>
+        </div>
+        
+        <div class="qr-container">
+            <div class="qr-box">
+                <h3>Frontend QR Code</h3>
+                <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://0884-31-164-254-8.ngrok-free.app" alt="Frontend QR Code">
+            </div>
+            <div class="qr-box">
+                <h3>Backend QR Code</h3>
+                <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://816d-31-164-254-8.ngrok-free.app" alt="Backend QR Code">
+            </div>
+        </div>
+        
+        <p class="timestamp">Last updated: 2025-03-29 16:03:23</p>
+    </div>
+</body>
+</html>

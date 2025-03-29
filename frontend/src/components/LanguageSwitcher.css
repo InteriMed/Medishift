@@ -1,0 +1,28 @@
+/* Disable all styles by commenting them out */
+/* Keep for reference in case we need to re-enable later
+
+.language-switcher {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+}
+
+.language-switcher button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.language-switcher button:hover {
+  background: #f0f0f0;
+}
+
+.language-switcher button.active {
+  background: #e0e0e0;
+  border-color: #999;
+} 
+
+*/ 

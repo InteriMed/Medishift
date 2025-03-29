@@ -1,0 +1,576 @@
+.event-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 5vh 0 5vh 5vw;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  z-index: 100;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.event-panel {
+  width: 50vw;
+  height: 90vh;
+  background-color: #ffffff;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-in-out;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.event-panel.closing {
+  animation: slideOut 0.3s ease-in-out;
+}
+
+.panel-header {
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+  z-index: 1;
+}
+
+.button-container {
+  position: relative;
+}
+
+.calendar-select-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.calendar-select-button:hover {
+  transform: scale(1.1);
+}
+
+.calendar-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  z-index: 2;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.calendar-select-dropdown.closing {
+  animation: fadeOut 0.2s ease-in-out;
+}
+
+.color-option {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+}
+
+.event-panel-close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 4px;
+  line-height: 1;
+  z-index: 2;
+}
+
+.event-panel-close-button:hover {
+  color: #333;
+}
+
+.collapsible-section {
+  border-bottom: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.section-header:hover {
+  background-color: #f5f5f5;
+}
+
+.section-header-text {
+  font-weight: 500;
+  color: #000000;
+}
+
+.section-arrow {
+  transition: transform 0.3s ease;
+}
+
+.section-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.section-content {
+  padding: 16px 20px;
+}
+
+.collapsible-section.expanded .section-content {
+  max-height: 1000px;
+}
+
+.datetime-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.datetime-column {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.datetime-row, .occurence-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.datetime-row-label {
+  color: #000000;
+  font-size: 14px;
+  font-weight: 500;
+  width: 120px;
+}
+
+.datetime-parts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  width: 100%;
+}
+
+.time-colon {
+  margin: 0 4px;
+}
+
+.repeat-section {
+  position: relative;
+}
+
+.repeat-value {
+  cursor: pointer;
+  color: #000000;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.repeat-value:hover {
+  background-color: #f5f5f5;
+}
+
+.repeat-frequency-dropdown,
+.repeat-end-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+  min-width: 200px;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.repeat-option {
+  color: #000000;
+  padding: 8px 16px;
+}
+
+.repeat-option:hover {
+  background-color: #f5f5f5;
+}
+
+.repeat-option.selected {
+  background-color: #e8e8e8;
+  color: #000000;
+}
+
+.repeat-option-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 4px 0;
+}
+
+.custom-repeat-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  width: 400px;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.custom-repeat-header {
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.custom-repeat-close {
+  cursor: pointer;
+  font-size: 20px;
+  color: #666;
+}
+
+.custom-repeat-content {
+  padding: 16px;
+}
+
+.custom-repeat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.custom-repeat-unit {
+  padding: 4px 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.weekday-selector {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.weekday-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.weekday-button.selected {
+  background-color: #1976d2;
+  color: #ffffff;
+  border-color: #1976d2;
+}
+
+.custom-repeat-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.custom-repeat-actions button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.custom-repeat-actions button:first-child {
+  background-color: #f5f5f5;
+  border: none;
+}
+
+.custom-repeat-actions .ok-button {
+  background-color: #1976d2;
+  color: #ffffff;
+  border: none;
+}
+
+.custom-repeat-actions .ok-button:disabled {
+  background-color: #bdbdbd;
+  cursor: not-allowed;
+}
+
+.end-repeat-display {
+  position: relative;
+}
+
+.end-repeat-input-container {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.end-repeat-input {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.end-repeat-date-container {
+  padding: 8px 16px;
+}
+
+.end-repeat-date-parts {
+  display: flex;
+  gap: 4px;
+}
+
+.panel-section {
+  margin-bottom: 16px;
+}
+
+.notes-section {
+  margin-top: 8px;
+}
+
+.delete-button {
+  margin: 20px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #ffebee;
+  color: #d32f2f;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: calc(100% - 40px);
+}
+
+.delete-button:hover {
+  background-color: #ffcdd2;
+}
+
+.delete-button-text {
+  font-size: 14px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Scrollbar styling */
+.event-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.event-panel::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.event-panel::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.event-panel::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Text color overrides */
+.repeat-value,
+.end-repeat-value,
+.custom-repeat-header,
+.weekday-button,
+.custom-repeat-row,
+.panel-section {
+  color: #000000;
+}
+
+/* Dropdown adjustments */
+.repeat-frequency-dropdown,
+.repeat-end-dropdown,
+.calendar-select-dropdown {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.repeat-option {
+  color: #000000;
+  padding: 8px 16px;
+}
+
+.repeat-option:hover {
+  background-color: #f5f5f5;
+}
+
+.repeat-option.selected {
+  background-color: #e8e8e8;
+  color: #000000;
+}
+
+/* Dropdown styling to match Dropdown-Date.js */
+.boxed-inputfield-container {
+  position: relative;
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 8px 12px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.boxed-inputfield-container:focus-within {
+  border-color: #000000;
+}
+
+.boxed-inputfield-label {
+  color: #000000;
+  font-size: 12px;
+  position: absolute;
+  top: -8px;
+  left: 8px;
+  background-color: #ffffff;
+  padding: 0 4px;
+}
+
+.boxed-inputfield-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  color: #000000;
+  font-size: 14px;
+}
+
+/* Remove dragging-related styles */
+.event-panel.dragging {
+  cursor: default;
+}
+
+/* Remove old datetime styles */
+.datetime-value,
+.datetime-display,
+.datetime-dropdown {
+  display: none;
+}
+
+/* Adjust Dropdown-Date integration */
+.datetime-parts .boxed-inputfield-wrapper {
+  flex: 1;
+}
+
+.datetime-parts .boxed-inputfield-container {
+  width: 100%;
+  margin: 0;
+}
+
+.datetime-parts .boxed-inputfield-input {
+  width: 100%;
+  height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #000000;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.datetime-parts .boxed-inputfield-input:focus {
+  border-color: #000000;
+  outline: none;
+}
+
+.datetime-parts .boxed-inputfield-label {
+  color: #000000;
+  font-size: 12px;
+  position: absolute;
+  top: -8px;
+  left: 8px;
+  background-color: #ffffff;
+  padding: 0 4px;
+  transition: all 0.2s ease;
+}
+
+/* Hide redundant labels when using Dropdown-Date */
+.datetime-parts .boxed-inputfield-wrapper .boxed-inputfield-label {
+  display: none;
+}
