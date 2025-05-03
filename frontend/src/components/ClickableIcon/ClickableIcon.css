@@ -6,22 +6,29 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--grey-1);
   border-radius: 10px;
   transition: all 0.1s ease-in-out;
   padding: 20px;
   text-align: center;
   height: 200px;
-  margin: 0 20px; /* Add horizontal margin */
+  margin: 0 20px;
+  flex-direction: column;
+}
+
+.clickable-icon p {
+  font-size: var(--font-size-medium);
+  color: var(--grey-3);
+  margin-top: 10px;
 }
 
 .clickable-icon:hover {
-  border-color: #767676;
+  border-color: var(--grey-2);
 }
 
 .clickable-icon:active {
-  background-color: rgb(247, 247, 247);
-  border-color: black;
+  background-color: var(--grey-1);
+  border-color: var(--color-logo-2);
 }
 
 .icon-container {

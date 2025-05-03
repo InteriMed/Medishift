@@ -1,0 +1,286 @@
+{
+  "about": {
+    "meta": {
+      "title": "À propos de PharmaSoft - Révolutionner le recrutement et les solutions pharmaceutiques",
+      "description": "PharmaSoft met en relation les professionnels de la santé avec les pharmacies, offrant des offres d'emploi, des solutions de dotation en personnel et une place de marché pour la collaboration.",
+      "ogTitle": "À propos de PharmaSoft - Révolutionner le recrutement et les solutions pharmaceutiques",
+      "ogDescription": "Découvrez la mission, les valeurs et les services de PharmaSoft dans le domaine du recrutement pharmaceutique et des offres d'emploi."
+    },
+    "title": "À propos de PharmaSoft",
+    "introduction": "PharmaSoft est une plateforme innovante qui met en relation les professionnels de la santé avec les pharmacies, offrant des solutions fiables de recrutement pharmaceutique, des offres d'emploi et des opportunités de marché. Notre équipe, composée de pharmaciens dévoués, est passionnée par la création d'un environnement prospère où les pharmaciens peuvent exceller et les professionnels de la santé peuvent trouver des opportunités de travail enrichissantes. Nous nous engageons à favoriser une culture qui valorise la liberté de travail, permettant aux professionnels de choisir les rôles qui conviennent le mieux à leurs compétences et aspirations.",
+    "mission": {
+      "title": "Notre Mission",
+      "description": "Notre mission est de fournir à l'industrie pharmaceutique des talents de premier ordre, en simplifiant la dotation en personnel et le recrutement pour les pharmacies et les professionnels de la santé. Nous favorisons une main-d'œuvre fiable, conforme et bien gérée pour améliorer la prestation des soins de santé dans le monde entier."
+    },
+    "vision": {
+      "title": "Notre Vision",
+      "description": "Nous visons à créer un écosystème fluide permettant aux pharmacies et aux professionnels de la santé de se connecter, de collaborer et de construire des relations à long terme. Notre vision est d'être la plateforme de référence pour les solutions de recrutement pharmaceutique et les offres d'emploi à l'échelle mondiale."
+    },
+    "services": {
+      "title": "Ce que nous offrons",
+      "jobListings": {
+        "title": "Offres d'emploi",
+        "description": "Parcourez les dernières offres d'emploi dans l'industrie pharmaceutique. Que vous soyez pharmacien, assistant en pharmacie ou à la recherche d'un stage, PharmaSoft propose des opportunités pour tous."
+      },
+      "staffing": {
+        "title": "Recrutement temporaire et permanent",
+        "description": "Trouvez des solutions de recrutement temporaires ou permanentes adaptées aux besoins de votre pharmacie. Nous assurons une mise en relation rapide et fiable de professionnels pour répondre à vos exigences opérationnelles."
+      },
+      "marketplace": {
+        "title": "Place de marché",
+        "description": "PharmaSoft offre une place de marché permettant aux pharmacies et aux pharmaciens d'interagir, de collaborer et d'élargir leurs réseaux professionnels. C'est une plateforme tout-en-un pour favoriser les relations d'affaires."
+      }
+    },
+    "coreValues": {
+      "title": "Nos Valeurs Fondamentales",
+      "integrity": {
+        "title": "Intégrité",
+        "description": "Nous nous engageons à la transparence, à l'éthique et à l'honnêteté dans tout ce que nous faisons."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "Nous innovons continuellement pour garantir que notre plateforme offre la meilleure expérience à nos utilisateurs."
+      },
+      "excellence": {
+        "title": "Excellence",
+        "description": "Nous visons les normes les plus élevées en matière de qualité et de prestation de services, garantissant la satisfaction de toutes les parties prenantes."
+      }
+    },
+    "team": {
+      "title": "Rencontrez Notre Équipe",
+      "description": "Notre équipe est composée de pharmaciens expérimentés et d'experts de l'industrie profondément engagés à révolutionner le paysage du recrutement pharmaceutique. Avec une compréhension approfondie des défis auxquels font face les pharmacies et les professionnels de la santé, nous nous efforçons de fournir des solutions innovantes qui améliorent la satisfaction au travail et l'efficacité opérationnelle. Nous croyons en l'autonomisation des pharmaciens et des professionnels de la santé en offrant des arrangements de travail flexibles et des opportunités de croissance professionnelle, assurant ainsi un parcours de carrière équilibré et gratifiant."
+    }
+  },
+  "homepage": {
+    "hero": {
+      "find": "Trouver",
+      "roles": {
+        "pharmacist": "un pharmacien",
+        "assistant": "un assistant",
+        "pharmacy": "une pharmacie",
+        "internship": "un stage"
+      },
+      "subtitle": "Votre plateforme de confiance pour les solutions de recrutement en santé",
+      "cta": {
+        "hire": "Embaucher un Professionnel",
+        "find": "Trouver un Emploi"
+      }
+    },
+    "services": {
+      "title": "Nos Services",
+      "temp": {
+        "title": "Recrutement Temporaire",
+        "description": "Trouvez des professionnels de la santé qualifiés pour des missions à court terme"
+      },
+      "permanent": {
+        "title": "Placement Permanent",
+        "description": "Embauchez du personnel de santé à temps plein pour votre établissement"
+      },
+      "workforce": {
+        "title": "Gestion de la Main-d'œuvre",
+        "description": "Optimisez la planification et la gestion de votre personnel de santé"
+      }
+    },
+    "features": {
+      "title": "Pourquoi Nous Choisir",
+      "quickMatch": {
+        "title": "Mise en Relation Rapide",
+        "description": "Trouvez le bon professionnel de la santé en moins de 24 heures"
+      },
+      "verified": {
+        "title": "Professionnels Vérifiés",
+        "description": "Toutes les qualifications et licences sont soigneusement vérifiées"
+      },
+      "compliance": {
+        "title": "Conformité Assurée",
+        "description": "Restez conforme à toutes les réglementations de santé"
+      },
+      "support": {
+        "title": "Support 24/7",
+        "description": "Assistance permanente pour les besoins urgents en personnel"
+      }
+    },
+    "cta": {
+      "title": "Prêt à Transformer Votre Recrutement en Santé ?",
+      "subtitle": "Rejoignez des milliers d'établissements de santé et de professionnels qui utilisent notre plateforme",
+      "buttons": {
+        "employers": "Pour les Employeurs",
+        "professionals": "Pour les Professionnels"
+      }
+    }
+  },
+  "faqs": {
+    "title": "FAQ et Politiques",
+    "subtitle": "Trouvez des réponses à vos questions, des détails sur le fonctionnement de la plateforme et des informations juridiques importantes.",
+    "search": "Rechercher des réponses...",
+    "categories": {
+      "general": "FAQ Générales",
+      "pricing": "Tarification",
+      "howItWorks": "Comment Ça Marche",
+      "privacy": "Politique de Confidentialité",
+      "terms": "Conditions d'Utilisation"
+    }
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "Besoin d'aide ? Nous sommes là pour vous assister.",
+    "search": "Rechercher des sujets d'aide...",
+    "contact": {
+      "title": "Contactez-Nous",
+      "subtitle": "Notre équipe est là pour vous aider avec toutes vos questions ou problèmes.",
+      "form": {
+        "name": "Nom (facultatif)",
+        "email": "Email (obligatoire)",
+        "issue": {
+          "label": "Type de Problème",
+          "technical": "Problème Technique",
+          "posting": "Problème d'Offre d'Emploi",
+          "payment": "Problème de Paiement",
+          "verification": "Vérification de Profil",
+          "other": "Autre"
+        },
+        "message": "Message",
+        "submit": "Soumettre la Demande",
+        "confirmation": "Merci ! Notre équipe de support vous répondra dans les 24 heures."
+      }
+    },
+    "categories": {
+      "title": "Parcourir par Catégorie d'Aide",
+      "account": "Problèmes de Compte",
+      "payments": "Paiements et Facturation",
+      "applications": "Candidatures",
+      "posting": "Publication d'Offres",
+      "verification": "Vérification de Profil"
+    },
+    "popular": {
+      "title": "Sujets d'Aide Populaires",
+      "subtitle": "Voici quelques-uns des sujets les plus courants sur lesquels on nous interroge",
+      "notFound": "Vous n'avez pas trouvé ce que vous cherchiez ?",
+      "contactUs": "Contactez-nous directement ci-dessous"
+    },
+    "liveChat": {
+      "title": "Besoin d'Aide Immédiate ?",
+      "subtitle": "Essayez notre chat en direct pour des réponses rapides",
+      "button": "Discuter avec le Support Maintenant",
+      "availability": "Notre équipe de support en direct est disponible de 9h à 18h, du lundi au vendredi"
+    }
+  },
+  "marketplace": {
+    "filters": {
+      "canton": "Canton",
+      "city": "Ville",
+      "area": "Zone",
+      "experience": "Expérience",
+      "software": "Logiciel",
+      "workAmount": "Volume de Travail",
+      "duration": "Durée"
+    },
+    "buttons": {
+      "findEmployees": "Trouver des Employés",
+      "findJob": "Trouver un Emploi"
+    },
+    "noListings": "Aucune annonce de {{type}} disponible pour le moment.",
+    "newScheduleTitle": "Nouveau Planning",
+    "header": "Place de Marché",
+    "filter": {
+      "title": "Filtres",
+      "apply": "Appliquer les Filtres",
+      "clear": "Tout Effacer",
+      "hide": "Masquer les Filtres",
+      "show": "Afficher les Filtres",
+      "noFiltersApplied": "Aucun filtre appliqué",
+      "placeholders": {
+        "canton": "Sélectionner un canton",
+        "city": "Sélectionner une ville",
+        "area": "Sélectionner un rayon",
+        "experience": "Sélectionner un niveau d'expérience",
+        "software": "Sélectionner un logiciel",
+        "workAmount": "Sélectionner un volume de travail",
+        "fromDate": "Sélectionner une date de début",
+        "toDate": "Sélectionner une date de fin"
+      }
+    },
+    "detailedCard": {
+      "loading": "Chargement des détails...",
+      "professionalTitle": "Profil Professionnel",
+      "badges": {
+        "verifiedCompany": "Entreprise Vérifiée",
+        "verifiedProfessional": "Professionnel Vérifié"
+      },
+      "actions": {
+        "apply": "Postuler Maintenant",
+        "hire": "Envoyer une Offre",
+        "save": "Sauvegarder l'Emploi",
+        "favorite": "Ajouter aux Favoris"
+      },
+      "tabs": {
+        "overview": "Aperçu",
+        "companyDetails": "Détails de l'Entreprise",
+        "professionalDetails": "Détails du Professionnel",
+        "experience": "Expérience et Formation"
+      },
+      "sections": {
+        "jobOverview": "Aperçu de l'Emploi",
+        "availability": "Disponibilité",
+        "description": "Description",
+        "requirements": "Exigences",
+        "skills": "Compétences",
+        "about": "À propos de {{companyName}}",
+        "personalInfo": "Informations Personnelles",
+        "languages": "Langues",
+        "experience": "Expérience",
+        "education": "Formation"
+      },
+      "fields": {
+        "location": "{{location}}",
+        "postedOn": "{{postedOn}}",
+        "salary": "{{amount}}",
+        "status": "{{status}}",
+        "applicants": "{{count}}",
+        "dateRange": "{{from}} - {{to}}",
+        "workAmount": "{{amount}}",
+        "experienceYearsLabel": "Expérience Totale",
+        "websiteLabel": "Site Web",
+        "industryLabel": "Industrie",
+        "nameLabel": "Nom",
+        "ageLabel": "Âge",
+        "age": "{{age}} ans",
+        "present": "Présent",
+        "salaryLabel": "Salaire",
+        "statusLabel": "Statut",
+        "applicantsLabel": "Candidats",
+        "locationLabel": "Lieu",
+        "postedOnLabel": "Publié le",
+        "dateRangeLabel": "Disponible",
+        "workAmountLabel": "Engagement"
+      }
+    },
+    "listings": {
+      "noResults": "Aucune annonce ne correspond à vos critères de filtrage.",
+      "empty": "Aucune offre d'emploi disponible pour le moment.",
+      "loading": "Chargement des annonces..."
+    }
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "learnMore": "En Savoir Plus",
+    "back": "Retour",
+    "details": "Détails",
+    "notAvailableShort": "N/D",
+    "loading": "Chargement des données...",
+    "saving": "Enregistrement...",
+    "loadingData": "Chargement de vos données, veuillez patienter...",
+    "loadingError": "Échec du chargement des données.",
+    "password": "Entrez votre mot de passe",
+    "hide": "Masquer",
+    "show": "Afficher",
+    "datetime": {
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain",
+      "allDay": "Toute la journée"
+    }
+  }
+} 

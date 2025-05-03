@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-const UnderlinedLink = ({ text, to, color = '#000000', hoverColor = '#808080', fontSize = '14px', bottomMargin = '0px', marginTop = '0px' }) => {
+const UnderlinedLink = ({ text, to, color = '#000000', hoverColor = 'var(--color-logo-1)', fontSize = 'var(--font-size-medium)', bottomMargin = '0px', marginTop = '0px' }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const linkStyle = {

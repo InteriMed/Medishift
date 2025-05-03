@@ -1,0 +1,156 @@
+.eventPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  background-color: var(--background-div-color, #ffffff);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.eventPanelClosed {
+  transform: translateX(100%);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--grey-3, #555);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.input, .textarea, .select {
+  padding: 10px 16px;
+  border: 1px solid var(--grey-1, #e0e0e0);
+  border-radius: 8px;
+  background-color: var(--background-div-color, #ffffff);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.colorSelector {
+  display: flex;
+  gap: 12px;
+}
+
+.colorOption {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.colorOptionSelected {
+  border-color: var(--grey-3, #555);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--grey-1, #e0e0e0);
+}
+
+.deleteButton {
+  padding: 10px 16px;
+  background-color: #ffebee;
+  color: #e53935;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.cancelButton {
+  padding: 10px 16px;
+  background-color: var(--grey-1-light, #f8f8f8);
+  border: 1px solid var(--grey-1, #e0e0e0);
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.saveButton {
+  padding: 10px 16px;
+  background-color: var(--color-logo-1, #4a90e2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.deleteButton:hover {
+  background-color: #ffcdd2;
+}
+
+.cancelButton:hover {
+  background-color: var(--grey-1, #e0e0e0);
+}
+
+.saveButton:hover {
+  background-color: var(--color-logo-1-dark, #3a80d2);
+}
+
+@media (max-width: 576px) {
+  .eventPanel {
+    width: 100%;
+  }
+} 

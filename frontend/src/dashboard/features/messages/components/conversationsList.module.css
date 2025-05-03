@@ -1,0 +1,117 @@
+.conversationsList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.conversationItem {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.conversationItem:hover {
+  background-color: var(--grey-1-light, #f8f8f8);
+}
+
+.conversationItem.active {
+  background-color: var(--color-logo-1-light, #e9f2ff);
+}
+
+.conversationItem.unread {
+  font-weight: 500;
+}
+
+.avatarContainer {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.groupAvatar {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-logo-1, #4a90e2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.conversationInfo {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.conversationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.conversationName {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversationTime {
+  font-size: 0.75rem;
+  color: var(--grey-2, #888);
+  white-space: nowrap;
+}
+
+.messagePreview {
+  font-size: 0.875rem;
+  color: var(--grey-2, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unreadBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background-color: var(--color-logo-1, #4a90e2);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+.emptyList {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--grey-2, #888);
+  padding: 24px;
+  text-align: center;
+} 

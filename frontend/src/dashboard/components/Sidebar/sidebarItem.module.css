@@ -1,0 +1,64 @@
+.navItem {
+  margin: 8px 0;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  text-decoration: none;
+  color: var(--text-color, #333);
+  border-radius: 8px;
+  margin: 0 12px;
+  transition: background-color 0.2s;
+}
+
+.navLink:hover {
+  background-color: var(--grey-1, #e0e0e0);
+}
+
+.navLink.active {
+  background-color: var(--grey-1, #e0e0e0);
+  color: var(--color-logo-1, #4a90e2);
+}
+
+.iconContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.icon {
+  font-size: 20px;
+}
+
+.active .icon {
+  color: var(--color-logo-1, #4a90e2);
+}
+
+.linkText {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: var(--color-danger, #e53935);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+} 

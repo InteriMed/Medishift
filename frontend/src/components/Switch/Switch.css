@@ -6,7 +6,7 @@
 }
 
 .switch-label {
-  font-size: 16px;
+  font-size: var(--font-size-medium);
   font-weight: 500;
   text-align: left;
 }
@@ -14,9 +14,9 @@
 .switch {
   position: relative;
   display: inline-block;
-  width: 50px;
+  max-width: 40px !important;
   height: 24px;
-  min-width: 50px;
+  min-width: 40px;
 }
 
 .switch input {
@@ -32,7 +32,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--grey-2);
   transition: .4s;
 }
 
@@ -43,16 +43,16 @@
   width: 20px;
   left: 2px;
   bottom: 2px;
-  background-color: white;
+  background-color: var(--background-div-color);
   transition: .4s;
 }
 
 input:checked + .slider {
-  background-color: #4CAF50;
+  background-color: var(--green-2);
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #4CAF50;
+  box-shadow: 0 0 1px var(--green-3);
 }
 
 input:checked + .slider:before {

@@ -1,0 +1,62 @@
+.network-status {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.network-status.visible {
+  transform: translateY(0);
+}
+
+.network-status.offline {
+  background-color: var(--warning-light);
+  color: var(--warning-dark);
+  border-bottom: 1px solid var(--warning);
+}
+
+.network-status.online {
+  background-color: var(--success-light);
+  color: var(--success-dark);
+  border-bottom: 1px solid var(--success);
+}
+
+.network-status .network-icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.reconnected, .disconnected {
+  display: flex;
+  align-items: center;
+  max-width: 800px;
+  width: 100%;
+}
+
+.close-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: inherit;
+  padding: 0 0 0 10px;
+}
+
+@media (max-width: 768px) {
+  .network-status {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .network-status .network-icon {
+    font-size: 16px;
+  }
+} 

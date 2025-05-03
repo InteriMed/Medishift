@@ -1,0 +1,80 @@
+---
+description: 
+globs: *.js, *.css, *.html, *.json
+---
+---
+description: Firebase JS SDK Integration Guidelines for PharmaSoft
+globs: frontend/**/*.js, frontend/**/*.jsx
+---
+# PharmaSoft Project - Firebase JS SDK Direct Integration Guidelines
+
+## Project Structure
+- Frontend: React application in /frontend (primary focus)
+- ~~Backend: Flask API in /firebase (legacy)~~ → Being phased out
+- Application is now frontend-focused with direct Firebase services integration
+
+## Firebase JS SDK Integration
+- Use Firebase SDK v10+ in the frontend for direct communication with Firebase services
+- Authentication flows must use Firebase Auth directly instead of Flask endpoints
+- All Firestore operations should be performed directly from the frontend components
+- Storage operations should use Firebase Storage SDK for direct upload/download
+- Implement proper error handling and loading states for asynchronous Firebase operations
+
+## React Implementation Guidelines
+- Use custom hooks for Firebase functionality (e.g., useAuth, useFirestore)
+- Implement proper React context providers for auth state and other global states
+- Consider using React Suspense with Firebase operations where appropriate
+- Organize Firebase service modules in frontend/src/services/ directory
+- Use environment variables (.env files) for Firebase configuration
+
+## Security Implementation
+- Implement comprehensive Firestore security rules to protect data when accessed directly
+- Ensure rules enforce user-based access control with proper authentication checks
+- Define schema validation in security rules where possible
+- Use Firebase Auth custom claims for role-based access control
+- Test all security rules thoroughly before deployment
+
+## Internationalization (i18n)
+- Use react-i18next for translation management
+- Store translations in dedicated files under frontend/src/translations/
+- Initialize i18n configuration in a dedicated frontend/src/i18n.js file
+- Ensure i18n provider is properly implemented at the root level in App.js
+- Support language detection from URL parameters (/:lang/* routes)
+- Implement language switching functionality
+
+## Asset Management
+- Store all assets within frontend/src/assets/ directory
+- Organize assets by type (images, icons, svg, etc.)
+- Use relative imports with proper paths
+- Consider implementing lazy loading for larger assets
+- Use placeholders during development for missing assets
+
+## Component Structure
+- Avoid circular dependencies between components
+- Implement proper prop validation
+- Create reusable UI components in frontend/src/components/
+- Organize page components in frontend/src/pages/
+- Feature-specific components should be in frontend/src/features/
+
+## Data Models
+- Users: workers & companies collections accessed directly from frontend
+- Contracts: contracts collection with worker/company references
+- Availability: availability collection for worker schedules
+- Define TypeScript interfaces or PropTypes for data models
+- Implement data validation both in frontend and in Firestore rules
+
+## Development Workflow
+- Use Firebase Emulator Suite for local development
+- Test all security rules with the Rules Playground
+- Use React development server with Firebase SDK
+- Implement comprehensive error handling for Firebase operations
+- Use feature branches for new functionality
+
+## Deployment
+- Deploy frontend to Firebase Hosting for seamless integration
+- Set up proper CORS configurations for production
+- Use environment variables for different environments
+- Implement CI/CD pipeline for automated testing and deployment
+- Consider implementing preview deployments for pull requests
+
+        

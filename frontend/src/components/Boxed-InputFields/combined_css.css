@@ -1,67 +1,81 @@
-:root {
---color-logo-1: #a2d4fe;
---color-logo-2: #075690;    
---boxed-inputfield-color-default: #b6b6b6;
---boxed-inputfield-color-active: var(--color-logo-2);
---boxed-inputfield-color-text: #000000;
---boxed-inputfield-color-hover: #b6b6b6;
---boxed-inputfield-height: 48px;
---boxed-inputfield-font-size: 14px;
---boxed-inputfield-background: white;
---boxed-inputfield-error-color: #ff453a;
---boxed-inputfield-hover-background: #f5f5f5;
---boxed-inputfield-border-color: var(--boxed-inputfield-color-default);
---boxed-inputfield-placeholder-color: var(--boxed-inputfield-color-default);
---boxed-inputfield-focus-border-color: var(--boxed-inputfield-color-active);
---boxed-inputfield-label-color: var(--boxed-inputfield-color-default);
---boxed-inputfield-label-focus-color: var(--boxed-inputfield-color-active);
---boxed-inputfield-hover-color: var(--boxed-inputfield-color-hover);
+:root {   
+    --boxed-inputfield-height: 38px;
+    --boxed-inputfield-font-size: var(--font-size-medium);
+    --boxed-inputfield-color-text: var(--text-color);
+    --boxed-inputfield-background: var(--background-div-color);
+    --boxed-inputfield-error-color: var(--red-2);
+    --boxed-inputfield-hover-background: var(--grey-2);
+    --boxed-inputfield-placeholder-color: var(--grey-1);
+    --boxed-inputfield-border-color: var(--grey-2);
+    --boxed-inputfield-label-color: var(--grey-1);
+    --boxed-inputfield-color-hover: var(--grey-2);
+    --boxed-inputfield-hover-color: var(--grey-2);
+    --boxed-inputfield-color-active: var(--color-logo-2);
+    --boxed-inputfield-focus-border-color: var(--color-logo-3);
+    --boxed-inputfield-label-focus-color: var(--color-logo-3);
 }
 
 .boxed-inputfield-container {
     position: relative;
     width: 100%;
+    min-width: 100%;
     margin-bottom: var(--margin-bottom);
     margin-left: var(--margin-left);
     margin-right: var(--margin-right);
     height: var(--boxed-inputfield-height);
-    transition: delay 0.3s !important;
+    /* transition: delay 0.3s !important; */
     border: none !important;
 }
 
 .boxed-inputfield-input {
     line-height: var(--boxed-inputfield-height);
+    width: 100%;
     height: var(--boxed-inputfield-height);
     text-align: left;
-    position: absolute;
-    top: 0;
-    left: 0;
     border-radius: 10px !important;
-    color: var(--boxed-inputfield-color-text);
-    padding: 0 15px;
     border: 1px solid var(--boxed-inputfield-border-color) !important;
+    color: var(--boxed-inputfield-color-text);
+    padding: 0 10px;
     transition: all 0.3s;
     font-size: var(--boxed-inputfield-font-size);
     box-sizing: border-box;
     outline: none !important;
 }
-                    
+
+/* Add styles to control date input placeholder color */
+.boxed-inputfield-input:not(:focus)::-webkit-datetime-edit {
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.boxed-inputfield-input:focus::-webkit-datetime-edit,
+.has-value .boxed-inputfield-input::-webkit-datetime-edit {
+    opacity: 1;
+    color: var(--boxed-inputfield-color-text);
+}
+
 .boxed-inputfield-label {
     position: absolute;
-    top: 50%;
+    top: 60%;
     left: 8px;
-    transform: translateY(-50%);
-    font-size: var(--boxed-inputfield-font-size);
-    color: var(--boxed-inputfield-label-color);
+    height: var(--font-size-medium);
+    transform: translateY(-60%);
+    font-size: var(--font-size-medium);
+    color: var(--background-div-color);
     transition: all 0.3s;
     pointer-events: none;
     background-color: var(--boxed-inputfield-background);
     padding: 0 4px;
     z-index: 1;
+    color: var(--grey-2);
+}
+
+.boxed-inputfield-label {
+    transform: translateY(-100%);
 }
 
 .boxed-inputfield-input::placeholder {
-    color: var(--boxed-inputfield-placeholder-color);
+    color: var(--background-div-color);
     font-size: var(--boxed-inputfield-font-size);
     opacity: 0;
     transition: all 0.3s ;
@@ -74,9 +88,9 @@
 .boxed-inputfield-arrow {
     position: absolute;
     right: 10px;
-    top: 28px;
+    top: 24px;
     color: var(--boxed-inputfield-placeholder-color);
-    transform: translateY(-50%) rotate(90deg);
+    transform: translateY(-60%) rotate(90deg);
     transition: transform 0.3s;
     font-size: 10px;
     cursor: pointer;
@@ -84,35 +98,46 @@
 }
 
 .boxed-inputfield-options {
-position: absolute;
-top: 100%;
-left: 0;
-right: 0;
-background-color: var(--boxed-inputfield-background);
-border-radius: 10px;
-max-height: 150px;
-min-height: 20px;
-overflow-y: auto;
-display: none;
-padding: 5px 0 10px 0;
-scrollbar-color: var(--boxed-inputfield-color-active) var(--boxed-inputfield-background);
-border: 1px solid var(--boxed-inputfield-border-color);
-z-index: 10000;
-}
-
-.option-tick {
-    color: var(--boxed-inputfield-color-active);
-    margin-left: 8px;
-    font-size: 14px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--boxed-inputfield-background);
+    border-radius: 10px;
+    min-height: 20px;
+    display: none;
+    scrollbar-color: var(--boxed-inputfield-color-active) var(--boxed-inputfield-background);
+    border: 1px solid var(--boxed-inputfield-border-color);
+    z-index: 1000;
+    overflow-y: auto;
 }
 
 .boxed-inputfield-option {
     padding: 5px 30px 5px 10px;
     cursor: pointer;
+    height: 30px;
     border-radius: 6px;
-    transition: background-color 0.2s;
+    background-color: var(--boxed-inputfield-background);
+    transition: background-color 0.3s;
+    color: var(--text-color);
+}
+
+.option-tick {
+    display: inline-block;
+    color: var(--color-logo-1);
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.boxed-inputfield-option.selected {
+    background-color: var(--color-logo-1);
+    color: white;
+}
+
+.boxed-inputfield-option:hover {
+    background-color: var(--color-logo-2);
+    color: white;
 }
 
 .boxed-inputfield-label--focused {
@@ -154,8 +179,8 @@ z-index: 10000;
 }
 
 .selected-value-tag {
-    background-color: var(--boxed-inputfield-color-active);
-    color: #ffffff;
+    background-color: var(--color-logo-1);
+    color: var(--text-color);
     border-radius: 16px;
     padding: 4px 12px;
     display: inline-flex;
@@ -165,6 +190,40 @@ z-index: 10000;
     height: 28px;
     margin-bottom: 4px;
     box-sizing: border-box;
+}
+
+/* Update clear button styles */
+.boxed-inputfield-clear {
+    position: absolute;
+    font-weight: 300;
+    right: 20px;
+    top: 26%;
+    transform: none;
+    align-items: left;
+    justify-content: left;
+    background-color: transparent;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+    border-radius: 100px;
+}
+
+.has-value .boxed-inputfield-clear {
+    opacity: 1;
+}
+
+.boxed-inputfield-container--focused,
+.has-value,
+.boxed-inputfield-clear {
+    color: var(--boxed-inputfield-color-active);
+}
+
+.boxed-inputfield-clear:hover {
+    color: var(--boxed-inputfield-color-active);
 }
 
 .remove-tag-button {
@@ -178,21 +237,17 @@ z-index: 10000;
 }
 
 .boxed-inputfield-wrapper {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 
-.boxed-inputfield-option.selected {
-    background-color: #f5f5f5;
-}
-
-.boxed-inputfield-option:hover {
-    background-color: var(--boxed-inputfield-hover-background);
-}
-
 .boxed-inputfield-options--visible {
     display: block;
+    visibility: visible;
+    opacity: 1;
+    border: 1px solid var(--boxed-inputfield-border-color);
 }
 
 .option-tick.visible {
@@ -208,8 +263,15 @@ z-index: 10000;
 }
 
 .boxed-inputfield-container--error .boxed-inputfield-label,
-.boxed-inputfield-container--error .boxed-inputfield- {
+.boxed-inputfield-container--error .boxed-inputfield,
+.boxed-inputfield-container--error .boxed-inputfield-arrow {
     color: var(--boxed-inputfield-error-color);
+}
+
+/* Add styles for the date input calendar icon in error state */
+.boxed-inputfield-container--error input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(35%) sepia(91%) saturate(2476%) hue-rotate(345deg) brightness(100%) contrast(100%); /* This filter attempts to color the icon red */
+    /* Direct color change is not supported, using filter as a workaround */
 }
 
 .boxed-inputfield-error-message {
@@ -221,11 +283,16 @@ z-index: 10000;
     opacity: 0;
     transition: all 0.3s;
     pointer-events: none;
-    margin-top: -12px;
+    margin-top: -12px; /* Adjusted margin to position correctly */
 }
 
 .boxed-inputfield-error-message--visible {
     opacity: 1;
+}
+
+/* Add this to ensure consistent error message display */
+.show-error {
+    opacity: 1 !important;
 }
 
 .boxed-inputfield-container--focused .boxed-inputfield-input {
@@ -246,4 +313,89 @@ z-index: 10000;
 
 .boxed-inputfield-error .boxed-inputfield-label {
     color: var(--boxed-inputfield-error-color);
+}
+
+/* Increased specificity for date input error border */
+.boxed-inputfield-container--error .boxed-inputfield-input {
+    border: 1px solid var(--boxed-inputfield-error-color) !important;
+}
+
+.boxed-inputfield-container--error .boxed-inputfield-arrow {
+    color: var(--boxed-inputfield-error-color);
+}
+
+.boxed-inputfield-container--error .boxed-inputfield-clear {
+    color: var(--boxed-inputfield-error-color);
+}
+
+.boxed-inputfield-container--error .boxed-inputfield-input {
+    color: var(--boxed-inputfield-error-color);
+}
+
+.boxed-inputfield-container--error input[type="date"]::-webkit-datetime-edit {
+    color: var(--boxed-inputfield-error-color);
+}
+
+.boxed-inputfield-container input[type="date"]::-webkit-datetime-edit {
+    padding-left: 0px;
+}
+
+
+/* Specific styles for Paragraph Textarea */
+.boxed-inputfield-container--paragraph {
+    height: auto; /* Allow container height to grow */
+    min-height: var(--boxed-inputfield-height); /* Maintain minimum height */
+}
+
+.boxed-inputfield-container--paragraph .boxed-inputfield-input {
+    position: relative; /* Change from absolute */
+    height: auto; /* Allow textarea height to dictate */
+    line-height: 1.4; /* Adjust line-height for textarea */
+    padding: 14px 10px 6px 10px; /* Adjust padding for label space */
+    min-height: var(--boxed-inputfield-height); /* Ensure minimum height */
+}
+
+/* Adjust label for relative input */
+.boxed-inputfield-container--paragraph .boxed-inputfield-label {
+    top: -8px; /* Position near top */
+    transform: translateY(0) scale(0.85); /* Initial small state */
+    color: var(--boxed-inputfield-label-color);
+}
+
+.boxed-inputfield-container--paragraph .boxed-inputfield-label--focused,
+.boxed-inputfield-container--paragraph.has-value .boxed-inputfield-label {
+    /* Keep label small and at top when focused or has value */
+    top: -8px;
+    transform: translateY(0) scale(0.85);
+    color: var(--boxed-inputfield-label-focus-color);
+}
+
+/* Adjust clear button position for paragraph */
+.boxed-inputfield-container--paragraph .boxed-inputfield-clear {
+    top: -5px; /* Position near the top right */
+    transform: none;
+}
+
+.boxed-inputfield-password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 57%;
+    transform: translateY(-50%);
+    z-index: 10;
+    border: none;
+    background-color: transparent;
+    color: var(--color-logo-2);
+}
+
+.boxed-inputfield-password-toggle--error {
+    color: var(--boxed-inputfield-error-color) !important;
+}
+
+.boxed-inputfield-container--error .boxed-inputfield-password-toggle {
+    color: var(--boxed-inputfield-error-color);
+}
+
+.email-box {
+    background-color: var(--background-color);
+    color: var(--grey-3);
 }

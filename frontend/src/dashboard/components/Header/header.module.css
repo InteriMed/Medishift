@@ -1,0 +1,146 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 24px;
+  background-color: var(--background-div-color, #ffffff);
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+  z-index: 10;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--grey-3, #555);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.workspaceInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workspaceName {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.notificationButton {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--grey-3, #555);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--color-error, #e53935);
+  color: white;
+  font-size: 0.75rem;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color, #333);
+  margin: 0;
+}
+
+.iconButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.iconButton:hover {
+  background-color: var(--grey-1, #e0e0e0);
+}
+
+.userButton {
+  display: flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userMenuContainer {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--color-danger, #e53935);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 12px;
+  }
+  
+  .title {
+    display: none;
+  }
+} 

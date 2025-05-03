@@ -1,0 +1,23 @@
+.colorPickerContainer {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.colorOption {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.colorOption:hover {
+  transform: scale(1.1);
+}
+
+.colorOption.selected {
+  border-color: var(--grey-2, #888);
+  transform: scale(1.1);
+} 

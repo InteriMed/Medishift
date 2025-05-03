@@ -1,0 +1,286 @@
+{
+  "about": {
+    "meta": {
+      "title": "About PharmaSoft - Revolutionizing Pharmaceutical Staffing & Solutions",
+      "description": "PharmaSoft connects healthcare professionals with pharmacies, offering job listings, staffing solutions, and a marketplace for collaboration.",
+      "ogTitle": "About PharmaSoft - Revolutionizing Pharmaceutical Staffing & Solutions",
+      "ogDescription": "Explore PharmaSoft's mission, values, and services in pharmaceutical staffing and job listings."
+    },
+    "title": "About PharmaSoft",
+    "introduction": "PharmaSoft is an innovative platform connecting healthcare professionals with pharmacies, offering reliable pharmaceutical staffing solutions, job listings, and marketplace opportunities. Our team, composed of dedicated pharmacists, is passionate about creating a thriving environment where pharmacists can excel and healthcare professionals can find fulfilling work opportunities. We are committed to fostering a culture that values freedom of work, allowing professionals to choose roles that best suit their skills and aspirations.",
+    "mission": {
+      "title": "Our Mission",
+      "description": "Our mission is to provide the pharmaceutical industry with top talent, simplifying staffing and recruitment for pharmacies and healthcare professionals. We foster a reliable, compliant, and well-managed workforce to enhance healthcare delivery worldwide."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "We aim to create a seamless ecosystem for pharmacies and healthcare professionals to connect, collaborate, and build long-term relationships. Our vision is to be the leading platform for pharmaceutical staffing solutions and job listings globally."
+    },
+    "services": {
+      "title": "What We Offer",
+      "jobListings": {
+        "title": "Job Listings",
+        "description": "Browse the latest job openings in the pharmaceutical industry. Whether you're a pharmacist, pharmacy assistant, or looking for an internship, PharmaSoft has opportunities for everyone."
+      },
+      "staffing": {
+        "title": "Temporary & Permanent Staffing",
+        "description": "Find temporary or permanent staffing solutions tailored to your pharmacy's needs. We provide quick and reliable matching of professionals to meet your operational requirements."
+      },
+      "marketplace": {
+        "title": "Marketplace",
+        "description": "PharmaSoft offers a marketplace for pharmacies and pharmacists to interact, collaborate, and expand their professional networks. It's an all-in-one platform to foster business relationships."
+      }
+    },
+    "coreValues": {
+      "title": "Our Core Values",
+      "integrity": {
+        "title": "Integrity",
+        "description": "We are committed to transparency, ethics, and honesty in everything we do."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "We continuously innovate to ensure our platform provides the best experience for our users."
+      },
+      "excellence": {
+        "title": "Excellence",
+        "description": "We aim for the highest standards in quality and service delivery, ensuring satisfaction for all stakeholders."
+      }
+    },
+    "team": {
+      "title": "Meet Our Team",
+      "description": "Our team consists of experienced pharmacists and industry experts who are deeply committed to revolutionizing the pharmaceutical staffing landscape. With a profound understanding of the challenges faced by both pharmacies and healthcare professionals, we strive to provide innovative solutions that enhance job satisfaction and operational efficiency. We believe in empowering pharmacists and healthcare professionals by offering flexible work arrangements and opportunities for professional growth, ensuring a balanced and rewarding career path."
+    }
+  },
+  "homepage": {
+    "hero": {
+      "find": "Find",
+      "roles": {
+        "pharmacist": "a pharmacist",
+        "assistant": "an assistant",
+        "pharmacy": "a pharmacy",
+        "internship": "an internship"
+      },
+      "subtitle": "Your trusted platform for healthcare staffing solutions",
+      "cta": {
+        "hire": "Hire a Professional",
+        "find": "Find a Job"
+      }
+    },
+    "services": {
+      "title": "Our Services",
+      "temp": {
+        "title": "Temporary Staffing",
+        "description": "Find qualified healthcare professionals for short-term assignments"
+      },
+      "permanent": {
+        "title": "Permanent Placement",
+        "description": "Hire full-time healthcare staff for your facility"
+      },
+      "workforce": {
+        "title": "Workforce Management",
+        "description": "Optimize your healthcare workforce scheduling and management"
+      }
+    },
+    "features": {
+      "title": "Why Choose Us",
+      "quickMatch": {
+        "title": "Quick Matching",
+        "description": "Find the right healthcare professional within 24 hours"
+      },
+      "verified": {
+        "title": "Verified Professionals",
+        "description": "All credentials and licenses thoroughly verified"
+      },
+      "compliance": {
+        "title": "Compliance Assured",
+        "description": "Stay compliant with all healthcare regulations"
+      },
+      "support": {
+        "title": "24/7 Support",
+        "description": "Round-the-clock assistance for urgent staffing needs"
+      }
+    },
+    "cta": {
+      "title": "Ready to Transform Your Healthcare Staffing?",
+      "subtitle": "Join thousands of healthcare facilities and professionals using our platform",
+      "buttons": {
+        "employers": "For Employers",
+        "professionals": "For Professionals"
+      }
+    }
+  },
+  "faqs": {
+    "title": "FAQs & Policies",
+    "subtitle": "Find answers to your questions, details on how the platform works, and important legal information.",
+    "search": "Search for answers...",
+    "categories": {
+      "general": "General FAQs",
+      "pricing": "Pricing",
+      "howItWorks": "How It Works",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    }
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "Need help? We're here to assist you.",
+    "search": "Search for help topics...",
+    "contact": {
+      "title": "Get in Touch with Us",
+      "subtitle": "Our team is here to help you with any questions or issues.",
+      "form": {
+        "name": "Name (optional)",
+        "email": "Email (required)",
+        "issue": {
+          "label": "Issue Type",
+          "technical": "Technical Issue",
+          "posting": "Job Posting Issue",
+          "payment": "Payment Issue",
+          "verification": "Profile Verification",
+          "other": "Other"
+        },
+        "message": "Message",
+        "submit": "Submit Request",
+        "confirmation": "Thank you! Our support team will get back to you within 24 hours."
+      }
+    },
+    "categories": {
+      "title": "Browse by Help Category",
+      "account": "Account Issues",
+      "payments": "Payments & Billing",
+      "applications": "Job Applications",
+      "posting": "Job Posting",
+      "verification": "Profile Verification"
+    },
+    "popular": {
+      "title": "Popular Support Topics",
+      "subtitle": "Here are some of the most common topics we get asked about",
+      "notFound": "Didn't find what you're looking for?",
+      "contactUs": "Contact us directly below"
+    },
+    "liveChat": {
+      "title": "Need Immediate Help?",
+      "subtitle": "Try our live chat for quick answers",
+      "button": "Chat with Support Now",
+      "availability": "Our live support team is available from 9 AM to 6 PM, Monday to Friday"
+    }
+  },
+  "marketplace": {
+    "filters": {
+      "canton": "Canton",
+      "city": "City",
+      "area": "Area",
+      "experience": "Experience",
+      "software": "Software",
+      "workAmount": "Work Amount",
+      "duration": "Duration"
+    },
+    "buttons": {
+      "findEmployees": "Find Employees",
+      "findJob": "Find Job"
+    },
+    "noListings": "No {{type}} listings available at the moment.",
+    "newScheduleTitle": "New Schedule",
+    "header": "Marketplace",
+    "filter": {
+      "title": "Filters",
+      "apply": "Apply Filters",
+      "clear": "Clear All",
+      "hide": "Hide Filters",
+      "show": "Show Filters",
+      "noFiltersApplied": "No filters applied",
+      "placeholders": {
+        "canton": "Select canton",
+        "city": "Select city",
+        "area": "Select area radius",
+        "experience": "Select experience level",
+        "software": "Select software",
+        "workAmount": "Select work amount",
+        "fromDate": "Select start date",
+        "toDate": "Select end date"
+      }
+    },
+    "detailedCard": {
+      "loading": "Loading details...",
+      "professionalTitle": "Professional Profile",
+      "badges": {
+        "verifiedCompany": "Verified Company",
+        "verifiedProfessional": "Verified Professional"
+      },
+      "actions": {
+        "apply": "Apply Now",
+        "hire": "Send Offer",
+        "save": "Save Job",
+        "favorite": "Add to Favorites"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "companyDetails": "Company Details",
+        "professionalDetails": "Professional Details",
+        "experience": "Experience & Education"
+      },
+      "sections": {
+        "jobOverview": "Job Overview",
+        "availability": "Availability",
+        "description": "Description",
+        "requirements": "Requirements",
+        "skills": "Skills",
+        "about": "About {{companyName}}",
+        "personalInfo": "Personal Information",
+        "languages": "Languages",
+        "experience": "Experience",
+        "education": "Education"
+      },
+      "fields": {
+        "location": "{{location}}",
+        "postedOn": "{{postedOn}}",
+        "salary": "{{amount}}",
+        "status": "{{status}}",
+        "applicants": "{{count}}",
+        "dateRange": "{{from}} - {{to}}",
+        "workAmount": "{{amount}}",
+        "experienceYearsLabel": "Total Experience",
+        "websiteLabel": "Website",
+        "industryLabel": "Industry",
+        "nameLabel": "Name",
+        "ageLabel": "Age",
+        "age": "{{age}} years old",
+        "present": "Present",
+        "salaryLabel": "Salary",
+        "statusLabel": "Status",
+        "applicantsLabel": "Applicants",
+        "locationLabel": "Location",
+        "postedOnLabel": "Posted On",
+        "dateRangeLabel": "Available",
+        "workAmountLabel": "Commitment"
+      }
+    },
+    "listings": {
+      "noResults": "No listings match your filter criteria.",
+      "empty": "No job listings available at the moment.",
+      "loading": "Loading listings..."
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "learnMore": "Learn More",
+    "back": "Back",
+    "details": "Details",
+    "notAvailableShort": "N/A",
+    "loading": "Loading data...",
+    "saving": "Saving...",
+    "loadingData": "Loading your data, please wait...",
+    "loadingError": "Failed to load data.",
+    "password": "Enter your password",
+    "hide": "Hide",
+    "show": "Show",
+    "datetime": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "allDay": "All day"
+    }
+  }
+} 

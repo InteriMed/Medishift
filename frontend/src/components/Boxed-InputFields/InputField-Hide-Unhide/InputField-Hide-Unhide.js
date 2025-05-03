@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { BiShow, BiHide } from "react-icons/bi";
+import { BiShow, BiHide, BiNoEntry } from "react-icons/bi";
 import '../combined_css.css';
 
-function InputFieldHideUnhide({ label, placeholder, value, onChange, marginBottom, marginLeft, marginRight, error, onErrorReset, type }) {
+function InputFieldHideUnhide({ label, placeholder, value, onChange, marginBottom, marginLeft, marginRight, error, onErrorReset, type, clearFilter, showClearButton = true, showErrors = false }) {
     const [isFocused, setIsFocused] = useState(false);
     const [showPlaceholder, setShowPlaceholder] = useState(!label);
-    const [showError, setShowError] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     const handleFocus = () => {
@@ -27,19 +26,31 @@ function InputFieldHideUnhide({ label, placeholder, value, onChange, marginBotto
         }
     };
 
+    const handleClear = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (clearFilter) {
+            clearFilter();
+        } else {
+            const syntheticEvent = {
+                target: {
+                    name: e.target.name,
+                    value: ''
+                }
+            };
+            onChange?.(syntheticEvent);
+        }
+        setIsFocused(false);
+        if (label) {
+            setShowPlaceholder(false);
+        }
+    };
+
     useEffect(() => {
         if (label && value) {
             setShowPlaceholder(true);
         }
     }, [label, value]);
-
-    useEffect(() => {
-        if (error) {
-            setShowError(true);
-        } else {
-            setShowError(false);
-        }
-    }, [error]);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -50,18 +61,23 @@ function InputFieldHideUnhide({ label, placeholder, value, onChange, marginBotto
         ? (showPassword ? 'text' : 'password')
         : type || 'text';
 
+    // Check if error message should be displayed
+    const shouldShowErrorMessage = error && showErrors;
+
     return (
-        <div className={`boxed-inputfield-container ${error ? 'boxed-inputfield-container--error' : ''}`} style={{ 
-            marginBottom,
-            marginLeft, 
-            marginRight 
-        }}>
-            {label && (
-                <label className={`boxed-inputfield-label ${(isFocused || value) ? 'boxed-inputfield-label--focused' : ''}`}>
-                    {label}
-                </label>
-            )}
-            <div className="boxed-inputfield-wrapper">
+        <div 
+            className="boxed-inputfield-wrapper" 
+            style={{ marginBottom, marginLeft, marginRight }}
+        >
+            <div 
+                className={`boxed-inputfield-container ${error && showErrors ? 'boxed-inputfield-container--error' : ''} ${value ? 'has-value' : ''}`}
+            >
+                {label && (
+                    <label className={`boxed-inputfield-label ${(isFocused || value) ? 'boxed-inputfield-label--focused' : ''}`}>
+                        {label}
+                    </label>
+                )}
+                
                 <input
                     className={`boxed-inputfield-input 
                         ${isFocused ? 'boxed-inputfield-input--focused' : ''} 
@@ -75,17 +91,35 @@ function InputFieldHideUnhide({ label, placeholder, value, onChange, marginBotto
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                 />
+                
+                {value && showClearButton && (
+                    <button 
+                        className="boxed-inputfield-clear" 
+                        onClick={handleClear}
+                        type="button"
+                        aria-label="Clear input"
+                        style={{
+                            right: '40px',
+                        }}
+                    >
+                        x
+                    </button>
+                )}
+                
                 {type === 'password' && (
                     <button 
                         type="button"
-                        className="boxed-inputfield-password-toggle"
+                        className={`boxed-inputfield-password-toggle ${error && showErrors ? 'boxed-inputfield-password-toggle--error' : ''}`}
                         onClick={togglePasswordVisibility}
+                        style={{
+                            color: error && showErrors ? 'var(--color-error, #ff0000)' : 'inherit'
+                        }}
                     >
                         {showPassword ? <BiHide /> : <BiShow />}
                     </button>
                 )}
             </div>
-            {error && <div className={`boxed-inputfield-error-message ${showError ? 'boxed-inputfield-error-message--visible' : ''}`}>{error}</div>}
+            {shouldShowErrorMessage && <div className={`boxed-inputfield-error-message ${shouldShowErrorMessage ? 'boxed-inputfield-error-message--visible' : ''}`}>{error}</div>}
         </div>
     );
 }

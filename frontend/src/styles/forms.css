@@ -1,0 +1,98 @@
+/**
+ * Form Styles
+ */
+
+.form-group {
+  margin-bottom: var(--spacing-3);
+}
+
+.form-label {
+  display: inline-block;
+  margin-bottom: var(--spacing-1);
+  font-weight: var(--font-weight-medium);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  background-clip: padding-box;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: border-color var(--transition-speed) var(--transition-function),
+    box-shadow var(--transition-speed) var(--transition-function);
+}
+
+.form-control:focus {
+  color: var(--text-color);
+  background-color: var(--background-color);
+  border-color: var(--primary-light);
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb), 0.25);
+}
+
+.form-control:disabled {
+  background-color: var(--secondary-light);
+  opacity: 0.65;
+}
+
+.form-text {
+  margin-top: var(--spacing-1);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.form-check {
+  display: block;
+  min-height: 1.5rem;
+  padding-left: 1.5em;
+  margin-bottom: var(--spacing-2);
+}
+
+.form-check-input {
+  width: 1em;
+  height: 1em;
+  margin-top: 0.25em;
+  margin-left: -1.5em;
+  vertical-align: top;
+  background-color: var(--background-color);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border: var(--border-width) solid var(--border-color);
+  appearance: none;
+}
+
+.form-check-input[type="checkbox"] {
+  border-radius: 0.25em;
+}
+
+.form-check-input[type="radio"] {
+  border-radius: 50%;
+}
+
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.form-check-label {
+  margin-bottom: 0;
+}
+
+.is-invalid {
+  border-color: var(--danger-color);
+}
+
+.invalid-feedback {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: var(--font-size-sm);
+  color: var(--danger-color);
+} 

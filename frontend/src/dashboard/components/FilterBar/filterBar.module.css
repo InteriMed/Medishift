@@ -1,0 +1,125 @@
+.filterBar {
+  background: var(--background-div-color, white);
+  padding: 8px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--grey-1, #e0e0e0);
+  position: relative;
+  z-index: 10;
+  overflow: visible;
+  transition: all 0.3s ease-in-out;
+}
+
+.filterBarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.filterTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.filterSummary {
+  flex: 1;
+  margin: 0 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--grey-2, #888);
+  font-size: 14px;
+}
+
+.expandButton {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--grey-3, #555);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filterContent {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-top: 1px solid var(--grey-1, #e0e0e0);
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterGroup label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.filterGroup select, 
+.filterGroup input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--grey-1, #e0e0e0);
+  background-color: var(--background-div-color, white);
+  font-size: 14px;
+}
+
+.filterGroup select[multiple] {
+  height: 120px;
+}
+
+.filterActions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.clearButton, 
+.applyButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.clearButton {
+  background-color: var(--grey-1-light, #f8f8f8);
+  border: 1px solid var(--grey-1, #e0e0e0);
+  color: var(--grey-3, #555);
+}
+
+.applyButton {
+  background-color: var(--color-logo-1, #4a90e2);
+  border: none;
+  color: white;
+}
+
+.clearButton:hover {
+  background-color: var(--grey-1, #e0e0e0);
+}
+
+.applyButton:hover {
+  background-color: var(--color-logo-1-dark, #3a80d2);
+}
+
+@media (max-width: 768px) {
+  .filterGrid {
+    grid-template-columns: 1fr;
+  }
+} 

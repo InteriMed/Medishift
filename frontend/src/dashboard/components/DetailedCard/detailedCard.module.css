@@ -1,0 +1,159 @@
+.detailedCard {
+  background-color: var(--background-div-color, white);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  width: 100%;
+}
+
+.cardHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardHeader h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--grey-3, #555);
+}
+
+.cardContent {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.mainInfo {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.listingImage {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.infoSection {
+  flex: 1;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--grey-3, #555);
+}
+
+.sectionDivider {
+  height: 1px;
+  background-color: var(--grey-1, #e0e0e0);
+  margin: 20px 0;
+}
+
+.salary, .rate {
+  font-weight: 500;
+  color: var(--color-logo-1, #4a90e2);
+  margin: 16px 0;
+}
+
+.description, .requirements, .experience, .availability {
+  margin-bottom: 24px;
+}
+
+.description h3, .requirements h3, .experience h3, .availability h3 {
+  font-size: 1.1rem;
+  margin: 0 0 12px 0;
+}
+
+.requirements ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.requirements li {
+  margin-bottom: 8px;
+}
+
+.specialtiesTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.specialtyTag {
+  padding: 4px 8px;
+  background-color: var(--color-logo-1-light, #e9f2ff);
+  color: var(--color-logo-1, #4a90e2);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.cardFooter {
+  padding: 16px 24px;
+  border-top: 1px solid var(--grey-1, #e0e0e0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actionButton {
+  padding: 10px 20px;
+  background-color: var(--color-logo-1, #4a90e2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.secondaryButton {
+  padding: 10px 20px;
+  background-color: transparent;
+  color: var(--grey-3, #555);
+  border: 1px solid var(--grey-1, #e0e0e0);
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionButton:hover {
+  background-color: var(--color-logo-1-dark, #3a80d2);
+}
+
+.secondaryButton:hover {
+  background-color: var(--grey-1-light, #f8f8f8);
+}
+
+@media (max-width: 768px) {
+  .mainInfo {
+    flex-direction: column;
+  }
+  
+  .listingImage {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16/9;
+  }
+} 

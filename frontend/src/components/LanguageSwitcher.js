@@ -1,46 +1,31 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation } from 'react-router-dom';
+import './LanguageSwitcher.css';
 
 const LanguageSwitcher = () => {
-  const { i18n } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const changeLanguage = (lng) => {
-    // Get the current path without the language prefix
-    const pathParts = location.pathname.split('/');
-    const currentPath = pathParts.slice(2).join('/');
-    
-    // Only navigate if the language is actually changing
-    if (lng !== i18n.language) {
-      const newPath = currentPath ? `/${lng}/${currentPath}` : `/${lng}`;
-      navigate(newPath);
-      i18n.changeLanguage(lng);
-    }
+  // Simple mock of language switching functionality
+  const currentLanguage = 'en';
+  
+  const handleLanguageChange = (language) => {
+    console.log(`Would change language to: ${language}`);
+    // In a real app, we would use i18n.changeLanguage(language) here
   };
 
-  // Return null to hide the component while keeping the functionality
-  return null;
-
-  /* Original return statement kept for reference
   return (
     <div className="language-switcher">
-      <button onClick={() => changeLanguage('en')} className={i18n.language === 'en' ? 'active' : ''}>
-        🇬🇧 EN
+      <button 
+        className={currentLanguage === 'en' ? 'active' : ''} 
+        onClick={() => handleLanguageChange('en')}
+      >
+        EN
       </button>
-      <button onClick={() => changeLanguage('fr')} className={i18n.language === 'fr' ? 'active' : ''}>
-        🇫🇷 FR
-      </button>
-      <button onClick={() => changeLanguage('de')} className={i18n.language === 'de' ? 'active' : ''}>
-        🇩🇪 DE
-      </button>
-      <button onClick={() => changeLanguage('it')} className={i18n.language === 'it' ? 'active' : ''}>
-        🇮🇹 IT
+      <button 
+        className={currentLanguage === 'fr' ? 'active' : ''} 
+        onClick={() => handleLanguageChange('fr')}
+      >
+        FR
       </button>
     </div>
   );
-  */
 };
 
 export default LanguageSwitcher; 

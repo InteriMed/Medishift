@@ -9,20 +9,20 @@
 
 .language-switcher button {
   padding: 6px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--grey-2);
   border-radius: 4px;
-  background: white;
+  background: var(--background-div-color);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .language-switcher button:hover {
-  background: #f0f0f0;
+  background: var(--grey-2);
 }
 
 .language-switcher button.active {
-  background: #e0e0e0;
-  border-color: #999;
+  background: var(--grey-2);
+  border-color: var(--grey-3;
 } 
 
 */ 

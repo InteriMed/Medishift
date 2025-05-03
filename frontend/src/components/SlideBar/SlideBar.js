@@ -12,9 +12,9 @@ const SlideBar = ({
   specialTicks = ["0", "25", "50", "75", "100"],
   continuousSlide = false,
   bottomMargin = "20px",
-  sliderColor1 = "#5ee7df",
-  sliderColor2 = "#b490ca",
-  colorDot = "#b490ca",
+  sliderColor1 = "var(--color-logo-1)",
+  sliderColor2 = "var(--color-logo-2)",
+  colorDot = "var(--color-logo-2)",
   colorRightBar = "rgb(230, 230, 230)",
   colorBorder = "rgb(230, 230, 230)",
   thumbSize = "28px",
@@ -142,7 +142,7 @@ const SlideBar = ({
         const percentage = ((tickValue - minValue) / (range)) * 100;
         ticks.push(
           <div
-            key={`tick-${tickValue}`}
+            key={`tick-${tickValue}-special`}
             className="slide-bar-tick slide-bar-tick-special"
             style={{ left: `${percentage}%`, opacity: 1, bottom: 0 }} // Ensure special ticks are always visible and at the bottom
           >

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../combined_css.css';
+import { BiNoEntry } from 'react-icons/bi';
 
 function DropdownField({ 
     label, 
@@ -13,7 +14,10 @@ function DropdownField({
     error, 
     onErrorReset,
     disableList = false,
-    required = false
+    required = false,
+    clearFilter,
+    showClearButton = true,
+    maxHeight = '150px'
 }) {
     const [isFocused, setIsFocused] = useState(false);
     const [showPlaceholder, setShowPlaceholder] = useState(!label);
@@ -189,6 +193,20 @@ function DropdownField({
         }
     };
 
+    const handleClear = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (clearFilter) {
+            clearFilter();
+        } else {
+            onChange?.([]);
+        }
+        setIsFocused(false);
+        setIsOpen(false);
+        setSearchTerm('');
+        setSelectedValues([]);
+    };
+
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -204,17 +222,31 @@ function DropdownField({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [label, selectedValues]);
 
+    const handleContainerClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsOpen(true);
+        setIsFocused(true);
+        setShowPlaceholder(selectedValues.length === 0 && !label);
+    };
+
     return (
-        <div className="boxed-inputfield-wrapper" style={{ marginBottom, marginLeft, marginRight }}>
+        <div 
+            className="boxed-inputfield-wrapper" 
+            style={{ marginBottom, marginLeft, marginRight }}
+            ref={dropdownRef}
+        >
             <div 
-                ref={dropdownRef}
-                className={`boxed-inputfield-container ${error ? 'boxed-inputfield-error' : ''} ${selectedValues.length > 0 ? 'has-selections' : ''}`} 
+                className={`boxed-inputfield-container ${error ? 'boxed-inputfield-error' : ''} ${selectedValues.length > 0 ? 'has-value' : ''}`}
+                onClick={handleContainerClick}
+                style={{ cursor: 'pointer' }}
             >
                 {label && (
                     <label className={`boxed-inputfield-label ${(isFocused || searchTerm || selectedValues.length > 0) ? 'boxed-inputfield-label--focused' : ''}`}>
                         {label}
                     </label>
                 )}
+                
                 <input
                     className="boxed-inputfield-input"
                     type="text"
@@ -229,6 +261,21 @@ function DropdownField({
                     aria-controls="dropdown-options"
                     aria-activedescendant={selectedIndex >= 0 ? `option-${selectedIndex}` : undefined}
                 />
+                
+                {selectedValues.length > 0 && showClearButton && (
+                    <button 
+                        className="boxed-inputfield-clear" 
+                        onClick={handleClear}
+                        type="button"
+                        aria-label="Clear all selections"
+                        style={{
+                            right: '40px',
+                        }}
+                    >
+                        x
+                    </button>
+                )}
+                
                 <span 
                     className={`boxed-inputfield-arrow ${isOpen ? 'boxed-inputfield-arrow--open' : ''}`}
                     onClick={handleArrowClick}
@@ -237,9 +284,10 @@ function DropdownField({
                 </span>
                 
                 <div 
-                    id="dropdown-options"
+                    id="boxed-inputfield-options"
                     className={`boxed-inputfield-options ${isOpen ? 'boxed-inputfield-options--visible' : ''}`}
                     role="listbox"
+                    style={{ maxHeight: maxHeight}}
                 >
                     {filteredOptions.map((option, index) => {
                         const optionValue = typeof option === 'string' ? option : option.value || option.label;
@@ -256,8 +304,9 @@ function DropdownField({
                                 onClick={() => handleOptionSelect(option)}
                                 role="option"
                                 aria-selected={selectedIndex === index}
+                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                             >
-                                {typeof option === 'string' ? option : option.label}
+                                <span>{typeof option === 'string' ? option : option.label}</span>
                                 <span className={`option-tick ${isSelected ? 'visible' : ''}`}>✓</span>
                             </div>
                         );

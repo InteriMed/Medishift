@@ -1,0 +1,55 @@
+{
+  "countries": [
+    { "value": "Switzerland", "label": "Switzerland" }
+  ],
+  "cantons": [
+    { "value": "AG", "label": "Aargau" },
+    { "value": "AI", "label": "Appenzell Innerrhoden" },
+    { "value": "AR", "label": "Appenzell Ausserrhoden" },
+    { "value": "BE", "label": "Bern" },
+    { "value": "BL", "label": "Basel-Landschaft" },
+    { "value": "BS", "label": "Basel-Stadt" },
+    { "value": "FR", "label": "Fribourg" },
+    { "value": "GE", "label": "Geneva" },
+    { "value": "GL", "label": "Glarus" },
+    { "value": "GR", "label": "Graubünden" },
+    { "value": "JU", "label": "Jura" },
+    { "value": "LU", "label": "Lucerne" },
+    { "value": "NE", "label": "Neuchâtel" },
+    { "value": "NW", "label": "Nidwalden" },
+    { "value": "OW", "label": "Obwalden" },
+    { "value": "SG", "label": "St. Gallen" },
+    { "value": "SH", "label": "Schaffhausen" },
+    { "value": "SO", "label": "Solothurn" },
+    { "value": "SZ", "label": "Schwyz" },
+    { "value": "TG", "label": "Thurgau" },
+    { "value": "TI", "label": "Ticino" },
+    { "value": "UR", "label": "Uri" },
+    { "value": "VD", "label": "Vaud" },
+    { "value": "VS", "label": "Valais" },
+    { "value": "ZG", "label": "Zug" },
+    { "value": "ZH", "label": "Zürich" }
+  ],
+  "certifications": [
+    { "value": "None", "label": "None" },
+    { "value": "fph_specialization", "label": "FPH Specialization" },
+    { "value": "cas_pharmacy", "label": "CAS in Clinical Pharmacy" },
+    { "value": "das_pharmacy_economics", "label": "DAS in Pharmacy Economics & Policy" },
+    { "value": "mas_managed_healthcare", "label": "MAS in Managed Health Care" },
+    { "value": "BCPS", "label": "Board Certified Pharmacotherapy Specialist (BCPS)" },
+    { "value": "BCACP", "label": "Board Certified Ambulatory Care Pharmacist (BCACP)" },
+    { "value": "CGP", "label": "Certified Geriatric Pharmacist (CGP)" },
+    { "value": "CPR/First Aid", "label": "CPR/First Aid Certification" }
+  ],
+  "software": [
+    { "value": "None", "label": "None" },
+    { "value": "pharmatic", "label": "Pharmatic" },
+    { "value": "propharma", "label": "ProPharma" },
+    { "value": "tactil", "label": "Tactil" },
+    { "value": "golden_gate", "label": "Golden Gate" },
+    { "value": "ofac", "label": "Ofac" },
+    { "value": "epic_willow", "label": "Epic Systems (Willow)" },
+    { "value": "cerner_pharmnet", "label": "Cerner (PharmNet)" },
+    { "value": "mckesson_enterpriserx", "label": "McKesson (EnterpriseRx)" }
+  ]
+}

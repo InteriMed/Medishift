@@ -1,30 +1,26 @@
 .customButton {
-  font-size: calc(0.8rem + 0.2vw);
+  font-size: var(--font-size-small);
   min-height: 30px;
-  min-width: 100px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 1.5rem;
+  padding: 5px 10px;
   line-height: 1;
-  border-radius: 9999px;
+  border-radius: 100px;
   text-decoration: none;
+  background-color: var(--background-color);
   transition: background-color 0.3s ease, font-size 0.1s ease;
-  font-weight: 500;
-  border: 1px solid var(--button-border-color, inherit);
+  font-weight: var(--font-weight-small);
   cursor: pointer;
+  font-size: var(--font-size-small);
+  color: var(--text-color);
+  border: 1px solid var(--grey-1);
 }
 
 .customButton:hover {
-  opacity: 0.9;
-}
-
-.customButton:focus {
-  background-color: var(--button-focus-color, inherit);
-  outline: none;
+  background-color: var(--grey-1);
 }
 
 .customButton:active {
-  font-size: calc(0.8rem + 0.2vw);
-  border: 2px solid var(--button-border-color, inherit);
+  background-color: var(--grey-1);
 }

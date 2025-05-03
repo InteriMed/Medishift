@@ -1,0 +1,79 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+}
+
+.formFields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroup:nth-child(5) {
+  grid-column: span 2;
+}
+
+.input, .textarea, .select {
+  padding: 10px 16px;
+  border: 1px solid var(--grey-1, #e0e0e0);
+  border-radius: 8px;
+  background-color: var(--background-div-color, #ffffff);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.submitButton {
+  padding: 12px 24px;
+  background-color: var(--color-logo-1, #4a90e2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: var(--color-logo-1-dark, #3a80d2);
+}
+
+.submitButton:disabled {
+  background-color: var(--grey-1, #e0e0e0);
+  cursor: not-allowed;
+}
+
+@media (max-width: 576px) {
+  .formFields {
+    grid-template-columns: 1fr;
+  }
+  
+  .formGroup:nth-child(5) {
+    grid-column: span 1;
+  }
+} 

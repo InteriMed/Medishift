@@ -1,0 +1,93 @@
+.conversationView {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header {
+  padding: 16px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+}
+
+.conversationName {
+  margin: 0 0 4px 0;
+  font-size: 1.25rem;
+}
+
+.participantsInfo {
+  color: var(--grey-2, #888);
+  font-size: 0.875rem;
+}
+
+.messagesList {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emptyMessages {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--grey-2, #888);
+  text-align: center;
+}
+
+.messageInput {
+  padding: 16px;
+  border-top: 1px solid var(--grey-1, #e0e0e0);
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.attachButton, .sendButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: var(--grey-1-light, #f8f8f8);
+  border: 1px solid var(--grey-1, #e0e0e0);
+  color: var(--grey-2, #888);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sendButton {
+  background-color: var(--color-logo-1, #4a90e2);
+  border-color: var(--color-logo-1, #4a90e2);
+  color: white;
+}
+
+.sendButton:disabled {
+  background-color: var(--grey-1, #e0e0e0);
+  border-color: var(--grey-1, #e0e0e0);
+  cursor: not-allowed;
+}
+
+.attachButton:hover:not(:disabled),
+.sendButton:hover:not(:disabled) {
+  background-color: var(--color-logo-1-dark, #3a80d2);
+  border-color: var(--color-logo-1-dark, #3a80d2);
+  color: white;
+}
+
+.messageTextarea {
+  flex: 1;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 10px 16px;
+  border: 1px solid var(--grey-1, #e0e0e0);
+  border-radius: 8px;
+  background-color: var(--background-div-color, #ffffff);
+  font-family: inherit;
+  font-size: inherit;
+  resize: none;
+  overflow-y: auto;
+} 

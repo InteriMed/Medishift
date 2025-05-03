@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   position: relative;
-  padding-left: 35px;
+  padding-left: 15px;
   margin-bottom: 12px;
   cursor: pointer;
   font-size: 14px;
@@ -20,15 +20,16 @@
 .checkmark {
   position: absolute;
   left: 0;
-  height: 20px;
-  width: 20px;
-  border: 2px solid #ccc;
+  height: 15px;
+  width: 15px;
+  border: 2px solid var(--grey-2);
   border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .checkbox-container input:checked ~ .checkmark {
-  border-width: 2px;
+  background-color: var(--color-logo-2);
+  border-color: var(--color-logo-2);
 }
 
 .checkmark:after {
@@ -39,10 +40,10 @@
 
 .checkbox-container input:checked ~ .checkmark:after {
   display: block;
-  left: 6px;
-  top: 2px;
-  width: 5px;
-  height: 10px;
+  left: 3px;
+  top: -1px;
+  width: 3px;
+  height: 8px;
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);

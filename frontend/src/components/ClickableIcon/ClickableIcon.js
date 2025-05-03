@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ClickableIcon.css';
 
-const ClickableIcon = ({ icon, alt, onClick, isSelected, onNavigate }) => {
+const ClickableIcon = ({ icon, alt, onClick, isSelected, onNavigate, text }) => {
   const [ripple, setRipple] = useState(null);
   const iconRef = useRef(null);
 
@@ -52,6 +52,7 @@ const ClickableIcon = ({ icon, alt, onClick, isSelected, onNavigate }) => {
           />
         )}
       </div>
+      <p>{text}</p>
     </div>
   );
 };

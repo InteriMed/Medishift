@@ -1,0 +1,487 @@
+{
+  "auth": {
+    "welcome": "Welcome!",
+    "loginPrompt": "To connect to Linky, log in to your account.",
+    "forgotPassword": "Forgot password?",
+    "signupPrompt": "Don't have an account? Sign up",
+    "email": "Email",
+    "password": "Password",
+    "login": "Log In",
+    "signup": {
+      "welcome": "Sign Up",
+      "welcomeTitle": "Welcome to Linky!",
+      "getStarted": "Hello, shall we get to know each other?",
+      "hiring": "I'm hiring",
+      "lookingForWork": "I'm ready to work!!",
+      "employeeInfo": "Employee Information",
+      "basicDetails": "Let's start with your basic details",
+      "requiredFields": "Required fields*",
+      "steps": {
+        "userType": "User Type",
+        "basicInfo": "Basic Info",
+        "professional": "Professional",
+        "verification": "Verification",
+        "password": "Password",
+        "complete": "Complete"
+      },
+      "forms": {
+        "name": "Name",
+        "namePlaceholder": "Enter your name",
+        "surname": "Surname",
+        "surnamePlaceholder": "Enter your surname",
+        "email": "Email Address",
+        "emailPlaceholder": "Enter your email",
+        "phone": "Phone Number",
+        "country": "Country",
+        "city": "City",
+        "cityPlaceholder": "Enter your city",
+        "address": "Address",
+        "jobtitle": {
+          "title": "Job Title",
+          "label": "Job Title",
+          "pharmacist": "Pharmacist",
+          "assistant": "Pharmacy Assistant",
+          "intern": "Intern",
+          "options": {
+            "pharmacist": "Pharmacist",
+            "intern": "Pharmacist Intern",
+            "assistant": "Assistant"
+          }
+        },
+        "experience": {
+          "title": "Years of Experience",
+          "lessThan1": "Less than 1 year",
+          "1to3": "1-3 years",
+          "3to5": "3-5 years",
+          "moreThan5": "More than 5 years",
+          "underage": "You must be at least 18 years old"
+        },
+        "availability": {
+          "title": "Availability",
+          "fullTime": "Full Time",
+          "partTime": "Part Time",
+          "temporary": "Temporary"
+        },
+        "documents": {
+          "title": "Required Documents",
+          "license": "Professional License",
+          "cv": "CV/Resume",
+          "idCard": "ID Card",
+          "upload": "Upload",
+          "dragDrop": "Drag and drop files here or click to browse"
+        },
+        "password": {
+          "title": "Create Password",
+          "subtitle": "Set up a secure password for your account",
+          "create": "Create Password",
+          "confirm": "Confirm Password",
+          "password": "Password (min. 8 characters)",
+          "confirmPassword": "Confirm Password",
+          "passwordPlaceholder": "Enter your password (min. 8 characters)",
+          "confirmPasswordPlaceholder": "Re-enter your password",
+          "hintText": "Password must contain:\n- At least 8 characters\n- One uppercase letter\n- One lowercase letter\n- One number\n- One special character (!@#$%^&*)",
+          "requirements": {
+            "title": "Password Requirements",
+            "length": "At least 8 characters",
+            "uppercase": "One uppercase letter",
+            "lowercase": "One lowercase letter",
+            "number": "One number",
+            "special": "One special character (!@#$%^&*)",
+            "hint": "Password must contain:\n- At least 8 characters\n- One uppercase letter\n- One lowercase letter\n- One number\n- One special character (!@#$%^&*)"
+          }
+        },
+        "pharmacy": {
+          "name": "Pharmacy Name",
+          "email": "Business Email",
+          "phone": "Business Phone",
+          "license": "Pharmacy License Number",
+          "address": {
+            "street": "Street Address",
+            "city": "City",
+            "postal": "Postal Code",
+            "country": "Country"
+          },
+          "type": {
+            "title": "Pharmacy Type",
+            "retail": "Retail Pharmacy",
+            "hospital": "Hospital Pharmacy",
+            "clinic": "Clinic Pharmacy",
+            "other": "Other"
+          }
+        },
+        "birthdate": {
+          "label": "Date of Birth",
+          "day": {
+            "label": "Day",
+            "placeholder": "Select day"
+          },
+          "month": {
+            "label": "Month",
+            "placeholder": "Select month"
+          },
+          "year": {
+            "label": "Year",
+            "placeholder": "Select year"
+          },
+          "error": {
+            "required": "Date of birth is required",
+            "invalid": "Please enter a valid date",
+            "underage": "You must be at least 18 years old"
+          }
+        },
+        "phoneHelperText": "Format: +41 XX XXX XX XX",
+        "phoneHelperTextManager": "Format: +41 XX XXX XX XX",
+        "phonePlaceholder": "Enter phone number",
+        "countryPlaceholder": "Select a country",
+        "profession": {
+          "title": "Professional Details",
+          "subtitle": "Tell us about your professional background",
+          "type": "Type of Professional",
+          "experience": "Years of Experience",
+          "availability": "Availability",
+          "licenses": "Professional Licenses",
+          "uploadPrompt": "Upload your licenses and certifications",
+          "timer": "Resend code in {{seconds}} seconds"
+        },
+        "validation": {
+          "title": "Verify Your Account",
+          "subtitle": "Please verify your email",
+          "code": "Verification Code",
+          "resend": "Resend Code",
+          "timer": "Resend code in {{seconds}} seconds"
+        },
+        "pageValidation": {
+          "title": "VERIFY YOUR ACCOUNT",
+          "subtitle": "We've sent a verification link to",
+          "instruction": "Please check your inbox and click the link to verify your account. If you don't see the email, please check your spam folder.",
+          "resendVerificationEmail": "Resend Verification Email",
+          "resendTimer": "Resend in {{seconds}}s",
+          "completeSignupButton": "Access Dashboard →",
+          "goToDashboardButton": "Go to Dashboard",
+          "verifyingButton": "Verifying...",
+          "emailSentMessage": "Verification email sent! Please check your inbox.",
+          "emailResentMessage": "Verification email resent. Please check your inbox.",
+          "emailSendFailed": "Account created, but failed to send verification email. Please try resending or log in later.",
+          "resendFailed": "Failed to resend verification email.",
+          "cannotResendUserNotFound": "Cannot resend email. User context not found.",
+          "emailNotVerified": "Email not verified. Please check your inbox for the verification link.",
+          "registrationDataMissing": "Registration data missing or mismatched. Please try signing up again.",
+          "registrationBackendFailed": "Failed to complete registration with backend."
+        },
+        "welcome": {
+          "title": "Welcome to Linky!",
+          "subtitle": "Let's get started with your profile",
+          "login": "Already have an account? Log in",
+          "hiring": "I'm hiring",
+          "lookingForWork": "I'm ready to work!!"
+        },
+        "employment": {
+          "franchise": "I am currently wokring in a franchise",
+          "title": "Employment Status",
+          "subtitle": "Let us know about your current work situation",
+          "currentlyEmployed": "I am currently employed as a pharmacist",
+          "company": "Current Company",
+          "franchiseName": "Franchise Name",
+          "software": "Software Experience",
+          "notEmployed": "I am not currently employed",
+          "legalNotice": "By continuing, you confirm that all information provided is accurate and complete",
+          "requiredFields": "Please fill in the following required fields: {{fields}}",
+          "passwordLength": "Password must be at least 8 characters long",
+          "passwordUppercase": "Password must contain at least one uppercase letter",
+          "passwordLowercase": "Password must contain at least one lowercase letter",
+          "passwordNumber": "Password must contain at least one number",
+          "passwordSpecialChar": "Password must contain at least one special character (!@#$%^&*)",
+          "confirmPasswordRequired": "Please confirm your password",
+          "missingCredentials": "Missing user credentials",
+          "documentUpdateFailed": "Failed to update document status"
+        },
+        "buttons": {
+          "next": "Next",
+          "back": "Back",
+          "submit": "Submit",
+          "finish": "Finish"
+        },
+        "errors": {
+          "required": "This field is required",
+          "invalidEmail": "Please enter a valid email address",
+          "invalidPhone": "Please enter a valid phone number",
+          "passwordMismatch": "Passwords do not match",
+          "fileSize": "File size must be less than 5MB",
+          "fileType": "Invalid file type",
+          "requiredFields": "Please fill in the following required fields: {{fields}}",
+          "emailAlreadyExists": "An account with this email already exists. Please try logging in.",
+          "emailCheckError": "Error checking email availability. Please try again.",
+          "phoneRequired": "Phone number is required",
+          "countryRequired": "Country is required",
+          "birthdateInvalidFormat": "Invalid date format (use YYYY-MM-DD)",
+          "birthdateInvalidDate": "Invalid date provided",
+          "jobTitleRequired": "Job title is required",
+          "companyRequired": "Company is required",
+          "franchiseNameRequired": "Franchise Name is required",
+          "softwareRequired": "Software is required",
+          "accountCreateFailed": "Failed to create account. Please try again.",
+          "backendRegistrationFailed": "Failed to complete registration with backend.",
+          "generic": "An unexpected error occurred. Please try again."
+        },
+        "pharmacyInfo": "Pharmacy Information",
+        "pharmacyDetails": "Let's start with your pharmacy details",
+        "loginPromptLink": "Already have an account? Log in",
+        "page1": {
+          "altManagerIcon": "Manager hiring icon",
+          "altEmployeeIcon": "Employee looking for work icon"
+        },
+        "page3_employee": {
+          "companyValidationText": "Company selected successfully!"
+        }
+      },
+      "buttons": {
+        "next": "Next",
+        "back": "Back",
+        "submit": "Submit",
+        "finish": "Finish"
+      },
+      "errors": {
+        "required": "This field is required",
+        "invalidEmail": "Please enter a valid email address",
+        "invalidPhone": "Please enter a valid phone number",
+        "passwordMismatch": "Passwords do not match",
+        "fileSize": "File size must be less than 5MB",
+        "fileType": "Invalid file type",
+        "requiredFields": "Please fill in the following required fields: {{fields}}",
+        "backendRegistrationFailed": "Failed to complete registration with backend.",
+        "jobTitleRequired": "Job title is required",
+        "companyRequired": "Company is required",
+        "franchiseNameRequired": "Franchise Name is required",
+        "softwareRequired": "Software is required"
+      },
+      "pharmacyInfo": "Pharmacy Information",
+      "pharmacyDetails": "Let's start with your pharmacy details",
+      "page4_employee": {
+        "title": "Additional Information",
+        "subtitle": "Tell us about your experiences and preferences",
+        "preferredWorkLocationLabel": "Preferred Work Location",
+        "preferredWorkLocationPlaceholder": "Select Locations",
+        "countryLabel": "Country",
+        "countryPlaceholder": "Select Country",
+        "cantonsLabel": "Preferred Cantons",
+        "cantonsPlaceholder": "Select Cantons",
+        "yearsOfExperienceLabel": "Years of Experience",
+        "certificationsLabel": "Certifications",
+        "certificationsPlaceholder": "Select Certifications",
+        "softwareLabel": "Software",
+        "softwarePlaceholder": "Select Software",
+        "errors": {
+          "preferredWorkLocationRequired": "Preferred work location is required",
+          "countryRequired": "Country is required",
+          "cantonsRequired": "At least one canton is required",
+          "certificationsRequired": "At least one certification is required",
+          "softwareRequired": "At least one software is required",
+          "yearsOfExperienceRequired": "Years of experience is required"
+        }
+      },
+      "page3_manager": {
+        "title": "Company Details",
+        "subtitle": "Tell us about your workplace",
+        "companyLabel": "Company",
+        "softwareLabel": "Software",
+        "franchiseLabel": "Franchise",
+        "franchiseNameLabel": "Franchise Name",
+        "companyValidationText": "Company selected successfully!",
+        "franchiseValidationText": "Franchise selected successfully!"
+      },
+      "pagePassword": {
+        "title": "Create Password",
+        "subtitle": "Set up a secure password for your account",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password (min. 8 characters)",
+        "confirmPasswordLabel": "Confirm Password",
+        "confirmPasswordPlaceholder": "Re-enter your password"
+      }
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required"
+    },
+    "placeholders": {
+      "email": "Enter your email",
+      "password": "Enter your password"
+    },
+    "sidebar": {
+      "pastContracts": "Past contracts",
+      "upcomingContracts": "Upcoming contracts",
+      "contacts": "Contacts",
+      "billing": "Billing",
+      "profile": "Profile"
+    },
+    "profile": {
+      "title": "User Profile",
+      "changePhoto": "Change Photo",
+      "personalInfo": "Personal Information",
+      "nameLabel": "Name",
+      "genderLabel": "Gender",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "genderOther": "Other",
+      "birthdayLabel": "Birthday",
+      "summaryLabel": "Summary",
+      "contactInfo": "Contact Information",
+      "emailLabel": "Email",
+      "phoneLabel": "Phone",
+      "addressLabel": "Address",
+      "languages": "Languages",
+      "skills": "Skills",
+      "workExperience": "Work Experience",
+      "atConnector": "at",
+      "present": "Present",
+      "education": "Education",
+      "volunteering": "Volunteering",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "languageLevelLabel": "Level",
+      "skillsPlaceholder": "Add or select skills",
+      "jobTitleLabel": "Job Title",
+      "degreeLabel": "Degree",
+      "institutionLabel": "Institution",
+      "roleLabel": "Role",
+      "organizationLabel": "Organization",
+      "languageLevels": {
+        "basic": "Basic",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "workingProficiency": "Working proficiency",
+        "native": "Native"
+      },
+      "languagesList": {
+        "english": "English",
+        "french": "French",
+        "german": "German",
+        "spanish": "Spanish",
+        "italian": "Italian",
+        "portuguese": "Portuguese"
+      },
+      "skillsList": {
+        "pharmaChemistry": "Pharmaceutical Chemistry",
+        "customerService": "Customer Service",
+        "inventoryMgmt": "Inventory Management",
+        "medDispensing": "Medication Dispensing",
+        "clinicalTrials": "Clinical Trials",
+        "pharmacovigilance": "Pharmacovigilance"
+      },
+      "currentlyHere": "I currently work/study here"
+    },
+    "banking": {
+      "title": "Payment Details",
+      "accountHolderLabel": "Account Holder",
+      "bankNameLabel": "Bank Name",
+      "ibanLabel": "IBAN",
+      "bicSwiftLabel": "BIC/SWIFT",
+      "taxIdLabel": "Tax ID Number"
+    },
+    "detailView": {
+      "contractSpecifics": "Contract Specifics",
+      "scheduleSpecifics": "Schedule Specifics",
+      "value": "Value",
+      "time": "Time",
+      "duration": "Duration",
+      "participants": "Participants"
+    },
+    "tables": {
+      "title": "TITLE",
+      "company": "COMPANY",
+      "date": "DATE",
+      "location": "LOCATION",
+      "status": "STATUS",
+      "description": "Description",
+      "clearFilters": "Clear Filters"
+    },
+    "contracts": {
+      "paid": "Paid",
+      "pendingPayment": "Pending Payment",
+      "noData": "No contracts found for the selected period"
+    },
+    "schedule": {
+      "pendingPharmacist": "Pending Pharmacist",
+      "pendingSignature": "Pending Signature",
+      "validated": "Validated",
+      "noData": "No schedule items found for the selected period",
+      "newScheduleTitle": "New Schedule"
+    },
+    "contacts": {
+      "lastWorkingDay": "Last Working Day",
+      "noData": "No contacts found for the selected period"
+    },
+    "statusDialog": {
+      "title": "Change Schedule Status",
+      "message": "Update status for \"{{title}}\"?"
+    },
+    "addLanguage": "Add Language",
+    "addExperience": "Add Experience",
+    "addEducation": "Add Education",
+    "addVolunteering": "Add Volunteering",
+    "bankingNote": "Your banking information is securely stored and only used for payment purposes.",
+    "filters": {
+      "from": "From",
+      "to": "To"
+    },
+    "status": {
+      "validated": "Validated",
+      "pendingSignature": "Pending Signature",
+      "pendingPharmacist": "Pending Pharmacist",
+      "paid": "Paid",
+      "pendingPayment": "Pending Payment"
+    },
+    "messages": {
+      "title": "Messages",
+      "newMessage": "New Message",
+      "search": "Search conversations...",
+      "writeMessage": "Write something..",
+      "send": "Send"
+    },
+    "settings": {
+      "title": "Settings",
+      "account": {
+        "title": "Account Settings",
+        "email": "Email",
+        "password": "Password",
+        "saveChanges": "Save Changes"
+      },
+      "preferences": "Preferences"
+    },
+    "pharmacist": {
+      "welcome": "Welcome, {{name}}",
+      "subtitle": "Find new opportunities and manage your applications",
+      "stats": {
+        "applications": "Active Applications",
+        "applied": "Jobs Applied",
+        "upcoming": "Upcoming Shifts"
+      },
+      "search": {
+        "title": "Search for Jobs",
+        "placeholder": "Search jobs by location, title..."
+      }
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "learnMore": "Learn More",
+    "back": "Back",
+    "details": "Details",
+    "notAvailableShort": "N/A",
+    "loading": "Loading data...",
+    "saving": "Saving...",
+    "loadingData": "Loading your data, please wait...",
+    "loadingError": "Failed to load data.",
+    "password": "Enter your password",
+    "hide": "Hide",
+    "show": "Show",
+    "datetime": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "allDay": "All day"
+    }
+  }
+} 

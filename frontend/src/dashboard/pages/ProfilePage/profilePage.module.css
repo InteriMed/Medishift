@@ -1,0 +1,64 @@
+.profilePage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  font-size: 1rem;
+  color: var(--grey-2, #888);
+}
+
+.tabsContainer {
+  margin-top: 24px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+}
+
+.tabs {
+  display: flex;
+  gap: 16px;
+}
+
+.tabButton {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.tabButton.active {
+  border-bottom-color: var(--color-logo-1, #4a90e2);
+  color: var(--color-logo-1, #4a90e2);
+}
+
+.tabContent {
+  background-color: var(--background-div-color, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+@media (max-width: 576px) {
+  .tabs {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .tabButton {
+    text-align: left;
+    border-left: 2px solid transparent;
+    border-bottom: none;
+  }
+  
+  .tabButton.active {
+    border-left-color: var(--color-logo-1, #4a90e2);
+    border-bottom: none;
+  }
+} 

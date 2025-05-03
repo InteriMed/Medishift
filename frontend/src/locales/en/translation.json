@@ -1,0 +1,45 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "login": {
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "login": "Login",
+    "loginWithGoogle": "Login with Google",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "signup": "Sign up",
+    "emailPasswordRequired": "Email and password are required",
+    "loginSuccess": "Login successful",
+    "loginFailed": "Login failed",
+    "emailRequired": "Email is required",
+    "passwordResetSent": "Password reset email sent",
+    "passwordResetFailed": "Failed to send password reset email",
+    "resetPassword": "Reset Password",
+    "sendResetLink": "Send Reset Link",
+    "backToLogin": "Back to Login"
+  },
+  "signup": {
+    "title": "Sign Up",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "signup": "Sign Up",
+    "signupWithGoogle": "Sign up with Google",
+    "alreadyHaveAccount": "Already have an account?",
+    "login": "Login",
+    "allFieldsRequired": "All fields are required",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "signupSuccess": "Signup successful",
+    "signupFailed": "Signup failed"
+  },
+  "homepage": {
+    "title": "Welcome",
+    "subtitle": "Your Healthcare Platform"
+  }
+} 

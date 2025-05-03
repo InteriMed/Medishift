@@ -1,0 +1,14 @@
+{
+  "countries": [
+    { "value": "Switzerland", "label": "Switzerland" }
+  ],
+  "cantons": [
+    { "value": "AG", "label": "Aargau" }
+  ],
+  "certifications": [
+    { "value": "None", "label": "None" }
+  ],
+  "software": [
+    { "value": "None", "label": "None" }
+  ]
+} 
