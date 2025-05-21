@@ -1,1 +1,0 @@
-// Delete this file completely as we're now using firebase.js 

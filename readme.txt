@@ -9,3 +9,24 @@ npm start
 Github:
 dev@interimed.ai
 InteriMed@Dev_Password@2025
+
+gmail:
+interimed.company@gmail.com
+InteriMed@Dev_Password@2025
+
+Contact carewell
+
+bourdin.jean76@gmail.com
+ouiOUI2007
+
+contact@interimed.ai
+ouiOUI2007@@@
+
+
+ftp account
+
+https://interimed.ai/
+dev@interimed.ai
+InteriMed@Dev_Password@2025
+sxb1plzcpnl508712
+sxb1plzcpnl508712.prod.sxb1.secureserver.net

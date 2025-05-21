@@ -1,0 +1,402 @@
+---
+description: Working with Firebase database (retrieving or pushing data)
+globs: 
+---
+#users Collection
+
+Purpose: Core user identity, authentication linkage, role, sector/profession designation, and overall account status. This is the central document for any logged-in user.
+Document ID: userId (Should match Firebase Authentication UID)
+Key Fields:
+email: String (Verified)
+role: String ('employer' or 'professional') - Determined at signup.
+primarySector: String ('pharmacy', 'medical', ...) - Determined at signup.
+primaryProfession: String (e.g., 'pharmacist', 'pharmacy_assistant', ...) - Applicable if role='professional', determined at signup.
+profileStatus: String ('incomplete', 'complete', 'pending_verification', 'verified') - Tracks profile setup stage.
+profileId: String (Reference ID to the specific document in employerProfiles OR professionalProfiles) - Crucial link established during profile creation.
+createdAt: Timestamp
+lastLoginAt: Timestamp
+isActive: Boolean (Allows disabling account access)
+notificationPreferences: Map (User settings for communication)
+consents: Map (Tracking agreement to ToS, Privacy Policy versions, etc. e.g., { tosVersion: '1.1', privacyVersion: '1.0', acceptedAt: Timestamp })
+
+----------------------------------------------------------------------------------------
+
+###Collection: facilityProfiles
+
+Document ID: profileId (Unique ID, referenced in the users document)
+userId: String (Back-reference to the users document) - Top Level
+1. identityLegal (Map) - Core Legal & Business Identification
+* Purpose: Essential, verifiable legal identity of the employing entity. High importance for contracts and compliance.
+* Fields:
+* legalCompanyName: String - As per Commercial Register (Handelsregister).
+* uidNumber: String (Format: CHE-XXX.XXX.XXX) - Crucial Swiss Enterprise ID.
+* vatNumber: String (Optional, e.g., CHE-XXX.XXX.XXX MWST/TVA/IVA - Often linked to UID but sometimes listed separately).
+* companyType: String Enum ('AG', 'GmbH', 'Sole Proprietorship (Einzelunternehmen)', 'Association (Verein)', 'Foundation (Stiftung)', 'Partnership (Kollektivgesellschaft/Kommanditgesellschaft)', ...) - Legal form.
+* cantonOfRegistration: String (e.g., 'GE', 'ZH', 'VD') - Canton where legally registered.
+* commercialRegisterNumber: String (Optional, legacy ID, e.g., CH-XXX.X.XXX.XXX-X)
+* dateOfIncorporation: Timestamp / ISO String (Optional)
+* legalPurpose: String (Brief description from Commercial Register, optional).
+* authorizedSignatories: Array&lt;Map> ({ firstName: String, lastName: String, title: String, signatureType: String ('individual', 'collective_two', ...) }) - Key personnel from Handelsregister.
+
+2. contactPoints (Map) - Official Addresses & Communication
+* Purpose: Verifiable addresses and primary contact channels for the business. Moderate sensitivity.
+* Fields:
+* registeredAddress: Map ({ street: String, number: String, postalCode: String, city: String, canton: String, country: 'CH' }) - Essential legal address.
+* operatingAddress: Map (Same structure, optional, if different from registered address).
+* generalPhone: String (Main contact number).
+* generalEmail: String (Main contact email).
+* websiteUrl: String (Official company website).
+
+3. profilePublic (Map) - Public-Facing Information & Branding
+* Purpose: Information displayed to potential hires and the public on the platform. Low sensitivity.
+* Fields:
+* displayName: String (Brand name or common name, might differ from legal name).
+* logoUrl: String (URL to logo image).
+* industrySector: String (e.g., 'pharmacy', 'medical_clinic', 'hospitality', 'construction') - Reflects primarySector from users doc.
+* subSectorOrSpecialization: String (Optional, e.g., 'Retail Pharmacy', 'Dental Clinic').
+* companySizeRange: String Enum ('1-10 employees', '11-50', '51-200', '201-500', '501+').
+* descriptionPublic: String (Company mission, values, culture, what it's like to work there).
+* operatingLocations: Array&lt;Map> (If multiple sites - { name: String, address: Map, isPrimary: Boolean }).
+
+4. operationalEnvironment (Map) - Internal Workings & Tools
+* Purpose: Details about the work environment, including software used and relevant labor agreements. Moderate sensitivity.
+* Fields:
+* primarySoftwareUsed: Array&lt;Map> (Key systems relevant to employees)
+* [{ category: String ('Pharmacy Mgmt', 'EMR/PMS', 'Accounting/Payroll', 'HRIS', 'Time Tracking', 'ERP', 'Office Suite', 'Communication'), name: String, version: String (Optional) }]
+* Examples: ProPharmaX, Aeskulap, Vitomed, Bexio, Abacus, Winbiz, Sage, SAP, SuccessFactors, Clockodo, Microsoft 365, Slack.
+* collectiveLaborAgreementInfo: Map ({ applies: Boolean, agreementName: String ('e.g., L-GAV Hospitality', 'LMV Construction', 'CLA Cleaning'), isDeclaredUniversal: Boolean, detailsUrl: String (Optional) }) - Very important for relevant sectors.
+* standardWorkWeekHours: Number (e.g., 42, 40 - depends on sector/GAV/company policy).
+* workingHoursModel: String Enum ('Fixed Schedule', 'Flextime', 'Trust-Based', 'Annualized Hours').
+* remoteWorkPolicy: String Enum ('On-Site Only', 'Hybrid Flexible', 'Hybrid Structured', 'Fully Remote Possible', 'Role Dependent').
+* employeeBenefitsSummary: String (Optional text describing key benefits like pension contributions above minimum, health insurance support, training budgets, transport allowances, etc.).
+
+5. recruitmentAndContracts (Map) - Hiring Processes & Standards
+* Purpose: Defines how the employer typically hires and standard contractual elements. Internal/Moderate sensitivity.
+* Fields:
+* hiringContactPerson: Map (Optional { name: String, email: String, phone: String, title: String }) - Specific contact for job applications.
+* hiringProcessOverview: String (Optional, e.g., "Application Review -> Phone Screen -> Technical Interview -> Final Interview").
+* standardProbationPeriodDays: Number (e.g., 90 - Max 3 months legally unless specified otherwise).
+* standardNoticePeriodPolicy: String (e.g., "According to Swiss Code of Obligations Art. 335c", "As per GAV/CCT", "3 months after probation").
+* typicalOnboardingDocumentsRequired: Array&lt;String> ('ID/Passport Copy', 'AHV Card Copy', 'Bank Details (IBAN)', 'Work Permit Copy', 'Residence Permit Copy', 'Signed Contract', 'CV', 'Diplomas/Certificates').
+* contractManagement: Map ({ usesPlatformTemplates: Boolean, requiresWetSignature: Boolean, digitalSignatureMethod: String ('QES', 'AES', 'None') }).
+
+6. payrollAndComplianceInfo (Map) - Employer Payroll Obligations & Setup
+* Purpose: Information related to the employer's setup for handling mandatory Swiss payroll deductions and compliance. Internal Use / High sensitivity related to specific fund numbers.
+* Fields:
+* compensationFundInfo: Map ({ canton: String, fundName: String, employerAffiliationNumber: String }) - For AHV/IV/EO, FAK.
+* accidentInsuranceProvider: Map ({ providerName: String, policyNumber: String }) - Mandatory UVG/LAA.
+* occupationalPensionProvider: Map ({ providerName: String, contractNumber: String, contributionPlanSummary: String }) - Mandatory BVG/LPP if applicable.
+* sicknessInsuranceProvider: Map (Optional KTG/IJM - { providerName: String, policyNumber: String, coveragePercentage: Number, waitingDays: Number }).
+* payrollFrequency: String ('Monthly' - standard in CH).
+* payslipDeliveryMethod: String ('Digital Platform', 'Email PDF', 'Paper').
+
+7. platformAccountAndBilling (Map) - Relationship with Your Platform
+* Purpose: Managing the employer's subscription, payment, and admin users on your platform. Moderate-High sensitivity.
+* Fields:
+* platformBillingContact: Map ({ name: String, email: String, address: Map }) - Where your invoices go.
+* platformSubscriptionPlan: String (Your defined plan names).
+* platformPaymentMethod: Map ({ type: String ('Credit Card', 'Direct Debit (LSV+/DD)', 'Invoice'), status: String, details: Map (Securely tokenized/masked info) }).
+* billingCycle: String ('monthly', 'annually').
+* nextBillingDate: Timestamp.
+* accountAdminUserIds: Array&lt;String> (Link to users who manage this profile).
+
+8. verification (Map) - Platform Verification Status
+* Purpose: Tracks the verification checks performed by your platform to ensure employer legitimacy. Moderate sensitivity.
+* Fields:
+* overallStatus: String ('unverified', 'pending', 'verified', 'requires_attention', 'rejected').
+* lastVerifiedAt: Timestamp.
+* verifiedBy: String (Platform Admin/System ID).
+* identityCheck: Map ({ method: String ('UID Lookup', 'Commercial Register Extract Review'), status: String, documentRefs: Array<String> }).
+* sectorComplianceCheck: Map (Sector-specific checks)
+* Example Pharmacy: { cantonalPermitVerified: Boolean, permitExpiry: Timestamp, documentRefs: Array<String> }
+* Example Temporary Work Agency: { SECO_LicenseVerified: Boolean, licenseExpiry: Timestamp }
+* verificationDocumentsProvided: Array&lt;Map> ({ documentId: String, type: String ('commercial_register_extract', 'operating_license', 'insurance_confirmation'), fileName: String, storageUrl: String, uploadedAt: Timestamp, status: String }).
+* rejectionReason: String (If applicable).
+
+----------------------------------------------------------------------------------------
+
+###Collection: professionalProfiles
+
+Document ID: profileId (Unique ID, referenced in the users document)
+userId: String (Back-reference to the users document) - Top Level
+1. identity (Map) - Core Identification & Legal Prerequisites
+* Purpose: Fundamental, legally required identification details. High sensitivity.
+* Fields:
+* legalFirstName: String - Required for contracts & payroll.
+* legalLastName: String - Required for contracts & payroll.
+* dateOfBirth: Timestamp / ISO String - Required for age verification, contracts, social security.
+* nationality: String - Required for work permit status.
+* ahvNumber: String (Swiss Social Security Number / AVS) - Essential for employment and social contributions. High sensitivity.
+
+2. contact (Map) - Communication & Residence
+* Purpose: How to contact the individual and their official place of residence. Moderate sensitivity.
+* Fields:
+* primaryPhone: String - For direct communication, notifications.
+* primaryEmail: String - Contact email (may differ from login), notifications.
+* residentialAddress: Map ({ street: String, number: String, postalCode: String, city: String, canton: String, country: 'CH' }) - Essential for contracts, tax calculation, legal notices.
+
+3. employmentEligibility (Map) - Right-to-Work Status
+* Purpose: Information determining the legal right to work in Switzerland. Crucial for employers before hiring. Moderate sensitivity.
+* Fields:
+* workPermit: Map (Required if non-Swiss/EU/EFTA) - { type: String ('L', 'B', 'C', 'G', ...), permitNumber: String, expiryDate: Timestamp, issuingCanton: String }
+* crossBorderPermitDetails: Map (If workPermit.type == 'G') - { primaryEmployerName: String, primaryWorkCanton: String } (Optional, context-dependent)
+
+4. profileDisplay (Map) - Public-Facing Profile Information
+* Purpose: Information generally considered less sensitive, often used for profile visibility, searching, and matching by employers.
+* Fields:
+* displayName: String (Optional, e.g., "Dr. Müller")
+* profilePictureUrl: String (Optional, URL to storage)
+* languagesSpoken: Array&lt;Map> (e.g., [{ language: 'German', level: 'native' }, { language: 'English', level: 'C1' }])
+* bioOrSummary: String (Professional introduction)
+* experienceYears: Number (Calculated or entered)
+* availabilitySummary: String (e.g., "Available Part-Time (60%) from July 2025 in Canton Zurich") - Derived from platformSettings?
+
+5. professionalDetails (Map) - Skills, Qualifications & Experience
+* Purpose: Detailed professional background used for matching and verification. Moderate sensitivity.
+* Fields:
+* mainProfession: String (e.g., 'pharmacist' - reflects primaryProfession from users doc)
+* specializations: Array&lt;String> (e.g., ['Community Pharmacy', 'Clinical Pharmacy'])
+* skills: Array&lt;String> (Keywords for searching, e.g., 'vaccination', 'compounding', 'team leadership')
+* softwareProficiency: Array&lt;Map> (e.g., [{ name: 'PharmaGestionX', level: 'expert' }, { name: 'MS Excel', level: 'advanced' }])
+* qualifications: Array&lt;Map> (Licenses, Diplomas, Certs)
+* Example: [{ type: 'federal_diploma_pharmacy', identifier: 'GLN: 7601...', dateIssued: Timestamp, issuingBody: 'BAG/OFSP', verifiedStatus: 'verified' }, { type: 'fph_vaccination_cert', validUntil: Timestamp, verifiedStatus: 'pending' }]
+* workExperience: Array&lt;Map> (Optional, simplified employment history - { jobTitle: String, companyName: String, period: String, description: String })
+
+6. payrollData (Map) - Salary Calculation & Payslip Generation
+* Purpose: Information strictly necessary for calculating salary, deductions, taxes, and generating legal payslips. Highest Sensitivity - Strong Access Control Needed.
+* Fields:
+* civilStatus: String Enum ('single', 'married', 'registered_partnership', 'divorced', 'widowed') - Affects tax, some benefits.
+* numberOfChildren: Number - Required for Family Allowances (Kinderzulagen).
+* childrenDetails: Array&lt;Map> (Optional, only if DOB needed for specific allowance rules/age brackets { dob: Timestamp }) - Minimize collection.
+* withholdingTaxInfo: Map ({ isSubject: Boolean, taxCanton: String, rateGroup: String ('A0N', 'B1Y', 'C2N', ...) }) - Required for those subject to Quellensteuer.
+* religion: String Enum ('Roman Catholic', 'Protestant', 'Christian Catholic', 'Other/None') - For church tax in applicable cantons. Should ideally be optional/user-controlled.
+* workPercentageDefault: Number (Optional default Pensum, e.g., 100)
+
+7. banking (Map) - Salary Payment
+* Purpose: Bank account details for receiving salary payments. Highest Sensitivity - Strong Access Control Needed.
+* Fields:
+* iban: String (Primary field for payments within CH/EU)
+* bankName: String (Helpful for identification/validation)
+* accountHolderName: String (Must match legal name, usually)
+* bicSwift: String (Optional, fallback/international context)
+* bankClearingNumber: String (BCN - Optional, sometimes still used in CH alongside IBAN)
+
+8. platformSettings (Map) - User Preferences for Platform Usage
+* Purpose: How the user wants to interact with the platform. Low sensitivity.
+* Fields:
+* detailedAvailability: Map ({ availabilityType: String ('full-time', 'part-time', 'temporary'), minHoursPerWeek: Number, maxHoursPerWeek: Number, preferredWorkdays: Array<String>, preferredCantons: Array<String>, noticePeriodDays: Number, earliestStartDate: Timestamp, notes: String })
+
+9. verification (Map) - Status of Verified Information
+* Purpose: Tracks the verification status of different aspects of the profile. Moderate sensitivity.
+* Fields:
+* identityStatus: String ('unverified', 'pending', 'verified', 'rejected')
+* qualificationsStatus: String ('unverified', 'pending', 'verified', 'rejected')
+* workEligibilityStatus: String ('unverified', 'pending', 'verified', 'rejected')
+* overallVerificationStatus: String ('unverified', 'pending', 'verified', 'rejected')
+* lastVerifiedAt: Timestamp
+* verifiedBy: String (Admin/System ID)
+* verificationDocuments: Array&lt;Map> ({ documentId: String, type: String ('id_card', 'diploma', 'permit', 'cv'), fileName: String, storageUrl: String, uploadedAt: Timestamp, status: String ('pending_review', 'approved', 'rejected'), rejectionReason: String })
+
+----------------------------------------------------------------------------------------
+
+###Collection: contracts
+
+Document ID: contractId (Unique identifier for this specific agreement)
+1. parties (Map) - Involved Employer and Professional
+* Purpose: Links the contract to the specific entities involved and captures key identifying information at the time of contract creation.
+* Fields:
+* employer: Map
+* profileId: String (Reference to employerProfiles document)
+* legalCompanyName: String (Snapshot from employer profile)
+* address: Map (Snapshot of registered address: { street, number, postalCode, city, canton, country })
+* professional: Map
+* profileId: String (Reference to professionalProfiles document)
+* legalFirstName: String (Snapshot from professional profile)
+* legalLastName: String (Snapshot from professional profile)
+* address: Map (Snapshot of residential address: { street, number, postalCode, city, canton, country })
+* ahvNumber: String (Snapshot from professional profile - Essential for payroll)
+
+2. terms (Map) - Core Contractual Details
+* Purpose: Specifies the agreed-upon conditions of employment based on Swiss requirements.
+* Fields:
+* jobTitle: String (Employee's function)
+* jobDescriptionRef: String (Optional, link/reference to a detailed description document)
+* startDate: Timestamp (Official start date of employment)
+* endDate: Timestamp (Optional, for fixed-term contracts only)
+* contractType: String Enum ('permanent', 'fixed_term')
+* workLocation: Map ({ address: Map, description: String ('Primary Office', 'Hybrid', 'Remote CH') })
+* workPercentage: Number (Pensum, e.g., 100, 80, 60)
+* weeklyHours: Number (Based on 100% standard for the company/sector, e.g., 40, 42, 45)
+* salary: Map
+* grossAmount: Number
+* currency: String ('CHF')
+* period: String Enum ('monthly', 'hourly')
+* includesThirteenth: Boolean (Is a 13th salary part of the annual package?)
+* paymentDateRule: String (e.g., "By the 25th of the month", "End of month")
+* annualVacationDays: Number (Statutory minimum is 4 weeks; 5 weeks common. E.g., 20, 25, 30)
+* probationPeriod: Map
+* durationMonths: Number (0, 1, 2, or 3 - Max 3)
+* noticeDays: Number (Notice period during probation, typically 7 days)
+* noticePeriodAfterProbation: String (e.g., "1 month (Year 1), 2 months (Years 2-9), 3 months (Year 10+)", "3 months fixed", "As per GAV/CCT")
+* applicableGAV_CCT: String (Optional, Name/Reference if a Collective Labour Agreement applies)
+* pensionFund: String (Optional, e.g., "Company Standard Fund", "Specific Fund Name")
+* accidentInsurance: String ("Employer mandatory coverage (SUVA/LAA/UVG)")
+* confidentialityClause: Boolean (Included Y/N)
+* nonCompeteClause: Map (Optional, { included: Boolean, scope: String, durationMonths: Number, geographicArea: String }) - Strictly regulated in CH.
+* additionalClauses: String (Optional, free text for other specific agreements)
+
+3. statusLifecycle (Map) - Workflow, Validation & Timestamps
+* Purpose: Tracks the contract's state from creation to termination, including the validation process.
+* Fields:
+* currentStatus: String Enum ('draft', 'pending_professional_approval', 'pending_employer_approval', 'changes_requested_by_professional', 'changes_requested_by_employer', 'active', 'terminated', 'rejected', 'cancelled')
+* validation: Map
+* initiatedByRole: String Enum ('employer', 'professional')
+* initiatorUserId: String (Reference to users doc ID)
+* professional: Map ({ needsApproval: Boolean, approved: Boolean, timestamp: Timestamp, userId: String, comments: String })
+* employer: Map ({ needsApproval: Boolean, approved: Boolean, timestamp: Timestamp, userId: String, comments: String })
+* lastActionTimestamp: Timestamp
+* timestamps: Map
+* createdAt: Timestamp
+* proposedAt: Timestamp (When sent for first approval)
+* activatedAt: Timestamp (When both parties approved)
+* terminatedAt: Timestamp (If applicable)
+* rejectedAt: Timestamp (If applicable)
+* cancelledAt: Timestamp (If applicable)
+* terminationDetails: Map (Optional, { reason: String, noticeServedDate: Timestamp, finalDayOfEmployment: Timestamp })
+* version: Number (Incremented on significant changes before activation)
+
+4. platformMeta (Map) - Platform-Related Information
+* Purpose: Tracks platform fees, associated documents, and creation context.
+* Fields:
+* platformFee: Map (Status related to platform charges for this contract)
+* status: String Enum ('not_applicable', 'pending', 'paid', 'failed', 'waived')
+* amount: Number
+* currency: String ('CHF')
+* transactionId: String (Optional payment reference)
+* paidAt: Timestamp
+* documentLinks: Map
+* generatedContractUrl: String (Link to the system-generated PDF)
+* signedContractUrl: String (Optional, if external signing is used/uploaded)
+* templateUsedId: String (Optional, reference to a base template)
+* createdByUserId: String (Who initially created the draft in the system)
+
+----------------------------------------------------------------------------------------
+
+###Collection: professionalAvailabilities
+
+Purpose: Stores individual time slots indicating when a professional is potentially available for work assignments. This collection facilitates matching professionals with employer needs.
+Document ID: availabilityId (Unique ID generated by Firestore)
+Fields:
+
+professionalProfileId: String
+Description: Reference to the document ID in the professionalProfiles collection.
+Indexed: Yes.
+userId: String
+Description: Reference to the users document ID associated with the professional profile (for permissions/management).
+Indexed: Yes.
+startTime: Timestamp
+Description: The exact date and time when the availability period begins (UTC).
+Indexed: Yes (Essential for time-based queries).
+endTime: Timestamp
+Description: The exact date and time when the availability period ends (UTC).
+Indexed: Yes (Essential for time-based queries).
+status: String
+Description: Current state of this availability slot.
+Enum: 'available', 'booked', 'unavailable', 'pending_confirmation'
+Indexed: Yes.
+jobTypes: Array&lt;String>
+Description: List of standardized job roles the professional is available for during this specific slot (e.g., ['pharmacist', 'pharma_assistant']). Should align with roles defined elsewhere.
+Indexed: Yes (Array contains).
+locationPreference: Map
+Description: Defines the geographical area where the professional is available during this slot.
+Fields:
+type: String Enum ('anywhere_in_canton', 'specific_address', 'radius', 'remote_ch')
+canton: String (Required if type is 'anywhere_in_canton', e.g., 'GE')
+address: Map (Required if type is 'specific_address', format: { street, number, postalCode, city, canton, country: 'CH' })
+centerGeoPoint: GeoPoint (Required if type is 'radius', Firestore GeoPoint)
+radiusKm: Number (Required if type is 'radius')
+Indexed: Yes (on canton, potentially GeoPoint if using geoqueries).
+minHourlyRate: Number (Optional)
+Description: Minimum acceptable gross hourly rate in CHF for this slot.
+bookedDetails: Map (Optional, relevant if status is 'booked' or 'pending_confirmation')
+Description: Information about the need or contract this availability is linked to.
+Fields:
+needId: String (Reference to employerNeeds)
+contractId: String (Reference to contracts)
+notes: String (Optional)
+Description: Private notes for the professional regarding this availability slot.
+createdAt: Timestamp
+Description: When this availability record was created.
+lastUpdatedAt: Timestamp
+Description: When this availability record was last modified.
+
+----------------------------------------------------------------------------------------
+
+###Collection: employerNeeds
+
+Purpose: Stores specific staffing requests (shifts, openings) posted by employers. This collection is matched against professionalAvailabilities.
+Document ID: needId (Unique ID generated by Firestore)
+Fields:
+
+employerProfileId: String
+Description: Reference to the document ID in the employerProfiles collection.
+Indexed: Yes.
+postedByUserId: String
+Description: Reference to the users document ID of the employer representative who created this need.
+Indexed: Yes.
+status: String
+Description: Current state of this staffing need.
+Enum: 'open', 'pending_assignment', 'filled', 'cancelled', 'expired'
+Indexed: Yes.
+jobTitle: String
+Description: Specific title for this position/shift (e.g., "Weekend Morning Pharmacist").
+jobType: String
+Description: Standardized job category (e.g., 'pharmacist', 'nurse_critical_care', 'medical_secretary'). Aligns with professionalAvailabilities.jobTypes.
+Indexed: Yes.
+startTime: Timestamp
+Description: The exact date and time when the work shift/period begins (UTC).
+Indexed: Yes.
+endTime: Timestamp
+Description: The exact date and time when the work shift/period ends (UTC).
+Indexed: Yes.
+location: Map
+Description: The specific physical location where the work needs to be performed.
+Fields:
+address: Map ({ street, number, postalCode, city, canton, country: 'CH' })
+locationName: String (Optional, e.g., "Main Dispensary", "Ward 3 East")
+Indexed: Yes (on canton, potentially postalCode).
+description: String (Optional)
+Description: Detailed information about the tasks, responsibilities, and context.
+requiredSkills: Array&lt;String> (Optional)
+Description: List of specific skills or certifications needed (e.g., ['BLS_certified', 'french_c1', 'system_X_proficient']).
+Indexed: Yes (Array contains).
+compensation: Map
+Description: Details about the offered payment.
+Fields:
+type: String Enum ('hourly', 'fixed_for_shift')
+grossAmount: Number
+currency: String ('CHF')
+notes: String (Optional, e.g., "Includes public holiday bonus")
+applicants: Array&lt;Map> (Optional)
+Description: List of professionals who have applied or been shortlisted for this need. Consider a subcollection applications if this list can become very large.
+Fields (per applicant):
+professionalProfileId: String
+userId: String
+applicationTimestamp: Timestamp
+status: String Enum ('applied', 'shortlisted', 'rejected', 'assigned')
+assignedProfessional: Map (Optional, populated when status is 'filled')
+Description: Details of the professional assigned to this need.
+Fields:
+professionalProfileId: String
+userId: String
+assignmentTimestamp: Timestamp
+generatedContractId: String (Optional)
+Description: Reference to a formal contracts document if one was created specifically for this need/assignment.
+internalReference: String (Optional)
+Description: An identifier used by the employer for their internal tracking.
+createdAt: Timestamp
+Description: When this need record was created.
+lastUpdatedAt: Timestamp
+Description: When this need record was last modified.
+expiryDate: Timestamp (Optional)
+Description: Date after which this need should automatically become 'expired' if not filled or cancelled.

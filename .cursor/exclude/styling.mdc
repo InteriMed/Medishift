@@ -1,0 +1,5 @@
+---
+description: Styling, css
+globs: *.css
+---
+Always refer to color, font-size and other variables stored in [variables.css](mdc:frontend/src/styles/variables.css)
