@@ -13,6 +13,7 @@ InteriMed@Dev_Password@2025
 gmail:
 interimed.company@gmail.com
 InteriMed@Dev_Password@2025
+./git_push_all.sh "Your commit message for this push"
 
 Contact carewell
 

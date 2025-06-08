@@ -1,8 +1,215 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidWorkerData(data) {
+      return data.keys().hasAll(['email', 'fullName', 'accountType']) 
+        && data.accountType == 'worker';
+    }
+    
+    function isValidCompanyData(data) {
+      return data.keys().hasAll(['email', 'companyName', 'accountType']) 
+        && data.accountType == 'company';
+    }
+    
+    function isValidAvailabilityData(data) {
+      return data.keys().hasAll(['userId', 'from', 'to']) 
+        && data.userId is string
+        && data.from is string
+        && data.to is string;
+    }
+    
+    // Workers collection
+    match /workers/{userId} {
+      allow read: if true;  // Public profiles for workers
+      allow create: if isOwner(userId) && isValidWorkerData(request.resource.data);
+      allow update: if isOwner(userId) && isValidWorkerData(request.resource.data);
+      allow delete: if isOwner(userId);
+    }
+    
+    // Companies collection
+    match /companies/{companyId} {
+      allow read: if true;  // Public profiles for companies
+      allow create: if isOwner(companyId) && isValidCompanyData(request.resource.data);
+      allow update: if isOwner(companyId) && isValidCompanyData(request.resource.data);
+      allow delete: if isOwner(companyId);
+    }
+    
+    // Availability collection - Enhanced rules for calendar integration
+    match /availability/{availabilityId} {
+      allow read: if true;  // Public availability listings for matching
+      
+      // Create availability events - only authenticated users for their own events
+      allow create: if isAuthenticated() 
+        && request.resource.data.userId == request.auth.uid
+        && isValidAvailabilityData(request.resource.data);
+      
+      // Update availability events - only the owner can update their events
+      allow update: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Delete availability events - only the owner can delete their events
+      allow delete: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
+    }
+    
+    // Contracts collection
+    match /contracts/{contractId} {
+      // Allow read access if user is either the worker or company on the contract
+      allow read: if isAuthenticated() && 
+        (resource.data.workerID == request.auth.uid || 
+         resource.data.companyID == request.auth.uid);
+      
+      // Allow creation if user is either the worker or company and data is valid
+      allow create: if isAuthenticated() && 
+        (request.resource.data.workerID == request.auth.uid || 
+         request.resource.data.companyID == request.auth.uid);
+      
+      // Allow updates with specific conditions
+      allow update: if isAuthenticated() && 
+        ((resource.data.workerID == request.auth.uid && 
+          resource.data.workerValidation == false) || 
+         (resource.data.companyID == request.auth.uid && 
+          resource.data.companyValidation == false));
+      
+      // Don't allow deletion of contracts
+      allow delete: if false;
+    }
+    
+    // Calendar Events collection (for external calendar integration)
+    match /calendarEvents/{eventId} {
+      allow read, write: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() 
+        && request.resource.data.userId == request.auth.uid;
+    }
+    
+    // Basic user document access
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+      allow delete: if false; // Prevent deletion
+    }
+    
+    // Professional profile rules with validation
+    match /professionalProfiles/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId && validateProfileData();
+      allow update: if request.auth.uid == userId && validateProfileData();
+      allow delete: if false; // Prevent deletion
+      
+      // Main validation function
+      function validateProfileData() {
+        let incomingData = request.resource.data;
+        
+        // During initial creation, we only validate what's provided
+        // For updates, we validate based on what sections are being modified
+        let isUpdate = exists(/databases/$(database)/documents/professionalProfiles/$(userId));
+        let existingData = isUpdate ? get(/databases/$(database)/documents/professionalProfiles/$(userId)).data : {};
+        
+        // Combine existing and new data for validation
+        let dataToValidate = isUpdate ? existingData : {};
+        // dataToValidate = incomingData; // This line was causing the error - commented out
+        
+        // Check which sections are being modified
+        let platformSettingsChanged = incomingData.keys().hasAny(['platformSettings']);
+        let privateDetailsChanged = incomingData.keys().hasAny(['privateDetails']);
+        let billingInfoChanged = incomingData.keys().hasAny(['billingInfo']);
+        let workPreferencesChanged = incomingData.keys().hasAny(['workPreferences']);
+        let documentsChanged = incomingData.keys().hasAny(['documents']);
+        
+        // Only validate sections that are being changed
+        return (!platformSettingsChanged || validatePlatformSettings(incomingData)) &&
+               (!privateDetailsChanged || validatePrivateDetails(incomingData)) &&
+               (!billingInfoChanged || validateBillingInfo(incomingData)) &&
+               (!workPreferencesChanged || validateWorkPreferences(incomingData)) &&
+               (!documentsChanged || validateDocuments(incomingData));
+      }
+      
+      // Platform settings validation
+      function validatePlatformSettings(data) {
+        let settings = data.platformSettings;
+        return settings != null &&
+               settings.userId == request.auth.uid &&
+               settings.profileStatus is string;
+      }
+      
+      // Private details validation
+      function validatePrivateDetails(data) {
+        let details = data.privateDetails;
+        return details != null &&
+               details.legalFirstName is string && details.legalFirstName.size() > 0 &&
+               details.legalLastName is string && details.legalLastName.size() > 0 &&
+               (details.dateOfBirth is string || details.dateOfBirth == null) &&
+               (details.nationality is string || details.nationality == null) &&
+               validateAddress(details.residentialAddress);
+      }
+      
+      // Address validation helper
+      function validateAddress(address) {
+        return address == null || (
+          address.street is string &&
+          address.city is string &&
+          address.postalCode is string
+        );
+      }
+      
+      // Billing info validation
+      function validateBillingInfo(data) {
+        let billing = data.billingInfo;
+        return billing == null || (
+          billing.iban is string &&
+          billing.bankName is string &&
+          billing.accountHolder is string
+        );
+      }
+      
+      // Work preferences validation
+      function validateWorkPreferences(data) {
+        let prefs = data.workPreferences;
+        return prefs == null || (
+          prefs.availabilityStatus is string &&
+          prefs.desiredWorkPercentage != null
+        );
+      }
+      
+      // Documents validation
+      function validateDocuments(data) {
+        let docs = data.documents;
+        
+        // Check if user is Swiss - if so, work permit not required
+        let isSwiss = data.privateDetails.nationality == "CH" || 
+                     (data.billingInfo != null && data.billingInfo.residencyPermit == "swiss");
+        
+        return docs == null || (
+          // Work permit is only required for non-Swiss
+          (isSwiss || docs.workPermitUrl is string)
+        );
+      }
+    }
+    
+    // Notifications collection
+    match /notifications/{notificationId} {
+      allow read, write: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() 
+        && request.resource.data.userId == request.auth.uid;
+    }
+    
+    // Client errors collection (for logging)
+    match /client_errors/{errorId} {
+      allow create: if isAuthenticated();
+      allow read: if false; // Only allow creation, not reading
     }
   }
 } 

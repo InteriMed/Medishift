@@ -1,0 +1,500 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  overflow: hidden; /* Prevent scrolling underneath */
+  backdrop-filter: blur(3px); /* Add subtle blur effect */
+}
+
+.panel {
+  width: 800px; /* Increased width for two-column layout */
+  max-width: 95%;
+  max-height: 90vh;
+  background-color: var(--background-div-color, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Hide scrollbars but contain content */
+  animation: slideIn 0.3s ease-out;
+  border: 1px solid var(--grey-1, #e0e0e0);
+}
+
+/* Mobile layout - single column */
+@media (max-width: 1110px) {
+  .panel {
+    width: 450px;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+  flex-shrink: 0;
+  background-color: var(--background-div-color, #ffffff);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color, #333);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--grey-3, #555);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: var(--grey-1, #e0e0e0);
+  transform: rotate(90deg);
+}
+
+/* Error and conflict message styles */
+.errorContainer, .conflictsContainer {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+  background-color: #fef2f2;
+  border-left: 4px solid #dc2626;
+}
+
+.errorMessage {
+  color: #dc2626;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.errorMessage:last-child {
+  margin-bottom: 0;
+}
+
+.conflictsContainer {
+  background-color: #fefbf3;
+  border-left-color: #f59e0b;
+}
+
+.conflictsContainer h4 {
+  color: #f59e0b;
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.conflictItem {
+  color: #92400e;
+  font-size: 14px;
+  margin-bottom: 4px;
+  padding: 4px 8px;
+  background-color: rgba(251, 191, 36, 0.1);
+  border-radius: 4px;
+}
+
+.conflictItem:last-child {
+  margin-bottom: 0;
+}
+
+.content {
+  padding: 20px 24px;
+  flex-grow: 1;
+  overflow-y: auto; /* Only this area should scroll */
+  max-height: calc(90vh - 130px); /* Header and footer heights accounted for */
+  scrollbar-width: thin;
+  scrollbar-color: var(--grey-2, #cccccc) transparent;
+}
+
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background-color: var(--grey-2, #cccccc);
+  border-radius: 3px;
+}
+
+/* Two-column form grid for desktop */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* Mobile layout - single column */
+@media (max-width: 1110px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  
+  /* Ensure right column sections have proper spacing and borders in mobile */
+  .rightColumn .section:first-child {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--grey-1, #e0e0e0);
+  }
+}
+
+.leftColumn, .rightColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.field {
+  margin-bottom: 20px;
+}
+
+.section {
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+  padding-bottom: 20px;
+}
+
+.section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sectionIcon {
+  color: var(--color-logo-1, #4a90e2);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color, #333);
+}
+
+.sectionContent {
+  width: 100%;
+}
+
+.titleInput {
+  font-size: 18px;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 2px solid var(--color-logo-1, #4a90e2);
+  width: 100%;
+  font-weight: 500;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.2s ease;
+}
+
+.titleInput:focus {
+  border-bottom-color: var(--color-logo-2, #3a80d2);
+}
+
+.fieldGroup {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.fieldIcon {
+  color: var(--grey-3, #555);
+  font-size: 18px;
+  margin-top: 10px;
+  flex-shrink: 0;
+}
+
+.input, .textareaInput, .select {
+  padding: 10px;
+  border: 1px solid var(--grey-1, #e0e0e0);
+  border-radius: 8px;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  background-color: var(--background-div-color, #ffffff);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input:focus, .textareaInput:focus, .select:focus {
+  border-color: var(--color-logo-1, #4a90e2);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+  outline: none;
+}
+
+.textareaInput {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.dateTimeFields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.dateTimeRow {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.dateInput, .timeInput {
+  padding: 10px;
+  border: 1px solid var(--grey-1, #e0e0e0);
+  border-radius: 8px;
+  font-family: inherit;
+  background-color: var(--background-div-color, #ffffff);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dateInput {
+  flex: 2;
+}
+
+.timeInput {
+  flex: 1;
+}
+
+.dateInput:focus, .timeInput:focus {
+  border-color: var(--color-logo-1, #4a90e2);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+  outline: none;
+}
+
+.recurringOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-color, #333);
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.recurringDetails {
+  padding: 16px;
+  background-color: var(--grey-0, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid var(--grey-1, #e0e0e0);
+}
+
+.customRepeat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.frequencySelection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.daySelector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.daySelectionLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color, #333);
+}
+
+.dayButtons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.dayButton {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--grey-1, #e0e0e0);
+  background-color: var(--background-div-color, #ffffff);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color, #333);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayButton:hover {
+  border-color: var(--color-logo-1, #4a90e2);
+  background-color: rgba(74, 144, 226, 0.1);
+}
+
+.dayButton.selected {
+  background-color: var(--color-logo-1, #4a90e2);
+  border-color: var(--color-logo-1, #4a90e2);
+  color: white;
+}
+
+.endRepeatSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.endRepeatLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color, #333);
+  white-space: nowrap;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid var(--grey-1, #e0e0e0);
+  flex-shrink: 0;
+  background-color: var(--background-div-color, #ffffff);
+}
+
+.deleteButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.deleteButton:hover {
+  background-color: #b91c1c;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.cancelButton, .saveButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background-color: var(--grey-1, #e0e0e0);
+  color: var(--text-color, #333);
+}
+
+.cancelButton:hover {
+  background-color: var(--grey-2, #cccccc);
+}
+
+.saveButton {
+  background-color: var(--color-logo-1, #4a90e2);
+  color: white;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: var(--color-logo-2, #3a80d2);
+}
+
+.saveButton:disabled {
+  background-color: var(--grey-2, #cccccc);
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .panel {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .header, .content, .footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .dateTimeRow {
+    flex-direction: column;
+  }
+  
+  .dateInput, .timeInput {
+    flex: none;
+  }
+  
+  .dayButtons {
+    justify-content: center;
+  }
+  
+  .endRepeatSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+} 
