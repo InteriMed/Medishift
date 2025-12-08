@@ -64,33 +64,80 @@ service cloud.firestore {
     
     // Contracts collection
     match /contracts/{contractId} {
-      // Allow read access if user is either the worker or company on the contract
-      allow read: if isAuthenticated() && 
-        (resource.data.workerID == request.auth.uid || 
-         resource.data.companyID == request.auth.uid);
+      // Helper function to check if user is a party in the contract
+      function isContractParty() {
+        return isAuthenticated() && (
+          resource.data.parties.professional.profileId == request.auth.uid ||
+          resource.data.parties.employer.profileId == request.auth.uid ||
+          (resource.data.participants != null && request.auth.uid in resource.data.participants) ||
+          // Backward compatibility with old structure
+          resource.data.workerID == request.auth.uid ||
+          resource.data.companyID == request.auth.uid
+        );
+      }
       
-      // Allow creation if user is either the worker or company and data is valid
-      allow create: if isAuthenticated() && 
-        (request.resource.data.workerID == request.auth.uid || 
-         request.resource.data.companyID == request.auth.uid);
+      // Helper function to check if user can create contract
+      function canCreateContract() {
+        return isAuthenticated() && (
+          request.resource.data.parties.professional.profileId == request.auth.uid ||
+          request.resource.data.parties.employer.profileId == request.auth.uid ||
+          (request.resource.data.participants != null && request.auth.uid in request.resource.data.participants) ||
+          // Backward compatibility
+          request.resource.data.workerID == request.auth.uid ||
+          request.resource.data.companyID == request.auth.uid
+        );
+      }
       
-      // Allow updates with specific conditions
-      allow update: if isAuthenticated() && 
-        ((resource.data.workerID == request.auth.uid && 
-          resource.data.workerValidation == false) || 
-         (resource.data.companyID == request.auth.uid && 
-          resource.data.companyValidation == false));
+      // Allow read access if user is a party in the contract
+      allow read: if isContractParty();
+      
+      // Allow creation if user is a party in the contract
+      allow create: if canCreateContract();
+      
+      // Allow updates if user is a party and contract is in editable state
+      allow update: if isContractParty() && (
+        // Allow updates if status is draft or pending
+        resource.data.statusLifecycle.currentStatus == 'draft' ||
+        resource.data.statusLifecycle.currentStatus == 'pending_professional_approval' ||
+        resource.data.statusLifecycle.currentStatus == 'pending_facility_approval' ||
+        // Backward compatibility
+        resource.data.status == 'draft' ||
+        resource.data.status == 'pending' ||
+        // Allow status updates by either party
+        request.resource.data.statusLifecycle.currentStatus != resource.data.statusLifecycle.currentStatus
+      );
       
       // Don't allow deletion of contracts
       allow delete: if false;
     }
     
     // Calendar Events collection (for external calendar integration)
-    match /calendarEvents/{eventId} {
-      allow read, write: if isAuthenticated() 
+    match /calendar_events/{eventId} {
+      // Helper function to validate calendar event data
+      function isValidCalendarEventData(data) {
+        return data.keys().hasAll(['userId']) 
+          && data.userId is string
+          && (data.startDate != null || data.from != null)
+          && (data.endDate != null || data.to != null);
+      }
+      
+      // Allow read if user owns the event
+      allow read: if isAuthenticated() 
         && resource.data.userId == request.auth.uid;
+      
+      // Allow create if user owns the event and data is valid
       allow create: if isAuthenticated() 
+        && request.resource.data.userId == request.auth.uid
+        && isValidCalendarEventData(request.resource.data);
+      
+      // Allow update if user owns the event
+      allow update: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid
         && request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if user owns the event
+      allow delete: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
     }
     
     // Basic user document access
@@ -198,6 +245,75 @@ service cloud.firestore {
       }
     }
     
+    // Facility profile rules with validation
+    match /facilityProfiles/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+      allow delete: if false; // Prevent deletion
+    }
+    
+    // Conversations collection
+    match /conversations/{conversationId} {
+      // Helper function to check if user is a participant
+      function isConversationParticipant() {
+        return isAuthenticated() && (
+          resource.data.participantIds != null && request.auth.uid in resource.data.participantIds ||
+          resource.data.participants != null && request.auth.uid in resource.data.participants
+        );
+      }
+      
+      // Helper function to check if user can create conversation
+      function canCreateConversation() {
+        return isAuthenticated() && (
+          request.resource.data.participantIds != null && request.auth.uid in request.resource.data.participantIds ||
+          request.resource.data.participants != null && request.auth.uid in request.resource.data.participants
+        );
+      }
+      
+      // Allow read if user is a participant
+      allow read: if isConversationParticipant();
+      
+      // Allow create if user is a participant
+      allow create: if canCreateConversation();
+      
+      // Allow update if user is a participant (for updating lastMessage, unreadCounts, etc.)
+      allow update: if isConversationParticipant();
+      
+      // Don't allow deletion of conversations
+      allow delete: if false;
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        // Helper function to check if user is a participant in parent conversation
+        function isMessageParticipant() {
+          return isAuthenticated() && (
+            get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds != null &&
+            request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds ||
+            get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants != null &&
+            request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+          );
+        }
+        
+        // Allow read if user is a participant
+        allow read: if isMessageParticipant();
+        
+        // Allow create if user is a participant and is the sender
+        allow create: if isMessageParticipant() && 
+          request.resource.data.senderId == request.auth.uid;
+        
+        // Allow update only for reactions or status updates by the sender
+        allow update: if isMessageParticipant() && (
+          resource.data.senderId == request.auth.uid ||
+          // Allow reactions updates by any participant
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions', 'status'])
+        );
+        
+        // Don't allow deletion of messages
+        allow delete: if false;
+      }
+    }
+    
     // Notifications collection
     match /notifications/{notificationId} {
       allow read, write: if isAuthenticated() 
@@ -206,10 +322,131 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid;
     }
     
+    // Positions collection (Marketplace)
+    match /positions/{positionId} {
+      // Helper function to check if user is facility admin
+      function isFacilityAdmin(facilityProfileId) {
+        return isAuthenticated() && 
+          exists(/databases/$(database)/documents/facilityProfiles/$(facilityProfileId)) &&
+          request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(facilityProfileId)).data.admin;
+      }
+      
+      // Allow read for all authenticated users (public marketplace)
+      allow read: if isAuthenticated();
+      
+      // Allow create if user is facility admin
+      allow create: if isAuthenticated() 
+        && request.resource.data.postedByUserId == request.auth.uid
+        && isFacilityAdmin(request.resource.data.facilityProfileId);
+      
+      // Allow update if user is facility admin
+      allow update: if isAuthenticated() 
+        && isFacilityAdmin(resource.data.facilityProfileId);
+      
+      // Don't allow deletion (positions should be marked as cancelled)
+      allow delete: if false;
+      
+      // Applications subcollection
+      match /applications/{applicationId} {
+        // Allow read if user is the applicant or facility admin
+        allow read: if isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          isFacilityAdmin(get(/databases/$(database)/documents/positions/$(positionId)).data.facilityProfileId)
+        );
+        
+        // Allow create if user is applying for themselves
+        allow create: if isAuthenticated() 
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.professionalProfileId == request.auth.uid;
+        
+        // Allow update if user is facility admin (to change status)
+        allow update: if isAuthenticated() 
+          && isFacilityAdmin(get(/databases/$(database)/documents/positions/$(positionId)).data.facilityProfileId);
+        
+        // Don't allow deletion
+        allow delete: if false;
+      }
+    }
+    
+    // Professional Availabilities collection (Marketplace)
+    match /professionalAvailabilities/{availabilityId} {
+      // Helper function to validate availability data
+      function isValidAvailabilityData(data) {
+        return data.keys().hasAll(['professionalProfileId', 'userId', 'startTime', 'endTime', 'status'])
+          && data.professionalProfileId is string
+          && data.userId is string
+          && data.status is string;
+      }
+      
+      // Allow read for all authenticated users (public marketplace)
+      allow read: if isAuthenticated();
+      
+      // Allow create if user owns the availability
+      allow create: if isAuthenticated() 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.professionalProfileId == request.auth.uid
+        && isValidAvailabilityData(request.resource.data);
+      
+      // Allow update if user owns the availability
+      allow update: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if user owns the availability
+      allow delete: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
+    }
+    
+    // User Settings collection (for app-level settings like theme, language, etc.)
+    match /userSettings/{userId} {
+      // Helper function to validate settings data
+      function isValidSettingsData(data) {
+        return data.keys().hasAll(['userId']) 
+          && data.userId is string
+          && (data.theme == null || data.theme is string)
+          && (data.language == null || data.language is string)
+          && (data.timezone == null || data.timezone is string);
+      }
+      
+      // Allow read if user owns the settings
+      allow read: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
+      
+      // Allow create if user owns the settings and data is valid
+      allow create: if isAuthenticated() 
+        && request.resource.data.userId == request.auth.uid
+        && isValidSettingsData(request.resource.data);
+      
+      // Allow update if user owns the settings
+      allow update: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if user owns the settings
+      allow delete: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
+    }
+    
     // Client errors collection (for logging)
     match /client_errors/{errorId} {
       allow create: if isAuthenticated();
       allow read: if false; // Only allow creation, not reading
+    }
+    
+    // Audit logs collection
+    match /audit_logs/{logId} {
+      // Only backend can write
+      allow write: if false;
+      
+      // Facility admins can read logs for their facility
+      allow read: if isAuthenticated() && (
+        // Allow reading own audit logs
+        resource.data.userId == request.auth.uid ||
+        // Allow facility admins to read their facility's logs
+        (resource.data.metadata.facilityId != null &&
+         exists(/databases/$(database)/documents/facilityProfiles/$(resource.data.metadata.facilityId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.metadata.facilityId)).data.admin)
+      );
     }
   }
 } 

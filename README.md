@@ -30,7 +30,7 @@ PharmaSoft is a comprehensive pharmacy management solution built with React and 
    cd frontend && npm start
    ```
 
-5. Access the application at http://localhost:3000
+5. Access the application at http://localhost:4000
 
 ## Documentation
 

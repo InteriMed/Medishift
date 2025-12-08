@@ -658,7 +658,7 @@ The `api.config.js` file contains Flask API configuration that should be fully r
 ```javascript
 const API_CONFIG = {
   BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000',
-  TIMEOUT: 30000, // 30 seconds
+  TIMEOUT: 35000, // 35 seconds
   HEADERS: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
