@@ -1,5 +1,5 @@
 # Authorization System - Quick Reference Card
-**InteriMed Platform | Developer Guide**
+**MediShift Platform | Developer Guide**
 
 ## 🚀 Quick Start
 

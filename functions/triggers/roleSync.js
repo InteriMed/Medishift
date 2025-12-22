@@ -1,4 +1,4 @@
-const functions = require('firebase-functions');
+const { onDocumentUpdated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const admin = require('firebase-admin');
 
 /**
@@ -9,12 +9,10 @@ const admin = require('firebase-admin');
 /**
  * Sync user roles when facility admin array changes
  */
-exports.syncAdminRoles = functions.firestore
-    .document('facilityProfiles/{facilityId}')
-    .onUpdate(async (change, context) => {
-        const facilityId = context.params.facilityId;
-        const beforeData = change.before.data();
-        const afterData = change.after.data();
+exports.syncAdminRoles = onDocumentUpdated('facilityProfiles/{facilityId}', async (event) => {
+        const facilityId = event.params.facilityId;
+        const beforeData = event.data.before.data();
+        const afterData = event.data.after.data();
 
         const beforeAdmins = beforeData.admin || [];
         const afterAdmins = afterData.admin || [];
@@ -232,11 +230,9 @@ exports.syncAdminRoles = functions.firestore
 /**
  * Clean up roles when facility is deleted
  */
-exports.cleanupRolesOnFacilityDelete = functions.firestore
-    .document('facilityProfiles/{facilityId}')
-    .onDelete(async (snap, context) => {
-        const facilityId = context.params.facilityId;
-        const facilityData = snap.data();
+exports.cleanupRolesOnFacilityDelete = onDocumentDeleted('facilityProfiles/{facilityId}', async (event) => {
+        const facilityId = event.params.facilityId;
+        const facilityData = event.data.data();
         const admins = facilityData.admin || [];
         const employees = facilityData.employees || [];
         const allMembers = [...new Set([...admins, ...employees])];

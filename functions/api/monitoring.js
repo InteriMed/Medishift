@@ -1,19 +1,23 @@
 const functions = require('firebase-functions');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onCall } = require('firebase-functions/v2/https');
+const { HttpsError } = require('firebase-functions/v2/https');
+const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 
 /**
  * Log client-side error to Firestore and Firebase Error Reporting
  */
-exports.logClientError = functions.https.onCall(async (data, context) => {
+exports.logClientError = onCall(async (request) => {
   try {
     // Extract error information
-    const { error, errorInfo, metadata } = data;
+    const { error, errorInfo, metadata } = request.data;
     
     // Get timestamp
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
     
     // Get user info from auth context if available
-    const userId = context.auth ? context.auth.uid : 'anonymous';
+    const userId = request.auth ? request.auth.uid : 'anonymous';
     
     // Store error in Firestore
     await admin.firestore().collection('client_errors').add({
@@ -29,7 +33,7 @@ exports.logClientError = functions.https.onCall(async (data, context) => {
     });
     
     // Log to Firebase Logging
-    functions.logger.error('Client Error', {
+    logger.error('Client Error', {
       error,
       errorInfo,
       metadata,
@@ -38,8 +42,8 @@ exports.logClientError = functions.https.onCall(async (data, context) => {
     
     return { success: true };
   } catch (err) {
-    functions.logger.error('Error in logClientError function', err);
-    throw new functions.https.HttpsError('internal', 'Error logging client error');
+    logger.error('Error in logClientError function', err);
+    throw new HttpsError('internal', 'Error logging client error');
   }
 });
 
@@ -47,7 +51,9 @@ exports.logClientError = functions.https.onCall(async (data, context) => {
  * Scheduled function to analyze errors and send alerts
  * Runs once a day
  */
-exports.analyzeErrorTrends = functions.pubsub.schedule('0 0 * * *').onRun(async (context) => {
+exports.analyzeErrorTrends = onSchedule({
+    schedule: '0 0 * * *'
+}, async (event) => {
   try {
     // Get errors from the last 24 hours
     const yesterday = new Date();
@@ -59,7 +65,7 @@ exports.analyzeErrorTrends = functions.pubsub.schedule('0 0 * * *').onRun(async 
       .get();
     
     if (errorsSnapshot.empty) {
-      functions.logger.info('No errors in the last 24 hours');
+      logger.info('No errors in the last 24 hours');
       return null;
     }
     
@@ -96,7 +102,7 @@ exports.analyzeErrorTrends = functions.pubsub.schedule('0 0 * * *').onRun(async 
     
     return null;
   } catch (error) {
-    functions.logger.error('Error analyzing error trends', error);
+    logger.error('Error analyzing error trends', error);
     return null;
   }
 }); 

@@ -1,5 +1,5 @@
 # Authorization & Access Control Implementation Review
-**InteriMed Platform - Facilities and Employee Level Authorization**
+**MediShift Platform - Facilities and Employee Level Authorization**
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -15,7 +15,7 @@
 
 ## Overview
 
-The InteriMed platform implements a **multi-layered authorization system** that manages access rights for:
+The MediShift platform implements a **multi-layered authorization system** that manages access rights for:
 - **Professional users** (healthcare professionals)
 - **Facility administrators** (facility owners/managers)
 - **Facility employees** (team members within facilities)

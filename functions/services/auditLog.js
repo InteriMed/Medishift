@@ -1,4 +1,5 @@
-const functions = require('firebase-functions');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 
 /**
@@ -163,25 +164,25 @@ const extractMetadata = (req, context = null) => {
 /**
  * Callable function to manually log audit events from frontend
  */
-exports.logAudit = functions.https.onCall(async (data, context) => {
+exports.logAudit = onCall(async (request) => {
     // Only allow authenticated users
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const { eventType, action, resource, details } = data;
+    const { eventType, action, resource, details } = request.data;
 
     if (!eventType || !action) {
-        throw new functions.https.HttpsError('invalid-argument', 'eventType and action are required');
+        throw new HttpsError('invalid-argument', 'eventType and action are required');
     }
 
     const metadata = {
-        authProvider: context.auth.token?.firebase?.sign_in_provider,
+        authProvider: request.auth.token?.firebase?.sign_in_provider,
     };
 
     await logAuditEvent({
         eventType,
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         action,
         resource,
         details,
@@ -200,13 +201,13 @@ exports.logAudit = functions.https.onCall(async (data, context) => {
  * Query audit logs for a facility
  * Requires admin permission
  */
-exports.getAuditLogs = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+exports.getAuditLogs = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const { facilityId, limit = 100, startAfter = null, filters = {} } = data;
-    const userId = context.auth.uid;
+    const { facilityId, limit = 100, startAfter = null, filters = {} } = request.data;
+    const userId = request.auth.uid;
 
     try {
         // Verify user is facility admin
@@ -217,12 +218,12 @@ exports.getAuditLogs = functions.https.onCall(async (data, context) => {
                 .get();
 
             if (!facilityDoc.exists) {
-                throw new functions.https.HttpsError('not-found', 'Facility not found');
+                throw new HttpsError('not-found', 'Facility not found');
             }
 
             const facilityData = facilityDoc.data();
             if (!facilityData.admin || !facilityData.admin.includes(userId)) {
-                throw new functions.https.HttpsError('permission-denied', 'Only facility admins can view audit logs');
+                throw new HttpsError('permission-denied', 'Only facility admins can view audit logs');
             }
         }
 
@@ -278,8 +279,8 @@ exports.getAuditLogs = functions.https.onCall(async (data, context) => {
             hasMore: logs.length === limit,
         };
     } catch (error) {
-        console.error('Error fetching audit logs:', error);
-        throw new functions.https.HttpsError('internal', error.message);
+        logger.error('Error fetching audit logs:', error);
+        throw new HttpsError('internal', error.message);
     }
 });
 

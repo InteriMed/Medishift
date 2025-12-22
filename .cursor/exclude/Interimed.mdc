@@ -3,10 +3,10 @@ description: Always
 globs: *.js, *.css, *.html, *.json
 ---
 ---
-description: Firebase JS SDK Integration Guidelines for InteriMed
+description: Firebase JS SDK Integration Guidelines for MediShift
 globs: frontend/**/*.js, frontend/**/*.jsx
 ---
-# InteriMed Project - Firebase JS SDK Direct Integration Guidelines
+# MediShift Project - Firebase JS SDK Direct Integration Guidelines
 
 ##Frontend Pages
 - Make sure all information entered in the frontpages are SEO optimized and security compliant

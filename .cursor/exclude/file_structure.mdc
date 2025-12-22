@@ -2,7 +2,7 @@
 description: 
 globs: *.js, *.css, *.html, *.json
 ---
-# InteriMed Frontend Structure Documentation
+# MediShift Frontend Structure Documentation
 
 ## Directory Organization
 
@@ -32,7 +32,7 @@ globs: *.js, *.css, *.html, *.json
    - Homepage: `/{lang}/` or `/{lang}/home`
    - About: `/{lang}/about`
    - Professionals: `/{lang}/professionals`
-   - Pharmacies: `/{lang}/pharmacies`
+   - Pharmacies: `/{lang}/healthcare facilities`
    - FAQ: `/{lang}/faq`
    - Contact: `/{lang}/contact`
    - Blog: `/{lang}/blog`

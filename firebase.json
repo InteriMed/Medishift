@@ -45,11 +45,26 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      { "source": "/fr/**", "destination": "/index.html" },
-      { "source": "/en/**", "destination": "/index.html" },
-      { "source": "/de/**", "destination": "/index.html" },
-      { "source": "/it/**", "destination": "/index.html" },
-      { "source": "**", "destination": "/index.html" }
+      {
+        "source": "/fr/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/en/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/de/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/it/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ],
     "trailingSlash": false
   }

@@ -1,7 +1,7 @@
 {
-  "name": "interimed-backend",
+  "name": "medishift-backend",
   "version": "1.0.0",
-  "description": "Backend API for Interimed - cPanel deployment",
+  "description": "Backend API for Medishift - cPanel deployment",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

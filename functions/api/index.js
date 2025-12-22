@@ -1,25 +1,28 @@
-const functions = require('firebase-functions');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const notificationsFunctions = require('./notifications');
+const bagAdminFunctions = require('./BAG_Admin');
 
 // HTTP endpoint for contract operations (for integration with external systems)
-const contractAPI = functions.https.onCall(async (data, context) => {
+const contractAPI = onCall(async (request) => {
   // Ensure user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+  if (!request.auth) {
+    throw new HttpsError(
       'unauthenticated',
       'You must be logged in to use this API'
     );
   }
 
-  const { action, contractId, contractData } = data;
+  const { action, contractId, contractData } = request.data;
+
 
   try {
     switch (action) {
       case 'get': {
         // Get a specific contract
         if (!contractId) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'invalid-argument',
             'Contract ID is required'
           );
@@ -31,7 +34,7 @@ const contractAPI = functions.https.onCall(async (data, context) => {
           .get();
 
         if (!contractDoc.exists) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'not-found',
             'Contract not found'
           );
@@ -50,7 +53,7 @@ const contractAPI = functions.https.onCall(async (data, context) => {
         const isOldCompany = contract.companyId === userId;
 
         if (!isProfessional && !isEmployer && !isParticipant && !isOldWorker && !isOldCompany) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'You do not have permission to view this contract'
           );
@@ -113,7 +116,7 @@ const contractAPI = functions.https.onCall(async (data, context) => {
       case 'create': {
         // Create a new contract
         if (!contractData) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'invalid-argument',
             'Contract data is required'
           );
@@ -126,11 +129,15 @@ const contractAPI = functions.https.onCall(async (data, context) => {
         const employerId = contractData.parties?.employer?.profileId;
 
         if (professionalId !== userId && employerId !== userId) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'You must be either the professional or employer in the contract'
           );
         }
+
+        // PHASE 1: Contracts created from conversations start in 'draft' status
+        // When both parties agree, status changes to 'awaiting_dual_approval' for parallel approvals
+        const initialStatus = contractData.statusLifecycle?.currentStatus || 'draft';
 
         // Prepare contract data with metadata
         const newContract = {
@@ -139,7 +146,13 @@ const contractAPI = functions.https.onCall(async (data, context) => {
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           statusLifecycle: {
-            currentStatus: contractData.statusLifecycle?.currentStatus || 'draft',
+            currentStatus: initialStatus,
+            validation: {
+              professionalApproved: false,
+              facilityApproved: false,
+              professionalApprovedAt: null,
+              facilityApprovedAt: null
+            },
             timestamps: {
               createdAt: admin.firestore.FieldValue.serverTimestamp(),
               updatedAt: admin.firestore.FieldValue.serverTimestamp()
@@ -169,7 +182,7 @@ const contractAPI = functions.https.onCall(async (data, context) => {
       case 'update': {
         // Update an existing contract
         if (!contractId || !contractData) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'invalid-argument',
             'Contract ID and data are required'
           );
@@ -184,7 +197,7 @@ const contractAPI = functions.https.onCall(async (data, context) => {
           .get();
 
         if (!contractDoc.exists) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'not-found',
             'Contract not found'
           );
@@ -202,7 +215,7 @@ const contractAPI = functions.https.onCall(async (data, context) => {
         const isOldCompany = contract.companyId === userId;
 
         if (!isProfessional && !isEmployer && !isParticipant && !isOldWorker && !isOldCompany) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'You do not have permission to update this contract'
           );
@@ -215,8 +228,28 @@ const contractAPI = functions.https.onCall(async (data, context) => {
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         };
 
-        // Update status lifecycle if status is being changed
-        if (contractData.statusLifecycle?.currentStatus) {
+        // PHASE 1: Handle parallel approval flow
+        if (contractData.statusLifecycle?.currentStatus === 'awaiting_dual_approval') {
+          // Update validation flags based on who is approving
+          const validation = contract.statusLifecycle?.validation || {};
+
+          if (isProfessional) {
+            validation.professionalApproved = true;
+            validation.professionalApprovedAt = admin.firestore.FieldValue.serverTimestamp();
+          } else if (isEmployer) {
+            validation.facilityApproved = true;
+            validation.facilityApprovedAt = admin.firestore.FieldValue.serverTimestamp();
+          }
+
+          updateData['statusLifecycle.validation'] = validation;
+
+          // Check if both parties have approved
+          if (validation.professionalApproved && validation.facilityApproved) {
+            updateData['statusLifecycle.currentStatus'] = 'active';
+            updateData['statusLifecycle.timestamps.activatedAt'] = admin.firestore.FieldValue.serverTimestamp();
+          }
+        } else if (contractData.statusLifecycle?.currentStatus) {
+          // Handle other status changes
           updateData['statusLifecycle.currentStatus'] = contractData.statusLifecycle.currentStatus;
           updateData['statusLifecycle.timestamps.updatedAt'] = admin.firestore.FieldValue.serverTimestamp();
           if (contractData.statusLifecycle.notes) {
@@ -240,15 +273,115 @@ const contractAPI = functions.https.onCall(async (data, context) => {
         };
       }
 
+      case 'approveContract': {
+        // PHASE 1: Parallel approval endpoint with auto-approval support
+        if (!contractId) {
+          throw new HttpsError(
+            'invalid-argument',
+            'Contract ID is required'
+          );
+        }
+
+        const userId = context.auth.uid;
+
+        // Get contract
+        const contractDoc = await admin.firestore()
+          .collection('contracts')
+          .doc(contractId)
+          .get();
+
+        if (!contractDoc.exists) {
+          throw new HttpsError('not-found', 'Contract not found');
+        }
+
+        const contract = contractDoc.data();
+        const currentStatus = contract.statusLifecycle?.currentStatus || contract.status || 'draft';
+
+        // Verify contract is in awaiting_dual_approval status
+        if (currentStatus !== 'awaiting_dual_approval') {
+          throw new HttpsError(
+            'failed-precondition',
+            `Contract is not awaiting approval. Current status: ${currentStatus}`
+          );
+        }
+
+        // Determine which party is approving
+        const isProfessional = contract.parties?.professional?.profileId === userId;
+        const isEmployer = contract.parties?.employer?.profileId === userId;
+
+        if (!isProfessional && !isEmployer) {
+          throw new HttpsError(
+            'permission-denied',
+            'You must be either the professional or employer to approve this contract'
+          );
+        }
+
+        // Get current validation state
+        const validation = contract.statusLifecycle?.validation || {
+          professionalApproved: false,
+          facilityApproved: false,
+          professionalApprovedAt: null,
+          facilityApprovedAt: null
+        };
+
+        // Update approval flag
+        if (isProfessional) {
+          if (validation.professionalApproved) {
+            throw new HttpsError(
+              'failed-precondition',
+              'You have already approved this contract'
+            );
+          }
+          validation.professionalApproved = true;
+          validation.professionalApprovedAt = admin.firestore.FieldValue.serverTimestamp();
+        } else if (isEmployer) {
+          if (validation.facilityApproved) {
+            throw new HttpsError(
+              'failed-precondition',
+              'You have already approved this contract'
+            );
+          }
+          validation.facilityApproved = true;
+          validation.facilityApprovedAt = admin.firestore.FieldValue.serverTimestamp();
+        }
+
+        // Prepare update
+        const updateData = {
+          'statusLifecycle.validation': validation,
+          'statusLifecycle.timestamps.updatedAt': admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: userId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        };
+
+        // Check if both parties have approved - activate contract
+        if (validation.professionalApproved && validation.facilityApproved) {
+          updateData['statusLifecycle.currentStatus'] = 'active';
+          updateData['statusLifecycle.timestamps.activatedAt'] = admin.firestore.FieldValue.serverTimestamp();
+        }
+
+        // Update contract
+        await admin.firestore()
+          .collection('contracts')
+          .doc(contractId)
+          .update(updateData);
+
+        return {
+          success: true,
+          message: validation.professionalApproved && validation.facilityApproved
+            ? 'Contract approved by both parties and activated'
+            : 'Your approval has been recorded. Waiting for the other party.'
+        };
+      }
+
       default:
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'Invalid action requested'
         );
     }
   } catch (error) {
     console.error('Error in contract API:', error);
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'internal',
       error.message
     );
@@ -257,22 +390,22 @@ const contractAPI = functions.https.onCall(async (data, context) => {
 
 // MESSAGE API FUNCTIONS
 
-const messagesAPI = functions.https.onCall(async (data, context) => {
+const messagesAPI = onCall(async (request) => {
   // SECURITY CHECK: Verify user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+  if (!request.auth) {
+    throw new HttpsError(
       'unauthenticated',
       'You must be logged in to use this API'
     );
   }
 
-  const { action, conversationId, messageData, conversationData } = data;
-  const userId = context.auth.uid;
+  const { action, conversationId, messageData, conversationData } = request.data;
+  const userId = request.auth.uid;
 
   try {
     switch (action) {
       case 'getConversations': {
-        const { context: messageContext = 'personal', facilityId = null } = data;
+        const { context: messageContext = 'personal', facilityId = null } = request.data;
 
         let conversationsQuery;
         const conversationsRef = admin.firestore().collection('conversations');
@@ -286,7 +419,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
           const facilityDoc = await admin.firestore().collection('facilityProfiles').doc(facilityId).get();
 
           if (!facilityDoc.exists) {
-            throw new functions.https.HttpsError(
+            throw new HttpsError(
               'not-found',
               'Facility not found'
             );
@@ -294,7 +427,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
 
           const facilityData = facilityDoc.data();
           if (!facilityData.admin || !facilityData.admin.includes(userId)) {
-            throw new functions.https.HttpsError(
+            throw new HttpsError(
               'permission-denied',
               'You do not have permission to view this facility\'s conversations'
             );
@@ -304,7 +437,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
             .where('facilityProfileId', '==', facilityId)
             .orderBy('lastMessageTimestamp', 'desc');
         } else {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'invalid-argument',
             'Invalid context or missing facilityId'
           );
@@ -327,7 +460,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
 
       case 'getMessages': {
         if (!conversationId) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'invalid-argument',
             'Conversation ID is required'
           );
@@ -340,7 +473,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
           .get();
 
         if (!conversationDoc.exists) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'not-found',
             'Conversation not found'
           );
@@ -351,7 +484,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
           conversationData.participants?.includes(userId);
 
         if (!isParticipant) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'You do not have permission to view this conversation'
           );
@@ -381,7 +514,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
 
       case 'sendMessage': {
         if (!conversationId || !messageData || !messageData.text) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'invalid-argument',
             'Conversation ID and message text are required'
           );
@@ -394,7 +527,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
         const conversationDoc = await conversationRef.get();
 
         if (!conversationDoc.exists) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'not-found',
             'Conversation not found'
           );
@@ -405,7 +538,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
           conversationData.participants?.includes(userId);
 
         if (!isParticipant) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'You do not have permission to send messages to this conversation'
           );
@@ -448,66 +581,17 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
       }
 
       case 'createConversation': {
-        if (!conversationData || !conversationData.participantIds || !Array.isArray(conversationData.participantIds) || conversationData.participantIds.length < 2) {
-          throw new functions.https.HttpsError(
-            'invalid-argument',
-            'At least 2 participant IDs are required'
-          );
-        }
-
-        if (!conversationData.participantInfo || !Array.isArray(conversationData.participantInfo)) {
-          throw new functions.https.HttpsError(
-            'invalid-argument',
-            'Participant info is required'
-          );
-        }
-
-        // SECURITY CHECK: Ensure user is in participantIds
-        if (!conversationData.participantIds.includes(userId)) {
-          throw new functions.https.HttpsError(
-            'permission-denied',
-            'You must be a participant in the conversation'
-          );
-        }
-
-        const newConversation = {
-          participantIds: conversationData.participantIds,
-          participantInfo: conversationData.participantInfo,
-          contractId: conversationData.contractId || null,
-          facilityProfileId: conversationData.facilityProfileId || null,
-          professionalProfileId: conversationData.professionalProfileId || null,
-          lastMessage: {
-            text: '',
-            senderId: '',
-            timestamp: admin.firestore.FieldValue.serverTimestamp()
-          },
-          lastMessageTimestamp: admin.firestore.FieldValue.serverTimestamp(),
-          unreadCounts: conversationData.participantIds.reduce((acc, id) => {
-            acc[id] = 0;
-            return acc;
-          }, {}),
-          isArchivedBy: [],
-          typingIndicator: conversationData.participantIds.reduce((acc, id) => {
-            acc[id] = false;
-            return acc;
-          }, {}),
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        };
-
-        const conversationRef = await admin.firestore()
-          .collection('conversations')
-          .add(newConversation);
-
-        return {
-          success: true,
-          conversationId: conversationRef.id
-        };
+        // PHASE 1: Manual conversation creation is disabled
+        // Conversations are automatically created when position status changes to 'interview'
+        throw new HttpsError(
+          'permission-denied',
+          'Manual conversation creation is not allowed. Conversations are automatically created during the interview process.'
+        );
       }
 
       case 'markAsRead': {
         if (!conversationId) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'invalid-argument',
             'Conversation ID is required'
           );
@@ -520,7 +604,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
         const conversationDoc = await conversationRef.get();
 
         if (!conversationDoc.exists) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'not-found',
             'Conversation not found'
           );
@@ -531,7 +615,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
           conversationData.participants?.includes(userId);
 
         if (!isParticipant) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'You do not have permission to access this conversation'
           );
@@ -554,7 +638,7 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
       }
 
       default:
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'Invalid action requested'
         );
@@ -563,11 +647,11 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
     console.error('Error in messages API:', error);
 
     // Re-throw HttpsError as-is
-    if (error instanceof functions.https.HttpsError) {
+    if (error instanceof HttpsError) {
       throw error;
     }
 
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'internal',
       error.message
     );
@@ -576,22 +660,22 @@ const messagesAPI = functions.https.onCall(async (data, context) => {
 
 // MARKETPLACE API FUNCTIONS
 
-const marketplaceAPI = functions.https.onCall(async (data, context) => {
+const marketplaceAPI = onCall(async (request) => {
   // SECURITY CHECK: Verify user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+  if (!request.auth) {
+    throw new HttpsError(
       'unauthenticated',
       'You must be logged in to use this API'
     );
   }
 
-  const { action, positionId, availabilityId, positionData, availabilityData, professionalProfileId } = data;
-  const userId = context.auth.uid;
+  const { action, positionId, availabilityId, positionData, availabilityData, professionalProfileId } = request.data;
+  const userId = request.auth.uid;
 
   try {
     switch (action) {
       case 'listPositions': {
-        const { filters = {}, limit: queryLimit = 50 } = data;
+        const { filters = {}, limit: queryLimit = 50 } = request.data;
 
         let positionsQuery = admin.firestore()
           .collection('positions')
@@ -624,7 +708,7 @@ const marketplaceAPI = functions.https.onCall(async (data, context) => {
       }
 
       case 'listAvailabilities': {
-        const { filters = {}, limit: queryLimit = 50 } = data;
+        const { filters = {}, limit: queryLimit = 50 } = request.data;
 
         let availabilitiesQuery = admin.firestore()
           .collection('professionalAvailabilities')
@@ -654,12 +738,12 @@ const marketplaceAPI = functions.https.onCall(async (data, context) => {
 
       case 'getPosition': {
         if (!positionId) {
-          throw new functions.https.HttpsError('invalid-argument', 'Position ID is required');
+          throw new HttpsError('invalid-argument', 'Position ID is required');
         }
 
         const positionDoc = await admin.firestore().collection('positions').doc(positionId).get();
         if (!positionDoc.exists) {
-          throw new functions.https.HttpsError('not-found', 'Position not found');
+          throw new HttpsError('not-found', 'Position not found');
         }
 
         const position = positionDoc.data();
@@ -703,29 +787,29 @@ const marketplaceAPI = functions.https.onCall(async (data, context) => {
         const { facilityProfileId, jobTitle, jobType, startTime, endTime, location, description, compensation } = positionData || {};
 
         if (!facilityProfileId || !jobTitle || !startTime || !endTime) {
-          throw new functions.https.HttpsError('invalid-argument', 'Facility profile ID, job title, start time, and end time are required');
+          throw new HttpsError('invalid-argument', 'Facility profile ID, job title, start time, and end time are required');
         }
 
         // SECURITY CHECK: Verify user is admin of the facility
         const facilityDoc = await admin.firestore().collection('facilityProfiles').doc(facilityProfileId).get();
         if (!facilityDoc.exists) {
-          throw new functions.https.HttpsError('not-found', 'Facility not found');
+          throw new HttpsError('not-found', 'Facility not found');
         }
 
         const facilityData = facilityDoc.data();
         if (!facilityData.admin || !facilityData.admin.includes(userId)) {
-          throw new functions.https.HttpsError('permission-denied', 'Only facility admins can create positions');
+          throw new HttpsError('permission-denied', 'Only facility admins can create positions');
         }
 
         const startDate = new Date(startTime);
         const endDate = new Date(endTime);
 
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-          throw new functions.https.HttpsError('invalid-argument', 'Invalid date format');
+          throw new HttpsError('invalid-argument', 'Invalid date format');
         }
 
         if (startDate >= endDate) {
-          throw new functions.https.HttpsError('invalid-argument', 'End time must be after start time');
+          throw new HttpsError('invalid-argument', 'End time must be after start time');
         }
 
         const positionDataToSave = {
@@ -750,7 +834,7 @@ const marketplaceAPI = functions.https.onCall(async (data, context) => {
 
       case 'applyToPosition': {
         if (!positionId) {
-          throw new functions.https.HttpsError('invalid-argument', 'Position ID is required');
+          throw new HttpsError('invalid-argument', 'Position ID is required');
         }
 
         let profileId = professionalProfileId || userId;
@@ -758,12 +842,12 @@ const marketplaceAPI = functions.https.onCall(async (data, context) => {
         // Verify position exists
         const positionDoc = await admin.firestore().collection('positions').doc(positionId).get();
         if (!positionDoc.exists) {
-          throw new functions.https.HttpsError('not-found', 'Position not found');
+          throw new HttpsError('not-found', 'Position not found');
         }
 
         const position = positionDoc.data();
         if (position.status !== 'open') {
-          throw new functions.https.HttpsError('failed-precondition', 'Position is no longer open');
+          throw new HttpsError('failed-precondition', 'Position is no longer open');
         }
 
         // Check if already applied
@@ -775,7 +859,7 @@ const marketplaceAPI = functions.https.onCall(async (data, context) => {
           .get();
 
         if (existingApplication.exists) {
-          throw new functions.https.HttpsError('already-exists', 'You have already applied to this position');
+          throw new HttpsError('already-exists', 'You have already applied to this position');
         }
 
         // Create application
@@ -796,29 +880,121 @@ const marketplaceAPI = functions.https.onCall(async (data, context) => {
         return { success: true, applicationId: profileId };
       }
 
+      case 'selectApplicant': {
+        const { positionId, professionalProfileId } = request.data;
+
+        if (!positionId || !professionalProfileId) {
+          throw new HttpsError(
+            'invalid-argument',
+            'Position ID and professional profile ID are required'
+          );
+        }
+
+        // Verify position exists and user has permission
+        const positionDoc = await admin.firestore().collection('positions').doc(positionId).get();
+        if (!positionDoc.exists) {
+          throw new HttpsError('not-found', 'Position not found');
+        }
+
+        const position = positionDoc.data();
+
+        // SECURITY CHECK: Verify user is facility admin
+        const facilityDoc = await admin.firestore()
+          .collection('facilityProfiles')
+          .doc(position.facilityProfileId)
+          .get();
+
+        if (!facilityDoc.exists) {
+          throw new HttpsError('not-found', 'Facility not found');
+        }
+
+        const facilityData = facilityDoc.data();
+        if (!facilityData.admin || !facilityData.admin.includes(userId)) {
+          throw new HttpsError(
+            'permission-denied',
+            'Only facility admins can select applicants'
+          );
+        }
+
+        // Verify position is still open
+        if (position.status !== 'open') {
+          throw new HttpsError(
+            'failed-precondition',
+            `Position is no longer open. Current status: ${position.status}`
+          );
+        }
+
+        // Verify application exists
+        const applicationDoc = await admin.firestore()
+          .collection('positions')
+          .doc(positionId)
+          .collection('applications')
+          .doc(professionalProfileId)
+          .get();
+
+        if (!applicationDoc.exists) {
+          throw new HttpsError('not-found', 'Application not found');
+        }
+
+        const application = applicationDoc.data();
+        if (application.status !== 'submitted') {
+          throw new HttpsError(
+            'failed-precondition',
+            `Application status is ${application.status}, expected 'submitted'`
+          );
+        }
+
+        // Update application status to accepted_for_contract
+        await admin.firestore()
+          .collection('positions')
+          .doc(positionId)
+          .collection('applications')
+          .doc(professionalProfileId)
+          .update({
+            status: 'accepted_for_contract',
+            selectedAt: admin.firestore.FieldValue.serverTimestamp(),
+            selectedByUserId: userId
+          });
+
+        // Update position status to 'interview' - this will trigger conversation creation
+        await admin.firestore()
+          .collection('positions')
+          .doc(positionId)
+          .update({
+            status: 'interview',
+            selectedApplicantProfileId: professionalProfileId,
+            updated: admin.firestore.FieldValue.serverTimestamp()
+          });
+
+        return {
+          success: true,
+          message: 'Applicant selected. Interview process started and conversation created automatically.'
+        };
+      }
+
       case 'createAvailability': {
         const { startTime, endTime, jobTypes, locationPreference, hourlyRate, notes } = availabilityData || {};
 
         if (!startTime || !endTime) {
-          throw new functions.https.HttpsError('invalid-argument', 'Start time and end time are required');
+          throw new HttpsError('invalid-argument', 'Start time and end time are required');
         }
 
         let profileId = professionalProfileId || userId;
 
         // SECURITY CHECK: Ensure user can only create availability for their own profile
         if (profileId !== userId) {
-          throw new functions.https.HttpsError('permission-denied', 'You can only create availability for your own profile');
+          throw new HttpsError('permission-denied', 'You can only create availability for your own profile');
         }
 
         const startDate = new Date(startTime);
         const endDate = new Date(endTime);
 
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-          throw new functions.https.HttpsError('invalid-argument', 'Invalid date format');
+          throw new HttpsError('invalid-argument', 'Invalid date format');
         }
 
         if (startDate >= endDate) {
-          throw new functions.https.HttpsError('invalid-argument', 'End time must be after start time');
+          throw new HttpsError('invalid-argument', 'End time must be after start time');
         }
 
         const availabilityDataToSave = {
@@ -841,14 +1017,14 @@ const marketplaceAPI = functions.https.onCall(async (data, context) => {
       }
 
       default:
-        throw new functions.https.HttpsError('invalid-argument', 'Invalid action requested');
+        throw new HttpsError('invalid-argument', 'Invalid action requested');
     }
   } catch (error) {
     console.error('Error in marketplace API:', error);
-    if (error instanceof functions.https.HttpsError) {
+    if (error instanceof HttpsError) {
       throw error;
     }
-    throw new functions.https.HttpsError('internal', error.message);
+    throw new HttpsError('internal', error.message);
   }
 });
 
@@ -856,5 +1032,6 @@ module.exports = {
   contractAPI,
   messagesAPI,
   marketplaceAPI,
+  ...bagAdminFunctions,
   ...notificationsFunctions
 }; 

@@ -1,0 +1,109 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Helper function to validate file size (max 10MB)
+    function isValidSize() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    // Helper function to validate file type for documents
+    function isValidDocumentType() {
+      return request.resource.contentType.matches('application/pdf') ||
+             request.resource.contentType.matches('application/msword') ||
+             request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document') ||
+             request.resource.contentType.matches('image/jpeg') ||
+             request.resource.contentType.matches('image/jpg') ||
+             request.resource.contentType.matches('image/png');
+    }
+    
+    // Helper function to validate file type for images
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // Default: deny all access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    
+    // Profile pictures - users can upload their own profile pictures
+    match /profilePictures/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                     isOwner(userId) && 
+                     isValidImageType() && 
+                     isValidSize();
+    }
+    
+    // Documents for professionals - CV, certificates, etc.
+    match /documents/{userId}/{docType}/{fileName} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && 
+                     isOwner(userId) && 
+                     isValidDocumentType() && 
+                     isValidSize();
+    }
+    
+    // Documents for facilities
+    match /documents/facilities/{userId}/{docType}/{fileName} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && 
+                     isOwner(userId) && 
+                     isValidDocumentType() && 
+                     isValidSize();
+    }
+    
+    // Facility documents (alternative path)
+    match /facilities/{facilityId}/documents/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                     isOwner(facilityId) && 
+                     isValidDocumentType() && 
+                     isValidSize();
+    }
+    
+    // Chat attachments
+    match /chats/{chatId}/attachments/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                     isValidSize();
+    }
+    
+    // Contract documents
+    match /contracts/{contractId}/documents/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                     isValidDocumentType() && 
+                     isValidSize();
+    }
+    
+    // Marketplace images
+    match /marketplace/{listingId}/images/{fileName} {
+      allow read: if true; // Public read for marketplace
+      allow write: if isAuthenticated() && 
+                     isValidImageType() && 
+                     isValidSize();
+    }
+    
+    // Temporary uploads (for processing)
+    match /temp/{userId}/{fileName} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && 
+                     isOwner(userId) && 
+                     isValidSize();
+      // Auto-delete after 24 hours (handled by Cloud Function)
+    }
+  }
+}

@@ -1,18 +1,18 @@
 Startup:
 
-cd Interimed
+cd Medishift
 firebase emulators:start
 
 cd frontend
 npm start
 
 Github:
-dev@interimed.ai
-InteriMed@Dev_Password@2025
+dev@medishift.ai
+MediShift@Dev_Password@2025
 
 gmail:
-interimed.company@gmail.com
-InteriMed@Dev_Password@2025
+medishift.company@gmail.com
+MediShift@Dev_Password@2025
 ./git_push_all.sh "Your commit message for this push"
 
 Contact carewell
@@ -20,14 +20,14 @@ Contact carewell
 bourdin.jean76@gmail.com
 ouiOUI2007
 
-contact@interimed.ai
+contact@medishift.ai
 ouiOUI2007@@@
 
 
 ftp account
 
-https://interimed.ai/
-dev@interimed.ai
-InteriMed@Dev_Password@2025
+https://medishift.ai/
+dev@medishift.ai
+MediShift@Dev_Password@2025
 sxb1plzcpnl508712
 sxb1plzcpnl508712.prod.sxb1.secureserver.net

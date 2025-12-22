@@ -905,7 +905,7 @@ export const checkAndCreateEvent = async (eventData, userId, workspaceContext) =
     };
 
     // Call the function as an HTTP request
-    const response = await fetch('https://us-central1-interimed.cloudfunctions.net/checkAndCreateEventHTTP', {
+    const response = await fetch('https://us-central1-medishift.cloudfunctions.net/checkAndCreateEventHTTP', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

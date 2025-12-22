@@ -1,4 +1,7 @@
 const functions = require('firebase-functions');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onCall } = require('firebase-functions/v2/https');
+const { HttpsError } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 
 /**
@@ -256,7 +259,7 @@ const rateLimitMiddleware = (action) => {
         const result = await rateLimiter.checkLimit(userId, action, ip);
 
         if (!result.allowed) {
-            throw new functions.https.HttpsError(
+            throw new HttpsError(
                 'resource-exhausted',
                 result.message || 'Rate limit exceeded',
                 { retryAfter: result.retryAfter }
@@ -275,9 +278,9 @@ const rateLimitMiddleware = (action) => {
  * Clean up expired rate limit records
  * Runs daily
  */
-exports.cleanupRateLimits = functions.pubsub
-    .schedule('every 24 hours')
-    .onRun(async (context) => {
+exports.cleanupRateLimits = onSchedule({
+    schedule: 'every 24 hours'
+}, async (event) => {
         try {
             const now = new Date();
             const snapshot = await admin.firestore()
@@ -309,18 +312,18 @@ exports.cleanupRateLimits = functions.pubsub
 /**
  * Get rate limit status for current user
  */
-exports.getRateLimitStatus = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+exports.getRateLimitStatus = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const { action } = data;
+    const { action } = request.data;
 
     if (!action || !RATE_LIMITS[action]) {
-        throw new functions.https.HttpsError('invalid-argument', 'Invalid action');
+        throw new HttpsError('invalid-argument', 'Invalid action');
     }
 
-    const status = await rateLimiter.getStatus(context.auth.uid, action);
+    const status = await rateLimiter.getStatus(request.auth.uid, action);
 
     return {
         success: true,

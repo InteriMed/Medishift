@@ -551,4 +551,4 @@ After deployment, update:
 
 ---
 
-**Implementation Checklist Version 2.0** | InteriMed Platform | December 2024
+**Implementation Checklist Version 2.0** | MediShift Platform | December 2024

@@ -6,7 +6,7 @@ globs:
 
 ## Overview
 
-This document provides a comprehensive guide to the internationalization (i18n) system used in the InteriMed application. The application uses `react-i18next` for translation management, with a structured approach to organizing translation files and accessing them in components. Translations are NEVER integrated to .js files directly, even alternative translations. Translations are always directly integrated in the given json or a new one. Update this document as you go.
+This document provides a comprehensive guide to the internationalization (i18n) system used in the MediShift application. The application uses `react-i18next` for translation management, with a structured approach to organizing translation files and accessing them in components. Translations are NEVER integrated to .js files directly, even alternative translations. Translations are always directly integrated in the given json or a new one. Update this document as you go.
 
 ## Translation Structure
 
@@ -26,7 +26,7 @@ frontend/src/locales/
 │   │   ├── home.json               # Homepage translations
 │   │   ├── about.json              # About page translations
 │   │   ├── faq.json                # FAQ page translations
-│   │   ├── pharmacies.json         # Pharmacies page translations
+│   │   ├── healthcare facilities.json         # Pharmacies page translations
 │   │   ├── professionals.json      # Professionals page translations
 │   │   ├── blogArticles/           # Blog-related translations
 │   │   │   └── common.json         # Common blog translations
@@ -71,7 +71,7 @@ This allows fallback to the common namespace if a key isn't found in the primary
 
 1. Always provide fallback text for translation keys
    ```javascript
-   t('hero.title', 'Welcome to InteriMed')
+   t('hero.title', 'Welcome to MediShift')
    ```
 
 2. Use dot notation for nested keys
@@ -118,7 +118,7 @@ When adding a new language:
 
 The i18n configuration is set up in `frontend/src/i18n.js`. It uses `i18next` and `react-i18next` to manage translations. The configuration includes:
 
-- **Resources**: This is where the translation files are loaded. The example configuration includes files for different namespaces (e.g., `translation`, `professionals`, `about`, `faq`, `home`, `pharmacies`, and `blogArticles`).
+- **Resources**: This is where the translation files are loaded. The example configuration includes files for different namespaces (e.g., `translation`, `professionals`, `about`, `faq`, `home`, `healthcare facilities`, and `blogArticles`).
 - **Language**: The default language is set to English (`en`).
 - **Fallback Language**: If a translation is not found in the default language, it will fall back to English.
 - **Interpolation**: This is set to `false` to prevent React from sanitizing the values, which is the default behavior.
@@ -133,7 +133,7 @@ import professionalsEN from './locales/en/pages/professionals.json';
 import aboutEN from './locales/en/pages/about.json';
 import faqEN from './locales/en/pages/faq.json';
 import homeEN from './locales/en/pages/home.json';
-import pharmaciesEN from './locales/en/pages/pharmacies.json';
+import healthcare facilitiesEN from './locales/en/pages/healthcare facilities.json';
 import blogArticlesEN from './locales/en/pages/blogArticles/common.json';
 
 i18n
@@ -146,7 +146,7 @@ i18n
         about: aboutEN,
         faq: faqEN,
         home: homeEN,
-        pharmacies: pharmaciesEN,
+        healthcare facilities: healthcare facilitiesEN,
         blogArticles: blogArticlesEN,
       },
     },

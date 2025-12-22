@@ -1,5 +1,5 @@
 {
-  "name": "Interimed - Deployment server",
+  "name": "Medishift - Deployment server",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
@@ -1222,6 +1222,7 @@
     }
   },
   "dependencies": {
+    "firebase": "^12.6.0",
     "js-cookie": "^3.0.5"
   }
 }
