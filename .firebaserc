@@ -1,7 +1,7 @@
 {
   "projects": {
-    "default": "medishift-620fd",
-    "prod": "medishift-620fd"
+    "default": "interimed-620fd",
+    "prod": "interimed-620fd"
   },
   "targets": {},
   "etags": {}

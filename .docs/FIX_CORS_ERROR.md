@@ -2,7 +2,7 @@
 
 ## Error Fixed
 ```
-Access to fetch at 'https://us-central1-medishift-620fd.cloudfunctions.net/processDocument' 
+Access to fetch at 'https://us-central1-interimed-620fd.cloudfunctions.net/processDocument' 
 from origin 'http://localhost:4000' has been blocked by CORS policy
 ```
 
@@ -77,7 +77,7 @@ firebase deploy --only functions:processDocument
 ### 2. Check Function URL
 The function should be available at:
 ```
-https://us-central1-medishift-620fd.cloudfunctions.net/processDocument
+https://us-central1-interimed-620fd.cloudfunctions.net/processDocument
 ```
 
 ### 3. Test from Frontend

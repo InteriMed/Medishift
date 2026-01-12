@@ -1,7 +1,8 @@
-const functions = require('firebase-functions');
+// Migrated to v2
+// const functions = require('firebase-functions/v1');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { onRequest } = require('firebase-functions/v2/https');
-const { logger } = functions;
+const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
 
@@ -90,7 +91,7 @@ exports.saveCalendarEvent = onCall(async (request) => {
     // Save to availability collection
     const docRef = await db.collection('availability').add(eventData);
 
-    functions.logger.info('Calendar event saved', {
+    logger.info('Calendar event saved', {
       eventId: docRef.id,
       userId: userId,
       start: start,
@@ -102,7 +103,7 @@ exports.saveCalendarEvent = onCall(async (request) => {
       id: docRef.id
     };
   } catch (error) {
-    functions.logger.error('Error saving calendar event', error);
+    logger.error('Error saving calendar event', error);
 
     if (error instanceof HttpsError) {
       throw error;
@@ -236,7 +237,7 @@ exports.updateCalendarEvent = onCall(async (request) => {
     // Update the document
     await eventRef.update(updateData);
 
-    functions.logger.info('Calendar event updated', {
+    logger.info('Calendar event updated', {
       eventId: eventId,
       userId: userId,
       updateFields: Object.keys(updateData)
@@ -246,7 +247,7 @@ exports.updateCalendarEvent = onCall(async (request) => {
       success: true
     };
   } catch (error) {
-    functions.logger.error('Error updating calendar event', error);
+    logger.error('Error updating calendar event', error);
 
     if (error instanceof HttpsError) {
       throw error;
@@ -384,7 +385,7 @@ exports.deleteCalendarEvent = onCall(async (request) => {
       }
     }
 
-    functions.logger.info('Calendar events deleted', {
+    logger.info('Calendar events deleted', {
       eventId: eventId,
       userId: userId,
       deleteType: deleteType,
@@ -396,7 +397,7 @@ exports.deleteCalendarEvent = onCall(async (request) => {
       count: deletedCount
     };
   } catch (error) {
-    functions.logger.error('Error deleting calendar event', error);
+    logger.error('Error deleting calendar event', error);
 
     if (error instanceof HttpsError) {
       throw error;
@@ -529,7 +530,7 @@ exports.saveRecurringEvents = onCall(async (request) => {
     // Wait for all batches to complete
     await Promise.all(batches);
 
-    functions.logger.info('Recurring events saved', {
+    logger.info('Recurring events saved', {
       userId: userId,
       recurrenceId: recurrenceId,
       count: occurrences.length
@@ -541,7 +542,7 @@ exports.saveRecurringEvents = onCall(async (request) => {
       count: occurrences.length
     };
   } catch (error) {
-    functions.logger.error('Error saving recurring events', error);
+    logger.error('Error saving recurring events', error);
 
     if (error instanceof HttpsError) {
       throw error;
@@ -618,7 +619,7 @@ exports.calendarSync = onCall(async (request) => {
     }
 
     // Log the sync request
-    functions.logger.info('Calendar sync request', { userId, calendarId, eventCount: events.length });
+    logger.info('Calendar sync request', { userId, calendarId, eventCount: events.length });
 
     // Get user's existing calendar data
     const userRef = db.collection('users').doc(userId);
@@ -642,7 +643,7 @@ exports.calendarSync = onCall(async (request) => {
       message: 'Calendar synced successfully'
     };
   } catch (error) {
-    functions.logger.error('Error syncing calendar', error);
+    logger.error('Error syncing calendar', error);
 
     if (error instanceof HttpsError) {
       throw error;
@@ -656,7 +657,7 @@ exports.calendarSync = onCall(async (request) => {
 });
 
 // HTTP version for external services
-exports.calendarWebhook = functions.https.onRequest((req, res) => {
+exports.calendarWebhook = onRequest({ region: 'europe-west6', cors: true }, (req, res) => {
   return cors(req, res, async () => {
     try {
       // Only allow POST method
@@ -681,7 +682,7 @@ exports.calendarWebhook = functions.https.onRequest((req, res) => {
         message: `Synced ${events.length} events for calendar ${calendarId}`
       });
     } catch (error) {
-      functions.logger.error('Error in calendar webhook', error);
+      logger.error('Error in calendar webhook', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -699,7 +700,7 @@ async function verifyApiKey(apiKey) {
 
     return !apiKeysSnapshot.empty;
   } catch (error) {
-    functions.logger.error('Error verifying API key', error);
+    logger.error('Error verifying API key', error);
     return false;
   }
 }
@@ -708,7 +709,7 @@ async function verifyApiKey(apiKey) {
  * Check for conflicts and create event (comprehensive validation)
  * Updated to use onRequest with CORS for better compatibility
  */
-exports.checkAndCreateEventHTTP = functions.https.onRequest(async (req, res) => {
+exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true }, async (req, res) => {
   // Enable CORS
   cors(req, res, async () => {
     try {
@@ -932,7 +933,7 @@ exports.checkAndCreateEventHTTP = functions.https.onRequest(async (req, res) => 
 
       console.log('Event creation result:', result);
 
-      functions.logger.info('Event created successfully', {
+      logger.info('Event created successfully', {
         eventType,
         targetUserId,
         workspaceContext,
@@ -943,7 +944,7 @@ exports.checkAndCreateEventHTTP = functions.https.onRequest(async (req, res) => 
 
     } catch (error) {
       console.error('Error in checkAndCreateEventHTTP:', error);
-      functions.logger.error('Error in checkAndCreateEventHTTP', error);
+      logger.error('Error in checkAndCreateEventHTTP', error);
 
       res.status(500).json({
         success: false,
@@ -1139,7 +1140,7 @@ exports.checkAndCreateEvent = onCall(async (request) => {
 
     console.log('Event creation result:', result);
 
-    functions.logger.info('Event created successfully', {
+    logger.info('Event created successfully', {
       eventType,
       targetUserId,
       workspaceContext,
@@ -1150,7 +1151,7 @@ exports.checkAndCreateEvent = onCall(async (request) => {
 
   } catch (error) {
     console.error('Error in checkAndCreateEvent:', error);
-    functions.logger.error('Error in checkAndCreateEvent', error);
+    logger.error('Error in checkAndCreateEvent', error);
 
     if (error instanceof HttpsError) {
       throw error;
@@ -1331,6 +1332,6 @@ async function createUnavailableBlock(userId, startTime, endTime, reason) {
       updated: admin.firestore.FieldValue.serverTimestamp()
     });
   } catch (error) {
-    functions.logger.error('Error creating unavailable block', error);
+    logger.error('Error creating unavailable block', error);
   }
 } 

@@ -17,7 +17,8 @@ const config = require('../config');
 const onOrganizationCreated = onDocumentCreated(
     {
         document: 'organizations/{orgId}',
-        region: config.region
+        region: config.region,
+        database: 'medishift'
     },
     async (event) => {
         const orgData = event.data.data();
@@ -40,7 +41,8 @@ const onOrganizationCreated = onDocumentCreated(
 const onOrganizationUpdated = onDocumentUpdated(
     {
         document: 'organizations/{orgId}',
-        region: config.region
+        region: config.region,
+        database: 'medishift'
     },
     async (event) => {
         const before = event.data.before.data();
@@ -97,7 +99,8 @@ const onOrganizationUpdated = onDocumentUpdated(
 const onOrganizationDeleted = onDocumentDeleted(
     {
         document: 'organizations/{orgId}',
-        region: config.region
+        region: config.region,
+        database: 'medishift'
     },
     async (event) => {
         const orgData = event.data.data();

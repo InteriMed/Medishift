@@ -42,7 +42,7 @@ chmod +x scripts/deploy-process-document.sh
 ### **Method 3: Using Firebase Console**
 
 1. Go to https://console.firebase.google.com/
-2. Select your project: **medishift-620fd**
+2. Select your project: **interimed-620fd**
 3. Go to **Functions**
 4. Click **Deploy** or wait for auto-deployment
 5. Verify `processDocument` function is deployed
@@ -69,7 +69,7 @@ If not logged in, follow the prompts to log in.
 
 ### 4. Select Project
 ```bash
-firebase use medishift-620fd
+firebase use interimed-620fd
 ```
 
 ### 5. Install Dependencies (if needed)
@@ -139,7 +139,7 @@ firebase login
 
 **Solution**: Select your project
 ```bash
-firebase use medishift-620fd
+firebase use interimed-620fd
 ```
 
 ### Error: "Permission denied"
@@ -179,7 +179,7 @@ Common causes:
 
 ```bash
 curl -X POST \
-  https://us-central1-medishift-620fd.cloudfunctions.net/processDocument \
+  https://us-central1-interimed-620fd.cloudfunctions.net/processDocument \
   -H "Content-Type: application/json" \
   -H "Origin: http://localhost:4000" \
   -d '{"data":{"documentUrl":"test"}}'
@@ -192,7 +192,7 @@ Should return CORS headers in response.
 ## Expected Deployment Output
 
 ```
-=== Deploying to 'medishift-620fd'...
+=== Deploying to 'interimed-620fd'...
 
 i  deploying functions
 i  functions: ensuring required API cloudfunctions.googleapis.com is enabled...
@@ -207,7 +207,7 @@ i  functions: updating Node.js 18 function processDocument(us-central1)...
 
 ✔  Deploy complete!
 
-Project Console: https://console.firebase.google.com/project/medishift-620fd/overview
+Project Console: https://console.firebase.google.com/project/interimed-620fd/overview
 ```
 
 ---
@@ -265,7 +265,7 @@ exports.processDocument = onCall(
 ### 2. Check Function URL
 Should be:
 ```
-https://us-central1-medishift-620fd.cloudfunctions.net/processDocument
+https://us-central1-interimed-620fd.cloudfunctions.net/processDocument
 ```
 
 ### 3. Verify Deployment

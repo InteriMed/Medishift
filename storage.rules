@@ -19,13 +19,15 @@ service firebase.storage {
     }
     
     // Helper function to validate file type for documents
+    // Allow null content type (will be auto-detected by Firebase) or valid document types
     function isValidDocumentType() {
-      return request.resource.contentType.matches('application/pdf') ||
-             request.resource.contentType.matches('application/msword') ||
-             request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document') ||
-             request.resource.contentType.matches('image/jpeg') ||
-             request.resource.contentType.matches('image/jpg') ||
-             request.resource.contentType.matches('image/png');
+      return (request.resource.contentType == null) ||
+             (request.resource.contentType != null && (
+               request.resource.contentType.matches('application/pdf') ||
+               request.resource.contentType.matches('application/msword') ||
+               request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document') ||
+               request.resource.contentType.matches('image/.*')
+             ));
     }
     
     // Helper function to validate file type for images
@@ -47,6 +49,15 @@ service firebase.storage {
                      isValidSize();
     }
     
+    // Profile pictures (alternative path with hyphen)
+    match /profile-pictures/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                     isOwner(userId) && 
+                     isValidImageType() && 
+                     isValidSize();
+    }
+    
     // Documents for professionals - CV, certificates, etc.
     match /documents/{userId}/{docType}/{fileName} {
       allow read: if isAuthenticated() && isOwner(userId);
@@ -57,12 +68,14 @@ service firebase.storage {
     }
     
     // Documents for facilities
+    // Allow authenticated users to upload facility documents
+    // The userId in path should match the authenticated user's UID
     match /documents/facilities/{userId}/{docType}/{fileName} {
-      allow read: if isAuthenticated() && isOwner(userId);
+      allow read: if isAuthenticated();
       allow write: if isAuthenticated() && 
                      isOwner(userId) && 
-                     isValidDocumentType() && 
-                     isValidSize();
+                     isValidSize() &&
+                     isValidDocumentType();
     }
     
     // Facility documents (alternative path)

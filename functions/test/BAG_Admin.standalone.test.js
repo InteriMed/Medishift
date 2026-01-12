@@ -2,7 +2,7 @@ const admin = require('firebase-admin');
 
 if (!admin.apps.length) {
   admin.initializeApp({
-    projectId: 'medishift-620fd'
+    projectId: 'interimed-620fd'
   });
 }
 

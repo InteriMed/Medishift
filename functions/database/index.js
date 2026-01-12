@@ -3,13 +3,16 @@ const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/
 const admin = require('firebase-admin');
 
 // Firebase Admin is already initialized in the main index.js
+const { getFirestore } = require('firebase-admin/firestore');
+
 // Reference to Firestore database
-const db = admin.firestore();
+// Explicitly use 'medishift' database to avoid default DB issues
+const db = getFirestore('medishift');
 
 /**
  * Creates a user profile document when a new user is created
  */
-exports.createUserProfile = functions.auth.user().onCreate(async (user) => {
+exports.createUserProfile = functions.region('europe-west6').auth.user().onCreate(async (user) => {
   try {
     // Create a default profile for new users
     const userProfile = {
@@ -48,7 +51,7 @@ exports.createUserProfile = functions.auth.user().onCreate(async (user) => {
 /**
  * Cleans up user data when a user is deleted
  */
-exports.cleanupDeletedUser = functions.auth.user().onDelete(async (user) => {
+exports.cleanupDeletedUser = functions.region('europe-west6').auth.user().onDelete(async (user) => {
   try {
     // Delete the user's profile document
     await db.collection('users').doc(user.uid).delete();
@@ -89,50 +92,50 @@ exports.getUserProfile = onCallV2(
       );
     }
 
-  try {
-    const userId = request.auth.uid;
+    try {
+      const userId = request.auth.uid;
 
-    // Get the user's profile document
-    const userDoc = await db.collection('users').doc(userId).get();
+      // Get the user's profile document
+      const userDoc = await db.collection('users').doc(userId).get();
 
-    if (!userDoc.exists) {
+      if (!userDoc.exists) {
+        throw new HttpsError(
+          'not-found',
+          'User profile not found'
+        );
+      }
+
+      const userData = userDoc.data();
+
+      // Determine role and fetch role-specific profile
+      const role = userData.role || 'professional';
+      const profileCollection = role === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+      const profileDoc = await db.collection(profileCollection).doc(userId).get();
+
+      // Merge user data with role-specific profile data
+      let profileData = { ...userData };
+      if (profileDoc.exists) {
+        profileData = { ...profileData, ...profileDoc.data() };
+      }
+
+      // Return the merged profile data
+      return {
+        success: true,
+        data: profileData
+      };
+    } catch (error) {
+      functions.logger.error('Error fetching user profile', error);
+
+      // Re-throw HttpsError as-is
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+
       throw new HttpsError(
-        'not-found',
-        'User profile not found'
+        'internal',
+        'Error fetching user profile data'
       );
     }
-
-    const userData = userDoc.data();
-
-    // Determine role and fetch role-specific profile
-    const role = userData.role || 'professional';
-    const profileCollection = role === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
-    const profileDoc = await db.collection(profileCollection).doc(userId).get();
-
-    // Merge user data with role-specific profile data
-    let profileData = { ...userData };
-    if (profileDoc.exists) {
-      profileData = { ...profileData, ...profileDoc.data() };
-    }
-
-    // Return the merged profile data
-    return {
-      success: true,
-      data: profileData
-    };
-  } catch (error) {
-    functions.logger.error('Error fetching user profile', error);
-
-    // Re-throw HttpsError as-is
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-
-    throw new HttpsError(
-      'internal',
-      'Error fetching user profile data'
-    );
-  }
   }
 );
 
@@ -155,98 +158,266 @@ exports.updateUserProfile = onCallV2(
       );
     }
 
+    let currentStep = 'start';
     try {
-    // Validate input data
-    const data = request.data;
-    if (!data || typeof data !== 'object') {
+      // Validate input data
+      const rawData = request.data;
+      if (!rawData || typeof rawData !== 'object') {
+        throw new HttpsError(
+          'invalid-argument',
+          'Profile data must be an object'
+        );
+      }
+
+      // Check Admin Initialization
+      if (!admin.apps.length) {
+        functions.logger.error('Firebase Admin not initialized properly!');
+        throw new Error('Firebase Admin not initialized');
+      }
+
+      // Sanitize data to remove any potential undefined values that might cause generic 500 errors
+      // formatting issues, or other serialization problems
+      const data = JSON.parse(JSON.stringify(rawData));
+
+      functions.logger.info(`updateUserProfile called by ${request.auth ? request.auth.uid : 'unauth'}`, {
+        structuredData: true,
+        dataKeys: Object.keys(data),
+        adminOptions: admin.app().options, // Log the initialization options
+        connectedDatabaseId: db.databaseId || 'unknown', // Check which DB we are using
+        currentStep: currentStep
+      });
+
+      // DEBUG: Connectivity Check
+      currentStep = 'connectivity_check';
+      try {
+        const collections = await db.listCollections();
+        functions.logger.info(`Connected to DB. Collections: ${collections.map(c => c.id).join(', ')}`);
+      } catch (dbError) {
+        functions.logger.error('Database connectivity check failed', dbError);
+        throw new Error(`Database unreachable: ${dbError.message}`);
+      }
+
+      const userId = request.auth.uid;
+
+      // Define fields that belong to the users collection
+      const USER_COLLECTION_FIELDS = [
+        'uid', 'email', 'emailVerified', 'role', 'profileType',
+        'firstName', 'lastName', 'displayName', 'photoURL',
+        'createdAt', 'updatedAt'
+      ];
+
+      // Get current user data to determine role
+      currentStep = 'fetch_user_doc';
+      functions.logger.info(`Fetching current user doc for ${userId}`);
+      const currentUserDoc = await db.collection('users').doc(userId).get();
+      const currentUserData = currentUserDoc.exists ? currentUserDoc.data() : {};
+      const currentRole = data.role || currentUserData.role;
+      const currentProfileType = data.profileType || currentUserData.profileType;
+
+      functions.logger.info(`Identified role: ${currentRole}, profileType: ${currentProfileType}`);
+
+      // Separate user fields from profile fields
+      const userFieldsToUpdate = {};
+      const profileFieldsToUpdate = {};
+
+      for (const [key, value] of Object.entries(data)) {
+        if (USER_COLLECTION_FIELDS.includes(key)) {
+          userFieldsToUpdate[key] = value;
+        } else {
+          profileFieldsToUpdate[key] = value;
+        }
+      }
+
+      // Ensure role and profileType are in user fields
+      userFieldsToUpdate.role = currentRole;
+      userFieldsToUpdate.profileType = currentProfileType;
+      userFieldsToUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+      // Update user document
+      if (Object.keys(userFieldsToUpdate).length > 0) {
+        try {
+          if (currentUserDoc.exists) {
+            currentStep = 'update_existing_user_doc';
+            functions.logger.info(`Updating users document for ${userId}`, {
+              fields: Object.keys(userFieldsToUpdate)
+            });
+            await db.collection('users').doc(userId).set(userFieldsToUpdate, { merge: true });
+          } else {
+            // Create user document if it doesn't exist
+            userFieldsToUpdate.uid = userId;
+            userFieldsToUpdate.createdAt = admin.firestore.FieldValue.serverTimestamp();
+            currentStep = 'create_new_user_doc';
+            functions.logger.info(`Creating users document for ${userId}`, {
+              fields: Object.keys(userFieldsToUpdate)
+            });
+            await db.collection('users').doc(userId).set(userFieldsToUpdate, { merge: true });
+          }
+          functions.logger.info(`User document updated successfully`);
+        } catch (userError) {
+          functions.logger.error('Error updating users document', {
+            error: userError.message,
+            stack: userError.stack,
+            userId,
+            fields: Object.keys(userFieldsToUpdate)
+          });
+          throw new HttpsError(
+            'internal',
+            `Error updating user document: ${userError.message}`
+          );
+        }
+      }
+
+      // Update role-specific profile document
+      if (Object.keys(profileFieldsToUpdate).length > 0) {
+        const profileCollection = currentRole === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+        profileFieldsToUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+        currentStep = `fetch_profile_doc_${profileCollection}`;
+        const profileDocRef = db.collection(profileCollection).doc(userId);
+        functions.logger.info(`Fetching profile doc from ${profileCollection}`);
+        const profileDoc = await profileDocRef.get();
+
+        functions.logger.info(`Updating ${profileCollection} for user ${userId}`, {
+          profileExists: profileDoc.exists,
+          fieldsCount: Object.keys(profileFieldsToUpdate).length,
+          topLevelFields: Object.keys(profileFieldsToUpdate).slice(0, 10)
+        });
+
+        if (!profileDoc.exists) {
+          // Create profile document if it doesn't exist
+          profileFieldsToUpdate.userId = userId;
+          profileFieldsToUpdate.createdAt = admin.firestore.FieldValue.serverTimestamp();
+
+          // Initialize tutorial data
+          profileFieldsToUpdate.tutorial = {
+            global: false,
+            profile: 1,
+            calendar: false
+          };
+
+          // CRITICAL FIX: If creating a facility, assign creator as admin and employee
+          if (currentRole === 'facility') {
+            profileFieldsToUpdate.admin = [userId];
+            profileFieldsToUpdate.employees = [userId];
+
+            // Also update user memberships
+            const facilityName = profileFieldsToUpdate.facilityDetails?.name || 'New Facility';
+
+            // Explicitly update user document as the main update block has already run
+            try {
+              currentStep = 'update_facility_membership';
+              functions.logger.info('Updating facility memberships for creator...');
+              await db.collection('users').doc(userId).set({
+                facilityMemberships: admin.firestore.FieldValue.arrayUnion({
+                  facilityId: userId, // In this model, facilityProfileId is the userId
+                  facilityName: facilityName,
+                  role: 'admin',
+                  facilityProfileId: userId
+                }),
+                roles: admin.firestore.FieldValue.arrayUnion('facility')
+              }, { merge: true });
+            } catch (facilityError) {
+              functions.logger.error('Error updating facility memberships', {
+                error: facilityError.message,
+                stack: facilityError.stack,
+                userId
+              });
+              // Don't throw here - facility membership update failure shouldn't block profile creation
+            }
+          }
+
+          functions.logger.info(`Creating new ${profileCollection} document for ${userId}`, {
+            fieldCount: Object.keys(profileFieldsToUpdate).length,
+            topFields: Object.keys(profileFieldsToUpdate).slice(0, 5)
+          });
+
+          try {
+            currentStep = `create_new_profile_doc_${profileCollection}`;
+            await profileDocRef.set(profileFieldsToUpdate);
+            functions.logger.info(`Successfully created ${profileCollection} document for ${userId}`);
+          } catch (createError) {
+            functions.logger.error(`Error creating ${profileCollection} document`, {
+              error: createError.message,
+              stack: createError.stack,
+              code: createError.code,
+              userId,
+              fieldCount: Object.keys(profileFieldsToUpdate).length
+            });
+            throw new HttpsError(
+              'internal',
+              `Error creating profile document: ${createError.message}`
+            );
+          }
+        } else {
+          // Update existing profile document
+          functions.logger.info(`Updating existing ${profileCollection} document for ${userId}`);
+
+          // Remove null values from top-level fields for Firestore updates
+          // Firestore update() doesn't accept null values - they must be omitted or use deleteField()
+          const updateData = {};
+          for (const [key, value] of Object.entries(profileFieldsToUpdate)) {
+            if (value !== null && value !== undefined) {
+              updateData[key] = value;
+            }
+          }
+
+          if (Object.keys(updateData).length > 0) {
+            functions.logger.info(`Updating ${profileCollection} with ${Object.keys(updateData).length} fields`, {
+              topFields: Object.keys(updateData).slice(0, 5)
+            });
+
+            try {
+              currentStep = `update_existing_profile_doc_${profileCollection}`;
+              await profileDocRef.set(updateData, { merge: true });
+              functions.logger.info(`Successfully updated ${profileCollection} document for ${userId}`);
+            } catch (updateError) {
+              functions.logger.error(`Error updating ${profileCollection} document`, {
+                error: updateError.message,
+                stack: updateError.stack,
+                code: updateError.code,
+                userId,
+                fieldCount: Object.keys(updateData).length,
+                fields: Object.keys(updateData)
+              });
+              throw new HttpsError(
+                'internal',
+                `Error updating profile document: ${updateError.message}`
+              );
+            }
+          }
+        }
+      }
+
+      // Return success response
+      return {
+        success: true,
+        message: 'Profile updated successfully'
+      };
+    } catch (error) {
+      functions.logger.error('Error updating user profile', error);
+
+      // Re-throw HttpsError as-is
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+
+      // DEBUG: Return detailed error to client
       throw new HttpsError(
-        'invalid-argument',
-        'Profile data must be an object'
+        'internal',
+        `Error updating user profile data at step [${currentStep}]: ${error.message} | Stack: ${error.stack}`
       );
     }
-
-    const userId = request.auth.uid;
-
-    // Define fields that belong to the users collection
-    const USER_COLLECTION_FIELDS = [
-      'uid', 'email', 'emailVerified', 'role', 'profileType',
-      'firstName', 'lastName', 'displayName', 'photoURL',
-      'createdAt', 'updatedAt'
-    ];
-
-    // Get current user data to determine role
-    const currentUserDoc = await db.collection('users').doc(userId).get();
-    const currentUserData = currentUserDoc.exists ? currentUserDoc.data() : {};
-    const currentRole = data.role || currentUserData.role || 'professional';
-    const currentProfileType = data.profileType || currentUserData.profileType || 'doctor';
-
-    // Separate user fields from profile fields
-    const userFieldsToUpdate = {};
-    const profileFieldsToUpdate = {};
-
-    for (const [key, value] of Object.entries(data)) {
-      if (USER_COLLECTION_FIELDS.includes(key)) {
-        userFieldsToUpdate[key] = value;
-      } else {
-        profileFieldsToUpdate[key] = value;
-      }
-    }
-
-    // Ensure role and profileType are in user fields
-    userFieldsToUpdate.role = currentRole;
-    userFieldsToUpdate.profileType = currentProfileType;
-    userFieldsToUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
-
-    // Update user document
-    if (Object.keys(userFieldsToUpdate).length > 0) {
-      if (currentUserDoc.exists) {
-        await db.collection('users').doc(userId).update(userFieldsToUpdate);
-      } else {
-        // Create user document if it doesn't exist
-        userFieldsToUpdate.uid = userId;
-        userFieldsToUpdate.createdAt = admin.firestore.FieldValue.serverTimestamp();
-        await db.collection('users').doc(userId).set(userFieldsToUpdate);
-      }
-    }
-
-    // Update role-specific profile document
-    if (Object.keys(profileFieldsToUpdate).length > 0) {
-      const profileCollection = currentRole === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
-      profileFieldsToUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
-
-      const profileDocRef = db.collection(profileCollection).doc(userId);
-      const profileDoc = await profileDocRef.get();
-
-      if (!profileDoc.exists) {
-        // Create profile document if it doesn't exist
-        profileFieldsToUpdate.userId = userId;
-        profileFieldsToUpdate.createdAt = admin.firestore.FieldValue.serverTimestamp();
-        await profileDocRef.set(profileFieldsToUpdate);
-      } else {
-        // Update existing profile document
-        await profileDocRef.update(profileFieldsToUpdate);
-      }
-    }
-
-    // Return success response
-    return {
-      success: true,
-      message: 'Profile updated successfully'
-    };
-  } catch (error) {
-    functions.logger.error('Error updating user profile', error);
-
-    throw new HttpsError(
-      'internal',
-      'Error updating user profile data'
-    );
-  }
   }
 );
 
 
 // Handle contract creation and notifications
-const onContractCreate = onDocumentCreated('contracts/{contractId}', async (event) => {
+// Handle contract creation and notifications
+const onContractCreate = onDocumentCreated({
+  document: 'contracts/{contractId}',
+  database: 'medishift',
+  region: 'europe-west6'
+}, async (event) => {
   const contract = event.data.data();
   const contractId = event.params.contractId;
 
@@ -276,7 +447,12 @@ const onContractCreate = onDocumentCreated('contracts/{contractId}', async (even
 });
 
 // Handle position status updates - CRITICAL: Auto-create conversation when status changes to 'interview'
-const onPositionUpdate = onDocumentUpdated('positions/{positionId}', async (event) => {
+// Handle position status updates - CRITICAL: Auto-create conversation when status changes to 'interview'
+const onPositionUpdate = onDocumentUpdated({
+  document: 'positions/{positionId}',
+  database: 'medishift',
+  region: 'europe-west6'
+}, async (event) => {
   const before = event.data.before.data();
   const after = event.data.after.data();
   const positionId = event.params.positionId;
@@ -413,7 +589,12 @@ const onPositionUpdate = onDocumentUpdated('positions/{positionId}', async (even
 });
 
 // Handle contract status updates
-const onContractUpdate = onDocumentUpdated('contracts/{contractId}', async (event) => {
+// Handle contract status updates
+const onContractUpdate = onDocumentUpdated({
+  document: 'contracts/{contractId}',
+  database: 'medishift',
+  region: 'europe-west6'
+}, async (event) => {
   const before = event.data.before.data();
   const after = event.data.after.data();
   const contractId = event.params.contractId;

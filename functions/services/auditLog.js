@@ -72,6 +72,18 @@ const AUDIT_EVENT_TYPES = {
     EVENT_CREATED: 'event:created',
     EVENT_UPDATED: 'event:updated',
     EVENT_DELETED: 'event:deleted',
+
+    // Admin Actions
+    ADMIN_USER_APPROVED: 'admin:user_approved',
+    ADMIN_USER_REJECTED: 'admin:user_rejected',
+    ADMIN_SHIFT_FORCE_ASSIGNED: 'admin:shift_force_assigned',
+    ADMIN_SHIFT_PAY_EDITED: 'admin:shift_pay_edited',
+    ADMIN_SHIFT_STATUS_EDITED: 'admin:shift_status_edited',
+    ADMIN_USER_IMPERSONATED: 'admin:user_impersonated',
+    ADMIN_EMPLOYEE_INVITED: 'admin:employee_invited',
+    ADMIN_EMPLOYEE_ROLE_UPDATED: 'admin:employee_role_updated',
+    ADMIN_ACCOUNT_CREATED: 'admin:account_created',
+    ADMIN_DATABASE_EDITED: 'admin:database_edited',
 };
 
 // ============================================

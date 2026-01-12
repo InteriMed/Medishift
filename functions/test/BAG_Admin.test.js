@@ -1,6 +1,6 @@
 const admin = require('firebase-admin');
 const test = require('firebase-functions-test')({
-  projectId: 'medishift-620fd',
+  projectId: 'interimed-620fd',
 });
 
 const myFunctions = require('../index');

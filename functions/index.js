@@ -7,7 +7,10 @@ setGlobalOptions({ region: "europe-west6" });
 
 // Initialize Firebase Admin
 const admin = require('firebase-admin');
-admin.initializeApp();
+admin.initializeApp({
+  databaseId: 'medishift',
+  storageBucket: 'interimed-620fd.firebasestorage.app'
+});
 
 // Import calendar functions
 const calendarFunctions = require('./api/calendar');

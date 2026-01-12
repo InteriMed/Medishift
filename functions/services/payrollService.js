@@ -243,7 +243,8 @@ function calculateFees(baseAmount, hoursWorked, hourlyRate) {
 const onPayrollRequestCreated = onDocumentCreated(
     {
         document: 'payroll_requests/{requestId}',
-        region: config.region
+        region: config.region,
+        database: 'medishift'
     },
     async (event) => {
         const data = event.data.data();

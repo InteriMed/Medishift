@@ -20,11 +20,80 @@ const visionClient = new vision.ImageAnnotatorClient({
   apiEndpoint: 'eu-vision.googleapis.com'
 });
 
-// CONFIGURE AI (GEMINI) TO RUN IN ZURICH
+// CONFIGURE AI (GEMINI) TO RUN IN EUROPE-WEST1 (Belgium - Better Availability)
 const vertexAI = new VertexAI({
-  project: process.env.GCLOUD_PROJECT || 'medishift-620fd',
-  location: 'europe-west3'
+  project: process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'interimed-620fd',
+  location: 'europe-west1'
 });
+
+const db = admin.firestore();
+
+/**
+ * Detect MIME type from file magic bytes (file signature)
+ * More reliable than trusting metadata or extension
+ */
+function detectMimeTypeFromMagicBytes(buffer, fallbackMimeType) {
+  if (!buffer || buffer.length < 4) {
+    console.warn('[MagicBytes] Buffer too small, using fallback:', fallbackMimeType);
+    return fallbackMimeType || 'application/octet-stream';
+  }
+
+  // JPEG: starts with FF D8 FF
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+    return 'image/jpeg';
+  }
+
+  // PNG: starts with 89 50 4E 47 0D 0A 1A 0A
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+    return 'image/png';
+  }
+
+  // GIF: starts with GIF87a or GIF89a
+  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) {
+    return 'image/gif';
+  }
+
+  // WebP: starts with RIFF....WEBP
+  if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+    buffer.length >= 12 && buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) {
+    return 'image/webp';
+  }
+
+  // PDF: starts with %PDF
+  if (buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) {
+    return 'application/pdf';
+  }
+
+  // HEIC/HEIF: starts with ftyp at byte 4 (after size bytes)
+  // Check for 'ftyp' signature followed by heic, heix, hevc, mif1, etc.
+  if (buffer.length >= 12) {
+    const ftypIndex = 4; // ftyp starts at byte 4
+    if (buffer[ftypIndex] === 0x66 && buffer[ftypIndex + 1] === 0x74 &&
+      buffer[ftypIndex + 2] === 0x79 && buffer[ftypIndex + 3] === 0x70) {
+      // Check brand: heic, heix, mif1, msf1
+      const brand = String.fromCharCode(buffer[8], buffer[9], buffer[10], buffer[11]);
+      if (['heic', 'heix', 'mif1', 'msf1', 'hevc'].includes(brand.toLowerCase())) {
+        return 'image/heic';
+      }
+    }
+  }
+
+  // BMP: starts with BM
+  if (buffer[0] === 0x42 && buffer[1] === 0x4D) {
+    return 'image/bmp';
+  }
+
+  // TIFF: starts with II or MM
+  if ((buffer[0] === 0x49 && buffer[1] === 0x49) || (buffer[0] === 0x4D && buffer[1] === 0x4D)) {
+    return 'image/tiff';
+  }
+
+  console.warn('[MagicBytes] Unknown format, first 8 bytes:',
+    Array.from(buffer.slice(0, 8)).map(b => b.toString(16).padStart(2, '0')).join(' '),
+    'Using fallback:', fallbackMimeType);
+
+  return fallbackMimeType || 'application/octet-stream';
+}
 
 /**
  * Process uploaded document using Vertex AI (Gemini) Multimodal capabilities
@@ -42,8 +111,12 @@ exports.processDocument = onCall(
     memory: '1GiB' // Increase memory for AI processing
   },
   async (request) => {
+    const logPrefix = `[ProcessDocument-${request.auth ? request.auth.uid : 'anon'}-${Date.now()}]`;
+    console.log(`${logPrefix} STARTING execution`);
+
     // Verify authentication
     if (!request.auth) {
+      console.warn(`${logPrefix} Unauthenticated request`);
       throw new HttpsError(
         'unauthenticated',
         'User must be authenticated to process documents'
@@ -52,46 +125,48 @@ exports.processDocument = onCall(
 
     const userId = request.auth.uid;
     const { documentUrl, documentType, storagePath, mimeType } = request.data;
+    console.log(`${logPrefix} Request data:`, { documentUrl, documentType, storagePath, mimeType, userId });
 
     // Rate limiting: 2 scans per minute
-    const rateLimitRef = admin.firestore().collection('rateLimits').doc(userId);
-    const rateLimitDoc = await rateLimitRef.get();
-    const now = Date.now();
-    const oneMinuteAgo = now - 60000; // 60 seconds
+    try {
+      const rateLimitRef = db.collection('rateLimits').doc(userId);
+      const rateLimitDoc = await rateLimitRef.get();
+      const now = Date.now();
+      const oneMinuteAgo = now - 60000; // 60 seconds
 
-    if (rateLimitDoc.exists) {
-      const data = rateLimitDoc.data();
-      // Filter scans from the last minute
-      const recentScans = (data.scans || []).filter(timestamp => timestamp > oneMinuteAgo);
+      if (rateLimitDoc.exists) {
+        const data = rateLimitDoc.data();
+        // Filter scans from the last minute
+        const recentScans = (data.scans || []).filter(timestamp => timestamp > oneMinuteAgo);
 
-      if (recentScans.length >= 2) {
-        const oldestScan = Math.min(...recentScans);
-        const waitTime = Math.ceil((oldestScan + 60000 - now) / 1000);
-        throw new HttpsError(
-          'resource-exhausted',
-          `Rate limit exceeded. Please wait ${waitTime} seconds before processing another document.`
-        );
+        if (recentScans.length >= 2) {
+          console.warn(`${logPrefix} Rate limit exceeded`);
+          const oldestScan = Math.min(...recentScans);
+          const waitTime = Math.ceil((oldestScan + 60000 - now) / 1000);
+          throw new HttpsError(
+            'resource-exhausted',
+            `Rate limit exceeded. Please wait ${waitTime} seconds before processing another document.`
+          );
+        }
+
+        // Update with current scan
+        await rateLimitRef.update({
+          scans: [...recentScans, now]
+        });
+      } else {
+        // First scan for this user
+        await rateLimitRef.set({
+          scans: [now]
+        });
       }
-
-      // Update with current scan
-      await rateLimitRef.update({
-        scans: [...recentScans, now]
-      });
-    } else {
-      // First scan for this user
-      await rateLimitRef.set({
-        scans: [now]
-      });
-    }
-
-    // Fallback: If no storagePath is provided (legacy calls), we simply can't process reliably without gs:// URI for Gemini.
-    // However, if we have documentUrl (https), we might be able to download it, but gs:// is preferred.
-    // For now, we enforce storagePath.
-    if (!storagePath) {
-      console.warn('Missing storagePath, attempting to rely on legacy Vision API logic? No, failing for now to enforce migration.');
+    } catch (rateLimitError) {
+      console.error(`${logPrefix} Rate limit check failed:`, rateLimitError);
+      // Don't block execution on rate limit DB error, but log it
+      if (rateLimitError.code === 'resource-exhausted') throw rateLimitError;
     }
 
     if (!storagePath) {
+      console.error(`${logPrefix} Missing storagePath`);
       throw new HttpsError(
         'invalid-argument',
         'Document Storage Path is required for AI processing'
@@ -99,45 +174,77 @@ exports.processDocument = onCall(
     }
 
     try {
-      console.log(`Processing document: ${storagePath} (${mimeType}) for user: ${request.auth.uid}`);
+      console.log(`${logPrefix} Verifying file existence: ${storagePath}`);
 
       // Verify file exists in storage before processing
       const bucket = admin.storage().bucket();
       const file = bucket.file(storagePath);
 
+      console.log(`${logPrefix} Bucket: ${bucket.name}, File object created`);
+
       const [exists] = await file.exists();
       if (!exists) {
-        console.error(`File not found in storage: ${storagePath}`);
+        console.error(`${logPrefix} File NOT found at ${storagePath}`);
         throw new HttpsError(
           'not-found',
           `Document not found at path: ${storagePath}. Please ensure the file was uploaded successfully.`
         );
       }
+      console.log(`${logPrefix} File exists.`);
 
       // Construct gs:// URI
       const bucketName = bucket.name;
       const gsUri = `gs://${bucketName}/${storagePath}`;
 
-      console.log(`Using GS URI: ${gsUri}`);
+      console.log(`${logPrefix} Using GS URI: ${gsUri}`);
 
-      // Step 1: Use Gemini to extract data directly
-      const extractionResult = await extractStructuredDataWithGemini(gsUri, mimeType || 'application/pdf', documentType);
+      // Check file metadata to detect actual content type
+      const [metadata] = await file.getMetadata();
+      const metadataContentType = metadata.contentType || mimeType;
 
-      console.log('[ProcessDocument] Extracted data structure:', JSON.stringify({
-        hasStudies: !!extractionResult.parsedData?.professionalBackground?.studies,
-        studiesCount: extractionResult.parsedData?.professionalBackground?.studies?.length || 0,
-        hasWorkExperience: !!extractionResult.parsedData?.professionalBackground?.workExperience,
-        workExperienceCount: extractionResult.parsedData?.professionalBackground?.workExperience?.length || 0,
-        workExperienceSample: extractionResult.parsedData?.professionalBackground?.workExperience?.[0] || null
-      }, null, 2));
+      console.log(`${logPrefix} Metadata ContentType: ${metadataContentType}, Size: ${metadata.size}`);
+
+      // Download file header to detect actual format from magic bytes
+      console.log(`${logPrefix} Downloading magic bytes...`);
+      const [fileBuffer] = await file.download({ start: 0, end: 32 }); // First 32 bytes for magic detection
+      const actualMimeType = detectMimeTypeFromMagicBytes(fileBuffer, metadataContentType);
+
+      console.log(`${logPrefix} Magic detection: ${actualMimeType} (Metadata: ${metadataContentType})`);
+
+      // Validate supported formats
+      const fileExtension = storagePath.split('.').pop()?.toLowerCase();
+
+      // Check for completely unsupported or undetectable formats
+      if (actualMimeType === 'application/octet-stream') {
+        console.error(`${logPrefix} MIME detection failed for extension .${fileExtension}`);
+        throw new HttpsError(
+          'invalid-argument',
+          'Unable to detect image format. The uploaded file may be corrupted or in an unsupported format. Please try uploading a JPEG or PNG image.'
+        );
+      }
+
+      // Use the magic-byte detected mime type (most accurate)
+      const effectiveMimeType = actualMimeType;
+
+      // Step 1: Use Gemini to extract data directly (pass file object for base64 fallback)
+      console.log(`${logPrefix} calling extractStructuredDataWithGemini...`);
+      const extractionResult = await extractStructuredDataWithGemini(gsUri, effectiveMimeType, documentType, file);
+      console.log(`${logPrefix} extraction returned success`);
+
+      console.log(`${logPrefix} Extracted data keys:`, Object.keys(extractionResult.parsedData || {}));
 
       // Step 2: Save to transient cache (15 minutes TTL)
-      const cacheRef = admin.firestore().collection('extractedDataCache').doc(userId);
-      await cacheRef.set({
-        data: extractionResult.parsedData,
-        createdAt: now,
-        expiresAt: now + (15 * 60 * 1000) // 15 minutes from now
-      });
+      try {
+        const cacheRef = db.collection('extractedDataCache').doc(userId);
+        await cacheRef.set({
+          data: extractionResult.parsedData,
+          createdAt: now,
+          expiresAt: now + (15 * 60 * 1000) // 15 minutes from now
+        });
+        console.log(`${logPrefix} Cache saved.`);
+      } catch (cacheError) {
+        console.error(`${logPrefix} Cache save failed (non-fatal):`, cacheError);
+      }
 
       // Step 3: Return the structured data with verification details
       return {
@@ -153,10 +260,16 @@ exports.processDocument = onCall(
       };
 
     } catch (error) {
-      console.error('Error processing document:', error);
+      console.error(`${logPrefix} FATAL ERROR:`, error);
+      console.error(`${logPrefix} FATAL ERROR JSON:`, JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+
       throw new HttpsError(
         'internal',
-        `Failed to process document: ${error.message}`
+        `Failed to process document: ${error.message} (LogID: ${logPrefix})`
       );
     }
   }
@@ -164,37 +277,133 @@ exports.processDocument = onCall(
 
 /**
  * Extract structured data using Gemini 1.5 Flash Multimodal
+ * @param {string} gsUri - The GS URI to the file (gs://bucket/path)
+ * @param {string} mimeType - The MIME type of the file
+ * @param {string} documentType - Type of document for prompt selection
+ * @param {Object} file - Optional Firebase Storage file object for base64 fallback
  */
-async function extractStructuredDataWithGemini(gsUri, mimeType, documentType) {
-  const model = vertexAI.getGenerativeModel({
-    model: 'gemini-2.5-flash'
-  });
+async function extractStructuredDataWithGemini(gsUri, mimeType, documentType, file = null) {
+  // Updated to use standard aliases for better resolution in europe-west1
+  const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash-lite', 'gemini-1.5-pro'];
+  let lastError = null;
 
-  const prompt = getExtractionPrompt(documentType);
+  for (const modelName of models) {
+    try {
+      console.log(`[Gemini] Trying model: ${modelName}`);
 
-  const filePart = {
-    fileData: {
-      fileUri: gsUri,
-      mimeType: mimeType
-    }
-  };
+      const model = vertexAI.getGenerativeModel({
+        model: modelName
+      });
 
-  const textPart = {
-    text: prompt
-  };
+      const prompt = getExtractionPrompt(documentType);
 
-  const request = {
-    contents: [
-      {
-        role: 'user',
-        parts: [filePart, textPart]
+      console.log(`[Gemini] Processing: gsUri=${gsUri}, mimeType=${mimeType}, documentType=${documentType}`);
+
+      // Try GS URI first, fallback to base64 if it fails
+      let filePart;
+
+      try {
+        // First attempt: Use GS URI (more efficient for large files)
+        filePart = {
+          fileData: {
+            fileUri: gsUri,
+            mimeType: mimeType
+          }
+        };
+
+        const textPart = {
+          text: prompt
+        };
+
+        const request = {
+          contents: [
+            {
+              role: 'user',
+              parts: [filePart, textPart]
+            }
+          ]
+        };
+
+        console.log('[Gemini] Attempting with GS URI...');
+        const result = await model.generateContent(request);
+        const response = result.response;
+
+        return processGeminiResponse(response, prompt);
+
+      } catch (gsError) {
+        console.warn(`[Gemini] GS URI failed with ${modelName}, trying base64 fallback:`, gsError.message);
+
+        // If we have the file object, try base64 approach
+        if (file) {
+          try {
+            // Download the file content
+            console.log('[Gemini] Downloading file for base64 encoding...');
+            const [fileBuffer] = await file.download();
+            const base64Data = fileBuffer.toString('base64');
+
+            console.log(`[Gemini] File downloaded: ${fileBuffer.length} bytes, base64 length: ${base64Data.length}`);
+
+            // Validate the file isn't empty
+            if (fileBuffer.length === 0) {
+              throw new Error('Downloaded file is empty');
+            }
+
+            // Use inline data instead of GS URI
+            filePart = {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data
+              }
+            };
+
+            const textPart = {
+              text: prompt
+            };
+
+            const request = {
+              contents: [
+                {
+                  role: 'user',
+                  parts: [filePart, textPart]
+                }
+              ]
+            };
+
+            console.log('[Gemini] Attempting with base64 inline data...');
+            const result = await model.generateContent(request);
+            const response = result.response;
+
+            return processGeminiResponse(response, prompt);
+
+          } catch (base64Error) {
+            console.error(`[Gemini] Base64 fallback also failed with ${modelName}:`, base64Error.message);
+            // Save error and try next model
+            lastError = new Error(`Image processing failed with ${modelName}. GS URI error: ${gsError.message}. Base64 error: ${base64Error.message}`);
+            continue; // TRY NEXT MODEL
+          }
+        } else {
+          // No file object provided, throw the original error (or save and continue)
+          console.warn(`[Gemini] No file object for fallback with ${modelName}.`);
+          lastError = gsError;
+          continue; // TRY NEXT MODEL
+        }
       }
-    ]
-  };
+    } catch (modelError) {
+      console.warn(`[Gemini] Model ${modelName} failed or crashed:`, modelError.message);
+      lastError = modelError;
+      continue; // TRY NEXT MODEL
+    }
+  }
 
-  const result = await model.generateContent(request);
-  const response = result.response;
+  // If we get here, all models failed
+  console.error('[Gemini] All models failed. Last error:', lastError);
+  throw lastError || new Error('All Gemini models failed to process the document.');
+}
 
+/**
+ * Process Gemini response and extract text
+ */
+function processGeminiResponse(response, prompt) {
   // Extract text from response - SDK v1.9.0 structure
   let extractedText;
   if (response.candidates && response.candidates[0] && response.candidates[0].content) {
@@ -479,9 +688,10 @@ CRITICAL EXTRACTION RULES:
    - Use 3-letter ISO codes: FRA (France), DEU (Germany), CHE (Switzerland), ITA (Italy), etc.
 
 Return valid JSON only, no additional text.`;
-  } else if (documentType === 'invoice' || documentType === 'bill' || documentType === 'tax_document') {
-    // Invoice/billing document extraction
-    return basePrompt + `Extract business and billing information from this invoice or tax document.
+  } else if (documentType === 'invoice' || documentType === 'bill' || documentType === 'tax_document' || documentType === 'bank_statement') {
+    // Invoice/billing/bank statement extraction
+    const docTypeSpecific = documentType === 'bank_statement' ? 'bank statement' : 'invoice or tax document';
+    return basePrompt + `Extract business and billing information from this ${docTypeSpecific}.
 
 Return a JSON object with this structure:
 {

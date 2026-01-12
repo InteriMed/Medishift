@@ -21,12 +21,19 @@ const { logAuditEvent } = require('../services/auditLog');
 // Get Firestore instance
 const db = admin.firestore();
 
-// CORS configuration
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Max-Age': '3600'
+// CORS configuration - Manual handling to ensure it works
+// Cloud Functions sometimes strips headers if not explicitly set this way
+const setCorsHeaders = (req, res) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.set('Access-Control-Max-Age', '3600');
+
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return true;
+    }
+    return false;
 };
 
 /**
@@ -53,15 +60,10 @@ async function verifyAuthToken(req) {
  */
 const deletionPreview = onRequest({
     region: 'europe-west6',
-    cors: true
+    cors: true  // Still keep this as a backup
 }, async (req, res) => {
-    // Handle CORS preflight
-    if (req.method === 'OPTIONS') {
-        res.set(corsHeaders);
-        return res.status(204).send('');
-    }
-
-    res.set(corsHeaders);
+    // Manually handle CORS
+    if (setCorsHeaders(req, res)) return;
 
     try {
         // Verify authentication
@@ -110,13 +112,8 @@ const deleteAccount = onRequest({
     cors: true,
     timeoutSeconds: 120 // Account deletion may take time
 }, async (req, res) => {
-    // Handle CORS preflight
-    if (req.method === 'OPTIONS') {
-        res.set(corsHeaders);
-        return res.status(204).send('');
-    }
-
-    res.set(corsHeaders);
+    // Manually handle CORS
+    if (setCorsHeaders(req, res)) return;
 
     if (req.method !== 'POST') {
         return res.status(405).json({
@@ -218,13 +215,8 @@ const checkBonusEligibility = onRequest({
     region: 'europe-west6',
     cors: true
 }, async (req, res) => {
-    // Handle CORS preflight
-    if (req.method === 'OPTIONS') {
-        res.set(corsHeaders);
-        return res.status(204).send('');
-    }
-
-    res.set(corsHeaders);
+    // Manually handle CORS
+    if (setCorsHeaders(req, res)) return;
 
     if (req.method !== 'POST') {
         return res.status(405).json({
@@ -278,13 +270,8 @@ const dataExport = onRequest({
     cors: true,
     timeoutSeconds: 120
 }, async (req, res) => {
-    // Handle CORS preflight
-    if (req.method === 'OPTIONS') {
-        res.set(corsHeaders);
-        return res.status(204).send('');
-    }
-
-    res.set(corsHeaders);
+    // Manually handle CORS
+    if (setCorsHeaders(req, res)) return;
 
     try {
         // Verify authentication
