@@ -468,7 +468,14 @@ exports.saveRecurringEvents = onCall(async (request) => {
       baseEvent.repeatValue || 'Every Day',
       baseEvent.endRepeatValue || 'On Date',
       baseEvent.endRepeatCount || 30,
-      endRepeatDate
+      endRepeatDate,
+      {
+        weeklyDays: baseEvent.weeklyDays,
+        monthlyType: baseEvent.monthlyType,
+        monthlyDay: baseEvent.monthlyDay,
+        monthlyWeek: baseEvent.monthlyWeek,
+        monthlyDayOfWeek: baseEvent.monthlyDayOfWeek
+      }
     );
 
     // Save all occurrences in batches
@@ -558,35 +565,175 @@ exports.saveRecurringEvents = onCall(async (request) => {
 /**
  * Helper function to generate recurring dates
  */
-function generateRecurringDates(startDate, repeatValue, endRepeatValue, endRepeatCount, endRepeatDate) {
+function generateRecurringDates(startDate, repeatValue, endRepeatValue, endRepeatCount, endRepeatDate, repeatConfig = {}) {
   const dates = [];
-  const currentDate = new Date(startDate);
-
+  const dateMap = new Set();
+  
   // Determine end condition
-  const maxOccurrences = endRepeatValue === 'After' ? endRepeatCount : 200; // Safety limit
-  const endDate = endRepeatValue === 'On Date' ? endRepeatDate : new Date(startDate.getTime() + (365 * 24 * 60 * 60 * 1000)); // 1 year default
+  const maxOccurrences = endRepeatValue === 'After' ? Math.min(endRepeatCount, 200) : 200;
+  let endDate;
+  if (endRepeatValue === 'On Date' && endRepeatDate) {
+    endDate = new Date(endRepeatDate);
+    endDate.setHours(23, 59, 59, 999);
+  } else {
+    endDate = new Date(startDate.getTime() + (365 * 24 * 60 * 60 * 1000));
+  }
 
-  let count = 0;
+  // First occurrence is always the start date
+  dates.push(new Date(startDate));
+  dateMap.add(startDate.toDateString());
+  let count = 1;
 
-  while (count < maxOccurrences && currentDate <= endDate) {
-    dates.push(new Date(currentDate));
-    count++;
+  if (repeatValue === 'Every Week' && repeatConfig.weeklyDays) {
+    const weeklyDays = repeatConfig.weeklyDays;
+    const selectedDays = weeklyDays.map((selected, index) => selected ? index : null).filter(v => v !== null);
+    
+    if (selectedDays.length === 0) {
+      const startDayOfWeek = startDate.getDay();
+      const mondayIndex = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+      selectedDays.push(mondayIndex);
+    }
 
-    // Advance to next occurrence
-    switch (repeatValue) {
-      case 'Every Day':
-        currentDate.setDate(currentDate.getDate() + 1);
-        break;
-      case 'Every Week':
-        currentDate.setDate(currentDate.getDate() + 7);
-        break;
-      case 'Every Month':
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        break;
-      default:
-        // Default to daily if unknown repeat value
-        currentDate.setDate(currentDate.getDate() + 1);
-        break;
+    const startDayOfWeek = startDate.getDay();
+    const startMondayIndex = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+    
+    let currentWeek = 0;
+    let dayIndex = 0;
+    let foundStart = false;
+
+    while (count < maxOccurrences) {
+      const targetDayIndex = selectedDays[dayIndex];
+      const checkDate = new Date(startDate);
+      
+      if (!foundStart) {
+        if (targetDayIndex === startMondayIndex) {
+          foundStart = true;
+        } else if (targetDayIndex > startMondayIndex) {
+          const daysToAdd = targetDayIndex - startMondayIndex;
+          checkDate.setDate(startDate.getDate() + daysToAdd);
+          foundStart = true;
+        } else {
+          dayIndex++;
+          if (dayIndex >= selectedDays.length) {
+            dayIndex = 0;
+            currentWeek++;
+          }
+          continue;
+        }
+      } else {
+        const daysFromStart = (currentWeek * 7) + (targetDayIndex - startMondayIndex);
+        checkDate.setDate(startDate.getDate() + daysFromStart);
+      }
+
+      if (checkDate > endDate) break;
+      if (checkDate < startDate) {
+        dayIndex++;
+        if (dayIndex >= selectedDays.length) {
+          dayIndex = 0;
+          currentWeek++;
+        }
+        continue;
+      }
+
+      const dateKey = checkDate.toDateString();
+      if (!dateMap.has(dateKey)) {
+        dateMap.add(dateKey);
+        dates.push(new Date(checkDate));
+        count++;
+      }
+
+      dayIndex++;
+      if (dayIndex >= selectedDays.length) {
+        dayIndex = 0;
+        currentWeek++;
+      }
+
+      if (checkDate > endDate) break;
+    }
+  } else if (repeatValue === 'Every Month' && repeatConfig.monthlyType) {
+    const monthlyType = repeatConfig.monthlyType || 'day';
+    let monthOffset = 1;
+
+    while (count < maxOccurrences) {
+      const nextDate = new Date(startDate);
+      nextDate.setMonth(startDate.getMonth() + monthOffset);
+
+      if (monthlyType === 'day') {
+        const day = repeatConfig.monthlyDay || startDate.getDate();
+        const lastDayOfMonth = new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate();
+        nextDate.setDate(Math.min(day, lastDayOfMonth));
+      } else if (monthlyType === 'weekday') {
+        const week = repeatConfig.monthlyWeek || 'first';
+        const dayOfWeek = repeatConfig.monthlyDayOfWeek !== undefined ? repeatConfig.monthlyDayOfWeek : (startDate.getDay() === 0 ? 6 : startDate.getDay() - 1);
+
+        const firstDay = new Date(nextDate.getFullYear(), nextDate.getMonth(), 1);
+        const firstDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
+        let targetDate;
+        if (week === 'last') {
+          const lastDay = new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0);
+          let lastDayOfWeek = lastDay.getDay() === 0 ? 6 : lastDay.getDay() - 1;
+          let daysBack = (lastDayOfWeek - dayOfWeek + 7) % 7;
+          if (daysBack === 0) daysBack = 7;
+          targetDate = new Date(lastDay);
+          targetDate.setDate(lastDay.getDate() - daysBack + 7);
+          if (targetDate.getMonth() !== nextDate.getMonth()) {
+            targetDate.setDate(targetDate.getDate() - 7);
+          }
+        } else {
+          const weekOffset = week === 'first' ? 0 : week === 'second' ? 1 : week === 'third' ? 2 : 3;
+          let daysToAdd = (dayOfWeek - firstDayOfWeek + 7) % 7;
+          if (daysToAdd === 0 && weekOffset > 0) daysToAdd = 7;
+          daysToAdd += weekOffset * 7;
+          targetDate = new Date(firstDay);
+          targetDate.setDate(firstDay.getDate() + daysToAdd);
+        }
+        nextDate.setTime(targetDate.getTime());
+      }
+
+      if (nextDate > endDate) break;
+
+      const dateKey = nextDate.toDateString();
+      if (!dateMap.has(dateKey)) {
+        dateMap.add(dateKey);
+        dates.push(new Date(nextDate));
+        count++;
+      }
+
+      monthOffset++;
+    }
+  } else {
+    const currentDate = new Date(startDate);
+
+    while (count < maxOccurrences && currentDate <= endDate) {
+      switch (repeatValue) {
+        case 'Every Day':
+          currentDate.setDate(currentDate.getDate() + 1);
+          break;
+        case 'Every Week':
+          currentDate.setDate(currentDate.getDate() + 7);
+          break;
+        case 'Every Month': {
+          const currentMonth = currentDate.getMonth();
+          currentDate.setMonth(currentMonth + 1);
+          if (currentDate.getMonth() !== (currentMonth + 1) % 12) {
+            currentDate.setDate(0);
+          }
+          break;
+        }
+        default:
+          currentDate.setDate(currentDate.getDate() + 1);
+          break;
+      }
+
+      if (currentDate > endDate) break;
+
+      const dateKey = currentDate.toDateString();
+      if (!dateMap.has(dateKey)) {
+        dateMap.add(dateKey);
+        dates.push(new Date(currentDate));
+        count++;
+      }
     }
   }
 
@@ -1164,7 +1311,7 @@ exports.checkAndCreateEvent = onCall(async (request) => {
 /**
  * Helper function to create a single event
  */
-async function createSingleEvent(eventType, eventData, targetUserId, workspaceContext) {
+async function createSingleEvent(eventType, eventData, targetUserId, workspaceContext, recurrenceId = null) {
   let collection, docData;
 
   switch (eventType) {
@@ -1183,7 +1330,8 @@ async function createSingleEvent(eventType, eventData, targetUserId, workspaceCo
         location: eventData.location || '',
         isAvailability: true,
         isValidated: eventData.isValidated !== false, // Default to true
-        recurring: false,
+        recurring: !!recurrenceId,
+        recurrenceId: recurrenceId || null,
         // Additional fields that frontend expects
         locationCountry: eventData.locationCountry || [],
         LocationArea: eventData.LocationArea || [],
@@ -1275,15 +1423,24 @@ async function createRecurringEvent(eventType, eventData, targetUserId, workspac
     recurrenceSettings.repeatValue || 'Every Week',
     recurrenceSettings.endRepeatValue || 'On Date',
     recurrenceSettings.endRepeatCount || 30,
-    recurrenceSettings.endRepeatDate ? new Date(recurrenceSettings.endRepeatDate) : null
+    recurrenceSettings.endRepeatDate ? new Date(recurrenceSettings.endRepeatDate) : null,
+    {
+      weeklyDays: recurrenceSettings.weeklyDays,
+      monthlyType: recurrenceSettings.monthlyType,
+      monthlyDay: recurrenceSettings.monthlyDay,
+      monthlyWeek: recurrenceSettings.monthlyWeek,
+      monthlyDayOfWeek: recurrenceSettings.monthlyDayOfWeek
+    }
   );
 
   const duration = new Date(eventData.endTime).getTime() - new Date(eventData.startTime).getTime();
   const batch = db.batch();
   let count = 0;
 
-  for (const occurrence of occurrences) {
+  for (let i = 0; i < occurrences.length; i++) {
+    const occurrence = occurrences[i];
     const occurrenceEnd = new Date(occurrence.getTime() + duration);
+    const isLastOccurrence = i === occurrences.length - 1;
 
     const occurrenceData = {
       ...eventData,
@@ -1291,8 +1448,8 @@ async function createRecurringEvent(eventType, eventData, targetUserId, workspac
       endTime: occurrenceEnd.toISOString()
     };
 
-    // Create single occurrence
-    const singleResult = await createSingleEvent(eventType, occurrenceData, targetUserId, workspaceContext);
+    // Create single occurrence with recurrenceId
+    const singleResult = await createSingleEvent(eventType, occurrenceData, targetUserId, workspaceContext, recurrenceId);
     count++;
 
     if (count >= 500) break; // Firestore batch limit
