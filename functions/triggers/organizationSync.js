@@ -189,7 +189,7 @@ const createOrganization = onCall(
             throw new HttpsError('unauthenticated', 'You must be logged in');
         }
 
-        const { name, type, initialFacilityIds, settings } = request.data;
+        const { name, type, initialFacilityIds, settings, phonePrefix, phoneNumber } = request.data;
         const createdBy = request.auth.uid;
         const db = admin.firestore();
 
@@ -218,6 +218,18 @@ const createOrganization = onCall(
                 }
             }
 
+            // Update user document with phone number if provided
+            if (phonePrefix && phoneNumber) {
+                const userDocRef = db.collection('users').doc(createdBy);
+                await userDocRef.update({
+                    'contact.primaryPhonePrefix': phonePrefix,
+                    'contact.primaryPhone': phoneNumber,
+                    'primaryPhonePrefix': phonePrefix,
+                    'primaryPhone': phoneNumber,
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+            }
+
             // Create the organization
             const orgRef = await db.collection('organizations').add({
                 name,
@@ -231,6 +243,8 @@ const createOrganization = onCall(
                     billingEmail: settings?.billingEmail || null,
                     invoiceConsolidation: settings?.invoiceConsolidation || 'per-shift'
                 },
+                phonePrefix: phonePrefix || null,
+                phoneNumber: phoneNumber || null,
                 status: 'active',
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 createdBy,

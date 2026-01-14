@@ -6,8 +6,475 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
 
-// Initialize Firestore
-const db = admin.firestore();
+const { getFirestore } = require('firebase-admin/firestore');
+const db = getFirestore('medishift');
+
+/**
+ * EVENT PERMISSION HELPERS
+ */
+
+async function getUserRoles(userId) {
+  try {
+    const userDoc = await db.collection('users').doc(userId).get();
+    if (!userDoc.exists) {
+      return { roles: [], facilityMemberships: [], organizationIds: [] };
+    }
+    const userData = userDoc.data();
+    return {
+      roles: userData.roles || [],
+      facilityMemberships: userData.facilityMemberships || [],
+      organizationIds: userData.organizationIds || [],
+      professionalProfileId: userData.professionalProfileId,
+      facilityProfileId: userData.facilityProfileId
+    };
+  } catch (error) {
+    logger.error('Error fetching user roles', { userId, error: error.message });
+    return { roles: [], facilityMemberships: [], organizationIds: [] };
+  }
+}
+
+async function isFacilityAdmin(userId, facilityProfileId) {
+  if (!facilityProfileId) return false;
+  try {
+    const facilityDoc = await db.collection('facilityProfiles').doc(facilityProfileId).get();
+    if (!facilityDoc.exists) return false;
+    const facilityData = facilityDoc.data();
+    return facilityData.admins?.includes(userId) || 
+           facilityData.chainAdmins?.includes(userId) ||
+           facilityProfileId === userId;
+  } catch (error) {
+    logger.error('Error checking facility admin', { userId, facilityProfileId, error: error.message });
+    return false;
+  }
+}
+
+async function isChainAdmin(userId, organizationId) {
+  if (!organizationId) return false;
+  try {
+    const orgDoc = await db.collection('organizations').doc(organizationId).get();
+    if (!orgDoc.exists) return false;
+    const orgData = orgDoc.data();
+    return orgData.admins?.includes(userId);
+  } catch (error) {
+    logger.error('Error checking chain admin', { userId, organizationId, error: error.message });
+    return false;
+  }
+}
+
+async function isFacilityEmployee(userId, facilityProfileId) {
+  if (!facilityProfileId) return false;
+  try {
+    const facilityDoc = await db.collection('facilityProfiles').doc(facilityProfileId).get();
+    if (!facilityDoc.exists) return false;
+    const facilityData = facilityDoc.data();
+    return facilityData.employees?.includes(userId);
+  } catch (error) {
+    logger.error('Error checking facility employee', { userId, facilityProfileId, error: error.message });
+    return false;
+  }
+}
+
+async function determineEventPermissions(eventData, userId) {
+  const userRoles = await getUserRoles(userId);
+  const permissions = {
+    owners: [userId],
+    chainAdmins: [],
+    facilityAdmins: [],
+    viewers: []
+  };
+
+  if (eventData.facilityProfileId) {
+    const facilityDoc = await db.collection('facilityProfiles').doc(eventData.facilityProfileId).get();
+    if (facilityDoc.exists) {
+      const facilityData = facilityDoc.data();
+      permissions.facilityAdmins = facilityData.admins || [];
+      
+      if (facilityData.organizationId) {
+        const orgDoc = await db.collection('organizations').doc(facilityData.organizationId).get();
+        if (orgDoc.exists) {
+          permissions.chainAdmins = orgDoc.data().admins || [];
+        }
+      }
+    }
+  }
+
+  if (eventData.organizationId) {
+    const orgDoc = await db.collection('organizations').doc(eventData.organizationId).get();
+    if (orgDoc.exists) {
+      permissions.chainAdmins = orgDoc.data().admins || [];
+    }
+  }
+
+  return permissions;
+}
+
+async function canManageEvent(eventDoc, userId, action = 'update') {
+  if (!eventDoc.exists) return false;
+  
+  const eventData = eventDoc.data();
+  
+  if (eventData.userId === userId) return true;
+  
+  if (eventData.permissions) {
+    if (eventData.permissions.owners?.includes(userId)) return true;
+    if (action === 'read' && eventData.permissions.viewers?.includes(userId)) return true;
+    if (eventData.permissions.chainAdmins?.includes(userId)) return true;
+    if (eventData.permissions.facilityAdmins?.includes(userId)) return true;
+  }
+  
+  if (eventData.facilityProfileId) {
+    if (await isFacilityAdmin(userId, eventData.facilityProfileId)) return true;
+  }
+  
+  if (eventData.organizationId) {
+    if (await isChainAdmin(userId, eventData.organizationId)) return true;
+  }
+  
+  return false;
+}
+
+function determineEventType(data, userRoles) {
+  if (data.type) return data.type;
+  
+  if (data.requestType === 'sick_leave' || data.requestType === 'time_off') {
+    return 'time_off_request';
+  }
+  
+  if (data.requestType === 'vacancy_application') {
+    return 'vacancy_application';
+  }
+  
+  if (data.requestType === 'vacancy_request' || data.requestType === 'sick_leave_request') {
+    return 'employee_vacancy_request';
+  }
+  
+  if (data.chainInternal || (data.facilityProfileId && data.organizationId && data.chainInternal)) {
+    return 'chain_internal_availability';
+  }
+  
+  if (data.isAvailability && (data.chainInternal || data.openInternally || data.openExternally)) {
+    return 'chain_internal_availability';
+  }
+  
+  if (data.facilityProfileId && data.employeeUserId) {
+    return 'facility_employee_schedule';
+  }
+  
+  if (data.facilityProfileId && data.status && data.jobTitle) {
+    return 'facility_job_post';
+  }
+  
+  if (data.facilityProfileId && data.vacancyType) {
+    return 'vacancy_request';
+  }
+  
+  return 'worker_availability';
+}
+
+/**
+ * VACANCY APPLICATION HELPERS
+ */
+
+async function createVacancyApplication(applicationId, vacancyEventId, professionalId, applicationData) {
+  try {
+    const vacancyRef = db.collection('events').doc(vacancyEventId);
+    const vacancyDoc = await vacancyRef.get();
+    
+    if (!vacancyDoc.exists) {
+      logger.error('Vacancy event not found', { vacancyEventId });
+      return;
+    }
+    
+    const vacancyData = vacancyDoc.data();
+    if (vacancyData.type !== 'vacancy_request') {
+      logger.error('Event is not a vacancy request', { vacancyEventId, type: vacancyData.type });
+      return;
+    }
+    
+    const applicationsRef = vacancyRef.collection('applications');
+    await applicationsRef.doc(applicationId).set({
+      professionalId: professionalId,
+      professionalProfileId: applicationData.professionalProfileId,
+      applicationId: applicationId,
+      status: 'pending',
+      appliedAt: admin.firestore.FieldValue.serverTimestamp(),
+      notes: applicationData.applicationNotes || '',
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    logger.info('Vacancy application created', {
+      applicationId,
+      vacancyEventId,
+      professionalId
+    });
+  } catch (error) {
+    logger.error('Error creating vacancy application', {
+      error: error.message,
+      applicationId,
+      vacancyEventId
+    });
+  }
+}
+
+/**
+ * ACCEPT EMPLOYEE REQUEST AND CREATE POSTINGS
+ */
+
+async function acceptEmployeeRequestAndCreatePostings(requestId, requestType, acceptedBy, options = {}) {
+  try {
+    const collectionName = requestType === 'vacancy_request' ? 'employeeVacancyRequests' : 'timeOffRequests';
+    const requestRef = db.collection(collectionName).doc(requestId);
+    const requestDoc = await requestRef.get();
+    
+    if (!requestDoc.exists) {
+      throw new HttpsError('not-found', 'Request not found');
+    }
+    
+    const requestData = requestDoc.data();
+    
+    if (requestData.status !== 'pending') {
+      throw new HttpsError('invalid-argument', 'Request has already been processed');
+    }
+    
+    const facilityDoc = await db.collection('facilityProfiles').doc(requestData.facilityProfileId).get();
+    if (!facilityDoc.exists) {
+      throw new HttpsError('not-found', 'Facility not found');
+    }
+    
+    const facilityData = facilityDoc.data();
+    const organizationId = facilityData.organizationId;
+    
+    await requestRef.update({
+      status: 'accepted',
+      acceptedBy: acceptedBy,
+      acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+      openInternally: options.openInternally !== false,
+      openExternally: options.openExternally || false
+    });
+    
+    const createdEvents = [];
+    
+    if (options.openInternally !== false) {
+      const internalEvent = {
+        userId: requestData.userId,
+        createdBy: acceptedBy,
+        title: requestData.title || (requestType === 'vacancy_request' ? 'Vacancy Request' : 'Time Off Request'),
+        from: requestData.from,
+        to: requestData.to,
+        type: requestType === 'vacancy_request' ? 'vacancy_request' : 'facility_employee_schedule',
+        facilityProfileId: requestData.facilityProfileId,
+        organizationId: organizationId,
+        visibility: 'facility',
+        status: requestType === 'vacancy_request' ? 'open' : 'scheduled',
+        notes: requestData.requestNotes || requestData.reason || '',
+        created: admin.firestore.FieldValue.serverTimestamp(),
+        updated: admin.firestore.FieldValue.serverTimestamp()
+      };
+      
+      if (requestType === 'vacancy_request') {
+        internalEvent.vacancyType = requestData.vacancyType || 'temporary';
+        internalEvent.urgency = requestData.urgency || 'medium';
+        internalEvent.requiredSkills = requestData.requiredSkills || [];
+      } else {
+        internalEvent.employeeUserId = requestData.userId;
+        internalEvent.employeeRole = requestData.employeeRole || '';
+        internalEvent.shiftType = 'time_off';
+      }
+      
+      const permissions = await determineEventPermissions(internalEvent, acceptedBy);
+      internalEvent.permissions = permissions;
+      
+      const internalEventRef = await db.collection('events').add(internalEvent);
+      createdEvents.push({ id: internalEventRef.id, type: 'internal' });
+    }
+    
+    if (options.openExternally) {
+      const externalEvent = {
+        userId: requestData.userId,
+        createdBy: acceptedBy,
+        title: requestData.title || 'Open Position',
+        from: requestData.from,
+        to: requestData.to,
+        type: requestType === 'vacancy_request' ? 'facility_job_post' : 'worker_availability',
+        facilityProfileId: requestData.facilityProfileId,
+        organizationId: organizationId,
+        visibility: 'public',
+        status: requestType === 'vacancy_request' ? 'open' : 'available',
+        notes: requestData.requestNotes || requestData.reason || '',
+        created: admin.firestore.FieldValue.serverTimestamp(),
+        updated: admin.firestore.FieldValue.serverTimestamp()
+      };
+      
+      if (requestType === 'vacancy_request') {
+        externalEvent.jobTitle = requestData.jobTitle || 'Open Position';
+        externalEvent.jobType = requestData.jobType || 'general';
+        externalEvent.compensation = requestData.compensation || {};
+        externalEvent.requiredSkills = requestData.requiredSkills || [];
+      } else {
+        externalEvent.isAvailability = true;
+        externalEvent.isValidated = false;
+        externalEvent.professionalProfileId = requestData.professionalProfileId;
+      }
+      
+      const permissions = await determineEventPermissions(externalEvent, acceptedBy);
+      externalEvent.permissions = permissions;
+      
+      const externalEventRef = await db.collection('events').add(externalEvent);
+      createdEvents.push({ id: externalEventRef.id, type: 'external' });
+    }
+    
+    logger.info('Employee request accepted and postings created', {
+      requestId,
+      requestType,
+      acceptedBy,
+      createdEvents
+    });
+    
+    return {
+      success: true,
+      requestId,
+      createdEvents
+    };
+  } catch (error) {
+    logger.error('Error accepting employee request', {
+      error: error.message,
+      requestId,
+      requestType
+    });
+    throw error;
+  }
+}
+
+exports.acceptEmployeeRequest = onCall(async (request) => {
+  const data = request.data;
+  const context = { auth: request.auth };
+  
+  if (!context.auth) {
+    throw new HttpsError('unauthenticated', 'You must be signed in');
+  }
+  
+  const { requestId, requestType, openInternally, openExternally } = data;
+  
+  if (!requestId || !requestType) {
+    throw new HttpsError('invalid-argument', 'Request ID and type are required');
+  }
+  
+  return await acceptEmployeeRequestAndCreatePostings(
+    requestId,
+    requestType,
+    context.auth.uid,
+    { openInternally, openExternally }
+  );
+});
+
+/**
+ * EVENT FILTERING HELPERS
+ */
+
+async function getAccessibleEvents(userId, filters = {}) {
+  const userRoles = await getUserRoles(userId);
+  const queries = [];
+
+  const baseQuery = db.collection('events');
+
+  if (filters.type) {
+    queries.push(baseQuery.where('type', '==', filters.type));
+  }
+
+  if (filters.userId) {
+    queries.push(baseQuery.where('userId', '==', filters.userId));
+  }
+
+  if (filters.facilityProfileId) {
+    queries.push(baseQuery.where('facilityProfileId', '==', filters.facilityProfileId));
+  }
+
+  if (filters.organizationId) {
+    queries.push(baseQuery.where('organizationId', '==', filters.organizationId));
+  }
+
+  if (filters.visibility) {
+    queries.push(baseQuery.where('visibility', '==', filters.visibility));
+  }
+
+  if (queries.length === 0) {
+    queries.push(baseQuery);
+  }
+
+  const allEvents = [];
+  for (const query of queries) {
+    const snapshot = await query.get();
+    for (const doc of snapshot.docs) {
+      const eventData = doc.data();
+      
+      if (await canViewEvent(doc, userId)) {
+        allEvents.push({
+          id: doc.id,
+          ...eventData
+        });
+      }
+    }
+  }
+
+  return allEvents;
+}
+
+async function canViewEvent(eventDoc, userId) {
+  if (!eventDoc.exists) return false;
+  
+  const eventData = eventDoc.data();
+  
+  if (eventData.userId === userId) return true;
+  
+  if (eventData.visibility === 'public' && eventData.type === 'worker_availability' && eventData.isValidated) {
+    return true;
+  }
+  
+  if (eventData.permissions) {
+    if (eventData.permissions.owners?.includes(userId)) return true;
+    if (eventData.permissions.viewers?.includes(userId)) return true;
+    if (eventData.permissions.chainAdmins?.includes(userId)) return true;
+    if (eventData.permissions.facilityAdmins?.includes(userId)) return true;
+  }
+  
+  if (eventData.facilityProfileId) {
+    if (await isFacilityAdmin(userId, eventData.facilityProfileId)) return true;
+    
+    if (eventData.type === 'facility_employee_schedule') {
+      if (await isFacilityEmployee(userId, eventData.facilityProfileId)) {
+        const facilityDoc = await db.collection('facilityProfiles').doc(eventData.facilityProfileId).get();
+        if (facilityDoc.exists) {
+          const facilityData = facilityDoc.data();
+          const userPermissions = facilityData.permissions?.[userId] || [];
+          if (userPermissions.includes('facility:schedule:view')) {
+            return true;
+          }
+        }
+      }
+    } else if (await isFacilityEmployee(userId, eventData.facilityProfileId)) {
+      if (eventData.type === 'facility_job_post' || eventData.visibility === 'facility') {
+        return true;
+      }
+    }
+  }
+  
+  if (eventData.organizationId) {
+    if (await isChainAdmin(userId, eventData.organizationId)) return true;
+    
+    const userRoles = await getUserRoles(userId);
+    const userFacilities = userRoles.facilityMemberships || [];
+    const userFacilityIds = userFacilities.map(f => f.facilityProfileId || f.facilityId);
+    
+    if (eventData.facilityProfileId && userFacilityIds.includes(eventData.facilityProfileId)) {
+      if (eventData.type === 'chain_internal_availability' || 
+          eventData.visibility === 'chain') {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
 
 /**
  * Save a calendar event (availability)
@@ -26,45 +493,94 @@ exports.saveCalendarEvent = onCall(async (request) => {
   }
 
   try {
-    const { userId, title, start, end, color, color1, color2, notes, location, isAvailability, isValidated, canton, area, languages, experience, software, certifications, workAmount } = data;
+    const {
+      userId, title, start, end, color, color1, color2, notes, location,
+      type, facilityProfileId, organizationId, employeeUserId,
+      isAvailability, isValidated, canton, area, languages, experience,
+      software, certifications, workAmount,
+      status, jobTitle, jobType, compensation, requiredSkills,
+      employeeRole, shiftType, isSublettable,
+      vacancyType, urgency,
+      visibility, chainInternal, sharedFacilityIds
+    } = data;
 
-    // Ensure the caller can only save events for their own account
-    if (userId !== context.auth.uid) {
-      throw new HttpsError(
-        'permission-denied',
-        'You can only save events for your own account'
-      );
+    const callerId = context.auth.uid;
+    const userRoles = await getUserRoles(callerId);
+
+    const eventType = determineEventType(data, userRoles);
+
+    if (eventType === 'worker_availability') {
+      if (userId !== callerId) {
+        throw new HttpsError('permission-denied', 'You can only save events for your own account');
+      }
+    } else if (eventType === 'time_off_request') {
+      if (userId !== callerId) {
+        throw new HttpsError('permission-denied', 'You can only request time off for yourself');
+      }
+      if (!facilityProfileId) {
+        throw new HttpsError('invalid-argument', 'Facility profile ID is required for time off requests');
+      }
+      if (!(await isFacilityEmployee(callerId, facilityProfileId))) {
+        throw new HttpsError('permission-denied', 'You must be an employee of the facility to request time off');
+      }
+    } else if (eventType === 'vacancy_application') {
+      if (userId !== callerId) {
+        throw new HttpsError('permission-denied', 'You can only apply for vacancies yourself');
+      }
+      if (!data.vacancyEventId) {
+        throw new HttpsError('invalid-argument', 'Vacancy event ID is required for applications');
+      }
+    } else if (eventType === 'employee_vacancy_request') {
+      if (userId !== callerId) {
+        throw new HttpsError('permission-denied', 'You can only request vacancies for yourself');
+      }
+      if (!facilityProfileId) {
+        throw new HttpsError('invalid-argument', 'Facility profile ID is required for vacancy requests');
+      }
+      if (!(await isFacilityEmployee(callerId, facilityProfileId))) {
+        throw new HttpsError('permission-denied', 'You must be an employee of the facility to request vacancies');
+      }
+    } else if (eventType === 'facility_job_post' || eventType === 'vacancy_request') {
+      if (!facilityProfileId) {
+        throw new HttpsError('invalid-argument', 'Facility profile ID is required for this event type');
+      }
+      if (!(await isFacilityAdmin(callerId, facilityProfileId))) {
+        throw new HttpsError('permission-denied', 'Only facility admins can create job posts or approved vacancy requests');
+      }
+    } else if (eventType === 'facility_employee_schedule') {
+      if (!facilityProfileId) {
+        throw new HttpsError('invalid-argument', 'Facility profile ID is required');
+      }
+      if (!(await isFacilityAdmin(callerId, facilityProfileId))) {
+        throw new HttpsError('permission-denied', 'Only facility admins can create employee schedules');
+      }
+    } else if (eventType === 'chain_internal_availability') {
+      if (!organizationId) {
+        throw new HttpsError('invalid-argument', 'Organization ID is required for chain events');
+      }
+      if (!(await isChainAdmin(callerId, organizationId))) {
+        throw new HttpsError('permission-denied', 'Only chain admins can create chain-wide availability');
+      }
     }
 
-    // Validate required fields
     if (!start || !end) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Start and end times are required'
-      );
+      throw new HttpsError('invalid-argument', 'Start and end times are required');
     }
 
-    // Validate date format
     const startDate = new Date(start);
     const endDate = new Date(end);
 
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Invalid date format'
-      );
+      throw new HttpsError('invalid-argument', 'Invalid date format');
     }
 
     if (startDate >= endDate) {
-      throw new HttpsError(
-        'invalid-argument',
-        'End time must be after start time'
-      );
+      throw new HttpsError('invalid-argument', 'End time must be after start time');
     }
 
-    // Prepare event data for Firestore
-    const eventData = {
-      userId: userId,
+    const baseEventData = {
+      userId: userId || callerId,
+      createdBy: callerId,
       title: title || 'Available',
       from: startDate.toISOString(),
       to: endDate.toISOString(),
@@ -72,24 +588,145 @@ exports.saveCalendarEvent = onCall(async (request) => {
       color1: color1 || '#a8c1ff',
       color2: color2 || '#4da6fb',
       notes: notes || '',
-      location: location || '',
-      isAvailability: isAvailability !== false, // Default to true
-      isValidated: isValidated !== false, // Default to true
+      location: location || {},
       recurring: false,
-      // Additional fields
-      locationCountry: canton || [],
-      LocationArea: area || [],
-      languages: languages || [],
-      experience: experience || '',
-      software: software || [],
-      certifications: certifications || [],
-      workAmount: workAmount || '',
+      visibility: visibility || (eventType === 'worker_availability' ? 'public' : 'facility'),
       created: admin.firestore.FieldValue.serverTimestamp(),
       updated: admin.firestore.FieldValue.serverTimestamp()
     };
 
-    // Save to availability collection
-    const docRef = await db.collection('availability').add(eventData);
+    const typeSpecificData = {};
+    
+    if (eventType === 'worker_availability') {
+      typeSpecificData.isAvailability = isAvailability !== false;
+      typeSpecificData.isValidated = isValidated !== false;
+      typeSpecificData.professionalProfileId = userRoles.professionalProfileId || userId;
+      typeSpecificData.locationCountry = Array.isArray(canton) ? canton : [];
+      typeSpecificData.LocationArea = Array.isArray(area) ? area : [];
+      typeSpecificData.languages = Array.isArray(languages) ? languages : [];
+      typeSpecificData.experience = experience || '';
+      typeSpecificData.software = Array.isArray(software) ? software : [];
+      typeSpecificData.certifications = Array.isArray(certifications) ? certifications : [];
+      typeSpecificData.workAmount = workAmount || '';
+    } else if (eventType === 'time_off_request') {
+      typeSpecificData.requestType = data.requestType || 'sick_leave';
+      typeSpecificData.timeOffType = data.timeOffType || 'sick_leave';
+      typeSpecificData.reason = notes || '';
+      typeSpecificData.status = 'pending';
+      typeSpecificData.professionalProfileId = userRoles.professionalProfileId || userId;
+    } else if (eventType === 'vacancy_application') {
+      typeSpecificData.vacancyEventId = data.vacancyEventId;
+      typeSpecificData.applicationStatus = 'pending';
+      typeSpecificData.professionalProfileId = userRoles.professionalProfileId || userId;
+      typeSpecificData.applicationNotes = notes || '';
+    } else if (eventType === 'facility_job_post') {
+      typeSpecificData.status = status || 'open';
+      typeSpecificData.jobTitle = jobTitle || title || 'Open Position';
+      typeSpecificData.jobType = jobType || 'general';
+      typeSpecificData.compensation = compensation || {};
+      typeSpecificData.requiredSkills = Array.isArray(requiredSkills) ? requiredSkills : [];
+    } else if (eventType === 'facility_employee_schedule') {
+      typeSpecificData.employeeUserId = employeeUserId || userId;
+      typeSpecificData.employeeRole = employeeRole || '';
+      typeSpecificData.shiftType = shiftType || 'regular';
+      typeSpecificData.isSublettable = isSublettable !== false;
+    } else if (eventType === 'chain_internal_availability') {
+      typeSpecificData.chainInternal = true;
+      typeSpecificData.isAvailability = true;
+      typeSpecificData.openInternally = data.openInternally !== false;
+      typeSpecificData.openExternally = data.openExternally || false;
+      typeSpecificData.sharedFacilityIds = Array.isArray(sharedFacilityIds) ? sharedFacilityIds : [];
+      typeSpecificData.locationCountry = Array.isArray(canton) ? canton : [];
+      typeSpecificData.LocationArea = Array.isArray(area) ? area : [];
+      typeSpecificData.languages = Array.isArray(languages) ? languages : [];
+      typeSpecificData.experience = experience || '';
+      typeSpecificData.software = Array.isArray(software) ? software : [];
+      typeSpecificData.certifications = Array.isArray(certifications) ? certifications : [];
+      typeSpecificData.workAmount = workAmount || '';
+      if (data.openExternally) {
+        typeSpecificData.isValidated = false;
+        typeSpecificData.visibility = 'public';
+      } else {
+        typeSpecificData.visibility = 'chain';
+      }
+    } else if (eventType === 'employee_vacancy_request') {
+      typeSpecificData.requestType = data.requestType || 'vacancy_request';
+      typeSpecificData.vacancyType = vacancyType || 'temporary';
+      typeSpecificData.urgency = urgency || 'medium';
+      typeSpecificData.requiredSkills = Array.isArray(requiredSkills) ? requiredSkills : [];
+      typeSpecificData.status = 'pending';
+      typeSpecificData.professionalProfileId = userRoles.professionalProfileId || userId;
+      typeSpecificData.requestNotes = notes || '';
+    } else if (eventType === 'vacancy_request') {
+      typeSpecificData.vacancyType = vacancyType || 'temporary';
+      typeSpecificData.urgency = urgency || 'medium';
+      typeSpecificData.requiredSkills = Array.isArray(requiredSkills) ? requiredSkills : [];
+      typeSpecificData.status = 'open';
+      typeSpecificData.openInternally = data.openInternally !== false;
+      typeSpecificData.openExternally = data.openExternally || false;
+    }
+
+    const eventData = {
+      ...baseEventData,
+      type: eventType,
+      facilityProfileId: facilityProfileId || null,
+      organizationId: organizationId || null,
+      ...typeSpecificData
+    };
+
+    const permissions = await determineEventPermissions(eventData, callerId);
+    eventData.permissions = permissions;
+
+    logger.info('Attempting to save event to events collection', {
+      userId,
+      hasData: !!eventData,
+      dataKeys: Object.keys(eventData)
+    });
+
+    let docRef;
+    try {
+      logger.info('Accessing availability collection', {
+        userId,
+        dbType: typeof db,
+        hasCollection: typeof db.collection === 'function'
+      });
+      
+      let collectionName = 'events';
+      
+      if (eventType === 'time_off_request') {
+        collectionName = 'timeOffRequests';
+      } else if (eventType === 'vacancy_application') {
+        collectionName = 'vacancyApplications';
+      } else if (eventType === 'employee_vacancy_request') {
+        collectionName = 'employeeVacancyRequests';
+      }
+      
+      const eventsRef = db.collection(collectionName);
+      logger.info('Collection reference obtained', { userId, collectionName });
+      
+      docRef = await eventsRef.add(eventData);
+      logger.info('Document reference created', { docId: docRef.id, userId, collectionName });
+      
+      if (eventType === 'vacancy_application') {
+        await createVacancyApplication(docRef.id, data.vacancyEventId, callerId, eventData);
+      }
+    } catch (addError) {
+      const addErrorMessage = addError.message || addError.toString() || 'Unknown error';
+      logger.error('Error adding document to events collection', {
+        error: addErrorMessage,
+        code: addError.code,
+        stack: addError.stack,
+        name: addError.name,
+        details: addError.details,
+        userId,
+        collectionName: 'events',
+        eventDataKeys: Object.keys(eventData)
+      });
+      throw new HttpsError(
+        'internal',
+        `Failed to save to events collection: ${addErrorMessage} (code: ${addError.code || 'unknown'})`
+      );
+    }
 
     logger.info('Calendar event saved', {
       eventId: docRef.id,
@@ -103,7 +740,16 @@ exports.saveCalendarEvent = onCall(async (request) => {
       id: docRef.id
     };
   } catch (error) {
-    logger.error('Error saving calendar event', error);
+    const errorMessage = error.message || error.toString() || 'Unknown error';
+    const errorCode = error.code || 'unknown';
+    
+    logger.error('Error saving calendar event', {
+      error: errorMessage,
+      code: errorCode,
+      stack: error.stack,
+      name: error.name,
+      details: error.details
+    });
 
     if (error instanceof HttpsError) {
       throw error;
@@ -111,7 +757,7 @@ exports.saveCalendarEvent = onCall(async (request) => {
 
     throw new HttpsError(
       'internal',
-      'Error saving calendar event'
+      `Error saving calendar event: ${errorMessage}`
     );
   }
 });
@@ -133,46 +779,34 @@ exports.updateCalendarEvent = onCall(async (request) => {
   }
 
   try {
-    const { eventId, userId, accountType, title, start, end, color, color1, color2, notes, location, isValidated, isRecurring, recurrenceId, canton, area, languages, experience, software, certifications, workAmount, isAvailability } = data;
+    const {
+      eventId, userId, accountType, title, start, end, color, color1, color2,
+      notes, location, isValidated, isRecurring, recurrenceId, canton, area,
+      languages, experience, software, certifications, workAmount, isAvailability,
+      type, facilityProfileId, organizationId, employeeUserId,
+      status, jobTitle, jobType, compensation, requiredSkills,
+      employeeRole, shiftType, isSublettable,
+      vacancyType, urgency, visibility
+    } = data;
 
-    // Ensure the caller can only update events for their own account
-    if (userId !== context.auth.uid) {
-      throw new HttpsError(
-        'permission-denied',
-        'You can only update events for your own account'
-      );
-    }
+    const callerId = context.auth.uid;
 
     if (!eventId) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Event ID is required'
-      );
+      throw new HttpsError('invalid-argument', 'Event ID is required');
     }
 
-    // Choose collection based on account type
-    const collectionName = accountType === 'manager' ? 'jobs-listing' : 'availability';
-
-    // Get the document reference
+    const collectionName = accountType === 'manager' ? 'jobs-listing' : 'events';
     const eventRef = db.collection(collectionName).doc(eventId);
     const eventDoc = await eventRef.get();
 
     if (!eventDoc.exists) {
-      throw new HttpsError(
-        'not-found',
-        'Event not found'
-      );
+      throw new HttpsError('not-found', 'Event not found');
     }
 
     const eventData = eventDoc.data();
 
-    // Check if user owns this event
-    const userField = collectionName === 'availability' ? 'userId' : 'user_id';
-    if (eventData[userField] !== userId) {
-      throw new HttpsError(
-        'permission-denied',
-        'You do not have permission to update this event'
-      );
+    if (!(await canManageEvent(eventDoc, callerId, 'update'))) {
+      throw new HttpsError('permission-denied', 'You do not have permission to update this event');
     }
 
     // Prepare update data
@@ -212,16 +846,46 @@ exports.updateCalendarEvent = onCall(async (request) => {
       }
     }
 
-    // Add availability-specific fields
-    if (collectionName === 'availability') {
-      if (canton !== undefined) updateData.locationCountry = canton;
-      if (area !== undefined) updateData.LocationArea = area;
-      if (languages !== undefined) updateData.languages = languages;
-      if (experience !== undefined) updateData.experience = experience;
-      if (software !== undefined) updateData.software = software;
-      if (certifications !== undefined) updateData.certifications = certifications;
-      if (workAmount !== undefined) updateData.workAmount = workAmount;
-      if (isAvailability !== undefined) updateData.isAvailability = isAvailability;
+    if (collectionName === 'events') {
+      const eventType = eventData.type || 'worker_availability';
+      
+      if (eventType === 'worker_availability') {
+        if (canton !== undefined) updateData.locationCountry = canton;
+        if (area !== undefined) updateData.LocationArea = area;
+        if (languages !== undefined) updateData.languages = languages;
+        if (experience !== undefined) updateData.experience = experience;
+        if (software !== undefined) updateData.software = software;
+        if (certifications !== undefined) updateData.certifications = certifications;
+        if (workAmount !== undefined) updateData.workAmount = workAmount;
+        if (isAvailability !== undefined) updateData.isAvailability = isAvailability;
+        if (isValidated !== undefined) updateData.isValidated = isValidated;
+      } else if (eventType === 'facility_job_post') {
+        if (status !== undefined) updateData.status = status;
+        if (jobTitle !== undefined) updateData.jobTitle = jobTitle;
+        if (jobType !== undefined) updateData.jobType = jobType;
+        if (compensation !== undefined) updateData.compensation = compensation;
+        if (requiredSkills !== undefined) updateData.requiredSkills = requiredSkills;
+      } else if (eventType === 'facility_employee_schedule') {
+        if (employeeRole !== undefined) updateData.employeeRole = employeeRole;
+        if (shiftType !== undefined) updateData.shiftType = shiftType;
+        if (isSublettable !== undefined) updateData.isSublettable = isSublettable;
+      } else if (eventType === 'vacancy_request') {
+        if (vacancyType !== undefined) updateData.vacancyType = vacancyType;
+        if (urgency !== undefined) updateData.urgency = urgency;
+        if (requiredSkills !== undefined) updateData.requiredSkills = requiredSkills;
+      }
+      
+      if (visibility !== undefined) updateData.visibility = visibility;
+      if (facilityProfileId !== undefined) updateData.facilityProfileId = facilityProfileId;
+      if (organizationId !== undefined) updateData.organizationId = organizationId;
+      
+      if (facilityProfileId || organizationId) {
+        const updatedPermissions = await determineEventPermissions(
+          { ...eventData, ...updateData, facilityProfileId, organizationId },
+          callerId
+        );
+        updateData.permissions = updatedPermissions;
+      }
     }
 
     // Validate date order if both dates are being updated
@@ -277,57 +941,34 @@ exports.deleteCalendarEvent = onCall(async (request) => {
   }
 
   try {
-    const { eventId, userId, accountType, deleteType, recurrenceId } = data;
+    const { eventId, userId, accountType, deleteType, recurrenceId, selectedDays } = data;
 
-    // Ensure the caller can only delete events for their own account
-    if (userId !== context.auth.uid) {
-      throw new HttpsError(
-        'permission-denied',
-        'You can only delete events for your own account'
-      );
-    }
+    const callerId = context.auth.uid;
 
     if (!eventId) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Event ID is required'
-      );
+      throw new HttpsError('invalid-argument', 'Event ID is required');
     }
 
-    // Choose collection based on account type
-    const collectionName = accountType === 'manager' ? 'jobs-listing' : 'availability';
-
+    const collectionName = accountType === 'manager' ? 'jobs-listing' : 'events';
     let deletedCount = 0;
 
     if (deleteType === 'single' || !recurrenceId) {
-      // Delete single event
       const eventRef = db.collection(collectionName).doc(eventId);
       const eventDoc = await eventRef.get();
 
       if (!eventDoc.exists) {
-        throw new HttpsError(
-          'not-found',
-          'Event not found'
-        );
+        throw new HttpsError('not-found', 'Event not found');
       }
 
-      const eventData = eventDoc.data();
-      const userField = collectionName === 'availability' ? 'userId' : 'user_id';
-
-      if (eventData[userField] !== userId) {
-        throw new HttpsError(
-          'permission-denied',
-          'You do not have permission to delete this event'
-        );
+      if (!(await canManageEvent(eventDoc, callerId, 'delete'))) {
+        throw new HttpsError('permission-denied', 'You do not have permission to delete this event');
       }
 
       await eventRef.delete();
       deletedCount = 1;
     } else if (deleteType === 'all' && recurrenceId) {
-      // Delete all events in the series
       const seriesQuery = db.collection(collectionName)
-        .where('recurrenceId', '==', recurrenceId)
-        .where(collectionName === 'availability' ? 'userId' : 'user_id', '==', userId);
+        .where('recurrenceId', '==', recurrenceId);
 
       const seriesSnapshot = await seriesQuery.get();
 
@@ -338,14 +979,19 @@ exports.deleteCalendarEvent = onCall(async (request) => {
         );
       }
 
-      // Delete all events in batches
       const batch = db.batch();
-      seriesSnapshot.docs.forEach(doc => {
-        batch.delete(doc.ref);
-      });
+      for (const doc of seriesSnapshot.docs) {
+        if (await canManageEvent(doc, callerId, 'delete')) {
+          batch.delete(doc.ref);
+          deletedCount++;
+        }
+      }
 
-      await batch.commit();
-      deletedCount = seriesSnapshot.size;
+      if (deletedCount > 0) {
+        await batch.commit();
+      } else {
+        throw new HttpsError('permission-denied', 'You do not have permission to delete any events in this series');
+      }
     } else if (deleteType === 'future' && recurrenceId) {
       // Delete future events in the series
       const eventRef = db.collection(collectionName).doc(eventId);
@@ -361,24 +1007,60 @@ exports.deleteCalendarEvent = onCall(async (request) => {
       const eventData = eventDoc.data();
       const currentEventDate = new Date(eventData.from);
 
-      // Find all future events in the series
       const seriesQuery = db.collection(collectionName)
-        .where('recurrenceId', '==', recurrenceId)
-        .where(collectionName === 'availability' ? 'userId' : 'user_id', '==', userId);
+        .where('recurrenceId', '==', recurrenceId);
 
       const seriesSnapshot = await seriesQuery.get();
 
-      // Filter for future events and delete them
       const batch = db.batch();
-      seriesSnapshot.docs.forEach(doc => {
+      for (const doc of seriesSnapshot.docs) {
         const docData = doc.data();
         const eventDate = new Date(docData.from);
 
-        if (eventDate >= currentEventDate) {
+        if (eventDate >= currentEventDate && await canManageEvent(doc, callerId, 'delete')) {
           batch.delete(doc.ref);
           deletedCount++;
         }
-      });
+      }
+
+      if (deletedCount > 0) {
+        await batch.commit();
+      }
+    } else if (deleteType === 'days' && recurrenceId && selectedDays) {
+      // Delete events on specific days of the week (for weekly repeats)
+      const eventRef = db.collection(collectionName).doc(eventId);
+      const eventDoc = await eventRef.get();
+
+      if (!eventDoc.exists) {
+        throw new HttpsError(
+          'not-found',
+          'Event not found'
+        );
+      }
+
+      const eventData = eventDoc.data();
+      const currentEventDate = new Date(eventData.from);
+
+      const seriesQuery = db.collection(collectionName)
+        .where('recurrenceId', '==', recurrenceId);
+
+      const seriesSnapshot = await seriesQuery.get();
+
+      const batch = db.batch();
+      for (const doc of seriesSnapshot.docs) {
+        const docData = doc.data();
+        const eventDate = new Date(docData.from);
+
+        if (eventDate >= currentEventDate && await canManageEvent(doc, callerId, 'delete')) {
+          const dayOfWeek = eventDate.getDay();
+          const mondayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+          
+          if (selectedDays[mondayIndex]) {
+            batch.delete(doc.ref);
+            deletedCount++;
+          }
+        }
+      }
 
       if (deletedCount > 0) {
         await batch.commit();
@@ -444,53 +1126,165 @@ exports.saveRecurringEvents = onCall(async (request) => {
       );
     }
 
-    // Generate recurrence ID
     const recurrenceId = `${userId}_${Date.now()}_recurrence`;
 
-    // Generate recurring dates
-    const startDate = new Date(baseEvent.start);
-    const endDate = new Date(baseEvent.end);
-    const duration = endDate.getTime() - startDate.getTime();
+    let startDate, endDate, duration;
+    try {
+      startDate = new Date(baseEvent.start);
+      endDate = new Date(baseEvent.end);
 
-    // Calculate end repeat date
-    let endRepeatDate;
-    if (baseEvent.endRepeatDate) {
-      endRepeatDate = new Date(baseEvent.endRepeatDate);
-    } else {
-      // Default to 3 months from start if no end date provided
-      endRepeatDate = new Date(startDate);
-      endRepeatDate.setMonth(endRepeatDate.getMonth() + 3);
+      if (isNaN(startDate.getTime())) {
+        throw new HttpsError(
+          'invalid-argument',
+          `Invalid start date: ${baseEvent.start}`
+        );
+      }
+
+      if (isNaN(endDate.getTime())) {
+        throw new HttpsError(
+          'invalid-argument',
+          `Invalid end date: ${baseEvent.end}`
+        );
+      }
+
+      if (startDate >= endDate) {
+        throw new HttpsError(
+          'invalid-argument',
+          'End time must be after start time'
+        );
+      }
+
+      duration = endDate.getTime() - startDate.getTime();
+    } catch (error) {
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+      logger.error('Error parsing dates', {
+        error: error.message,
+        start: baseEvent.start,
+        end: baseEvent.end
+      });
+      throw new HttpsError(
+        'invalid-argument',
+        `Invalid date format: ${error.message}`
+      );
     }
 
-    // Generate occurrence dates based on repeat pattern
-    const occurrences = generateRecurringDates(
-      startDate,
-      baseEvent.repeatValue || 'Every Day',
-      baseEvent.endRepeatValue || 'On Date',
-      baseEvent.endRepeatCount || 30,
-      endRepeatDate,
-      {
-        weeklyDays: baseEvent.weeklyDays,
-        monthlyType: baseEvent.monthlyType,
-        monthlyDay: baseEvent.monthlyDay,
-        monthlyWeek: baseEvent.monthlyWeek,
-        monthlyDayOfWeek: baseEvent.monthlyDayOfWeek
+    let endRepeatDate = null;
+    try {
+      if (baseEvent.endRepeatValue === 'On Date' && baseEvent.endRepeatDate) {
+        endRepeatDate = new Date(baseEvent.endRepeatDate);
+        if (isNaN(endRepeatDate.getTime())) {
+          throw new Error(`Invalid endRepeatDate: ${baseEvent.endRepeatDate}`);
+        }
+      } else if (baseEvent.endRepeatValue === 'Never') {
+        endRepeatDate = new Date(startDate);
+        endRepeatDate.setFullYear(endRepeatDate.getFullYear() + 2);
+      } else if (baseEvent.endRepeatDate) {
+        endRepeatDate = new Date(baseEvent.endRepeatDate);
+        if (isNaN(endRepeatDate.getTime())) {
+          throw new Error(`Invalid endRepeatDate: ${baseEvent.endRepeatDate}`);
+        }
+      } else {
+        endRepeatDate = new Date(startDate);
+        endRepeatDate.setFullYear(endRepeatDate.getFullYear() + 1);
       }
-    );
+    } catch (error) {
+      logger.error('Error calculating end repeat date', {
+        error: error.message,
+        endRepeatValue: baseEvent.endRepeatValue,
+        endRepeatDate: baseEvent.endRepeatDate
+      });
+      endRepeatDate = new Date(startDate);
+      endRepeatDate.setFullYear(endRepeatDate.getFullYear() + 1);
+    }
+
+    logger.info('Generating recurring events', {
+      userId,
+      repeatValue: baseEvent.repeatValue,
+      endRepeatValue: baseEvent.endRepeatValue,
+      endRepeatCount: baseEvent.endRepeatCount,
+      endRepeatDate: endRepeatDate?.toISOString(),
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString()
+    });
+
+    let occurrences;
+    try {
+      occurrences = generateRecurringDates(
+        startDate,
+        baseEvent.repeatValue || 'Every Day',
+        baseEvent.endRepeatValue || 'After',
+        baseEvent.endRepeatCount || 30,
+        endRepeatDate,
+        {
+          weeklyDays: baseEvent.weeklyDays,
+          monthlyType: baseEvent.monthlyType,
+          monthlyDay: baseEvent.monthlyDay,
+          monthlyWeek: baseEvent.monthlyWeek,
+          monthlyDayOfWeek: baseEvent.monthlyDayOfWeek
+        }
+      );
+    } catch (error) {
+      logger.error('Error generating recurring dates', {
+        error: error.message,
+        stack: error.stack,
+        repeatValue: baseEvent.repeatValue,
+        endRepeatValue: baseEvent.endRepeatValue
+      });
+      throw new HttpsError(
+        'internal',
+        `Error generating recurring dates: ${error.message}`
+      );
+    }
+
+    logger.info('Generated occurrences', {
+      userId,
+      count: occurrences.length,
+      firstOccurrence: occurrences[0]?.toISOString(),
+      lastOccurrence: occurrences[occurrences.length - 1]?.toISOString()
+    });
+
+    if (occurrences.length === 0) {
+      throw new HttpsError(
+        'invalid-argument',
+        'No occurrences generated for recurring event'
+      );
+    }
 
     // Save all occurrences in batches
     const batchSize = 500; // Firestore batch limit
     const batches = [];
     let currentBatch = db.batch();
     let operationCount = 0;
+    let totalSaved = 0;
 
-    for (let i = 0; i < occurrences.length; i++) {
-      const occurrence = occurrences[i];
-      const isLastOccurrence = i === occurrences.length - 1;
+    try {
+      for (let i = 0; i < occurrences.length; i++) {
+        const occurrence = occurrences[i];
+        const isLastOccurrence = i === occurrences.length - 1;
 
-      const occurrenceEnd = new Date(occurrence.getTime() + duration);
+        if (!(occurrence instanceof Date) || isNaN(occurrence.getTime())) {
+          logger.error('Invalid occurrence date', {
+            index: i,
+            occurrence: occurrence,
+            type: typeof occurrence
+          });
+          continue;
+        }
 
-      const eventData = {
+        const occurrenceEnd = new Date(occurrence.getTime() + duration);
+
+        if (isNaN(occurrenceEnd.getTime())) {
+          logger.error('Invalid occurrence end date', {
+            index: i,
+            occurrence: occurrence.toISOString(),
+            duration: duration
+          });
+          continue;
+        }
+
+        const eventData = {
         userId: userId,
         title: baseEvent.title || 'Available',
         from: occurrence.toISOString(),
@@ -505,6 +1299,17 @@ exports.saveRecurringEvents = onCall(async (request) => {
         recurring: true,
         recurrenceId: recurrenceId,
         isLastOccurrence: isLastOccurrence,
+        recurrenceMetadata: {
+          repeatValue: baseEvent.repeatValue || 'Every Day',
+          endRepeatValue: baseEvent.endRepeatValue || 'After',
+          endRepeatCount: baseEvent.endRepeatCount || 30,
+          endRepeatDate: baseEvent.endRepeatDate ? new Date(baseEvent.endRepeatDate).toISOString() : null,
+          weeklyDays: baseEvent.weeklyDays || null,
+          monthlyType: baseEvent.monthlyType || null,
+          monthlyDay: baseEvent.monthlyDay || null,
+          monthlyWeek: baseEvent.monthlyWeek || null,
+          monthlyDayOfWeek: baseEvent.monthlyDayOfWeek || null
+        },
         // Additional fields
         locationCountry: baseEvent.canton || [],
         LocationArea: baseEvent.area || [],
@@ -517,25 +1322,57 @@ exports.saveRecurringEvents = onCall(async (request) => {
         updated: admin.firestore.FieldValue.serverTimestamp()
       };
 
-      const docRef = db.collection('availability').doc();
-      currentBatch.set(docRef, eventData);
-      operationCount++;
+        const docRef = db.collection('events').doc();
+        currentBatch.set(docRef, eventData);
+        operationCount++;
+        totalSaved++;
 
-      // If we've reached the batch limit, commit and start a new batch
-      if (operationCount === batchSize) {
-        batches.push(currentBatch.commit());
-        currentBatch = db.batch();
-        operationCount = 0;
+        if (operationCount === batchSize) {
+          batches.push(currentBatch.commit());
+          currentBatch = db.batch();
+          operationCount = 0;
+        }
       }
-    }
 
-    // Commit any remaining operations
-    if (operationCount > 0) {
-      batches.push(currentBatch.commit());
-    }
+      if (operationCount > 0) {
+        batches.push(currentBatch.commit());
+      }
 
-    // Wait for all batches to complete
-    await Promise.all(batches);
+      if (batches.length === 0) {
+        throw new HttpsError(
+          'internal',
+          'No valid occurrences to save'
+        );
+      }
+
+      logger.info('Committing batches', {
+        userId,
+        totalBatches: batches.length,
+        totalSaved,
+        totalOccurrences: occurrences.length
+      });
+
+      await Promise.all(batches);
+      logger.info('All batches committed successfully', {
+        userId,
+        totalBatches: batches.length,
+        totalSaved
+      });
+    } catch (batchError) {
+      logger.error('Error processing batches', {
+        error: batchError.message,
+        stack: batchError.stack,
+        code: batchError.code,
+        userId,
+        batchesAttempted: batches.length,
+        totalSaved,
+        totalOccurrences: occurrences.length
+      });
+      throw new HttpsError(
+        'internal',
+        `Error saving recurring events: ${batchError.message || 'Unknown error'}`
+      );
+    }
 
     logger.info('Recurring events saved', {
       userId: userId,
@@ -549,7 +1386,11 @@ exports.saveRecurringEvents = onCall(async (request) => {
       count: occurrences.length
     };
   } catch (error) {
-    logger.error('Error saving recurring events', error);
+    logger.error('Error saving recurring events', {
+      error: error.message,
+      code: error.code,
+      stack: error.stack
+    });
 
     if (error instanceof HttpsError) {
       throw error;
@@ -557,7 +1398,7 @@ exports.saveRecurringEvents = onCall(async (request) => {
 
     throw new HttpsError(
       'internal',
-      'Error saving recurring events'
+      `Error saving recurring events: ${error.message || 'Unknown error'}`
     );
   }
 });
@@ -570,12 +1411,21 @@ function generateRecurringDates(startDate, repeatValue, endRepeatValue, endRepea
   const dateMap = new Set();
   
   // Determine end condition
-  const maxOccurrences = endRepeatValue === 'After' ? Math.min(endRepeatCount, 200) : 200;
+  let maxOccurrences = 200; // Default safety limit
+  if (endRepeatValue === 'After' && endRepeatCount) {
+    maxOccurrences = Math.min(parseInt(endRepeatCount, 10) || 200, 200);
+  }
+  
   let endDate;
   if (endRepeatValue === 'On Date' && endRepeatDate) {
     endDate = new Date(endRepeatDate);
     endDate.setHours(23, 59, 59, 999);
+  } else if (endRepeatDate) {
+    // Use provided endRepeatDate (for 'Never' case where we set it to 2 years)
+    endDate = new Date(endRepeatDate);
+    endDate.setHours(23, 59, 59, 999);
   } else {
+    // Default to 1 year from start
     endDate = new Date(startDate.getTime() + (365 * 24 * 60 * 60 * 1000));
   }
 
@@ -584,7 +1434,7 @@ function generateRecurringDates(startDate, repeatValue, endRepeatValue, endRepea
   dateMap.add(startDate.toDateString());
   let count = 1;
 
-  if (repeatValue === 'Every Week' && repeatConfig.weeklyDays) {
+  if (repeatValue === 'Every Week' && repeatConfig.weeklyDays && Array.isArray(repeatConfig.weeklyDays) && repeatConfig.weeklyDays.length > 0) {
     const weeklyDays = repeatConfig.weeklyDays;
     const selectedDays = weeklyDays.map((selected, index) => selected ? index : null).filter(v => v !== null);
     
@@ -706,6 +1556,7 @@ function generateRecurringDates(startDate, repeatValue, endRepeatValue, endRepea
     const currentDate = new Date(startDate);
 
     while (count < maxOccurrences && currentDate <= endDate) {
+      // Advance to next occurrence
       switch (repeatValue) {
         case 'Every Day':
           currentDate.setDate(currentDate.getDate() + 1);
@@ -735,6 +1586,17 @@ function generateRecurringDates(startDate, repeatValue, endRepeatValue, endRepea
         count++;
       }
     }
+  }
+
+  // Log if no dates were generated (shouldn't happen since we always add startDate)
+  if (dates.length === 0) {
+    logger.warn('generateRecurringDates returned no dates', {
+      startDate: startDate.toISOString(),
+      repeatValue,
+      endRepeatValue,
+      endRepeatCount,
+      endRepeatDate: endRepeatDate?.toISOString()
+    });
   }
 
   return dates;
@@ -973,13 +1835,13 @@ exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true
       const conflicts = [];
 
       if (eventType !== 'position') {
-        // 1. Check availability conflicts (for professionals)
-        const availabilityQuery = await db.collection('availability')
+        // 1. Check event conflicts (for professionals)
+        const eventsQuery = await db.collection('events')
           .where('userId', '==', targetUserId)
           .where('from', '<=', endDate.toISOString())
           .get();
 
-        availabilityQuery.docs.forEach(doc => {
+        eventsQuery.docs.forEach(doc => {
           const availData = doc.data();
           const existingStart = new Date(availData.from);
           const existingEnd = new Date(availData.to);
@@ -1182,12 +2044,12 @@ exports.checkAndCreateEvent = onCall(async (request) => {
 
     if (eventType !== 'position') {
       // 1. Check availability conflicts (for professionals)
-      const availabilityQuery = await db.collection('availability')
+      const eventsQuery = await db.collection('events')
         .where('userId', '==', targetUserId)
         .where('from', '<=', endDate.toISOString())
         .get();
 
-      availabilityQuery.docs.forEach(doc => {
+      eventsQuery.docs.forEach(doc => {
         const availData = doc.data();
         const existingStart = new Date(availData.from);
         const existingEnd = new Date(availData.to);
@@ -1316,7 +2178,7 @@ async function createSingleEvent(eventType, eventData, targetUserId, workspaceCo
 
   switch (eventType) {
     case 'availability':
-      collection = 'availability';
+      collection = 'events';
       docData = {
         userId: targetUserId,
         professionalProfileId: targetUserId, // Assuming profileId matches userId
@@ -1332,6 +2194,7 @@ async function createSingleEvent(eventType, eventData, targetUserId, workspaceCo
         isValidated: eventData.isValidated !== false, // Default to true
         recurring: !!recurrenceId,
         recurrenceId: recurrenceId || null,
+        recurrenceMetadata: recurrenceId && eventData.recurrenceMetadata ? eventData.recurrenceMetadata : null,
         // Additional fields that frontend expects
         locationCountry: eventData.locationCountry || [],
         LocationArea: eventData.LocationArea || [],
@@ -1445,7 +2308,18 @@ async function createRecurringEvent(eventType, eventData, targetUserId, workspac
     const occurrenceData = {
       ...eventData,
       startTime: occurrence.toISOString(),
-      endTime: occurrenceEnd.toISOString()
+      endTime: occurrenceEnd.toISOString(),
+      recurrenceMetadata: {
+        repeatValue: recurrenceSettings.repeatValue || 'Every Week',
+        endRepeatValue: recurrenceSettings.endRepeatValue || 'On Date',
+        endRepeatCount: recurrenceSettings.endRepeatCount || 30,
+        endRepeatDate: recurrenceSettings.endRepeatDate || null,
+        weeklyDays: recurrenceSettings.weeklyDays || null,
+        monthlyType: recurrenceSettings.monthlyType || null,
+        monthlyDay: recurrenceSettings.monthlyDay || null,
+        monthlyWeek: recurrenceSettings.monthlyWeek || null,
+        monthlyDayOfWeek: recurrenceSettings.monthlyDayOfWeek || null
+      }
     };
 
     // Create single occurrence with recurrenceId
@@ -1463,7 +2337,7 @@ async function createRecurringEvent(eventType, eventData, targetUserId, workspac
  */
 async function createUnavailableBlock(userId, startTime, endTime, reason) {
   try {
-    await db.collection('availability').add({
+    await db.collection('events').add({
       userId: userId,
       professionalProfileId: userId,
       from: new Date(startTime).toISOString(), // Use 'from' field expected by frontend

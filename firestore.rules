@@ -20,7 +20,7 @@ service cloud.firestore {
         && data.accountType == 'company';
     }
     
-    function isValidAvailabilityData(data) {
+    function isValidEventData(data) {
       return data.keys().hasAll(['userId', 'from', 'to']) 
         && data.userId is string
         && data.from is string
@@ -53,12 +53,130 @@ service cloud.firestore {
       allow delete: if isOwner(companyId);
     }
     
-    // Availability collection
-    match /availability/{availabilityId} {
-      allow read: if true;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidAvailabilityData(request.resource.data);
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+    // Employee vacancy requests collection
+    match /employeeVacancyRequests/{requestId} {
+      function canManageEmployeeRequest() {
+        return isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          (resource.data.facilityProfileId != null && 
+           exists(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)).data.admins)
+        );
+      }
+      
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.facilityProfileId != null && 
+         exists(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)).data.admins)
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if canManageEmployeeRequest();
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Time off requests collection
+    match /timeOffRequests/{requestId} {
+      function canManageTimeOffRequest() {
+        return isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          (resource.data.facilityProfileId != null && 
+           exists(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)).data.admins)
+        );
+      }
+      
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.facilityProfileId != null && 
+         exists(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)) &&
+         (request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)).data.admins ||
+          request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)).data.employees))
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if canManageTimeOffRequest();
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Vacancy applications collection
+    match /vacancyApplications/{applicationId} {
+      function canManageApplication() {
+        return isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          (resource.data.vacancyEventId != null &&
+           exists(/databases/$(database)/documents/events/$(resource.data.vacancyEventId)) &&
+           get(/databases/$(database)/documents/events/$(resource.data.vacancyEventId)).data.facilityProfileId != null &&
+           exists(/databases/$(database)/documents/facilityProfiles/$(get(/databases/$(database)/documents/events/$(resource.data.vacancyEventId)).data.facilityProfileId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(get(/databases/$(database)/documents/events/$(resource.data.vacancyEventId)).data.facilityProfileId)).data.admins)
+        );
+      }
+      
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || canManageApplication()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if canManageApplication();
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Events collection
+    match /events/{eventId} {
+      function canViewEvent() {
+        return isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          (resource.data.visibility == 'public' && resource.data.type == 'worker_availability' && resource.data.isValidated == true) ||
+          (resource.data.permissions != null && request.auth.uid in resource.data.permissions.owners) ||
+          (resource.data.permissions != null && request.auth.uid in resource.data.permissions.viewers) ||
+          (resource.data.permissions != null && request.auth.uid in resource.data.permissions.facilityAdmins) ||
+          (resource.data.permissions != null && request.auth.uid in resource.data.permissions.chainAdmins) ||
+          (resource.data.facilityProfileId != null && 
+           exists(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)).data.admins) ||
+          (resource.data.organizationId != null &&
+           exists(/databases/$(database)/documents/organizations/$(resource.data.organizationId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/organizations/$(resource.data.organizationId)).data.admins)
+        );
+      }
+      
+      function canManageEvent() {
+        return isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          (resource.data.permissions != null && request.auth.uid in resource.data.permissions.owners) ||
+          (resource.data.permissions != null && request.auth.uid in resource.data.permissions.facilityAdmins) ||
+          (resource.data.permissions != null && request.auth.uid in resource.data.permissions.chainAdmins) ||
+          (resource.data.facilityProfileId != null && 
+           exists(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityProfileId)).data.admins) ||
+          (resource.data.organizationId != null &&
+           exists(/databases/$(database)/documents/organizations/$(resource.data.organizationId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/organizations/$(resource.data.organizationId)).data.admins)
+        );
+      }
+      
+      allow read: if canViewEvent();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidEventData(request.resource.data);
+      allow update: if canManageEvent() && request.resource.data.userId == resource.data.userId;
+      allow delete: if canManageEvent();
+      
+      // Applications subcollection for vacancy requests
+      match /applications/{applicationId} {
+        allow read: if isAuthenticated() && (
+          resource.data.professionalId == request.auth.uid ||
+          (exists(/databases/$(database)/documents/events/$(eventId)) &&
+           get(/databases/$(database)/documents/events/$(eventId)).data.facilityProfileId != null &&
+           exists(/databases/$(database)/documents/facilityProfiles/$(get(/databases/$(database)/documents/events/$(eventId)).data.facilityProfileId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(get(/databases/$(database)/documents/events/$(eventId)).data.facilityProfileId)).data.admins)
+        );
+        allow create: if isAuthenticated() && request.resource.data.professionalId == request.auth.uid;
+        allow update: if isAuthenticated() && (
+          resource.data.professionalId == request.auth.uid ||
+          (exists(/databases/$(database)/documents/events/$(eventId)) &&
+           get(/databases/$(database)/documents/events/$(eventId)).data.facilityProfileId != null &&
+           exists(/databases/$(database)/documents/facilityProfiles/$(get(/databases/$(database)/documents/events/$(eventId)).data.facilityProfileId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(get(/databases/$(database)/documents/events/$(eventId)).data.facilityProfileId)).data.admins)
+        );
+        allow delete: if isAuthenticated() && resource.data.professionalId == request.auth.uid;
+      }
     }
     
     // Contracts collection

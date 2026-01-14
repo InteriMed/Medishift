@@ -1,7 +1,7 @@
 {
   "indexes": [
     {
-      "collectionGroup": "availability",
+      "collectionGroup": "events",
       "queryScope": "COLLECTION",
       "fields": [
         {

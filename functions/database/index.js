@@ -729,11 +729,11 @@ const onContractUpdate = onDocumentUpdated({
 
       if (professionalProfileId && contractStart && contractEnd && originAvailabilityId) {
         // Update the availability status to 'booked'
-        const availabilityRef = db.collection('availability').doc(originAvailabilityId);
-        const availabilityDoc = await availabilityRef.get();
+        const eventsRef = db.collection('events').doc(originAvailabilityId);
+        const eventsDoc = await eventsRef.get();
 
-        if (availabilityDoc.exists) {
-          await availabilityRef.update({
+        if (eventsDoc.exists) {
+          await eventsRef.update({
             status: 'booked',
             bookedByContractId: contractId,
             updated: admin.firestore.FieldValue.serverTimestamp()

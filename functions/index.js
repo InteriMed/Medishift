@@ -27,6 +27,9 @@ const bagAdminFunctions = require('./api/BAG_Admin');
 // Import document processing function
 const documentProcessing = require('./api/processDocument');
 
+// Import invitation functions
+const invitationFunctions = require('./api/invitations');
+
 // Simplified functions - create basic endpoints
 
 // Health check endpoint
@@ -150,4 +153,13 @@ module.exports.accountDeletionPreview = accountManagement.deletionPreview;     /
 module.exports.accountDelete = accountManagement.deleteAccount;                 // POST delete account
 module.exports.accountBonusEligibility = accountManagement.checkBonusEligibility; // Anti-fraud check
 module.exports.accountDataExport = accountManagement.dataExport;                // GDPR data export
+
+// =========================================================================
+//  📧 FACILITY INVITATIONS - Role Invitation System
+// =========================================================================
+
+// FACILITY INVITATIONS - Export from api/invitations.js
+module.exports.generateFacilityRoleInvitation = invitationFunctions.generateFacilityRoleInvitation;
+module.exports.getInvitationDetails = invitationFunctions.getInvitationDetails;
+module.exports.acceptFacilityInvitation = invitationFunctions.acceptFacilityInvitation;
 
