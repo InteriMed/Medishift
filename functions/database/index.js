@@ -297,11 +297,18 @@ exports.updateUserProfile = onCallV2(
 
           // CRITICAL FIX: If creating a facility, assign creator as admin and employee
           if (currentRole === 'facility') {
-            profileFieldsToUpdate.admin = [userId];
-            profileFieldsToUpdate.employees = [userId];
+            // New structure: employees array with objects containing uid and rights
+            profileFieldsToUpdate.employees = [{
+              uid: userId,
+              rights: 'admin'
+            }];
+            // Ensure facilityProfileId is set
+            if (!profileFieldsToUpdate.facilityProfileId) {
+              profileFieldsToUpdate.facilityProfileId = userId;
+            }
 
             // Also update user memberships
-            const facilityName = profileFieldsToUpdate.facilityDetails?.name || 'New Facility';
+            const facilityName = profileFieldsToUpdate.facilityName || profileFieldsToUpdate.facilityDetails?.name || 'New Facility';
 
             // Explicitly update user document as the main update block has already run
             try {
@@ -492,7 +499,8 @@ const onPositionUpdate = onDocumentUpdated({
     }
 
     const facilityData = facilityDoc.data();
-    const facilityAdminId = position.postedByUserId || (facilityData.admin && facilityData.admin[0]);
+    const adminEmployee = facilityData.employees?.find(emp => emp.rights === 'admin');
+    const facilityAdminId = position.postedByUserId || adminEmployee?.uid || (facilityData.employees && facilityData.employees[0]?.uid);
 
     if (!facilityAdminId || !professionalUserId) {
       console.error(`Missing participant IDs: facilityAdminId=${facilityAdminId}, professionalUserId=${professionalUserId}`);

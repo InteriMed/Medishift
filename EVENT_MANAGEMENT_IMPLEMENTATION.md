@@ -228,3 +228,10 @@ Existing `availability` collection documents should be migrated:
 3. Set `visibility: 'public'` for validated events, `'private'` for unvalidated
 
 
+
+
+
+
+
+
+

@@ -39,7 +39,9 @@ async function isFacilityAdmin(userId, facilityProfileId) {
     const facilityDoc = await db.collection('facilityProfiles').doc(facilityProfileId).get();
     if (!facilityDoc.exists) return false;
     const facilityData = facilityDoc.data();
-    return facilityData.admins?.includes(userId) || 
+    const employeesList = facilityData.employees || [];
+    const isAdmin = employeesList.some(emp => emp.uid === userId && emp.rights === 'admin');
+    return isAdmin || 
            facilityData.chainAdmins?.includes(userId) ||
            facilityProfileId === userId;
   } catch (error) {
@@ -87,7 +89,8 @@ async function determineEventPermissions(eventData, userId) {
     const facilityDoc = await db.collection('facilityProfiles').doc(eventData.facilityProfileId).get();
     if (facilityDoc.exists) {
       const facilityData = facilityDoc.data();
-      permissions.facilityAdmins = facilityData.admins || [];
+      const employeesList = facilityData.employees || [];
+      permissions.facilityAdmins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
       
       if (facilityData.organizationId) {
         const orgDoc = await db.collection('organizations').doc(facilityData.organizationId).get();
@@ -1792,7 +1795,9 @@ exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true
           }
 
           const facilityData = facilityDoc.data();
-          if (!facilityData.admin.includes(decodedToken.uid)) {
+          const employeesList = facilityData.employees || [];
+          const isAdmin = employeesList.some(emp => emp.uid === decodedToken.uid && emp.rights === 'admin');
+          if (!isAdmin) {
             res.status(403).json({
               success: false,
               error: 'Only facility admins can create events for employees'
@@ -2016,7 +2021,9 @@ exports.checkAndCreateEvent = onCall(async (request) => {
         }
 
         const facilityData = facilityDoc.data();
-        if (!facilityData.admin.includes(context.auth.uid)) {
+        const employeesList = facilityData.employees || [];
+        const isAdmin = employeesList.some(emp => emp.uid === context.auth.uid && emp.rights === 'admin');
+        if (!isAdmin) {
           throw new HttpsError('permission-denied', 'Only facility admins can create events for employees');
         }
       } else {

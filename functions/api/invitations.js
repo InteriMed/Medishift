@@ -57,7 +57,8 @@ exports.generateFacilityRoleInvitation = onCall(async (request) => {
     }
 
     const facilityData = facilitySnap.data();
-    const admins = facilityData.admin || [];
+    const employeesList = facilityData.employees || [];
+    const admins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
     
     if (!admins.includes(context.auth.uid)) {
       throw new HttpsError('permission-denied', 'You must be an admin of this facility to generate invitations');
@@ -114,7 +115,7 @@ exports.generateFacilityRoleInvitation = onCall(async (request) => {
     return {
       success: true,
       invitationToken,
-      invitationLink: `${process.env.INVITATION_BASE_URL || 'https://interimed.ch'}/invite/${invitationToken}`,
+      invitationLink: `${process.env.INVITATION_BASE_URL || 'https://MediShift.ch'}/invite/${invitationToken}`,
       expiresAt: expiresAt.toISOString()
     };
   } catch (error) {
@@ -302,12 +303,24 @@ exports.acceptFacilityInvitation = onCall(async (request) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    const admins = facilityData.admin || [];
+    const employeesList = facilityData.employees || [];
+    const admins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
     if (!admins.includes(userId)) {
-      batch.update(facilityRef, {
-        admin: admin.firestore.FieldValue.arrayUnion(userId),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
+      const existingEmployee = employeesList.find(emp => emp.uid === userId);
+      if (!existingEmployee) {
+        batch.update(facilityRef, {
+          employees: admin.firestore.FieldValue.arrayUnion({ uid: userId, rights: 'admin' }),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      } else if (existingEmployee.rights !== 'admin') {
+        const updatedEmployees = employeesList.map(emp => 
+          emp.uid === userId ? { ...emp, rights: 'admin' } : emp
+        );
+        batch.update(facilityRef, {
+          employees: updatedEmployees,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
     }
 
     const workerRequirements = facilityData.operationalSettings?.workerRequirements || [];

@@ -3,6 +3,10 @@ description:
 globs: 
 alwaysApply: true
 ---
+
+Be very succint when possible in your answer, especially for quick fixes. 
+Never wrap up your changed, except if the user excplicitely requests it.
+
 Always use the styling variables stored in [variables.css](mdc:frontend/src/styles/variables.css).
 Always set the translations in english following [i18n.js](mdc:frontend/src/i18n.js)
 Use the components stored [Button.js](mdc:frontend/src/components/BoxedInputFields/Button.js), [Personnalized-InputField.js](mdc:frontend/src/components/BoxedInputFields/Personnalized-InputField.js) and other components in the same folder.

@@ -241,11 +241,33 @@ service cloud.firestore {
     }
     
     // Facility profile rules
-    match /facilityProfiles/{userId} {
-      allow read: if request.auth.uid == userId || isAdmin();
-      allow create: if request.auth.uid == userId || isAdmin();
-      allow update: if request.auth.uid == userId || isAdmin();
-      allow delete: if false;
+    match /facilityProfiles/{facilityId} {
+      function isFacilityMember() {
+        return isAuthenticated() && (
+          request.auth.uid == facilityId ||
+          (resource.data.admins != null && request.auth.uid in resource.data.admins) ||
+          (resource.data.employees != null && resource.data.employees.size() > 0)
+        );
+      }
+      function canReadFacility() {
+        return isAuthenticated() && (
+          request.auth.uid == facilityId ||
+          isAdmin() ||
+          (exists(/databases/$(database)/documents/facilityProfiles/$(facilityId)) == false) ||
+          (resource.data.admins != null && request.auth.uid in resource.data.admins) ||
+          (resource.data.chainAdmins != null && request.auth.uid in resource.data.chainAdmins)
+        );
+      }
+      function isSuperAdmin() {
+        return isAuthenticated() && 
+               exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
+               'super_admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles;
+      }
+      allow read: if canReadFacility();
+      allow create: if request.auth.uid == facilityId || isAdmin();
+      allow update: if request.auth.uid == facilityId || isAdmin() || (resource.data.admins != null && request.auth.uid in resource.data.admins);
+      allow delete: if isSuperAdmin();
     }
     
     // Conversations collection

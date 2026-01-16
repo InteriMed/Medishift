@@ -107,7 +107,7 @@ exports.processDocument = onCall(
   {
     cors: true, // Enable CORS for all origins
     maxInstances: 10,
-    timeoutSeconds: 300, // 5 minutes for processing
+    timeoutSeconds: 600, // 10 minutes for processing during onboarding
     memory: '1GiB' // Increase memory for AI processing
   },
   async (request) => {
@@ -403,6 +403,71 @@ async function extractStructuredDataWithGemini(gsUri, mimeType, documentType, fi
 /**
  * Process Gemini response and extract text
  */
+function filterEmptyQualifications(qualifications) {
+  if (!Array.isArray(qualifications)) {
+    return [];
+  }
+
+  return qualifications
+    .filter(qual => {
+      if (!qual || typeof qual !== 'object') {
+        return false;
+      }
+
+      const title = qual.title || qual.name || '';
+      const hasTitle = typeof title === 'string' && title.trim().length > 0;
+
+      if (!hasTitle) {
+        return false;
+      }
+
+      return true;
+    })
+    .map(qual => {
+      const cleaned = {};
+
+      if (qual.title) {
+        cleaned.title = qual.title.trim();
+      } else if (qual.name) {
+        cleaned.title = qual.name.trim();
+      }
+
+      if (qual.type && typeof qual.type === 'string' && qual.type.trim().length > 0) {
+        cleaned.type = qual.type.trim();
+      }
+
+      if (qual.institution && typeof qual.institution === 'string' && qual.institution.trim().length > 0) {
+        cleaned.institution = qual.institution.trim();
+      } else if (qual.issuingOrganization && typeof qual.issuingOrganization === 'string' && qual.issuingOrganization.trim().length > 0) {
+        cleaned.institution = qual.issuingOrganization.trim();
+      }
+
+      if (qual.licenseNumber && typeof qual.licenseNumber === 'string' && qual.licenseNumber.trim().length > 0) {
+        cleaned.licenseNumber = qual.licenseNumber.trim();
+      }
+
+      if (qual.dateObtained && typeof qual.dateObtained === 'string' && qual.dateObtained.trim().length > 0) {
+        cleaned.dateObtained = qual.dateObtained.trim();
+      } else if (qual.issueDate && typeof qual.issueDate === 'string' && qual.issueDate.trim().length > 0) {
+        cleaned.dateObtained = qual.issueDate.trim();
+      }
+
+      if (qual.expiryDate && typeof qual.expiryDate === 'string' && qual.expiryDate.trim().length > 0) {
+        cleaned.expiryDate = qual.expiryDate.trim();
+      }
+
+      if (typeof qual.validForLife === 'boolean') {
+        cleaned.validForLife = qual.validForLife;
+      }
+
+      if (qual.source) {
+        cleaned.source = qual.source;
+      }
+
+      return cleaned;
+    });
+}
+
 function processGeminiResponse(response, prompt) {
   // Extract text from response - SDK v1.9.0 structure
   let extractedText;
@@ -429,6 +494,13 @@ function processGeminiResponse(response, prompt) {
   } catch (parseError) {
     console.error('Failed to parse AI response:', extractedText);
     throw new Error('Failed to parse structured data from AI response');
+  }
+
+  if (parsedData.professionalBackground?.qualifications) {
+    parsedData.professionalBackground.qualifications = filterEmptyQualifications(
+      parsedData.professionalBackground.qualifications
+    );
+    console.log(`[processDocument] Filtered qualifications: ${parsedData.professionalBackground.qualifications.length} valid items`);
   }
 
   return {
@@ -484,10 +556,13 @@ Return a JSON object with this structure:
     ],
     "qualifications": [
       {
-        "name": "string",
-        "issuingOrganization": "string or null",
-        "issueDate": "YYYY-MM-DD or null",
-        "expiryDate": "YYYY-MM-DD or null"
+        "type": "string or null",
+        "title": "string",
+        "institution": "string or null",
+        "licenseNumber": "string or null",
+        "dateObtained": "YYYY-MM-DD or null",
+        "expiryDate": "YYYY-MM-DD or null",
+        "validForLife": false
       }
     ],
     "skills": [
@@ -532,9 +607,16 @@ FIELD DEFINITIONS:
    - Extract start/end dates if available
 
 2. **qualifications**: Professional certifications and credentials (NOT academic degrees)
-   - Examples: Vaccination certificates, CAS certificates, board certifications, professional licenses
-   - Include issuing organization and dates
-   - Do NOT include university degrees here
+   - Examples: Vaccination certificates (e.g., Hepatitis B, COVID-19), CAS certificates, board certifications, professional licenses, CPR certifications, ACLS, BLS
+   - REQUIRED: "title" field must contain the qualification name (e.g., "Hepatitis B Vaccination", "CPR Certification", "Board Certification in Cardiology")
+   - OPTIONAL: "type" field should indicate qualification category if identifiable (e.g., "Vaccination", "Certification", "License", "CET")
+   - OPTIONAL: "institution" field for issuing organization (e.g., "Swiss Red Cross", "BAG", "Medical Board")
+   - OPTIONAL: "licenseNumber" for license/certificate numbers if present
+   - OPTIONAL: "dateObtained" for when qualification was obtained
+   - OPTIONAL: "expiryDate" for qualifications with expiration dates
+   - Set "validForLife" to true if qualification never expires, false otherwise
+   - CRITICAL: Only include qualifications with at least a "title" field. Exclude any qualification item where title is empty, null, or whitespace.
+   - Do NOT include university degrees here (those go in "studies")
 
 3. **skills**: Translational and transferable skills with proficiency levels
    - ONLY extract major, relevant professional skills
@@ -689,8 +771,8 @@ CRITICAL EXTRACTION RULES:
 
 Return valid JSON only, no additional text.`;
   } else if (documentType === 'invoice' || documentType === 'bill' || documentType === 'tax_document' || documentType === 'bank_statement') {
-    // Invoice/billing/bank statement extraction
-    const docTypeSpecific = documentType === 'bank_statement' ? 'bank statement' : 'invoice or tax document';
+    // Invoice/billing/bank statement/debit card extraction
+    const docTypeSpecific = documentType === 'bank_statement' ? 'bank statement or debit card' : 'invoice or tax document';
     return basePrompt + `Extract business and billing information from this ${docTypeSpecific}.
 
 Return a JSON object with this structure:

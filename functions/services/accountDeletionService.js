@@ -24,7 +24,7 @@ const db = admin.firestore();
 const FieldValue = admin.firestore.FieldValue;
 
 // Salt for hashing - should be stored in environment variables in production
-const HASH_SALT = config.security?.accountDeletionSalt || process.env.ACCOUNT_DELETION_SALT || 'interimed-gdpr-compliant-2024';
+const HASH_SALT = config.security?.accountDeletionSalt || process.env.ACCOUNT_DELETION_SALT || 'MediShift-gdpr-compliant-2024';
 
 /**
  * Determine if user has any legal records that require 10-year retention

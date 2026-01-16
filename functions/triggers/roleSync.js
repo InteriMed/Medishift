@@ -18,10 +18,12 @@ exports.syncAdminRoles = onDocumentUpdated({
     const beforeData = event.data.before.data();
     const afterData = event.data.after.data();
 
-    const beforeAdmins = beforeData.admin || [];
-    const afterAdmins = afterData.admin || [];
-    const beforeEmployees = beforeData.employees || [];
-    const afterEmployees = afterData.employees || [];
+    const beforeEmployeesList = beforeData.employees || [];
+    const afterEmployeesList = afterData.employees || [];
+    const beforeAdmins = beforeEmployeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
+    const afterAdmins = afterEmployeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
+    const beforeEmployees = beforeEmployeesList.filter(emp => emp.rights !== 'admin').map(emp => emp.uid);
+    const afterEmployees = afterEmployeesList.filter(emp => emp.rights !== 'admin').map(emp => emp.uid);
 
     const facilityName = afterData.legalInfo?.tradeName || afterData.legalInfo?.legalCompanyName || 'Facility';
 
@@ -241,8 +243,9 @@ exports.cleanupRolesOnFacilityDelete = onDocumentDeleted({
 }, async (event) => {
     const facilityId = event.params.facilityId;
     const facilityData = event.data.data();
-    const admins = facilityData.admin || [];
-    const employees = facilityData.employees || [];
+    const employeesList = facilityData.employees || [];
+    const admins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
+    const employees = employeesList.filter(emp => emp.rights !== 'admin').map(emp => emp.uid);
     const allMembers = [...new Set([...admins, ...employees])];
 
     try {

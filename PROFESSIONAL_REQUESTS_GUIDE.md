@@ -168,3 +168,10 @@ const handleApplyForVacancy = async (vacancyEvent, professionalId) => {
 - Facility admins can manage both types of requests through the calendar interface
 
 
+
+
+
+
+
+
+
