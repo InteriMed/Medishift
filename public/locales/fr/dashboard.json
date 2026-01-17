@@ -1,0 +1,85 @@
+{
+    "dashboard": {
+        "sidebar": {
+            "overview": "Vue d'ensemble",
+            "profile": "Profil",
+            "contracts": "Contrats",
+            "messages": "Messages",
+            "calendar": "Calendrier",
+            "marketplace": "Place de marché",
+            "payroll": "Paie",
+            "organization": "Organisation",
+            "settings": "Paramètres",
+            "incompleteProfile": "Votre profil est incomplet",
+            "completeProfileFirst": "Veuillez d'abord compléter votre profil"
+        },
+        "header": {
+            "search": "Rechercher...",
+            "worker": "Travailleur",
+            "overview": {
+                "title": "Vue d'ensemble",
+                "subtitle": "Bienvenue dans votre tableau de bord"
+            },
+            "calendar": {
+                "title": "Calendrier",
+                "subtitle": "Gérez votre planning et vos rendez-vous"
+            },
+            "messages": {
+                "title": "Messages",
+                "subtitle": "Communiquez avec les établissements et les professionnels"
+            },
+            "contracts": {
+                "title": "Contrats",
+                "subtitle": "Consultez et gérez vos contrats"
+            },
+            "profile": {
+                "title": "Profil",
+                "subtitle": "Gérez vos informations personnelles"
+            },
+            "marketplace": {
+                "title": "Place de marché",
+                "subtitle": "Trouvez des postes ou des professionnels"
+            },
+            "payroll": {
+                "title": "Paie",
+                "subtitle": "Gérez les paiements et demandes du personnel"
+            },
+            "organization": {
+                "title": "Organisation",
+                "subtitle": "Gérez votre chaîne de pharmacies ou groupe"
+            },
+            "settings": {
+                "title": "Paramètres",
+                "subtitle": "Configurez les paramètres de votre compte"
+            }
+        },
+        "loading": "Chargement des données du tableau de bord...",
+        "error": "Erreur lors du chargement des données du tableau de bord",
+        "completeProfile": {
+            "completeProfileTitle": "Complétez votre profil",
+            "completeProfileDescription": "Bienvenue sur MediShift ! Pour accéder à toutes les fonctionnalités de la plateforme, veuillez d'abord compléter votre profil.",
+            "completeProfileButton": "Compris, créer mon profil"
+        },
+        "overview": {
+            "title": "Bienvenue sur MediShift !",
+            "welcome": "Bonjour",
+            "welcomeTitle": "Bienvenue sur MediShift !",
+            "totalContracts": "Contrats totaux",
+            "activeHours": "Heures actives",
+            "earnings": "Gains",
+            "upcomingJobs": "Emplois à venir",
+            "recentActivity": "Activité récente",
+            "noRecentActivity": "Aucune activité récente à afficher"
+        }
+    },
+    "userMenu": {
+        "profile": "Mon profil",
+        "settings": "Paramètres",
+        "language": "Langue",
+        "logout": "Déconnexion",
+        "user": "Utilisateur"
+    }
+}
+
+
+

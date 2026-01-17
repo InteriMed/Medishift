@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "title": "Blog InteriMed",
+    "description": "Découvrez des articles, conseils et analyses sur le recrutement temporaire dans le secteur de la santé en Suisse.",
+    "keywords": "blog santé, recrutement pharmacie, staffing médical, InteriMed, Suisse"
+  },
+  "title": "Blog InteriMed",
+  "introduction": "Expert insights and resources for healthcare professionals and facility managers in Switzerland",
+  "featured": {
+    "title": "Featured Article"
+  },
+  "recent": {
+    "title": "Recent Articles"
+  },
+  "readMore": "Read More",
+  "searchPlaceholder": "Search blog posts...",
+  "noPostsFound": "No posts found matching your search criteria.",
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "sidebar": {
+    "search": "Search",
+    "categories": "Categories",
+    "recentPosts": "Recent Posts",
+    "cta": {
+      "title": "Need Staffing Solutions?",
+      "description": "Find qualified professionals or flexible work opportunities."
+    }
+  },
+  "forPharmacies": "For Pharmacies",
+  "forProfessionals": "For Professionals",
+  "postNotFound": "Blog Post Not Found",
+  "postNotFoundDescription": "The blog post you're looking for doesn't exist or has been moved.",
+  "backToBlog": "Back to Blog",
+  "tableOfContents": "Table of Contents",
+  "shareThisPost": "Share This Post",
+  "tags": "Tags",
+  "relatedPosts": "Related Posts",
+  "aboutAuthor": "About the Author",
+  "needStaffingSolutions": "Need Staffing Solutions?",
+  "ctaDescription": "Find qualified professionals or flexible work opportunities with InteriMed."
+} 

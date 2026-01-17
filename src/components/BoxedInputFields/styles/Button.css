@@ -262,7 +262,7 @@
 
 /* Healthcare Theme Styles - For non-contract components */
 .button.healthcare-theme:not(.actionButton):not(.closeButton):not(.mobileBackButton):not(.mobilePdfButton):not(.clear-search-button):not(.clear-filters-button):not(.addButton):not(.removeButton) {
-  font-family: var(--font-family, 'Roboto', sans-serif);
+  font-family: var(--font-family-text, 'Roboto', sans-serif);
   border-radius: 10px;
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

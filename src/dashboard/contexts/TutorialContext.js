@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp, collection } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { tutorialSteps } from '../onboarding/tutorialSteps';
 import { useDashboard } from './DashboardContext';
@@ -336,10 +336,31 @@ export const TutorialProvider = ({ children }) => {
           // Check profile verification status
           const isVerifiedProfile = !!userData.GLN_certified;
 
-          // PRIORITY CHECK: Mandatory Step 1 (GLN Verification)
-          // If not verified and not completed, force modal and block restoration
-          if (!onboardingCompleted && !isVerifiedProfile) {
-            console.log("[TutorialContext] User not verified/completed. Forcing First Time Modal (Step 1).");
+          /**
+           * Onboarding Trigger:
+           * Once a user logs in, if its uid is not in professionalProfiles, facilityProfiles or has admin role,
+           * it means we fire up onboarding.
+           */
+          const isAdmin = userData.role === 'admin' || (userData.roles && userData.roles.includes('admin'));
+
+          let hasProfessionalProfile = false;
+          let hasFacilityProfile = false;
+
+          try {
+            const profDoc = await getDoc(doc(db, 'professionalProfiles', currentUser.uid));
+            hasProfessionalProfile = profDoc.exists();
+
+            const facDoc = await getDoc(doc(db, 'facilityProfiles', currentUser.uid));
+            hasFacilityProfile = facDoc.exists();
+          } catch (e) {
+            console.error("[TutorialContext] Error checking profile existence:", e);
+          }
+
+          const hasEstablishedWorkspace = hasProfessionalProfile || hasFacilityProfile || isAdmin;
+
+          // PRIORITY CHECK: Mandatory Onboarding Trigger
+          if (!hasEstablishedWorkspace && !onboardingCompleted && !isVerifiedProfile) {
+            console.log("[TutorialContext] User has no established workspace. Forcing First Time Modal.");
             if (isInDashboard && !showFirstTimeModal) {
               setOnboardingType('professional'); // Default to professional onboarding
               setShowFirstTimeModal(true);
@@ -1171,6 +1192,12 @@ export const TutorialProvider = ({ children }) => {
       return true;
     }
 
+    // Bug Fix: If First Time Modal is showing, we should allow profile accessibility 
+    // if the user is somehow clicking it or if they are in the transition phase.
+    if (showFirstTimeModal) {
+      return true;
+    }
+
     // Check if we are in the initial onboarding/tutorial phase
     // This includes:
     // 1. First time modal showing
@@ -1209,7 +1236,7 @@ export const TutorialProvider = ({ children }) => {
     // 3. All other items are LOCKED until profile tutorial is complete
     return false;
 
-  }, [activeTutorial, currentStep, completedTutorials, tutorialPassed]);
+  }, [activeTutorial, currentStep, completedTutorials, tutorialPassed, showFirstTimeModal]);
 
   // Route guard: Enforce strict navigation during mandatory onboarding
   useEffect(() => {

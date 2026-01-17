@@ -122,6 +122,7 @@ function PersonnalizedInputField({
                     name={name}
                     required={required}
                     value={value}
+                    autoComplete={type === 'email' ? 'email' : type === 'password' ? 'current-password' : undefined}
                     onChange={handleChange}
                     onFocus={handleFocus}
                     onBlur={handleBlur}

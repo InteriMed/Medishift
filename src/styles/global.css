@@ -30,17 +30,14 @@ svg {
 input,
 textarea,
 select {
-  font: inherit;
+  font-family: var(--font-family-text, 'Roboto', sans-serif);
   color: #000000 !important;
-  /* Force black text */
   font-weight: normal !important;
-  /* Force normal weight */
   font-style: normal !important;
-  /* Force normal style */
 }
 
 button {
-  font: inherit;
+  font-family: var(--font-family-text, 'Roboto', sans-serif);
 }
 
 button {
@@ -311,4 +308,24 @@ a:hover {
 
 .btn-yellow:hover {
   background-color: var(--yellow-4);
+}
+
+/* Global border, radius, and shadow style for auth and dashboard pages */
+/* Apply to divs in auth pages */
+.auth-page-container div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.auth-container div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.auth-card div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.auth-content div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form) {
+  border-radius: var(--border-radius-hero, 2.5rem);
+  border: var(--default-border, none);
+  box-shadow: var(--default-div-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
+}
+
+/* Apply to divs in dashboard pages */
+main[data-dashboard="true"] div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.dashboard-container div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.dashboard-content div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form) {
+  border-radius: var(--border-radius-hero, 2.5rem);
+  border: var(--default-border, none);
+  box-shadow: var(--default-div-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
 }

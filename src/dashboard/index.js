@@ -62,19 +62,19 @@ const Dashboard = () => {
                 {/* Restrict access to other routes if profile is not complete */}
                 <Route
                   path="calendar/*"
-                  element={profileComplete ? <Calendar userData={userData} /> : <Navigate to="/dashboard/overview" replace />}
+                  element={<Calendar userData={userData} />}
                 />
                 <Route
                   path="messages/*"
-                  element={profileComplete ? <Messages userData={userData} /> : <Navigate to="/dashboard/overview" replace />}
+                  element={<Messages userData={userData} />}
                 />
                 <Route
                   path="contracts/*"
-                  element={profileComplete ? <Contracts userData={userData} /> : <Navigate to="/dashboard/overview" replace />}
+                  element={<Contracts userData={userData} />}
                 />
                 <Route
                   path="marketplace/*"
-                  element={profileComplete ? <Marketplace userData={userData} /> : <Navigate to="/dashboard/overview" replace />}
+                  element={<Marketplace userData={userData} />}
                 />
 
                 {/* 🇨🇭 Swiss Compliance - Phase 1: Payroll Management (Facilities only) */}

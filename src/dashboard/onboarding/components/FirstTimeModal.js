@@ -13,7 +13,7 @@ import { useDashboard } from '../../contexts/DashboardContext';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { FiBriefcase, FiSearch, FiCheck, FiArrowRight, FiHome, FiAlertTriangle, FiX, FiLink, FiHelpCircle, FiLoader } from 'react-icons/fi';
 import GLNVerificationStep from './GLNVerificationStep';
-import logoImage from '../../../assets/global/logo.png';
+import PhoneVerificationStep from './PhoneVerificationStep';
 
 // Styles
 const styles = {
@@ -66,9 +66,12 @@ const FirstTimeModal = () => {
 
   // Default role based on onboarding type
   const defaultRole = onboardingType === 'facility' ? 'company' : null;
-  const [step, setStep] = useState(1); // 1: Intro, 2: Role, 3: Details, 4: GLN Verification
+  const [step, setStep] = useState(1); // 1: Legal, 2: Role, 3: Phone, 4: GLN Verification
   const [role, setRole] = useState(defaultRole); // 'worker' | 'company' | 'chain'
   const [isEmployed, setIsEmployed] = useState(false); // boolean - default to false
+  const [belongsToFacility, setBelongsToFacility] = useState(false); // For Legal step
+  const [phoneVerified, setPhoneVerified] = useState(false); // Track phone verification
+  const [phoneData, setPhoneData] = useState({ phoneNumber: '', verified: false });
   const [accessTeam, setAccessTeam] = useState(null); // boolean
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -157,6 +160,15 @@ const FirstTimeModal = () => {
             }
             if (savedRole) {
               setRole(savedRole);
+            }
+            if (typeProgress.belongsToFacility !== undefined) {
+              setBelongsToFacility(typeProgress.belongsToFacility);
+            }
+            if (typeProgress.phoneVerified !== undefined) {
+              setPhoneVerified(typeProgress.phoneVerified);
+            }
+            if (typeProgress.phoneData) {
+              setPhoneData(typeProgress.phoneData);
             }
             if (savedIsEmployed !== undefined && savedIsEmployed !== null) {
               setIsEmployed(savedIsEmployed);
@@ -333,15 +345,16 @@ const FirstTimeModal = () => {
   const handleNext = async () => {
     console.log('[FirstTimeModal] handleNext called, current step:', step);
 
-    if (step === 3 && role === 'worker' && isEmployed && accessTeam && !selectedCompany) {
-      console.log('[FirstTimeModal] Validation failed: company not selected');
-      return;
-    }
-
     const maxStep = role === 'chain' ? 3 : 4;
 
     if (step < maxStep) {
-      const newStep = step === 2 && role === 'company' ? 4 : step + 1;
+      let newStep = step + 1;
+
+      // SKIP LOGIC: Step 2 -> Step 4 if Step 3 (Phone) was already verified in previous attempt
+      if (step === 2 && phoneVerified && role !== 'chain') {
+        newStep = 4;
+      }
+
       console.log('[FirstTimeModal] Advancing from step', step, 'to step', newStep);
       setStep(newStep);
       await saveOnboardingProgress({
@@ -352,7 +365,10 @@ const FirstTimeModal = () => {
         selectedCompany,
         legalConsiderationsConfirmed,
         generalWorkingLawsConfirmed,
-        hasGLN
+        hasGLN,
+        belongsToFacility,
+        phoneVerified,
+        phoneData
       });
     } else {
       console.log(`[FirstTimeModal] Step ${maxStep} completed, calling handleComplete`);
@@ -362,7 +378,13 @@ const FirstTimeModal = () => {
 
   const handleBack = async () => {
     if (step > 1) {
-      const newStep = step === 4 && role === 'company' ? 2 : step - 1;
+      let newStep = step - 1;
+
+      // SKIP LOGIC: Step 4 -> Step 2 if Step 3 (Phone) was skipped
+      if (step === 4 && phoneVerified && role !== 'chain') {
+        newStep = 2;
+      }
+
       setStep(newStep);
 
       await saveOnboardingProgress({
@@ -373,7 +395,10 @@ const FirstTimeModal = () => {
         selectedCompany,
         legalConsiderationsConfirmed,
         generalWorkingLawsConfirmed,
-        hasGLN
+        hasGLN,
+        belongsToFacility,
+        phoneVerified,
+        phoneData
       });
     }
   };
@@ -439,24 +464,64 @@ const FirstTimeModal = () => {
   const filteredCompanies = companies.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const renderStep1 = () => (
-    <div className="text-center space-y-6">
-      <div className="w-20 h-20 flex items-center justify-center mx-auto mb-6">
-        <img
-          src={logoImage}
-          alt="Interimed Logo"
-          className="w-20 h-20 object-contain"
-        />
+    <div className="space-y-6">
+      <div className="text-center space-y-4">
+        <div className="w-20 h-20 flex items-center justify-center mx-auto mb-2">
+          <img
+            src="/logo.png"
+            alt="Interimed Logo"
+            className="w-20 h-20 object-contain"
+          />
+        </div>
+        <h2 className="text-2xl font-bold" style={{ color: onboardingType === 'facility' ? 'var(--color-logo-2)' : 'var(--color-logo-1)' }}>
+          Legal Considerations
+        </h2>
+        <p className="text-muted-foreground text-sm max-w-md mx-auto">
+          Please review the following legal requirements and confirm your understanding.
+        </p>
       </div>
-      <h2 className="text-3xl font-bold" style={{ color: onboardingType === 'facility' ? 'var(--color-logo-2)' : 'var(--color-logo-1)' }}>
-        {onboardingType === 'facility'
-          ? "Let's set up your business"
-          : "Let's start your onboarding"}
-      </h2>
-      <p className="text-muted-foreground text-sm max-w-md mx-auto">
-        {onboardingType === 'facility'
-          ? "Create your facility profile to start recruiting healthcare professionals."
-          : "Welcome to MediShift! We'll guide you through setting up your workspace in just a few steps."}
-      </p>
+
+      <div className="bg-muted/30 p-4 rounded-xl space-y-4 border border-border">
+        <div className="flex items-center justify-between p-2">
+          <span className="text-sm font-medium">I belong to a facility/organization</span>
+          <ToggleSwitch
+            checked={belongsToFacility}
+            onChange={(val) => setBelongsToFacility(val)}
+          />
+        </div>
+
+        <div className="text-sm text-foreground/80 leading-relaxed max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+          {belongsToFacility ? (
+            <div className="space-y-4">
+              <p className="font-semibold text-primary">Facility/Chain Legal Notice:</p>
+              <p>As a facility representative, you are responsible for ensuring that all data provided is accurate and that you have the authority to act on behalf of the organization.</p>
+              <p>Swiss labor laws regarding maximum working hours (LTr) and rest periods must be strictly observed when scheduling shifts. Employers share liability for labor law violations if they are aware of a worker's secondary employment.</p>
+              <p>By proceeding, you agree to our Terms of Business and data processing agreements specifically tailored for healthcare facilities in Switzerland.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="font-semibold text-primary">Professional/Worker Legal Notice:</p>
+              <p>Swiss Labor Law sets a strict maximum of 50 hours per week. If you work 100% (42h), taking extra shifts may be illegal without prior authorization.</p>
+              <p>The Duty of Loyalty (Art. 321a CO) requires you to obtain written permission from your main employer to work for a competitor.</p>
+              <p>You must alternate rest periods: 11 consecutive hours of rest are required between shifts. Working during paid holidays (vacation) is legally restricted to recovery purposes.</p>
+              <p>By proceeding, you acknowledge that you are solely responsible for managing your working hours across different employers.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 bg-primary/5 p-4 rounded-lg border border-primary/20">
+        <input
+          type="checkbox"
+          id="legal-confirm"
+          checked={legalConsiderationsConfirmed}
+          onChange={(e) => setLegalConsiderationsConfirmed(e.target.checked)}
+          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+        />
+        <label htmlFor="legal-confirm" className="text-sm font-medium cursor-pointer">
+          I have read and agree to the legal considerations described above.
+        </label>
+      </div>
     </div>
   );
 
@@ -517,6 +582,28 @@ const FirstTimeModal = () => {
       </div>
     </div>
   );
+
+  const handlePhoneComplete = async (data) => {
+    setPhoneData(data);
+    setPhoneVerified(true);
+
+    // Save progress immediately
+    await saveOnboardingProgress({
+      step: 4,
+      role,
+      isEmployed,
+      accessTeam,
+      selectedCompany,
+      legalConsiderationsConfirmed,
+      generalWorkingLawsConfirmed,
+      hasGLN,
+      belongsToFacility,
+      phoneVerified: true,
+      phoneData: data
+    });
+
+    setStep(4);
+  };
 
   const renderStep3 = () => {
     if (role === 'chain') {
@@ -615,191 +702,12 @@ ${chainMessage}
       );
     }
 
-    if (role === 'company') {
-      return (
-        <div className="text-center space-y-6">
-          <h2 className="text-2xl font-bold">Great! Let's get your company set up.</h2>
-          <p className="text-muted-foreground text-sm">We'll guide you through the process of creating your company profile and inviting your team.</p>
-        </div>
-      );
-    }
-
     return (
-      <div className="space-y-6">
-        {isEmployed && !accessTeam ? (
-          <div className={`${styles.twoColumnGrid} two-column-grid-950`}>
-            <div className="space-y-4">
-              <div className={styles.switchGroup}>
-                <div className="flex flex-col">
-                  <span className={styles.switchLabel}>{t('dashboard.onboarding.employedByCompany', 'Are you currently employed by a company?')}</span>
-                  <span className="text-sm text-muted-foreground">{t('dashboard.onboarding.employedByCompanyDesc', 'Enable if you work for an organization')}</span>
-                </div>
-                <ToggleSwitch
-                  checked={isEmployed === true}
-                  onChange={(val) => {
-                    setIsEmployed(val);
-                    if (val) {
-                      setAccessTeam(true);
-                    } else {
-                      setAccessTeam(false);
-                      setSelectedCompany(null);
-                    }
-                  }}
-                />
-              </div>
-
-              <div className={styles.switchGroup}>
-                <div className="flex flex-col">
-                  <span className={styles.switchLabel}>{t('dashboard.onboarding.joinTeam', 'Join a team')}</span>
-                  <span className="text-sm text-muted-foreground">{t('dashboard.onboarding.joinTeamDesc', 'Enable to find and join your workplace')}</span>
-                </div>
-                <ToggleSwitch
-                  checked={accessTeam === true}
-                  onChange={handleAccessTeamChange}
-                />
-              </div>
-            </div>
-
-            <div className="bg-card border border-border rounded-xl p-5 space-y-3 animate-in fade-in slide-in-from-top-2">
-              <div className="flex items-start gap-2 text-destructive">
-                <FiAlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <h4 className="font-semibold" style={{ fontSize: 'var(--font-size-medium)' }}>{t('dashboard.onboarding.legalConsiderations.title', 'Important Legal Considerations')}</h4>
-              </div>
-              <p className="text-destructive/80" style={{ fontSize: 'var(--font-size-small)' }}>
-                {t('dashboard.onboarding.legalConsiderations.intro', 'For employees working 100% (usually 40-42 hours/week), taking on extra shifts at another pharmacy is almost impossible to do legally.')}
-              </p>
-
-              <div>
-                <p className="font-semibold text-foreground mb-1" style={{ fontSize: 'var(--font-size-medium)' }}>{t('dashboard.onboarding.legalConsiderations.hoursCap.title', '1. Maximum Weekly Hours Cap')}</p>
-                <p className="mb-2 leading-relaxed text-muted-foreground" style={{ fontSize: 'var(--font-size-small)' }}>{t('dashboard.onboarding.legalConsiderations.hoursCap.content', 'Swiss Labor Law sets a strict maximum of 50 hours per week (45 hours in some retail settings). A 100% employee typically works 42 hours, leaving only 8 hours maximum. One full Saturday shift (9 hours) would break the law. Both employers are liable if they know about the other job.')}</p>
-              </div>
-
-              <div>
-                <p className="font-semibold text-foreground mb-1" style={{ fontSize: 'var(--font-size-medium)' }}>{t('dashboard.onboarding.legalConsiderations.dutyOfLoyalty.title', '2. Duty of Loyalty')}</p>
-                <p className="mb-2 leading-relaxed text-muted-foreground" style={{ fontSize: 'var(--font-size-small)' }}>{t('dashboard.onboarding.legalConsiderations.dutyOfLoyalty.content', 'Under the Code of Obligations (Art. 321a), you must obtain written permission from your main employer to work for a competitor. Most pharmacy owners will not grant this permission as they expect staff to rest and be fresh for Monday.')}</p>
-              </div>
-
-              <div>
-                <p className="font-semibold text-foreground mb-1" style={{ fontSize: 'var(--font-size-medium)' }}>{t('dashboard.onboarding.legalConsiderations.dailyRest.title', '3. Daily Rest Rule')}</p>
-                <p className="mb-2 leading-relaxed text-muted-foreground" style={{ fontSize: 'var(--font-size-small)' }}>{t('dashboard.onboarding.legalConsiderations.dailyRest.content', 'The law requires 11 consecutive hours of rest between shifts (can be reduced to 8 hours once a week). For example: finishing at 18:30 and starting an evening shift until 23:00, then returning at 08:00 the next morning gives only 9 hours of rest (illegal).')}</p>
-              </div>
-
-              <div>
-                <p className="font-semibold text-foreground mb-1" style={{ fontSize: 'var(--font-size-medium)' }}>{t('dashboard.onboarding.legalConsiderations.holidays.title', '4. Working During Holidays')}</p>
-                <p className="mb-2 leading-relaxed text-muted-foreground" style={{ fontSize: 'var(--font-size-small)' }}>{t('dashboard.onboarding.legalConsiderations.holidays.content', 'Vacation is legally designated for recovery (Erholungszweck). Working for money during paid holidays can result in your employer refusing to pay holiday salary or even termination for breach of contract.')}</p>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-border">
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={legalConsiderationsConfirmed}
-                    onChange={(e) => handleLegalConfirmChange(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 border-border rounded focus:ring-2"
-                    style={{ accentColor: 'var(--color-logo-1)' }}
-                  />
-                  <span className="text-muted-foreground" style={{ fontSize: 'var(--font-size-small)' }}>
-                    {t('dashboard.onboarding.legalConsiderations.confirm', 'I understand and acknowledge these legal considerations')}
-                  </span>
-                </label>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className={styles.switchGroup}>
-              <div className="flex flex-col">
-                <span className={styles.switchLabel}>{t('dashboard.onboarding.employedByCompany', 'Are you currently employed by a company?')}</span>
-                <span className="text-sm text-muted-foreground">{t('dashboard.onboarding.employedByCompanyDesc', 'Enable if you work for an organization')}</span>
-              </div>
-              <ToggleSwitch
-                checked={isEmployed === true}
-                onChange={handleEmployedChange}
-              />
-            </div>
-
-            {!isEmployed && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-top-2 bg-card border border-border rounded-xl p-5">
-                <div className="flex items-start gap-2 text-destructive">
-                  <FiAlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <h4 className="font-semibold" style={{ fontSize: 'var(--font-size-medium)' }}>{t('dashboard.onboarding.generalWorkingLaws.title', 'Important Legal Considerations')}</h4>
-                </div>
-                <p className="text-muted-foreground" style={{ fontSize: 'var(--font-size-small)' }}>
-                  {t('dashboard.onboarding.generalWorkingLaws.warning', 'Please be aware of general working laws and regulations that apply to all workers. Swiss Labor Law sets a strict maximum of 50 hours per week (45 hours in some retail settings). The law requires 11 consecutive hours of rest between shifts (can be reduced to 8 hours once a week). Vacation and rest periods are legally designated for recovery (Erholungszweck). Please ensure you comply with all applicable labor law requirements regarding maximum working hours, rest periods, and other regulations.')}
-                </p>
-                <div className="mt-4 pt-4 border-t border-border">
-                  <label className="flex items-start gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={generalWorkingLawsConfirmed}
-                      onChange={(e) => handleGeneralWorkingLawsConfirmChange(e.target.checked)}
-                      className="w-4 h-4 mt-0.5 border-border rounded focus:ring-2"
-                      style={{ accentColor: 'var(--color-logo-1)' }}
-                    />
-                    <span className="text-muted-foreground" style={{ fontSize: 'var(--font-size-small)' }}>
-                      {t('dashboard.onboarding.generalWorkingLaws.confirm', 'I understand and acknowledge these legal considerations')}
-                    </span>
-                  </label>
-                </div>
-              </div>
-            )}
-
-            {isEmployed && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                <div className={styles.switchGroup}>
-                  <div className="flex flex-col">
-                    <span className={styles.switchLabel}>{t('dashboard.onboarding.joinTeam', 'Join a team')}</span>
-                    <span className="text-sm text-muted-foreground">{t('dashboard.onboarding.joinTeamDesc', 'Enable to find and join your workplace')}</span>
-                  </div>
-                  <ToggleSwitch
-                    checked={accessTeam === true}
-                    onChange={handleAccessTeamChange}
-                  />
-                </div>
-
-                {isEmployed && accessTeam && (
-                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                    <h3 className="font-semibold text-sm">Find your company</h3>
-                    <div className="relative">
-                      <FiSearch className="absolute left-3 top-3 text-muted-foreground" />
-                      <input
-                        type="text"
-                        placeholder="Search for your company..."
-                        className={styles.searchInput}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.2)'; }}
-                        onBlur={(e) => { e.currentTarget.style.boxShadow = ''; }}
-                      />
-                    </div>
-                    {searchQuery && (
-                      <div className="border border-border rounded-lg mt-2 max-h-40 overflow-y-auto shadow-sm">
-                        {filteredCompanies.length > 0 ? (
-                          <ul className="divide-y divide-border">
-                            {filteredCompanies.map(c => (
-                              <li
-                                key={c.id}
-                                onClick={() => handleCompanySelect(c)}
-                                className={`p-3 cursor-pointer hover:bg-muted/50 flex justify-between items-center ${selectedCompany?.id === c.id ? '' : ''}`}
-                                style={selectedCompany?.id === c.id ? { backgroundColor: 'rgba(37, 99, 235, 0.05)', color: 'var(--color-logo-1)' } : {}}
-                              >
-                                <span className="text-sm">{c.name}</span>
-                                {selectedCompany?.id === c.id && <FiCheck className="w-4 h-4" style={{ color: 'var(--color-logo-1)' }} />}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className="p-3 text-sm text-muted-foreground text-center">No companies found</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <PhoneVerificationStep
+        onComplete={handlePhoneComplete}
+        onBack={handleBack}
+        initialPhoneNumber={currentUser?.phoneNumber}
+      />
     );
   };
 
@@ -896,23 +804,14 @@ ${chainMessage}
   };
 
   const canProceed = () => {
-    if (step === 1) return true;
+    if (step === 1) return legalConsiderationsConfirmed;
     if (step === 2) return role !== null;
     if (step === 3) {
-      if (role === 'company') return true;
       if (role === 'chain') return chainMessage.trim().length > 0 && chainPhonePrefix && chainPhoneNumber.trim().length > 0;
-      if (role === 'worker' && isEmployed && !accessTeam) {
-        return legalConsiderationsConfirmed;
-      }
-      if (role === 'worker' && !isEmployed) {
-        return generalWorkingLawsConfirmed;
-      }
-      return true;
+      return phoneVerified;
     }
     if (step === 4) {
       if (role === 'chain') return true;
-
-      // Check if documents are ready (updated by child component)
       return documentsReady;
     }
     return true;
@@ -963,7 +862,7 @@ ${chainMessage}
             </Button>
           )}
 
-          {(step !== 3 || role !== 'chain') && step !== 4 && (
+          {step !== 3 && (step !== 3 || role !== 'chain') && step !== 4 && (
             <Button
               variant="primary"
               onClick={handleNext}

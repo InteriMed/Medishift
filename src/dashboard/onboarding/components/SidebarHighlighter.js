@@ -450,17 +450,9 @@ const SidebarHighlighter = () => {
         console.log(`[SidebarHighlighter] Adding interaction listener to element`);
         addInteractionListener(targetElement);
 
-        // Make the actual element non-clickable by adding a pointer-events blocker
-        // The overlay will handle clicks instead
-        // For profile tabs, we need to be more careful with styling
         if (isProfileTab) {
-          // Store original styles to restore later
-          if (!targetElement.dataset.originalPointerEvents) {
-            targetElement.dataset.originalPointerEvents = targetElement.style.pointerEvents || '';
-          }
-          targetElement.style.pointerEvents = 'none';
+          // No longer needed as we allow direct interaction
         } else {
-          targetElement.style.pointerEvents = 'none';
           targetElement.style.position = 'relative';
           targetElement.style.zIndex = '1';
         }
@@ -641,156 +633,8 @@ const SidebarHighlighter = () => {
   }, [activeTutorial, currentStep, stepData, positionHighlightBox, cleanup, isTutorialActive, handleResize]); // Removed isMainSidebarCollapsed - not needed here
 
 
-  // Don't render anything if there's no highlight box to show
-  if (!highlightBox || !isTutorialActive) {
-    // Debug logging
-    if (isTutorialActive && !highlightBox) {
-      console.log("[SidebarHighlighter] Tutorial active but no highlightBox - stepData:", stepData);
-    }
-    return null;
-  }
-
-  // Check if highlight box has valid dimensions
-  const hasValidDimensions = highlightBox.width &&
-    highlightBox.height &&
-    parseFloat(highlightBox.width.toString().replace('px', '')) > 0 &&
-    parseFloat(highlightBox.height.toString().replace('px', '')) > 0;
-
-  if (!hasValidDimensions && waitingForInteraction) {
-    console.warn("[SidebarHighlighter] Highlight box has invalid dimensions:", highlightBox);
-    // Don't return null - still render it, but log the issue
-  }
-
-  // Determine if we should show a special pulsing effect for interaction elements
-  const isPulsing = waitingForInteraction;
-
-  // Debug logging for mobile overlay
-  const isMobile = window.innerWidth < 768;
-  if (isMobile && waitingForInteraction) {
-    console.log("[SidebarHighlighter] Mobile overlay should be visible - highlightBox:", highlightBox, "waitingForInteraction:", waitingForInteraction);
-    console.log("[SidebarHighlighter] Overlay dimensions:", {
-      width: highlightBox.width,
-      height: highlightBox.height,
-      top: highlightBox.top,
-      left: highlightBox.left,
-      zIndex: highlightBox.zIndex
-    });
-  }
-
-  // Determine if this is a profile tab based on stepData
-  const isProfileTab = stepData?.highlightTab !== undefined;
-  const isUploadButton = stepData?.highlightUploadButton === true;
-  const useProfileTabAnimation = isProfileTab || isUploadButton;
-
-  // Disable overlay blocking when tutorial is waiting for save
-  const shouldBlockInteraction = waitingForInteraction && !isWaitingForSave;
-
-  // Show overlay for upload button even if it doesn't require interaction
-  const shouldShowOverlay = shouldBlockInteraction || isUploadButton;
-
-  // Inline styles for the highlight box with animation
-  // Match the exact styling of profile tabs or sidebar items
-  const highlightBoxStyle = {
-    ...highlightBox,
-    pointerEvents: shouldBlockInteraction ? 'auto' : 'none',
-    cursor: shouldBlockInteraction ? 'pointer' : 'default',
-    display: 'block', // Ensure overlay is always displayed
-    visibility: 'visible', // Ensure overlay is visible
-    opacity: shouldShowOverlay ? (shouldBlockInteraction ? 1 : 0.8) : 0.3, // Show overlay for upload button
-    // Force very high z-index - mobile sidebar is z-50 (500), backdrop is z-40 (400)
-    // We need to be above both, so use 10000 (higher than the highlight.zIndex of 10000)
-    // But lower z-index when waiting for save so it doesn't block
-    zIndex: shouldBlockInteraction ? 10000 : (isWaitingForSave ? 1 : (highlightBox.zIndex || 2500)),
-    // Force overlay to be on top in mobile mode and for sidebar items
-    ...(shouldBlockInteraction ? {
-      position: 'fixed', // Force fixed positioning
-      zIndex: 10000, // Force highest z-index to be above sidebar (z-50 = 500)
-      isolation: 'isolate', // Create new stacking context
-      willChange: 'transform', // Optimize for animation
-    } : {}),
-    // Match profile tab styling with dark blue logo color 1 (#2563eb)
-    // Make overlay less visible when waiting for save
-    // Use profile tab animation for both profile tabs and upload button
-    backgroundColor: shouldShowOverlay
-      ? (useProfileTabAnimation ? 'rgba(37, 99, 235, 0.08)' : 'rgba(37, 99, 235, 0.06)')
-      : (isWaitingForSave ? 'transparent' : 'transparent'),
-    border: shouldShowOverlay
-      ? (useProfileTabAnimation
-        ? '1px solid rgba(37, 99, 235, 0.35)'
-        : '2px solid rgba(37, 99, 235, 0.45)')
-      : 'none',
-    boxShadow: shouldShowOverlay
-      ? (useProfileTabAnimation
-        ? '0 0 0 2px rgba(37, 99, 235, 0.25), 0 0 0 4px rgba(37, 99, 235, 0.15), 0 0 20px rgba(37, 99, 235, 0.35)'
-        : '0 0 0 2px rgba(37, 99, 235, 0.25), 0 0 20px rgba(37, 99, 235, 0.45)')
-      : 'none',
-    transition: 'all 0.3s ease-in-out',
-    animation: shouldShowOverlay ? 'pulse-overlay 2s ease-in-out infinite' : 'none',
-    // Ensure exact match - no padding or margin adjustments
-    margin: '0',
-    padding: '0',
-    boxSizing: 'border-box'
-  };
-
-  return (
-    <>
-      <style>{`
-        @keyframes pulse-overlay {
-          0%, 100% {
-            box-shadow: ${useProfileTabAnimation
-          ? '0 0 0 2px rgba(37, 99, 235, 0.25), 0 0 0 4px rgba(37, 99, 235, 0.15), 0 0 20px rgba(37, 99, 235, 0.35)'
-          : '0 0 0 2px rgba(37, 99, 235, 0.15), 0 0 20px rgba(37, 99, 235, 0.25)'};
-            border-color: ${useProfileTabAnimation ? 'rgba(37, 99, 235, 0.35)' : 'rgba(37, 99, 235, 0.15)'};
-            background-color: ${useProfileTabAnimation ? 'rgba(37, 99, 235, 0.08)' : 'rgba(37, 99, 235, 0.04)'};
-          }
-          50% {
-            box-shadow: ${useProfileTabAnimation
-          ? '0 0 0 3px rgba(37, 99, 235, 0.35), 0 0 0 6px rgba(37, 99, 235, 0.2), 0 0 30px rgba(37, 99, 235, 0.5)'
-          : '0 0 0 4px rgba(37, 99, 235, 0.25), 0 0 30px rgba(37, 99, 235, 0.45)'};
-            border-color: ${useProfileTabAnimation ? 'rgba(37, 99, 235, 0.55)' : 'rgba(37, 99, 235, 0.25)'};
-            background-color: ${useProfileTabAnimation ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.06)'};
-          }
-        }
-      `}</style>
-      <div
-        className={`${styles.highlightBox} ${isPulsing ? styles.pulsing : ''}`}
-        style={{
-          ...highlightBoxStyle,
-          // Force important styles for overlay visibility (only when not waiting for save)
-          ...(shouldBlockInteraction ? {
-            zIndex: 10000, // Always use highest z-index for interactive elements
-            position: 'fixed',
-            display: 'block',
-            visibility: 'visible',
-            opacity: 1,
-            pointerEvents: 'auto',
-            isolation: 'isolate', // Ensure new stacking context
-          } : isWaitingForSave ? {
-            // When waiting for save, make overlay non-blocking but visible
-            pointerEvents: 'none',
-            zIndex: 1,
-            opacity: 0.5
-          } : {})
-        }}
-        data-testid="tutorial-highlight-box"
-        data-waiting-interaction={shouldBlockInteraction ? 'true' : 'false'}
-        data-tutorial-waiting-for-save={isWaitingForSave ? 'true' : 'false'}
-        data-mobile-overlay="true"
-        data-is-mobile={isMobile ? 'true' : 'false'}
-        onClick={shouldBlockInteraction ? handleOverlayClick : undefined}
-        onMouseEnter={(e) => {
-          if (shouldBlockInteraction) {
-            e.currentTarget.style.transform = 'scale(1.02)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (shouldBlockInteraction) {
-            e.currentTarget.style.transform = 'scale(1)';
-          }
-        }}
-      />
-    </>
-  );
+  // Don't render anything - highlights are now handled directly by components
+  return null;
 };
 
-export default SidebarHighlighter; 
+export default SidebarHighlighter;

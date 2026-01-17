@@ -435,18 +435,18 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                 <div className="text-xs text-muted-foreground truncate">{user?.email}</div>
               </div>
               <div className="p-1">
-                <button onClick={() => { navigate('/dashboard/profile'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm">
-                  <FiUser className="w-4 h-4" /> Profile
+                <button onClick={() => { navigate('/dashboard/profile'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm text-black">
+                  <FiUser className="w-4 h-4 text-black" /> Profile
                 </button>
-                <button onClick={() => { navigate('/dashboard/profile/settings'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm">
-                  <FiSettings className="w-4 h-4" /> Settings
+                <button onClick={() => { navigate('/dashboard/profile/settings'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm text-black">
+                  <FiSettings className="w-4 h-4 text-black" /> Settings
                 </button>
                 <div className="my-1 h-px bg-border" />
                 <button 
                   onClick={() => { setShowResetConfirm(true); }} 
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-destructive/10 text-destructive text-sm"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-destructive/10 text-black text-sm"
                 >
-                  <FiRefreshCw className="w-4 h-4" /> {t('dashboard.header.resetProfile', 'Reset Profile')}
+                  <FiRefreshCw className="w-4 h-4 text-black" /> {t('dashboard.header.resetProfile', 'Reset Profile')}
                 </button>
                 <div className="my-1 h-px bg-border" />
                 <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-destructive/10 text-destructive text-sm">

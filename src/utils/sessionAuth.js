@@ -7,13 +7,14 @@ const SESSION_TOKEN_PREFIX = 'medishift_session_';
 const SESSION_EXPIRY_HOURS = 1;
 const WORKSPACE_TYPES = {
   PERSONAL: 'personal',
-  TEAM: 'team'
+  TEAM: 'team',
+  ADMIN: 'admin'
 };
 
 /**
  * Generate a session token for workspace access
  * @param {string} userId - Firebase Auth UID
- * @param {string} workspaceType - 'personal' or 'team'
+ * @param {string} workspaceType - 'personal', 'team', or 'admin'
  * @param {string} facilityId - Required for team workspace
  * @returns {string} Session token
  */
@@ -88,9 +89,27 @@ const hasTeamAccess = (userData, facilityId) => {
 };
 
 /**
+ * Check if user has admin access
+ * @param {Object} userData - User document from Firestore
+ * @returns {boolean} True if user has admin access
+ */
+const hasAdminAccess = (userData) => {
+  if (!userData) return false;
+  
+  // Check roles array for admin roles
+  if (userData.roles && Array.isArray(userData.roles)) {
+    const adminRoles = ['admin', 'super_admin', 'ops_manager', 'finance', 'recruiter', 'support'];
+    return userData.roles.some(role => adminRoles.includes(role));
+  }
+  
+  // Fallback to singular role field for backward compatibility
+  return userData.role === 'admin';
+};
+
+/**
  * Verify user permissions and create session token for workspace access
  * @param {string} userId - Firebase Auth UID
- * @param {string} workspaceType - 'personal' or 'team'
+ * @param {string} workspaceType - 'personal', 'team', or 'admin'
  * @param {string} facilityId - Required for team workspace
  * @returns {Promise<string|null>} Session token or null if unauthorized
  */
@@ -146,6 +165,11 @@ export const createWorkspaceSession = async (userId, workspaceType, facilityId =
         console.warn(`[SessionAuth] User ${userId} not found in facility ${facilityId} admin/employees`);
         return null;
       }
+    } else if (workspaceType === WORKSPACE_TYPES.ADMIN) {
+      if (!hasAdminAccess(userData)) {
+        console.warn(`[SessionAuth] User ${userId} lacks admin access`);
+        return null;
+      }
     } else {
       console.warn(`[SessionAuth] Invalid workspace type: ${workspaceType}`);
       return null;
@@ -173,7 +197,7 @@ export const createWorkspaceSession = async (userId, workspaceType, facilityId =
 
 /**
  * Validate current session for workspace access
- * @param {string} workspaceType - 'personal' or 'team'
+ * @param {string} workspaceType - 'personal', 'team', or 'admin'
  * @param {string} facilityId - Required for team workspace
  * @returns {Object|null} Session data or null if invalid
  */
@@ -205,6 +229,11 @@ export const validateWorkspaceSession = (workspaceType, facilityId = null) => {
       return null;
     }
 
+    if (workspaceType === WORKSPACE_TYPES.ADMIN && sessionData.facilityId) {
+      console.warn(`[SessionAuth] Admin workspace should not have facilityId`);
+      return null;
+    }
+
     console.log(`[SessionAuth] Valid session found for ${workspaceType} workspace`);
     return sessionData;
 
@@ -216,7 +245,7 @@ export const validateWorkspaceSession = (workspaceType, facilityId = null) => {
 
 /**
  * Clear session for specific workspace
- * @param {string} workspaceType - 'personal' or 'team'
+ * @param {string} workspaceType - 'personal', 'team', or 'admin'
  * @param {string} facilityId - Required for team workspace
  */
 export const clearWorkspaceSession = (workspaceType, facilityId = null) => {
@@ -293,6 +322,16 @@ export const getAvailableWorkspaces = (userData) => {
           description: 'Manage team schedules, time-off requests, and internal operations'
         });
       }
+    });
+  }
+
+  // 4. Check for admin access
+  if (hasAdminAccess(userData)) {
+    workspaces.push({
+      id: 'admin',
+      name: 'Admin Workspace',
+      type: WORKSPACE_TYPES.ADMIN,
+      description: 'Manage platform operations, users, and system settings'
     });
   }
 

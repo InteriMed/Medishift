@@ -125,8 +125,8 @@ export function DashboardLayout({ children }) {
                     onBackButtonClick={onBackButtonClick}
                 />
 
-                <main className="flex-1 overflow-hidden bg-muted/10 bg-swiss-cross w-full h-full">
-                    <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <main className="flex-1 overflow-hidden w-full h-full" style={{ position: 'relative', backgroundColor: 'var(--dashboard-bg, #f8f9fa)' }} data-dashboard="true">
+                    <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ position: 'relative', zIndex: 1 }}>
                         {children}
                     </div>
                 </main>

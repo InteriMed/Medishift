@@ -211,18 +211,25 @@ export const DashboardProvider = ({ children }) => {
   // Fetch user data and workspaces when currentUser changes
   useEffect(() => {
     const fetchUserData = async () => {
-      console.log("[DashboardContext] Fetching user data...");
+      // console.log("[DashboardContext] Fetching user data...");
 
       if (!currentUser) {
-        setUser(null);
-        setWorkspaces([]);
-        setSelectedWorkspace(null);
-        setProfileComplete(false);
-        setTutorialPassed(false);
+        if (user) {
+          setUser(null);
+          setWorkspaces([]);
+          setSelectedWorkspace(null);
+          setProfileComplete(false);
+          setTutorialPassed(false);
+          setUserProfile(null);
+          clearCookieValues(currentUser?.uid);
+        }
         setIsLoading(false);
-        setUserProfile(null);
-        clearCookieValues(currentUser?.uid);
+        return;
+      }
 
+      // Optimization: if we already have the user data for this UID, don't refetch
+      if (user && user.uid === currentUser.uid) {
+        setIsLoading(false);
         return;
       }
 
@@ -233,11 +240,16 @@ export const DashboardProvider = ({ children }) => {
 
         // console.log("[DashboardContext] Cookie values:", cookieValues);
 
-
-
         // console.log(`Attempting to fetch user document for ID: ${currentUser.uid}`);
         // Replace API call with direct Firestore access
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        // Add timeout to prevent infinite loading
+        const TIMEOUT_MS = 15000;
+        const fetchUserDoc = getDoc(doc(db, 'users', currentUser.uid));
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS)
+        );
+
+        const userDoc = await Promise.race([fetchUserDoc, timeoutPromise]);
 
         if (!userDoc.exists()) {
           console.log("[DashboardContext] User document does not exist, creating new user document");
@@ -332,13 +344,13 @@ export const DashboardProvider = ({ children }) => {
         // Workspaces are initialized in useEffect based on user roles
         // This prevents race conditions and ensures correct session handling
       } catch (error) {
-        console.error('Error fetching user data from Firestore:', error);
-
         // Don't show full error UI for offline/network issues, just log warning
-        if (error.code === 'unavailable' || (error.message && error.message.includes('offline'))) {
-          console.warn('[DashboardContext] User data fetch failed due to offline status');
-          // We suppress the global error state for offline handling to allow UI to show cached data if available
+        if (error.message === 'Request timed out') {
+          console.warn('[DashboardContext] User data fetch timed out - using minimal state/cookie values');
+        } else if (error.code === 'unavailable' || (error.message && error.message.includes('offline'))) {
+          console.warn('[DashboardContext] User data fetch skipped - client is offline');
         } else {
+          console.error('Error fetching user data from Firestore:', error);
           // Only set error if we really have no user data to show
           if (!user) {
             setError(`Error fetching user data: ${error.message}`);
@@ -441,6 +453,8 @@ export const DashboardProvider = ({ children }) => {
           clearWorkspaceSession(WORKSPACE_TYPES.PERSONAL);
         } else if (selectedWorkspace.type === WORKSPACE_TYPES.TEAM) {
           clearWorkspaceSession(WORKSPACE_TYPES.TEAM, selectedWorkspace.facilityId);
+        } else if (selectedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
+          clearWorkspaceSession(WORKSPACE_TYPES.ADMIN);
         }
       }
 
@@ -450,6 +464,8 @@ export const DashboardProvider = ({ children }) => {
         sessionToken = await createWorkspaceSession(user.uid, WORKSPACE_TYPES.PERSONAL, null, user);
       } else if (workspace.type === WORKSPACE_TYPES.TEAM) {
         sessionToken = await createWorkspaceSession(user.uid, WORKSPACE_TYPES.TEAM, workspace.facilityId, user);
+      } else if (workspace.type === WORKSPACE_TYPES.ADMIN) {
+        sessionToken = await createWorkspaceSession(user.uid, WORKSPACE_TYPES.ADMIN, null, user);
       }
 
       if (!sessionToken) {
@@ -539,6 +555,8 @@ export const DashboardProvider = ({ children }) => {
         hasValidSession = validateWorkspaceSession(WORKSPACE_TYPES.PERSONAL) !== null;
       } else if (savedWorkspace.type === WORKSPACE_TYPES.TEAM) {
         hasValidSession = validateWorkspaceSession(WORKSPACE_TYPES.TEAM, savedWorkspace.facilityId) !== null;
+      } else if (savedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
+        hasValidSession = validateWorkspaceSession(WORKSPACE_TYPES.ADMIN) !== null;
       }
 
       if (hasValidSession) {
@@ -560,7 +578,7 @@ export const DashboardProvider = ({ children }) => {
           return w.type === WORKSPACE_TYPES.PERSONAL;
         }
         return false;
-      });
+      }) || availableWorkspaces.find(w => w.type === WORKSPACE_TYPES.ADMIN);
 
       // Fall back to first workspace if no match found
       const workspaceToSelect = primaryWorkspace || availableWorkspaces[0];
@@ -584,6 +602,8 @@ export const DashboardProvider = ({ children }) => {
         isValid = validateWorkspaceSession(WORKSPACE_TYPES.PERSONAL) !== null;
       } else if (selectedWorkspace.type === WORKSPACE_TYPES.TEAM) {
         isValid = validateWorkspaceSession(WORKSPACE_TYPES.TEAM, selectedWorkspace.facilityId) !== null;
+      } else if (selectedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
+        isValid = validateWorkspaceSession(WORKSPACE_TYPES.ADMIN) !== null;
       }
 
       if (!isValid) {

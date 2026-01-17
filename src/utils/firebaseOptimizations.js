@@ -122,44 +122,9 @@ export const batchOperations = async (operations) => {
   }
 };
 
-/**
- * Cache data in localStorage for faster access
- * @param {string} key - Cache key
- * @param {any} data - Data to cache
- * @param {number} expiryMinutes - Minutes until cache expires
- */
 export const cacheData = (key, data, expiryMinutes = 10) => {
-  try {
-    const cacheItem = {
-      data,
-      expiry: Date.now() + (expiryMinutes * 60 * 1000)
-    };
-    localStorage.setItem(`firebase_cache_${key}`, JSON.stringify(cacheItem));
-  } catch (error) {
-    console.warn('Error caching data:', error);
-  }
 };
 
-/**
- * Get cached data if available and not expired
- * @param {string} key - Cache key
- * @returns {any|null} Cached data or null if not found/expired
- */
 export const getCachedData = (key) => {
-  try {
-    const cachedItem = localStorage.getItem(`firebase_cache_${key}`);
-    if (!cachedItem) return null;
-    
-    const { data, expiry } = JSON.parse(cachedItem);
-    if (Date.now() > expiry) {
-      // Cache expired, remove it
-      localStorage.removeItem(`firebase_cache_${key}`);
-      return null;
-    }
-    
-    return data;
-  } catch (error) {
-    console.warn('Error retrieving cached data:', error);
-    return null;
-  }
+  return null;
 }; 

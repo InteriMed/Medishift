@@ -32,9 +32,7 @@ const DashboardLayout = ({ children }) => {
       height: '100vh',
       width: '100vw',
       overflow: 'hidden',
-      backgroundColor: 'hsl(var(--background))',
-      backgroundImage: 'radial-gradient(var(--pattern-dot) 1px, transparent 1px)',
-      backgroundSize: '20px 20px',
+      backgroundColor: 'var(--dashboard-bg, #f8f9fa)',
       position: window.innerWidth <= 1110 ? 'relative' : undefined,
     },
     dashboardContent: {
@@ -154,10 +152,18 @@ const DashboardLayout = ({ children }) => {
   };
 
   return (
-    <div style={styles.dashboardContainer}>
-      <Header
-        sidebarDisabled={isSidebarDisabled}
-      />
+    <>
+      <style>{`
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
+      <div style={styles.dashboardContainer}>
+        <Header
+          sidebarDisabled={isSidebarDisabled}
+        />
 
       <div style={styles.dashboardContent}>
         <div ref={sidebarRef}>
@@ -178,12 +184,13 @@ const DashboardLayout = ({ children }) => {
         )}
 
         <div style={styles.mainContent}>
-          <main style={styles.contentArea}>
+          <main style={styles.contentArea} data-dashboard="true">
             {children}
           </main>
         </div>
       </div>
     </div>
+    </>
   );
 };
 

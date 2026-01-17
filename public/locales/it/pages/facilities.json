@@ -1,0 +1,104 @@
+{
+    "meta": {
+        "title": "Soluzioni di personale per strutture sanitarie | MediShift",
+        "description": "Trova professionisti sanitari qualificati per posizioni temporanee. Ottimizza il tuo processo di reclutamento con la piattaforma specializzata di MediShift",
+        "keywords": "personale sanitario, reclutamento farmacie, professionisti sanitari temporanei, personale sanitario, lavori sanitari Svizzera, piattaforma personale"
+    },
+    "hero": {
+        "title": "Soluzioni di personale sanitario, semplicemente",
+        "subtitle": "Ottimizza il tuo processo di reclutamento con MediShift, semplifica il tuo lavoro e concentrati sulla cura dei pazienti",
+        "trustSnippet": "Lancio nella Svizzera francese, iniziando con le farmacie",
+        "cta": "Inizia ora",
+        "features": {
+            "contracts": "Contratti Sicuri",
+            "planning": "Pianificazione Facile",
+            "qualifiedStaff": "Personale Qualificato"
+        }
+    },
+    "problem": {
+        "title": "Comprendiamo le sfide del settore sanitario",
+        "description": "Comprendiamo le sfide quotidiane che affronti. La nostra piattaforma fornisce soluzioni concrete per superare questi ostacoli.",
+        "challenge1": {
+            "title": "Carenza di personale",
+            "description": "Comprendiamo che la carenza cronica di personale impatta sul tuo lavoro e sui tuoi pazienti. Siamo qui per aiutare"
+        },
+        "challenge2": {
+            "title": "Reclutamento dispendioso in termini di tempo",
+            "description": "I processi di assunzione tradizionali erano lenti, inefficienti e spesso portavano a risultati negativi. Ora siamo qui"
+        },
+        "challenge3": {
+            "title": "Trovare professionisti qualificati",
+            "description": "Trovare i professionisti giusti è una sfida. Forniamo gli strumenti e le informazioni, tu prendi la decisione"
+        }
+    },
+    "solution": {
+        "title": "La nostra soluzione è semplice, efficiente ed efficace",
+        "step1": {
+            "title": "Crea il profilo della tua struttura",
+            "description": "Configura il profilo della tua struttura sanitaria con posizione, requisiti e dettagli sull'ambiente di lavoro"
+        },
+        "step2": {
+            "title": "Pubblica le esigenze di personale",
+            "description": "Crea rapidamente annunci di lavoro per le posizioni, anche all'ultimo minuto, usando il nostro calendario interattivo"
+        },
+        "step3": {
+            "title": "Connetti e firma",
+            "description": "Conferma il match, contatta il candidato, inizia a lavorare insieme. È così semplice"
+        }
+    },
+    "benefits": {
+        "title": "Vantaggi per le Strutture Sanitarie",
+        "benefit1": {
+            "title": "Soluzioni rapide di personale",
+            "description": "Copri le posizioni rapidamente con professionisti qualificati, rispondendo anche a esigenze dell'ultimo minuto"
+        },
+        "benefit2": {
+            "title": "Riduzione del carico amministrativo",
+            "description": "Processi ottimizzati per la pubblicazione di annunci, la revisione dei candidati e la gestione della conformità delle buste paga"
+        },
+        "benefit3": {
+            "title": "Garanzia di qualità",
+            "description": "Tutti i professionisti sono pre-verificati e validati. Puoi concentrarti sulle tue esigenze e sui tuoi pazienti"
+        },
+        "benefit4": {
+            "title": "Efficienza dei costi",
+            "description": "Costi di reclutamento inferiori rispetto ai mezzi tradizionali. Siamo qui per aiutarti a risparmiare tempo e denaro"
+        }
+    },
+    "features": {
+        "title": "Funzionalità per le Strutture Sanitarie",
+        "feature1": {
+            "title": "Gestione annunci di lavoro",
+            "description": "Crea un annuncio di lavoro, dettaglia le specifiche della posizione, hai già finito"
+        },
+        "feature2": {
+            "title": "Matching intelligente",
+            "description": "Ci occupiamo noi del matching, in base alle tue esigenze, tu prendi la decisione"
+        },
+        "feature3": {
+            "title": "Calendario interattivo",
+            "description": "Gestisci le tue esigenze di personale con il nostro sistema di calendario intuitivo, rendendo facile la pianificazione e l'organizzazione"
+        },
+        "feature4": {
+            "title": "Buste paga automatizzate",
+            "description": "Ci occupiamo noi dell'amministrazione e delle buste paga, tu ti occupi della tua attività e dei tuoi pazienti"
+        },
+        "feature5": {
+            "title": "Pool di professionisti",
+            "description": "Accedi a un pool di professionisti sanitari e trova la persona giusta per le tue esigenze"
+        },
+        "feature6": {
+            "title": "Servizio di subaffitto del personale",
+            "description": "Registra il tuo personale sulla nostra piattaforma e offri i loro servizi ad altre strutture durante i periodi di minore domanda"
+        },
+        "feature7": {
+            "title": "Gestione HR diretta",
+            "description": "Tutto il tuo team può registrarsi sulla piattaforma, permettendoti di gestire efficientemente i loro orari e incarichi"
+        }
+    },
+    "cta": {
+        "title": "Pronto a trasformare la gestione del personale sanitario?",
+        "description": "Unisciti a MediShift per risolvere le tue sfide di personale con la nostra piattaforma specializzata",
+        "button": "Registrati ora"
+    }
+}

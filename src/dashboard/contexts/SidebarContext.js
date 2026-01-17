@@ -6,14 +6,7 @@ const SidebarContext = createContext(null);
 const SIDEBAR_COLLAPSED_KEY = 'dashboard_sidebar_collapsed';
 
 export const SidebarProvider = ({ children }) => {
-  const [isMainSidebarCollapsed, setIsMainSidebarCollapsed] = useState(() => {
-    const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-    return saved ? JSON.parse(saved) : false;
-  });
-
-  useEffect(() => {
-    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, JSON.stringify(isMainSidebarCollapsed));
-  }, [isMainSidebarCollapsed]);
+  const [isMainSidebarCollapsed, setIsMainSidebarCollapsed] = useState(false);
 
   const value = {
     isMainSidebarCollapsed,

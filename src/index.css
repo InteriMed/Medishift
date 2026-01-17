@@ -109,6 +109,10 @@
     font-family: var(--font-family-text, 'Roboto', sans-serif);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  input, textarea, select, button {
+    font-family: var(--font-family-text, 'Roboto', sans-serif);
+  }
 }
 
 /* Swiss Cross Pattern */
@@ -146,6 +150,49 @@ button:hover .arrow-animate,
   background-color: white;
 }
 
+.bg-hero-gradient {
+  background: linear-gradient(135deg, #fef0f4 0%, #f0f4ff 15%, #f0fdf4 30%, #fefce8 45%, #fdf2f8 60%, #f0f9ff 75%, #f5f3ff 90%, #fff1f2 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-hero-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bg-hero-gradient::before {
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(251, 207, 232, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 20% 20%, rgba(199, 210, 254, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 50% 15%, rgba(167, 243, 208, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 60% 20%, rgba(254, 240, 138, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 15% 50%, rgba(253, 186, 116, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 25% 15%, rgba(196, 181, 253, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 15% 60%, rgba(254, 202, 202, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 25% 60%, rgba(186, 230, 253, 0.4) 0%, transparent 50%);
+  filter: blur(80px);
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(30px, -50px) rotate(120deg);
+  }
+  66% {
+    transform: translate(-20px, 20px) rotate(240deg);
+  }
+}
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
@@ -155,6 +202,18 @@ button:hover .arrow-animate,
     background-position: 100% 50%;
   }
 
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
   100% {
     background-position: 0% 50%;
   }

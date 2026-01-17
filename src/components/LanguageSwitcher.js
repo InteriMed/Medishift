@@ -18,13 +18,8 @@ const LanguageSwitcher = () => {
   ];
 
   const changeLanguage = (languageCode) => {
-    // Don't do anything if it's already the current language
     if (languageCode === currentLanguage) return;
 
-    // Store preference
-    localStorage.setItem('preferredLanguage', languageCode);
-    
-    // Change language in i18n
     i18n.changeLanguage(languageCode);
     
     // Update URL to reflect language change

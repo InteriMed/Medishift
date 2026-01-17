@@ -1,0 +1,150 @@
+{
+    "meta": {
+        "title": "Häufig gestellte Fragen | MediShift",
+        "description": "Finden Sie Antworten auf häufige Fragen zur MediShift-Personalvermittlungsplattform im Gesundheitswesen für Einrichtungen und Fachkräfte.",
+        "keywords": "MediShift FAQ, Fragen Personalvermittlung Gesundheitswesen, Gesundheitsjobs FAQ, temporäre Rekrutierung"
+    },
+    "subtitle": "Häufig gestellte Fragen",
+    "allCategories": "Alle Kategorien",
+    "introduction": "Finden Sie Antworten auf häufige Fragen zu unserer Personalvermittlungsplattform im Gesundheitswesen.",
+    "searchPlaceholder": "Fragen durchsuchen...",
+    "searchResults": "Suchergebnisse für",
+    "categoryLabels": {
+        "general": "Allgemein",
+        "healthcare facilities": "Für Einrichtungen",
+        "professionals": "Für Fachkräfte",
+        "compliance": "Compliance & Vorschriften",
+        "pricing": "Preise & Abrechnung",
+        "technical": "Technischer Support"
+    },
+    "contactCta": {
+        "title": "Noch Fragen?",
+        "description": "Unser Support-Team ist bereit, Ihnen bei weiteren Fragen zu helfen.",
+        "button": "Support kontaktieren"
+    },
+    "categories": {
+        "general": {
+            "name": "Allgemein",
+            "questions": {
+                "q1": {
+                    "question": "Was ist MediShift?",
+                    "answer": "MediShift ist eine spezialisierte digitale Plattform, die Gesundheitseinrichtungen mit qualifizierten Fachkräften für temporäre und unbefristete Rekrutierung verbindet. Unsere Mission ist es, den Rekrutierungsprozess im Gesundheitssektor in der Schweiz zu vereinfachen."
+                },
+                "q2": {
+                    "question": "In welchen Regionen ist MediShift verfügbar?",
+                    "answer": "Derzeit ist MediShift in der gesamten französischsprachigen Schweiz verfügbar. Wir planen, unsere Dienste bald auf andere Regionen der Schweiz auszuweiten."
+                },
+                "q3": {
+                    "question": "Welche Arten von Gesundheitseinrichtungen können MediShift nutzen?",
+                    "answer": "MediShift ist für alle Arten von Gesundheitseinrichtungen konzipiert, einschliesslich Apotheken, Arztpraxen, Kliniken und Krankenhäuser. Unsere Plattform passt sich den spezifischen Bedürfnissen jeder Art von Einrichtung an."
+                }
+            }
+        },
+        "healthcare facilities": {
+            "name": "Für Einrichtungen",
+            "questions": {
+                "q1": {
+                    "question": "Wie überprüft MediShift Fachkräfte?",
+                    "answer": "Wir führen eine gründliche Überprüfung aller Fachkräfte auf unserer Plattform durch, einschliesslich der Überprüfung von Diplomen, Referenzprüfungen und der Validierung der Berufsregistrierung. Wir stellen sicher, dass alle Fachkräfte die Schweizer regulatorischen Anforderungen erfüllen."
+                },
+                "q2": {
+                    "question": "Welche Arten von Stellen kann ich ausschreiben?",
+                    "answer": "Sie können temporäre Stellen (von einem einzigen Tag bis zu mehreren Wochen), Teilzeitstellen und unbefristete Stellen ausschreiben. Unsere Plattform deckt verschiedene Rekrutierungsbedürfnisse ab, von Notfall-Vertretungen bis hin zu langfristigen Einstellungen."
+                },
+                "q3": {
+                    "question": "Wie schnell kann ich Personal für dringende Bedürfnisse finden?",
+                    "answer": "Viele Einrichtungen finden innerhalb von 24 Stunden qualifizierte Fachkräfte für dringende Bedürfnisse. Der genaue Zeitrahmen hängt von Ihrem Standort, spezifischen Anforderungen und verfügbaren Fachkräften in Ihrer Region ab."
+                },
+                "q4": {
+                    "question": "Was kostet es für Gesundheitseinrichtungen?",
+                    "answer": "Einrichtungen zahlen Abonnementgebühren basierend auf ihrem Nutzungsniveau sowie eine kleine Transaktionsprovision für jede erfolgreiche Vermittlung. Unsere Preisgestaltung ist transparent, ohne versteckte Gebühren, und deutlich günstiger als traditionelle Personalvermittlungsagenturen."
+                },
+                "q5": {
+                    "question": "Wie kann ich meinen Personalbedarf definieren?",
+                    "answer": "In Ihrem Einrichtungsprofil können Sie einfach Stellenausschreibungen erstellen und Ihren spezifischen Bedarf detailliert beschreiben. Unser interaktiver Kalender ermöglicht es Ihnen, Ihren Bedarf im Voraus zu planen oder dringende Anfragen zu veröffentlichen."
+                }
+            }
+        },
+        "professionals": {
+            "name": "Für Fachkräfte",
+            "questions": {
+                "q1": {
+                    "question": "Ist MediShift nur für Apotheker?",
+                    "answer": "Nein, MediShift ist für alle Gesundheitsfachkräfte, einschliesslich Apotheker, Apothekenassistenten, pharmazeutisch-technische Assistenten und andere Gesundheitsfachkräfte (gemäss aktuellen Vorschriften)."
+                },
+                "q2": {
+                    "question": "Wie kann ich meine Verfügbarkeit festlegen?",
+                    "answer": "In Ihrem Profil können Sie Ihre allgemeine Verfügbarkeit festlegen (Tage/Stunden, an denen Sie normalerweise arbeiten) und auch bestimmte Daten in unserer Kalenderfunktion markieren. Sie können diese Informationen jederzeit aktualisieren, wenn sich Ihr Zeitplan ändert."
+                },
+                "q3": {
+                    "question": "Wie und wann werde ich bezahlt?",
+                    "answer": "Die Zahlungsbedingungen variieren je nach Einrichtung, aber unsere Plattform wickelt sichere Zahlungen ab. Die meisten temporären Einsätze werden innerhalb von 1-2 Wochen nach Abschluss bezahlt, während unbefristete Stellen dem normalen Gehaltsplan der Einrichtung folgen."
+                },
+                "q4": {
+                    "question": "Muss ich für die Nutzung von MediShift bezahlen?",
+                    "answer": "Basisprofile für Fachkräfte sind kostenlos. Wir erheben nur eine kleine Serviceprovision, wenn Sie erfolgreich eine Stelle über unsere Plattform erhalten."
+                },
+                "q5": {
+                    "question": "Wie kann ich Möglichkeiten finden, die zu meinen Fähigkeiten passen?",
+                    "answer": "Unser intelligentes Matching-System schlägt automatisch Möglichkeiten vor, die auf Ihr Profil, Ihre Fähigkeiten und Ihre Verfügbarkeit zugeschnitten sind. Sie können auch unseren Stellenmarkt durchsuchen, um alle verfügbaren Möglichkeiten zu erkunden."
+                }
+            }
+        },
+        "compliance": {
+            "name": "Compliance & Vorschriften",
+            "questions": {
+                "q1": {
+                    "question": "Ist MediShift mit Schweizer Vorschriften konform?",
+                    "answer": "Ja, MediShift entspricht vollständig den Schweizer Arbeits- und Datenschutzvorschriften. Wir arbeiten eng mit Rechtsexperten zusammen, um sicherzustellen, dass unsere Plattform alle gesetzlichen Anforderungen erfüllt."
+                },
+                "q2": {
+                    "question": "Wie handhabt MediShift Arbeitsverträge?",
+                    "answer": "MediShift erleichtert die Erstellung von Arbeitsverträgen, die der Schweizer Gesetzgebung entsprechen. Je nach Art des Einsatzes bieten wir verschiedene Vertragsvorlagen an, die an die spezifischen Bedürfnisse von Einrichtungen und Fachkräften angepasst sind."
+                },
+                "q3": {
+                    "question": "Wie schützt MediShift meine persönlichen Daten?",
+                    "answer": "Wir nehmen den Schutz persönlicher Daten sehr ernst. Alle Daten werden auf sicheren Servern in der Schweiz gespeichert, in Übereinstimmung mit dem Bundesgesetz über den Datenschutz (DSG) und der DSGVO. Wir verwenden Ihre Daten nur für die in unserer Datenschutzrichtlinie angegebenen Zwecke."
+                }
+            }
+        },
+        "pricing": {
+            "name": "Preise & Abrechnung",
+            "questions": {
+                "q1": {
+                    "question": "Welche verschiedenen Abonnementpläne gibt es für Einrichtungen?",
+                    "answer": "Wir bieten mehrere Abonnementpläne an, die auf die Bedürfnisse von Einrichtungen unterschiedlicher Grösse zugeschnitten sind. Die Pläne variieren je nach der Anzahl der Stellen, die Sie ausschreiben können, und den verfügbaren erweiterten Funktionen. Kontaktieren Sie uns für individuelle Preise."
+                },
+                "q2": {
+                    "question": "Gibt es versteckte Gebühren?",
+                    "answer": "Nein, unsere Preispolitik ist vollständig transparent. Sie zahlen nur die klar angegebenen Abonnementgebühren und Transaktionsprovisionen. Es gibt keine versteckten Gebühren oder zusätzlichen Kosten."
+                },
+                "q3": {
+                    "question": "Kann ich mein Abonnement jederzeit kündigen?",
+                    "answer": "Ja, Sie können Ihr Abonnement jederzeit kündigen. Abonnements werden in der Regel monatlich abgerechnet, und Sie können vor dem nächsten Abrechnungszyklus kündigen."
+                }
+            }
+        },
+        "technical": {
+            "name": "Technischer Support",
+            "questions": {
+                "q1": {
+                    "question": "Wie kann ich mein Passwort zurücksetzen?",
+                    "answer": "Auf der Anmeldeseite klicken Sie auf 'Passwort vergessen' und folgen den Anweisungen zum Zurücksetzen Ihres Passworts. Ein Link zum Zurücksetzen wird an Ihre E-Mail-Adresse gesendet."
+                },
+                "q2": {
+                    "question": "Ist MediShift mit allen Browsern kompatibel?",
+                    "answer": "MediShift ist für aktuelle Versionen von Chrome, Firefox, Safari und Edge optimiert. Für die beste Erfahrung empfehlen wir, die neueste Version Ihres bevorzugten Browsers zu verwenden."
+                },
+                "q3": {
+                    "question": "Wie kann ich den technischen Support kontaktieren?",
+                    "answer": "Sie können unser technisches Support-Team per E-Mail unter support@medishift.com oder über das Kontaktformular auf unserer Website erreichen. Unser Team ist montags bis freitags von 9:00 bis 18:00 Uhr erreichbar."
+                }
+            }
+        }
+    },
+    "stillHaveQuestions": {
+        "title": "Sie haben nicht gefunden, was Sie gesucht haben?",
+        "description": "Unser Support-Team ist bereit, Ihnen bei weiteren Fragen zu helfen.",
+        "buttonText": "Support kontaktieren"
+    }
+}

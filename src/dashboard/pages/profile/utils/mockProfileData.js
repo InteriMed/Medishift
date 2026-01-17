@@ -122,6 +122,41 @@ export const mockProfileData = {
             scheduleChanges: true,
             contractUpdates: true
         }
+    },
+
+    facilityCoreDetails: {
+        facilityName: 'Pharmacie de la Navigation',
+        facilityType: 'community_pharmacy',
+        address: {
+            street: 'Rue de la Navigation',
+            number: '12',
+            postalCode: '1201',
+            city: 'Genève',
+            canton: 'GE',
+            country: 'CH'
+        },
+        mainPhoneNumber: '+41 22 732 25 25',
+        mainEmail: 'info@pharmacie-navigation.ch',
+        website: 'https://pharmacie-navigation.ch'
+    },
+
+    facilityLegalBilling: {
+        legalEntityName: 'Pharmacie de la Navigation SA',
+        uidNumber: 'CHE-123.456.789 MWST',
+        commercialRegisterNumber: 'CH-660.1.234.567-8',
+        legalRepresentative: {
+            firstName: 'Marc',
+            lastName: 'Müller',
+            email: 'marc.mueller@pharmacie-navigation.ch',
+            phone: '+41 78 987 65 43'
+        },
+        billingContact: {
+            name: 'Comptabilité',
+            email: 'compta@pharmacie-navigation.ch',
+            phone: '+41 22 732 25 26'
+        },
+        facilityIBAN: 'CH12 0000 0000 0000 0000 0',
+        facilityBankName: 'BCGE Genève'
     }
 };
 

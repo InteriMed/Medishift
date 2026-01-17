@@ -5,7 +5,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getInvitationDetails, acceptFacilityInvitation } from '../../services/cloudFunctions';
 import { useNotification } from '../../contexts/NotificationContext';
 import Button from '../../components/BoxedInputFields/Button';
-import logoImage from '../../assets/global/logo.png';
 import '../../styles/auth.css';
 
 function AcceptInvitationPage() {
@@ -49,7 +48,6 @@ function AcceptInvitationPage() {
           setInvitation(result.invitation);
           
           if (!currentUser) {
-            localStorage.setItem('pendingInvitation', invitationToken);
             navigate(`/${lang}/login?invite=${invitationToken}`);
             return;
           }
@@ -83,7 +81,6 @@ function AcceptInvitationPage() {
       
       if (result.success) {
         showSuccess(t('auth.invitation.accepted', 'Successfully joined the facility!'));
-        localStorage.removeItem('pendingInvitation');
         
         setTimeout(() => {
           navigate(`/${lang}/dashboard`);
@@ -100,9 +97,6 @@ function AcceptInvitationPage() {
   };
 
   const handleLogin = () => {
-    if (invitationToken) {
-      localStorage.setItem('pendingInvitation', invitationToken);
-    }
     navigate(`/${lang}/login?invite=${invitationToken || ''}`);
   };
 
@@ -126,7 +120,7 @@ function AcceptInvitationPage() {
       <div className="auth-container">
         <div className="auth-card">
           <div className="text-center">
-            <img src={logoImage} alt="Logo" className="mx-auto mb-6 h-12" />
+            <img src="/logo.png" alt="Logo" className="mx-auto mb-6 h-12" />
             <h1 className="text-2xl font-bold mb-4">{t('auth.invitation.error', 'Error')}</h1>
             <p className="text-destructive mb-6">{error}</p>
             <Button onClick={() => navigate(`/${lang}/login`)} variant="confirmation">
@@ -141,7 +135,7 @@ function AcceptInvitationPage() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <img src={logoImage} alt="Logo" className="mx-auto mb-6 h-12" />
+        <img src="/logo.png" alt="Logo" className="mx-auto mb-6 h-12" />
         
         <h1 className="text-2xl font-bold mb-2 text-center">
           {t('auth.invitation.title', 'Facility Invitation')}

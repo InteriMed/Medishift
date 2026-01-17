@@ -14,38 +14,10 @@ export const useAutoSync = (userId, accountType) => {
   
   // Local storage functions
   const saveEventsToLocalStorage = useCallback((eventsToSave) => {
-    try {
-      const eventsData = {
-        events: eventsToSave,
-        timestamp: Date.now(),
-        userId: userId
-      };
-      localStorage.setItem(`calendar_events_${userId}`, JSON.stringify(eventsData));
-      console.log('Events saved to local storage');
-    } catch (error) {
-      console.error('Error saving events to local storage:', error);
-    }
   }, [userId]);
 
   const loadEventsFromLocalStorage = useCallback(() => {
-    try {
-      const stored = localStorage.getItem(`calendar_events_${userId}`);
-      if (stored) {
-        const eventsData = JSON.parse(stored);
-        if (eventsData.userId === userId) {
-          console.log('Events loaded from local storage');
-          return eventsData.events.map(event => ({
-            ...event,
-            start: new Date(event.start),
-            end: new Date(event.end)
-          }));
-        }
-      }
-      return null;
-    } catch (error) {
-      console.error('Error loading events from local storage:', error);
-      return null;
-    }
+    return null;
   }, [userId]);
 
   // Mark event as having pending changes

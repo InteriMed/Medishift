@@ -90,6 +90,10 @@
   --border-radius-md: 12px;
   --border-radius-lg: 16px;
   --border-radius-xl: 20px;
+  --border-radius-hero: 2.5rem; /* 40px - matches hero section image */
+  --default-border: none; /* No border by default */
+  --dashboard-bg: #f1f4f7; /* Very subtle grey background for dashboard */
+  --default-div-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Subtle shadow for divs */
   --margin-sm: 0 10px 10px 10px;
 
   /* Enhanced Shadows - Multi-layered depth */

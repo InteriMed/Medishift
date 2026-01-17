@@ -25,7 +25,7 @@ const ProfessionalsNew = () => {
             </Helmet>
 
             {/* Hero Section */}
-            <section className="relative pt-20 pb-32 overflow-hidden flex items-center z-10 pastel-gradient-bg" style={{ 
+            <section className="relative pt-20 pb-32 overflow-hidden flex items-center z-10 pastel-gradient-bg" style={{
                 minHeight: 'calc(100vh - var(--header-height))',
                 background: 'linear-gradient(135deg, #fef0f4 0%, #f0f4ff 15%, #f0fdf4 30%, #fefce8 45%, #fdf2f8 60%, #f0f9ff 75%, #f5f3ff 90%, #fff1f2 100%)',
                 backgroundSize: '400% 400%',
@@ -59,6 +59,10 @@ const ProfessionalsNew = () => {
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="flex-1 text-left">
                             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100/50 text-blue-700 text-xs font-bold tracking-wider uppercase mb-8 border border-blue-200 shadow-sm">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
+                                </span>
                                 Espace Professionnels
                             </div>
 
@@ -72,40 +76,42 @@ const ProfessionalsNew = () => {
 
                             <div className="flex flex-wrap gap-5">
                                 <Link to={`/${lang || 'fr'}/signup`} className="group">
-                                    <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center gap-3 transition-all hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-200 transform hover:-translate-y-1">
+                                    <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-lg flex items-center gap-3 transition-all hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-200 transform hover:-translate-y-1">
                                         Créer mon profil
                                         <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                                     </button>
                                 </Link>
                                 <Link to="#details">
-                                    <button className="px-8 py-4 bg-white text-slate-900 border-2 border-slate-200 rounded-2xl font-bold flex items-center gap-3 transition-all hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transform hover:-translate-y-1">
+                                    <button className="px-8 py-4 bg-white text-slate-900 border-2 border-slate-200 rounded-2xl font-black text-lg flex items-center gap-3 transition-all hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transform hover:-translate-y-1">
                                         En savoir plus
                                     </button>
                                 </Link>
                             </div>
                         </div>
 
-                        <div className="flex-1 relative">
-                            <div className="relative z-10 animate-float">
-                                <div className="bg-white rounded-[3rem] p-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-100">
-                                    <img
-                                        src={phoneAppMockup}
-                                        alt="Application MediShift"
-                                        className="w-full h-auto rounded-[2.5rem]"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Verification Floating Badge */}
-                            <div className="absolute top-1/4 -right-12 bg-white rounded-2xl p-6 shadow-2xl border border-blue-50 flex flex-col gap-2 animate-bounce-slow z-20">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                                        <FaFingerprint size={18} />
+                        <div className="flex-1 px-14 lg:px-0">
+                            <div className="relative">
+                                <div className="relative z-10 animate-float">
+                                    <div className="bg-white rounded-[3rem] p-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-100">
+                                        <img
+                                            src={phoneAppMockup}
+                                            alt="Application MediShift"
+                                            className="w-full h-auto rounded-[2.5rem]"
+                                        />
                                     </div>
-                                    <div className="font-black text-slate-800">Verification GLN</div>
                                 </div>
-                                <div className="flex items-center gap-2 text-green-500 font-bold text-xs">
-                                    <FaCheckDouble /> Validé par MediShift
+
+                                {/* Verification Floating Badge */}
+                                <div className="absolute top-1/4 -right-12 bg-white rounded-2xl p-6 shadow-2xl border border-blue-50 flex flex-col gap-2 animate-bounce-slow z-20">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                                            <FaFingerprint size={18} />
+                                        </div>
+                                        <div className="font-black text-slate-800">Verification GLN</div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-green-500 font-bold text-xs">
+                                        <FaCheckDouble /> Validé par MediShift
+                                    </div>
                                 </div>
                             </div>
                         </div>

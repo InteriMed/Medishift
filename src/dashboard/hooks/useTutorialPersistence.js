@@ -15,43 +15,13 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
     // --- Local Storage Operations ---
 
     const saveLocalState = useCallback((state) => {
-        if (!currentUser) return;
-        try {
-            const workspaceId = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? selectedWorkspace?.facilityId : null;
-            const key = getTutorialStorageKey(currentUser.uid, workspaceId);
-            localStorage.setItem(key, JSON.stringify({
-                ...state,
-                savedAt: Date.now()
-            }));
-        } catch (error) {
-            console.error('[TutorialPersistence] Error saving to localStorage:', error);
-        }
     }, [currentUser, selectedWorkspace]);
 
     const loadLocalState = useCallback(() => {
-        if (!currentUser) return null;
-        try {
-            const workspaceId = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? selectedWorkspace?.facilityId : null;
-            const key = getTutorialStorageKey(currentUser.uid, workspaceId);
-            const stored = localStorage.getItem(key);
-            if (stored) {
-                return JSON.parse(stored);
-            }
-        } catch (error) {
-            console.error('[TutorialPersistence] Error loading from localStorage:', error);
-        }
         return null;
     }, [currentUser, selectedWorkspace]);
 
     const clearLocalState = useCallback(() => {
-        if (!currentUser) return;
-        try {
-            const workspaceId = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? selectedWorkspace?.facilityId : null;
-            const key = getTutorialStorageKey(currentUser.uid, workspaceId);
-            localStorage.removeItem(key);
-        } catch (error) {
-            console.error('[TutorialPersistence] Error clearing localStorage:', error);
-        }
     }, [currentUser, selectedWorkspace]);
 
     // --- New Onboarding Persistence Operations ---
@@ -318,10 +288,6 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
     const saveAccessLevel = useCallback(async (accessLevel) => {
         if (!currentUser) return;
         try {
-            // Save to localStorage (priority)
-            localStorage.setItem(`access_${currentUser.uid}`, accessLevel);
-
-            // Also save to backend
             let docRef;
             if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
                 docRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
@@ -339,12 +305,7 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
     }, [currentUser, selectedWorkspace]);
 
     const getAccessLevel = useCallback(() => {
-        if (!currentUser) return null;
-        try {
-            return localStorage.getItem(`access_${currentUser.uid}`);
-        } catch (e) {
-            return null;
-        }
+        return null;
     }, [currentUser]);
 
 

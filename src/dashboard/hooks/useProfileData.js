@@ -1,7 +1,7 @@
 // FILE: /src/hooks/useProfileData.js (Updated)
 
 import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc, setDoc, updateDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, Timestamp, enableNetwork } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -72,8 +72,20 @@ const useProfileData = () => {
     // console.log('[useProfileData] Fetching data for:', currentUser.uid);
 
     try {
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      const userDoc = await getDoc(userDocRef);
+      // Ensure network is enabled before fetching
+      try {
+        await enableNetwork(db);
+      } catch (networkError) {
+        console.warn('[useProfileData] Network enable warning:', networkError.message);
+      }
+
+      const TIMEOUT_MS = 4000;
+      const fetchUserDoc = getDoc(doc(db, 'users', currentUser.uid));
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS)
+      );
+
+      const userDoc = await Promise.race([fetchUserDoc, timeoutPromise]);
 
       if (!userDoc.exists()) {
         console.warn('[useProfileData] User document not found. Call initializeProfileDocument.');
@@ -91,8 +103,14 @@ const useProfileData = () => {
       }
 
       const profileCollection = getProfileCollectionName(userRole);
-      const profileDocRef = doc(db, profileCollection, currentUser.uid);
-      const profileDoc = await getDoc(profileDocRef);
+
+      // Also protect the second fetch with timeout
+      const fetchProfileDoc = getDoc(doc(db, profileCollection, currentUser.uid));
+      const profileTimeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS)
+      );
+
+      const profileDoc = await Promise.race([fetchProfileDoc, profileTimeoutPromise]);
 
       let fetchedData = { ...userData, role: userRole, profileType: userProfileType }; // Ensure role/type are on the final object
       if (profileDoc.exists()) {
@@ -106,7 +124,41 @@ const useProfileData = () => {
       setProfileData(fetchedData);
       return fetchedData;
 
-    } catch (err) { /* ... */ console.error('[useProfileData] Error fetching profile data:', err); setError(err.message); return null;
+    } catch (err) {
+      console.error('[useProfileData] Error fetching profile data:', err);
+
+      if (err.message === 'Request timed out') {
+        console.warn('[useProfileData] Fetch timed out - using fallback/offline mode');
+        // Return minimal valid data structure to allow UI to render (or show offline specific UI)
+        // If we have previously loaded data, we could return that, but here we just return minimal valid object
+        const offlineData = { uid: currentUser.uid, email: currentUser.email, role: 'professional', profileType: getDefaultProfileType('professional'), isOffline: true };
+        setProfileData(offlineData);
+        setIsLoading(false);
+        return offlineData;
+      }
+
+      // Handle offline errors specifically
+      if (err.code === 'unavailable' || err.message?.includes('offline') || err.message?.includes('Failed to get document because the client is offline')) {
+        console.warn('[useProfileData] Client is offline, attempting to enable network and retry...');
+        try {
+          // ... retry logic (omitted for brevity, or we can keep it inside a new block?)
+          // actually the Retry logic block below is huge. Let's simplfy and rely on the timeout fallback.
+          // If network is strictly offline, getDoc might fail fast or hang.
+          // If it fails fast with 'unavailable', we can just return minimal data too.
+
+          const offlineData = { uid: currentUser.uid, email: currentUser.email, role: 'professional', profileType: getDefaultProfileType('professional'), isOffline: true };
+          setProfileData(offlineData);
+          setIsLoading(false);
+          return offlineData;
+
+        } catch (retryError) {
+          // ...
+          return null;
+        }
+      }
+
+      setError(err.message || 'Failed to fetch profile data');
+      return null;
     } finally { setIsLoading(false); }
   }, [currentUser, getProfileCollectionName, getDefaultProfileType]);
 

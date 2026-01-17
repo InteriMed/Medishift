@@ -8,13 +8,15 @@ import {
   RecaptchaVerifier,
   PhoneAuthProvider,
   sendEmailVerification,
-  linkWithCredential
+  linkWithCredential,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { db, firebaseApp, loginWithGoogle } from '../../services/firebase';
+import { db, auth, loginWithGoogle } from '../../services/firebase';
 import InputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import PhoneInput from 'react-phone-number-input';
-import logoImage from "../../assets/global/logo.png";
 import { validatePassword } from '../../utils/validation';
 import 'react-phone-number-input/style.css';
 import { FcGoogle } from 'react-icons/fc';
@@ -26,7 +28,7 @@ function Signup() {
   const { t } = useTranslation(['auth']);
   const { lang } = useParams();
   const navigate = useNavigate();
-  const auth = getAuth(firebaseApp);
+  // const auth = getAuth(firebaseApp); // Use imported auth instance
   const { showError } = useNotification();
 
   // State management
@@ -57,6 +59,8 @@ function Signup() {
       setHasUnsavedChanges(true);
     }
   }, [formData, step]);
+
+  // Removed unused redirect handling effect since we now use popup for Google Sign In
 
   // Warn user about unsaved changes
   useEffect(() => {
@@ -217,15 +221,7 @@ function Signup() {
         // Store the user temporarily
         setTemporaryUser(user);
 
-        // Store auth data
         const token = await user.getIdToken(true);
-        localStorage.setItem('token', token);
-        localStorage.setItem('firebaseUid', user.uid);
-        localStorage.setItem('user', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          displayName: `${formData.firstName} ${formData.lastName}`,
-        }));
 
         // Redirect to VerificationSentPage
         handleNavigateToDashboard();
@@ -280,15 +276,7 @@ function Signup() {
           isProfessionalProfileComplete: false,
         });
 
-        // Store auth data
         const token = await user.getIdToken(true);
-        localStorage.setItem('token', token);
-        localStorage.setItem('firebaseUid', user.uid);
-        localStorage.setItem('user', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          displayName: `${formData.firstName} ${formData.lastName}`,
-        }));
 
         // Redirect to profile for onboarding
         navigate(`/${lang}/dashboard/profile`);
@@ -370,15 +358,7 @@ function Signup() {
           isProfessionalProfileComplete: false,
         });
 
-        // Store auth data
         const token = await user.getIdToken(true);
-        localStorage.setItem('token', token);
-        localStorage.setItem('firebaseUid', user.uid);
-        localStorage.setItem('user', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          displayName: `${formData.firstName} ${formData.lastName}`,
-        }));
 
         // Redirect to profile for onboarding
         navigate(`/${lang}/dashboard/profile`);
@@ -519,33 +499,56 @@ function Signup() {
   const handleGoogleSignup = async () => {
     setIsLoading(true);
     try {
+      // Use the centralized loginWithGoogle function which now uses signInWithPopup
       const user = await loginWithGoogle();
 
-      // Check if user document exists in Firestore
+      // Retry helper for checking user existence
+      const getDocWithRetry = async (docRef, retries = 3, delay = 1000) => {
+        try {
+          return await getDoc(docRef);
+        } catch (err) {
+          if (retries > 0 && (err.code === 'unavailable' || err.message?.includes('offline') || err.message?.includes('network'))) {
+            console.warn(`Firestore read failed, retrying... (${retries} attempts left)`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return getDocWithRetry(docRef, retries - 1, delay);
+          }
+          throw err;
+        }
+      };
+
+      // Check if user exists in Firestore, if not create them
       const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
+
+      // Use retry logic
+      const userDoc = await getDocWithRetry(userDocRef);
 
       if (!userDoc.exists()) {
-        // New user - create document with onboarding flags
-        await setDoc(userDocRef, {
-          email: user.email,
-          displayName: user.displayName || user.email.split('@')[0],
-          firstName: user.displayName?.split(' ')[0] || '',
-          lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-          photoURL: user.photoURL || '',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          role: 'professional',
-          profileCompleted: false,
-          profileStatus: 'incomplete',
-          tutorialPassed: false,
-          isProfessionalProfileComplete: false,
-        });
+        try {
+          await setDoc(userDocRef, {
+            email: user.email,
+            displayName: user.displayName || user.email.split('@')[0],
+            firstName: user.displayName?.split(' ')[0] || '',
+            lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+            photoURL: user.photoURL || '',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            role: 'professional',
+            profileCompleted: false,
+            profileStatus: 'incomplete',
+            tutorialPassed: false,
+            isProfessionalProfileComplete: false,
+          });
+        } catch (setDocError) {
+          console.error("Error creating user doc:", setDocError);
+          // If setDoc fails, we should probably stop and show error, but existing code logged and continued?
+          // Actually existing code just logged and navigated. 
+          // If setDoc fails (e.g. offline), the write is queued. So navigating is actually OK if it's an offline write.
+        }
 
-        // Redirect to profile for onboarding
+        // Redirect new user to profile
         navigate(`/${lang}/dashboard/profile`);
       } else {
-        // Existing user - check if profile is complete
+        // Existing user
         const userData = userDoc.data();
         if (!userData.profileCompleted && !userData.isProfessionalProfileComplete) {
           navigate(`/${lang}/dashboard/profile`);
@@ -553,11 +556,11 @@ function Signup() {
           navigate(`/${lang}/dashboard`);
         }
       }
+
     } catch (error) {
       console.error('Google signup error:', error);
-      showError(t('auth.errors.googleSignupFailed'));
-    } finally {
       setIsLoading(false);
+      showError(t('auth.errors.googleSignupFailed'));
     }
   };
 
@@ -570,7 +573,7 @@ function Signup() {
             <h1 className="auth-title">{t('auth.signup.title')}</h1>
             <p className="auth-subtitle">{t('auth.signup.subtitle')}</p>
 
-            <div className="auth-form">
+            <form className="auth-form" onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
               <div className="form-row">
                 <div className="form-group">
                   <InputField
@@ -687,14 +690,15 @@ function Signup() {
               {errors.general && <div className="auth-error">{errors.general}</div>}
 
               <button
+                type="submit"
                 className="auth-button primary-button"
-                onClick={handleNext}
                 disabled={isLoading}
               >
                 {isLoading ? t('auth.signup.creating') : t('auth.signup.continue')}
               </button>
 
               <button
+                type="button"
                 className="auth-button social-button"
                 onClick={handleGoogleSignup}
                 disabled={isLoading}
@@ -703,7 +707,7 @@ function Signup() {
                 {t('auth.signup.signUpWithGoogle')}
               </button>
 
-            </div>
+            </form>
 
             <div className="auth-footer">
               <p>
@@ -882,7 +886,7 @@ function Signup() {
     <div className="auth-page-container bg-swiss-cross">
       <div className="auth-card">
         <div className="auth-logo-container">
-          <img src={logoImage} alt="Logo" className="auth-logo" />
+          <img src="/logo.png" alt="Logo" className="auth-logo" />
         </div>
 
         <div className="auth-form-container">

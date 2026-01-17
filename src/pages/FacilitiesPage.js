@@ -58,7 +58,11 @@ const FacilitiesNew = () => {
                 <div className="container mx-auto px-4 relative z-10" style={{ maxWidth: '1200px' }}>
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="flex-1 text-left">
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-bold tracking-wider uppercase mb-8 shadow-lg">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100/50 text-blue-700 text-xs font-bold tracking-wider uppercase mb-8 border border-blue-200 shadow-sm">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
+                                </span>
                                 Espace Établissements
                             </div>
 
@@ -72,22 +76,42 @@ const FacilitiesNew = () => {
 
                             <div className="flex flex-wrap gap-5">
                                 <Link to={`/${lang || 'fr'}/signup`} className="group">
-                                    <button className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold flex items-center gap-3 transition-all hover:bg-blue-700 hover:shadow-2xl hover:shadow-blue-200 transform hover:-translate-y-1">
+                                    <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-lg flex items-center gap-3 transition-all hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-200 transform hover:-translate-y-1">
                                         Commencer gratuitement
                                         <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                </Link>
+                                <Link to="#details">
+                                    <button className="px-8 py-4 bg-white text-slate-900 border-2 border-slate-200 rounded-2xl font-black text-lg flex items-center gap-3 transition-all hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transform hover:-translate-y-1">
+                                        Voir les solutions
                                     </button>
                                 </Link>
                             </div>
                         </div>
 
-                        <div className="flex-1 relative">
-                            <div className="relative z-10 animate-float">
-                                <div className="bg-white rounded-[3rem] p-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-100">
-                                    <img
-                                        src={institutionalMockup}
-                                        alt="Espace Santé"
-                                        className="w-full h-auto rounded-[2.5rem]"
-                                    />
+                        <div className="flex-1 px-14 lg:px-0">
+                            <div className="relative">
+                                <div className="relative z-10 animate-float">
+                                    <div className="bg-white rounded-[3rem] p-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-100">
+                                        <img
+                                            src={institutionalMockup}
+                                            alt="Espace Santé"
+                                            className="w-full h-auto rounded-[2.5rem]"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Verification Floating Badge */}
+                                <div className="absolute top-1/4 -right-12 bg-white rounded-2xl p-6 shadow-2xl border border-blue-50 flex flex-col gap-2 animate-bounce-slow z-20">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                                            <FaBuilding size={18} />
+                                        </div>
+                                        <div className="font-black text-slate-800">Partenaire Certifié</div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-green-500 font-bold text-xs">
+                                        <FaCheckCircle /> Swiss Made
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -215,57 +239,56 @@ const FacilitiesNew = () => {
             </section>
 
             {/* In-depth Vacancy Management Section */}
-            <section className="py-24 bg-slate-900 text-white overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-1/2 h-full opacity-5 pointer-events-none">
-                    <svg viewBox="0 0 200 200" className="w-full h-full text-white fill-current">
-                        <path d="M40,-56.3C50.7,-49.2,57.1,-34.7,62.8,-19.7C68.6,-4.8,73.6,10.6,69.5,23.5C65.4,36.5,52.1,47,38.8,55.1C25.5,63.1,12.2,68.7,-1.8,71.2C-15.8,73.7,-31.6,73.1,-43.8,65.3C-56,57.4,-64.5,42.4,-68.9,26.8C-73.3,11.2,-73.6,-5,-68.8,-19.9C-64,-34.8,-54.1,-48.5,-41.4,-55.1C-28.7,-61.7,-14.3,-61.1,0.9,-62.4C16.1,-63.7,32.2,-66.8,40,-56.3Z" transform="translate(100 100)" />
-                    </svg>
-                </div>
+            <section className="py-24 bg-white">
+                <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
+                    <div className="bg-slate-900 rounded-[4rem] p-12 lg:p-20 relative overflow-hidden text-white">
+                        {/* Decorative circles */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-[120px] opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
 
-                <div className="container mx-auto px-4 relative z-10" style={{ maxWidth: '1200px' }}>
-                    <div className="grid lg:grid-cols-2 gap-20 items-center">
-                        <div>
-                            <h2 className="text-4xl lg:text-5xl font-black mb-8 leading-tight">
-                                Pilotage Multi-sites & <span className="text-blue-500">Besoins Flexibles</span>
-                            </h2>
-                            <p className="text-xl text-slate-400 mb-10 leading-relaxed font-medium">
-                                Que vous soyez un cabinet indépendant ou une chaîne nationale, MediShift s'adapte à votre échelle.
-                            </p>
+                        <div className="grid lg:grid-cols-2 gap-20 items-center relative z-10">
+                            <div>
+                                <h2 className="text-4xl lg:text-5xl font-black mb-8 leading-tight">
+                                    Pilotage Multi-sites & <span className="text-blue-500">Besoins Flexibles</span>
+                                </h2>
+                                <p className="text-xl text-slate-400 mb-10 leading-relaxed font-medium">
+                                    Que vous soyez un cabinet indépendant ou une chaîne nationale, MediShift s'adapte à votre échelle.
+                                </p>
 
-                            <div className="space-y-6">
-                                <div className="flex gap-4 items-center p-6 bg-white/5 rounded-2xl border border-white/10">
-                                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500">
-                                        <FaBriefcase />
+                                <div className="space-y-6">
+                                    <div className="flex gap-4 items-center p-6 bg-white/5 rounded-2xl border border-white/10">
+                                        <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500">
+                                            <FaBriefcase />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-lg">Vacancy Management</div>
+                                            <div className="text-slate-500 text-sm">Postez vos besoins en un éclair et recevez des candidatures qualifiées instantanément.</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="font-bold text-lg">Vacancy Management</div>
-                                        <div className="text-slate-500 text-sm">Postez vos besoins en un éclair et recevez des candidatures qualifiées instantanément.</div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 items-center p-6 bg-white/5 rounded-2xl border border-white/10">
-                                    <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-500">
-                                        <FaChartLine />
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-lg">Analytics RH</div>
-                                        <div className="text-slate-500 text-sm">Suivez vos indicateurs de performance, coûts et taux de remplissage en temps réel.</div>
+                                    <div className="flex gap-4 items-center p-6 bg-white/5 rounded-2xl border border-white/10">
+                                        <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-500">
+                                            <FaChartLine />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-lg">Analytics RH</div>
+                                            <div className="text-slate-500 text-sm">Suivez vos indicateurs de performance, coûts et taux de remplissage en temps réel.</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3rem] p-12 text-center relative overflow-hidden shadow-2xl">
-                            <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_50%_50%,#fff,transparent)]"></div>
-                            <FaLayerGroup size={80} className="mx-auto mb-8 text-blue-200 opacity-50" />
-                            <h3 className="text-3xl font-black mb-6">Prêt pour la Santé 2.0 ?</h3>
-                            <p className="text-blue-100 mb-8 font-medium">
-                                Rejoignez les établissements qui ont déjà digitalisé leur gestion RH avec MediShift.
-                            </p>
-                            <Link to={`/${lang || 'fr'}/signup`}>
-                                <button className="w-full py-4 bg-white text-blue-600 rounded-2xl font-black text-lg hover:shadow-xl hover:bg-slate-50 transition-all">
-                                    Essayer maintenant
-                                </button>
-                            </Link>
+                            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3rem] p-12 text-center relative overflow-hidden shadow-2xl">
+                                <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_50%_50%,#fff,transparent)]"></div>
+                                <FaLayerGroup size={80} className="mx-auto mb-8 text-blue-200 opacity-50" />
+                                <h3 className="text-3xl font-black mb-6">Prêt pour la Santé 2.0 ?</h3>
+                                <p className="text-blue-100 mb-8 font-medium">
+                                    Rejoignez les établissements qui ont déjà digitalisé leur gestion RH avec MediShift.
+                                </p>
+                                <Link to={`/${lang || 'fr'}/signup`}>
+                                    <button className="w-full py-4 bg-white text-blue-600 rounded-2xl font-black text-lg hover:shadow-xl hover:bg-slate-50 transition-all">
+                                        Essayer maintenant
+                                    </button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

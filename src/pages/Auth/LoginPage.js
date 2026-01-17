@@ -1,14 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, sendPasswordResetEmail } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import InputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldHideUnhide from '../../components/BoxedInputFields/InputFieldHideUnhide';
 import UnderlinedLink from '../../components/Links/UnderlinedLink';
-import logoImage from "../../assets/global/logo.png";
 import { FcGoogle } from 'react-icons/fc';
-import { firebaseApp, db } from '../../services/firebase';
+import { auth, firebaseApp, db, loginWithGoogle } from '../../services/firebase';
 import { useNotification } from '../../contexts/NotificationContext';
 import '../../styles/auth.css';
 
@@ -16,9 +15,9 @@ function Login() {
   const { t } = useTranslation(['auth']);
   const { lang } = useParams();
   const navigate = useNavigate();
-  const auth = getAuth(firebaseApp);
+  // const auth = getAuth(firebaseApp); // Use imported auth instance
   const { showError } = useNotification();
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -28,6 +27,8 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+
+  // Removed unused redirect handling effect since we now use popup for Google Sign In
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -42,23 +43,23 @@ function Login() {
       showError(t('auth.errors.emailRequired'));
       return false;
     }
-    
+
     if (!formData.password) {
       showError(t('auth.errors.passwordRequired'));
       return false;
     }
-    
+
     return true;
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setModalError('');
     setIsLoading(true);
-    
+
     try {
       // Sign in with email/password
       const result = await signInWithEmailAndPassword(
@@ -66,30 +67,31 @@ function Login() {
         formData.email,
         formData.password
       );
-      
+
       const user = result.user;
-      
-      // Get fresh token
-      const token = await user.getIdToken(true);
-      
-      // Store the token and basic user data
-      localStorage.setItem('token', token);
-      localStorage.setItem('firebaseUid', user.uid);
-      
+
+      // Get token (use cached token if offline, don't force refresh)
+      let token;
+      try {
+        token = await user.getIdToken(true);
+      } catch (tokenError) {
+        if (tokenError.code === 'unavailable' || (tokenError.message && tokenError.message.includes('offline'))) {
+          token = await user.getIdToken(false);
+        } else {
+          throw tokenError;
+        }
+      }
+
+
       // Get additional user profile data directly from Firestore
       try {
         // Get user data from Firestore instead of API
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
-        
+
         if (userDoc.exists()) {
-          // Store user data from Firestore
           const userData = userDoc.data();
-          localStorage.setItem('user', JSON.stringify({
-            ...userData,
-            uid: user.uid
-          }));
-          
+
           // Check if profile is incomplete - redirect to onboarding
           if (!userData.profileCompleted && !userData.isProfessionalProfileComplete) {
             navigate(`/${lang}/dashboard/profile`);
@@ -97,53 +99,48 @@ function Login() {
           }
         } else {
           // User document doesn't exist in Firestore yet - new user
-          // Create user document with onboarding flags
-          await setDoc(userDocRef, {
-            email: user.email,
-            displayName: user.displayName || user.email.split('@')[0],
-            firstName: user.displayName?.split(' ')[0] || '',
-            lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            role: 'professional',
-            profileCompleted: false,
-            profileStatus: 'incomplete',
-            tutorialPassed: false,
-            isProfessionalProfileComplete: false,
-          });
-          
-          localStorage.setItem('user', JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || user.email.split('@')[0],
-          }));
-          
+          // Try to create user document with onboarding flags (non-blocking if offline)
+          try {
+            await setDoc(userDocRef, {
+              email: user.email,
+              displayName: user.displayName || user.email.split('@')[0],
+              firstName: user.displayName?.split(' ')[0] || '',
+              lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              role: 'professional',
+              profileCompleted: false,
+              profileStatus: 'incomplete',
+              tutorialPassed: false,
+              isProfessionalProfileComplete: false,
+            });
+          } catch (setDocError) {
+            if (setDocError.code === 'unavailable' || (setDocError.message && setDocError.message.includes('offline'))) {
+              console.warn('User document creation skipped - client is offline, will be created when online');
+            } else {
+              throw setDocError;
+            }
+          }
+
+
           // Redirect to profile for onboarding
           navigate(`/${lang}/dashboard/profile`);
           return;
         }
       } catch (firestoreError) {
-        console.error('Firestore data retrieval error:', firestoreError);
-        // Continue with login even if Firestore connection fails
-        localStorage.setItem('user', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || user.email.split('@')[0],
-        }));
+        if (firestoreError.code === 'unavailable' || (firestoreError.message && firestoreError.message.includes('offline'))) {
+          console.warn('Firestore data retrieval skipped - client is offline');
+        } else {
+          console.error('Firestore data retrieval error:', firestoreError);
+        }
       }
-      
-      // Save email in localStorage if "Remember me" is checked
-      if (formData.rememberMe) {
-        localStorage.setItem('rememberedEmail', formData.email);
-      } else {
-        localStorage.removeItem('rememberedEmail');
-      }
-      
+
+
       // Redirect to dashboard
       navigate(`/${lang}/dashboard`);
     } catch (error) {
       console.error('Login error:', error);
-      
+
       // Handle specific Firebase auth errors
       let errorMessage = '';
       switch (error.code) {
@@ -165,7 +162,7 @@ function Login() {
         default:
           errorMessage = t('auth.errors.loginFailed');
       }
-      
+
       // Show error notification
       showError(errorMessage);
     } finally {
@@ -175,75 +172,80 @@ function Login() {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    
+
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      // Get fresh token
-      const token = await user.getIdToken(true);
-      
-      // Store auth data
-      localStorage.setItem('token', token);
-      localStorage.setItem('firebaseUid', user.uid);
-      
-      // Check if user document exists in Firestore
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      if (!userDoc.exists()) {
-        // New user - create document with onboarding flags
-        await setDoc(userDocRef, {
-          email: user.email,
-          displayName: user.displayName || user.email.split('@')[0],
-          firstName: user.displayName?.split(' ')[0] || '',
-          lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-          photoURL: user.photoURL || '',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          role: 'professional',
-          profileCompleted: false,
-          profileStatus: 'incomplete',
-          tutorialPassed: false,
-          isProfessionalProfileComplete: false,
-        });
-        
-        localStorage.setItem('user', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || user.email.split('@')[0],
-          photoURL: user.photoURL
-        }));
-        
-        // Redirect to profile for onboarding
-        navigate(`/${lang}/dashboard/profile`);
-      } else {
-        // Existing user - check if profile is complete
-        const userData = userDoc.data();
-        localStorage.setItem('user', JSON.stringify({
-          ...userData,
-          uid: user.uid,
-          photoURL: user.photoURL
-        }));
-        
-        // Check if profile is incomplete - redirect to onboarding
-        if (!userData.profileCompleted && !userData.isProfessionalProfileComplete) {
+      // Use the centralized loginWithGoogle function which now uses signInWithPopup
+      const user = await loginWithGoogle();
+
+      // Let the existing logic in handleRedirectResult (or a new effect) handle the user state?
+      // Actually, since we use popup now, we get the user immediately here.
+      // We should handle the post-login logic right here.
+
+      const token = await user.getIdToken();
+
+      // Retry helper for checking user existence
+      const getDocWithRetry = async (docRef, retries = 3, delay = 1000) => {
+        try {
+          return await getDoc(docRef);
+        } catch (err) {
+          if (retries > 0 && (err.code === 'unavailable' || err.message?.includes('offline') || err.message?.includes('network'))) {
+            console.warn(`Firestore read failed, retrying... (${retries} attempts left)`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return getDocWithRetry(docRef, retries - 1, delay);
+          }
+          throw err;
+        }
+      };
+
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        // Use retry logic to handle transient offline states
+        const userDoc = await getDocWithRetry(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+
+          if (!userData.profileCompleted && !userData.isProfessionalProfileComplete) {
+            navigate(`/${lang}/dashboard/profile`);
+          } else {
+            navigate(`/${lang}/dashboard`);
+          }
+        } else {
+          // New user
+          await setDoc(userDocRef, {
+            email: user.email,
+            displayName: user.displayName || user.email.split('@')[0],
+            firstName: user.displayName?.split(' ')[0] || '',
+            lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            role: 'professional',
+            profileCompleted: false,
+            profileStatus: 'incomplete',
+            tutorialPassed: false,
+            isProfessionalProfileComplete: false,
+          });
+          navigate(`/${lang}/dashboard/profile`);
+        }
+      } catch (firestoreError) {
+        console.warn("Firestore error during login check:", firestoreError);
+
+        // FAIL-SAFE: If we can't check Firestore (offline), assume the user is valid and let them in.
+        // The DashboardContext will attempt to refetch/repair the profile when connection is restored.
+        if (firestoreError.code === 'unavailable' || firestoreError.message?.includes('offline')) {
+          console.log("Proceeding with offline login fallback");
+          // Default to profile page to ensure they fill in missing details if it is indeed a new user
           navigate(`/${lang}/dashboard/profile`);
         } else {
-          navigate(`/${lang}/dashboard`);
+          showError(t('auth.errors.networkError') || "Network error. Please try again.");
+          setIsLoading(false);
         }
       }
+
     } catch (error) {
       console.error('Google login error:', error);
-      
-      if (error.code === 'auth/popup-closed-by-user') {
-        showError(t('auth.errors.loginCancelled'));
-      } else {
-        showError(t('auth.errors.googleLoginFailed'));
-      }
-    } finally {
       setIsLoading(false);
+      showError(t('auth.errors.googleLoginFailed'));
     }
   };
 
@@ -270,12 +272,12 @@ function Login() {
     <div className="auth-page-container bg-swiss-cross">
       <div className="auth-card">
         <div className="auth-logo-container">
-          <img src={logoImage} alt="Logo" className="auth-logo" />
+          <img src="/logo.png" alt="Logo" className="auth-logo" />
         </div>
-        
+
         <h1 className="auth-title">{t('auth.login.title')}</h1>
         <p className="auth-subtitle">{t('auth.login.subtitle')}</p>
-        
+
         <form className="auth-form" onSubmit={handleLogin}>
           <div className="form-group">
             <InputField
@@ -288,7 +290,7 @@ function Login() {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <InputFieldHideUnhide
               label={t('auth.login.password')}
@@ -308,7 +310,7 @@ function Login() {
               <p>
                 {t('auth.login.resetPassword')}
               </p>
-              <button 
+              <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
                 style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline', color: 'inherit', fontSize: 'var(--font-size-small)' }}
@@ -317,7 +319,7 @@ function Login() {
               </button>
             </div>
           </div>
-          
+
           <div className="form-options">
             <div className="remember-me">
               <input
@@ -329,23 +331,23 @@ function Login() {
               />
               <label htmlFor="rememberMe">{t('auth.login.rememberMe')}</label>
             </div>
-            
+
             <UnderlinedLink
               text={t('auth.login.forgotPassword')}
               to={`/${lang}/forgot-password`}
               color="#000000"
             />
           </div>
-          
-          <button 
+
+          <button
             type="submit"
             className="auth-button primary-button"
             disabled={isLoading}
           >
             {isLoading ? t('auth.login.loggingIn') : t('auth.login.button')}
           </button>
-          
-          <button 
+
+          <button
             type="button"
             className="auth-button social-button"
             onClick={handleGoogleLogin}
@@ -355,11 +357,11 @@ function Login() {
             {t('auth.loginWithGoogle')}
           </button>
         </form>
-        
+
         <div className="auth-footer">
           <p>
             {t('auth.login.noAccount')}
-            <a 
+            <a
               href={`/${lang}/signup`}
               className="text-link"
             >

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import InputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import UnderlinedLink from '../../components/Links/UnderlinedLink';
-import logoImage from '../../assets/global/logo.png';
 import { firebaseApp } from '../../services/firebase';
 
 function ForgotPassword() {
@@ -71,7 +70,7 @@ function ForgotPassword() {
     <div className="auth-container">
       <div className="auth-content">
         <div className="auth-logo-container">
-          <img src={logoImage} alt="Logo" className="auth-logo" />
+          <img src="/logo.png" alt="Logo" className="auth-logo" />
         </div>
         
         <h1 className="auth-title">

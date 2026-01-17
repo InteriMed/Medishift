@@ -13,14 +13,29 @@ import {
   FiDollarSign,
   FiUsers
 } from 'react-icons/fi';
+import {
+  LayoutDashboard,
+  Users,
+  Calendar,
+  DollarSign,
+  Shield,
+  FileText,
+  AlertCircle,
+  Bell,
+  Search,
+  FlaskConical
+} from 'lucide-react';
 import { cn } from '../../../utils/cn';
-import logoImage from '../../../assets/global/logo.png';
 import { normalizePathname } from '../../utils/pathUtils';
 import { useTutorial } from '../../contexts/TutorialContext';
+import { useDashboard } from '../../contexts/DashboardContext';
+import { useAuth } from '../../../contexts/AuthContext';
+import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { hasPermission, PERMISSIONS } from '../../admin/utils/rbac';
 import LockedMenuItem from './LockedMenuItem';
 
-// Define sidebar items structure
-const SIDEBAR_ITEMS = [
+// Define regular sidebar items structure
+const REGULAR_SIDEBAR_ITEMS = [
   {
     title: 'dashboard.sidebar.messages',
     icon: FiMessageSquare,
@@ -46,14 +61,12 @@ const SIDEBAR_ITEMS = [
     icon: FiBox,
     path: '/dashboard/marketplace'
   },
-  // 🇨🇭 Swiss Compliance - Phase 1: Payroll (Facilities only)
   {
     title: 'dashboard.sidebar.payroll',
     icon: FiDollarSign,
     path: '/dashboard/payroll',
     facilityOnly: true
   },
-  // 🔵 Phase 2: Organization Management (Facilities only)
   {
     title: 'dashboard.sidebar.organization',
     icon: FiUsers,
@@ -62,11 +75,98 @@ const SIDEBAR_ITEMS = [
   }
 ];
 
+// Define admin sidebar items structure
+const getAdminSidebarItems = (t) => [
+  {
+    title: t('admin:sidebar.dashboard', 'Executive Dashboard'),
+    icon: LayoutDashboard,
+    path: '/dashboard/admin/portal',
+    permission: PERMISSIONS.VIEW_DASHBOARD
+  },
+  {
+    title: t('admin:sidebar.searchCRM', 'Search - CRM'),
+    icon: Search,
+    path: '/dashboard/admin/operations/users',
+    permission: PERMISSIONS.VIEW_USER_PROFILES
+  },
+  {
+    title: t('admin:sidebar.verificationQueue', 'Verification Queue'),
+    icon: Users,
+    path: '/dashboard/admin/verification',
+    permission: PERMISSIONS.VERIFY_USERS
+  },
+  {
+    title: t('admin:sidebar.shiftList', 'Shift List'),
+    icon: Calendar,
+    path: '/dashboard/admin/operations/shifts',
+    permission: PERMISSIONS.MANAGE_SHIFTS
+  },
+  {
+    title: t('admin:sidebar.revenueCommissions', 'Revenue & Commissions'),
+    icon: DollarSign,
+    path: '/dashboard/admin/finance/revenue',
+    permission: PERMISSIONS.VIEW_REVENUE
+  },
+  {
+    title: t('admin:sidebar.referralPayouts', 'Referral Payouts'),
+    icon: DollarSign,
+    path: '/dashboard/admin/finance/spendings',
+    permission: PERMISSIONS.VIEW_FINANCE
+  },
+  {
+    title: t('admin:sidebar.invoices', 'Invoices (SaaS)'),
+    icon: FileText,
+    path: '/dashboard/admin/finance/ar',
+    permission: PERMISSIONS.VIEW_FINANCE
+  },
+  {
+    title: t('admin:sidebar.balanceSheet', 'Balance Sheet'),
+    icon: DollarSign,
+    path: '/dashboard/admin/finance/balance-sheet',
+    permission: PERMISSIONS.VIEW_BALANCE_SHEET
+  },
+  {
+    title: t('admin:sidebar.auditLogs', 'Audit Logs'),
+    icon: AlertCircle,
+    path: '/dashboard/admin/system/audit',
+    permission: PERMISSIONS.VIEW_AUDIT_LOGS
+  },
+  {
+    title: t('admin:sidebar.notifications', 'Notifications'),
+    icon: Bell,
+    path: '/dashboard/admin/system/notifications',
+    permission: PERMISSIONS.SEND_NOTIFICATIONS
+  },
+  {
+    title: t('admin:sidebar.glnTest', 'GLN Test'),
+    icon: FlaskConical,
+    path: '/dashboard/admin/system/gln-test',
+    permission: PERMISSIONS.VIEW_AUDIT_LOGS
+  },
+  {
+    title: t('admin:sidebar.payrollExport', 'Payroll Export'),
+    icon: FileText,
+    path: '/dashboard/admin/payroll/export',
+    permission: PERMISSIONS.EXPORT_PAYROLL
+  },
+  {
+    title: t('admin:sidebar.adminManagement', 'Admin Management'),
+    icon: Shield,
+    path: '/dashboard/admin/management/employees',
+    permission: PERMISSIONS.MANAGE_EMPLOYEES
+  }
+];
+
 export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode = false, isOverlayExpanded = false }) {
-  const { t } = useTranslation(['dashboard']);
+  const { t } = useTranslation(['dashboard', 'admin']);
   const location = useLocation();
   const normalizedPathname = React.useMemo(() => normalizePathname(location.pathname), [location.pathname]);
   const { isSidebarItemAccessible, forceUpdateElementPosition, isTutorialActive, activeTutorial } = useTutorial();
+  const { selectedWorkspace } = useDashboard();
+  const { userProfile } = useAuth();
+  
+  const userRoles = userProfile?.roles || [];
+  const isAdminWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN;
 
   const handleNavClick = () => {
     if (window.innerWidth < 768 && onToggle) {
@@ -119,12 +219,12 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
       )}>
         <div className="flex items-center gap-3 overflow-hidden opacity-100 transition-opacity duration-300 min-w-0">
           <img
-            src={logoImage}
+            src="/logo.png"
             alt="MediShift"
             className="h-8 w-auto object-contain shrink-0"
           />
           {!collapsed && (
-            <span className="text-xl font-bold" style={{ color: 'var(--primary-color)' }}>
+            <span className="text-xl font-bold" style={{ color: 'var(--color-logo-2)' }}>
               MediShift
             </span>
           )}
@@ -159,13 +259,21 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
 
       {/* Navigation Items */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-1.5 px-2 flex flex-col gap-0.5">
-        {SIDEBAR_ITEMS.map((item) => {
+        {(isAdminWorkspace ? getAdminSidebarItems(t).filter(item => !item.permission || hasPermission(userRoles, item.permission)) : REGULAR_SIDEBAR_ITEMS.filter(item => {
+          // Filter out facility-only items when not in team workspace
+          if (item.facilityOnly && selectedWorkspace?.type !== WORKSPACE_TYPES.TEAM) {
+            return false;
+          }
+          return true;
+        })).map((item) => {
           const isActive = item.exact
             ? normalizedPathname === item.path
             : normalizedPathname.startsWith(item.path);
 
-          // Check if this item is accessible during onboarding
-          const isAccessible = isSidebarItemAccessible(item.path);
+          // For admin items, check permission instead of onboarding accessibility
+          const isAccessible = isAdminWorkspace 
+            ? (!item.permission || hasPermission(userRoles, item.permission))
+            : isSidebarItemAccessible(item.path);
 
           // Render locked item with unified component
           if (!isAccessible) {

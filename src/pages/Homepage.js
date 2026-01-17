@@ -62,7 +62,7 @@ const NewHomepage = () => {
                 <div className="container mx-auto px-4 relative z-10" style={{ maxWidth: '1200px' }}>
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="flex-1 text-left">
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold tracking-wider uppercase mb-8 shadow-sm">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100/50 text-blue-700 text-xs font-bold tracking-wider uppercase mb-8 border border-blue-200 shadow-sm">
                                 <span className="relative flex h-2 w-2">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
@@ -96,36 +96,36 @@ const NewHomepage = () => {
 
                         </div>
 
-                        <div className="flex-1 relative">
-                            <div className="relative z-10 animate-float">
-                                <div className="bg-white rounded-[3rem] p-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-100">
-                                    <div className="rounded-[2.5rem] overflow-hidden bg-slate-50 aspect-square relative">
+                        <div className="flex-1 px-14 lg:px-0">
+                            <div className="relative">
+                                <div className="relative z-10 animate-float">
+                                    <div className="bg-white rounded-[3rem] p-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-100">
                                         <img
                                             src={phoneAppMockup}
                                             alt="MediShift App"
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-auto rounded-[2.5rem]"
                                         />
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="absolute top-1/4 -left-12 bg-white rounded-2xl p-4 shadow-xl border border-slate-50 flex items-center gap-3 animate-bounce-slow z-20">
-                                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
-                                    <FaCheckCircle size={18} />
+                                <div className="absolute top-1/4 -left-12 bg-white rounded-2xl p-4 shadow-xl border border-slate-50 flex items-center gap-3 animate-bounce-slow z-20">
+                                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
+                                        <FaCheckCircle size={18} />
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Vérifié</div>
+                                        <div className="text-sm font-bold text-slate-800">Profil Validé</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Vérifié</div>
-                                    <div className="text-sm font-bold text-slate-800">Profil Validé</div>
-                                </div>
-                            </div>
 
-                            <div className="absolute bottom-1/4 -right-8 bg-white rounded-2xl p-4 shadow-xl border border-slate-50 flex items-center gap-3 animate-float-delayed z-20">
-                                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                                    <FaFileContract size={18} />
-                                </div>
-                                <div>
-                                    <div className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Contrat</div>
-                                    <div className="text-sm font-bold text-slate-800">Signature Digitale</div>
+                                <div className="absolute bottom-1/4 -right-8 bg-white rounded-2xl p-4 shadow-xl border border-slate-50 flex items-center gap-3 animate-float-delayed z-20">
+                                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                                        <FaFileContract size={18} />
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Contrat</div>
+                                        <div className="text-sm font-bold text-slate-800">Signature Digitale</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

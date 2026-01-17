@@ -21,6 +21,7 @@ import ProfileHeader from './components/ProfileHeader'; // Is now our Sidebar
 import { uploadFile } from '../../../services/storageService';
 import { processDocumentWithAI, mergeExtractedData, getCachedExtractedData } from '../../../services/documentProcessingService';
 import { mergeOnboardingDocuments } from '../../utils/mergeOnboardingDocuments';
+import { getAllMockData, getMockDataForTab } from './utils/mockProfileData';
 
 // --- Professional Profile Section Components ---
 import PersonalDetails from './professionals/components/PersonalDetails';
@@ -519,6 +520,27 @@ const Profile = () => {
         setExtractedData(null);
     }, []);
 
+    const handleAutofill = useCallback((scope = 'all') => {
+        if (!formData) return;
+
+        let mockData;
+        let successMsg;
+
+        if (scope === 'current') {
+            mockData = getMockDataForTab(activeTab);
+            successMsg = t('dashboardProfile:common.autofillTabSuccess', 'Current tab populated with test data (Beta)');
+        } else {
+            mockData = getAllMockData();
+            successMsg = t('dashboardProfile:common.autofillSuccess', 'Full profile populated with test data (Beta)');
+        }
+
+        setFormData(current => ({
+            ...current,
+            ...mockData
+        }));
+        showNotification(successMsg, 'success');
+    }, [formData, activeTab, t, showNotification]);
+
     const availableDocuments = useMemo(() => {
         if (!formData) return [];
         const verificationDocs = getNestedValue(formData, 'verification.verificationDocuments') || [];
@@ -1015,6 +1037,7 @@ const Profile = () => {
                             highlightTabId={stepData?.highlightTab || nextIncompleteTab}
                             collapsed={isProfileMenuCollapsed}
                             onToggle={() => setIsProfileMenuCollapsed(!isProfileMenuCollapsed)}
+                            onAutofill={handleAutofill}
                         />
                     )}
                 </div>

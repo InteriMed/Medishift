@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useMobileView } from '../../../hooks/useMobileView';
@@ -12,8 +12,10 @@ import {
   FiCheckCircle,
   FiCircle,
   FiChevronLeft,
-  FiChevronRight
+  FiChevronRight,
+  FiZap
 } from 'react-icons/fi';
+import { useTutorial } from '../../../contexts/TutorialContext';
 
 const ProfileHeader = ({
   profile,
@@ -25,10 +27,15 @@ const ProfileHeader = ({
   nextIncompleteSection,
   highlightTabId,
   collapsed = false,
-  onToggle
+  onToggle,
+  onAutofill
 }) => {
+  const [showMenu, setShowMenu] = useState(false);
   const isMobile = useMobileView();
   const { t } = useTranslation(['dashboardProfile', 'tabs']);
+  const { isTutorialActive, stepData } = useTutorial();
+
+  const isAutofillHighlighted = isTutorialActive && stepData?.highlightUploadButton;
 
   const tabs = config?.tabs || [];
 
@@ -218,6 +225,56 @@ const ProfileHeader = ({
             </button>
           );
         })}
+
+        {onAutofill && (
+          <div className="mt-4 pt-4 border-t border-border relative">
+            {showMenu && (
+              <div className={cn(
+                "absolute bottom-full left-0 w-full mb-2 bg-popover border border-border rounded-lg shadow-xl z-50 overflow-hidden animate-in slide-in-from-bottom-2 duration-200",
+                collapsed && "left-full ml-2 w-48 bottom-0 mb-0"
+              )}>
+                <button
+                  onClick={() => {
+                    onAutofill('current');
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-muted transition-colors flex items-center gap-2 border-b border-border"
+                >
+                  <FiZap className="w-3.5 h-3.5 text-amber-500" />
+                  Fill Current Tab
+                </button>
+                <button
+                  onClick={() => {
+                    onAutofill('all');
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-muted transition-colors flex items-center gap-2 text-amber-600"
+                >
+                  <FiZap className="w-3.5 h-3.5" />
+                  Fill All (Complete)
+                </button>
+              </div>
+            )}
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              data-tutorial="profile-upload-button"
+              className={cn(
+                "w-full flex items-center gap-3 p-3 rounded-lg transition-all relative overflow-hidden",
+                "bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/20",
+                collapsed ? "justify-center px-2" : "px-3",
+                showMenu && "bg-amber-500/20 ring-2 ring-amber-500/30",
+                isAutofillHighlighted && "ring-2 ring-amber-500/40 border-amber-500/40"
+              )}
+              title="Beta: Autofill Options"
+            >
+              {isAutofillHighlighted && (
+                <div className="absolute inset-0 pointer-events-none animate-pulse bg-amber-500/10" />
+              )}
+              <FiZap className="w-5 h-5 shrink-0" />
+              {!collapsed && <span className="text-sm font-bold uppercase tracking-wider">(Beta) Fill</span>}
+            </button>
+          </div>
+        )}
       </nav>
     </div>
   );
@@ -235,7 +292,8 @@ ProfileHeader.propTypes = {
   nextIncompleteSection: PropTypes.string,
   highlightTabId: PropTypes.string,
   collapsed: PropTypes.bool,
-  onToggle: PropTypes.func
+  onToggle: PropTypes.func,
+  onAutofill: PropTypes.func
 };
 
 export default ProfileHeader;

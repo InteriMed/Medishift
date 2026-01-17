@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiChevronDown, FiChevronUp, FiUser, FiUsers, FiCheck } from 'react-icons/fi';
+import { FiChevronDown, FiChevronUp, FiUser, FiUsers, FiCheck, FiShield } from 'react-icons/fi';
 import { WORKSPACE_TYPES } from '../../../../utils/sessionAuth';
 
 
 // Logo colors for role-based styling
 const LOGO_COLOR_1 = 'var(--color-logo-1, #2563eb)'; // Professional - Blue
 const LOGO_COLOR_2 = 'var(--color-logo-2, #0f172a)'; // Facility - Dark Blue
+const LOGO_COLOR_ADMIN = '#dc2626'; // Admin - Red
 
 const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorkspace, onOpenChange, children }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -63,12 +64,16 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
   }
 
   const getWorkspaceIcon = (workspaceType) => {
-    return workspaceType === WORKSPACE_TYPES.PERSONAL ? <FiUser /> : <FiUsers />;
+    if (workspaceType === WORKSPACE_TYPES.PERSONAL) return <FiUser />;
+    if (workspaceType === WORKSPACE_TYPES.ADMIN) return <FiShield />;
+    return <FiUsers />;
   };
 
   // Get the appropriate color for the workspace type
   const getWorkspaceColor = (workspaceType) => {
-    return workspaceType === WORKSPACE_TYPES.PERSONAL ? LOGO_COLOR_1 : LOGO_COLOR_2;
+    if (workspaceType === WORKSPACE_TYPES.PERSONAL) return LOGO_COLOR_1;
+    if (workspaceType === WORKSPACE_TYPES.ADMIN) return LOGO_COLOR_ADMIN;
+    return LOGO_COLOR_2;
   };
 
   // Get display name with role-specific default names
@@ -76,6 +81,8 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
     if (!workspace) return 'Select Workspace';
     if (workspace.type === WORKSPACE_TYPES.PERSONAL) {
       return 'Professional Profile';
+    } else if (workspace.type === WORKSPACE_TYPES.ADMIN) {
+      return workspace.name || 'Admin Workspace';
     } else {
       // Use facility name if available, otherwise default to "Facility Profile"
       const facilityName = workspace.name?.replace(' - Team Workspace', '');
@@ -174,7 +181,9 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
                         {getWorkspaceDisplayName(workspace)}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {workspace.type === WORKSPACE_TYPES.PERSONAL ? 'Personal Account' : 'Team Workspace'}
+                        {workspace.type === WORKSPACE_TYPES.PERSONAL ? 'Personal Account' : 
+                         workspace.type === WORKSPACE_TYPES.ADMIN ? 'Admin Workspace' : 
+                         'Team Workspace'}
                       </span>
                     </div>
                     {isSelected && (

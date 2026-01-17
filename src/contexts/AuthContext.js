@@ -125,14 +125,30 @@ export const AuthProvider = ({ children }) => {
 
       if (user) {
         try {
-          // Get additional user data from Firestore
-          const profile = await getUserProfile(user.uid);
-          setUserProfile(profile);
+          // Create a timeout promise
+          const TIMEOUT_MS = 15000;
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS)
+          );
 
-          // Check onboarding status
-          await checkOnboardingStatus(user.uid);
+          // Get additional user data from Firestore with timeout
+          // We wrap the fetch logic to run in parallel
+          const fetchData = async () => {
+            const profile = await getUserProfile(user.uid);
+            setUserProfile(profile);
+            await checkOnboardingStatus(user.uid);
+          };
+
+          await Promise.race([fetchData(), timeoutPromise]);
+
         } catch (err) {
-          console.error("Error fetching user profile:", err);
+          if (err.message === 'Request timed out') {
+            console.warn("User profile fetch timed out - allowing app to load without full profile");
+          } else if (err.code === 'unavailable' || (err.message && err.message.includes('offline'))) {
+            console.warn("User profile fetch skipped - client is offline");
+          } else {
+            console.error("Error fetching user profile:", err);
+          }
         }
       } else {
         setUserProfile(null);

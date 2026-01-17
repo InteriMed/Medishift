@@ -108,7 +108,34 @@ const BlogPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-premium-hero">
+    <div className="min-h-screen relative pastel-gradient-bg" style={{
+      background: 'linear-gradient(135deg, #fef0f4 0%, #f0f4ff 15%, #f0fdf4 30%, #fefce8 45%, #fdf2f8 60%, #f0f9ff 75%, #f5f3ff 90%, #fff1f2 100%)',
+      backgroundSize: '400% 400%',
+      animation: 'gradientShift 15s ease infinite'
+    }}>
+      {/* Pastel Colored Shapes Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-pink-200/40 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-[20%] right-[10%] w-80 h-80 bg-blue-200/40 rounded-full blur-3xl animate-float-delayed"></div>
+        <div className="absolute top-[50%] left-[15%] w-72 h-72 bg-purple-200/40 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-[60%] right-[20%] w-96 h-96 bg-green-200/40 rounded-full blur-3xl animate-float-delayed" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-[15%] left-[10%] w-56 h-56 bg-yellow-200/40 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+        <div className="absolute bottom-[25%] right-[15%] w-88 h-88 bg-indigo-200/40 rounded-full blur-3xl animate-float-delayed" style={{ animationDelay: '4s' }}></div>
+
+        <div className="absolute top-[30%] left-[50%] w-48 h-48 bg-rose-200/35 rounded-[40%] blur-2xl animate-float" style={{ animationDelay: '1.5s', transform: 'rotate(45deg)' }}></div>
+        <div className="absolute bottom-[40%] left-[60%] w-60 h-60 bg-cyan-200/35 rounded-[35%] blur-2xl animate-float-delayed" style={{ animationDelay: '2.5s', transform: 'rotate(-30deg)' }}></div>
+        <div className="absolute top-[70%] right-[30%] w-52 h-52 bg-purple-200/35 rounded-[45%] blur-2xl animate-float" style={{ animationDelay: '3.5s', transform: 'rotate(60deg)' }}></div>
+
+        <svg className="absolute top-[5%] right-[5%] w-40 h-40 opacity-30" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="#fbcfe8" className="animate-pulse" />
+        </svg>
+        <svg className="absolute bottom-[10%] left-[5%] w-36 h-36 opacity-30" viewBox="0 0 100 100">
+          <polygon points="50,10 90,90 10,90" fill="#c7d2fe" className="animate-pulse" style={{ animationDelay: '2s' }} />
+        </svg>
+        <svg className="absolute top-[40%] right-[40%] w-32 h-32 opacity-30" viewBox="0 0 100 100">
+          <rect x="20" y="20" width="60" height="60" rx="10" fill="#a7f3d0" className="animate-pulse" style={{ animationDelay: '1s' }} />
+        </svg>
+      </div>
       <Helmet>
         <title>{t('meta.title')}</title>
         <meta name="description" content={t('meta.description')} />
@@ -116,13 +143,13 @@ const BlogPage = () => {
       </Helmet>
 
       {/* Hero Section */}
-      <section className="relative pt-6 pb-8 lg:pt-8 lg:pb-12 overflow-hidden bg-premium-hero flex items-center justify-center">
+      <section className="relative pt-6 pb-8 lg:pt-8 lg:pb-12 overflow-hidden flex items-center justify-center">
         <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-colors border-transparent bg-primary/10 text-primary mb-6">
               Blog & Actualités
             </div>
-            <h1 className="text-4xl lg:text-7xl font-extrabold tracking-tight text-foreground pb-6 bg-clip-text text-transparent bg-gradient-to-r from-secondary via-secondary/80 to-secondary animate-gradient">
+            <h1 className="text-4xl lg:text-7xl font-black tracking-tight text-slate-900 pb-6 animate-gradient">
               {t('title')}
             </h1>
           </div>
@@ -169,8 +196,8 @@ const BlogPage = () => {
                     {mostRecentPost.excerpt}
                   </p>
                   <Link to={`/${lang || 'en'}/blog/${mostRecentPost.slug}`}>
-                    <button className="bg-secondary text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-secondary/90 transition-all hover-lift">
-                      {t('readMore')} <FaArrowRight className="arrow-animate" />
+                    <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-lg flex items-center gap-3 hover:bg-slate-800 hover:shadow-xl transition-all hover:-translate-y-1">
+                      {t('readMore')} <FaArrowRight />
                     </button>
                   </Link>
                 </div>
@@ -209,7 +236,7 @@ const BlogPage = () => {
                       </h3>
                       <div className="mt-auto pt-4 border-t border-slate-100">
                         <Link to={`/${lang || 'en'}/blog/${post.slug}`}>
-                          <button className="text-sm font-bold text-primary flex items-center gap-1 hover:gap-2 transition-all">
+                          <button className="text-blue-600 font-bold text-sm uppercase tracking-wide flex items-center gap-2 hover:gap-3 transition-all">
                             {t('readMore')} <FaArrowRight size={12} />
                           </button>
                         </Link>
@@ -263,7 +290,7 @@ const BlogPage = () => {
           <div className="space-y-8">
             {/* Search Widget */}
             <div className="bg-white rounded-[2rem] border border-slate-100 shadow-lg p-8">
-              <h3 className="text-lg font-bold mb-6 pb-2 border-b border-slate-100 text-slate-900">{t('sidebar.search')}</h3>
+              <h3 className="text-xl font-black text-slate-900 mb-6 pb-2 border-b border-slate-100">{t('sidebar.search')}</h3>
               <form onSubmit={handleSearchSubmit} className="relative">
                 <input
                   type="text"
@@ -278,7 +305,7 @@ const BlogPage = () => {
 
             {/* Categories Widget */}
             <div className="bg-white rounded-[2rem] border border-slate-100 shadow-lg p-8">
-              <h3 className="text-lg font-bold mb-6 pb-2 border-b border-slate-100 text-slate-900">{t('sidebar.categories')}</h3>
+              <h3 className="text-xl font-black text-slate-900 mb-6 pb-2 border-b border-slate-100">{t('sidebar.categories')}</h3>
               <div className="flex flex-wrap gap-3">
                 {categories.map((category, index) => (
                   <button
@@ -297,7 +324,7 @@ const BlogPage = () => {
 
             {/* Recent Posts Widget */}
             <div className="bg-white rounded-[2rem] border border-slate-100 shadow-lg p-8">
-              <h3 className="text-lg font-bold mb-6 pb-2 border-b border-slate-100 text-slate-900">{t('sidebar.recentPosts')}</h3>
+              <h3 className="text-xl font-black text-slate-900 mb-6 pb-2 border-b border-slate-100">{t('sidebar.recentPosts')}</h3>
               <div className="space-y-6">
                 {recentPosts.slice(0, 3).map(post => (
                   <Link key={post.id} to={`/${lang || 'en'}/blog/${post.slug}`} className="flex gap-4 group items-center">
@@ -321,51 +348,60 @@ const BlogPage = () => {
         </div>
       </div>
 
-      {/* CTA Section - Unified Design */}
-      <section className="relative py-32 bg-secondary text-white overflow-hidden">
-        {/* Abstract Background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,#3b82f6,transparent)]"></div>
-        </div>
+      {/* CTA Section - Unified Premium Design */}
+      <section className="py-24 bg-white">
+        <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
+          <div className="bg-slate-900 rounded-[4rem] p-12 lg:p-20 relative overflow-hidden text-white shadow-2xl">
+            {/* Decorative circles */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-[120px] opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
 
-        <div className="container mx-auto px-4 relative z-10 w-full" style={{ maxWidth: '1200px' }}>
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-            <div className="lg:w-1/2 text-left">
-              <h2 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">{t('blog:ctaDescription') || "Lancez-vous aujourd'hui"}</h2>
-              <p className="text-xl text-slate-400 mb-8 max-w-xl">
-                Rejoignez la révolution du recrutement médical en Suisse
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to={`/${lang}/facilities`} onClick={() => window.scrollTo(0, 0)}>
-                  <button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-primary/25">
-                    Etablissements <FaArrowRight />
-                  </button>
-                </Link>
-                <Link to={`/${lang}/professionals`} onClick={() => window.scrollTo(0, 0)}>
-                  <button className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:bg-white/10 border border-white/20 hover:border-white text-white">
-                    Professionnels <FaArrowRight />
-                  </button>
-                </Link>
+            <div className="grid lg:grid-cols-2 gap-20 items-center relative z-10">
+              <div>
+                <h2 className="text-4xl lg:text-5xl font-black mb-6 leading-tight">
+                  {t('ctaDescription') || "Lancez-vous aujourd'hui"}
+                </h2>
+                <p className="text-xl text-slate-400 mb-10 leading-relaxed font-medium">
+                  Rejoignez la révolution du recrutement médical en Suisse.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-5">
+                  <Link to={`/${lang}/facilities`} onClick={() => window.scrollTo(0, 0)}>
+                    <button className="w-full sm:w-auto px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all hover:bg-slate-50 hover:shadow-xl hover:-translate-y-1">
+                      Etablissements <FaArrowRight className="text-blue-600" />
+                    </button>
+                  </Link>
+                  <Link to={`/${lang}/professionals`} onClick={() => window.scrollTo(0, 0)}>
+                    <button className="w-full sm:w-auto px-8 py-4 bg-slate-800 text-white border border-slate-700 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all hover:bg-slate-700 hover:border-slate-600 hover:-translate-y-1">
+                      Professionnels <FaArrowRight />
+                    </button>
+                  </Link>
+                </div>
               </div>
-            </div>
 
-            <div className="lg:w-1/2 flex justify-center lg:justify-end">
-              <div className="relative">
-                {/* Decorative Card Stack */}
-                <div className="w-80 h-96 bg-secondary/80 rounded-2xl border border-slate-700 shadow-2xl transform rotate-3 absolute -left-4 -top-4 opacity-50"></div>
-                <div className="w-80 h-96 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-2xl relative z-10 p-8 flex flex-col justify-between text-white">
-                  <div>
-                    <FaRegLightbulb size={48} className="mb-4 opacity-80" />
-                    <div className="text-2xl font-bold mb-2">Platforme Digitale</div>
-                    <p className="opacity-70">La solution complète pour le recrutement médical.</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-green-500"></div>
-                      <div className="h-2 w-24 bg-white/20 rounded-full"></div>
+              <div className="relative hidden lg:block">
+                <div className="relative z-10 grid grid-cols-2 gap-4">
+                  <div className="space-y-4 pt-8">
+                    <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 transform translate-y-4">
+                      <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mb-3">
+                        <FaRegLightbulb />
+                      </div>
+                      <div className="h-2 w-20 bg-white/20 rounded-full mb-2"></div>
+                      <div className="h-2 w-full bg-white/10 rounded-full"></div>
                     </div>
-                    <div className="h-2 w-full bg-white/10 rounded-full mb-2"></div>
-                    <div className="h-2 w-2/3 bg-white/10 rounded-full"></div>
+                    <div className="bg-white/5 backdrop-blur-sm p-6 rounded-3xl border border-white/5">
+                      <div className="h-2 w-16 bg-white/20 rounded-full mb-2"></div>
+                      <div className="h-2 w-full bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-6 rounded-3xl shadow-xl transform -translate-y-4">
+                      <div className="text-3xl font-black mb-1">100%</div>
+                      <div className="text-blue-100 text-sm font-medium">Digital &amp; Humain</div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10">
+                      <div className="h-2 w-24 bg-white/20 rounded-full mb-2"></div>
+                      <div className="h-2 w-full bg-white/10 rounded-full"></div>
+                      <div className="h-2 w-2/3 bg-white/10 rounded-full mt-2"></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -373,6 +409,38 @@ const BlogPage = () => {
           </div>
         </div>
       </section>
+      {/* Animation Styles */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        @keyframes float-delayed {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.05); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; }
+        .animate-bounce-slow { animation: bounce-slow 4s ease-in-out infinite; }
+        .pastel-gradient-bg {
+            background: linear-gradient(135deg, #fef0f4 0%, #f0f4ff 15%, #f0fdf4 30%, #fefce8 45%, #fdf2f8 60%, #f0f9ff 75%, #f5f3ff 90%, #fff1f2 100%) !important;
+            background-image: linear-gradient(135deg, #fef0f4 0%, #f0f4ff 15%, #f0fdf4 30%, #fefce8 45%, #fdf2f8 60%, #f0f9ff 75%, #f5f3ff 90%, #fff1f2 100%) !important;
+            background-size: 400% 400% !important;
+            background-color: transparent !important;
+        }
+    `}} />
     </div>
   );
 };

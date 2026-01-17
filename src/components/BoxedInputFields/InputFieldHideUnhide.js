@@ -141,6 +141,7 @@ function InputFieldHideUnhide({ label, placeholder, value, onChange, marginTop, 
                     required={required}
                     placeholder={showPlaceholder ? placeholder : ''}
                     value={value}
+                    autoComplete={type === 'password' ? 'current-password' : type === 'email' ? 'email' : undefined}
                     onChange={(e) => {
                         // Reset error state when user types
                         setInternalError(null);

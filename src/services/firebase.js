@@ -1,11 +1,10 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import {
   getFirestore,
   connectFirestoreEmulator,
-  initializeFirestore,
-  persistentLocalCache,
-  persistentSingleTabManager
+  memoryLocalCache,
+  initializeFirestore
 } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
@@ -33,15 +32,21 @@ import {
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || 'interimed-620fd',
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || 'interimed-620fd.firebasestorage.app',
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
+if (!firebaseConfig.projectId || firebaseConfig.projectId !== 'interimed-620fd') {
+  console.warn('⚠️ Firebase Project ID mismatch! Expected: interimed-620fd, Got:', firebaseConfig.projectId);
+  firebaseConfig.projectId = 'interimed-620fd';
+}
+
 console.log('!!!! FIREBASE API KEY:', firebaseConfig.apiKey ? 'PRESENT' : 'MISSING');
 console.log('!!!! FIREBASE PROJECT ID:', firebaseConfig.projectId);
+console.log('!!!! FIREBASE AUTH DOMAIN:', firebaseConfig.authDomain);
 
 // Flag to control emulator usage - supports both explicit env var and development environment check
 const useEmulators = process.env.REACT_APP_USE_FIREBASE_EMULATORS === 'true';
@@ -54,21 +59,37 @@ const emulatorConfig = {
   storage: process.env.REACT_APP_FIREBASE_STORAGE_EMULATOR_URL || 'http://localhost:9199'
 };
 
-// Initialize Firebase app first
-const firebaseApp = initializeApp(firebaseConfig);
+// Initialize Firebase app - Robust Singleton Pattern
+let firebaseApp;
+
+if (getApps().length === 0) {
+  firebaseApp = initializeApp(firebaseConfig);
+} else {
+  firebaseApp = getApp();
+}
 
 // Then initialize services using the app
 const auth = getAuth(firebaseApp);
 let db;
+
+const DATABASE_ID = 'medishift';
+
+// Initialize Firestore - Use the correct database ID as specified in firebase.json
 try {
-  db = initializeFirestore(firebaseApp, {
-    localCache: persistentLocalCache({ tabManager: persistentSingleTabManager() })
-  });
+  db = getFirestore(firebaseApp, DATABASE_ID);
+  console.log(`✅ Firestore initialized with database ID: ${DATABASE_ID}`);
 } catch (error) {
-  // If Firestore is already initialized, we use the existing instance
-  // This can happen during hot reloads or if another module initialized it
-  console.warn('Firestore initialization fallback:', error.message);
-  db = getFirestore(firebaseApp);
+  console.warn('ℹ️ Firestore re-initialization:', error.message);
+  db = getFirestore(firebaseApp, DATABASE_ID);
+}
+
+// Log connection status in development
+if (typeof window !== 'undefined' && db) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🌐 Browser online status:', navigator.onLine ? 'ONLINE' : 'OFFLINE');
+    console.log('📦 Firestore instance ready for project:', firebaseConfig.projectId);
+    console.log('📦 Firestore database ID:', DATABASE_ID);
+  }
 }
 const storage = getStorage(firebaseApp);
 const functions = getFunctions(firebaseApp, 'europe-west6');
@@ -176,6 +197,7 @@ export const loginWithGoogle = async () => {
     console.log('Current origin:', window.location.origin);
 
     const provider = new GoogleAuthProvider();
+    // Use popup for better reliability in some environments
     const result = await signInWithPopup(auth, provider);
     return result.user;
   } catch (error) {

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { getLocalizedRoute } from '../../i18n';
 import { FaBars, FaTimes } from 'react-icons/fa';
 
-import logoImage from '../../assets/global/logo.png';
 
 const Header = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -134,11 +133,11 @@ const Header = () => {
       <div className="w-full flex h-20 items-center justify-between px-6 lg:px-8 max-w-[1400px] mx-auto">
         <Link to={`/${lang}/${getLocalizedRoute('home', lang)}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <img
-            src={logoImage}
+            src="/logo.png"
             alt="MediShift"
             className="h-10 w-auto"
           />
-          <span className="text-2xl font-bold" style={{ color: 'var(--primary-color)' }}>MediShift</span>
+          <span className="text-2xl font-bold" style={{ color: 'var(--color-logo-2)' }}>MediShift</span>
         </Link>
 
         {isMobile ? (

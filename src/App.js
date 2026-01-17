@@ -65,7 +65,7 @@ const AppContainer = () => {
   return (
     <ErrorBoundary>
       <HelmetProvider>
-        <Router>
+        <Router future={{ v7_startTransition: true }}>
           <ScrollToTop />
           <AuthProvider>
             <NotificationProvider>
@@ -131,9 +131,7 @@ function AppContent() {
     const langFromUrl = pathSegments[0];
 
     if (!langFromUrl || !SUPPORTED_LANGUAGES.includes(langFromUrl)) {
-      // No valid language in URL, redirect to preferred language
-      const userPreferredLang = localStorage.getItem('preferredLanguage') ||
-        navigator.language.split('-')[0] || DEFAULT_LANGUAGE;
+      const userPreferredLang = navigator.language.split('-')[0] || DEFAULT_LANGUAGE;
       const lang = SUPPORTED_LANGUAGES.includes(userPreferredLang) ? userPreferredLang : DEFAULT_LANGUAGE;
 
       // Set language in i18n
