@@ -1,0 +1,313 @@
+.tutorialOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  pointer-events: auto;
+}
+
+.highlightBox {
+  position: fixed;
+  border: 3px solid #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: 8px;
+  pointer-events: none; /* Allow clicks to pass through */
+  z-index: 2500;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+  animation: pulse 1.5s infinite;
+  /* Ensure no offset from computed inline positioning */
+  margin: 0;
+}
+
+/* Special styling for highlight box when it requires interaction */
+.highlightBox.pulsing {
+  border: 3px solid #ffc107;
+  background-color: rgba(255, 193, 7, 0.15);
+  box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.3);
+  animation: interactionPulse 1.5s infinite;
+  cursor: pointer;
+  pointer-events: auto; /* Allow interaction with the element */
+  z-index: 3000;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+/* Stronger pulsing animation for interaction elements */
+@keyframes interactionPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 193, 7, 0.2);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+    transform: scale(1);
+  }
+}
+
+.tutorialTooltip {
+  position: absolute;
+  background-color: var(--background-div-color);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 350px;
+  z-index: 3000;
+  pointer-events: auto; /* Make the tooltip clickable */
+}
+
+.tooltip h3 {
+  border-bottom: 1px solid var(--color-logo-1);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: var(--text-color, #333);
+}
+
+.tooltipContent {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  color: var(--text-secondary, #555);
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.prevButton,
+.nextButton,
+.skipButton {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  pointer-events: auto !important;
+}
+
+.prevButton {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.skipButton {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+.skipButton:hover {
+  background-color: #e5e7eb;
+}
+
+.nextButton {
+  background-color: var(--primary-color, #3366FF);
+  color: white;
+  border: none;
+}
+
+.nextButton:hover {
+  background-color: var(--color-logo-2, #2851E7);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.tutorialContainer {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 2000;
+}
+
+/* Make the modal interactive - !important ensures these rules take precedence */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 4000;
+  pointer-events: auto !important;
+}
+
+.modal {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 90%;
+  position: relative;
+  z-index: 4100;
+  pointer-events: auto !important;
+}
+
+.modalTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #333;
+  pointer-events: auto !important;
+}
+
+.modalText {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 25px;
+  color: #555;
+  pointer-events: auto !important;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 4200;
+}
+
+.modalActions > * {
+  pointer-events: auto !important;
+}
+
+/* Custom style for buttons in the modal */
+.modalButton {
+  min-width: 120px !important;
+  pointer-events: auto !important;
+  width: auto !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  z-index: 2300 !important; /* Ensure buttons are above other elements */
+  position: relative !important;
+}
+
+/* Tooltip styles */
+.tooltip {
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: auto;
+  max-width: 300px;
+  pointer-events: auto !important;
+  z-index: 3500; /* Above everything, including the highlight box */
+  transition: all 0.3s ease;
+}
+
+/* Mobile styles for tooltip */
+@media (max-width: 767px) {
+  .tooltip {
+    max-width: 85vw;
+    padding: 12px;
+    font-size: 14px;
+  }
+  
+  .tooltip h3 {
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+  
+  .tooltip p {
+    margin-bottom: 10px;
+  }
+  
+  .tooltipActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  
+  .tooltipButton {
+    padding: 6px 12px !important;
+    font-size: 14px !important;
+  }
+}
+
+.tooltip h3 {
+  margin-top: 0;
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.tooltip p {
+  margin-bottom: 15px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.tooltipActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  pointer-events: auto !important;
+  z-index: 3600; /* Ensure buttons are clickable above everything */
+}
+
+.tooltipButton {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 3700; /* Extremely high z-index for buttons */
+}
+
+/* Mobile styles for highlight box */
+/* Sidebar item highlighting */
+.sidebarItemHighlighted {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  border: 2px solid #3b82f6 !important;
+  border-radius: 8px !important;
+  animation: sidebarPulse 2s infinite !important;
+  position: relative !important;
+  z-index: 1000 !important;
+  margin: 2px !important;
+}
+
+@keyframes sidebarPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+@media (max-width: 767px) {
+  .highlightBox {
+    border-width: 3px;
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.4);
+  }
+} 

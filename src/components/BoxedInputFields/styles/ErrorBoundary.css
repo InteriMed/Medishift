@@ -1,0 +1,48 @@
+.error-boundary {
+  padding: 2rem;
+  max-width: 800px;
+  text-align: center;
+  background-color: var(--background-div-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.error-boundary h2 {
+  color: var(--danger);
+}
+
+.error-details {
+  text-align: left;
+  background-color: var(--background-div-color);
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid var(--grey-3);
+}
+
+.error-details summary {
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+
+.error-details pre {
+  white-space: pre-wrap;
+  font-size: var(--font-size-small);
+  overflow-x: auto;
+}
+
+.reload-button {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: var(--font-size-small);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.reload-button:hover {
+  background-color: var(--primary-dark);
+} 

@@ -1,0 +1,896 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  RecaptchaVerifier,
+  PhoneAuthProvider,
+  sendEmailVerification,
+  linkWithCredential
+} from 'firebase/auth';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { db, firebaseApp, loginWithGoogle } from '../../services/firebase';
+import InputField from '../../components/BoxedInputFields/Personnalized-InputField';
+import PhoneInput from 'react-phone-number-input';
+import logoImage from "../../assets/global/logo.png";
+import { validatePassword } from '../../utils/validation';
+import 'react-phone-number-input/style.css';
+import { FcGoogle } from 'react-icons/fc';
+import { useNotification } from '../../contexts/NotificationContext';
+import InputFieldHideUnhide from '../../components/BoxedInputFields/InputFieldHideUnhide';
+import '../../styles/auth.css';
+
+function Signup() {
+  const { t } = useTranslation(['auth']);
+  const { lang } = useParams();
+  const navigate = useNavigate();
+  const auth = getAuth(firebaseApp);
+  const { showError } = useNotification();
+
+  // State management
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phoneNumber: '',
+    emailVerificationCode: '',
+    phoneVerificationCode: '',
+    termsAccepted: false,
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [phoneVerificationId, setPhoneVerificationId] = useState('');
+  const [emailVerificationId, setEmailVerificationId] = useState('');
+  const [temporaryUser, setTemporaryUser] = useState(null);
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+
+  // Set unsaved changes flag when form data changes
+  useEffect(() => {
+    if (step > 1 && step < 5) {
+      setHasUnsavedChanges(true);
+    }
+  }, [formData, step]);
+
+  // Warn user about unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (hasUnsavedChanges) {
+        const confirmationMessage = t('auth.signup.unsavedChangesWarning');
+        event.returnValue = confirmationMessage; // For most browsers
+        return confirmationMessage; // For some browsers
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges, t]);
+
+  // Initialize reCAPTCHA verifier for phone auth
+  useEffect(() => {
+    if (step === 3 && !recaptchaVerifier) {
+      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'normal',
+        'callback': () => {
+          console.log('reCAPTCHA verified');
+        },
+        'expired-callback': () => {
+          console.log('reCAPTCHA expired');
+          setRecaptchaVerifier(null);
+        }
+      });
+
+      setRecaptchaVerifier(verifier);
+    }
+
+    return () => {
+      if (recaptchaVerifier) {
+        recaptchaVerifier.clear();
+      }
+    };
+  }, [step, auth, recaptchaVerifier]);
+
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors(prevErrors => {
+        const newErrors = { ...prevErrors };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+
+    // If changing password or confirmPassword, also check the other one
+    if (name === 'password' || name === 'confirmPassword') {
+      const otherField = name === 'password' ? 'confirmPassword' : 'password';
+      const otherValue = name === 'password' ? formData.confirmPassword : formData.password;
+
+      // If the other field has a value, check if they match
+      if (otherValue) {
+        if (value !== otherValue) {
+          setErrors(prevErrors => ({
+            ...prevErrors,
+            [otherField]: t('auth.errors.passwordsDoNotMatch')
+          }));
+        } else {
+          // If they match, clear the error
+          setErrors(prevErrors => {
+            const newErrors = { ...prevErrors };
+            delete newErrors[otherField];
+            return newErrors;
+          });
+        }
+      }
+    }
+  };
+
+  // Handle phone number input change
+  const handlePhoneChange = (value) => {
+    setFormData(prevData => ({
+      ...prevData,
+      phoneNumber: value || ''
+    }));
+
+    // Clear phone number error when user updates the value
+    if (errors.phoneNumber) {
+      setErrors(prevErrors => {
+        const newErrors = { ...prevErrors };
+        delete newErrors.phoneNumber;
+        return newErrors;
+      });
+    }
+  };
+
+
+  // Handle resending email verification code
+  const handleResendEmailCode = async () => {
+    setIsLoading(true);
+    try {
+      const verificationCode = await sendEmailVerificationCode();
+      // For demo purposes, auto-fill the verification code
+      setFormData(prev => ({ ...prev, emailVerificationCode: verificationCode }));
+    } catch (error) {
+      console.error('Email verification error:', error);
+      setErrors({ general: t('auth.errors.emailVerificationFailed') });
+      showError(t('auth.errors.emailVerificationFailed'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle navigation to dashboard after successful signup
+  const handleNavigateToDashboard = () => {
+    setHasUnsavedChanges(false);
+    console.log("Current language:", lang);
+    navigate(`/${lang}/verification-sent`);
+  };
+
+  // Complete the handleNext function for step 4 and 5
+  const handleNext = async () => {
+    if (!validateForm()) return;
+
+    if (step === 1) {
+      // Send email verification code
+      setIsLoading(true);
+
+      try {
+        // Create a temporary user account
+        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+        const user = userCredential.user;
+
+        // Send email verification
+        await sendEmailVerification(user);
+
+        // Create user document in Firestore with onboarding flags
+        await setDoc(doc(db, 'users', user.uid), {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          displayName: `${formData.firstName} ${formData.lastName}`,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          role: 'professional',
+          isEmailVerified: false,
+          profileCompleted: false,
+          profileStatus: 'incomplete',
+          tutorialPassed: false,
+          isProfessionalProfileComplete: false,
+        });
+
+        // Store the user temporarily
+        setTemporaryUser(user);
+
+        // Store auth data
+        const token = await user.getIdToken(true);
+        localStorage.setItem('token', token);
+        localStorage.setItem('firebaseUid', user.uid);
+        localStorage.setItem('user', JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: `${formData.firstName} ${formData.lastName}`,
+        }));
+
+        // Redirect to VerificationSentPage
+        handleNavigateToDashboard();
+      } catch (error) {
+        console.error('Account creation error:', error);
+        if (error.code === 'auth/email-already-in-use') {
+          const newErrors = { email: t('auth.errors.emailInUse') };
+          setErrors(newErrors);
+          showError(t('auth.errors.emailInUse'));
+        } else {
+          setErrors({ general: t('auth.errors.signupFailed') });
+          showError(t('auth.errors.signupFailed'));
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    } else if (step === 2) {
+      // Verify email code
+      setIsLoading(true);
+
+      try {
+        if (formData.emailVerificationCode !== emailVerificationId) {
+          setErrors({ emailVerificationCode: t('auth.errors.invalidEmailCode') });
+          showError(t('auth.errors.invalidEmailCode'));
+          setIsLoading(false);
+          return;
+        }
+
+        // Proceed with account creation after email verification
+        const user = temporaryUser; // Use the temporarily stored user
+        await updateProfile(user, {
+          displayName: `${formData.firstName} ${formData.lastName}`
+        });
+
+        // Create user document in Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          displayName: `${formData.firstName} ${formData.lastName}`,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          role: 'professional',
+          isEmailVerified: true,
+          isPhoneVerified: false,
+          profileCompleted: false,
+          profileStatus: 'incomplete',
+          primarySector: 'pharmacy',
+          primaryProfession: 'pharmacist',
+          tutorialPassed: false,
+          isProfessionalProfileComplete: false,
+        });
+
+        // Store auth data
+        const token = await user.getIdToken(true);
+        localStorage.setItem('token', token);
+        localStorage.setItem('firebaseUid', user.uid);
+        localStorage.setItem('user', JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: `${formData.firstName} ${formData.lastName}`,
+        }));
+
+        // Redirect to profile for onboarding
+        navigate(`/${lang}/dashboard/profile`);
+
+      } catch (error) {
+        console.error('Email verification error:', error);
+        setErrors({ general: t('auth.errors.verificationFailed') });
+        showError(t('auth.errors.verificationFailed'));
+      } finally {
+        setIsLoading(false);
+      }
+    } else if (step === 3) {
+      // Send phone verification code
+      setIsLoading(true);
+
+      try {
+        if (!recaptchaVerifier) {
+          const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'normal'
+          });
+          setRecaptchaVerifier(verifier);
+        }
+
+        const phoneProvider = new PhoneAuthProvider(auth);
+        const verificationId = await phoneProvider.verifyPhoneNumber(
+          formData.phoneNumber,
+          recaptchaVerifier
+        );
+
+        setPhoneVerificationId(verificationId);
+        setStep(4);
+      } catch (error) {
+        console.error('Phone verification error:', error);
+        setErrors({ general: t('auth.errors.verificationFailed') });
+        showError(t('auth.errors.verificationFailed'));
+      } finally {
+        setIsLoading(false);
+      }
+    } else if (step === 4) {
+      // Verify phone code and create user
+      setIsLoading(true);
+
+      try {
+        const phoneCredential = PhoneAuthProvider.credential(
+          phoneVerificationId,
+          formData.phoneVerificationCode
+        );
+
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password
+        );
+
+        const user = userCredential.user;
+
+        await updateProfile(user, {
+          displayName: `${formData.firstName} ${formData.lastName}`
+        });
+
+        await linkWithCredential(user, phoneCredential);
+
+        await setDoc(doc(db, 'users', user.uid), {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          displayName: `${formData.firstName} ${formData.lastName}`,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          role: 'professional',
+          isEmailVerified: true,
+          isPhoneVerified: true,
+          profileCompleted: false,
+          profileStatus: 'incomplete',
+          primarySector: 'pharmacy',
+          primaryProfession: 'pharmacist',
+          tutorialPassed: false,
+          isProfessionalProfileComplete: false,
+        });
+
+        // Store auth data
+        const token = await user.getIdToken(true);
+        localStorage.setItem('token', token);
+        localStorage.setItem('firebaseUid', user.uid);
+        localStorage.setItem('user', JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: `${formData.firstName} ${formData.lastName}`,
+        }));
+
+        // Redirect to profile for onboarding
+        navigate(`/${lang}/dashboard/profile`);
+
+      } catch (error) {
+        console.error('Account creation error:', error);
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            setErrors({ general: t('auth.errors.emailInUse') });
+            showError(t('auth.errors.emailInUse'));
+            break;
+          case 'auth/invalid-verification-code':
+            setErrors({ phoneVerificationCode: t('auth.errors.invalidPhoneCode') });
+            showError(t('auth.errors.invalidPhoneCode'));
+            break;
+          default:
+            setErrors({ general: t('auth.errors.signupFailed') });
+            showError(t('auth.errors.signupFailed'));
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  // Validate the form based on current step
+  const validateForm = () => {
+    const newErrors = {};
+    let hasErrors = false;
+
+    // Collect all errors
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = t('auth.errors.nameRequired');
+      hasErrors = true;
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = t('auth.errors.nameRequired');
+      hasErrors = true;
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = t('auth.errors.emailRequired');
+      hasErrors = true;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = t('auth.errors.emailInvalid');
+      hasErrors = true;
+    }
+
+    if (!formData.password) {
+      newErrors.password = t('auth.errors.passwordRequired');
+      hasErrors = true;
+    } else if (!validatePassword(formData.password)) {
+      newErrors.password = t('auth.errors.passwordRequirements');
+      hasErrors = true;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = t('auth.errors.passwordsDoNotMatch');
+      hasErrors = true;
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = t('auth.errors.confirmPasswordRequired');
+      hasErrors = true;
+    }
+
+    if (!formData.termsAccepted) {
+      newErrors.termsAccepted = t('auth.errors.termsRequired');
+      hasErrors = true;
+    }
+
+    setErrors(newErrors);
+
+    // If there are multiple errors, show a generic message
+    if (hasErrors) {
+      const errorCount = Object.keys(newErrors).length;
+      if (errorCount > 1) {
+        showError(t('auth.errors.multipleErrors'));
+      } else {
+        // If there's only one error, show that specific message
+        const firstErrorField = Object.keys(newErrors)[0];
+        const firstErrorMessage = newErrors[firstErrorField];
+        showError(firstErrorMessage);
+      }
+      return false;
+    }
+
+    return true;
+  };
+
+
+  // Send email verification code
+  const sendEmailVerificationCode = async () => {
+    try {
+      // Create a temporary user account
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+
+      const user = userCredential.user;
+
+      // Update the user's display name
+      await updateProfile(user, {
+        displayName: `${formData.firstName} ${formData.lastName}`
+      });
+
+      // Send email verification
+      await sendEmailVerification(user);
+
+      // Store the user temporarily
+      setTemporaryUser(user);
+
+      // For development, we'll use a simulated code
+      // In production, the user would get this code via email
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      setEmailVerificationId(verificationCode);
+
+      return verificationCode;
+    } catch (error) {
+      console.error('Email verification error:', error);
+
+      if (error.code === 'auth/email-already-in-use') {
+        setErrors({ email: t('auth.errors.emailInUse') });
+        showError(t('auth.errors.emailInUse'));
+      } else {
+        setErrors({ general: t('auth.errors.emailVerificationFailed') });
+        showError(t('auth.errors.emailVerificationFailed'));
+      }
+
+      throw error;
+    }
+  };
+
+  // Add Google signup button
+  const handleGoogleSignup = async () => {
+    setIsLoading(true);
+    try {
+      const user = await loginWithGoogle();
+
+      // Check if user document exists in Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        // New user - create document with onboarding flags
+        await setDoc(userDocRef, {
+          email: user.email,
+          displayName: user.displayName || user.email.split('@')[0],
+          firstName: user.displayName?.split(' ')[0] || '',
+          lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+          photoURL: user.photoURL || '',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          role: 'professional',
+          profileCompleted: false,
+          profileStatus: 'incomplete',
+          tutorialPassed: false,
+          isProfessionalProfileComplete: false,
+        });
+
+        // Redirect to profile for onboarding
+        navigate(`/${lang}/dashboard/profile`);
+      } else {
+        // Existing user - check if profile is complete
+        const userData = userDoc.data();
+        if (!userData.profileCompleted && !userData.isProfessionalProfileComplete) {
+          navigate(`/${lang}/dashboard/profile`);
+        } else {
+          navigate(`/${lang}/dashboard`);
+        }
+      }
+    } catch (error) {
+      console.error('Google signup error:', error);
+      showError(t('auth.errors.googleSignupFailed'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Render different steps of the signup form
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <div className="signup-step">
+            <h1 className="auth-title">{t('auth.signup.title')}</h1>
+            <p className="auth-subtitle">{t('auth.signup.subtitle')}</p>
+
+            <div className="auth-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <InputField
+                    label={t('auth.signup.firstName') + ' *'}
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    placeholder={t('auth.signup.firstNamePlaceholder')}
+                    error={errors.firstName}
+                    required={true}
+                  />
+                </div>
+                <div className="form-group">
+                  <InputField
+                    label={t('auth.signup.lastName') + ' *'}
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    placeholder={t('auth.signup.lastNamePlaceholder')}
+                    error={errors.lastName}
+                    required={true}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <InputField
+                  label={t('auth.signup.email') + ' *'}
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder={t('auth.signup.emailPlaceholder')}
+                  error={errors.email}
+                  required={true}
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <InputFieldHideUnhide
+                    label={t('auth.signup.password')}
+                    name="password"
+                    value={formData.password}
+                    onChange={(e) => {
+                      handleInputChange({
+                        target: {
+                          name: 'password',
+                          value: e.target.value
+                        }
+                      });
+                    }}
+                    placeholder="••••••••"
+                    type="password"
+                    required
+                    error={errors.password}
+                    onErrorReset={() => {
+                      if (errors.password) {
+                        setErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.password;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <InputFieldHideUnhide
+                    label={t('auth.signup.confirmPassword')}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={(e) => {
+                      handleInputChange({
+                        target: {
+                          name: 'confirmPassword',
+                          value: e.target.value
+                        }
+                      });
+                    }}
+                    placeholder="••••••••"
+                    type="password"
+                    required
+                    error={errors.confirmPassword}
+                    onErrorReset={() => {
+                      if (errors.confirmPassword) {
+                        setErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.confirmPassword;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="terms-agreement">
+                <input
+                  type="checkbox"
+                  id="termsAccepted"
+                  name="termsAccepted"
+                  checked={formData.termsAccepted}
+                  onChange={handleInputChange}
+                  required
+                />
+                <label htmlFor="termsAccepted" className="termsAgreed">
+                  {t('auth.signup.termsAgreement')}
+                  <a href={`/${lang}/terms-of-service`}>{t('auth.signup.termsAndConditions')}</a>
+                </label>
+              </div>
+
+              {errors.general && <div className="auth-error">{errors.general}</div>}
+
+              <button
+                className="auth-button primary-button"
+                onClick={handleNext}
+                disabled={isLoading}
+              >
+                {isLoading ? t('auth.signup.creating') : t('auth.signup.continue')}
+              </button>
+
+              <button
+                className="auth-button social-button"
+                onClick={handleGoogleSignup}
+                disabled={isLoading}
+              >
+                <FcGoogle className="social-icon" />
+                {t('auth.signup.signUpWithGoogle')}
+              </button>
+
+            </div>
+
+            <div className="auth-footer">
+              <p>
+                {t('auth.signup.alreadyHaveAccount')}
+                <a
+                  href={`/${lang}/login`}
+                  className="text-link"
+                >
+                  {t('auth.login.button')}
+                </a>
+              </p>
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="signup-step">
+            <h1 className="auth-title">{t('auth.signup.verifyEmail')}</h1>
+            <p className="auth-subtitle">
+              {t('auth.signup.emailVerificationDesc')} {formData.email}
+            </p>
+
+            <div className="auth-form">
+              <div className="form-group">
+                <InputField
+                  label={t('auth.emailVerificationCode')}
+                  name="emailVerificationCode"
+                  value={formData.emailVerificationCode}
+                  onChange={handleInputChange}
+                  placeholder="123456"
+                  maxLength={6}
+                  error={errors.emailVerificationCode}
+                />
+              </div>
+
+              {errors.general && <div className="auth-error">{errors.general}</div>}
+
+              <button
+                className="auth-button primary-button"
+                onClick={handleNext}
+                disabled={isLoading}
+              >
+                {isLoading ? t('auth.signup.verifying') : t('auth.signup.verifyEmail')}
+              </button>
+
+            </div>
+
+            <div className="resend-code">
+              <p>
+                {t('auth.signup.didntReceiveCode')}
+                <button
+                  type="button"
+                  onClick={handleResendEmailCode}
+                  className="text-link"
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {t('auth.signup.resend')}
+                </button>
+              </p>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="signup-step">
+            <h1 className="auth-title">{t('auth.signup.verifyPhone')}</h1>
+            <p className="auth-subtitle">{t('auth.signup.phoneVerificationDesc')}</p>
+
+            <div className="auth-form">
+              <div className="form-group">
+                <label>{t('auth.phoneNumber')}</label>
+                <PhoneInput
+                  international
+                  defaultCountry="CH"
+                  value={formData.phoneNumber}
+                  onChange={handlePhoneChange}
+                  className="phone-input"
+                />
+                {errors.phoneNumber && <div className="field-error">{errors.phoneNumber}</div>}
+              </div>
+
+              <div id="recaptcha-container" className="recaptcha-container"></div>
+
+              {errors.general && <div className="auth-error">{errors.general}</div>}
+
+              <button
+                className="auth-button primary-button"
+                onClick={handleNext}
+                disabled={isLoading}
+              >
+                {isLoading ? t('auth.signup.sending') : t('auth.signup.sendCode')}
+              </button>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="signup-step">
+            <h1 className="auth-title">{t('auth.signup.enterPhoneCode')}</h1>
+            <p className="auth-subtitle">
+              {t('auth.signup.codeSent')} {formData.phoneNumber}
+            </p>
+
+            <div className="auth-form">
+              <div className="form-group">
+                <InputField
+                  label={t('auth.phoneVerificationCode')}
+                  name="phoneVerificationCode"
+                  value={formData.phoneVerificationCode}
+                  onChange={handleInputChange}
+                  placeholder="123456"
+                  maxLength={6}
+                  error={errors.phoneVerificationCode}
+                />
+              </div>
+
+              {errors.general && <div className="auth-error">{errors.general}</div>}
+
+              <button
+                className="auth-button primary-button"
+                onClick={handleNext}
+                disabled={isLoading}
+              >
+                {isLoading ? t('auth.signup.creating') : t('auth.signup.createAccount')}
+              </button>
+
+            </div>
+
+            <div className="resend-code">
+              <p>
+                {t('auth.signup.didntReceiveCode')}
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  className="text-link"
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {t('auth.signup.resend')}
+                </button>
+              </p>
+            </div>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="signup-step success-step">
+            <div className="success-icon">✓</div>
+            <h1 className="auth-title">{t('auth.signup.accountCreated')}</h1>
+            <p className="auth-subtitle">
+              {t('auth.signup.welcomeMessage')}
+              {formData.firstName}!
+            </p>
+
+            <div className="auth-form">
+              <button
+                className="auth-button primary-button"
+                onClick={handleNavigateToDashboard}
+              >
+                {t('auth.signup.continueToApp')}
+              </button>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+
+  return (
+    <div className="auth-page-container bg-swiss-cross">
+      <div className="auth-card">
+        <div className="auth-logo-container">
+          <img src={logoImage} alt="Logo" className="auth-logo" />
+        </div>
+
+        <div className="auth-form-container">
+          {renderStep()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Signup; 

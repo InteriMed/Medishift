@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkfrontend=self.webpackChunkfrontend||[]).push([[122],{7122:e=>{e.exports=JSON.parse('{"no":"Non","yes":"Oui","cancel":"Annuler","saveAndContinue":"Sauvegarder et continuer","discardChanges":"Ignorer les modifications"}')}}]);

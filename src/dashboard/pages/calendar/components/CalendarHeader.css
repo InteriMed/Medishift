@@ -1,0 +1,27 @@
+.calendar-filter-button:focus {
+  background-color: var(--color-logo-1) !important;
+  border-color: var(--color-logo-1) !important;
+  color: white !important;
+}
+
+.calendar-filter-button:focus-visible {
+  outline: 2px solid var(--color-logo-1);
+  outline-offset: 2px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

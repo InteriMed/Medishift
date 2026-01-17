@@ -1,0 +1,142 @@
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { Sidebar } from '../components/Sidebar/Sidebar';
+import { Header } from '../components/Header/Header';
+import { cn } from '../../utils/cn';
+import { useSidebar } from '../contexts/SidebarContext';
+import { usePageMobile } from '../contexts/PageMobileContext';
+
+export function DashboardLayout({ children }) {
+    const { isMainSidebarCollapsed, setIsMainSidebarCollapsed } = useSidebar();
+    const { showBackButton, onBackButtonClick } = usePageMobile();
+    const [viewportWidth, setViewportWidth] = useState(() => {
+        return typeof window !== 'undefined' ? window.innerWidth : 1200;
+    });
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        const vw = typeof window !== 'undefined' ? window.innerWidth : 1200;
+        return vw < 1200 ? true : isMainSidebarCollapsed;
+    });
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const isMobileMode = viewportWidth < 768;
+    const isOverlayMode = viewportWidth >= 768 && viewportWidth < 1200;
+
+    useEffect(() => {
+        const handleResize = () => {
+            const vw = window.innerWidth;
+            setViewportWidth(vw);
+            if (vw < 768) {
+                setIsSidebarCollapsed(true);
+            } else if (vw < 1200) {
+                setIsSidebarCollapsed(true);
+            } else {
+                setIsSidebarCollapsed(isMainSidebarCollapsed);
+            }
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [isMainSidebarCollapsed]);
+
+    useEffect(() => {
+        if (!isOverlayMode) {
+            if (isSidebarCollapsed !== isMainSidebarCollapsed) {
+                setIsMainSidebarCollapsed(isSidebarCollapsed);
+            }
+        }
+    }, [isSidebarCollapsed, isMainSidebarCollapsed, setIsMainSidebarCollapsed, isOverlayMode]);
+
+    const toggleSidebar = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+    };
+
+    const closeOverlaySidebar = () => {
+        if (isOverlayMode && !isMobileMode) {
+            setIsSidebarCollapsed(true);
+        }
+    };
+
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
+
+    return (
+        <div className="h-screen bg-background text-foreground font-sans antialiased flex flex-col overflow-hidden">
+            {/* Desktop Sidebar - Normal mode (viewport >= 1200px) */}
+            {!isOverlayMode && !isMobileMode && (
+                <Sidebar
+                    collapsed={isSidebarCollapsed}
+                    onToggle={toggleSidebar}
+                    isMobile={false}
+                />
+            )}
+
+            {/* Overlay Sidebar for 768px <= viewport < 1200px */}
+            {isOverlayMode && (
+                <>
+                    {!isSidebarCollapsed && (
+                        <div
+                            className="fixed inset-0 bg-black/50 z-40"
+                            onClick={closeOverlaySidebar}
+                        />
+                    )}
+                    <Sidebar
+                        collapsed={isSidebarCollapsed}
+                        onToggle={toggleSidebar}
+                        isMobile={false}
+                        isOverlayMode={true}
+                        isOverlayExpanded={!isSidebarCollapsed}
+                    />
+                </>
+            )}
+
+            {/* Mobile Sidebar Overlay - Only shown when mobile menu is open */}
+            {isMobileMode && isMobileMenuOpen && (
+                <>
+                    <div
+                        className="fixed inset-0 bg-black/50 z-40"
+                        onClick={closeMobileMenu}
+                    />
+                    <Sidebar
+                        collapsed={false}
+                        onToggle={closeMobileMenu}
+                        isMobile={true}
+                    />
+                </>
+            )}
+
+            {/* Main Content Area */}
+            <div className={cn(
+                "flex-1 flex flex-col h-full transition-all duration-300 ease-in-out",
+                !isOverlayMode && !isMobileMode && "md:border-l md:border-border",
+                !isOverlayMode && !isMobileMode && (isSidebarCollapsed ? "md:ml-[70px]" : "md:ml-64"),
+                isOverlayMode && isSidebarCollapsed && "ml-[70px]"
+            )}>
+                <Header
+                    collapsed={isSidebarCollapsed}
+                    onMobileMenuToggle={toggleMobileMenu}
+                    isMobileMenuOpen={isMobileMenuOpen}
+                    showBackButton={showBackButton}
+                    onBackButtonClick={onBackButtonClick}
+                />
+
+                <main className="flex-1 overflow-hidden bg-muted/10 bg-swiss-cross w-full h-full">
+                    <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {children}
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
+}
+
+DashboardLayout.propTypes = {
+  children: PropTypes.node.isRequired
+};
+
+export default DashboardLayout;

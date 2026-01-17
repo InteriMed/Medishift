@@ -1,0 +1,174 @@
+.user-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.user-menu-trigger {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: auto;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: var(--grey-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  color: white;
+}
+
+.user-name {
+  font-weight: bold;
+}
+
+.user-menu-dropdown {
+  padding: 8px;
+  right: 0;
+  position: absolute;
+  top: 50px;
+  background-color: white;
+  border: 1px solid var(--grey-2);
+  border-radius: 10px;
+  z-index: 1000;
+  min-width: 220px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.menu-item:hover {
+  background-color: var(--color-logo-1);
+  color: white;
+}
+
+.menu-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: var(--grey-1);
+  margin: 8px 0;
+}
+
+.menu-item-logout {
+  display: flex;
+  justify-content: center; 
+  padding: 12px 16px 8px;
+}
+
+.menu-item-logout button {
+  width: 100%;
+}
+
+/* Language Switcher Styles */
+.language-section {
+  position: relative;
+}
+
+.language-trigger {
+  cursor: pointer;
+  justify-content: space-between;
+}
+
+.language-trigger .chevron {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  margin-left: auto;
+}
+
+.language-trigger .chevron.open {
+  transform: rotate(180deg);
+}
+
+.language-dropdown {
+  background-color: var(--grey-0, #f8f9fa);
+  border-radius: 6px;
+  margin: 4px 0;
+  overflow: hidden;
+  border: 1px solid var(--grey-1);
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  color: var(--text-color, #333);
+}
+
+.language-option:hover {
+  background-color: var(--grey-1, #e0e0e0);
+}
+
+.language-option.active {
+  background-color: var(--color-logo-1-light, #e9f2ff);
+  color: var(--color-logo-1, #4a90e2);
+}
+
+.language-option .flag {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.language-option .language-name {
+  flex: 1;
+  text-align: left;
+}
+
+.language-option .checkmark {
+  color: var(--color-logo-1, #4a90e2);
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .user-name {
+    display: none; /* Hide user name on smaller screens */
+  }
+  
+  .user-avatar {
+    margin-right: 0; /* Remove right margin when name is hidden */
+  }
+  
+  .user-menu-dropdown {
+    min-width: 200px;
+    right: -10px; /* Adjust position for mobile */
+  }
+}

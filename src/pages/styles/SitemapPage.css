@@ -1,0 +1,87 @@
+/* Sitemap page specific styles */
+.sitemap-page {
+  padding: 4rem 0;
+}
+
+.sitemap-container {
+  max-width: 800px;
+}
+
+.sitemap-page h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.intro-text {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: var(--grey-3);
+}
+
+.sitemap-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.sitemap-section {
+  margin-bottom: 2rem;
+}
+
+.sitemap-section h2 {
+  font-size: 1.4rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--grey-2);
+  color: var(--color-logo-2);
+}
+
+.sitemap-links {
+  list-style: none;
+  padding: 0;
+}
+
+.sitemap-links li {
+  margin-bottom: 0.75rem;
+}
+
+.sitemap-links a {
+  display: block;
+  color: var(--grey-3);
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.sitemap-links a:hover {
+  background-color: var(--background-color);
+  color: var(--color-logo-2);
+}
+
+.sitemap-sublinks {
+  list-style: none;
+  padding-left: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.sitemap-sublinks li {
+  margin-bottom: 0.5rem;
+}
+
+.current-page {
+  display: block;
+  color: var(--grey-3);
+  padding: 0.5rem;
+  cursor: default;
+}
+
+@media (max-width: 768px) {
+  .sitemap-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .sitemap-page {
+    padding: 3rem 0;
+  }
+} 

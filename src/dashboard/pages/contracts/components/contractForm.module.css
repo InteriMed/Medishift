@@ -1,0 +1,232 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-modal);
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.modal {
+  background-color: var(--background-div-color);
+  border-radius: var(--spacing-sm);
+  box-shadow: var(--shadow-lg);
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-family);
+}
+
+.header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--grey-1);
+  position: sticky;
+  top: 0;
+  background-color: var(--background-div-color);
+  z-index: var(--z-index-sticky);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-xlarge);
+  font-weight: var(--font-weight-large);
+  color: var(--text-color);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: var(--font-size-xlarge);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--grey-2);
+  transition: color var(--transition-fast);
+}
+
+.closeButton:hover {
+  color: var(--red-3);
+}
+
+.form {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.sectionHeader h3 {
+  margin: 0;
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-large);
+  color: var(--text-color);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.formGroup label {
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  color: var(--grey-4);
+}
+
+.input, .textarea, .select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--grey-1);
+  border-radius: var(--spacing-sm);
+  background-color: var(--background-div-color);
+  font-family: var(--font-family);
+  font-size: var(--font-size-small);
+  color: var(--text-color);
+  transition: border-color var(--transition-fast);
+}
+
+.input:focus, .textarea:focus, .select:focus {
+  outline: none;
+  border-color: var(--color-logo-2);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.partyItem, .termItem {
+  background-color: var(--grey-1-light);
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.partyHeader, .termHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
+}
+
+.partyFields, .termFields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+.addButton {
+  background: none;
+  border: none;
+  color: var(--color-logo-1);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: color var(--transition-fast);
+  font-family: var(--font-family);
+}
+
+.addButton:hover {
+  color: var(--color-logo-1-dark);
+}
+
+.removeButton {
+  background: none;
+  border: none;
+  color: var(--grey-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.removeButton:hover {
+  color: var(--red-3);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.cancelButton {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--grey-1-light);
+  border: 1px solid var(--grey-1);
+  border-radius: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  font-family: var(--font-family);
+  color: var(--text-color);
+}
+
+.submitButton {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-logo-1);
+  color: var(--white);
+  border: none;
+  border-radius: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  font-family: var(--font-family);
+}
+
+.cancelButton:hover {
+  background-color: var(--grey-1);
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: var(--color-logo-1-dark);
+}
+
+.submitButton:disabled {
+  background-color: var(--grey-1);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 1110px) {
+  .partyFields, .termFields {
+    grid-template-columns: 1fr;
+  }
+  
+  .formActions {
+    flex-direction: column-reverse;
+  }
+} 

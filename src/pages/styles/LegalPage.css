@@ -1,0 +1,268 @@
+.legal-page {
+  width: 100%;
+  min-height: calc(100vh - var(--header-height, 80px));
+  padding: 2rem 1rem;
+  background-color: var(--background-color, var(--background-div-color, #f9fafb));
+}
+
+.legal-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 3rem;
+}
+
+.legal-sidebar {
+  position: sticky;
+  top: calc(var(--header-height, 80px) + 2rem);
+  align-self: start;
+  background-color: var(--white, #ffffff);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: calc(100vh - var(--header-height, 80px) - 4rem);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-sizing: border-box;
+}
+
+.legal-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.legal-sidebar:hover {
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+  padding-right: 0.9rem;
+}
+
+.legal-sidebar:hover::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+.legal-sidebar:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.legal-sidebar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.legal-sidebar:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.legal-sidebar h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-primary, #1f2937);
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border, #e5e7eb);
+}
+
+.table-of-contents {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.table-of-contents li {
+  margin-bottom: 0.5rem;
+  list-style: none;
+}
+
+.table-of-contents a {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-secondary, #6b7280);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.table-of-contents a:hover {
+  background-color: var(--background-color, #f3f4f6);
+  color: var(--link-color, var(--color-logo-2));
+}
+
+.table-of-contents a.active {
+  background-color: var(--color-logo-1, #2563eb);
+  color: white;
+  font-weight: 500;
+}
+
+.legal-content {
+  background-color: var(--white, #ffffff);
+  border-radius: 8px;
+  padding: 2.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.legal-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  padding-bottom: 1rem;
+  color: var(--text-primary, #1f2937);
+  line-height: 1.2;
+}
+
+.legal-content .last-updated {
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.privacy-section {
+  margin-bottom: 2.5rem;
+}
+
+.privacy-section h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary, #1f2937);
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border, #e5e7eb);
+  scroll-margin-top: calc(var(--header-height, 80px) + 2rem);
+}
+
+.privacy-section p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+  color: var(--text-secondary, #4b5563);
+}
+
+.privacy-policy-page {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.terms-of-service-page {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.legal-section {
+  margin-bottom: 2.5rem;
+  scroll-margin-top: calc(var(--header-height, 80px) + 2rem);
+}
+
+.legal-section h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary, #1f2937);
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border, #e5e7eb);
+}
+
+.legal-section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary, #1f2937);
+}
+
+.legal-section h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary, #1f2937);
+}
+
+.legal-section ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.legal-section ul li {
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
+  color: var(--text-secondary, #4b5563);
+}
+
+.effective-date {
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.legal-disclaimer {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background-color: var(--background-color, #f3f4f6);
+  border-left: 4px solid var(--color-logo-1, #2563eb);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #6b7280);
+  line-height: 1.6;
+}
+
+@media (max-width: 968px) {
+  .legal-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .legal-sidebar {
+    position: relative;
+    top: 0;
+    max-height: none;
+    margin-bottom: 1rem;
+  }
+
+  .legal-content {
+    padding: 1.5rem;
+  }
+
+  .legal-content h1 {
+    font-size: 2rem;
+  }
+
+  .privacy-section h3 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .legal-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .legal-container {
+    gap: 1.5rem;
+  }
+
+  .legal-sidebar {
+    padding: 1rem;
+  }
+
+  .legal-content {
+    padding: 1.25rem;
+  }
+
+  .legal-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .privacy-section h3 {
+    font-size: 1.1rem;
+  }
+}
+

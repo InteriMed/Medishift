@@ -1,0 +1,90 @@
+{
+  "h1meta": {
+    "title": "À propos d'InteriMed | Votre partenaire de recrutement en santé",
+    "description": "Découvrez comment InteriMed révolutionne le recrutement dans le secteur de la santé en Suisse avec des solutions innovantes pour les établissements et les professionnels.",
+    "keywords": "InteriMed, recrutement santé, personnel médical temporaire, emplois santé Suisse, plateforme recrutement santé"
+  },
+  "hero": {
+    "title": "À propos d'InteriMed",
+    "features": {
+      "contracts": "Accès sécurisé",
+      "planning": "Planification facile",
+      "qualifiedStaff": "Personnel qualifié"
+    }
+  },
+  "missionVision": {
+    "title": "Notre Mission et Vision",
+    "intro": "Interimed",
+    "experienceSection": {
+      "title": "Notre Expérience",
+      "paragraph1": "Avec plus de 50 ans d'expérience combinée dans le secteur de la santé, notre équipe comprend les défis uniques auxquels sont confrontés les établissements de santé pour trouver du personnel qualifié, ainsi que les besoins des professionnels de la santé à la recherche d'opportunités de travail flexibles.",
+      "paragraph2": "Cette expertise nous a permis de développer une plateforme qui simplifie le processus de recrutement tout en maintenant les normes élevées requises dans le secteur de la santé."
+    },
+    "insightSection": {
+      "title": "Notre Perspective",
+      "paragraph1": "Nous croyons que le futur du travail dans le secteur de la santé sera de plus en plus flexible, avec une demande croissante pour des solutions qui permettent aux établissements de s'adapter rapidement aux besoins changeants et aux professionnels de trouver un meilleur équilibre entre vie professionnelle et vie privée."
+    },
+    "commitmentSection": {
+      "title": "Notre Engagement",
+      "points": [
+        {
+          "title": "Qualité :",
+          "text": "Nous vérifions rigoureusement les qualifications et l'expérience de tous les professionnels sur notre plateforme."
+        },
+        {
+          "title": "Innovation :",
+          "text": "Nous investissons continuellement dans la technologie pour améliorer l'expérience utilisateur et l'efficacité du processus de recrutement."
+        },
+        {
+          "title": "Transparence :",
+          "text": "Nous croyons en une communication claire et honnête avec tous nos partenaires."
+        }
+      ]
+    },
+    "conclusion": "En choisissant InteriMed, vous optez pour un partenaire qui comprend les nuances du secteur de la santé suisse et qui s'engage à fournir des solutions de recrutement de haute qualité."
+  },
+  "story": {
+    "title": "Notre Histoire",
+    "paragraph1": "InteriMed a été fondée par deux pharmaciens possédant une expertise technique et de solides relations dans l'industrie, tirant parti de leurs connaissances du domaine pour créer une solution sur mesure pour le secteur de la santé.",
+    "paragraph2": "Après avoir personnellement expérimenté les défis liés à la recherche de personnel qualifié et à la sécurisation d'un travail flexible dans le domaine de la santé, ils ont entrepris de créer une solution qui profiterait à la fois aux établissements et aux professionnels.",
+    "paragraph3": "En commençant par le secteur pharmaceutique en Suisse romande, InteriMed ambitionne de devenir la plateforme leader du recrutement temporaire dans le secteur de la santé en Suisse et dans les pays voisins."
+  },
+  "values": {
+    "title": "Nos Valeurs",
+    "value1": {
+      "title": "Intégrité",
+      "description": "Nous maintenons les plus hauts standards éthiques dans toutes nos interactions."
+    },
+    "value2": {
+      "title": "Excellence",
+      "description": "Nous nous efforçons constamment d'améliorer nos services et de dépasser les attentes."
+    },
+    "value3": {
+      "title": "Collaboration",
+      "description": "Nous travaillons en étroite collaboration avec nos clients pour comprendre leurs besoins uniques."
+    },
+    "value4": {
+      "title": "Respect",
+      "description": "Nous valorisons la diversité et traitons chaque individu avec dignité et respect."
+    },
+    "value5": {
+      "title": "Innovation",
+      "description": "Nous adoptons les nouvelles technologies et idées pour améliorer continuellement notre plateforme."
+    }
+  },
+  "h1team": {
+    "title": "Notre Équipe",
+    "subtitle": "Rencontrez les personnes qui rendent InteriMed possible",
+    "member1": {
+      "bio": "Pharmacien ancien propriétaire de pharmacies avec 40 ans d'expérience dans le secteur de la santé suisse."
+    },
+    "member2": {
+      "bio": "Pharmacien avec 5 ans d'expérience dans le secteur pharmaceutique, software & computational engineer."
+    }
+  },
+  "cta": {
+    "title": "Passez au digital",
+    "forFacilities": "Pour les Établissements de Santé",
+    "forProfessionals": "Pour les Professionnels de la Santé"
+  }
+}

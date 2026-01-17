@@ -1,0 +1,245 @@
+.conversationView {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 400px;
+  /* Prevent collapsing */
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  border: 1px solid var(--border-light, #e2e8f0);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  font-family: var(--font-family);
+}
+
+.conversationHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-light, #e2e8f0);
+  background-color: transparent;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.conversationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.conversationTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.facilityBadge {
+  background-color: var(--color-success, #10b981);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.conversationSubtitle {
+  margin: 0;
+  color: var(--text-secondary, #64748b);
+  font-size: 0.85rem;
+}
+
+.contractLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-logo-1, #3b82f6);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.contractLink:hover {
+  background-color: rgba(59, 130, 246, 0.2);
+  border-color: var(--color-logo-1);
+  transform: translateY(-1px);
+}
+
+.contractInfo {
+  margin: 0.5rem 0 0 0;
+  color: var(--color-logo-1);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background-color: transparent;
+}
+
+.messagesContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messagesContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb {
+  background-color: #e2e8f0;
+  border-radius: 3px;
+}
+
+.emptyMessages {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.emptyMessages p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.loadingContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+}
+
+.loadingSpinner {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.messageForm {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-light, #e2e8f0);
+  background-color: transparent;
+  flex-shrink: 0;
+}
+
+.inputContainer {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.messageInput {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-light, #cbd5e1);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+}
+
+.messageInput:focus {
+  border-color: var(--color-logo-1);
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.messageInput:disabled {
+  background-color: rgba(241, 245, 249, 0.5);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.sendButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  background-color: var(--color-logo-1);
+  border: none;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: var(--font-family);
+}
+
+.sendButton:hover:not(:disabled) {
+  background-color: var(--color-logo-1-dark, #2563eb);
+  transform: translateY(-1px);
+}
+
+.sendButton:disabled {
+  background-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .conversationHeader {
+    padding: 1rem;
+  }
+
+  .conversationTitle {
+    font-size: 1.1rem;
+  }
+
+  .conversationSubtitle {
+    font-size: 0.8rem;
+  }
+
+  .messagesContainer {
+    padding: 1rem;
+  }
+
+  .messageForm {
+    padding: 0.75rem 1rem;
+  }
+
+  .messageInput {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .sendButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .facilityBadge {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+}

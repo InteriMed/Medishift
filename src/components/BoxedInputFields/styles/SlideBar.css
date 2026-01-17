@@ -1,0 +1,74 @@
+.slider-container {
+  width: 100%;
+  padding: 10px 0;
+  position: relative;
+}
+
+.slider-track {
+  height: 4px;
+  background: var(--background-div-color);
+  width: 100%;
+  position: relative;
+  border-radius: 2px;
+}
+
+.slider-track-active {
+  background: var(--color-logo-2);
+  height: 4px;
+  position: absolute;
+  top: 0;
+  border-radius: 2px;
+}
+
+.slider-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-logo-2);
+  position: absolute;
+  top: -6px;
+  transform: translateX(-50%);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.slider-thumb:hover,
+.slider-thumb.active {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.slider-marks {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider-mark {
+  position: relative;
+  font-size: var(--font-size-small);
+  color: var(--grey-3);
+  text-align: center;
+}
+
+.slider-mark::before {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 5px;
+  background: var(--grey-3);
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.slider-mark-active {
+  color: var(--color-logo-2);
+}
+
+.slider-mark-active::before {
+  background: var(--color-logo-2);
+} 

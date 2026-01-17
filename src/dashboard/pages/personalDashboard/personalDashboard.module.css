@@ -1,0 +1,229 @@
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 100%;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.profileCompletionBanner {
+  background-color: var(--yellow-1);
+  color: var(--yellow-2);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--yellow-2);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.profileCompletionBanner h2 {
+  margin: 0 0 10px 0;
+  color: var(--yellow-2) !important;
+  padding-bottom: 10px;
+  font-size: 1.5rem;
+  border-bottom: 2px solid var(--yellow-2) !important;
+}
+
+.profileCompletionBanner p,
+.profileCompletionBanner span {
+  color: var(--yellow-4) !important;
+}
+
+.bannerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bannerContent h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--grey-4);
+}
+
+.bannerContent p {
+  margin: 0;
+  color: var(--grey-4);
+  line-height: 1.5;
+}
+
+.actionButton {
+  align-self: flex-start;
+  padding: 10px 16px;
+  background-color: var(--yellow-3);
+  color: var(--yellow-4);
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 8px;
+}
+
+.actionButton:hover {
+  background-color: var(--yellow-2);
+}
+
+.pageHeader {
+  margin-bottom: 8px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color, #333);
+}
+
+.welcomeMessage {
+  font-size: 16px;
+  color: var(--grey-2, #888);
+  margin: 8px 0 0 0;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.metricCard {
+  background-color: var(--background-div-color, #ffffff);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.metricCard h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--grey-2, #888);
+  font-weight: 500;
+}
+
+.metricValue {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color, #333);
+}
+
+.recentActivity {
+  background-color: var(--background-div-color, #ffffff);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.recentActivity h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-color, #333);
+}
+
+.activityList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activityItem {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+}
+
+.activityItem:last-child {
+  border-bottom: none;
+}
+
+.activityContent h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color, #333);
+}
+
+.activityTime {
+  margin: 0;
+  font-size: 12px;
+  color: var(--grey-2, #888);
+}
+
+.loadingState,
+.errorState,
+.emptyState {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--grey-2, #888);
+}
+
+.errorState {
+  color: var(--color-danger, #e53935);
+}
+
+.loadingState {
+  padding: 2rem;
+  text-align: center;
+  font-size: 1rem;
+  color: #666;
+}
+
+.loadingDebug {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  text-align: left;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loadingDebug h4 {
+  margin-top: 0;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.loadingDebug ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.loadingDebug li {
+  margin-bottom: 0.5rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.errorMessage {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .metricsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .profileCompletionBanner {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actionButton {
+    width: 100%;
+  }
+}

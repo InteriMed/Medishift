@@ -1,0 +1,39 @@
+.helpButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: transparent;
+  border: 1px solid var(--color-logo-1, #4299e1);
+  color: var(--color-logo-1, #4299e1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.helpButton:hover {
+  background-color: var(--color-logo-1, #4299e1);
+  color: white;
+}
+
+.helpIcon {
+  font-size: 18px;
+}
+
+.helpText {
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .helpText {
+    display: none;
+  }
+  
+  .helpButton {
+    padding: 8px;
+  }
+  
+  .helpIcon {
+    font-size: 20px;
+  }
+} 

@@ -1,0 +1,183 @@
+/* Tutorial overlay styles */
+
+/* Base overlay styles for sidebar and content */
+.sidebarOverlay,
+.contentOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  pointer-events: none; /* Allow clicking through overlay by default */
+}
+
+/* Highlight box for target elements */
+.highlightBox {
+  position: absolute;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  z-index: 1001;
+  border: 2px solid var(--color-logo-1, #4299e1);
+  pointer-events: auto; /* Allow clicking the highlighted element */
+}
+
+/* Tooltip styles */
+.tutorialTooltip {
+  position: absolute;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-width: 350px;
+  z-index: 1002;
+  pointer-events: auto; /* Make the tooltip clickable */
+}
+
+.tooltipTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--color-logo-1, #4299e1);
+}
+
+.tooltipContent {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  color: var(--text-primary, #4a5568);
+}
+
+/* Button styles */
+.actionButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.prevButton,
+.nextButton,
+.skipButton,
+.actionButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.prevButton {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.prevButton:hover {
+  background-color: #e5e7eb;
+}
+
+.nextButton {
+  background-color: var(--color-logo-1, #4299e1);
+  color: white;
+}
+
+.nextButton:hover {
+  background-color: var(--color-logo-2, #3182ce);
+}
+
+.skipButton {
+  background-color: transparent;
+  color: #6b7280;
+  text-decoration: underline;
+}
+
+.skipButton:hover {
+  color: #4b5563;
+}
+
+.actionButton {
+  display: block;
+  width: 100%;
+  background-color: var(--color-logo-1, #4299e1);
+  color: white;
+  padding: 10px 16px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.actionButton:hover {
+  background-color: var(--color-logo-2, #3182ce);
+}
+
+/* Modal styles for welcome modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modalContent {
+  padding: 30px;
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--color-logo-1, #4299e1);
+}
+
+.modalText {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  color: var(--text-primary, #4a5568);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Highlight styles for sidebar items */
+.sidebarItem {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.sidebarItemHighlighted {
+  background-color: rgba(66, 153, 225, 0.2);
+  box-shadow: 0 0 0 2px var(--color-logo-1, #4299e1);
+  border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tutorialTooltip {
+    max-width: 280px;
+  }
+  
+  .modalContent {
+    padding: 20px;
+  }
+} 

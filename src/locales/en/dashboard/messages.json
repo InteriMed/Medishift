@@ -1,0 +1,32 @@
+{
+  "tabs": {
+    "personal": "Personal Messages",
+    "personalDesc": "Messages related to your professional profile",
+    "facility": "Facility Messages",
+    "facilityDesc": "Messages related to facility operations"
+  },
+  "noConversations": "No Conversations",
+  "noConversationsHint": "Start conversations through marketplace interactions",
+  "noFacilityConversationsHint": "Facility-related conversations will appear here",
+  "selectConversation": "Select a Conversation",
+  "selectConversationPrompt": "Choose a conversation from the list to view messages",
+  "facilityMessagesInfo": "These messages are related to facility operations and team management",
+  "conversation": {
+    "typing": "Typing...",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Last seen",
+    "sendMessage": "Send message",
+    "messagePlaceholder": "Type your message..."
+  },
+  "errors": {
+    "loadingConversations": "Failed to load conversations",
+    "loadingMessages": "Failed to load messages",
+    "sendingMessage": "Failed to send message"
+  },
+  "actions": {
+    "markAsRead": "Mark as read",
+    "deleteConversation": "Delete conversation",
+    "blockUser": "Block user"
+  }
+}

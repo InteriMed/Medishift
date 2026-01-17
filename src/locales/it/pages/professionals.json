@@ -1,0 +1,112 @@
+{
+    "meta": {
+        "title": "Opportunità per professionisti sanitari | MediShift",
+        "description": "Trova posizioni flessibili nel settore sanitario in tutta la Svizzera. Connettiti direttamente con le strutture sanitarie che cercano professionisti qualificati come te",
+        "keywords": "lavori sanitari, posizioni farmacista, lavori assistente farmacia, lavoro sanitario flessibile, carriere sanitarie Svizzera"
+    },
+    "hero": {
+        "title": "Lavora meno, guadagna di più, decidi tu",
+        "subtitle": "Connettiti direttamente con le strutture sanitarie che cercano professionisti qualificati come te",
+        "trustSnippet": "MediShift sta sviluppando una piattaforma specializzata per professionisti sanitari in tutta la Svizzera",
+        "cta": "Crea il tuo profilo"
+    },
+    "problem": {
+        "title": "Comprendiamo le sfide del settore sanitario",
+        "description": "Comprendiamo le sfide quotidiane che affronti come professionista sanitario. La nostra piattaforma fornisce soluzioni concrete per superare questi ostacoli.",
+        "problem1": {
+            "title": "Mancanza di flessibilità",
+            "description": "I ruoli sanitari tradizionali spesso hanno orari rigidi che non si adattano agli impegni personali e familiari"
+        },
+        "problem2": {
+            "title": "Accesso limitato alle opportunità",
+            "description": "Trovare le opportunità giuste può essere una sfida perché non sei visibile ai potenziali datori di lavoro"
+        },
+        "problem3": {
+            "title": "Compiti amministrativi complessi",
+            "description": "I processi di assunzione sono lenti e dispendiosi in termini di tempo. I compiti amministrativi possono essere frustranti"
+        }
+    },
+    "howItWorks": {
+        "title": "Come funziona per i professionisti",
+        "step1": {
+            "title": "Crea il tuo profilo personale",
+            "description": "Costruisci il tuo profilo professionale con le tue qualifiche, esperienze e preferenze"
+        },
+        "step2": {
+            "title": "Imposta la tua disponibilità, ci pensiamo noi al resto",
+            "description": "Indica quando sei disponibile a lavorare, ti forniamo i match giusti"
+        },
+        "step3": {
+            "title": "Rivedi il tuo programma proposto, sei pronto",
+            "description": "Convalida il match e ottieni il via libera finale dal team di assunzione"
+        },
+        "step4": {
+            "title": "Esplora le opportunità sul marketplace",
+            "description": "In alternativa, puoi esplorare le posizioni aperte direttamente sul marketplace e contattare direttamente quando trovi quella giusta"
+        },
+        "step5": {
+            "title": "Lavora e vieni pagato, niente di più, niente di meno",
+            "description": "Fornisci i tuoi servizi e fai quello che sai fare meglio, aiutare i pazienti. Ci pensiamo noi al resto"
+        }
+    },
+    "benefits": {
+        "title": "Vantaggi per i professionisti sanitari",
+        "subtitle": "MediShift è stato progettato specificamente per affrontare le sfide uniche del mercato sanitario svizzero:",
+        "benefit1": {
+            "title": "Centralizza il tuo profilo",
+            "description": "Crea e gestisci un profilo professionale con tutto centralizzato. Inviamo le tue informazioni direttamente ai recruiter"
+        },
+        "benefit2": {
+            "title": "Mantieni il controllo del tuo programma",
+            "description": "Adatta il tuo programma alle tue esigenze e preferenze, non il contrario"
+        },
+        "benefit3": {
+            "title": "Matching automatico",
+            "description": "Ricevi match automatici con notifiche push. Niente più ricerche, niente più candidature, niente più attese"
+        },
+        "benefit4": {
+            "title": "Tutte le opportunità in un unico posto",
+            "description": "Sfoglia il marketplace delle offerte con filtri di ricerca avanzati per esplorare le opportunità nella tua zona"
+        },
+        "benefit5": {
+            "title": "Amministrazione centralizzata",
+            "description": "Organizza tutti i tuoi documenti, contratti e informazioni sulle buste paga in un unico posto accessibile sempre e ovunque"
+        }
+    },
+    "features": {
+        "title": "Funzionalità per i professionisti",
+        "feature1": {
+            "title": "Calendario interattivo",
+            "description": "Imposta la tua disponibilità attraverso un calendario interattivo. Decidi dove e quando vuoi lavorare"
+        },
+        "feature2": {
+            "title": "Matching intelligente",
+            "description": "Ricevi match automatici con notifiche push per nuove opportunità. Niente più ricerche, candidature o attese"
+        },
+        "feature3": {
+            "title": "Tutte le opportunità in un unico posto",
+            "description": "Sfoglia il marketplace delle offerte con filtri di ricerca avanzati per esplorare le opportunità nella tua zona"
+        },
+        "feature4": {
+            "title": "Amministrazione centralizzata",
+            "description": "Organizza tutti i tuoi documenti, contratti e informazioni sulle buste paga in un unico posto accessibile sempre e ovunque"
+        },
+        "feature5": {
+            "title": "Copilota per la gestione delle candidature",
+            "description": "Ci occupiamo noi dei tuoi documenti durante il processo di candidatura, dal momento in cui ti candidi fino a quando ottieni il lavoro"
+        },
+        "feature6": {
+            "title": "Messaggistica sicura",
+            "description": "Comunica con il tuo futuro/attuale datore di lavoro attraverso la nostra piattaforma sicura per i dettagli del lavoro"
+        },
+        "feature7": {
+            "title": "Buste paga automatizzate",
+            "description": "Ci occupiamo noi dell'amministrazione, contratti e buste paga, tutto in un unico posto"
+        }
+    },
+    "cta": {
+        "title": "Pronto a far avanzare la tua carriera sanitaria?",
+        "description": "Unisciti alla nostra comunità di professionisti sanitari che trovano opportunità appaganti in tutta la Svizzera",
+        "button": "Registrati ora"
+    }
+}

@@ -1,0 +1,55 @@
+{
+    "profileType": "pharmacy",
+    "profileTypeNameKey": "profileTypes.pharmacy",
+  
+    "tabs": [
+      { "id": "facilityCoreDetails", "labelKey": "tabs.facilityCoreDetails" },
+      { "id": "facilityLegalBilling", "labelKey": "tabs.facilityLegalBilling" },
+      { "id": "facilityDocuments", "labelKey": "tabs.facilityDocuments" }
+    ],
+  
+    "fields": {
+      "facilityCoreDetails": [
+        { "name": "facilityName", "type": "text", "required": true, "labelKey": "facilityDetails.facilityName", "placeholderKey": "facilityDetails.facilityNamePlaceholder", "validationRules": { "minLength": 3 } },
+        { "name": "facilityType", "type": "dropdown", "optionsKey": "facilityTypes", "required": true, "labelKey": "facilityDetails.facilityType", "placeholderKey": "facilityDetails.selectFacilityType" },
+        { "name": "address.street", "type": "text", "required": true, "labelKey": "facilityDetails.street", "placeholderKey": "facilityDetails.streetPlaceholder" },
+        { "name": "address.number", "type": "text", "required": true, "labelKey": "facilityDetails.houseNumber", "placeholderKey": "facilityDetails.houseNumberPlaceholder" },
+        { "name": "address.postalCode", "type": "text", "required": true, "labelKey": "facilityDetails.postalCode", "placeholderKey": "facilityDetails.postalPlaceholder", "validationRules": {"pattern": "^[0-9]{4}$", "patternErrorKey": "validation.invalidPostalCodeSwiss"} },
+        { "name": "address.city", "type": "text", "required": true, "labelKey": "facilityDetails.city", "placeholderKey": "facilityDetails.cityPlaceholder" },
+        { "name": "address.canton", "type": "dropdown", "optionsKey": "cantons", "required": true, "labelKey": "facilityDetails.canton", "placeholderKey": "facilityDetails.selectCanton" },
+        { "name": "address.country", "type": "dropdown", "optionsKey": "countries", "required": true, "labelKey": "facilityDetails.country", "placeholderKey": "facilityDetails.selectCountry" },
+        { "name": "mainPhoneNumber", "type": "tel", "required": true, "labelKey": "facilityDetails.mainPhoneNumber", "placeholderKey": "facilityDetails.mainPhoneNumberPlaceholder", "validationRules": {"pattern": "^\\+?[0-9\\s-()]{7,20}$", "patternErrorKey": "validation.invalidPhoneNumber"} },
+        { "name": "mainEmail", "type": "email", "required": true, "labelKey": "facilityDetails.mainEmail", "placeholderKey": "facilityDetails.mainEmailPlaceholder", "validationRules": {"pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "patternErrorKey": "validation.invalidEmail"} },
+        { "name": "website", "type": "url", "required": false, "labelKey": "facilityDetails.website", "placeholderKey": "facilityDetails.websitePlaceholder" }
+      ],
+  
+      "facilityLegalBilling": [
+        
+        { "name": "legalEntityName", "type": "text", "required": true, "labelKey": "facilityDetails.legalEntityName", "group": "legal", "validationRules": { "minLength": 3 } },
+        { "name": "uidNumber", "type": "text", "required": true, "labelKey": "facilityDetails.uidNumber", "placeholderKey": "facilityDetails.uidNumberPlaceholder", "group": "legal", "infoKey": "facilityDetails.uidNumberInfoSwiss", "validationRules": {"pattern": "^CHE-[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}(\\sMWST)?$", "patternErrorKey": "validation.invalidUIDNumberSwiss"} },
+        { "name": "commercialRegisterNumber", "type": "text", "required": false, "labelKey": "facilityDetails.commercialRegisterNumber", "placeholderKey": "facilityDetails.commercialRegisterNumberPlaceholder", "group": "legal" },
+        { "name": "legalRepresentative.firstName", "type": "text", "required": true, "labelKey": "facilityDetails.legalRepFirstName", "group": "legalRep" },
+        { "name": "legalRepresentative.lastName", "type": "text", "required": true, "labelKey": "facilityDetails.legalRepLastName", "group": "legalRep" },
+        { "name": "legalRepresentative.email", "type": "email", "required": true, "labelKey": "facilityDetails.legalRepEmail", "group": "legalRep" },
+        { "name": "legalRepresentative.phone", "type": "tel", "required": false, "labelKey": "facilityDetails.legalRepPhone", "group": "legalRep" },
+  
+        { "name": "billingContact.name", "type": "text", "required": false, "labelKey": "facilityDetails.billingContactName", "group": "billing", "infoKey": "facilityDetails.billingContactInfo" },
+        { "name": "billingContact.email", "type": "email", "required": true, "labelKey": "facilityDetails.billingContactEmail", "group": "billing" },
+        { "name": "billingContact.phone", "type": "tel", "required": false, "labelKey": "facilityDetails.billingContactPhone", "group": "billing" },
+        { "name": "facilityIBAN", "type": "text", "required": true, "labelKey": "facilityDetails.facilityIBAN", "group": "bankingFacility", "infoKey": "facilityDetails.facilityIBANInfo", "validationRules": {"pattern": "^CH[0-9]{2}[0-9A-Za-z]{1,17}$|^CH[0-9]{2}\\s?([0-9A-Za-z]{4}\\s?){4}[0-9A-Za-z]{1}$", "patternErrorKey": "validation.invalidIbanSwiss"} },
+        { "name": "facilityBankName", "type": "text", "required": true, "labelKey": "facilityDetails.facilityBankName", "group": "bankingFacility"}
+      ],
+  
+      "facilityDocuments": [
+        { "docType": "commercialRegisterExtract", "name": "commercialRegisterExtractUrl", "required": true, "isMultiple": false, "labelKey": "facilityDocs.commercialRegisterExtract", "descriptionKey": "facilityDocs.commercialRegisterExtractDescription", "accept": ".pdf,.jpg,.png,.jpeg" },
+        { "docType": "proofOfAddress", "name": "proofOfAddressUrl", "required": true, "isMultiple": false, "labelKey": "facilityDocs.proofOfAddress", "descriptionKey": "facilityDocs.proofOfAddressDescription", "infoKey": "facilityDocs.proofOfAddressInfo", "accept": ".pdf,.jpg,.png,.jpeg" },
+        { "docType": "pharmacyLicense", "name": "pharmacyLicenseUrl", "required": true, "isMultiple": false, "labelKey": "facilityDocs.pharmacyLicense", "descriptionKey": "facilityDocs.pharmacyLicenseDescription", "accept": ".pdf,.jpg,.png,.jpeg" }
+      ]
+    },
+  
+    "dropdownOptions": {
+      "facilityTypes": "locales:dropdowns.facilityTypes",
+      "cantons": "locales:dropdowns.cantons",
+      "countries": "locales:dropdowns.countries"
+    }
+  }

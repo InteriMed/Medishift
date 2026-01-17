@@ -1,0 +1,159 @@
+.messageItem {
+  display: flex;
+  padding: var(--spacing-md) var(--spacing-md);
+  max-width: 100%;
+  font-family: var(--font-family);
+}
+
+.ownMessage {
+  justify-content: flex-end;
+}
+
+.otherMessage {
+  justify-content: flex-start;
+}
+
+.messageContent {
+  max-width: 70%;
+  padding: var(--spacing-md) var(--spacing-md);
+  border-radius: var(--spacing-md);
+  background-color: var(--grey-1-light);
+  position: relative;
+}
+
+.ownMessage .messageContent {
+  background-color: var(--color-logo-1-light);
+  border-bottom-right-radius: var(--spacing-xs);
+}
+
+.otherMessage .messageContent {
+  background-color: var(--grey-1-light);
+  border-bottom-left-radius: var(--spacing-xs);
+}
+
+.messageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.senderName {
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-large);
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.senderRole {
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-2);
+  font-style: italic;
+}
+
+.messageTime {
+  font-size: var(--font-size-small);
+  color: var(--grey-2);
+  white-space: nowrap;
+}
+
+.messageStatus {
+  color: var(--color-logo-1);
+  font-weight: var(--font-weight-medium);
+}
+
+.messageText {
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-color);
+  margin: var(--spacing-xs) 0;
+}
+
+.imageMessage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.messageImage {
+  max-width: 100%;
+  border-radius: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.fileMessage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.fileLink {
+  color: var(--color-logo-1);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+  transition: color var(--transition-fast);
+}
+
+.fileLink:hover {
+  color: var(--color-logo-1-dark);
+}
+
+.messageReactions {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.reaction {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--background-div-color);
+  border-radius: var(--spacing-md);
+  font-size: var(--font-size-small);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.reaction:hover {
+  background-color: var(--grey-1);
+}
+
+.messageContext {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(40, 167, 69, 0.1);
+  border-radius: var(--spacing-sm);
+  border-left: 3px solid var(--green-3);
+}
+
+.messageContext small {
+  font-size: var(--font-size-small);
+  color: var(--green-3);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .messageContent {
+    max-width: 85%;
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .messageText {
+    font-size: var(--font-size-small);
+  }
+
+  .senderName {
+    font-size: var(--font-size-small);
+  }
+
+  .messageTime {
+    font-size: var(--font-size-small);
+  }
+} 

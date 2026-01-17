@@ -1,0 +1,415 @@
+{
+    "continue": "Continua",
+    "no": "No",
+    "yes": "Sì",
+    "yesDiscard": "Sì, elimina",
+    "auth": {
+        "login": {
+            "button": "Accedi"
+        },
+        "signup": {
+            "button": "Registrati"
+        }
+    },
+    "common": {
+        "loading": "Caricamento...",
+        "error": "Errore",
+        "success": "Successo",
+        "comingSoon": "Prossimamente",
+        "underDevelopment": "Questa pagina è attualmente in sviluppo.",
+        "cancel": "Annulla",
+        "save": "Salva",
+        "edit": "Modifica",
+        "delete": "Elimina",
+        "add": "Aggiungi",
+        "remove": "Rimuovi",
+        "update": "Aggiorna",
+        "submit": "Invia",
+        "warning": "Avviso",
+        "info": "Informazione",
+        "yes": "Sì",
+        "no": "No",
+        "back": "Indietro",
+        "next": "Avanti",
+        "continue": "Continua",
+        "finish": "Fine",
+        "required": "Obbligatorio",
+        "optional": "Facoltativo",
+        "select": "Seleziona",
+        "selectPlaceholder": "Seleziona un'opzione",
+        "search": "Cerca",
+        "filter": "Filtra",
+        "sort": "Ordina",
+        "ascending": "Crescente",
+        "descending": "Decrescente",
+        "show": "Mostra",
+        "hide": "Nascondi",
+        "view": "Visualizza",
+        "preview": "Anteprima",
+        "download": "Scarica",
+        "upload": "Carica",
+        "close": "Chiudi",
+        "open": "Apri",
+        "expand": "Espandi",
+        "collapse": "Comprimi",
+        "enable": "Abilita",
+        "disable": "Disabilita",
+        "activate": "Attiva",
+        "deactivate": "Disattiva",
+        "confirm": "Conferma",
+        "reject": "Rifiuta",
+        "approve": "Approva",
+        "decline": "Rifiuta",
+        "accept": "Accetta",
+        "logout": "Esci",
+        "login": "Accedi",
+        "register": "Registrati",
+        "forgotPassword": "Password dimenticata",
+        "resetPassword": "Reimposta password",
+        "changePassword": "Cambia password",
+        "profile": "Profilo",
+        "settings": "Impostazioni",
+        "help": "Aiuto",
+        "support": "Supporto",
+        "contact": "Contatti",
+        "about": "Chi siamo",
+        "terms": "Termini",
+        "privacy": "Privacy",
+        "cookies": "Cookie",
+        "language": "Lingua",
+        "theme": "Tema",
+        "notifications": "Notifiche",
+        "messages": "Messaggi",
+        "dashboard": "Dashboard",
+        "home": "Home",
+        "forFacilities": "Per Strutture Sanitarie",
+        "forProfessionals": "Per Professionisti Sanitari",
+        "aboutUs": "Chi siamo",
+        "blog": "Blog",
+        "faq": "FAQ"
+    },
+    "tabs": {
+        "personalDetails": "Dati Personali",
+        "professionalBackground": "Background Professionale",
+        "billingInformation": "Informazioni di Fatturazione",
+        "documentUploads": "Caricamento Documenti",
+        "accountBasics": "Base Account",
+        "jobPreferences": "Preferenze Lavorative",
+        "facilityCoreDetails": "Dettagli Struttura",
+        "facilityLegalBilling": "Legale & Fatturazione",
+        "facilityDocuments": "Documenti Struttura"
+    },
+    "navbar": {
+        "home": "Home",
+        "healthcare facilities": "Per Farmacie",
+        "professionals": "Per Professionisti",
+        "about": "Chi siamo",
+        "faq": "FAQ",
+        "contact": "Contatti",
+        "blog": "Blog",
+        "login": "Accedi",
+        "register": "Registrati"
+    },
+    "footer": {
+        "links": {
+            "companies": "Per Strutture Sanitarie",
+            "pharmacy": "Farmacie",
+            "soon": "Prossimamente",
+            "faqCompany": "FAQ per Strutture",
+            "tempWorkers": "Per Professionisti Sanitari",
+            "pharmacyDoctor": "Farmacisti",
+            "pharmacyTechnician": "Tecnici di Farmacia",
+            "faqCandidate": "FAQ per Professionisti",
+            "practical": "Informazioni Pratiche",
+            "about": "Chi siamo",
+            "press": "Blog & Notizie",
+            "legalNotice": "Note Legali",
+            "terms": "Termini di Servizio",
+            "contact": "Contattaci",
+            "legal": "Informativa Privacy"
+        },
+        "newsletter": {
+            "title": "Iscriviti alla Newsletter",
+            "placeholder": "Il tuo indirizzo email",
+            "subscribe": "Iscriviti",
+            "consent": "Iscrivendoti, accetti di ricevere la nostra newsletter e comunicazioni di marketing."
+        }
+    },
+    "validation": {
+        "required": "Questo campo è obbligatorio",
+        "tooLong": "Questo campo non può superare {{max}} caratteri",
+        "email": "Inserisci un indirizzo email valido",
+        "password": {
+            "minLength": "La password deve contenere almeno 8 caratteri",
+            "noMatch": "Le password non corrispondono",
+            "wrong": "La password attuale non è corretta"
+        },
+        "phone": "Inserisci un numero di telefono valido",
+        "postalCode": "Inserisci un codice postale valido a 4 cifre",
+        "ahvFormat": "Inserisci un numero AVS valido (756.XXXX.XXXX.XX)"
+    },
+    "jobRoles": {
+        "pharmacist": "Farmacista",
+        "pharmacy_assistant": "Assistente di Farmacia",
+        "pharmacy_technician": "Tecnico di Farmacia",
+        "nurse": "Infermiere/a",
+        "physician": "Medico",
+        "medical_assistant": "Assistente Medico",
+        "dental_assistant": "Assistente Dentale",
+        "veterinary_assistant": "Assistente Veterinario"
+    },
+    "skills": {
+        "patient_care": "Cura del Paziente",
+        "medication_management": "Gestione Farmaci",
+        "inventory_management": "Gestione Inventario",
+        "compounding": "Preparazione Galenica",
+        "customer_service": "Servizio Clienti",
+        "clinical_trials": "Studi Clinici",
+        "vaccination": "Vaccinazione",
+        "health_education": "Educazione Sanitaria"
+    },
+    "languages": {
+        "de_native": "Tedesco (Madrelingua)",
+        "de_c2": "Tedesco (C2)",
+        "de_c1": "Tedesco (C1)",
+        "de_b2": "Tedesco (B2)",
+        "de_b1": "Tedesco (B1)",
+        "fr_native": "Francese (Madrelingua)",
+        "fr_c2": "Francese (C2)",
+        "fr_c1": "Francese (C1)",
+        "fr_b2": "Francese (B2)",
+        "fr_b1": "Francese (B1)",
+        "it_native": "Italiano (Madrelingua)",
+        "it_c2": "Italiano (C2)",
+        "it_c1": "Italiano (C1)",
+        "it_b2": "Italiano (B2)",
+        "it_b1": "Italiano (B1)",
+        "en_native": "Inglese (Madrelingua)",
+        "en_c2": "Inglese (C2)",
+        "en_c1": "Inglese (C1)",
+        "en_b2": "Inglese (B2)",
+        "en_b1": "Inglese (B1)"
+    },
+    "workPermits": {
+        "notApplicable": "Non applicabile (Cittadino Svizzero)",
+        "B": "B - Permesso di Dimora (5 anni)",
+        "C": "C - Permesso di Domicilio (Permanente)",
+        "G": "G - Permesso Frontaliero",
+        "L": "L - Permesso di Soggiorno di Breve Durata",
+        "other": "Altro"
+    },
+    "education": {
+        "highSchool": "Diploma di Maturità",
+        "vocational": "Formazione Professionale",
+        "bachelors": "Laurea Triennale",
+        "masters": "Laurea Magistrale",
+        "doctorate": "Dottorato / PhD",
+        "other": "Altro"
+    },
+    "jobPreferences": {
+        "activelyLooking": "In Cerca Attiva di Lavoro",
+        "openToOffers": "Aperto a Offerte",
+        "notLooking": "Non in Cerca al Momento",
+        "permanent": "Tempo Indeterminato",
+        "fixedTerm": "Tempo Determinato",
+        "temporary": "Temporaneo/Sostituzione",
+        "freelance": "Freelance/Progetto"
+    },
+    "countries": {
+        "switzerland": "Svizzera",
+        "germany": "Germania",
+        "france": "Francia",
+        "italy": "Italia",
+        "austria": "Austria",
+        "other": "Altro"
+    },
+    "navigation": {
+        "sitemap": {
+            "title": "Mappa del Sito",
+            "introduction": "Questa è la mappa del sito per MediShift. Mostra la struttura del nostro sito web e le pagine disponibili.",
+            "corePages": {
+                "title": "Pagine Principali",
+                "home": "Home",
+                "forFacilities": "Per le Strutture",
+                "forProfessionals": "Per i Professionisti",
+                "aboutUs": "Chi siamo",
+                "contact": "Contatti",
+                "blog": "Blog",
+                "faq": "FAQ",
+                "login": "Accedi",
+                "signup": "Registrati"
+            },
+            "resources": {
+                "title": "Risorse"
+            },
+            "legal": {
+                "title": "Legale & Conformità"
+            },
+            "account": {
+                "title": "Accesso Account"
+            },
+            "thisPage": {
+                "title": "Questa Pagina",
+                "sitemap": "Mappa del Sito"
+            }
+        }
+    },
+    "buttons": {
+        "getStarted": "Inizia",
+        "learnMore": "Scopri di più",
+        "contactUs": "Contattaci",
+        "viewAll": "Vedi tutto",
+        "readMore": "Leggi di più",
+        "submit": "Invia",
+        "cancel": "Annulla",
+        "save": "Salva"
+    },
+    "pages": {
+        "not_found": {
+            "title": "Wow, sei veloce!",
+            "description": "La pagina che stai cercando non esiste o non è ancora stata pubblicata. Lasciaci il tuo contatto nella newsletter o registrati già. Ti contatteremo presto!",
+            "message": "Per favore torna presto mentre completiamo gli ultimi ritocchi sulla nostra piattaforma sanitaria.",
+            "return_home": "Torna alla Home"
+        }
+    },
+    "professionals": {
+        "features": {
+            "title": "Funzionalità della Piattaforma",
+            "feature1": {
+                "title": "Matching Intelligente",
+                "description": "Il nostro algoritmo ti abbina a posizioni che corrispondono alle tue qualifiche e preferenze."
+            },
+            "feature2": {
+                "title": "Messaggi Sicuri",
+                "description": "Comunica direttamente con le strutture sanitarie attraverso il nostro sistema di messaggistica sicuro."
+            },
+            "feature3": {
+                "title": "Profilo Digitale",
+                "description": "Crea un profilo completo che mostri le tue competenze, esperienza e disponibilità."
+            },
+            "feature4": {
+                "title": "Calendario Disponibilità",
+                "description": "Imposta la tua disponibilità e gestisci il tuo programma con il nostro strumento calendario intuitivo."
+            },
+            "feature5": {
+                "title": "Gestione Contratti",
+                "description": "Rivedi e gestisci i tuoi contratti e accordi tutto in un unico posto."
+            },
+            "feature6": {
+                "title": "Supporto & Risorse",
+                "description": "Accedi a risorse utili e al nostro team di supporto quando hai bisogno di assistenza."
+            }
+        },
+        "whoCanJoin": {
+            "title": "Chi può unirsi a MediShift?",
+            "qualification1": {
+                "title": "Farmacisti Abilitati",
+                "description": "Professionisti con licenza farmaceutica svizzera valida o equivalenti internazionali riconosciuti."
+            },
+            "qualification2": {
+                "title": "Tecnici di Farmacia",
+                "description": "Tecnici di farmacia certificati con qualifiche ed esperienza rilevanti."
+            },
+            "qualification3": {
+                "title": "Assistenti di Farmacia",
+                "description": "Assistenti di farmacia formati in cerca di opportunità di lavoro flessibili."
+            },
+            "qualification4": {
+                "title": "Studenti di Farmacia",
+                "description": "Studenti di farmacia avanzati in cerca di esperienza pratica (con supervisione appropriata)."
+            },
+            "qualification5": {
+                "title": "Specialisti Farmaceutici",
+                "description": "Specialisti con competenze in aree specifiche della pratica farmaceutica."
+            }
+        },
+        "gettingStarted": {
+            "title": "Iniziare è Facile",
+            "step1": {
+                "title": "Crea il Tuo Profilo",
+                "description": "Registrati e costruisci il tuo profilo professionale con le tue qualifiche e esperienze."
+            },
+            "step2": {
+                "title": "Imposta le Tue Preferenze",
+                "description": "Specifica la tua disponibilità, preferenze di località e i tipi di posizioni che ti interessano."
+            },
+            "step3": {
+                "title": "Connettiti con le Farmacie",
+                "description": "Inizia a ricevere opportunità corrispondenti e connettiti direttamente con le strutture sanitarie."
+            },
+            "cta": "Crea il Tuo Profilo Ora"
+        }
+    },
+    "routes": {
+        "home": "home",
+        "about": "about",
+        "professionals": "professionals",
+        "facilities": "facilities",
+        "healthcare facilities": "healthcare facilities",
+        "faq": "faq",
+        "contact": "contact",
+        "blog": "blog",
+        "privacy": "privacy-policy",
+        "terms": "terms-of-service",
+        "sitemap": "sitemap",
+        "login": "login",
+        "signup": "signup",
+        "forgotPassword": "forgot-password",
+        "dashboard": "dashboard",
+        "loading": "loading",
+        "notFound": "not-found"
+    },
+    "saveAndContinue": "Salva & Continua",
+    "saving": "Salvataggio...",
+    "mandatoryFields": "Campi obbligatori",
+    "move": "Sposta",
+    "apply": "Applica",
+    "dashboard": {
+        "sections": {
+            "profile": "Profilo",
+            "calendar": "Calendario",
+            "messages": "Messaggi",
+            "documents": "Documenti",
+            "jobs": "Lavori",
+            "settings": "Impostazioni",
+            "admin": "Admin"
+        },
+        "calendar": {
+            "today": "Oggi",
+            "dayView": "Giorno",
+            "weekView": "Settimana",
+            "monthView": "Mese",
+            "categories": "Categorie",
+            "allCategories": "Tutte le Categorie",
+            "someCategories": "{{count}} Selezionate",
+            "noCategories": "Nessuna Selezionata",
+            "upcomingEvents": "Eventi in Arrivo",
+            "noUpcomingEvents": "Nessun evento in arrivo",
+            "editEvent": "Modifica Evento",
+            "createEvent": "Crea Evento",
+            "location": "Luogo",
+            "notes": "Note",
+            "isRecurring": "Evento Ricorrente",
+            "deleteConfirmation": {
+                "title": "Elimina Evento",
+                "message": "Sei sicuro di voler eliminare questo evento?",
+                "contractWarning": "ATTENZIONE: Questo è un appuntamento programmato. Eliminarlo potrebbe influire sul tuo stato lavorativo e sul registro di disponibilità.",
+                "cancel": "Annulla",
+                "delete": "Elimina",
+                "deleteThisOnly": "Elimina Solo Questo Evento",
+                "deleteAllFuture": "Elimina Questo & Eventi Futuri",
+                "timerText": "Elimina ({{seconds}})"
+            },
+            "moveConfirmation": {
+                "title": "Modifica Evento",
+                "message": "Vuoi confermare questa modifica?",
+                "messageRecurring": "Questo è un evento ricorrente. Come vuoi applicare le modifiche?",
+                "confirm": "Conferma Modifica",
+                "confirmSingle": "Solo Questo Evento",
+                "confirmAll": "Questo e Tutti gli Eventi Futuri",
+                "cancel": "Annulla",
+                "cancelSingleEvent": "Annulla"
+            }
+        }
+    }
+}

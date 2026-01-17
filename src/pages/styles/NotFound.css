@@ -1,0 +1,104 @@
+.not-found-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.not-found-code {
+  font-size: 8rem;
+  font-weight: 700;
+  color: var(--blue-3);
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+
+.not-found-container h1 {
+  color: var(--grey-4);
+}
+
+.not-found-container p {
+  color: var(--grey-3);
+}
+
+.healthcare-logo {
+  margin: 1.5rem 0;
+  color: var(--blue-2);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.not-found-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--grey-4);
+  margin-bottom: 1rem;
+}
+
+.not-found-description {
+  font-size: 1.25rem;
+  color: var(--grey-4);
+  max-width: 600px;
+  margin-bottom: 0.5rem;
+}
+
+.not-found-message {
+  font-size: 1.1rem;
+  color: var(--grey-4);
+  max-width: 600px;
+  margin-bottom: 2rem;
+}
+
+.not-found-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--blue-3);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.not-found-button:hover {
+  background-color: var(--blue-2);
+  color: var(--grey-4);
+}
+
+.not-found-illustration {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .not-found-code {
+    font-size: 6rem;
+  }
+  
+  .not-found-title {
+    font-size: 2rem;
+  }
+  
+  .not-found-description,
+  .not-found-message {
+    font-size: 1rem;
+  }
+} 

@@ -1,0 +1,40 @@
+{
+    "dashboard": {
+    "sidebar": {
+            "overview": "Aperçu",
+            "profile": "Profil",
+            "contracts": "Contrats",
+            "messages": "Messages",
+            "calendar": "Calendrier",
+            "marketplace": "Marché",
+            "settings": "Paramètres",
+            "incompleteProfile": "Votre profil est incomplet",
+            "completeProfileFirst": "Veuillez d'abord compléter votre profil"
+        },
+        "loading": "Chargement des données du tableau de bord...",
+        "error": "Erreur lors du chargement des données du tableau de bord",
+        "completeProfile": {
+            "completeProfileTitle": "Complétez Votre Profil",
+            "completeProfileDescription": "Bienvenue sur InteriMed ! Pour accéder à toutes les fonctionnalités de la plateforme, veuillez d'abord compléter votre profil.",
+            "completeProfileButton": "Je comprends, créer mon profil"
+        },
+        "overview": {
+            "title": "Bienvenue sur InteriMed !",
+            "welcome": "Bonjour",
+            "welcomeTitle": "Bienvenue sur InteriMed !",
+            "totalContracts": "Total des Contrats",
+            "activeHours": "Heures Actives",
+            "earnings": "Revenus",
+            "upcomingJobs": "Emplois à Venir",
+            "recentActivity": "Activité Récente",
+            "noRecentActivity": "Aucune activité récente à afficher"
+        }
+    },
+    "userMenu": {
+        "profile": "Mon Profil",
+        "settings": "Paramètres",
+        "language": "Langue",
+        "logout": "Se Déconnecter",
+        "user": "Utilisateur"
+    }
+}
