@@ -4,25 +4,36 @@
 
 .upload-form {
   width: auto;
-  min-height: 80px;
-  max-height: 120px;
-  border: 2px dashed var(--grey-3);
+  min-height: 140px;
+  /* Increased height to accommodate button */
+  max-height: 180px;
+  border: 2px dashed var(--grey-3) !important;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  padding: 10px;
+  padding: 16px;
+  /* Increased padding */
+}
+
+.upload-form.has-file {
+  border: 2px dashed var(--grey-3) !important;
 }
 
 .upload-form.drag-active {
-  border-color: var(--color-logo-2);
+  border: 2px dashed var(--color-logo-2) !important;
   background-color: rgba(0, 0, 0, 0.05);
 }
 
 .upload-content {
   text-align: center;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .upload-content p {
@@ -45,6 +56,10 @@
   font-size: inherit;
 }
 
+.upload-link.hidden {
+  display: none;
+}
+
 .upload-link:hover:not(.disabled) {
   opacity: 0.8;
 }
@@ -61,6 +76,32 @@
   text-decoration: underline;
   cursor: pointer;
   padding: 4px 8px;
+}
+
+/* New Select File Button Styles */
+.upload-content button[type="button"] {
+  background-color: var(--color-logo-2);
+  /* Use brand color */
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+  margin-top: 4px;
+}
+
+.upload-content button[type="button"]:hover:not(:disabled) {
+  background-color: var(--color-logo-1);
+}
+
+.upload-content button[type="button"]:disabled {
+  background-color: var(--grey-4);
+  cursor: not-allowed;
 }
 
 .file-name {
@@ -150,10 +191,19 @@
 }
 
 /* Error styles */
+.upload-container.upload-error .upload-form,
+.upload-form.upload-form-error {
+  border-color: var(--boxed-inputfield-error-color) !important;
+  border: 2px dashed var(--boxed-inputfield-error-color) !important;
+}
+
+.upload-form.upload-form-error.has-file {
+  border: 2px dashed var(--boxed-inputfield-error-color) !important;
+}
+
 .upload-container.border-destructive .upload-form {
   border-color: hsl(var(--destructive)) !important;
   background-color: hsl(var(--destructive) / 0.05);
-  /* Light red background */
 }
 
 .upload-container.border-destructive .upload-text,
@@ -163,4 +213,13 @@
 
 .upload-container.border-destructive .upload-link {
   text-decoration-color: hsl(var(--destructive));
+}
+
+.upload-button-error {
+  background-color: var(--boxed-inputfield-error-color) !important;
+}
+
+.upload-button-error:hover:not(:disabled) {
+  background-color: var(--boxed-inputfield-error-color) !important;
+  opacity: 0.9;
 }

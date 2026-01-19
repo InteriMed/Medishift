@@ -62,6 +62,10 @@
     "errorDeletingAccount": "Error deleting your account. Please try again.",
     "complete": "complete"
   },
+  "subscription": {
+    "status": "Subscription Status",
+    "free": "Free Plan"
+  },
   "errors": {
     "loadingConfig": "Error loading profile configuration. Please refresh the page.",
     "loadingProfile": "Error loading profile data",
@@ -159,6 +163,7 @@
   },
   "personalDetails": {
     "identityInfo": "Identity Information",
+    "profession": "Profession",
     "title": "Personal Details",
     "subtitle": "Manage your personal information and contact details.",
     "basicInfo": "Basic Information",
@@ -196,6 +201,7 @@
     "selectPermitType": "Select permit type",
     "permitExpiryDate": "Permit Expiry Date",
     "uploadPermit": "Upload Permit Document",
+    "upload": "Upload",
     "saveChanges": "Save Changes",
     "residencyPermit": "Residency Permit",
     "swissCitizen": "Swiss Citizen",
@@ -368,6 +374,11 @@
     "idCard": "Identity Card (Front/Back)",
     "privacyNoticeTitle": "Document Privacy",
     "privacyNoticeText": "Private and secure.",
+    "autofill": "Auto Fill",
+    "selectDocumentType": "Document Type",
+    "selectDocumentTypePlaceholder": "Select document type...",
+    "clickToUpload": "click to upload",
+    "selectDocumentTypeFirst": "Please select a document type first",
     "cv": "CV / Resume",
     "cvDescription": "Upload your most recent CV or resume. PDF format is preferred.",
     "uploadCV": "Upload CV",

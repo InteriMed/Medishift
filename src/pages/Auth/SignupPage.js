@@ -195,15 +195,21 @@ function Signup() {
       setIsLoading(true);
 
       try {
+        if (!db) {
+          throw new Error('Firestore database not initialized');
+        }
+
         // Create a temporary user account
         const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
         const user = userCredential.user;
+        console.log('✅ Auth user created:', user.uid);
 
         // Send email verification
         await sendEmailVerification(user);
 
         // Create user document in Firestore with onboarding flags
-        await setDoc(doc(db, 'users', user.uid), {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userData = {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
@@ -216,7 +222,17 @@ function Signup() {
           profileStatus: 'incomplete',
           tutorialPassed: false,
           isProfessionalProfileComplete: false,
-        });
+        };
+
+        await setDoc(userDocRef, userData);
+        console.log('📝 User document write initiated');
+
+        // Verify the document was created
+        const verifyDoc = await getDoc(userDocRef);
+        if (!verifyDoc.exists()) {
+          throw new Error('Failed to create user document in Firestore - document does not exist after write');
+        }
+        console.log('✅ User document verified in Firestore:', user.uid);
 
         // Store the user temporarily
         setTemporaryUser(user);
@@ -499,28 +515,84 @@ function Signup() {
   const handleGoogleSignup = async () => {
     setIsLoading(true);
     try {
+      // Ensure network is enabled before operations (Implicit check)
+      if (db) {
+        // Network is enabled by default. Explicit calls removed to prevent assertion errors.
+      }
+
       // Use the centralized loginWithGoogle function which now uses signInWithPopup
       const user = await loginWithGoogle();
 
-      // Retry helper for checking user existence
-      const getDocWithRetry = async (docRef, retries = 3, delay = 1000) => {
-        try {
-          return await getDoc(docRef);
-        } catch (err) {
-          if (retries > 0 && (err.code === 'unavailable' || err.message?.includes('offline') || err.message?.includes('network'))) {
-            console.warn(`Firestore read failed, retrying... (${retries} attempts left)`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            return getDocWithRetry(docRef, retries - 1, delay);
+      // Retry helper for checking user existence with better offline handling
+      const getDocWithRetry = async (docRef, retries = 5, delay = 1000) => {
+        for (let attempt = 0; attempt < retries; attempt++) {
+          try {
+            const docSnapshot = await getDoc(docRef);
+            return docSnapshot;
+          } catch (err) {
+            const isOfflineError = err.code === 'unavailable' ||
+              err.code === 'failed-precondition' ||
+              err.message?.includes('offline') ||
+              err.message?.includes('network') ||
+              err.message?.includes('client is offline');
+
+            if (isOfflineError && attempt < retries - 1) {
+              console.warn(`Firestore read failed (attempt ${attempt + 1}/${retries}), retrying...`);
+              await new Promise(resolve => setTimeout(resolve, delay * (attempt + 1)));
+              continue;
+            }
+
+            // If it's an offline error and we've exhausted retries, just log and throw
+            if (isOfflineError && attempt === retries - 1) {
+              console.error('❌ Network issues persisted after retries');
+            }
+
+            throw err;
           }
-          throw err;
         }
       };
 
       // Check if user exists in Firestore, if not create them
       const userDocRef = doc(db, 'users', user.uid);
 
-      // Use retry logic
-      const userDoc = await getDocWithRetry(userDocRef);
+      // Use retry logic with better error handling
+      let userDoc;
+      try {
+        userDoc = await getDocWithRetry(userDocRef);
+      } catch (error) {
+        const isOfflineError = error.code === 'unavailable' ||
+          error.message?.includes('offline') ||
+          error.message?.includes('client is offline');
+
+        if (isOfflineError) {
+          console.warn('⚠️ Client is offline, user document will be created when online');
+          // Create user document anyway - it will be queued for when online
+          try {
+            await setDoc(userDocRef, {
+              email: user.email,
+              displayName: user.displayName || user.email.split('@')[0],
+              firstName: user.displayName?.split(' ')[0] || '',
+              lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+              photoURL: user.photoURL || '',
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              role: 'professional',
+              profileCompleted: false,
+              profileStatus: 'incomplete',
+              tutorialPassed: false,
+              isProfessionalProfileComplete: false,
+            });
+            console.log('✅ User document queued for creation (offline mode)');
+          } catch (setDocError) {
+            console.error('❌ Error queuing user document creation:', setDocError);
+          }
+          // Navigate anyway since auth succeeded
+          navigate(`/${lang}/dashboard/profile`);
+          setIsLoading(false);
+          return;
+        }
+        throw error;
+      }
 
       if (!userDoc.exists()) {
         try {

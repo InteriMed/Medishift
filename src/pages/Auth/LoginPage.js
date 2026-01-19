@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, sendPasswordResetEmail } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, sendPasswordResetEmail, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import InputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldHideUnhide from '../../components/BoxedInputFields/InputFieldHideUnhide';
 import UnderlinedLink from '../../components/Links/UnderlinedLink';
 import { FcGoogle } from 'react-icons/fc';
+import { ShieldAlert, X } from 'lucide-react';
 import { auth, firebaseApp, db, loginWithGoogle } from '../../services/firebase';
 import { useNotification } from '../../contexts/NotificationContext';
 import '../../styles/auth.css';
@@ -27,6 +28,10 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+
+  // Ban state
+  const [isBanModalOpen, setIsBanModalOpen] = useState(false);
+  const [banDetails, setBanDetails] = useState(null);
 
   // Removed unused redirect handling effect since we now use popup for Google Sign In
 
@@ -85,12 +90,24 @@ function Login() {
 
       // Get additional user profile data directly from Firestore
       try {
-        // Get user data from Firestore instead of API
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
+
+          // Check if account is disabled/banned
+          if (userData.accountStatus === 'disabled') {
+            await signOut(auth);
+            setBanDetails({
+              reason: userData.banReason || 'No reason provided',
+              info: userData.banInformation || 'Your account has been disabled. Please contact support if you believe this is a mistake.',
+              date: userData.bannedAt?.toDate?.()?.toLocaleDateString() || 'N/A'
+            });
+            setIsBanModalOpen(true);
+            setIsLoading(false);
+            return;
+          }
 
           // Check if profile is incomplete - redirect to onboarding
           if (!userData.profileCompleted && !userData.isProfessionalProfileComplete) {
@@ -204,6 +221,19 @@ function Login() {
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
+
+          // Check if account is disabled/banned
+          if (userData.accountStatus === 'disabled') {
+            await signOut(auth);
+            setBanDetails({
+              reason: userData.banReason || 'No reason provided',
+              info: userData.banInformation || 'Your account has been disabled. Please contact support if you believe this is a mistake.',
+              date: userData.bannedAt?.toDate?.()?.toLocaleDateString() || 'N/A'
+            });
+            setIsBanModalOpen(true);
+            setIsLoading(false);
+            return;
+          }
 
           if (!userData.profileCompleted && !userData.isProfessionalProfileComplete) {
             navigate(`/${lang}/dashboard/profile`);
@@ -415,8 +445,58 @@ function Login() {
           </div>
         </div>
       )}
+
+      {/* Ban Information Popup */}
+      {isBanModalOpen && (
+        <div className="modal-overlay" style={{ zIndex: 10000 }}>
+          <div className="modal-content ban-modal" style={{ maxWidth: '450px', borderTop: '4px solid var(--red-4)' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => setIsBanModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light-color)' }}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div style={{ textAlign: 'center', padding: '0 20px 20px' }}>
+              <div style={{
+                width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(var(--red-4-rgb), 0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--red-4)'
+              }}>
+                <ShieldAlert size={36} />
+              </div>
+
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-color)', marginBottom: '10px' }}>
+                Account Disabled
+              </h2>
+
+              <div style={{
+                backgroundColor: 'var(--grey-1)', padding: '15px', borderRadius: '8px', textAlign: 'left',
+                marginBottom: '20px', border: '1px solid var(--grey-2)'
+              }}>
+                <p style={{ fontSize: '14px', marginBottom: '8px' }}>
+                  <strong style={{ color: 'var(--text-color)' }}>Reason:</strong><br />
+                  <span style={{ color: 'var(--red-4)' }}>{banDetails?.reason}</span>
+                </p>
+                <p style={{ fontSize: '13px', color: 'var(--text-light-color)', lineHeight: '1.5' }}>
+                  {banDetails?.info}
+                </p>
+                <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--text-light-color)', textAlign: 'right' }}>
+                  Disabled on: {banDetails?.date}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsBanModalOpen(false)}
+                className="auth-button primary-button"
+                style={{ width: '100%' }}
+              >
+                Understood
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default Login; 
+export default Login;

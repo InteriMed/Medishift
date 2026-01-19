@@ -37,7 +37,7 @@ const LockedMenuItem = ({ item, collapsed = false, isMobile = false }) => {
             aria-label={`${item.title} - Locked. Complete the profile tutorial to unlock.`}
             onClick={handleClick}
             className={cn(
-                "group relative flex gap-3 rounded-lg border min-w-0 transition-all duration-200 outline-none select-none",
+                "global-lock group relative flex gap-3 rounded-lg border min-w-0 transition-all duration-200 outline-none select-none",
                 collapsed ? "p-2 justify-center" : "p-3",
                 "text-muted-foreground/40 cursor-not-allowed",
                 "border-transparent",
@@ -46,10 +46,10 @@ const LockedMenuItem = ({ item, collapsed = false, isMobile = false }) => {
             )}
             style={{
                 userSelect: 'none',
-                pointerEvents: 'auto' // Must be auto to catch clicks
+                pointerEvents: 'auto'
             }}
         >
-            {/* Lock indicator bar */}
+
             <div className={cn(
                 "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
                 "bg-muted/20"
@@ -57,14 +57,14 @@ const LockedMenuItem = ({ item, collapsed = false, isMobile = false }) => {
 
             <div className={cn(
                 "w-full flex items-center justify-between min-w-0",
-                collapsed ? "justify-center pl-0" : "pl-2"
+                collapsed ? "justify-center pl-0" : "pl-1.5"
             )}>
                 <div className={cn(
                     "flex items-center min-w-0",
                     collapsed ? "justify-center" : "gap-3"
                 )}>
                     <div className={cn(
-                        "shrink-0",
+                        "shrink-0 icon-container",
                         "bg-muted/10 text-muted-foreground/40"
                     )}>
                         <item.icon className="w-5 h-5 shrink-0" />
@@ -72,7 +72,7 @@ const LockedMenuItem = ({ item, collapsed = false, isMobile = false }) => {
                     {!collapsed && (
                         <>
                             <span className={cn(
-                                "text-sm font-medium truncate",
+                                "text-sm font-medium truncate text-container",
                                 "text-muted-foreground/40"
                             )}>
                                 {item.title}
@@ -146,17 +146,6 @@ const LockedMenuItem = ({ item, collapsed = false, isMobile = false }) => {
                 </div>
             )}
 
-            {/* CSS for shake animation */}
-            <style jsx="true">{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          20%, 60% { transform: translateX(-8px); }
-          40%, 80% { transform: translateX(8px); }
-        }
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-      `}</style>
         </div>
     );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '../../utils/cn';
 import { FiX } from 'react-icons/fi';
 
@@ -139,10 +140,10 @@ const Dialog = ({
   const currentContentStyle = messageType ? contentColorStyles[messageType] : contentColorStyles.default;
 
 
-  return (
+  return createPortal(
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300",
+        "fixed inset-0 z-[200000] flex items-center justify-center p-4 transition-all duration-300",
         isVisible ? "opacity-100" : "opacity-0"
       )}
       style={{
@@ -218,7 +219,8 @@ const Dialog = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

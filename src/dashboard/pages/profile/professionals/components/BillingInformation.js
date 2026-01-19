@@ -1,6 +1,7 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import classNames from 'classnames';
 import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield } from 'react-icons/fi';
 
@@ -10,6 +11,7 @@ import InputField from '../../../../../components/BoxedInputFields/Personnalized
 import Button from '../../../../../components/BoxedInputFields/Button';
 import Dialog from '../../../../../components/Dialog/Dialog';
 // Use CSS module instead of regular CSS
+import PhoneVerificationStep from '../../../../onboarding/components/PhoneVerificationStep';
 
 // Import the dropdown options hook
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
@@ -18,15 +20,15 @@ import { useDropdownOptions } from '../../utils/DropdownListsImports';
 
 // Tailwind styles
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1000px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1000px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
   sectionTitle: "text-2xl font-semibold mb-2",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
   subtitleRow: "flex items-end justify-between gap-4",
   mandatoryFieldLegend: "text-xs text-muted-foreground",
   hiringMandatoryMark: "text-orange-500",
-  sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1000px] mx-auto",
+  sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
   sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
@@ -39,7 +41,7 @@ const styles = {
   gridSingle: "grid grid-cols-1 gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "md:col-span-2",
-  formActions: "flex justify-end gap-4 w-full max-w-[1000px] mx-auto"
+  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto"
 };
 
 const BillingInformation = ({
@@ -49,16 +51,69 @@ const BillingInformation = ({
   isSubmitting,
   onInputChange, // Use this for all updates
   onSaveAndContinue,
+  onSave,
   onCancel,
   getNestedValue,
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
   const [showHiringInfo, setShowHiringInfo] = useState(false);
+  const location = useLocation();
+  const localStorageKey = 'billingInformation_draft';
+  const previousLocationRef = useRef(location.pathname);
+  const saveTimeoutRef = useRef(null);
+  const hasUnsavedChangesRef = useRef(false);
 
   // Use the dropdown options hook
   const dropdownOptionsFromHook = useDropdownOptions();
 
   const fieldsToRender = useMemo(() => config?.fields?.billingInformation || [], [config]);
+
+  // Extract billing information fields from formData
+  const extractBillingData = useCallback(() => {
+    if (!formData || !fieldsToRender) return null;
+    const billingData = {};
+    fieldsToRender.forEach(field => {
+      const value = getNestedValue(formData, field.name);
+      if (value !== undefined && value !== null) {
+        billingData[field.name] = value;
+      }
+    });
+    return billingData;
+  }, [formData, fieldsToRender, getNestedValue]);
+
+  // 2FA for Editing Logic
+  const hasExistingBillingInfo = useMemo(() => {
+    return formData && (
+      (formData.billingInformation && Object.keys(formData.billingInformation).length > 0) ||
+      (formData.payrollData && Object.keys(formData.payrollData).length > 0) ||
+      (formData.banking && Object.keys(formData.banking).length > 0)
+    );
+  }, [formData]);
+
+  // If data exists, it matches the requirement "validated after the tutorial" (assuming saved = validated)
+  // Lock editing by default if data exists
+  const [isEditingLocked, setIsEditingLocked] = useState(() => hasExistingBillingInfo);
+  const [show2FADialog, setShow2FADialog] = useState(false);
+
+  // Re-lock if formData changes externally and we haven't unlocked (e.g. initial load)
+  useEffect(() => {
+    if (hasExistingBillingInfo && isEditingLocked === undefined) {
+      setIsEditingLocked(true);
+    }
+  }, [hasExistingBillingInfo, isEditingLocked]);
+
+  const handleUnlockClick = () => {
+    setShow2FADialog(true);
+  };
+
+  const handle2FASuccess = () => {
+    setShow2FADialog(false);
+    setIsEditingLocked(false);
+  };
+
+  // LocalStorage logic removed as requested ("Billing information never save to locals")
+  // Auto-save logic hooks removed.
+
 
   // Handle cancel with page reload
   const handleCancel = useCallback(() => {
@@ -305,132 +360,156 @@ const BillingInformation = ({
   }, [fieldsToRender, formData, getNestedValue, onSaveAndContinue, checkDependency]);
 
   return (
-    <div className={styles.sectionContainer}>
-      <div className={styles.headerCard}>
-        <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('billingInformation.title')}</h2>
-        <div className={styles.subtitleRow}>
-          <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('billingInformation.subtitle', 'Provide your employment and billing details.')}</p>
-          <div className={styles.mandatoryFieldLegend}><span className={styles.hiringMandatoryMark}>*</span> {t('billingInformation.hiringRequiredLegend')}</div>
+    <div className={styles.sectionContainer} style={{ position: 'relative' }}>
+      {/* Locked Overlay */}
+      {isEditingLocked && hasExistingBillingInfo && (
+        <div className="absolute inset-0 z-50 rounded-xl backdrop-blur-sm bg-background/50 flex flex-col items-center justify-center border border-border/50 transition-all duration-300">
+          <div className="p-8 bg-card border border-border shadow-xl rounded-2xl flex flex-col items-center max-w-md text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-primary">
+              <FiShield size={32} />
+            </div>
+            <h3 className="text-2xl font-bold mb-2">Secure Information</h3>
+            <p className="text-muted-foreground mb-8">
+              To update your billing and sensitive financial information, we need to verify your identity with a security code sent to your phone.
+            </p>
+            <Button onClick={handleUnlockClick} variant="primary" className="w-full">
+              Verify Identity to Edit
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className={styles.sectionsWrapper}>
-        {/* Left Column */}
-        <div className={styles.leftColumn}>
-          {/* Employment Eligibility Section */}
-          {groupedFields.employmentEligibility && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiBriefcase /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.employmentEligibilityTitle')}</h3>
-                  </div>
-                </div>
-                {groupedFields.employmentEligibility.map(renderField)}
-              </div>
-            </div>
-          )}
-
-          {/* Banking Information Section */}
-          {groupedFields.banking && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiCreditCard /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.bankingInfo')}</h3>
-                  </div>
-                </div>
-                {groupedFields.banking.map(renderField)}
-              </div>
-            </div>
-          )}
-
-          {/* Legacy sections for backward compatibility */}
-          {groupedFields.residency && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiBriefcase /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.residencyPermitTitle')}</h3>
-                  </div>
-                </div>
-                {groupedFields.residency.map(renderField)}
-              </div>
-            </div>
-          )}
-
-          {groupedFields.insurance && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiShield /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.insurance')}</h3>
-                  </div>
-                </div>
-                {groupedFields.insurance.map(renderField)}
-              </div>
-            </div>
-          )}
-
-          {groupedFields.billingAddress && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiHome /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.billingAddress')}</h3>
-                  </div>
-                </div>
-                {groupedFields.billingAddress.find(f => f.name === 'sameAsResidential') && renderField(groupedFields.billingAddress.find(f => f.name === 'sameAsResidential'))}
-                {groupedFields.billingAddress.filter(f => f.name !== 'sameAsResidential').map(renderField)}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column */}
-        <div className={styles.rightColumn}>
-          {/* Payroll Data Section */}
-          {groupedFields.payrollData && (
-            <div className={styles.sectionCard}>
-              <div className={styles.gridSingle}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiDollarSign /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.payrollDataTitle')}</h3>
-                  </div>
-                </div>
-                {groupedFields.payrollData.map(field => renderField(field, true))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* --- Action Buttons --- */}
-      <div className={styles.sectionCard}>
-        <div className={styles.formActions} style={{ marginTop: 0 }}>
-          <Button onClick={handleCancel} variant="secondary" disabled={isSubmitting}>
-            {t('common.cancel')}
-          </Button>
-          <Button onClick={handleSaveAndContinueClick} variant="confirmation" disabled={isSubmitting}>
-            {isSubmitting ? t('common.saving') : t('common.saveAndContinue')}
-          </Button>
-        </div>
-      </div>
-
+      {/* 2FA Dialog */}
       <Dialog
-        isOpen={showHiringInfo}
-        onClose={() => setShowHiringInfo(false)}
-        title={t('billingInformation.hiringInfoTitle')}
-        actions={<Button onClick={() => setShowHiringInfo(false)} variant="primary">OK</Button>}
+        isOpen={show2FADialog}
+        onClose={() => setShow2FADialog(false)}
+        title={t('auth.steps.phoneVerification', 'Identity Verification')}
+        size="medium"
       >
-        <p>{t('billingInformation.hiringInfoMessage')}</p>
+        <PhoneVerificationStep
+          onComplete={handle2FASuccess}
+          onStepChange={() => { }}
+          onValidationChange={() => { }}
+        // You might want to pass user's current phone if known, but PhoneVerificationStep often handles it
+        />
       </Dialog>
+
+      <div className={classNames(styles.sectionContainer, isEditingLocked && hasExistingBillingInfo ? 'pointer-events-none filter blur-[2px]' : '')}>
+        <div className={styles.headerCard}>
+          <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('billingInformation.title')}</h2>
+          <div className={styles.subtitleRow}>
+            <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('billingInformation.subtitle', 'Provide your employment and billing details.')}</p>
+            <div className={styles.mandatoryFieldLegend}><span className={styles.hiringMandatoryMark}>*</span> {t('billingInformation.hiringRequiredLegend')}</div>
+          </div>
+        </div>
+
+        <div className={styles.sectionsWrapper}>
+          {/* Left Column */}
+          <div className={styles.leftColumn}>
+            {/* Employment Eligibility Section */}
+            {groupedFields.employmentEligibility && (
+              <div className={styles.sectionCard}>
+                <div className={styles.grid}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardIconWrapper}><FiBriefcase /></div>
+                    <div className={styles.cardTitle}>
+                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.employmentEligibilityTitle')}</h3>
+                    </div>
+                  </div>
+                  {groupedFields.employmentEligibility.map(renderField)}
+                </div>
+              </div>
+            )}
+
+            {/* Banking Information Section */}
+            {groupedFields.banking && (
+              <div className={styles.sectionCard}>
+                <div className={styles.grid}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardIconWrapper}><FiCreditCard /></div>
+                    <div className={styles.cardTitle}>
+                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.bankingInfo')}</h3>
+                    </div>
+                  </div>
+                  {groupedFields.banking.map(renderField)}
+                </div>
+              </div>
+            )}
+
+            {/* Legacy sections for backward compatibility */}
+            {groupedFields.residency && (
+              <div className={styles.sectionCard}>
+                <div className={styles.grid}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardIconWrapper}><FiBriefcase /></div>
+                    <div className={styles.cardTitle}>
+                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.residencyPermitTitle')}</h3>
+                    </div>
+                  </div>
+                  {groupedFields.residency.map(renderField)}
+                </div>
+              </div>
+            )}
+
+            {groupedFields.insurance && (
+              <div className={styles.sectionCard}>
+                <div className={styles.grid}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardIconWrapper}><FiShield /></div>
+                    <div className={styles.cardTitle}>
+                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.insurance')}</h3>
+                    </div>
+                  </div>
+                  {groupedFields.insurance.map(renderField)}
+                </div>
+              </div>
+            )}
+
+            {groupedFields.billingAddress && (
+              <div className={styles.sectionCard}>
+                <div className={styles.grid}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardIconWrapper}><FiHome /></div>
+                    <div className={styles.cardTitle}>
+                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.billingAddress')}</h3>
+                    </div>
+                  </div>
+                  {groupedFields.billingAddress.find(f => f.name === 'sameAsResidential') && renderField(groupedFields.billingAddress.find(f => f.name === 'sameAsResidential'))}
+                  {groupedFields.billingAddress.filter(f => f.name !== 'sameAsResidential').map(renderField)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column */}
+          <div className={styles.rightColumn}>
+            {/* Payroll Data Section */}
+            {groupedFields.payrollData && (
+              <div className={styles.sectionCard}>
+                <div className={styles.gridSingle}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardIconWrapper}><FiDollarSign /></div>
+                    <div className={styles.cardTitle}>
+                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.payrollDataTitle')}</h3>
+                    </div>
+                  </div>
+                  {groupedFields.payrollData.map(field => renderField(field, true))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+
+        <Dialog
+          isOpen={showHiringInfo}
+          onClose={() => setShowHiringInfo(false)}
+          title={t('billingInformation.hiringInfoTitle')}
+          actions={<Button onClick={() => setShowHiringInfo(false)} variant="primary">OK</Button>}
+        >
+          <p>{t('billingInformation.hiringInfoMessage')}</p>
+        </Dialog>
+      </div>
     </div>
   );
 };
@@ -446,6 +525,7 @@ BillingInformation.propTypes = {
   isSubmitting: PropTypes.bool.isRequired,
   onInputChange: PropTypes.func.isRequired,
   onSaveAndContinue: PropTypes.func.isRequired,
+  onSave: PropTypes.func,
   onCancel: PropTypes.func.isRequired,
   getNestedValue: PropTypes.func.isRequired
 };

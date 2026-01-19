@@ -26,7 +26,7 @@ const AccessPopup = () => {
                     backgroundColor: 'rgba(0, 0, 0, 0.4)',
                     backdropFilter: 'blur(4px)',
                     WebkitBackdropFilter: 'blur(4px)',
-                    zIndex: 9400,
+                    zIndex: 199900,
                 }}
             />
 
@@ -37,7 +37,7 @@ const AccessPopup = () => {
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    zIndex: 9500,
+                    zIndex: 200000,
                     pointerEvents: 'auto',
                     maxWidth: window.innerWidth < 768 ? 'calc(100vw - 40px)' : '480px',
                     width: window.innerWidth < 768 ? 'calc(100vw - 40px)' : 'auto',

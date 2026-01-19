@@ -12,18 +12,19 @@ import Button from '../../../../../components/BoxedInputFields/Button';
 
 // Import the dropdown options hook
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
+import useAutoSave from '../../../../hooks/useAutoSave';
 
 // Tailwind styles (copied from PersonalDetails.js to ensure consistency)
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1000px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1000px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
   subtitleRow: "flex items-end justify-between gap-4",
   mandatoryFieldLegend: "text-xs text-muted-foreground",
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "facility-details-sections-wrapper flex flex-col gap-6 w-full max-w-[1000px] mx-auto",
+  sectionsWrapper: "facility-details-sections-wrapper flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
   sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
@@ -35,7 +36,7 @@ const styles = {
   grid: "grid grid-cols-1 gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "md:col-span-2",
-  formActions: "flex justify-end gap-4 w-full max-w-[1000px] mx-auto"
+  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto"
 };
 
 const FacilityDetails = ({
@@ -46,6 +47,7 @@ const FacilityDetails = ({
   isSubmitting,
   onInputChange,
   onSaveAndContinue,
+  onSave,
   onCancel,
   getNestedValue,
 }) => {
@@ -61,6 +63,15 @@ const FacilityDetails = ({
     }
     return config.fields[activeTab];
   }, [config, activeTab]);
+
+  useAutoSave({
+    formData,
+    config,
+    activeTab,
+    onInputChange,
+    onSave,
+    getNestedValue
+  });
 
   // Get options from translations if available
   const getDropdownOptions = useCallback((optionsKey) => {
@@ -327,15 +338,6 @@ const FacilityDetails = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className={styles.formActions}>
-          <Button onClick={onCancel} variant="secondary" disabled={isSubmitting}>
-            {t('common.cancel')}
-          </Button>
-          <Button onClick={onSaveAndContinue} variant="confirmation" disabled={isSubmitting}>
-            {isSubmitting ? t('common.saving') : t('common.saveAndContinue')}
-          </Button>
-        </div>
       </div>
     </>
   );

@@ -2,6 +2,18 @@ import React, { useEffect } from 'react';
 import './styles/CheckboxField.css';
 import { useNotification } from '../../contexts/NotificationContext';
 
+/**
+ * Premium Checkbox component
+ * @param {Object} props
+ * @param {string} props.label - Text to display next to checkbox
+ * @param {boolean} props.checked - Checked state
+ * @param {Function} props.onChange - Change handler
+ * @param {string} props.color - Custom color for the checkmark background
+ * @param {string} props.error - Error message to display (via notification)
+ * @param {boolean} props.required - Whether the field is required
+ * @param {string} props.name - Input name attribute
+ * @param {string} props.className - Additional class names for wrapper
+ */
 const Checkbox = ({
   label,
   checked = false,
@@ -9,7 +21,8 @@ const Checkbox = ({
   color,
   error = null,
   required = false,
-  name = ''
+  name = '',
+  className = ''
 }) => {
   const { showError } = useNotification();
 
@@ -21,16 +34,19 @@ const Checkbox = ({
   }, [error, showError]);
 
   const handleChange = (e) => {
-    if (error && onChange) {
-      // Reset error when user interacts with checkbox
-      onChange(e, null); // Pass null as second parameter to indicate error reset
-    } else {
-      onChange(e);
+    // Only call onChange if it exists
+    if (onChange) {
+      if (error) {
+        // Reset error when user interacts with checkbox if needed by parent logic
+        onChange(e, null);
+      } else {
+        onChange(e);
+      }
     }
   };
 
   return (
-    <div className="checkbox-wrapper">
+    <div className={`checkbox-wrapper ${className}`}>
       <label className={`checkbox-container ${error ? 'checkbox-container--error' : ''}`}>
         <input
           type="checkbox"
@@ -42,18 +58,18 @@ const Checkbox = ({
         <span
           className="checkmark"
           style={{
-            backgroundColor: checked ? color : '#fff',
-            borderColor: error ? 'var(--red-3)' : color,
-            opacity: checked ? 1 : 0.5
+            backgroundColor: checked && color ? color : undefined,
+            borderColor: checked && color ? color : (error ? 'var(--red-3)' : undefined),
           }}
         ></span>
-        <span
-          className={`checkbox-label ${error ? 'checkbox-label--error' : ''}`}
-          style={{ opacity: checked ? 1 : 0.5 }}
-        >
-          {label}
-          {required && <span className="checkbox-required">*</span>}
-        </span>
+        {label && (
+          <span
+            className={`checkbox-label ${error ? 'checkbox-label--error' : ''}`}
+          >
+            {label}
+            {required && <span className="checkbox-required">*</span>}
+          </span>
+        )}
       </label>
     </div>
   );

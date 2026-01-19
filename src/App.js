@@ -23,6 +23,8 @@ import './styles/notifications.css';
 // import './styles/global.css';
 import './styles/variables.css';
 import DashboardRoot from './dashboard/DashboardRoot';
+import { testFirestoreConnection } from './utils/testFirestoreConnection';
+import { resetFirestoreCache } from './utils/resetFirestoreCache';
 import Footer from './components/Footer/Footer';
 import BlogPost from './pages/Blog/BlogPost';
 import VerificationSentPage from './pages/Auth/VerificationSentPage';
@@ -47,7 +49,10 @@ import {
   TermsOfServicePage,
   SitemapPage,
   NotFoundPage,
-  TestPage
+  TestPage,
+  TestPhonePage,
+  TestGLNPage,
+  OnboardingPage
 } from './pages';
 
 // Import header component
@@ -87,6 +92,15 @@ const AppContainer = () => {
   );
 };
 
+// Make test and utility functions available globally in development
+if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+  window.testFirestore = testFirestoreConnection;
+  window.resetFirestoreCache = resetFirestoreCache;
+  console.log('🧪 Firestore utilities available:');
+  console.log('   - window.testFirestore() - Test Firestore connection');
+  console.log('   - window.resetFirestoreCache() - Clear Firestore cache');
+}
+
 // App content with language handling
 function AppContent() {
   const location = useLocation();
@@ -111,7 +125,8 @@ function AppContent() {
   useEffect(() => {
     const isDashboardPage = location.pathname.includes('/dashboard') ||
       location.pathname.includes('login') ||
-      location.pathname.includes('signup');
+      location.pathname.includes('signup') ||
+      location.pathname.includes('/onboarding');
     setShowHeader(!isDashboardPage);
   }, [location.pathname]);
 
@@ -171,11 +186,13 @@ function AppContent() {
     path.includes('/login') ||
     path.includes('/signup') ||
     path.includes('/forgot-password') ||
+    path.includes('/onboarding') ||
     // Add localized versions
     path.includes(`/${currentLang}/${getLocalizedRoute('dashboard', currentLang)}`) ||
     path.includes(`/${currentLang}/${getLocalizedRoute('login', currentLang)}`) ||
     path.includes(`/${currentLang}/${getLocalizedRoute('signup', currentLang)}`) ||
-    path.includes(`/${currentLang}/${getLocalizedRoute('forgotPassword', currentLang)}`);
+    path.includes(`/${currentLang}/${getLocalizedRoute('forgotPassword', currentLang)}`) ||
+    path.includes(`/${currentLang}/onboarding`);
 
 
   // If we're still initializing, show a loading page
@@ -211,6 +228,13 @@ function AppContent() {
             <Route path="forgot-password" element={<ForgotPasswordPage />} />
             <Route path="verification-sent" element={<VerificationSentPage />} />
 
+            {/* Onboarding route */}
+            <Route path="onboarding" element={
+              <ProtectedRoute>
+                <OnboardingPage />
+              </ProtectedRoute>
+            } />
+
             {/* Protected dashboard routes - fixed routing */}
             <Route path="dashboard/*" element={
               DASHBOARD_DISABLED ?
@@ -232,8 +256,10 @@ function AppContent() {
             {/* Loading page */}
             <Route path="loading" element={<LoadingPage />} />
 
-            {/* Test page */}
+            {/* Test pages */}
             <Route path="test" element={<TestPage />} />
+            <Route path="testphone" element={<TestPhonePage />} />
+            <Route path="dashboard/admin/system/gln-test" element={<TestGLNPage />} />
 
             {/* Not found route */}
             <Route path="not-found" element={<NotFoundPage />} />

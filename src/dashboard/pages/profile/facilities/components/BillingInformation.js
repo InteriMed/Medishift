@@ -14,6 +14,7 @@ import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import Button from '../../../../../components/BoxedInputFields/Button';
 import styles from '../../Profile.module.css'; // Use CSS module instead of regular CSS
+import useAutoSave from '../../../../hooks/useAutoSave';
 
 // --- FAKE Dropdown Options (Replace with real data loading/i18n) ---
 const FAKE_DROPDOWN_TRANSLATIONS = {
@@ -29,12 +30,22 @@ const BillingInformation = ({
   isSubmitting,
   onInputChange, // Use this for all updates
   onSaveAndContinue,
+  onSave,
   onCancel,
   getNestedValue,
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
 
   const fieldsToRender = useMemo(() => config?.fields?.billingInformation || [], [config]);
+
+  useAutoSave({
+    formData,
+    config,
+    activeTab: 'facilityLegalBilling',
+    onInputChange,
+    onSave,
+    getNestedValue
+  });
 
   const getDropdownOptions = useCallback((optionsKey) => {
     // First, try to get the options from i18n dropdowns
@@ -201,15 +212,6 @@ const BillingInformation = ({
       )}
       {/* Add rendering for other groups like 'family', 'spouse' if defined */}
 
-      {/* --- Action Buttons --- */}
-      <div className={styles.onboardingActions}>
-        <Button onClick={onCancel} variant="secondary" disabled={isSubmitting}>
-          {t('common.cancel')}
-        </Button>
-        <Button onClick={onSaveAndContinue} variant="confirmation" disabled={isSubmitting}>
-          {isSubmitting ? t('common.saving') : t('common.saveAndContinue')}
-        </Button>
-      </div>
     </div>
   );
 };

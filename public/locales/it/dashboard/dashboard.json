@@ -72,89 +72,128 @@
             "noRecentActivity": "Nessuna attività recente da mostrare"
         },
         "onboarding": {
-            "welcome": {
-                "title": "Benvenuto su MediShift!",
-                "description": "Iniziamo con un rapido processo di onboarding per configurare il tuo account.",
-                "continue": "Continua"
+            "verify_account": "Verifica il Tuo Account",
+            "verify_intro": "Fornisci i tuoi dettagli qui sotto. Utilizziamo una verifica AI sicura per certificare il tuo account.",
+            "step1": {
+                "title": "Considerazioni Legali",
+                "facilityLegalNotice": "Avviso Legale per le Strutture",
+                "facilityLegalText1": "Come struttura sanitaria che utilizza InteriMed, è necessario garantire la conformità alle leggi sul lavoro svizzere quando si assume personale temporaneo.",
+                "facilityLegalText2": "Siete responsabili di verificare che i lavoratori temporanei rispettino gli orari di lavoro massimi, i periodi di riposo e altri requisiti legali.",
+                "facilityLegalText3": "Assicuratevi che tutto il personale temporaneo possieda le qualifiche e i permessi di lavoro necessari.",
+                "professionalLegalNotice": "Avviso Legale per i Professionisti",
+                "professionalLegalText1": "Per i dipendenti che lavorano al 100% (di solito 40-42 ore/settimana), è quasi impossibile accettare turni extra in un'altra farmacia legalmente.",
+                "professionalLegalText2": "La Legge sul Lavoro Svizzera fissa un massimo rigoroso di 50 ore settimanali (45 ore in alcuni contesti retail). Un dipendente al 100% lavora tipicamente 42 ore, lasciando solo 8 ore massimo.",
+                "professionalLegalText3": "Secondo il Codice delle Obbligazioni (Art. 321a), devi ottenere il permesso scritto dal tuo datore di lavoro principale per lavorare per un concorrente.",
+                "professionalLegalText4": "La legge richiede 11 ore consecutive di riposo tra i turni (può essere ridotto a 8 ore una volta alla settimana).",
+                "agreementStatus": "Stato dell'Accordo",
+                "areYouEmployed": "Sei attualmente impiegato da una struttura?",
+                "areYouEmployedDescription": "Attiva se lavori per un'organizzazione",
+                "termsAcceptance": "Termini e Considerazioni Legali",
+                "termsAcceptanceDescription": "Comprendo e riconosco le considerazioni legali e i termini di servizio",
+                "note": "Proseguendo, riconosci di aver letto e compreso le considerazioni legali applicabili al tuo ruolo."
             },
-            "roleSelection": {
-                "title": "Che tipo di account ti serve?",
-                "description": "Seleziona l'opzione che ti descrive meglio",
+            "step2": {
+                "title": "Seleziona il Tuo Ruolo",
+                "description": "Scegli l'opzione che descrive meglio la tua situazione",
                 "professional": "Professionista",
                 "professionalDescription": "Sono un professionista sanitario in cerca di opportunità lavorative",
-                "facility": "Azienda",
-                "facilityDescription": "Rappresento un'azienda o una struttura in cerca di professionisti"
+                "facility": "Struttura",
+                "facilityDescription": "Rappresento un'azienda o una struttura in cerca di professionisti",
+                "organization": "Organizzazione",
+                "organizationDescription": "Rappresento una catena di farmacie o un'organizzazione"
             },
-            "companySearch": {
-                "title": "Hai un'azienda?",
-                "description": "Se lavori per un'azienda, cercala e selezionala qui sotto",
-                "noCompany": "Non ho un'azienda",
-                "yesCompany": "Sì, ho un'azienda",
-                "searchLabel": "Cerca la tua azienda",
-                "searchPlaceholder": "Digita il nome dell'azienda...",
-                "searching": "Ricerca in corso...",
-                "noResults": "Nessuna azienda trovata. Puoi continuare senza selezionarne una."
+            "step3": {
+                "chain": {
+                    "title": "Informazioni di Contatto",
+                    "description": "Fornisci i tuoi dati di contatto in modo che possiamo aiutarti a configurare il tuo account organizzazione",
+                    "phonePrefix": "Prefisso Telefonico",
+                    "phoneNumber": "Numero di Telefono",
+                    "phoneNumberPlaceholder": "Inserisci il tuo numero di telefono",
+                    "messageToSupport": "Messaggio al Supporto",
+                    "messagePlaceholder": "Descrivi la tua organizzazione e le tue esigenze..."
+                }
             },
-            "confirmation": {
-                "title": "Conferma la Tua Selezione",
-                "accountType": "Tipo di Account",
-                "company": "Azienda",
-                "noCompany": "Nessuna azienda",
-                "confirm": "Conferma"
+            "step4": {
+                "title": "Verifica GLN",
+                "description": "Hai un GLN (Global Location Number)?",
+                "hasGLN": "Ho un numero GLN"
             },
-            "profileGuide": {
-                "title": "Ottimo! Ora completiamo il tuo profilo",
-                "description": "Ti guideremo passo dopo passo nel completamento del tuo profilo. Ogni sezione verrà evidenziata man mano che procedi.",
-                "startProfile": "Inizia a Completare il Profilo"
+            "professional_gln": {
+                "title": "Informazioni GLN",
+                "text1": "Numero professionale richiesto per i professionisti medici certificati in Svizzera (farmacisti, dentisti, medici, ecc.).",
+                "text2": "Per le altre professioni (infermieri, assistenti, ecc.), questo numero non è obbligatorio.",
+                "text3": "Abilita se possiedi un tuo numero GLN."
+            },
+            "company_gln": {
+                "title": "Informazioni GLN",
+                "text1": "Il GLN (Global Location Number) è un identificatore unico per la tua struttura o azienda.",
+                "text2": "Fornire il tuo GLN ci aiuta a verificare automaticamente i dettagli della tua attività e accelera il processo di verifica.",
+                "text3": "Questo campo è facoltativo, ma consigliato per una verifica più rapida dell'account."
+            },
+            "input": {
+                "professional_gln": "GLN Professionale",
+                "company_gln": "GLN Aziendale",
+                "professional_gln_optional": "GLN Professionale (Facoltativo)",
+                "company_gln_optional": "GLN Aziendale (Facoltativo)"
+            },
+            "docs": {
+                "title": "Documenti di Verifica",
+                "facility_id": {
+                    "label": "1. Documento d'Identità della Persona Responsabile",
+                    "desc": "Carica la carta d'identità di una persona responsabile elencata nel registro."
+                },
+                "facility_bill": {
+                    "label": "2. Fattura / Documento Fiscale",
+                    "desc": "Carica una fattura recente o un documento fiscale per la verifica della struttura."
+                },
+                "select_id_type": "Seleziona Tipo ID",
+                "internal_ref": "Riferimento Interno / Numero Ordine (Facoltativo)",
+                "professional_id": "Documento d'Identità",
+                "select_doc_type": "Seleziona tipo documento",
+                "upload_id": "Carica Documento d'Identità",
+                "upload_bill": "Carica Fattura"
             },
             "errors": {
-                "roleRequired": "Seleziona un ruolo",
-                "companyAnswerRequired": "Rispondi alla domanda",
-                "companyRequired": "Seleziona un'azienda",
-                "searchFailed": "Ricerca aziende fallita",
-                "updateFailed": "Impossibile completare l'onboarding"
+                "service_high_demand": "Alta Richiesta di Servizio",
+                "wait_message": "Attendi {{seconds}} secondi prima di riprovare",
+                "can_try_again": "Puoi riprovare ora.",
+                "verification_failed": "Verifica Fallita",
+                "review_inputs": "Controlla i tuoi inserimenti. Se ritieni che si tratti di un errore, contatta il nostro supporto urgente qui sotto.",
+                "contact_support": "Contatta Supporto Urgente",
+                "report_issue": "Segnala Problema via Email",
+                "describe_issue": "Descrivi il problema che stai riscontrando..."
             },
-            "employedByCompany": "Sei attualmente impiegato da un'azienda?",
-            "employedByCompanyDesc": "Attiva se lavori per un'organizzazione",
-            "joinTeam": "Unisciti a un team",
-            "joinTeamDesc": "Attiva per trovare e unirti al tuo posto di lavoro",
-            "legalConsiderations": {
-                "title": "Importanti Considerazioni Legali",
-                "intro": "Per i dipendenti che lavorano al 100% (di solito 40-42 ore/settimana), è quasi impossibile accettare turni extra in un'altra farmacia legalmente.",
-                "hoursCap": {
-                    "title": "1. Limite Massimo Ore Settimanali",
-                    "content": "La Legge sul Lavoro Svizzera fissa un massimo rigoroso di 50 ore settimanali (45 ore in alcuni contesti retail). Un dipendente al 100% lavora tipicamente 42 ore, lasciando solo 8 ore massimo. Un turno del sabato completo (9 ore) violerebbe la legge. Entrambi i datori di lavoro sono responsabili se sanno dell'altro lavoro."
-                },
-                "dutyOfLoyalty": {
-                    "title": "2. Dovere di Lealtà",
-                    "content": "Secondo il Codice delle Obbligazioni (Art. 321a), devi ottenere il permesso scritto dal tuo datore di lavoro principale per lavorare per un concorrente. La maggior parte dei titolari di farmacia non concederà questo permesso poiché si aspettano che il personale riposi ed sia fresco per lunedì."
-                },
-                "dailyRest": {
-                    "title": "3. Regola del Riposo Giornaliero",
-                    "content": "La legge richiede 11 ore consecutive di riposo tra i turni (può essere ridotto a 8 ore una volta alla settimana). Esempio: finire alle 18:30 e iniziare un turno serale fino alle 23:00, poi tornare alle 08:00 il giorno dopo dà solo 9 ore di riposo (illegale)."
-                },
-                "holidays": {
-                    "title": "4. Lavorare Durante le Ferie",
-                    "content": "Le ferie sono legalmente designate per il recupero (Erholungszweck). Lavorare per soldi durante le ferie pagate può comportare il rifiuto del datore di lavoro di pagare lo stipendio delle ferie o anche il licenziamento per violazione del contratto."
-                },
-                "confirm": "Comprendo e riconosco queste considerazioni legali"
+            "success": {
+                "verified_title": "Account Verificato con Successo!",
+                "professional_redirect": "Il tuo profilo professionale è ora attivo. Reindirizzamento per completare la configurazione del profilo...",
+                "facility_redirect": "Il tuo profilo struttura è ora attivo. Reindirizzamento per completare la configurazione del profilo..."
             },
-            "generalWorkingLaws": {
-                "title": "Importanti Considerazioni Legali",
-                "warning": "Si prega di essere consapevoli delle leggi e dei regolamenti generali sul lavoro che si applicano a tutti i lavoratori. La Legge sul Lavoro Svizzera fissa un massimo rigoroso di 50 ore settimanali (45 ore in alcuni contesti retail). La legge richiede 11 ore consecutive di riposo tra i turni (può essere ridotto a 8 ore una volta alla settimana). Le ferie e i periodi di riposo sono legalmente designate per il recupero (Erholungszweck). Si prega di assicurarsi di rispettare tutti i requisiti applicabili della legge sul lavoro riguardanti gli orari di lavoro massimi, i periodi di riposo e altre regolamentazioni.",
-                "confirm": "Comprendo e riconosco queste considerazioni legali"
+            "phone": {
+                "title": "Verifica Mobile",
+                "subtitle": "Inserisci il tuo numero di telefono per ricevere un codice identità sicuro.",
+                "secured_code": "Codice Sicuro",
+                "sent_text": "Abbiamo inviato un codice di verifica a {{prefix}} {{number}}.",
+                "verified_title": "Telefono Verificato",
+                "verified_text": "Il tuo numero di telefono {{prefix}} {{number}} è stato verificato con successo.",
+                "verification_complete": "Verifica Completata",
+                "verify_continue": "Verifica e continua",
+                "verifying": "Verifica in corso...",
+                "resend": "Invia di nuovo codice",
+                "resend_wait": "Reinvia in {{seconds}}s",
+                "change_number": "Cambia numero",
+                "verification_code_label": "Codice di Verifica",
+                "sending": "Invio..."
             },
-            "separateWorkerGLM": {
-                "title": "Lavoratore Separato con GLM",
-                "description": "Hai un GLM (manager) ma nessun GLN. La tua impostazione GLM verrà salvata nel tuo profilo.",
-                "saveButton": "Salva Impostazione GLM",
-                "saving": "Salvataggio...",
-                "complete": "Impostazione GLM Salvata!",
-                "completeMessage": "La tua impostazione GLM è stata salvata nel tuo profilo. Puoi gestire questa impostazione nelle impostazioni del profilo.",
-                "hasGLMNoGLN": "Ho un GLM e Lavoratore senza GLN",
-                "hasGLMNoGLNDesc": "Attiva se hai un manager (GLM) ma non hai il tuo GLN"
-            },
-            "exitOnboarding": "Esci dall'Onboarding"
+            "buttons": {
+                "back": "Indietro",
+                "nextStep": "Prossimo Passo",
+                "sendCode": "Invia Codice",
+                "validate": "Valida",
+                "contactAndFinish": "Contatta e Termina",
+                "verifying": "Verifica in corso...",
+                "completeAccount": "Completa Account",
+                "verify_account": "Verifica Account"
+            }
         }
     },
     "userMenu": {

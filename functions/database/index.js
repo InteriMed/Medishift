@@ -6,8 +6,8 @@ const admin = require('firebase-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 
 // Reference to Firestore database
-// Explicitly use 'medishift' database to avoid default DB issues
-const db = getFirestore('medishift');
+// Use default database
+const db = getFirestore();
 
 /**
  * Creates a user profile document when a new user is created
@@ -422,7 +422,7 @@ exports.updateUserProfile = onCallV2(
 // Handle contract creation and notifications
 const onContractCreate = onDocumentCreated({
   document: 'contracts/{contractId}',
-  database: 'medishift',
+  database: '(default)',
   region: 'europe-west6'
 }, async (event) => {
   const contract = event.data.data();
@@ -457,7 +457,7 @@ const onContractCreate = onDocumentCreated({
 // Handle position status updates - CRITICAL: Auto-create conversation when status changes to 'interview'
 const onPositionUpdate = onDocumentUpdated({
   document: 'positions/{positionId}',
-  database: 'medishift',
+  database: '(default)',
   region: 'europe-west6'
 }, async (event) => {
   const before = event.data.before.data();
@@ -600,7 +600,7 @@ const onPositionUpdate = onDocumentUpdated({
 // Handle contract status updates
 const onContractUpdate = onDocumentUpdated({
   document: 'contracts/{contractId}',
-  database: 'medishift',
+  database: '(default)',
   region: 'europe-west6'
 }, async (event) => {
   const before = event.data.before.data();

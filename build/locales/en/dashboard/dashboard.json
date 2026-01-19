@@ -1,0 +1,56 @@
+{
+    "dashboard": {
+        "sidebar": {
+            "overview": "Overview",
+            "profile": "Profile",
+            "contracts": "Contracts",
+            "messages": "Messages",
+            "calendar": "Calendar",
+            "marketplace": "Marketplace",
+            "settings": "Settings",
+            "incompleteProfile": "Your profile is incomplete",
+            "completeProfileFirst": "Please complete your profile first"
+        },
+        "header": {
+            "profile": {
+                "title": "Profile"
+            },
+            "search": "Search...",
+            "createBusiness": "Create a business",
+            "createBusinessDesc": "Set up your facility profile",
+            "createProfessional": "Create Professional Profile",
+            "createProfessionalDesc": "Switch to personal account",
+            "resetProfile": "Reset Profile",
+            "resetProfileTitle": "Reset Profile",
+            "resetProfileMessage": "Are you sure you want to reset your profile? This will remove all your data and set your account back to the initial onboarding state. This action cannot be undone.",
+            "resetConfirm": "Reset Profile",
+            "profileResetSuccess": "Profile reset successfully",
+            "profileResetError": "Failed to reset profile"
+        },
+        "loading": "Loading dashboard data...",
+        "error": "Error loading dashboard data",
+        "completeProfile": {
+            "completeProfileTitle": "Complete Your Profile",
+            "completeProfileDescription": "Welcome to InteriMed! To access all features of the platform, please complete your profile first.",
+            "completeProfileButton": "I understand, create my profile"
+        },
+        "overview": {
+            "title": "Welcome to InteriMed!",
+            "welcome": "Hello",
+            "welcomeTitle": "Welcome to InteriMed!",
+            "totalContracts": "Total Contracts",
+            "activeHours": "Active Hours",
+            "earnings": "Earnings",
+            "upcomingJobs": "Upcoming Jobs",
+            "recentActivity": "Recent Activity",
+            "noRecentActivity": "No recent activity to display"
+        }
+    },
+    "userMenu": {
+        "profile": "My Profile",
+        "settings": "Settings",
+        "language": "Language",
+        "logout": "Log Out",
+        "user": "User"
+    }
+}

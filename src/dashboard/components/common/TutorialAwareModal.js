@@ -113,7 +113,7 @@ const TutorialAwareModal = ({
         </div>
 
         {/* Body */}
-        <div className="modal-body">
+        <div className="modal-body custom-scrollbar">
           {children}
         </div>
 
@@ -125,7 +125,7 @@ const TutorialAwareModal = ({
             <>
               <button
                 onClick={handleClose}
-                className="btn-cancel"
+                className="modal-btn modal-btn-secondary"
                 type="button"
               >
                 {cancelButtonText}
@@ -133,7 +133,7 @@ const TutorialAwareModal = ({
               {onSave && (
                 <button
                   onClick={handleSave}
-                  className="btn-save"
+                  className="modal-btn modal-btn-primary"
                   type="button"
                   disabled={disableSave}
                 >
@@ -146,200 +146,13 @@ const TutorialAwareModal = ({
 
         {/* Debug info in development */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="modal-debug">
-            <small>
-              Tutorial paused: {isPaused ? 'Yes' : 'No'} |
-              Resume on save: {resumeOnSave ? 'Yes' : 'No'} |
-              Resume on close: {resumeOnClose ? 'Yes' : 'No'}
-            </small>
+          <div className="modal-debug p-2 bg-yellow-100/50 text-[10px] text-muted-foreground border-t border-border">
+            Tutorial paused: {isPaused ? 'Yes' : 'No'} |
+            Resume on save: {resumeOnSave ? 'Yes' : 'No'} |
+            Resume on close: {resumeOnClose ? 'Yes' : 'No'}
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(4px);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: var(--z-index-popup, 11000);
-          padding: 20px;
-          animation: fadeIn 0.2s ease-out;
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        .modal-content {
-          background: var(--background, #fff);
-          border-radius: 12px;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-          display: flex;
-          flex-direction: column;
-          max-height: 90vh;
-          animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-          from {
-            transform: translateY(20px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-
-        .modal-small {
-          width: 100%;
-          max-width: 400px;
-        }
-
-        .modal-medium {
-          width: 100%;
-          max-width: 600px;
-        }
-
-        .modal-large {
-          width: 100%;
-          max-width: 900px;
-        }
-
-        .modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px 24px;
-          border-bottom: 1px solid var(--border-color, #e5e7eb);
-        }
-
-        .modal-title {
-          margin: 0;
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: var(--text-primary, #111);
-        }
-
-        .modal-close-btn {
-          background: none;
-          border: none;
-          font-size: 20px;
-          cursor: pointer;
-          padding: 4px;
-          color: var(--text-muted, #6b7280);
-          transition: color 0.2s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .modal-close-btn:hover {
-          color: var(--text-primary, #111);
-        }
-
-        .modal-body {
-          padding: 24px;
-          overflow-y: auto;
-          flex: 1;
-        }
-
-        .modal-footer {
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-          padding: 20px 24px;
-          border-top: 1px solid var(--border-color, #e5e7eb);
-        }
-
-        .btn-cancel {
-          padding: 10px 20px;
-          background: var(--background-secondary, #f3f4f6);
-          border: 1px solid var(--border-color, #e5e7eb);
-          border-radius: 6px;
-          cursor: pointer;
-          font-weight: 500;
-          color: var(--text-primary, #111);
-          transition: all 0.2s;
-        }
-
-        .btn-cancel:hover {
-          background: var(--background-secondary-hover, #e5e7eb);
-        }
-
-        .btn-save {
-          padding: 10px 20px;
-          background: var(--primary-color, #3b82f6);
-          color: white;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-weight: 500;
-          transition: all 0.2s;
-        }
-
-        .btn-save:hover:not(:disabled) {
-          opacity: 0.9;
-          transform: translateY(-1px);
-        }
-
-        .btn-save:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .modal-debug {
-          padding: 10px 24px;
-          background: var(--background-debug, #fef3c7);
-          border-top: 1px solid var(--border-color, #e5e7eb);
-          font-family: 'Courier New', monospace;
-          font-size: 11px;
-          color: var(--text-muted, #6b7280);
-        }
-
-        @media (max-width: 640px) {
-          .modal-overlay {
-            padding: 10px;
-          }
-
-          .modal-content {
-            max-height: 95vh;
-          }
-
-          .modal-small,
-          .modal-medium,
-          .modal-large {
-            max-width: 100%;
-          }
-
-          .modal-header,
-          .modal-body,
-          .modal-footer {
-            padding: 16px;
-          }
-
-          .modal-footer {
-            flex-direction: column-reverse;
-          }
-
-          .btn-cancel,
-          .btn-save {
-            width: 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 };

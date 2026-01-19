@@ -1,5 +1,5 @@
 const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, getDocs, doc, setDoc, getDoc, terminate } = require('firebase/firestore');
+const { getFirestore, collection, getDocs, doc, setDoc, getDoc, terminate, initializeFirestore } = require('firebase/firestore');
 
 const firebaseConfig = {
     apiKey: "AIzaSyBKMnh477m8ZDmk7WhQZKPzb3VDe3PktDs",
@@ -16,8 +16,8 @@ async function runTest() {
     console.log('Initializing Firebase with Project ID:', firebaseConfig.projectId);
 
     const app = initializeApp(firebaseConfig);
-    // Specify the database ID 'medishift' as found in firebase.json
-    const db = getFirestore(app, 'medishift');
+    // Initialize Firestore with specific database ID
+    const db = initializeFirestore(app, {}, 'medishift');
 
     try {
         console.log('\n1. Testing Write Access...');

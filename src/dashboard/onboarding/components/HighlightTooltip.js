@@ -16,7 +16,14 @@ const HighlightTooltip = ({
   completeTutorial
 }) => {
   const location = useLocation();
-  const { skipTutorial, elementPosition, pauseTutorial, isWaitingForSave, setWaitingForSave } = useTutorial();
+  const {
+    skipTutorial,
+    elementPosition,
+    pauseTutorial,
+    isWaitingForSave,
+    setWaitingForSave,
+    completedTutorials
+  } = useTutorial();
   const { userProfile } = useDashboard();
   const stepIndex = tutorialStep || 0;
   const featureKey = tutorialFeature || 'dashboard';
@@ -381,7 +388,7 @@ const HighlightTooltip = ({
           style={{
             ...tooltipContent.position,
             position: 'fixed',
-            zIndex: 3500,
+            zIndex: 11000,
             pointerEvents: 'auto',
             maxWidth: window.innerWidth < 768 ? 'calc(100vw - 20px)' : '420px',
             width: window.innerWidth < 768 ? 'calc(100vw - 20px)' : 'auto',
@@ -412,6 +419,29 @@ const HighlightTooltip = ({
                 transform: translateY(0) scale(1);
               }
             }
+            @media (max-width: 768px) {
+              [data-tooltip-buttons] {
+                gap: 0 !important;
+                overflow: hidden;
+                min-width: 0;
+                width: 100%;
+              }
+              [data-tooltip-buttons] .button {
+                flex: 0 1 auto !important;
+                width: auto !important;
+                min-width: 0 !important;
+                max-width: 48% !important;
+                padding: 6px 8px !important;
+                font-size: 11px !important;
+                white-space: nowrap !important;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                box-sizing: border-box;
+              }
+              [data-tooltip-buttons] .button svg {
+                display: none !important;
+              }
+            }
           `}</style>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
             <div style={{ flex: 1, position: 'relative' }}>
@@ -433,22 +463,25 @@ const HighlightTooltip = ({
                 color: 'var(--color-logo-2)'
               }}>{tooltipContent.title}</h3>
             </div>
-            <button
-              onClick={skipTutorial}
-              disabled={isProcessingClick}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Close tutorial"
-              style={{
-                marginLeft: '10px',
-                flexShrink: 0,
-                transform: 'scale(1)',
-                transition: 'all 0.2s var(--ease-smooth)'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; }}
-            >
-              <FiX className="w-5 h-5" />
-            </button>
+            {/* Close button - hidden on profile if profile section is not complete */}
+            {(completedTutorials?.profileTabs || !location.pathname.includes('/profile')) && (
+              <button
+                onClick={skipTutorial}
+                disabled={isProcessingClick}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Close tutorial"
+                style={{
+                  marginLeft: '10px',
+                  flexShrink: 0,
+                  transform: 'scale(1)',
+                  transition: 'all 0.2s var(--ease-smooth)'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; }}
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            )}
           </div>
           <p style={{
             lineHeight: '1.6',
@@ -462,7 +495,16 @@ const HighlightTooltip = ({
               zIndex: 3600
             }}
           >
-            <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' }}>
+            <div
+              data-tooltip-buttons
+              style={{
+                display: 'flex',
+                marginTop: '24px',
+                justifyContent: 'flex-end',
+                flexWrap: 'nowrap',
+                gap: '0'
+              }}
+            >
               {currentStepData?.customButtons ? (
                 <>
                   {currentStepData.customButtons.map((button, index) => (
@@ -471,6 +513,13 @@ const HighlightTooltip = ({
                       variant={button.variant || 'primary'}
                       onClick={(e) => handleCustomButtonClick(button.action, e)}
                       disabled={isProcessingClick}
+                      style={{
+                        flexShrink: 0,
+                        width: 'auto',
+                        minWidth: 'fit-content',
+                        maxWidth: 'none',
+                        whiteSpace: 'nowrap'
+                      }}
                     >
                       {button.text}
                     </Button>
@@ -483,6 +532,13 @@ const HighlightTooltip = ({
                       variant="secondary"
                       onClick={handlePrevClick}
                       disabled={isProcessingClick}
+                      style={{
+                        flexShrink: 0,
+                        width: 'auto',
+                        minWidth: 'fit-content',
+                        maxWidth: 'none',
+                        whiteSpace: 'nowrap'
+                      }}
                     >
                       Previous
                     </Button>
@@ -494,6 +550,13 @@ const HighlightTooltip = ({
                       variant="primary"
                       onClick={handleNextClick}
                       disabled={isProcessingClick}
+                      style={{
+                        flexShrink: 0,
+                        width: 'auto',
+                        minWidth: 'fit-content',
+                        maxWidth: 'none',
+                        whiteSpace: 'nowrap'
+                      }}
                     >
                       {currentStepData.actionButton.text || 'Continue'}
                     </Button>
@@ -502,6 +565,13 @@ const HighlightTooltip = ({
                       variant="primary"
                       onClick={handleNextClick}
                       disabled={isProcessingClick}
+                      style={{
+                        flexShrink: 0,
+                        width: 'auto',
+                        minWidth: 'fit-content',
+                        maxWidth: 'none',
+                        whiteSpace: 'nowrap'
+                      }}
                     >
                       {isLastStep ? 'Finish' : 'Next'}
                     </Button>

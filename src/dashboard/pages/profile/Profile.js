@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { get, set, cloneDeep, isEqual } from 'lodash';
-import { FiUpload, FiFileText, FiZap } from 'react-icons/fi';
+import { FiUpload, FiFileText, FiZap, FiCheckCircle } from 'react-icons/fi';
 
 import { useAuth } from '../../../contexts/AuthContext';
 import { useNotification } from '../../../contexts/NotificationContext';
@@ -19,25 +19,19 @@ import UploadFile from '../../../components/BoxedInputFields/UploadFile';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import ProfileHeader from './components/ProfileHeader'; // Is now our Sidebar
 import { uploadFile } from '../../../services/storageService';
-import { processDocumentWithAI, mergeExtractedData, getCachedExtractedData } from '../../../services/documentProcessingService';
+import { processDocumentWithAI, mergeExtractedData, getCachedExtractedData, saveCachedExtractedData } from '../../../services/documentProcessingService';
+import { useDropdownOptions } from './utils/DropdownListsImports';
 import { mergeOnboardingDocuments } from '../../utils/mergeOnboardingDocuments';
 import { getAllMockData, getMockDataForTab } from './utils/mockProfileData';
-
-// --- Professional Profile Section Components ---
 import PersonalDetails from './professionals/components/PersonalDetails';
 import ProfessionalBackground from './professionals/components/ProfessionalBackground';
 import BillingInformation from './professionals/components/BillingInformation';
 import ProfessionalDocumentUploads from './professionals/components/DocumentUploads';
 import ProfessionalSettings from './professionals/components/Settings';
-
-// --- Facility Profile Section Components ---
 import FacilityDetails from './facilities/components/FacilityDetails';
 import FacilityDocumentUploads from './facilities/components/DocumentUploads';
 import FacilitySettings from './facilities/components/Settings';
-
 import { cn } from '../../../utils/cn';
-
-// --- Helper Functions ---
 export const calculateProfileCompleteness = (data, config) => {
     if (!data || !config?.tabs) return 0;
     const TABS_FOR_COMPLETENESS = config.tabs.map(t => t.id);
@@ -65,11 +59,38 @@ export const isTabCompleted = (profileData, tabId, config) => {
     else if (typeof fieldsOrRules === 'object') {
         let isComplete = true;
         Object.entries(fieldsOrRules).forEach(([key, rules]) => {
-            if (rules.required && rules.minItems > 0) {
-                const list = get(profileData, key);
+            const list = get(profileData, `professionalDetails.${key}`) || get(profileData, key);
+
+            // Check for minimum items (if minItems > 0, we consider it mandatory)
+            if (rules.minItems > 0) {
                 if (!Array.isArray(list) || list.length < rules.minItems) {
                     isComplete = false;
                 }
+            }
+
+            // Always validate items if they exist, regardless of section requirement
+            if (Array.isArray(list) && list.length > 0) {
+                const itemSchemaRef = rules.itemSchemaRef;
+                const itemSchema = config?.itemSchemas?.[itemSchemaRef] || [];
+                list.forEach((item) => {
+                    itemSchema.forEach((fieldRule) => {
+                        const { name, required, dependsOn, dependsOnValue, dependsOnValueExclude } = fieldRule;
+                        let isActuallyRequired = required;
+                        if (dependsOn) {
+                            const dependentValue = get(item, dependsOn);
+                            let conditionMet = true;
+                            if (dependsOnValue && !dependsOnValue.includes(dependentValue)) conditionMet = false;
+                            if (dependsOnValueExclude && dependsOnValueExclude.includes(dependentValue)) conditionMet = false;
+                            if (!conditionMet) isActuallyRequired = false;
+                        }
+                        if (isActuallyRequired) {
+                            const value = get(item, name);
+                            if (value === null || value === undefined || String(value).trim() === '') {
+                                isComplete = false;
+                            }
+                        }
+                    });
+                });
             }
         });
         return isComplete;
@@ -99,6 +120,7 @@ const Profile = () => {
     const { setProfileCompletionStatus } = useDashboard();
     const isMobile = useMobileView();
     const pageMobileContext = usePageMobile();
+    const dropdownOptions = useDropdownOptions();
 
     const {
         profileData: initialProfileData,
@@ -133,6 +155,9 @@ const Profile = () => {
     const [extractedData, setExtractedData] = useState(null);
     const [showAnalysisConfirmation, setShowAnalysisConfirmation] = useState(false);
     const [cachedData, setCachedData] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [documentTypeError, setDocumentTypeError] = useState(null);
+    const [fileUploadError, setFileUploadError] = useState(null);
 
     // Load cached extracted data on mount
     useEffect(() => {
@@ -160,13 +185,9 @@ const Profile = () => {
     }, [formData]);
 
     // --- Initialization ---
-    useEffect(() => {
-        if (currentUser && !initialProfileData && !isLoadingData && !profileError) {
-            initializeProfileDocument().then(success => {
-                if (success) refreshProfileData();
-            });
-        }
-    }, [currentUser, initialProfileData, isLoadingData, profileError, initializeProfileDocument, refreshProfileData]);
+    // Automatic profile initialization removed to support delayed creation logic
+    // The profile document will be created only when the user explicitly saves data
+
 
     // Handle profile tutorial start - only when user navigates here during main tutorial
     const { tutorialPassed, startTutorial, activeTutorial, completedTutorials, isTutorialActive, stepData, currentStep, isWaitingForSave, onTabCompleted } = useTutorial();
@@ -242,6 +263,21 @@ const Profile = () => {
             loadConfig();
         }
     }, [initialProfileData, t, showNotification]);
+
+    // Initial Validation on Load
+    const initialValidationRun = useRef(false);
+    useEffect(() => {
+        if (!isLoadingConfig && !isLoadingData && profileConfig && formData && activeTab && !initialValidationRun.current) {
+            // Call validation on next tick to ensure all functions are initialized
+            setTimeout(() => {
+                if (typeof validateCurrentTabData === 'function') {
+                    validateCurrentTabData();
+                    initialValidationRun.current = true;
+                }
+            }, 0);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoadingConfig, isLoadingData, profileConfig, formData, activeTab]);
 
     useEffect(() => {
         const fetchSubscriptionStatus = () => {
@@ -341,12 +377,17 @@ const Profile = () => {
             const docType = document.type || (isProfessional ? 'cv' : 'businessDocument');
             const mimeType = document.mimeType || document.fileType || 'application/pdf'; // Default to PDF if unknown
 
-            const result = await processDocumentWithAI(document.storageUrl, docType, document.storagePath, mimeType);
+            const result = await processDocumentWithAI(document.storageUrl, docType, document.storagePath, mimeType, dropdownOptions);
 
             if (result.success && result.data) {
                 setExtractedData(result.data);
                 setCachedData(result.data);
                 setShowAnalysisConfirmation(true);
+
+                // Save to persistent storage (Firestore + localStorage)
+                if (currentUser?.uid) {
+                    saveCachedExtractedData(currentUser.uid, result.data);
+                }
             } else {
                 throw new Error('Analysis failed or returned no data');
             }
@@ -361,23 +402,49 @@ const Profile = () => {
     const handleCloseAutoFillDialog = useCallback(() => {
         setShowAutoFillDialog(false);
         setSelectedDocumentType(null);
+        setSelectedFile(null);
+        setDocumentTypeError(null);
+        setFileUploadError(null);
     }, []);
 
     const handleFileUpload = useCallback(async (files) => {
-        if (!files || files.length === 0 || !currentUser) return;
-
-        if (!selectedDocumentType) {
-            showNotification(t('dashboardProfile:documents.selectDocumentTypeFirst', 'Please select a document type first'), 'warning');
+        if (!files || files.length === 0 || !currentUser) {
+            setSelectedFile(null);
             return;
         }
 
         const file = files[0];
+        setSelectedFile(file);
+        setFileUploadError(null);
+    }, [currentUser]);
+
+    const handleAutoFillProcess = useCallback(async () => {
+        let hasError = false;
+
+        if (!selectedFile || !currentUser) {
+            setFileUploadError(t('dashboardProfile:documents.selectFileFirst', 'Please select a file to upload'));
+            hasError = true;
+        } else {
+            setFileUploadError(null);
+        }
+
+        if (!selectedDocumentType) {
+            setDocumentTypeError(t('dashboardProfile:documents.selectDocumentTypeFirst', 'Please select a document type first'));
+            hasError = true;
+        } else {
+            setDocumentTypeError(null);
+        }
+
+        if (hasError) {
+            return;
+        }
         setIsUploading(true);
         setUploadProgress(0);
 
         try {
             const userId = currentUser.uid;
             const docType = selectedDocumentType;
+            const file = selectedFile;
             const timestamp = Date.now();
             const fileExtension = file.name.split('.').pop();
             const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
@@ -455,13 +522,15 @@ const Profile = () => {
 
             setIsUploading(false);
             setUploadProgress(0);
+            setSelectedFile(null);
         } catch (error) {
             console.error('[Profile] Error uploading file:', error);
             setIsUploading(false);
             setUploadProgress(0);
+            setFileUploadError(t('dashboardProfile:documents.uploadError', 'Error uploading document'));
             showNotification(t('dashboardProfile:documents.uploadError', 'Error uploading document'), 'error');
         }
-    }, [currentUser, isProfessional, formData, profileConfig, selectedDocumentType, showNotification, t, updateProfileData, processAndFillProfile, handleCloseAutoFillDialog, getNestedValue]); // eslint-disable-line no-use-before-define
+    }, [currentUser, isProfessional, formData, profileConfig, selectedDocumentType, selectedFile, showNotification, t, updateProfileData, processAndFillProfile, handleCloseAutoFillDialog, getNestedValue]);
 
     const handleUploadButtonClick = useCallback(() => {
         if (uploadInputRef.current) {
@@ -469,14 +538,10 @@ const Profile = () => {
         }
     }, []);
 
-    const isTutorialStep1 = isTutorialActive && activeTutorial === 'profileTabs' && currentStep === 0;
-    const isAutoFillDisabled = isTutorialStep1 && !isWaitingForSave;
-
     const handleAutoFillClick = useCallback(() => {
-        if (isAutoFillDisabled) return;
         setSelectedDocumentType(null);
         setShowAutoFillDialog(true);
-    }, [isAutoFillDisabled]);
+    }, []);
 
     const handleCloseDocumentsView = useCallback(() => {
         setShowDocumentsView(false);
@@ -495,8 +560,10 @@ const Profile = () => {
             setIsSubmitting(true);
 
             const updatedFormData = mergeExtractedData(formData, extractedData);
-
             setFormData(updatedFormData);
+
+            // Run validation immediately on the new data to show errors if any
+            validateCurrentTabData(updatedFormData);
 
             await updateProfileData(updatedFormData);
 
@@ -584,9 +651,11 @@ const Profile = () => {
     }, [cachedData, handleCloseAutoFillDialog]);
 
     // --- Validation & Saving ---
-    const validateCurrentTabData = useCallback(() => {
-        if (!profileConfig || !formData) return false;
-        const currentTabId = activeTab;
+    const validateCurrentTabData = useCallback((dataToValidate = null, tabId = null) => {
+        const data = dataToValidate || formData;
+        const currentTabId = tabId || activeTab;
+
+        if (!profileConfig || !data) return false;
         const fieldsOrRules = profileConfig.fields[currentTabId];
         let isValid = true;
         const newErrors = {};
@@ -597,15 +666,14 @@ const Profile = () => {
             let shouldValidate = true;
 
             if (dependsOn) {
-                const dependentValue = get(formData, dependsOn);
+                const dependentValue = get(data, dependsOn);
                 let conditionMet = true;
                 if (dependsOnValue && !dependsOnValue.includes(dependentValue)) conditionMet = false;
                 if (dependsOnValueExclude && dependsOnValueExclude.includes(dependentValue)) conditionMet = false;
                 if (!conditionMet) { isActuallyRequired = false; shouldValidate = false; }
             }
 
-            const value = get(formData, name);
-            // Strict check for required fields including whitespace-only strings
+            const value = get(data, name);
             if (isActuallyRequired && (value === null || value === undefined || String(value).trim() === '')) {
                 isValid = false;
                 set(newErrors, name, t('validation:required'));
@@ -632,12 +700,55 @@ const Profile = () => {
             fieldsOrRules.forEach(checkField);
         } else if (typeof fieldsOrRules === 'object') {
             Object.entries(fieldsOrRules).forEach(([key, rules]) => {
-                if (rules.required && rules.minItems > 0) {
-                    const list = get(formData, key);
+                const list = get(data, `professionalDetails.${key}`) || get(data, key);
+
+                // 1. Mandatory requirement check (min items)
+                if (rules.minItems > 0) {
                     if (!Array.isArray(list) || list.length < rules.minItems) {
                         isValid = false;
                         set(newErrors, key, t('validation:minItemsRequired', { count: rules.minItems }));
                     }
+                }
+
+                // 2. Item-level validation (if there are items, they must be valid)
+                if (Array.isArray(list) && list.length > 0) {
+                    const itemSchemaRef = rules.itemSchemaRef;
+                    const itemSchema = profileConfig?.itemSchemas?.[itemSchemaRef] || [];
+                    list.forEach((item, itemIndex) => {
+                        itemSchema.forEach((fieldRule) => {
+                            const { name, required, dependsOn, dependsOnValue, dependsOnValueExclude, validationRules } = fieldRule;
+                            let isActuallyRequired = required;
+                            let shouldValidate = true;
+                            if (dependsOn) {
+                                const dependentValue = get(item, dependsOn);
+                                let conditionMet = true;
+                                if (dependsOnValue && !dependsOnValue.includes(dependentValue)) conditionMet = false;
+                                if (dependsOnValueExclude && dependsOnValueExclude.includes(dependentValue)) conditionMet = false;
+                                if (!conditionMet) { isActuallyRequired = false; shouldValidate = false; }
+                            }
+                            const fieldPath = `professionalDetails.${key}.${itemIndex}.${name}`;
+                            const value = get(item, name);
+                            if (isActuallyRequired && (value === null || value === undefined || String(value).trim() === '')) {
+                                isValid = false;
+                                set(newErrors, fieldPath, t('validation:required'));
+                                shouldValidate = false;
+                            }
+                            if (shouldValidate && value && validationRules) {
+                                if (validationRules.minLength && String(value).length < validationRules.minLength) {
+                                    isValid = false;
+                                    set(newErrors, fieldPath, t('validation:minLength', { count: validationRules.minLength }));
+                                } else if (validationRules.pattern) {
+                                    try {
+                                        const regex = new RegExp(validationRules.pattern);
+                                        if (!regex.test(String(value))) {
+                                            isValid = false;
+                                            set(newErrors, fieldPath, t(validationRules.patternErrorKey || 'validation:invalidFormat'));
+                                        }
+                                    } catch (e) { }
+                                }
+                            }
+                        });
+                    });
                 }
             });
         }
@@ -698,6 +809,10 @@ const Profile = () => {
         await handleSave({ navigateToNextTab: true });
     }, [handleSave]);
 
+    const handleSaveOnly = useCallback(async () => {
+        await handleSave({ navigateToNextTab: false });
+    }, [handleSave]);
+
     useEffect(() => {
         const setPageMobileState = pageMobileContext?.setPageMobileState;
         if (!setPageMobileState || typeof setPageMobileState !== 'function') {
@@ -754,7 +869,7 @@ const Profile = () => {
 
     const currentTabComponent = () => {
         if (!profileConfig || !formData || !activeTab) return null;
-        const commonProps = { formData, config: profileConfig, errors, isSubmitting, onInputChange: handleInputChange, onArrayChange: handleArrayChange, onSaveAndContinue: handleSaveAndContinue, onCancel: handleCancelChanges, getNestedValue };
+        const commonProps = { formData, config: profileConfig, errors, isSubmitting, onInputChange: handleInputChange, onArrayChange: handleArrayChange, onSaveAndContinue: handleSaveAndContinue, onSave: handleSaveOnly, onCancel: handleCancelChanges, getNestedValue };
 
         // Determine if we should use facility components
         const isFacility = formData.role === 'facility' || formData.role === 'company';
@@ -827,16 +942,17 @@ const Profile = () => {
                         <div className="relative" ref={autoFillButtonRef}>
                             <button
                                 onClick={handleAutoFillClick}
-                                disabled={isUploading || isAnalyzing || isAutoFillDisabled}
+                                disabled={isUploading || isAnalyzing}
                                 className={cn(
                                     "h-9 px-4 flex items-center justify-center gap-2 rounded-lg border transition-all shrink-0",
-                                    "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                                    (isUploading || isAnalyzing || isAutoFillDisabled) && "opacity-50 cursor-not-allowed"
+                                    "bg-background border-border text-black hover:text-black hover:bg-muted/50",
+                                    (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
+                                    (isTutorialActive && stepData?.highlightUploadButton) && "tab-highlight"
                                 )}
                                 data-tutorial="profile-upload-button"
                             >
-                                {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4" />}
-                                <span className="text-sm font-medium">
+                                {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
+                                <span className="text-sm font-medium text-black">
                                     {isAnalyzing
                                         ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
                                         : t('dashboardProfile:documents.autofill', 'Auto Fill')
@@ -881,6 +997,7 @@ const Profile = () => {
                         <Button
                             variant="secondary"
                             onClick={handleCloseAutoFillDialog}
+                            disabled={isUploading}
                         >
                             {t('common.cancel')}
                         </Button>
@@ -888,10 +1005,19 @@ const Profile = () => {
                             <Button
                                 variant="primary"
                                 onClick={handleUseCachedData}
+                                disabled={isUploading}
                             >
                                 {t('personalDetails.useExistingData', 'Use Existing Data')}
                             </Button>
                         )}
+                        <Button
+                            variant="primary"
+                            onClick={handleAutoFillProcess}
+                            isLoading={isUploading}
+                            disabled={isUploading}
+                        >
+                            {t('dashboardProfile:documents.autofill', 'Auto Fill')}
+                        </Button>
                     </>
                 }
             >
@@ -921,8 +1047,12 @@ const Profile = () => {
                                 label={t('dashboardProfile:documents.selectDocumentType', 'Document Type')}
                                 options={documentTypeOptions}
                                 value={selectedDocumentType}
-                                onChange={setSelectedDocumentType}
+                                onChange={(value) => {
+                                    setSelectedDocumentType(value);
+                                    setDocumentTypeError(null);
+                                }}
                                 placeholder={t('dashboardProfile:documents.selectDocumentTypePlaceholder', 'Select document type...')}
+                                error={documentTypeError}
                             />
                         </div>
 
@@ -930,25 +1060,18 @@ const Profile = () => {
                             <label className="block text-sm font-medium mb-2" style={{ color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
                                 {t('personalDetails.upload', 'Upload')}
                             </label>
-                            <div className="relative">
-                                <UploadFile
-                                    onChange={handleFileUpload}
-                                    isLoading={isUploading}
-                                    progress={uploadProgress}
-                                    accept={selectedDocumentTypeConfig?.accept || '.pdf,.doc,.docx,.jpg,.png'}
-                                    label=""
-                                    documentName={t('dashboardProfile:documents.clickToUpload', 'click to upload')}
-                                    disabled={!selectedDocumentType}
-                                />
-                                {!isUploading && (
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                                        <FiUpload className="text-primary/50" size={24} />
-                                    </div>
-                                )}
-                            </div>
-                            {!selectedDocumentType && (
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    {t('dashboardProfile:documents.selectDocumentTypeFirst', 'Please select a document type first')}
+                            <UploadFile
+                                onChange={handleFileUpload}
+                                isLoading={isUploading}
+                                progress={uploadProgress}
+                                accept={selectedDocumentTypeConfig?.accept || '.pdf,.doc,.docx,.jpg,.png'}
+                                label=""
+                                documentName=""
+                                error={fileUploadError}
+                            />
+                            {selectedFile && (
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    {t('dashboardProfile:documents.selectedFile', 'Selected file:')} {selectedFile.name}
                                 </p>
                             )}
                         </div>
@@ -974,7 +1097,7 @@ const Profile = () => {
                             onClick={handleFillEmptyFields}
                             isLoading={isSubmitting}
                         >
-                            {t('dashboardProfile:documents.fillEmptyFields', 'Fill Empty Fields')}
+                            {t('dashboardProfile:documents.fillProfile', 'Fill Profile')}
                         </Button>
                     </>
                 }

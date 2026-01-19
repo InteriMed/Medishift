@@ -91,7 +91,11 @@ const UserCRM = () => {
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         if (accountType === 'professional') {
-          if (data.roles?.includes('professional')) {
+          // Check both role string and roles array for "professional"
+          const role = data.role?.toLowerCase();
+          const roles = (Array.isArray(data.roles) ? data.roles : []).map(r => r.toLowerCase());
+
+          if (role === 'professional' || roles.includes('professional') || data.isProfessionalProfileComplete) {
             usersList.push({
               id: docSnap.id,
               ...data
@@ -108,6 +112,10 @@ const UserCRM = () => {
       setUsers(usersList);
       setSelectedUser(null);
       setError(null);
+
+      if (usersList.length === 0) {
+        setError(`No ${accountType}s found in the database.`);
+      }
     } catch (error) {
       console.error('Error loading users:', error);
       if (error.code === 'permission-denied' || error.message?.includes('permissions')) {
@@ -441,7 +449,7 @@ const UserCRM = () => {
       await setDoc(doc(db, 'facilityProfiles', newFacilityId), facilityData);
       await updateDoc(doc(db, 'users', userId), {
         facilityMemberships: arrayUnion({ facilityId: newFacilityId, facilityName: newFacilityName, role: 'admin', facilityProfileId: newFacilityId }),
-        roles: arrayUnion('facility'),
+        roles: arrayUnion('facility', `facility_admin_${newFacilityId}`),
         updatedAt: serverTimestamp()
       });
       await loadUserDetails(userId);
@@ -470,7 +478,7 @@ const UserCRM = () => {
         const facilityData = facilitySnap.data();
         const employees = facilityData.employees || [];
         const admins = facilityData.admins || [];
-        
+
         const allUserIds = new Set();
         employees.forEach(emp => emp.uid && allUserIds.add(emp.uid));
         admins.forEach(adminId => adminId && allUserIds.add(adminId));
@@ -490,7 +498,7 @@ const UserCRM = () => {
             });
           }
         }
-        
+
         const usersRef = collection(db, 'users');
         const usersSnap = await getDocs(usersRef);
         for (const userDoc of usersSnap.docs) {
@@ -665,12 +673,23 @@ const UserCRM = () => {
           </div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
             {loading ? <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div> :
-              filteredUsers.map(user => (
-                <button key={user.id} onClick={() => loadUserDetails(user.id)} style={{ width: '100%', textAlign: 'left', padding: '12px', borderBottom: '1px solid var(--grey-2)', background: selectedUser?.id === user.id ? 'rgba(37, 99, 235, 0.05)' : 'transparent', borderLeft: selectedUser?.id === user.id ? '4px solid var(--primary-color)' : 'none', cursor: 'pointer' }}>
-                  <div style={{ fontWeight: 'bold' }}>{filters.accountType === 'professional' ? `${user.firstName} ${user.lastName}` : (user.facilityName || user.facilityDetails?.name || user.legalCompanyName || user.identityLegal?.legalCompanyName || 'Unnamed Facility')}</div>
-                  <div style={{ fontSize: '0.85em', color: 'gray' }}>{user.mainEmail || user.contactPoints?.generalEmail || user.email}</div>
-                </button>
-              ))}
+              error ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--red-4)' }}>
+                  <ShieldCheck size={40} style={{ margin: '0 auto 10px', display: 'block', opacity: 0.5 }} />
+                  {error}
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'gray' }}>
+                  <Search size={40} style={{ margin: '0 auto 10px', display: 'block', opacity: 0.5 }} />
+                  No users match your filters.
+                </div>
+              ) :
+                filteredUsers.map(user => (
+                  <button key={user.id} onClick={() => loadUserDetails(user.id)} style={{ width: '100%', textAlign: 'left', padding: '12px', borderBottom: '1px solid var(--grey-2)', background: selectedUser?.id === user.id ? 'rgba(37, 99, 235, 0.05)' : 'transparent', borderLeft: selectedUser?.id === user.id ? '4px solid var(--primary-color)' : 'none', cursor: 'pointer' }}>
+                    <div style={{ fontWeight: 'bold' }}>{filters.accountType === 'professional' ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.displayName || 'No Name' : (user.facilityName || user.facilityDetails?.name || user.legalCompanyName || user.identityLegal?.legalCompanyName || 'Unnamed Facility')}</div>
+                    <div style={{ fontSize: '0.85em', color: 'gray' }}>{user.mainEmail || user.contactPoints?.generalEmail || user.email}</div>
+                  </button>
+                ))}
           </div>
         </div>
 
@@ -1187,9 +1206,9 @@ const UserCRM = () => {
             <Button onClick={() => { setShowLeaveFacilityDialog(false); setFacilityActionConfirmText(''); }} variant="secondary" disabled={facilityActionProcessing}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleLeaveFacility} 
-              variant="warning" 
+            <Button
+              onClick={handleLeaveFacility}
+              variant="warning"
               disabled={facilityActionProcessing || (targetFacilityForAction?.employeeUid ? facilityActionConfirmText !== 'REMOVE EMPLOYEE' : facilityActionConfirmText !== 'LEAVE FACILITY')}
             >
               {facilityActionProcessing ? 'Processing...' : (targetFacilityForAction?.employeeUid ? 'Remove Employee' : 'Leave Facility')}

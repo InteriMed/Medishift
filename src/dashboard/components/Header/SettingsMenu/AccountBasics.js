@@ -194,25 +194,21 @@ const AccountBasics = ({
     }
   };
 
-  // Add this to fetch basic profile info
   const { profileData: headerData, isLoading: headerLoading } = useProfileData();
   
-  // Use headerData if available, otherwise use currentUser
   const displayProfile = headerLoading ? currentUser : (headerData || currentUser);
+  const profilePicture = displayProfile?.documents?.profile_picture || displayProfile?.profilePicture || currentUser?.photoURL;
   
-  // Handle profile picture upload
   const handleProfilePictureChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check file size (2MB limit)
     const fileSizeInMB = file.size / (1024 * 1024);
     if (fileSizeInMB > 2) {
       setPictureError(t('accountBasics.errors.fileTooLarge'));
       return;
     }
 
-    // Check file type
     if (!file.type.startsWith('image/')) {
       setPictureError(t('accountBasics.errors.invalidFileType'));
       return;
@@ -222,12 +218,11 @@ const AccountBasics = ({
     setPictureError('');
 
     try {
-      // Create a data URL for preview
       const reader = new FileReader();
       reader.onload = async (event) => {
-        // Upload the image to Firebase and retrieve the URL
         const photoURL = await uploadImageAndRetrieveURL(currentUser.uid, event.target.result);
-        onInputChange('profilePicture', photoURL); // Update the form data with the new profile picture
+        onInputChange('documents.profile_picture', photoURL);
+        onInputChange('profilePicture', photoURL);
         setIsUploadingPicture(false);
       };
       reader.readAsDataURL(file);
@@ -247,10 +242,10 @@ const AccountBasics = ({
           className={styles.profilePictureContainer}
           onClick={() => fileInputRef.current.click()}
         >
-          {displayProfile?.profilePicture ? (
+          {profilePicture ? (
             <div className={styles.profilePictureWrapper}>
               <img 
-                src={displayProfile.profilePicture} 
+                src={profilePicture} 
                 alt={`${displayProfile.firstName} ${displayProfile.lastName}`} 
                 className={styles.profilePicture}
               />
@@ -260,7 +255,7 @@ const AccountBasics = ({
             </div>
           ) : (
             <div className={styles.profileInitialsWrapper}>
-              <div className={styles.profileInitials}>
+              <div className={styles.profileInitials} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {displayProfile?.firstName?.[0] || ''}{displayProfile?.lastName?.[0] || ''}
               </div>
               <div className={styles.profilePictureOverlay}>

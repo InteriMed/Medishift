@@ -124,8 +124,8 @@ exports.processDocument = onCall(
     }
 
     const userId = request.auth.uid;
-    const { documentUrl, documentType, storagePath, mimeType } = request.data;
-    console.log(`${logPrefix} Request data:`, { documentUrl, documentType, storagePath, mimeType, userId });
+    const { documentUrl, documentType, storagePath, mimeType, dropdownOptions } = request.data;
+    console.log(`${logPrefix} Request data:`, { documentUrl, documentType, storagePath, mimeType, userId, hasDropdownOptions: !!dropdownOptions });
 
     // Rate limiting: 2 scans per minute
     try {
@@ -228,7 +228,7 @@ exports.processDocument = onCall(
 
       // Step 1: Use Gemini to extract data directly (pass file object for base64 fallback)
       console.log(`${logPrefix} calling extractStructuredDataWithGemini...`);
-      const extractionResult = await extractStructuredDataWithGemini(gsUri, effectiveMimeType, documentType, file);
+      const extractionResult = await extractStructuredDataWithGemini(gsUri, effectiveMimeType, documentType, file, dropdownOptions);
       console.log(`${logPrefix} extraction returned success`);
 
       console.log(`${logPrefix} Extracted data keys:`, Object.keys(extractionResult.parsedData || {}));
@@ -282,7 +282,7 @@ exports.processDocument = onCall(
  * @param {string} documentType - Type of document for prompt selection
  * @param {Object} file - Optional Firebase Storage file object for base64 fallback
  */
-async function extractStructuredDataWithGemini(gsUri, mimeType, documentType, file = null) {
+async function extractStructuredDataWithGemini(gsUri, mimeType, documentType, file = null, dropdownOptions = null) {
   // Updated to use standard aliases for better resolution in europe-west1
   const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash-lite', 'gemini-1.5-pro'];
   let lastError = null;
@@ -295,7 +295,7 @@ async function extractStructuredDataWithGemini(gsUri, mimeType, documentType, fi
         model: modelName
       });
 
-      const prompt = getExtractionPrompt(documentType);
+      const prompt = getExtractionPrompt(documentType, dropdownOptions);
 
       console.log(`[Gemini] Processing: gsUri=${gsUri}, mimeType=${mimeType}, documentType=${documentType}`);
 
@@ -510,12 +510,16 @@ function processGeminiResponse(response, prompt) {
   };
 }
 
-/**
- * Generate extraction prompt based on document type
- */
-function getExtractionPrompt(documentType) {
+function getExtractionPrompt(documentType, dropdownOptions = null) {
   const basePrompt = `You are a data extraction assistant. Extract information from the attached document and return it as a valid JSON object. Only include fields where you found actual data. Use null for missing data.
 `;
+
+  // Helper to format dropdown options for the prompt (max 10)
+  const formatOptions = (key) => {
+    if (!dropdownOptions || !dropdownOptions[key] || !Array.isArray(dropdownOptions[key])) return '';
+    const options = dropdownOptions[key].slice(0, 10);
+    return options.map(opt => `- "${opt.value}": ${opt.label}`).join('\n');
+  };
 
   if (documentType === 'cv' || documentType === 'resume') {
     return basePrompt + `Extract the following information for a healthcare professional's CV/Resume:
@@ -544,24 +548,26 @@ Return a JSON object with this structure:
   },
   "professionalBackground": {
     "professionalSummary": "string or null",
-    "studies": [
+    "education": [
       {
-        "degree": "string",
-        "institution": "string",
-        "year": "number or null",
-        "field": "string or null",
-        "startDate": "YYYY-MM-DD or null",
-        "endDate": "YYYY-MM-DD or null"
+        "degree": "string (MUST be one of the options below)",
+        "field": "string (REQUIRED - field of study)",
+        "institution": "string (REQUIRED - institution name)",
+        "startDate": "YYYY-MM-DD (REQUIRED - IMPORTANT: ensure this is extracted if present)",
+        "endDate": "YYYY-MM-DD (REQUIRED if currentlyStudying is false - IMPORTANT: ensure this is extracted if present)",
+        "currentlyStudying": false,
+        "gpa": "string or null",
+        "honors": "string or null"
       }
     ],
     "qualifications": [
       {
-        "type": "string or null",
-        "title": "string",
-        "institution": "string or null",
+        "type": "string (MUST be one of the options below)",
+        "title": "string (REQUIRED - qualification title)",
+        "institution": "string (REQUIRED - issuing organization)",
         "licenseNumber": "string or null",
-        "dateObtained": "YYYY-MM-DD or null",
-        "expiryDate": "YYYY-MM-DD or null",
+        "dateObtained": "YYYY-MM-DD (REQUIRED - IMPORTANT: ensure this is extracted if present)",
+        "expiryDate": "YYYY-MM-DD (REQUIRED if validForLife is false - IMPORTANT: ensure this is extracted if present)",
         "validForLife": false
       }
     ],
@@ -575,11 +581,11 @@ Return a JSON object with this structure:
     "specialties": ["string"],
     "workExperience": [
       {
-        "jobTitle": "string",
-        "employer": "string",
-        "location": "string or null",
-        "startDate": "YYYY-MM-DD or null",
-        "endDate": "YYYY-MM-DD or null",
+        "jobTitle": "string (REQUIRED)",
+        "employer": "string (REQUIRED)",
+        "location": "string (REQUIRED)",
+        "startDate": "YYYY-MM-DD (REQUIRED - IMPORTANT: ensure this is extracted if present)",
+        "endDate": "YYYY-MM-DD (REQUIRED if current is false - IMPORTANT: ensure this is extracted if present)",
         "current": false,
         "description": "string or null"
       }
@@ -600,25 +606,40 @@ Important:
 - Only include data you can confidently extract
 - Return valid JSON only, no additional text
 
-FIELD DEFINITIONS:
+FIELD DEFINITIONS AND DROPDOWN OPTIONS:
 
-1. **studies**: Academic education and formal degrees (e.g., Medical School, Bachelor's, Master's, PhD)
+**EDUCATION LEVEL OPTIONS (for "degree" field in education):**
+${formatOptions('educationLevels') || '- "high_school": High School Diploma\n- "vocational": Vocational Training\n- "bachelors": Bachelor\'s Degree\n- "masters": Master\'s Degree\n- "doctorate": Doctorate / PhD\n- "other": Other'}
+
+**QUALIFICATION TYPE OPTIONS (for "type" field in qualifications):**
+${formatOptions('qualificationTypes') || '- "license": Professional License\n- "certification": Professional Certification\n- "diploma": Diploma\n- "degree": Academic Degree\n- "training": Training Certificate\n- "membership": Professional Membership\n- "other": Other'}
+
+1. **education** (formerly "studies"): Academic education and formal degrees (e.g., Medical School, Bachelor's, Master's, PhD)
+   - REQUIRED FIELDS: degree (must match dropdown options above), field, institution, startDate
+   - REQUIRED IF NOT CURRENTLY STUDYING: endDate
+   - OPTIONAL: gpa, honors, currentlyStudying (set to true if still studying)
    - Include university degrees, medical school, residency programs
-   - Extract start/end dates if available
+   - Extract ALL dates in YYYY-MM-DD format
+   - For "degree" field, you MUST use one of the exact values from the dropdown options above
 
 2. **qualifications**: Professional certifications and credentials (NOT academic degrees)
    - Examples: Vaccination certificates (e.g., Hepatitis B, COVID-19), CAS certificates, board certifications, professional licenses, CPR certifications, ACLS, BLS
-   - REQUIRED: "title" field must contain the qualification name (e.g., "Hepatitis B Vaccination", "CPR Certification", "Board Certification in Cardiology")
-   - OPTIONAL: "type" field should indicate qualification category if identifiable (e.g., "Vaccination", "Certification", "License", "CET")
-   - OPTIONAL: "institution" field for issuing organization (e.g., "Swiss Red Cross", "BAG", "Medical Board")
-   - OPTIONAL: "licenseNumber" for license/certificate numbers if present
-   - OPTIONAL: "dateObtained" for when qualification was obtained
-   - OPTIONAL: "expiryDate" for qualifications with expiration dates
+   - REQUIRED FIELDS: type (must match dropdown options above), title, institution, dateObtained
+   - REQUIRED IF NOT VALID FOR LIFE: expiryDate (if validForLife is false, expiryDate is required)
+   - OPTIONAL: licenseNumber for license/certificate numbers if present
    - Set "validForLife" to true if qualification never expires, false otherwise
+   - For "type" field, you MUST use one of the exact values from the dropdown options above
    - CRITICAL: Only include qualifications with at least a "title" field. Exclude any qualification item where title is empty, null, or whitespace.
-   - Do NOT include university degrees here (those go in "studies")
+   - Do NOT include university degrees here (those go in "education")
 
-3. **skills**: Translational and transferable skills with proficiency levels
+3. **workExperience**: Professional work history and employment
+   - REQUIRED FIELDS: jobTitle, employer, location, startDate
+   - REQUIRED IF NOT CURRENT: endDate (if current is false, endDate is required)
+   - OPTIONAL: description, current (set to true if currently working there)
+   - Extract ALL dates in YYYY-MM-DD format
+   - Include all employment history, internships, and relevant work experience
+
+4. **skills**: Translational and transferable skills with proficiency levels
    - ONLY extract major, relevant professional skills
    - Categories:
      * "language": Spoken languages (e.g., "French: B2", "English: C1", "German: Native")

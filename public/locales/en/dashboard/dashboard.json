@@ -1,6 +1,6 @@
 {
     "dashboard": {
-    "sidebar": {
+        "sidebar": {
             "overview": "Overview",
             "profile": "Profile",
             "contracts": "Contracts",
@@ -10,6 +10,22 @@
             "settings": "Settings",
             "incompleteProfile": "Your profile is incomplete",
             "completeProfileFirst": "Please complete your profile first"
+        },
+        "header": {
+            "profile": {
+                "title": "Profile"
+            },
+            "search": "Search...",
+            "createBusiness": "Create a business",
+            "createBusinessDesc": "Set up your facility profile",
+            "createProfessional": "Create Professional Profile",
+            "createProfessionalDesc": "Switch to personal account",
+            "resetProfile": "Reset Profile",
+            "resetProfileTitle": "Reset Profile",
+            "resetProfileMessage": "Are you sure you want to reset your profile? This will remove all your data and set your account back to the initial onboarding state. This action cannot be undone.",
+            "resetConfirm": "Reset Profile",
+            "profileResetSuccess": "Profile reset successfully",
+            "profileResetError": "Failed to reset profile"
         },
         "loading": "Loading dashboard data...",
         "error": "Error loading dashboard data",
@@ -28,6 +44,133 @@
             "upcomingJobs": "Upcoming Jobs",
             "recentActivity": "Recent Activity",
             "noRecentActivity": "No recent activity to display"
+        },
+        "onboarding": {
+            "verify_account": "Verify Your Account",
+            "verify_intro": "Please provide your details below. We use secure AI verification to certify your account.",
+            "step1": {
+                "title": "Legal Considerations",
+                "facilityLegalNotice": "Legal Notice for Facilities",
+                "facilityLegalText1": "As a healthcare facility using InteriMed, you must ensure compliance with Swiss labor laws when engaging temporary staff.",
+                "facilityLegalText2": "You are responsible for verifying that temporary workers comply with maximum working hours, rest periods, and other legal requirements.",
+                "facilityLegalText3": "Please ensure all temporary staff have the necessary qualifications and work permits.",
+                "professionalLegalNotice": "Legal Notice for Professionals",
+                "professionalLegalText1": "For employees working 100% (typically 40-42 hours/week), it is nearly impossible to legally take additional shifts at another pharmacy.",
+                "professionalLegalText2": "Swiss labor law sets a strict maximum of 50 hours per week (45 hours in some retail contexts). A 100% employee typically works 42 hours, leaving only 8 hours maximum.",
+                "professionalLegalText3": "According to the Code of Obligations (Art. 321a), you must obtain written approval from your main employer to work for a competitor.",
+                "professionalLegalText4": "The law requires 11 consecutive hours of rest between shifts (can be reduced to 8 hours once per week).",
+                "agreementStatus": "Agreement Status",
+                "areYouEmployed": "Are you currently employed by a facility?",
+                "areYouEmployedDescription": "Activate if you work for an organization",
+                "termsAcceptance": "Terms and Legal Considerations",
+                "termsAcceptanceDescription": "I understand and acknowledge the legal considerations and terms of service",
+                "note": "By proceeding, you acknowledge that you have read and understood the legal considerations applicable to your role."
+            },
+            "step2": {
+                "title": "Select Your Role",
+                "description": "Choose the option that best describes your situation",
+                "professional": "Professional",
+                "professionalDescription": "I am a healthcare professional looking for work opportunities",
+                "facility": "Facility",
+                "facilityDescription": "I represent a company or facility looking for professionals",
+                "organization": "Organization",
+                "organizationDescription": "I represent a pharmacy chain or organization"
+            },
+            "step3": {
+                "chain": {
+                    "title": "Contact Information",
+                    "description": "Please provide your contact details so we can assist you with setting up your organization account",
+                    "phonePrefix": "Phone Prefix",
+                    "phoneNumber": "Phone Number",
+                    "phoneNumberPlaceholder": "Enter your phone number",
+                    "messageToSupport": "Message to Support",
+                    "messagePlaceholder": "Please describe your organization and your needs..."
+                }
+            },
+            "step4": {
+                "title": "GLN Verification",
+                "description": "Do you have a GLN (Global Location Number)?",
+                "hasGLN": "I have a GLN number"
+            },
+            "professional_gln": {
+                "title": "GLN information",
+                "text1": "Professional number required for certified medical professionals in Switzerland (pharmacists, dentists, doctors, etc.).",
+                "text2": "For other professions (nurses, assistants, etc.), this number is not mandatory.",
+                "text3": "Enable if you have your own GLN number."
+            },
+            "company_gln": {
+                "title": "GLN information",
+                "text1": "The GLN (Global Location Number) is a unique identifier for your facility or company.",
+                "text2": "Providing your GLN helps us verify your business details automatically and speeds up the verification process.",
+                "text3": "This field is optional, but recommended for faster account verification."
+            },
+            "input": {
+                "professional_gln": "Professional GLN",
+                "company_gln": "Company GLN",
+                "professional_gln_optional": "Professional GLN (Optional)",
+                "company_gln_optional": "Company GLN (Optional)"
+            },
+            "docs": {
+                "title": "Verification Documents",
+                "facility_id": {
+                    "label": "1. Responsible Person Identity Document",
+                    "desc": "Upload ID card of a responsible person listed in the registry."
+                },
+                "facility_bill": {
+                    "label": "2. Billing / Tax Document",
+                    "desc": "Upload a recent bill or tax document for facility verification."
+                },
+                "select_id_type": "Select ID Type",
+                "internal_ref": "Internal Reference / PO Number (Optional)",
+                "professional_id": "Identity Document",
+                "select_doc_type": "Select document type",
+                "upload_id": "Upload Identity Document",
+                "upload_bill": "Upload Bill"
+            },
+            "errors": {
+                "service_high_demand": "Service High Demand",
+                "wait_message": "Please wait {{seconds}} seconds before trying again",
+                "can_try_again": "You can now try again.",
+                "verification_failed": "Verification Failed",
+                "review_inputs": "Please review your inputs. If you believe this is an error, contact our urgent support below.",
+                "contact_support": "Contact Urgent Support",
+                "report_issue": "Report Issue via Email",
+                "describe_issue": "Describe the issue you are facing...",
+                "gln_length": "GLN must be exactly 13 digits.",
+                "missing_document": "Missing verification document",
+                "missing_profession": "Please select your profession"
+            },
+            "success": {
+                "verified_title": "Account Successfully Verified!",
+                "professional_redirect": "Your professional profile is now active. Redirecting to complete your profile setup...",
+                "facility_redirect": "Your facility profile is now active. Redirecting to complete your profile setup..."
+            },
+            "phone": {
+                "title": "Mobile Verification",
+                "subtitle": "Enter your phone number to receive a secure identity code.",
+                "secured_code": "Secured Code",
+                "sent_text": "We sent a verification code to {{prefix}} {{number}}.",
+                "verified_title": "Phone Verified",
+                "verified_text": "Your phone number {{prefix}} {{number}} has been successfully verified.",
+                "verification_complete": "Verification Complete",
+                "verify_continue": "Verify and continue",
+                "verifying": "Verifying...",
+                "resend": "Send code again",
+                "resend_wait": "Resend in {{seconds}}s",
+                "change_number": "Change number",
+                "verification_code_label": "Verification Code",
+                "sending": "Sending..."
+            },
+            "buttons": {
+                "back": "Back",
+                "nextStep": "Next Step",
+                "sendCode": "Send Code",
+                "validate": "Validate",
+                "contactAndFinish": "Contact & Finish",
+                "verifying": "Verifying...",
+                "completeAccount": "Complete Account",
+                "verify_account": "Verify Account"
+            }
         }
     },
     "userMenu": {

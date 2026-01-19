@@ -50,11 +50,13 @@ function DropdownField({
     required = false,
     clearFilter,
     showClearButton = true,
-    maxHeight = '150px'
+    maxHeight = '150px',
+    placeholder = 'Select...'
 }) {
     const [isFocused, setIsFocused] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isOptionHovered, setIsOptionHovered] = useState(false);
     const dropdownRef = useRef(null);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [selectedValues, setSelectedValues] = useState(value || []);
@@ -65,6 +67,13 @@ function DropdownField({
             setSelectedValues(value);
         }
     }, [value]);
+
+    // Reset hover state when dropdown closes
+    useEffect(() => {
+        if (!isOpen) {
+            setIsOptionHovered(false);
+        }
+    }, [isOpen]);
 
 
     // Filter options based on the search term
@@ -255,7 +264,7 @@ function DropdownField({
             ref={dropdownRef}
         >
             <div
-                className={`boxed-inputfield-container ${error ? 'boxed-inputfield-error' : ''} ${selectedValues.length > 0 ? 'has-value' : ''}`}
+                className={`boxed-inputfield-container ${error ? 'boxed-inputfield-error' : ''} ${selectedValues.length > 0 ? 'has-value' : ''} ${isOptionHovered ? 'boxed-inputfield-container--option-hovered' : ''}`}
                 onClick={handleContainerClick}
                 style={{ cursor: 'pointer' }}
             >
@@ -278,6 +287,7 @@ function DropdownField({
                     aria-expanded={isOpen}
                     aria-controls="dropdown-options"
                     aria-activedescendant={selectedIndex >= 0 ? `option-${selectedIndex}` : undefined}
+                    placeholder={error && typeof error === 'string' ? error : placeholder}
                 />
 
                 {selectedValues.length > 0 && showClearButton && (
@@ -321,6 +331,8 @@ function DropdownField({
                                 id={`option-${index}`}
                                 className={`boxed-inputfield-option ${selectedIndex === index ? 'selected' : ''}`}
                                 onClick={() => handleOptionSelect(option)}
+                                onMouseEnter={() => setIsOptionHovered(true)}
+                                onMouseLeave={() => setIsOptionHovered(false)}
                                 role="option"
                                 aria-selected={selectedIndex === index}
                                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}

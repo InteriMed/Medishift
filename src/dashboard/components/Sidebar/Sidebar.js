@@ -161,10 +161,10 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
   const { t } = useTranslation(['dashboard', 'admin']);
   const location = useLocation();
   const normalizedPathname = React.useMemo(() => normalizePathname(location.pathname), [location.pathname]);
-  const { isSidebarItemAccessible, forceUpdateElementPosition, isTutorialActive, activeTutorial } = useTutorial();
-  const { selectedWorkspace } = useDashboard();
+  const { isSidebarItemAccessible, forceUpdateElementPosition, isTutorialActive, activeTutorial, stepData } = useTutorial();
+  const { selectedWorkspace, completedTutorials = [], profileComplete, tutorialPassed } = useDashboard();
   const { userProfile } = useAuth();
-  
+
   const userRoles = userProfile?.roles || [];
   const isAdminWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN;
 
@@ -177,22 +177,61 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
     }
   };
 
+  const SIDEBAR_ORDER = ['profile', 'messages', 'contracts', 'calendar', 'marketplace', 'payroll', 'organization', 'settings'];
+
+  const getHighlightedItem = React.useMemo(() => {
+    const highlightSidebarItem = stepData?.highlightSidebarItem;
+    if (highlightSidebarItem) {
+      return highlightSidebarItem;
+    }
+
+    if (tutorialPassed) {
+      return null;
+    }
+
+    const isProfileTabsComplete = completedTutorials.includes('profileTabs') || completedTutorials.includes('facilityProfileTabs');
+    const isProfileComplete = profileComplete === true;
+
+    if (!isProfileTabsComplete && !isProfileComplete) {
+      return 'profile';
+    }
+
+    for (const item of SIDEBAR_ORDER) {
+      if (item === 'profile') {
+        if (!isProfileTabsComplete && !isProfileComplete) {
+          return 'profile';
+        }
+        continue;
+      }
+
+      const tutorialKey = item === 'messages' ? 'messages' :
+        item === 'contracts' ? 'contracts' :
+          item === 'calendar' ? 'calendar' :
+            item === 'marketplace' ? 'marketplace' :
+              item === 'payroll' ? 'payroll' :
+                item === 'organization' ? 'organization' :
+                  item === 'settings' ? 'settings' : null;
+
+      if (tutorialKey && !completedTutorials.includes(tutorialKey)) {
+        return item;
+      }
+    }
+
+    return null;
+  }, [stepData, tutorialPassed, completedTutorials, profileComplete]);
+
   const handleToggleClick = () => {
-    // Prevent toggling during tutorial
     if (isTutorialActive) return;
 
     if (onToggle) {
       onToggle();
     }
 
-    // If tutorial is active, force position updates for smooth repositioning
     if (isTutorialActive && forceUpdateElementPosition) {
-      // Update immediately for instant visual feedback
       setTimeout(() => {
         forceUpdateElementPosition();
       }, 0);
 
-      // Update again after sidebar transition completes for final accurate positioning
       setTimeout(() => {
         forceUpdateElementPosition();
       }, 320);
@@ -202,38 +241,25 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-screen bg-sidebar border-r border-border transition-all duration-300 ease-in-out overflow-x-hidden",
+        "fixed left-0 top-16 h-[calc(100vh-4rem)] bg-sidebar shadow-xl shadow-foreground/5 transition-all duration-300 ease-in-out overflow-x-hidden",
         collapsed ? "w-[70px]" : "w-64",
         isMobile
-          ? "z-50 flex flex-col md:!hidden"
+          ? "z-[60] flex flex-col md:!hidden"
           : isOverlayMode
             ? isOverlayExpanded
-              ? "z-50 flex flex-col"
-              : "z-40 flex flex-col"
+              ? "z-[60] flex flex-col"
+              : "z-[60] flex flex-col"
             : "z-40 !hidden md:!flex md:flex-col"
       )}
+      style={{
+        backgroundColor: 'hsl(var(--sidebar-background))',
+        zIndex: isMobile || isOverlayMode ? 60 : undefined
+      }}
     >
-      {/* Header Section with Logo */}
-      <div className={cn(
-        "h-16 flex items-center justify-center border-b border-border bg-sidebar-accent/10 px-3"
-      )}>
-        <div className="flex items-center gap-3 overflow-hidden opacity-100 transition-opacity duration-300 min-w-0">
-          <img
-            src="/logo.png"
-            alt="MediShift"
-            className="h-8 w-auto object-contain shrink-0"
-          />
-          {!collapsed && (
-            <span className="text-xl font-bold" style={{ color: 'var(--color-logo-2)' }}>
-              MediShift
-            </span>
-          )}
-        </div>
-      </div>
 
       {/* Collapse/Expand Button - Above Overview */}
       <div className={cn(
-        "h-16 border-b border-border flex items-center",
+        "h-16 flex items-center mb-2",
         collapsed ? "px-2" : "px-3"
       )}>
         <button
@@ -260,18 +286,34 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
       {/* Navigation Items */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-1.5 px-2 flex flex-col gap-0.5">
         {(isAdminWorkspace ? getAdminSidebarItems(t).filter(item => !item.permission || hasPermission(userRoles, item.permission)) : REGULAR_SIDEBAR_ITEMS.filter(item => {
-          // Filter out facility-only items when not in team workspace
-          if (item.facilityOnly && selectedWorkspace?.type !== WORKSPACE_TYPES.TEAM) {
-            return false;
+          const isPersonalWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.PERSONAL;
+          const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
+          
+          if (item.facilityOnly) {
+            return isTeamWorkspace;
           }
-          return true;
+          
+          const professionalItems = ['messages', 'contracts', 'calendar', 'marketplace'];
+          const itemKey = item.path.split('/').pop();
+          
+          if (professionalItems.includes(itemKey)) {
+            return isPersonalWorkspace;
+          }
+          
+          if (itemKey === 'profile') {
+            return true;
+          }
+          
+          return isPersonalWorkspace;
         })).map((item) => {
           const isActive = item.exact
             ? normalizedPathname === item.path
             : normalizedPathname.startsWith(item.path);
 
-          // For admin items, check permission instead of onboarding accessibility
-          const isAccessible = isAdminWorkspace 
+          const itemKey = item.path.split('/').pop();
+          const shouldHighlight = getHighlightedItem === itemKey;
+
+          const isAccessible = isAdminWorkspace
             ? (!item.permission || hasPermission(userRoles, item.permission))
             : isSidebarItemAccessible(item.path);
 
@@ -318,16 +360,16 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
               }}
               data-tutorial={`${item.path.split('/').pop()}-link`}
               className={({ isActive: linkActive }) => {
-                // Add highlight for profile if implementation tutorial is active
                 const isTutorialTarget = isTutorialActive && activeTutorial === 'profileTabs' && item.path.includes('/profile');
                 const active = isActive || linkActive || isTutorialTarget;
 
                 return cn(
-                  "group flex items-center justify-between w-full p-2 text-left rounded-lg transition-all duration-200 outline-none border border-transparent relative min-w-0",
+                  "group flex items-center justify-between w-full p-2 text-left rounded-lg transition-all duration-200 outline-none relative min-w-0",
                   active
-                    ? "bg-primary/5 border-primary/10 text-primary shadow-sm"
+                    ? "bg-primary/5 text-primary shadow-sm"
                     : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                  isTutorialTarget && !isActive && !linkActive && "ring-1 ring-primary/50 border-primary/20", // Extra visual cue if not actually on the page
+                  isTutorialTarget && "tutorial-pulse",
+                  shouldHighlight && "global-highlight",
                   collapsed && "justify-center px-1.5"
                 );
               }}
@@ -371,11 +413,6 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
           );
         })}
       </nav>
-
-      {/* Footer - Removed collapse button from here */}
-      <div className="p-2 border-t border-border mt-auto">
-        {/* Could put user profile here later */}
-      </div>
     </aside>
   );
 }

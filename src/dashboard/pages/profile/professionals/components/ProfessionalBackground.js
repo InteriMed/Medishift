@@ -8,6 +8,7 @@ import classNames from 'classnames';
 import { validateProfileItem, addOrUpdateProfileItem, deleteProfileItem } from '../../utils/professionalBackgroundUtils';
 // Import the dropdown options hook
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
+import useAutoSave from '../../../../hooks/useAutoSave';
 
 // --- Import Base Components (Adjust Paths) ---
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
@@ -16,22 +17,23 @@ import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-
 import Button from '../../../../../components/BoxedInputFields/Button';
 import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxField';
 import Switch from '../../../../../components/BoxedInputFields/Switch';
-import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus } from 'react-icons/fi';
+import Dialog from '../../../../../components/Dialog/Dialog';
+import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye } from 'react-icons/fi';
 
 // =====================================================================
 
 
 // Tailwind styles
 const styles = {
-   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1000px] mx-auto",
-   headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1000px] mx-auto",
+   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+   headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
    sectionTitle: "text-2xl font-semibold mb-2",
    sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
    sectionSubtitle: "text-sm font-medium text-muted-foreground",
    subtitleRow: "flex items-end justify-between gap-4",
    mandatoryFieldLegend: "text-xs text-muted-foreground",
    mandatoryMark: "text-destructive",
-   sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1000px] mx-auto",
+   sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
    leftColumn: "flex flex-col gap-6 flex-1",
    rightColumn: "flex flex-col gap-6 flex-1",
    sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
@@ -63,6 +65,7 @@ const ProfessionalBackground = ({
    isSubmitting,
    onArrayChange,
    onSaveAndContinue,
+   onSave,
    onCancel,
    getNestedValue,
    onInputChange,
@@ -71,6 +74,29 @@ const ProfessionalBackground = ({
 
    // Get dropdown options using the hook
    const dropdownOptionsFromHook = useDropdownOptions();
+
+   const extractTabData = useCallback(() => {
+      if (!formData) return null;
+      const tabData = {};
+      const sectionConfig = config?.fields?.professionalBackground || {};
+      Object.keys(sectionConfig).forEach(sectionKey => {
+         const value = getNestedValue(formData, sectionKey);
+         if (value !== undefined && value !== null) {
+            tabData[sectionKey] = value;
+         }
+      });
+      return tabData;
+   }, [formData, config, getNestedValue]);
+
+   useAutoSave({
+      formData,
+      config,
+      activeTab: 'professionalBackground',
+      onInputChange,
+      onSave,
+      getNestedValue,
+      extractTabData
+   });
 
    // Handle cancel with page reload
    const handleCancel = useCallback(() => {
@@ -89,6 +115,7 @@ const ProfessionalBackground = ({
 
    // --- Local State for Forms ---
    const [formStates, setFormStates] = useState({});
+   const [viewState, setViewState] = useState({ isOpen: false, sectionKey: null, index: -1 });
 
    // Initialize/Reset form states
    useMemo(() => {
@@ -169,9 +196,17 @@ const ProfessionalBackground = ({
       // Updated to use professionalDetails prefix for nested data
       const fullSectionPath = `professionalDetails.${sectionKey}`;
       const currentList = getNestedValue(formData, fullSectionPath) || [];
+      const itemData = cloneDeep(currentList[index]);
+
+      // Validate immediately to show existing errors
+      // using the same utility that handles save validation for consistency
+      const itemSchemaRef = sectionConfig[sectionKey]?.itemSchemaRef;
+      const itemSchema = itemSchemas[itemSchemaRef] || [];
+      const { errors: itemErrors } = validateProfileItem(itemData, itemSchema, t);
+
       setFormStates(prev => ({
          ...prev,
-         [sectionKey]: { showForm: true, editIndex: index, itemData: cloneDeep(currentList[index]), itemErrors: {} }
+         [sectionKey]: { showForm: true, editIndex: index, itemData, itemErrors }
       }));
    };
 
@@ -227,6 +262,14 @@ const ProfessionalBackground = ({
          currentList,
          onArrayChange
       });
+   };
+
+   const handleShowView = (sectionKey, index) => {
+      setViewState({ isOpen: true, sectionKey, index });
+   };
+
+   const handleCloseView = () => {
+      setViewState({ isOpen: false, sectionKey: null, index: -1 });
    };
 
    // --- Dynamic Field Rendering (Remains in component) ---
@@ -358,6 +401,149 @@ const ProfessionalBackground = ({
       }
    };
 
+   const formatFieldValue = (value, fieldRule) => {
+      if (value === null || value === undefined || value === '') {
+         return '-';
+      }
+
+      const { type, optionsKey } = fieldRule;
+
+      switch (type) {
+         case 'date':
+            if (typeof value === 'string') {
+               const date = new Date(value);
+               return date.toLocaleDateString(i18n.language || 'en', { year: 'numeric', month: 'long', day: 'numeric' });
+            }
+            return new Date(value).toLocaleDateString(i18n.language || 'en', { year: 'numeric', month: 'long', day: 'numeric' });
+         case 'dropdown':
+            const options = getDropdownOptions(optionsKey);
+            const option = options.find(opt => opt.value === value);
+            return option ? option.label : value;
+         case 'checkbox':
+            return value ? t('common.yes', 'Yes') : t('common.no', 'No');
+         case 'textarea':
+            return value;
+         default:
+            return value;
+      }
+   };
+
+   const renderViewDialog = () => {
+      if (!viewState.isOpen || viewState.sectionKey === null || viewState.index === -1) return null;
+
+      const fullSectionPath = `professionalDetails.${viewState.sectionKey}`;
+      const currentList = getNestedValue(formData, fullSectionPath) || [];
+      const item = currentList[viewState.index];
+      if (!item) return null;
+
+      const mainSectionRule = sectionConfig[viewState.sectionKey];
+      const itemSchemaRef = mainSectionRule?.itemSchemaRef;
+      const itemSchema = itemSchemas[itemSchemaRef] || [];
+      const subsectionTitle = t(mainSectionRule?.labelKey || viewState.sectionKey, viewState.sectionKey.charAt(0).toUpperCase() + viewState.sectionKey.slice(1).replace(/([A-Z])/g, ' $1'));
+
+      const validateItemForView = (itemData, schema) => {
+         const itemErrors = {};
+         schema.forEach((fieldRule) => {
+            const { name, required, dependsOn, dependsOnValue, dependsOnValueExclude } = fieldRule;
+            let isActuallyRequired = required;
+            if (dependsOn) {
+               const dependentValue = get(itemData, dependsOn);
+               let conditionMet = true;
+               if (dependsOnValue && !dependsOnValue.includes(dependentValue)) conditionMet = false;
+               if (dependsOnValueExclude && dependsOnValueExclude.includes(dependentValue)) conditionMet = false;
+               if (!conditionMet) isActuallyRequired = false;
+            }
+            if (isActuallyRequired) {
+               const value = get(itemData, name);
+               if (value === null || value === undefined || String(value).trim() === '') {
+                  itemErrors[name] = t('validation.required', 'This field is required');
+               }
+            }
+         });
+         return itemErrors;
+      };
+
+      const itemErrors = validateItemForView(item, itemSchema);
+
+      return (
+         <Dialog
+            isOpen={viewState.isOpen}
+            onClose={handleCloseView}
+            title={`${t('common.view', 'View')} ${subsectionTitle}`}
+            size="large"
+         >
+            <div style={{ padding: '1rem 0' }}>
+               <div className="space-y-4">
+                  {itemSchema.map((fieldRule) => {
+                     const { name, labelKey, type, required, dependsOn, dependsOnValue, dependsOnValueExclude } = fieldRule;
+                     const value = get(item, name);
+                     const label = t(labelKey, name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1'));
+                     const formattedValue = formatFieldValue(value, fieldRule);
+
+                     let isActuallyRequired = required;
+                     if (dependsOn) {
+                        const dependentValue = get(item, dependsOn);
+                        let conditionMet = true;
+                        if (dependsOnValue && !dependsOnValue.includes(dependentValue)) conditionMet = false;
+                        if (dependsOnValueExclude && dependsOnValueExclude.includes(dependentValue)) conditionMet = false;
+                        if (!conditionMet) isActuallyRequired = false;
+                     }
+
+                     const hasError = itemErrors[name] !== undefined;
+                     const isEmpty = value === null || value === undefined || String(value).trim() === '';
+
+                     return (
+                        <div
+                           key={name}
+                           style={{
+                              padding: '1rem',
+                              marginBottom: '0.5rem',
+                              border: hasError ? '2px dotted hsl(var(--destructive))' : '1px solid hsl(var(--border) / 0.3)',
+                              borderRadius: '8px',
+                              backgroundColor: hasError ? 'hsl(var(--destructive) / 0.05)' : 'transparent'
+                           }}
+                        >
+                           <div style={{
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              color: hasError ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))',
+                              marginBottom: '0.5rem',
+                              fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
+                           }}>
+                              {label} {isActuallyRequired && <span style={{ color: 'hsl(var(--destructive))' }}>*</span>}
+                           </div>
+                           <div style={{
+                              fontSize: '0.875rem',
+                              color: hasError ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
+                              fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                              fontStyle: isEmpty ? 'italic' : 'normal'
+                           }}>
+                              {formattedValue}
+                           </div>
+                           {hasError && (
+                              <div style={{
+                                 fontSize: '0.75rem',
+                                 color: 'hsl(var(--destructive))',
+                                 marginTop: '0.5rem',
+                                 fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
+                              }}>
+                                 {itemErrors[name]}
+                              </div>
+                           )}
+                        </div>
+                     );
+                  })}
+               </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+               <Button onClick={handleCloseView} variant="primary">
+                  {t('common.close', 'Close')}
+               </Button>
+            </div>
+         </Dialog>
+      );
+   };
+
    // --- Generic Renderer for a List Section (Remains in component) ---
    const renderListSection = (sectionKey) => {
       const mainSectionRule = sectionConfig[sectionKey];
@@ -365,68 +551,110 @@ const ProfessionalBackground = ({
 
       const itemSchemaRef = mainSectionRule.itemSchemaRef;
       const itemSchema = itemSchemas[itemSchemaRef] || [];
-
-      const fullSectionPath = `professionalDetails.${sectionKey}`;
-      const currentList = getNestedValue(formData, fullSectionPath) || [];
-      const mainSectionError = getNestedValue(errors, fullSectionPath);
       const currentFormState = formStates[sectionKey];
+
+      const mainSectionPath = `professionalDetails.${sectionKey}`;
+      const currentList = getNestedValue(formData, mainSectionPath) || [];
+      const sectionErrors = get(errors, mainSectionPath);
+      const hasErrors = !!sectionErrors && (typeof sectionErrors === 'string' || (typeof sectionErrors === 'object' && Object.keys(sectionErrors).length > 0));
 
       const subsectionTitle = t(mainSectionRule.labelKey, sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1).replace(/([A-Z])/g, ' $1'));
 
       return (
          <div key={sectionKey} className={styles.sectionCard}>
-            <div className={classNames(styles.sectionContent, { [styles.formSectionError]: mainSectionError && !currentList.length })}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <div className={styles.cardIconWrapper}>{getSectionIcon(sectionKey)}</div>
-                  <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{subsectionTitle}</h3>
+            <div className={styles.sectionContent}>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                     <div className={styles.cardIconWrapper}>
+                        {getSectionIcon(sectionKey)}
+                     </div>
+                     <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
+                        {subsectionTitle}
+                     </h3>
+                  </div>
+                  <p className={styles.sectionSubtitle} style={{
+                     fontSize: '0.75rem',
+                     margin: 0,
+                     fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                     color: 'hsl(var(--muted-foreground))'
+                  }}>
+                     {t(mainSectionRule.descriptionKey, t('professionalBackground.subtitle'))}
+                  </p>
                </div>
 
                {/* List of added items */}
                {!currentFormState?.showForm && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0 }}>
-                     {currentList.length > 0 && currentList.map((item, index) => (
-                        <React.Fragment key={`${sectionKey}-${index}`}>
-                           <div style={{
-                              padding: 0,
-                              margin: 0,
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center'
-                           }}>
-                              <div className={styles.itemContent}>
-                                 <div className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}><strong>{item.title || item.degree || item.jobTitle || 'Item'}</strong></div>
-                                 <div className="text-xs" style={{ color: 'hsl(var(--muted-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{item.institution || item.employer}</div>
+                     {currentList.length > 0 && currentList.map((item, index) => {
+                        const itemErrors = get(errors, `${mainSectionPath}.${index}`);
+                        const itemHasError = !!itemErrors && typeof itemErrors === 'object' && Object.keys(itemErrors).length > 0;
+
+                        return (
+                           <React.Fragment key={`${sectionKey}-${index}`}>
+                              <div style={{
+                                 padding: '0.5rem',
+                                 margin: '2px 0',
+                                 display: 'flex',
+                                 justifyContent: 'space-between',
+                                 alignItems: 'center',
+                                 borderRadius: '8px',
+                                 border: itemHasError ? '1px dotted hsl(var(--destructive))' : '1px solid transparent',
+                                 backgroundColor: itemHasError ? 'hsl(var(--destructive) / 0.03)' : 'transparent'
+                              }}>
+                                 <div className={styles.itemContent}>
+                                    <div className="text-sm font-medium" style={{
+                                       color: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
+                                       fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
+                                    }}>
+                                       <strong>{item.title || item.degree || item.jobTitle || 'Item'}</strong>
+                                       {itemHasError && <span className="ml-2 text-[10px] uppercase tracking-wider font-bold text-destructive">{t('validation:incomplete', 'Incomplete')}</span>}
+                                    </div>
+                                    <div className="text-xs" style={{
+                                       color: itemHasError ? 'hsl(var(--destructive) / 0.7)' : 'hsl(var(--muted-foreground))',
+                                       fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
+                                    }}>
+                                       {item.institution || item.employer}
+                                    </div>
+                                 </div>
+                                 <div className={styles.itemActions} style={{ display: 'flex', gap: '0.75rem' }}>
+                                    <button
+                                       onClick={() => handleShowView(sectionKey, index)}
+                                       className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
+                                       title={t('common.view', 'View')}
+                                       aria-label={t('common.view', 'View')}
+                                    >
+                                       <FiEye className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                       onClick={() => handleShowEditForm(sectionKey, index)}
+                                       className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
+                                       title={t('common.edit')}
+                                       aria-label={t('common.edit')}
+                                    >
+                                       <FiEdit className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                       onClick={() => handleDeleteItem(sectionKey, index)}
+                                       className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive" : "text-muted-foreground hover:text-destructive")}
+                                       title={t('common.delete')}
+                                       aria-label={t('common.delete')}
+                                    >
+                                       <FiTrash2 className="w-4 h-4" />
+                                    </button>
+                                 </div>
                               </div>
-                              <div className={styles.itemActions} style={{ display: 'flex', gap: '0.75rem' }}>
-                                 <button
-                                    onClick={() => handleShowEditForm(sectionKey, index)}
-                                    className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
-                                    title={t('common.edit')}
-                                    aria-label={t('common.edit')}
-                                 >
-                                    <FiEdit className="w-4 h-4" />
-                                 </button>
-                                 <button
-                                    onClick={() => handleDeleteItem(sectionKey, index)}
-                                    className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-destructive transition-colors"
-                                    title={t('common.delete')}
-                                    aria-label={t('common.delete')}
-                                 >
-                                    <FiTrash2 className="w-4 h-4" />
-                                 </button>
-                              </div>
-                           </div>
-                           {index < currentList.length - 1 && (
-                              <div style={{ height: '1px', backgroundColor: 'hsl(var(--border) / 0.3)', margin: '0.5rem 0' }} />
-                           )}
-                        </React.Fragment>
-                     ))}
+                              {index < currentList.length - 1 && !itemHasError && (
+                                 <div style={{ height: '1px', backgroundColor: 'hsl(var(--border) / 0.3)', margin: '0.25rem 0' }} />
+                              )}
+                           </React.Fragment>
+                        );
+                     })}
 
                      {currentList.length === 0 && (
                         <p className={styles.emptyStateText} style={{ textAlign: 'center', color: 'gray', padding: '2rem' }}>{t(`professionalBackground.no${sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1)}`, 'No entries added yet.')}</p>
                      )}
 
-                     {mainSectionError && !currentList.length && <p className={styles.errorText}>{mainSectionError}</p>}
+                     {typeof sectionErrors === 'string' && !currentList.length && <p className={styles.errorText}>{sectionErrors}</p>}
 
                      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 0, padding: 0 }}>
                         <button
@@ -487,17 +715,7 @@ const ProfessionalBackground = ({
             </div>
          </div>
 
-         {/* --- Main Action Buttons --- */}
-         <div className={styles.sectionCard}>
-            <div className={styles.formActions} style={{ marginTop: 0 }}>
-               <Button onClick={handleCancel} variant="secondary" disabled={isSubmitting}>
-                  {t('common.cancel')}
-               </Button>
-               <Button onClick={onSaveAndContinue} variant="confirmation" disabled={isSubmitting}>
-                  {isSubmitting ? t('common.saving') : t('common.saveAndContinue')}
-               </Button>
-            </div>
-         </div>
+         {renderViewDialog()}
       </div>
    );
 };
@@ -514,6 +732,7 @@ ProfessionalBackground.propTypes = {
    isSubmitting: PropTypes.bool.isRequired,
    onArrayChange: PropTypes.func.isRequired,
    onSaveAndContinue: PropTypes.func.isRequired,
+   onSave: PropTypes.func,
    onCancel: PropTypes.func.isRequired,
    getNestedValue: PropTypes.func.isRequired,
    onInputChange: PropTypes.func.isRequired

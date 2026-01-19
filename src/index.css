@@ -110,7 +110,10 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  input, textarea, select, button {
+  input,
+  textarea,
+  select,
+  button {
     font-family: var(--font-family-text, 'Roboto', sans-serif);
   }
 }
@@ -168,7 +171,7 @@ button:hover .arrow-animate,
 }
 
 .bg-hero-gradient::before {
-  background-image: 
+  background-image:
     radial-gradient(circle at 10% 10%, rgba(251, 207, 232, 0.4) 0%, transparent 50%),
     radial-gradient(circle at 20% 20%, rgba(199, 210, 254, 0.4) 0%, transparent 50%),
     radial-gradient(circle at 50% 15%, rgba(167, 243, 208, 0.4) 0%, transparent 50%),
@@ -182,12 +185,16 @@ button:hover .arrow-animate,
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) rotate(0deg);
   }
+
   33% {
     transform: translate(30px, -50px) rotate(120deg);
   }
+
   66% {
     transform: translate(-20px, 20px) rotate(240deg);
   }
@@ -211,9 +218,11 @@ button:hover .arrow-animate,
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -275,4 +284,136 @@ button:hover .arrow-animate,
     max-width: 1400px;
     margin: 0 auto;
   }
+}
+
+/* Modern Scrollbar Design */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+  background-clip: content-box;
+}
+
+/* Hide scrollbar arrows */
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
+
+@keyframes tutorial-pulse {
+  0% {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.6), 0 0 0 0 hsl(var(--primary) / 0.4);
+  }
+
+  100% {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.6), 0 0 0 15px hsl(var(--primary) / 0);
+  }
+}
+
+.tutorial-pulse {
+  animation: tutorial-pulse 1.2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 50;
+  border-color: hsl(var(--primary) / 0.7) !important;
+  background-color: hsl(var(--primary) / 0.1) !important;
+  outline: none !important;
+}
+
+@keyframes pulse-sidebar-highlight {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3), 0 0 0 4px rgba(37, 99, 235, 0.2), 0 0 20px rgba(37, 99, 235, 0.4);
+    border-color: rgba(37, 99, 235, 0.5);
+    background-color: rgba(37, 99, 235, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4), 0 0 0 6px rgba(37, 99, 235, 0.3), 0 0 30px rgba(37, 99, 235, 0.5);
+    border-color: rgba(37, 99, 235, 0.7);
+    background-color: rgba(37, 99, 235, 0.12);
+  }
+}
+
+.global-highlight {
+  position: relative;
+  border-radius: 0.75rem;
+  background-color: rgba(37, 99, 235, 0.08);
+  border: 2px solid rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3), 0 0 0 4px rgba(37, 99, 235, 0.2), 0 0 20px rgba(37, 99, 235, 0.4);
+  animation: pulse-sidebar-highlight 2s ease-in-out infinite;
+  z-index: 1;
+}
+
+.tab-highlight {
+  position: relative !important;
+  animation: pulse-sidebar-highlight 2s ease-in-out infinite !important;
+  z-index: 5 !important;
+  border-width: 1px !important;
+  pointer-events: auto !important;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.global-lock {
+  position: relative;
+  user-select: none;
+  pointer-events: auto;
+  cursor: not-allowed;
+  color: hsl(var(--muted-foreground) / 0.4);
+  border-color: transparent;
+}
+
+.global-lock::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border-radius: 0.5rem 0 0 0.5rem;
+  background-color: hsl(var(--muted) / 0.2);
+}
+
+.global-lock .icon-container,
+.global-lock [class*="icon"] {
+  background-color: hsl(var(--muted) / 0.1) !important;
+  color: hsl(var(--muted-foreground) / 0.4) !important;
+}
+
+.global-lock .text-container,
+.global-lock [class*="text-container"] {
+  color: hsl(var(--muted-foreground) / 0.4) !important;
+}
+
+.tab-lock {
+  position: relative;
+  user-select: none;
+  pointer-events: auto;
+  cursor: not-allowed;
 }

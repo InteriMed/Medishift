@@ -28,7 +28,7 @@ export const validateProfileItem = (itemData, itemSchema, t) => {
             // Note: This logic might need refinement based on exact config needs. Example assumes dependsOnValue makes it required.
             let conditionMet = false;
             if (fieldRule.dependsOnValue) {
-               conditionMet = fieldRule.dependsOnValue.includes(dependentValue);
+                conditionMet = fieldRule.dependsOnValue.includes(dependentValue);
             } else if (fieldRule.dependsOnValueExclude) {
                 conditionMet = !fieldRule.dependsOnValueExclude.includes(dependentValue);
             } else {
@@ -43,9 +43,9 @@ export const validateProfileItem = (itemData, itemSchema, t) => {
         // Check required field
         if (isActuallyRequired) {
             const value = get(itemData, name);
-            if (value === null || value === undefined || value === '') {
+            if (value === null || value === undefined || String(value).trim() === '') {
                 isValid = false;
-                set(errors, name, t('validation.required'));
+                set(errors, name, t('validation.required', 'This field is required'));
             }
         }
 
@@ -59,15 +59,15 @@ export const validateProfileItem = (itemData, itemSchema, t) => {
             }
             // Example: Check pattern (regex)
             if (validationRules.pattern) {
-                 try {
-                     const regex = new RegExp(validationRules.pattern);
-                     if (!regex.test(String(value))) {
-                         isValid = false;
-                         set(errors, name, t(validationRules.patternErrorKey || 'validation.invalidFormat'));
-                     }
-                 } catch (e) {
-                     console.error("Invalid regex pattern in config:", validationRules.pattern, e);
-                 }
+                try {
+                    const regex = new RegExp(validationRules.pattern);
+                    if (!regex.test(String(value))) {
+                        isValid = false;
+                        set(errors, name, t(validationRules.patternErrorKey || 'validation.invalidFormat'));
+                    }
+                } catch (e) {
+                    console.error("Invalid regex pattern in config:", validationRules.pattern, e);
+                }
             }
             // Add more rules (maxLength, numeric range, date comparisons, etc.)
         }

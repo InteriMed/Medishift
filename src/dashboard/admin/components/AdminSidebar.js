@@ -11,7 +11,9 @@ import {
     AlertCircle,
     Bell,
     Search,
-    FlaskConical
+    FlaskConical,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -20,7 +22,7 @@ import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore
 import { db } from '../../../services/firebase';
 import '../../../styles/variables.css';
 
-const AdminSidebar = ({ collapsed = false }) => {
+const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
     const { t } = useTranslation(['admin']);
     const location = useLocation();
     const { userProfile } = useAuth();
@@ -116,16 +118,16 @@ const AdminSidebar = ({ collapsed = false }) => {
             permission: PERMISSIONS.VIEW_FINANCE
         },
         {
-            title: t('admin:sidebar.invoices', 'Invoices (SaaS)'),
-            icon: FileText,
-            path: '/dashboard/admin/finance/ar',
-            permission: PERMISSIONS.VIEW_FINANCE
-        },
-        {
             title: t('admin:sidebar.balanceSheet', 'Balance Sheet'),
             icon: DollarSign,
             path: '/dashboard/admin/finance/balance-sheet',
             permission: PERMISSIONS.VIEW_BALANCE_SHEET
+        },
+        {
+            title: t('admin:sidebar.invoices', 'Invoices (SaaS)'),
+            icon: FileText,
+            path: '/dashboard/admin/finance/ar',
+            permission: PERMISSIONS.VIEW_FINANCE
         },
         {
             title: t('admin:sidebar.auditLogs', 'Audit Logs'),
@@ -220,13 +222,18 @@ const AdminSidebar = ({ collapsed = false }) => {
             collapsed ? "w-[70px]" : "w-64"
         )}>
             {/* Header */}
-            <div className="h-16 flex items-center justify-center border-b border-border px-3">
-                <div className="flex items-center gap-2">
-                    <Shield className="w-6 h-6 text-primary shrink-0" />
-                    {!collapsed && (
-                        <span className="text-lg font-bold text-primary">Admin Portal</span>
+            <div className="h-16 flex items-center justify-center border-b border-border px-3 bg-sidebar">
+                <button
+                    onClick={onToggleCollapse}
+                    className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground hover:text-sidebar-foreground"
+                    title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+                >
+                    {collapsed ? (
+                        <ChevronRight className="w-5 h-5" />
+                    ) : (
+                        <ChevronLeft className="w-5 h-5" />
                     )}
-                </div>
+                </button>
             </div>
 
             {/* Navigation */}

@@ -17,3 +17,21 @@ export const normalizePathname = (pathname) => {
   return pathname.startsWith('/') ? pathname : `/${pathname}`;
 };
 
+export const buildDashboardUrl = (path, workspaceId) => {
+  const cleanPath = path.startsWith('/dashboard') ? path.replace('/dashboard', '') : path;
+  const finalPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
+  const searchParams = new URLSearchParams();
+  if (workspaceId) {
+    searchParams.set('workspace', workspaceId);
+  }
+  const queryString = searchParams.toString();
+  return `/dashboard${finalPath}${queryString ? `?${queryString}` : ''}`;
+};
+
+export const getDefaultRouteForWorkspace = (workspaceType) => {
+  if (workspaceType === 'admin') {
+    return '/dashboard/admin/portal';
+  }
+  return '/dashboard/overview';
+};
+

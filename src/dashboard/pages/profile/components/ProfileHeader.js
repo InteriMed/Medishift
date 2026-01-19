@@ -64,9 +64,9 @@ const ProfileHeader = ({
 
   return (
     <div className={cn(
-      "w-full h-fit bg-card rounded-xl border border-border/60 transition-all duration-300 ease-in-out overflow-x-hidden",
-      collapsed ? "p-2" : "p-4"
-    )}>
+        "w-full h-fit bg-card rounded-xl border border-border/60 transition-all duration-300 ease-in-out overflow-x-hidden",
+        collapsed ? "p-2" : "p-4"
+      )}>
       {onToggle && !isMobile && (
         <div className={cn(
           "border-b border-border mb-3",
@@ -106,12 +106,12 @@ const ProfileHeader = ({
                 data-tab={tab.id}
                 data-tutorial-disabled="true"
                 className={cn(
-                  "group relative flex gap-3 rounded-lg border min-w-0 transition-all duration-200 outline-none",
+                  "group relative flex gap-3 rounded-lg border min-w-0 transition-all duration-200 outline-none tab-lock",
                   collapsed ? "p-2 justify-center" : "p-3",
-                  "text-muted-foreground/40 cursor-not-allowed pointer-events-none select-none",
-                  "border-transparent"
+                  "text-muted-foreground/40 cursor-not-allowed select-none",
+                  "border-transparent",
+                  "hover:bg-muted/20 hover:border-muted/30"
                 )}
-                style={{ pointerEvents: 'none', userSelect: 'none' }}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -121,7 +121,8 @@ const ProfileHeader = ({
                 }}
               >
                 <div className={cn(
-                  "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg"
+                  "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
+                  "bg-muted/20"
                 )} />
                 <div className={cn(
                   "w-full flex items-center justify-between min-w-0",
@@ -170,7 +171,7 @@ const ProfileHeader = ({
                 "group relative flex gap-3 rounded-lg hover:bg-muted/50 transition-all cursor-pointer border min-w-0",
                 collapsed ? "p-2 justify-center" : "p-3",
                 isActive && "bg-primary/5 border-primary/10",
-                isHighlighted && "border-primary/30 bg-primary/10 ring-2 ring-primary/20",
+                isHighlighted && "tab-highlight",
                 !isActive && !isHighlighted && "border-transparent"
               )}
             >
@@ -230,7 +231,7 @@ const ProfileHeader = ({
           <div className="mt-4 pt-4 border-t border-border relative">
             {showMenu && (
               <div className={cn(
-                "absolute bottom-full left-0 w-full mb-2 bg-popover border border-border rounded-lg shadow-xl z-50 overflow-hidden animate-in slide-in-from-bottom-2 duration-200",
+                "absolute bottom-full left-0 w-full mb-2 bg-popover border border-border rounded-lg shadow-xl z-[200000] overflow-hidden animate-in slide-in-from-bottom-2 duration-200",
                 collapsed && "left-full ml-2 w-48 bottom-0 mb-0"
               )}>
                 <button
@@ -260,18 +261,15 @@ const ProfileHeader = ({
               data-tutorial="profile-upload-button"
               className={cn(
                 "w-full flex items-center gap-3 p-3 rounded-lg transition-all relative overflow-hidden",
-                "bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/20",
+                "bg-amber-500/10 hover:bg-amber-500/20 text-black border border-amber-500/20",
                 collapsed ? "justify-center px-2" : "px-3",
                 showMenu && "bg-amber-500/20 ring-2 ring-amber-500/30",
-                isAutofillHighlighted && "ring-2 ring-amber-500/40 border-amber-500/40"
+                isAutofillHighlighted && "tab-highlight"
               )}
               title="Beta: Autofill Options"
             >
-              {isAutofillHighlighted && (
-                <div className="absolute inset-0 pointer-events-none animate-pulse bg-amber-500/10" />
-              )}
               <FiZap className="w-5 h-5 shrink-0" />
-              {!collapsed && <span className="text-sm font-bold uppercase tracking-wider">(Beta) Fill</span>}
+              {!collapsed && <span className="text-sm font-bold uppercase tracking-wider text-black">(Beta) Fill</span>}
             </button>
           </div>
         )}

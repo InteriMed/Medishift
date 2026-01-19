@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmedishift_deployment_server=self.webpackChunkmedishift_deployment_server||[]).push([[7122],{4741(e){e.exports=JSON.parse('{"no":"Non","yes":"Oui","cancel":"Annuler","saveAndContinue":"Sauvegarder et continuer","discardChanges":"Ignorer les modifications"}')}}]);

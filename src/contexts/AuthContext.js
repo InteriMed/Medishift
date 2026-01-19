@@ -19,7 +19,7 @@ import {
 
 // Import Firebase functions directly from firebase/auth and firebase/firestore
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import Cookies from 'js-cookie'; // Import js-cookie library
 
 // Cookie names for storing onboarding status
@@ -73,22 +73,21 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Check onboarding status
-  const checkOnboardingStatus = useCallback(async (userId) => {
+  const checkOnboardingStatus = useCallback(async (userId, providedUserData = null) => {
     try {
-      // First check cookies for faster response
+      // First check cookies for faster response (as fallback/initial state)
       const cookieValues = getCookieValues(userId);
-      console.log(`[AuthContext] Cookie values for user ${userId}:`, cookieValues);
 
-      // Set initial values from cookies
-      setIsProfessionalProfileComplete(cookieValues.profileComplete);
-      setIsTutorialPassed(cookieValues.tutorialPassed);
+      // If no data provided, try to get from Firestore
+      let userData = providedUserData;
+      if (!userData) {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+          userData = userDoc.data();
+        }
+      }
 
-      // Then get the latest values from Firestore
-      const userDoc = await getDoc(doc(db, 'users', userId));
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-
+      if (userData) {
         // Get onboarding status
         const profileComplete = userData.hasOwnProperty('isProfessionalProfileComplete')
           ? userData.isProfessionalProfileComplete
@@ -98,7 +97,7 @@ export const AuthProvider = ({ children }) => {
           ? userData.tutorialPassed
           : false;
 
-        console.log(`[AuthContext] Firestore values - Profile Complete: ${profileComplete}, Tutorial Passed: ${tutorialPassed}`);
+        console.log(`[AuthContext] Firestore values for ${userId} - Profile Complete: ${profileComplete}, Tutorial Passed: ${tutorialPassed}`);
 
         // Update state
         setIsProfessionalProfileComplete(profileComplete);
@@ -110,6 +109,9 @@ export const AuthProvider = ({ children }) => {
         return { profileComplete, tutorialPassed };
       }
 
+      // Fallback to cookies if no data found/provided
+      setIsProfessionalProfileComplete(cookieValues.profileComplete);
+      setIsTutorialPassed(cookieValues.tutorialPassed);
       return cookieValues;
     } catch (error) {
       console.error('[AuthContext] Error checking onboarding status:', error);
@@ -125,29 +127,161 @@ export const AuthProvider = ({ children }) => {
 
       if (user) {
         try {
-          // Create a timeout promise
-          const TIMEOUT_MS = 15000;
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS)
+          const isOnboarding = window.location.pathname.includes('/onboarding') || 
+                               window.location.pathname.includes('/dashboard/profile') ||
+                               window.location.pathname.includes('/dashboard/onboarding');
+          
+          const timeoutPromise = isOnboarding ? null : new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Request timed out')), 15000)
           );
 
-          // Get additional user data from Firestore with timeout
-          // We wrap the fetch logic to run in parallel
-          const fetchData = async () => {
-            const profile = await getUserProfile(user.uid);
-            setUserProfile(profile);
-            await checkOnboardingStatus(user.uid);
+          // Helper function to create user document
+          const createUserDocument = async (user, userDocRef) => {
+            const displayName = user.displayName || user.email?.split('@')[0] || '';
+            const nameParts = displayName.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+
+            const userData = {
+              email: user.email || '',
+              displayName: displayName,
+              firstName: firstName,
+              lastName: lastName,
+              phoneNumber: '',
+              phonePrefix: '+41',
+              photoURL: user.photoURL || '',
+              role: 'professional',
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              profileCompleted: false,
+              profileCompletionPercentage: 0,
+              isProfessionalProfileComplete: false,
+              tutorialPassed: false
+            };
+
+            console.log(`[AuthContext] Creating user document for ${user.uid}`);
+            await setDoc(userDocRef, userData);
+            console.log(`[AuthContext] ✅ User document created for ${user.uid}`);
+
+            // Also create profile document
+            try {
+              const profileRef = doc(db, 'professionalProfiles', user.uid);
+              const profileData = {
+                email: userData.email,
+                firstName: firstName,
+                lastName: lastName,
+                legalFirstName: firstName,
+                legalLastName: lastName,
+                contactPhone: '',
+                contactPhonePrefix: '+41',
+                profileVisibility: 'public',
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+              };
+              await setDoc(profileRef, profileData);
+              console.log(`[AuthContext] ✅ Profile document created for ${user.uid}`);
+            } catch (profileError) {
+              console.warn(`[AuthContext] ⚠️ Could not create profile document:`, profileError);
+            }
           };
 
-          await Promise.race([fetchData(), timeoutPromise]);
+          // Get additional user data from Firestore with timeout
+          const fetchData = async () => {
+            if (!db) {
+              throw new Error('Firestore database not initialized');
+            }
+
+            console.log(`[AuthContext] Fetching user document for ${user.uid}`);
+            const userDocRef = doc(db, 'users', user.uid);
+            
+            try {
+              // Use a shorter timeout for the initial read
+              const quickReadPromise = getDoc(userDocRef);
+              const quickTimeout = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Quick read timeout')), 5000)
+              );
+              
+              let userDoc;
+              try {
+                userDoc = await Promise.race([quickReadPromise, quickTimeout]);
+              } catch (quickError) {
+                // If quick read fails, try creating document directly
+                console.log(`[AuthContext] Quick read failed, creating user document directly for ${user.uid}`);
+                await createUserDocument(user, userDocRef);
+                userDoc = await getDoc(userDocRef);
+              }
+
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                console.log(`[AuthContext] User document found for ${user.uid}`);
+                setUserProfile({ id: userDoc.id, ...userData });
+                await checkOnboardingStatus(user.uid, userData);
+              } else {
+                console.log(`[AuthContext] User document doesn't exist, creating for ${user.uid}`);
+                await createUserDocument(user, userDocRef);
+                
+                // Fetch the newly created document
+                const newUserDoc = await getDoc(userDocRef);
+                if (newUserDoc.exists()) {
+                  const userData = newUserDoc.data();
+                  setUserProfile({ id: newUserDoc.id, ...userData });
+                  await checkOnboardingStatus(user.uid, userData);
+                } else {
+                  await checkOnboardingStatus(user.uid);
+                }
+              }
+            } catch (docError) {
+              console.error(`[AuthContext] Error with user document:`, docError);
+              // Try to create document anyway as fallback
+              try {
+                console.log(`[AuthContext] Fallback: Creating user document for ${user.uid}`);
+                await createUserDocument(user, userDocRef);
+              } catch (createError) {
+                console.error(`[AuthContext] Failed to create user document:`, createError);
+              }
+              throw docError;
+            }
+          };
+
+          if (timeoutPromise) {
+            await Promise.race([fetchData(), timeoutPromise]);
+          } else {
+            await fetchData();
+          }
 
         } catch (err) {
           if (err.message === 'Request timed out') {
-            console.warn("User profile fetch timed out - allowing app to load without full profile");
+            console.warn("⚠️ User profile fetch timed out - allowing app to load without full profile");
+            console.warn("This may indicate:");
+            console.warn("  1. Firestore is slow to respond");
+            console.warn("  2. Network connectivity issues");
+            console.warn("  3. User document doesn't exist and needs to be created");
+            
+            // Try a quick retry with shorter timeout
+            try {
+              console.log("[AuthContext] Attempting quick retry...");
+              const quickRetry = await Promise.race([
+                getDoc(doc(db, 'users', user.uid)),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Quick retry timed out')), 3000))
+              ]);
+              
+              if (quickRetry.exists()) {
+                const userData = quickRetry.data();
+                setUserProfile({ id: quickRetry.id, ...userData });
+                await checkOnboardingStatus(user.uid, userData);
+                console.log("[AuthContext] Quick retry succeeded");
+              }
+            } catch (retryError) {
+              console.warn("[AuthContext] Quick retry also failed:", retryError.message);
+            }
           } else if (err.code === 'unavailable' || (err.message && err.message.includes('offline'))) {
-            console.warn("User profile fetch skipped - client is offline");
+            console.warn("⚠️ User profile fetch skipped - client is offline");
+          } else if (err.code === 'permission-denied') {
+            console.error("❌ Permission denied accessing user document. Check Firestore security rules.");
           } else {
-            console.error("Error fetching user profile:", err);
+            console.error("❌ Error fetching user profile:", err);
+            console.error("Error code:", err.code);
+            console.error("Error message:", err.message);
           }
         }
       } else {
@@ -169,29 +303,46 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
 
+      if (!db) {
+        throw new Error('Firestore database not initialized');
+      }
+
       // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log('✅ Auth user created:', user.uid);
 
       // Create user document in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
+      const userDocRef = doc(db, 'users', user.uid);
+      const userData = {
         email,
         firstName,
         lastName,
         phoneNumber: phoneNumber || '',
-        phonePrefix: phonePrefix || '+41', // Default to Swiss prefix
-        role: 'professional', // Default role
+        phonePrefix: phonePrefix || '+41',
+        role: 'professional',
         createdAt: new Date(),
         updatedAt: new Date(),
         profileCompleted: false,
         profileCompletionPercentage: 0,
-        isProfessionalProfileComplete: false, // Add new fields
+        isProfessionalProfileComplete: false,
         tutorialPassed: false
-      });
+      };
+
+      await setDoc(userDocRef, userData);
+      console.log('📝 User document write initiated');
+
+      // Verify the document was created
+      const verifyUserDoc = await getDoc(userDocRef);
+      if (!verifyUserDoc.exists()) {
+        throw new Error('Failed to create user document in Firestore - document does not exist after write');
+      }
+      console.log('✅ User document verified in Firestore:', user.uid);
 
       // Create empty profile document
-      const profileCollection = 'professionalProfiles'; // Default to professional
-      await setDoc(doc(db, profileCollection, user.uid), {
+      const profileCollection = 'professionalProfiles';
+      const profileDocRef = doc(db, profileCollection, user.uid);
+      const profileData = {
         email,
         firstName,
         lastName,
@@ -199,17 +350,33 @@ export const AuthProvider = ({ children }) => {
         legalLastName: lastName,
         contactPhone: phoneNumber || '',
         contactPhonePrefix: phonePrefix || '+41',
-        profileVisibility: 'public', // Default to public
+        profileVisibility: 'public',
         createdAt: new Date(),
         updatedAt: new Date()
-      });
+      };
+
+      await setDoc(profileDocRef, profileData);
+      console.log('📝 Profile document write initiated');
+
+      // Verify the profile document was created
+      const verifyProfileDoc = await getDoc(profileDocRef);
+      if (!verifyProfileDoc.exists()) {
+        console.warn('⚠️ Profile document may not have been created');
+      } else {
+        console.log('✅ Profile document verified in Firestore');
+      }
 
       // Set cookies for onboarding status
       setCookieValues(user.uid, false, false);
 
       return user;
     } catch (error) {
-      console.error("Error registering user:", error);
+      console.error("❌ Error registering user:", error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      if (error.stack) {
+        console.error("Error stack:", error.stack);
+      }
       throw error;
     } finally {
       setLoading(false);

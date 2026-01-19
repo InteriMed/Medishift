@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
+import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { UserPlus, Shield, Mail, Search, CheckCircle, XCircle, User } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
@@ -60,37 +61,69 @@ const EmployeeManagement = () => {
     }
   };
 
-  const handleInvite = async () => {
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [invitePreview, setInvitePreview] = useState({
+    email: '',
+    subject: 'Invitation to join MediShift Admin Team',
+    role: 'ops_manager',
+    customMessage: ''
+  });
+
+  const openInviteModal = () => {
     if (!inviteEmail.trim()) {
-      alert('Please enter an email address');
+      alert(t('admin:management.enterEmail', 'Please enter an email address'));
       return;
     }
+    setInvitePreview({
+      email: inviteEmail,
+      subject: 'Invitation to join MediShift Admin Team',
+      role: inviteRole,
+      customMessage: `You have been invited by ${userProfile?.firstName || 'an administrator'} to join the MediShift Admin Team as a ${roleLabels[inviteRole] || inviteRole}.`
+    });
+    setShowInviteModal(true);
+  };
 
+  const handleInvite = async () => {
     setInviting(true);
     try {
-      await logAdminAction({
-        eventType: ADMIN_AUDIT_EVENTS.EMPLOYEE_INVITED,
-        action: `Invited employee: ${inviteEmail}`,
-        resource: {
-          type: 'employee',
-          email: inviteEmail
-        },
-        details: {
-          inviteEmail,
-          inviteRole,
-          invitedBy: userProfile?.uid || 'admin',
-          invitedByName: `${userProfile?.firstName || ''} ${userProfile?.lastName || ''}`.trim() || userProfile?.email
-        }
+      const functions = getFunctions(undefined, 'europe-west6');
+      const inviteAdminEmployee = httpsCallable(functions, 'inviteAdminEmployee');
+
+      const result = await inviteAdminEmployee({
+        inviteEmail: invitePreview.email,
+        inviteRole: invitePreview.role,
+        invitedByName: `${userProfile?.firstName || ''} ${userProfile?.lastName || ''}`.trim() || userProfile?.email,
+        customMessage: invitePreview.customMessage
       });
 
-      alert('Employee invitation feature coming soon. For now, please manually create admin accounts.');
-      setInviteEmail('');
+      if (result.data.success) {
+        await logAdminAction({
+          eventType: ADMIN_AUDIT_EVENTS.EMPLOYEE_INVITED,
+          action: `Invited employee: ${invitePreview.email}`,
+          resource: {
+            type: 'employee',
+            email: invitePreview.email
+          },
+          details: {
+            inviteEmail: invitePreview.email,
+            inviteRole: invitePreview.role,
+            invitedBy: userProfile?.uid || 'admin',
+            invitedByName: `${userProfile?.firstName || ''} ${userProfile?.lastName || ''}`.trim() || userProfile?.email
+          }
+        });
+
+        alert(t('admin:management.inviteSent', 'Invitation sent successfully!'));
+        setInviteEmail('');
+        setShowInviteModal(false);
+      } else {
+        throw new Error(result.data.message || 'Failed to send invitation');
+      }
     } catch (error) {
       console.error('Error inviting employee:', error);
       await logAdminAction({
         eventType: ADMIN_AUDIT_EVENTS.EMPLOYEE_INVITED,
-        action: `Failed to invite employee: ${inviteEmail}`,
-        resource: { type: 'employee', email: inviteEmail },
+        action: `Failed to invite employee: ${invitePreview.email}`,
+        resource: { type: 'employee', email: invitePreview.email },
         details: { error: error.message },
         success: false,
         errorMessage: error.message
@@ -214,7 +247,7 @@ const EmployeeManagement = () => {
               />
             </div>
             <div>
-              <Button onClick={handleInvite} disabled={inviting} variant="confirmation" style={{ height: 'var(--boxed-inputfield-height)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Button onClick={openInviteModal} disabled={inviting} variant="confirmation" style={{ height: 'var(--boxed-inputfield-height)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Mail size={18} style={{ marginRight: 'var(--spacing-xs)' }} />
                 {inviting ? t('admin:management.inviting', 'Sending...') : t('admin:management.sendInvite', 'Send Invite')}
               </Button>
@@ -306,6 +339,76 @@ const EmployeeManagement = () => {
           )}
         </div>
       </div>
+
+      {/* Invite Preview Modal */}
+      {showInviteModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-lg)', padding: 'var(--spacing-xl)', width: '100%', maxWidth: '500px', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--grey-2)' }}>
+            <h3 style={{ fontSize: 'var(--font-size-xlarge)', fontWeight: 'var(--font-weight-bold)', marginBottom: 'var(--spacing-lg)', color: 'var(--text-color)' }}>
+              Confirm Invitation
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+              <PersonnalizedInputField
+                label="Recipient Email"
+                value={invitePreview.email}
+                onChange={(e) => setInvitePreview({ ...invitePreview, email: e.target.value })}
+              />
+
+              <PersonnalizedInputField
+                label="Email Subject"
+                value={invitePreview.subject}
+                onChange={(e) => setInvitePreview({ ...invitePreview, subject: e.target.value })}
+              />
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-color)' }}>
+                  Custom Message (HTML supported)
+                </label>
+                <textarea
+                  value={invitePreview.customMessage}
+                  onChange={(e) => setInvitePreview({ ...invitePreview, customMessage: e.target.value })}
+                  style={{
+                    width: '100%',
+                    height: '120px',
+                    padding: '12px',
+                    borderRadius: 'var(--border-radius-md)',
+                    border: '1px solid var(--grey-2)',
+                    fontSize: 'var(--font-size-small)',
+                    fontFamily: 'inherit',
+                    outline: 'none',
+                    resize: 'vertical'
+                  }}
+                  placeholder="Enter custom invitation message..."
+                />
+              </div>
+
+              <DropdownField
+                label="Assigned Role"
+                options={[
+                  { value: 'ops_manager', label: 'Operations Manager' },
+                  { value: 'finance', label: 'Finance' },
+                  { value: 'recruiter', label: 'Recruiter' },
+                  { value: 'support', label: 'Support' },
+                  { value: 'external_payroll', label: 'External Payroll' }
+                ]}
+                value={invitePreview.role}
+                onChange={(value) => setInvitePreview({ ...invitePreview, role: value })}
+              />
+
+            </div>
+
+            <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'flex-end', marginTop: 'var(--spacing-xl)' }}>
+              <Button onClick={() => setShowInviteModal(false)} variant="ghost" style={{ minWidth: '100px' }}>
+                Cancel
+              </Button>
+              <Button onClick={handleInvite} disabled={inviting} variant="confirmation" style={{ minWidth: '120px' }}>
+                {inviting ? 'Sending...' : 'Send Invitation'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 };

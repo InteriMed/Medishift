@@ -1,0 +1,27 @@
+{
+    "dashboard": {
+        "completeProfile": {
+            "completeProfileTitle": "Completa il tuo Profilo",
+            "completeProfileDescription": "Benvenuto su MediShift! Per accedere a tutte le funzionalità della piattaforma, completa prima il tuo profilo.",
+            "completeProfileButton": "Ho capito, crea il mio profilo",
+            "messages": "Benvenuto su MediShift!",
+            "calendar": "Calendario",
+            "marketplace": "Marketplace",
+            "settings": "Impostazioni",
+            "incompleteProfile": "Il tuo profilo è incompleto",
+            "completeProfileFirst": "Completa prima il tuo profilo"
+        },
+        "overview": {
+            "title": "Benvenuto su MediShift!",
+            "welcome": "Ciao",
+            "welcomeTitle": "Benvenuto su MediShift!",
+            "totalContracts": "Contratti Totali",
+            "activeHours": "Ore Attive",
+            "earnings": "Guadagni",
+            "upcomingJobs": "Lavori in Arrivo",
+            "recentActivity": "Attività Recente",
+            "noRecentActivity": "Nessuna attività recente da mostrare"
+        },
+        "loading": "Caricamento dati dashboard..."
+    }
+}

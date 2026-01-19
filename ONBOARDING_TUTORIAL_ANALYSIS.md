@@ -209,3 +209,5 @@ After fixes, verify:
 - `useTutorialRules.js` and `useTutorialLifecycle.js` appear to be from a newer approach that wasn't integrated
 - All functionality currently works through `TutorialContext.js` except for the profile tab unlocking issue
 
+
+

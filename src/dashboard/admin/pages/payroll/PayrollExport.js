@@ -33,8 +33,15 @@ const PayrollExport = () => {
         try {
             // Get total professional users
             const usersRef = collection(db, 'users');
-            const professionalQuery = query(usersRef, where('roles', 'array-contains', 'professional'));
-            const usersSnapshot = await getDocs(professionalQuery);
+            const usersSnapshot = await getDocs(usersRef);
+
+            // Filter professionals locally to support both role (string) and roles (array)
+            const professionalUsers = usersSnapshot.docs.filter(docSnap => {
+                const data = docSnap.data();
+                const role = data.role?.toLowerCase();
+                const roles = (Array.isArray(data.roles) ? data.roles : []).map(r => r.toLowerCase());
+                return role === 'professional' || roles.includes('professional') || data.isProfessionalProfileComplete;
+            });
 
             // Get all completed shifts
             const shiftsRef = collection(db, 'shifts');
@@ -50,18 +57,13 @@ const PayrollExport = () => {
             const unexportedSnapshot = await getDocs(unexportedQuery);
 
             // Get unexported users
-            const unexportedUsersQuery = query(
-                usersRef,
-                where('roles', 'array-contains', 'professional')
-            );
-            const allUsersSnapshot = await getDocs(unexportedUsersQuery);
             let unexportedUsersCount = 0;
-            for (const userDoc of allUsersSnapshot.docs) {
+            professionalUsers.forEach((userDoc) => {
                 const userData = userDoc.data();
                 if (!userData.userPayrollExported) {
                     unexportedUsersCount++;
                 }
-            }
+            });
 
             // Calculate total hours
             let totalHours = 0;
@@ -76,7 +78,7 @@ const PayrollExport = () => {
             });
 
             setStats({
-                totalUsers: usersSnapshot.size,
+                totalUsers: professionalUsers.length,
                 totalShifts: shiftsSnapshot.size,
                 totalHours: Math.round(totalHours),
                 unexportedCount: unexportedSnapshot.size,
@@ -389,10 +391,17 @@ const PayrollExport = () => {
     const handleUserExport = async () => {
         try {
             const usersRef = collection(db, 'users');
-            const professionalQuery = query(usersRef, where('roles', 'array-contains', 'professional'));
-            const usersSnapshot = await getDocs(professionalQuery);
+            const usersSnapshot = await getDocs(usersRef);
 
-            if (usersSnapshot.empty) {
+            // Filter professionals locally to support both role (string) and roles (array)
+            const professionalDocs = usersSnapshot.docs.filter(docSnap => {
+                const data = docSnap.data();
+                const role = data.role?.toLowerCase();
+                const roles = (Array.isArray(data.roles) ? data.roles : []).map(r => r.toLowerCase());
+                return role === 'professional' || roles.includes('professional') || data.isProfessionalProfileComplete;
+            });
+
+            if (professionalDocs.length === 0) {
                 alert('No professional users found.');
                 setLoading(false);
                 return;
@@ -402,7 +411,7 @@ const PayrollExport = () => {
             const userIdsToUpdate = [];
             const exportAllUsers = exportType === 'allUsers';
 
-            for (const userDoc of usersSnapshot.docs) {
+            for (const userDoc of professionalDocs) {
                 const userData = userDoc.data();
                 const userId = userDoc.id;
 
@@ -728,18 +737,18 @@ const PayrollExport = () => {
     ];
 
     return (
-        <div style={{ 
-            padding: 'var(--spacing-xl)', 
-            maxWidth: '1400px', 
+        <div style={{
+            padding: 'var(--spacing-xl)',
+            maxWidth: '1400px',
             margin: '0 auto',
             display: 'flex',
             flexDirection: 'column',
             gap: 'var(--spacing-xl)'
         }}>
             <div>
-                <h1 style={{ 
-                    fontSize: 'var(--font-size-xxxlarge)', 
-                    fontWeight: 'var(--font-weight-large)', 
+                <h1 style={{
+                    fontSize: 'var(--font-size-xxxlarge)',
+                    fontWeight: 'var(--font-weight-large)',
                     color: 'var(--text-color)',
                     marginBottom: 0,
                     letterSpacing: '-0.5px'
@@ -748,455 +757,455 @@ const PayrollExport = () => {
                 </h1>
             </div>
 
-                <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-                    gap: 'var(--spacing-lg)',
-                    marginBottom: 'var(--spacing-xl)'
-                }}>
-                    <div style={{ 
-                        background: 'var(--background-div-color)', 
-                        padding: 'var(--spacing-lg)', 
-                        borderRadius: 'var(--border-radius-md)',
-                        border: '1px solid var(--grey-2)',
-                        boxShadow: 'var(--shadow-sm)',
-                        transition: 'var(--transition-normal)'
-                    }}>
-                        <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 'var(--spacing-md)', 
-                            marginBottom: 'var(--spacing-md)'
-                        }}>
-                            <Users style={{ width: '24px', height: '24px', color: 'var(--primary-color)' }} />
-                            <span style={{ 
-                                fontSize: 'var(--font-size-small)', 
-                                color: 'var(--text-light-color)',
-                                fontWeight: 'var(--font-weight-medium)'
-                            }}>
-                                {t('admin:payroll.stats.totalProfessionals', 'Total Professionals')}
-                            </span>
-                        </div>
-                        <div style={{ 
-                            fontSize: 'var(--font-size-xxlarge)', 
-                            fontWeight: 'var(--font-weight-large)',
-                            color: 'var(--text-color)'
-                        }}>
-                            {stats.totalUsers}
-                        </div>
-                    </div>
-
-                    <div style={{ 
-                        background: 'var(--background-div-color)', 
-                        padding: 'var(--spacing-lg)', 
-                        borderRadius: 'var(--border-radius-md)',
-                        border: '1px solid var(--grey-2)',
-                        boxShadow: 'var(--shadow-sm)',
-                        transition: 'var(--transition-normal)'
-                    }}>
-                        <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 'var(--spacing-md)', 
-                            marginBottom: 'var(--spacing-md)'
-                        }}>
-                            <FileText style={{ width: '24px', height: '24px', color: 'var(--green-3)' }} />
-                            <span style={{ 
-                                fontSize: 'var(--font-size-small)', 
-                                color: 'var(--text-light-color)',
-                                fontWeight: 'var(--font-weight-medium)'
-                            }}>
-                                {t('admin:payroll.stats.completedShifts', 'Completed Shifts')}
-                            </span>
-                        </div>
-                        <div style={{ 
-                            fontSize: 'var(--font-size-xxlarge)', 
-                            fontWeight: 'var(--font-weight-large)',
-                            color: 'var(--text-color)'
-                        }}>
-                            {stats.totalShifts}
-                        </div>
-                    </div>
-
-                    <div style={{ 
-                        background: 'var(--background-div-color)', 
-                        padding: 'var(--spacing-lg)', 
-                        borderRadius: 'var(--border-radius-md)',
-                        border: '1px solid var(--grey-2)',
-                        boxShadow: 'var(--shadow-sm)',
-                        transition: 'var(--transition-normal)'
-                    }}>
-                        <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 'var(--spacing-md)', 
-                            marginBottom: 'var(--spacing-md)'
-                        }}>
-                            <Clock style={{ width: '24px', height: '24px', color: 'var(--blue-3)' }} />
-                            <span style={{ 
-                                fontSize: 'var(--font-size-small)', 
-                                color: 'var(--text-light-color)',
-                                fontWeight: 'var(--font-weight-medium)'
-                            }}>
-                                {t('admin:payroll.stats.totalHours', 'Total Hours')}
-                            </span>
-                        </div>
-                        <div style={{ 
-                            fontSize: 'var(--font-size-xxlarge)', 
-                            fontWeight: 'var(--font-weight-large)',
-                            color: 'var(--text-color)'
-                        }}>
-                            {stats.totalHours}
-                        </div>
-                    </div>
-
-                    <div style={{ 
-                        background: 'var(--background-div-color)', 
-                        padding: 'var(--spacing-lg)', 
-                        borderRadius: 'var(--border-radius-md)',
-                        border: '1px solid var(--grey-2)',
-                        boxShadow: 'var(--shadow-sm)',
-                        transition: 'var(--transition-normal)'
-                    }}>
-                        <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 'var(--spacing-md)', 
-                            marginBottom: 'var(--spacing-md)'
-                        }}>
-                            <CheckCircle style={{ width: '24px', height: '24px', color: 'var(--yellow-3)' }} />
-                            <span style={{ 
-                                fontSize: 'var(--font-size-small)', 
-                                color: 'var(--text-light-color)',
-                                fontWeight: 'var(--font-weight-medium)'
-                            }}>
-                                {t('admin:payroll.stats.unexportedShifts', 'Unexported Shifts')}
-                            </span>
-                        </div>
-                        <div style={{ 
-                            fontSize: 'var(--font-size-xxlarge)', 
-                            fontWeight: 'var(--font-weight-large)',
-                            color: 'var(--yellow-3)'
-                        }}>
-                            {stats.unexportedCount}
-                        </div>
-                    </div>
-
-                    <div style={{ 
-                        background: 'var(--background-div-color)', 
-                        padding: 'var(--spacing-lg)', 
-                        borderRadius: 'var(--border-radius-md)',
-                        border: '1px solid var(--grey-2)',
-                        boxShadow: 'var(--shadow-sm)',
-                        transition: 'var(--transition-normal)'
-                    }}>
-                        <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 'var(--spacing-md)', 
-                            marginBottom: 'var(--spacing-md)'
-                        }}>
-                            <Users style={{ width: '24px', height: '24px', color: 'var(--purple-3)' }} />
-                            <span style={{ 
-                                fontSize: 'var(--font-size-small)', 
-                                color: 'var(--text-light-color)',
-                                fontWeight: 'var(--font-weight-medium)'
-                            }}>
-                                {t('admin:payroll.stats.unexportedUsers', 'Unexported Users')}
-                            </span>
-                        </div>
-                        <div style={{ 
-                            fontSize: 'var(--font-size-xxlarge)', 
-                            fontWeight: 'var(--font-weight-large)',
-                            color: 'var(--purple-3)'
-                        }}>
-                            {stats.unexportedUsersCount}
-                        </div>
-                    </div>
-                </div>
-
-                <div style={{ 
-                    background: 'var(--background-div-color)', 
-                    padding: 'var(--spacing-xl)', 
-                    borderRadius: 'var(--border-radius-lg)',
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: 'var(--spacing-lg)',
+                marginBottom: 'var(--spacing-xl)'
+            }}>
+                <div style={{
+                    background: 'var(--background-div-color)',
+                    padding: 'var(--spacing-lg)',
+                    borderRadius: 'var(--border-radius-md)',
                     border: '1px solid var(--grey-2)',
-                    boxShadow: 'var(--shadow-sm)'
+                    boxShadow: 'var(--shadow-sm)',
+                    transition: 'var(--transition-normal)'
                 }}>
-                    <h2 style={{ 
-                        fontSize: 'var(--font-size-xlarge)', 
-                        fontWeight: 'var(--font-weight-large)', 
-                        marginBottom: 'var(--spacing-lg)',
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--spacing-md)',
+                        marginBottom: 'var(--spacing-md)'
+                    }}>
+                        <Users style={{ width: '24px', height: '24px', color: 'var(--primary-color)' }} />
+                        <span style={{
+                            fontSize: 'var(--font-size-small)',
+                            color: 'var(--text-light-color)',
+                            fontWeight: 'var(--font-weight-medium)'
+                        }}>
+                            {t('admin:payroll.stats.totalProfessionals', 'Total Professionals')}
+                        </span>
+                    </div>
+                    <div style={{
+                        fontSize: 'var(--font-size-xxlarge)',
+                        fontWeight: 'var(--font-weight-large)',
                         color: 'var(--text-color)'
                     }}>
-                        {t('admin:payroll.configuration.title', 'Export Configuration')}
-                    </h2>
-
-                    <div style={{ 
-                        display: 'flex', 
-                        gap: 'var(--spacing-sm)',
-                        marginBottom: 'var(--spacing-lg)',
-                        borderBottom: '2px solid var(--grey-2)'
-                    }}>
-                        <button
-                            onClick={() => {
-                                setActiveTab('shifts');
-                                setExportType('weekly');
-                            }}
-                            style={{
-                                padding: 'var(--spacing-md) var(--spacing-lg)',
-                                fontSize: 'var(--font-size-medium)',
-                                fontWeight: 'var(--font-weight-medium)',
-                                color: activeTab === 'shifts' ? 'var(--color-logo-2)' : 'var(--text-light-color)',
-                                backgroundColor: 'transparent',
-                                border: 'none',
-                                borderBottom: activeTab === 'shifts' ? '3px solid var(--color-logo-2)' : '3px solid transparent',
-                                cursor: 'pointer',
-                                transition: 'var(--transition-normal)',
-                                marginBottom: '-2px'
-                            }}
-                        >
-                            {t('admin:payroll.tabs.shifts', 'Shifts')}
-                        </button>
-                        <button
-                            onClick={() => {
-                                setActiveTab('users');
-                                setExportType('unexportedUsers');
-                            }}
-                            style={{
-                                padding: 'var(--spacing-md) var(--spacing-lg)',
-                                fontSize: 'var(--font-size-medium)',
-                                fontWeight: 'var(--font-weight-medium)',
-                                color: activeTab === 'users' ? 'var(--color-logo-2)' : 'var(--text-light-color)',
-                                backgroundColor: 'transparent',
-                                border: 'none',
-                                borderBottom: activeTab === 'users' ? '3px solid var(--color-logo-2)' : '3px solid transparent',
-                                cursor: 'pointer',
-                                transition: 'var(--transition-normal)',
-                                marginBottom: '-2px'
-                            }}
-                        >
-                            {t('admin:payroll.tabs.users', 'Users')}
-                        </button>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-                        {activeTab === 'shifts' && (
-                            <>
-                                <div>
-                                    <SimpleDropdown
-                                        label={t('admin:payroll.configuration.exportType', 'Export Type')}
-                                        options={shiftsExportTypeOptions}
-                                        value={exportType}
-                                        onChange={setExportType}
-                                        searchable={false}
-                                    />
-                                </div>
-
-                                {exportType === 'period' && (
-                                    <div style={{ 
-                                        display: 'grid', 
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-                                        gap: 'var(--spacing-lg)'
-                                    }}>
-                                        <PersonnalizedInputField
-                                            label={t('admin:payroll.configuration.startDate', 'Start Date')}
-                                            type="date"
-                                            value={startDate}
-                                            onChange={(e) => setStartDate(e.target.value)}
-                                        />
-                                        <PersonnalizedInputField
-                                            label={t('admin:payroll.configuration.endDate', 'End Date')}
-                                            type="date"
-                                            value={endDate}
-                                            onChange={(e) => setEndDate(e.target.value)}
-                                        />
-                                    </div>
-                                )}
-
-                                <div>
-                                    <SimpleDropdown
-                                        label={t('admin:payroll.configuration.exportFormat', 'Export Format')}
-                                        options={exportFormatOptions}
-                                        value={exportFormat}
-                                        onChange={setExportFormat}
-                                        searchable={false}
-                                    />
-                                </div>
-
-                                <div style={{ marginTop: 'var(--spacing-md)' }}>
-                                    <Button
-                                        onClick={handleExport}
-                                        disabled={loading || (exportType === 'period' && (!startDate || !endDate))}
-                                        variant="primary"
-                                        className="actionButton"
-                                        style={{ 
-                                            width: '100%',
-                                            padding: 'var(--spacing-md) var(--spacing-xl)',
-                                            fontSize: 'var(--font-size-medium)',
-                                            fontWeight: 'var(--font-weight-medium)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: 'var(--spacing-sm)',
-                                            backgroundColor: 'var(--color-logo-2)',
-                                            color: 'var(--text-color-logo-2)'
-                                        }}
-                                    >
-                                        {exportFormat === 'csv' && <FileText style={{ width: '20px', height: '20px' }} />}
-                                        {exportFormat === 'xml' && <FileCode style={{ width: '20px', height: '20px' }} />}
-                                        {exportFormat === 'txt' && <FileType style={{ width: '20px', height: '20px' }} />}
-                                        <Download style={{ width: '20px', height: '20px' }} />
-                                        {loading 
-                                            ? t('admin:payroll.exporting', 'Exporting...') 
-                                            : t('admin:payroll.exportButton', 'Export Payroll Data')
-                                        }
-                                    </Button>
-                                </div>
-                            </>
-                        )}
-
-                        {activeTab === 'users' && (
-                            <>
-                                <div>
-                                    <SimpleDropdown
-                                        label={t('admin:payroll.configuration.exportType', 'Export Type')}
-                                        options={usersExportTypeOptions}
-                                        value={exportType}
-                                        onChange={setExportType}
-                                        searchable={false}
-                                    />
-                                </div>
-
-                                <div>
-                                    <SimpleDropdown
-                                        label={t('admin:payroll.configuration.exportFormat', 'Export Format')}
-                                        options={exportFormatOptions}
-                                        value={exportFormat}
-                                        onChange={setExportFormat}
-                                        searchable={false}
-                                    />
-                                </div>
-
-                                <div style={{ marginTop: 'var(--spacing-md)' }}>
-                                    <Button
-                                        onClick={handleExport}
-                                        disabled={loading}
-                                        variant="primary"
-                                        className="actionButton"
-                                        style={{ 
-                                            width: '100%',
-                                            padding: 'var(--spacing-md) var(--spacing-xl)',
-                                            fontSize: 'var(--font-size-medium)',
-                                            fontWeight: 'var(--font-weight-medium)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: 'var(--spacing-sm)',
-                                            backgroundColor: 'var(--color-logo-2)',
-                                            color: 'var(--text-color-logo-2)'
-                                        }}
-                                    >
-                                        {exportFormat === 'csv' && <FileText style={{ width: '20px', height: '20px' }} />}
-                                        {exportFormat === 'xml' && <FileCode style={{ width: '20px', height: '20px' }} />}
-                                        {exportFormat === 'txt' && <FileType style={{ width: '20px', height: '20px' }} />}
-                                        <Download style={{ width: '20px', height: '20px' }} />
-                                        {loading 
-                                            ? t('admin:payroll.exporting', 'Exporting...') 
-                                            : t('admin:payroll.exportButton', 'Export Payroll Data')
-                                        }
-                                    </Button>
-                                </div>
-                            </>
-                        )}
+                        {stats.totalUsers}
                     </div>
                 </div>
 
-                <div style={{ 
-                    background: 'var(--blue-1)', 
-                    border: '1px solid var(--blue-2)', 
-                    borderRadius: 'var(--border-radius-md)', 
-                    padding: 'var(--spacing-lg)', 
-                    display: 'flex', 
-                    gap: 'var(--spacing-lg)',
-                    boxShadow: 'var(--shadow-sm)'
+                <div style={{
+                    background: 'var(--background-div-color)',
+                    padding: 'var(--spacing-lg)',
+                    borderRadius: 'var(--border-radius-md)',
+                    border: '1px solid var(--grey-2)',
+                    boxShadow: 'var(--shadow-sm)',
+                    transition: 'var(--transition-normal)'
                 }}>
-                    <Info style={{ 
-                        width: '24px', 
-                        height: '24px', 
-                        color: 'var(--blue-3)', 
-                        flexShrink: 0, 
-                        marginTop: '2px'
-                    }} />
-                    <div>
-                        <h3 style={{ 
-                            fontWeight: 'var(--font-weight-large)', 
-                            color: 'var(--blue-4)', 
-                            marginBottom: 'var(--spacing-md)',
-                            fontSize: 'var(--font-size-large)'
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--spacing-md)',
+                        marginBottom: 'var(--spacing-md)'
+                    }}>
+                        <FileText style={{ width: '24px', height: '24px', color: 'var(--green-3)' }} />
+                        <span style={{
+                            fontSize: 'var(--font-size-small)',
+                            color: 'var(--text-light-color)',
+                            fontWeight: 'var(--font-weight-medium)'
                         }}>
-                            {t('admin:payroll.info.title', 'Export Information')}
-                        </h3>
-                        <ul style={{ 
-                            fontSize: 'var(--font-size-small)', 
-                            color: 'var(--blue-4)', 
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 'var(--spacing-sm)',
-                            margin: 0,
-                            paddingLeft: 'var(--spacing-md)'
-                        }}>
-                            {activeTab === 'shifts' ? (
-                                <>
-                                    <li>
-                                        <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                                            {t('admin:payroll.info.weekly', '• Weekly:')}
-                                        </span>
-                                        {' '}
-                                        {t('admin:payroll.info.weeklyDesc', 'Exports shifts from the current week (Monday to Sunday)')}
-                                    </li>
-                                    <li>
-                                        <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                                            {t('admin:payroll.info.monthly', '• Monthly:')}
-                                        </span>
-                                        {' '}
-                                        {t('admin:payroll.info.monthlyDesc', 'Exports shifts from the current month')}
-                                    </li>
-                                    <li>
-                                        <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                                            {t('admin:payroll.info.customPeriod', '• Custom Period:')}
-                                        </span>
-                                        {' '}
-                                        {t('admin:payroll.info.customPeriodDesc', 'Exports shifts within your specified date range')}
-                                    </li>
-                                    <li>
-                                        <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                                            {t('admin:payroll.info.unexported', '• Unexported:')}
-                                        </span>
-                                        {' '}
-                                        {t('admin:payroll.info.unexportedDesc', 'Exports all shifts not previously exported (marks them as exported after download)')}
-                                    </li>
-                                </>
-                            ) : (
-                                <>
-                                    <li>
-                                        <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                                            {t('admin:payroll.info.unexportedUsers', '• Unexported Users:')}
-                                        </span>
-                                        {' '}
-                                        {t('admin:payroll.info.unexportedUsersDesc', 'Exports all user profiles with billing information that have not been exported yet (marks them as exported after download)')}
-                                    </li>
-                                    <li>
-                                        <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                                            {t('admin:payroll.info.allUsers', '• All Users:')}
-                                        </span>
-                                        {' '}
-                                        {t('admin:payroll.info.allUsersDesc', 'Exports all user profiles with billing information regardless of export status (does not mark them as exported)')}
-                                    </li>
-                                </>
-                            )}
-                        </ul>
+                            {t('admin:payroll.stats.completedShifts', 'Completed Shifts')}
+                        </span>
+                    </div>
+                    <div style={{
+                        fontSize: 'var(--font-size-xxlarge)',
+                        fontWeight: 'var(--font-weight-large)',
+                        color: 'var(--text-color)'
+                    }}>
+                        {stats.totalShifts}
                     </div>
                 </div>
+
+                <div style={{
+                    background: 'var(--background-div-color)',
+                    padding: 'var(--spacing-lg)',
+                    borderRadius: 'var(--border-radius-md)',
+                    border: '1px solid var(--grey-2)',
+                    boxShadow: 'var(--shadow-sm)',
+                    transition: 'var(--transition-normal)'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--spacing-md)',
+                        marginBottom: 'var(--spacing-md)'
+                    }}>
+                        <Clock style={{ width: '24px', height: '24px', color: 'var(--blue-3)' }} />
+                        <span style={{
+                            fontSize: 'var(--font-size-small)',
+                            color: 'var(--text-light-color)',
+                            fontWeight: 'var(--font-weight-medium)'
+                        }}>
+                            {t('admin:payroll.stats.totalHours', 'Total Hours')}
+                        </span>
+                    </div>
+                    <div style={{
+                        fontSize: 'var(--font-size-xxlarge)',
+                        fontWeight: 'var(--font-weight-large)',
+                        color: 'var(--text-color)'
+                    }}>
+                        {stats.totalHours}
+                    </div>
+                </div>
+
+                <div style={{
+                    background: 'var(--background-div-color)',
+                    padding: 'var(--spacing-lg)',
+                    borderRadius: 'var(--border-radius-md)',
+                    border: '1px solid var(--grey-2)',
+                    boxShadow: 'var(--shadow-sm)',
+                    transition: 'var(--transition-normal)'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--spacing-md)',
+                        marginBottom: 'var(--spacing-md)'
+                    }}>
+                        <CheckCircle style={{ width: '24px', height: '24px', color: 'var(--yellow-3)' }} />
+                        <span style={{
+                            fontSize: 'var(--font-size-small)',
+                            color: 'var(--text-light-color)',
+                            fontWeight: 'var(--font-weight-medium)'
+                        }}>
+                            {t('admin:payroll.stats.unexportedShifts', 'Unexported Shifts')}
+                        </span>
+                    </div>
+                    <div style={{
+                        fontSize: 'var(--font-size-xxlarge)',
+                        fontWeight: 'var(--font-weight-large)',
+                        color: 'var(--yellow-3)'
+                    }}>
+                        {stats.unexportedCount}
+                    </div>
+                </div>
+
+                <div style={{
+                    background: 'var(--background-div-color)',
+                    padding: 'var(--spacing-lg)',
+                    borderRadius: 'var(--border-radius-md)',
+                    border: '1px solid var(--grey-2)',
+                    boxShadow: 'var(--shadow-sm)',
+                    transition: 'var(--transition-normal)'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--spacing-md)',
+                        marginBottom: 'var(--spacing-md)'
+                    }}>
+                        <Users style={{ width: '24px', height: '24px', color: 'var(--purple-3)' }} />
+                        <span style={{
+                            fontSize: 'var(--font-size-small)',
+                            color: 'var(--text-light-color)',
+                            fontWeight: 'var(--font-weight-medium)'
+                        }}>
+                            {t('admin:payroll.stats.unexportedUsers', 'Unexported Users')}
+                        </span>
+                    </div>
+                    <div style={{
+                        fontSize: 'var(--font-size-xxlarge)',
+                        fontWeight: 'var(--font-weight-large)',
+                        color: 'var(--purple-3)'
+                    }}>
+                        {stats.unexportedUsersCount}
+                    </div>
+                </div>
+            </div>
+
+            <div style={{
+                background: 'var(--background-div-color)',
+                padding: 'var(--spacing-xl)',
+                borderRadius: 'var(--border-radius-lg)',
+                border: '1px solid var(--grey-2)',
+                boxShadow: 'var(--shadow-sm)'
+            }}>
+                <h2 style={{
+                    fontSize: 'var(--font-size-xlarge)',
+                    fontWeight: 'var(--font-weight-large)',
+                    marginBottom: 'var(--spacing-lg)',
+                    color: 'var(--text-color)'
+                }}>
+                    {t('admin:payroll.configuration.title', 'Export Configuration')}
+                </h2>
+
+                <div style={{
+                    display: 'flex',
+                    gap: 'var(--spacing-sm)',
+                    marginBottom: 'var(--spacing-lg)',
+                    borderBottom: '2px solid var(--grey-2)'
+                }}>
+                    <button
+                        onClick={() => {
+                            setActiveTab('shifts');
+                            setExportType('weekly');
+                        }}
+                        style={{
+                            padding: 'var(--spacing-md) var(--spacing-lg)',
+                            fontSize: 'var(--font-size-medium)',
+                            fontWeight: 'var(--font-weight-medium)',
+                            color: activeTab === 'shifts' ? 'var(--color-logo-2)' : 'var(--text-light-color)',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderBottom: activeTab === 'shifts' ? '3px solid var(--color-logo-2)' : '3px solid transparent',
+                            cursor: 'pointer',
+                            transition: 'var(--transition-normal)',
+                            marginBottom: '-2px'
+                        }}
+                    >
+                        {t('admin:payroll.tabs.shifts', 'Shifts')}
+                    </button>
+                    <button
+                        onClick={() => {
+                            setActiveTab('users');
+                            setExportType('unexportedUsers');
+                        }}
+                        style={{
+                            padding: 'var(--spacing-md) var(--spacing-lg)',
+                            fontSize: 'var(--font-size-medium)',
+                            fontWeight: 'var(--font-weight-medium)',
+                            color: activeTab === 'users' ? 'var(--color-logo-2)' : 'var(--text-light-color)',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderBottom: activeTab === 'users' ? '3px solid var(--color-logo-2)' : '3px solid transparent',
+                            cursor: 'pointer',
+                            transition: 'var(--transition-normal)',
+                            marginBottom: '-2px'
+                        }}
+                    >
+                        {t('admin:payroll.tabs.users', 'Users')}
+                    </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+                    {activeTab === 'shifts' && (
+                        <>
+                            <div>
+                                <SimpleDropdown
+                                    label={t('admin:payroll.configuration.exportType', 'Export Type')}
+                                    options={shiftsExportTypeOptions}
+                                    value={exportType}
+                                    onChange={setExportType}
+                                    searchable={false}
+                                />
+                            </div>
+
+                            {exportType === 'period' && (
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                                    gap: 'var(--spacing-lg)'
+                                }}>
+                                    <PersonnalizedInputField
+                                        label={t('admin:payroll.configuration.startDate', 'Start Date')}
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                    />
+                                    <PersonnalizedInputField
+                                        label={t('admin:payroll.configuration.endDate', 'End Date')}
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <SimpleDropdown
+                                    label={t('admin:payroll.configuration.exportFormat', 'Export Format')}
+                                    options={exportFormatOptions}
+                                    value={exportFormat}
+                                    onChange={setExportFormat}
+                                    searchable={false}
+                                />
+                            </div>
+
+                            <div style={{ marginTop: 'var(--spacing-md)' }}>
+                                <Button
+                                    onClick={handleExport}
+                                    disabled={loading || (exportType === 'period' && (!startDate || !endDate))}
+                                    variant="primary"
+                                    className="actionButton"
+                                    style={{
+                                        width: '100%',
+                                        padding: 'var(--spacing-md) var(--spacing-xl)',
+                                        fontSize: 'var(--font-size-medium)',
+                                        fontWeight: 'var(--font-weight-medium)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 'var(--spacing-sm)',
+                                        backgroundColor: 'var(--color-logo-2)',
+                                        color: 'var(--text-color-logo-2)'
+                                    }}
+                                >
+                                    {exportFormat === 'csv' && <FileText style={{ width: '20px', height: '20px' }} />}
+                                    {exportFormat === 'xml' && <FileCode style={{ width: '20px', height: '20px' }} />}
+                                    {exportFormat === 'txt' && <FileType style={{ width: '20px', height: '20px' }} />}
+                                    <Download style={{ width: '20px', height: '20px' }} />
+                                    {loading
+                                        ? t('admin:payroll.exporting', 'Exporting...')
+                                        : t('admin:payroll.exportButton', 'Export Payroll Data')
+                                    }
+                                </Button>
+                            </div>
+                        </>
+                    )}
+
+                    {activeTab === 'users' && (
+                        <>
+                            <div>
+                                <SimpleDropdown
+                                    label={t('admin:payroll.configuration.exportType', 'Export Type')}
+                                    options={usersExportTypeOptions}
+                                    value={exportType}
+                                    onChange={setExportType}
+                                    searchable={false}
+                                />
+                            </div>
+
+                            <div>
+                                <SimpleDropdown
+                                    label={t('admin:payroll.configuration.exportFormat', 'Export Format')}
+                                    options={exportFormatOptions}
+                                    value={exportFormat}
+                                    onChange={setExportFormat}
+                                    searchable={false}
+                                />
+                            </div>
+
+                            <div style={{ marginTop: 'var(--spacing-md)' }}>
+                                <Button
+                                    onClick={handleExport}
+                                    disabled={loading}
+                                    variant="primary"
+                                    className="actionButton"
+                                    style={{
+                                        width: '100%',
+                                        padding: 'var(--spacing-md) var(--spacing-xl)',
+                                        fontSize: 'var(--font-size-medium)',
+                                        fontWeight: 'var(--font-weight-medium)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 'var(--spacing-sm)',
+                                        backgroundColor: 'var(--color-logo-2)',
+                                        color: 'var(--text-color-logo-2)'
+                                    }}
+                                >
+                                    {exportFormat === 'csv' && <FileText style={{ width: '20px', height: '20px' }} />}
+                                    {exportFormat === 'xml' && <FileCode style={{ width: '20px', height: '20px' }} />}
+                                    {exportFormat === 'txt' && <FileType style={{ width: '20px', height: '20px' }} />}
+                                    <Download style={{ width: '20px', height: '20px' }} />
+                                    {loading
+                                        ? t('admin:payroll.exporting', 'Exporting...')
+                                        : t('admin:payroll.exportButton', 'Export Payroll Data')
+                                    }
+                                </Button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            <div style={{
+                background: 'var(--blue-1)',
+                border: '1px solid var(--blue-2)',
+                borderRadius: 'var(--border-radius-md)',
+                padding: 'var(--spacing-lg)',
+                display: 'flex',
+                gap: 'var(--spacing-lg)',
+                boxShadow: 'var(--shadow-sm)'
+            }}>
+                <Info style={{
+                    width: '24px',
+                    height: '24px',
+                    color: 'var(--blue-3)',
+                    flexShrink: 0,
+                    marginTop: '2px'
+                }} />
+                <div>
+                    <h3 style={{
+                        fontWeight: 'var(--font-weight-large)',
+                        color: 'var(--blue-4)',
+                        marginBottom: 'var(--spacing-md)',
+                        fontSize: 'var(--font-size-large)'
+                    }}>
+                        {t('admin:payroll.info.title', 'Export Information')}
+                    </h3>
+                    <ul style={{
+                        fontSize: 'var(--font-size-small)',
+                        color: 'var(--blue-4)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 'var(--spacing-sm)',
+                        margin: 0,
+                        paddingLeft: 'var(--spacing-md)'
+                    }}>
+                        {activeTab === 'shifts' ? (
+                            <>
+                                <li>
+                                    <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                                        {t('admin:payroll.info.weekly', '• Weekly:')}
+                                    </span>
+                                    {' '}
+                                    {t('admin:payroll.info.weeklyDesc', 'Exports shifts from the current week (Monday to Sunday)')}
+                                </li>
+                                <li>
+                                    <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                                        {t('admin:payroll.info.monthly', '• Monthly:')}
+                                    </span>
+                                    {' '}
+                                    {t('admin:payroll.info.monthlyDesc', 'Exports shifts from the current month')}
+                                </li>
+                                <li>
+                                    <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                                        {t('admin:payroll.info.customPeriod', '• Custom Period:')}
+                                    </span>
+                                    {' '}
+                                    {t('admin:payroll.info.customPeriodDesc', 'Exports shifts within your specified date range')}
+                                </li>
+                                <li>
+                                    <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                                        {t('admin:payroll.info.unexported', '• Unexported:')}
+                                    </span>
+                                    {' '}
+                                    {t('admin:payroll.info.unexportedDesc', 'Exports all shifts not previously exported (marks them as exported after download)')}
+                                </li>
+                            </>
+                        ) : (
+                            <>
+                                <li>
+                                    <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                                        {t('admin:payroll.info.unexportedUsers', '• Unexported Users:')}
+                                    </span>
+                                    {' '}
+                                    {t('admin:payroll.info.unexportedUsersDesc', 'Exports all user profiles with billing information that have not been exported yet (marks them as exported after download)')}
+                                </li>
+                                <li>
+                                    <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                                        {t('admin:payroll.info.allUsers', '• All Users:')}
+                                    </span>
+                                    {' '}
+                                    {t('admin:payroll.info.allUsersDesc', 'Exports all user profiles with billing information regardless of export status (does not mark them as exported)')}
+                                </li>
+                            </>
+                        )}
+                    </ul>
+                </div>
+            </div>
         </div>
     );
 };

@@ -244,7 +244,7 @@ const onPayrollRequestCreated = onDocumentCreated(
     {
         document: 'payroll_requests/{requestId}',
         region: config.region,
-        database: 'medishift'
+        database: '(default)'
     },
     async (event) => {
         const data = event.data.data();

@@ -154,7 +154,60 @@
                 "hasGLMNoGLN": "Ich habe einen GLM und Mitarbeiter ohne GLN",
                 "hasGLMNoGLNDesc": "Aktivieren, wenn Sie einen Manager (GLM) haben, aber keine eigene GLN"
             },
-            "exitOnboarding": "Onboarding beenden"
+            "exitOnboarding": "Onboarding beenden",
+            "step1": {
+                "title": "Rechtliche Überlegungen",
+                "facilityLegalNotice": "Rechtliche Hinweise für Einrichtungen/Ketten",
+                "facilityLegalText1": "Als Vertreter einer Einrichtung sind Sie dafür verantwortlich, dass alle bereitgestellten Daten korrekt sind und dass Sie die Befugnis haben, im Namen der Organisation zu handeln.",
+                "facilityLegalText2": "Die schweizerischen Arbeitsgesetze bezüglich maximaler Arbeitszeiten (LTr) und Ruhezeiten müssen bei der Planung von Schichten strikt eingehalten werden. Arbeitgeber teilen sich die Haftung für Verstöße gegen das Arbeitsrecht, wenn sie von einer Nebenbeschäftigung eines Arbeitnehmers wissen.",
+                "facilityLegalText3": "Durch Fortfahren stimmen Sie unseren Geschäftsbedingungen und Datenverarbeitungsvereinbarungen zu, die speziell für Gesundheitseinrichtungen in der Schweiz angepasst sind.",
+                "professionalLegalNotice": "Rechtliche Hinweise für Fachkräfte/Arbeitnehmer",
+                "professionalLegalText1": "Das schweizerische Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche. Wenn Sie 100% (42h) arbeiten, kann das Übernehmen zusätzlicher Schichten ohne vorherige Genehmigung illegal sein.",
+                "professionalLegalText2": "Die Treuepflicht (Art. 321a OR) verpflichtet Sie, eine schriftliche Genehmigung Ihres Hauptarbeitgebers einzuholen, um für einen Konkurrenten zu arbeiten.",
+                "professionalLegalText3": "Sie müssen Ruhezeiten einhalten: 11 aufeinanderfolgende Ruhestunden sind zwischen Schichten erforderlich. Das Arbeiten während bezahlter Ferien (Urlaub) ist gesetzlich auf Erholungszwecke beschränkt.",
+                "professionalLegalText4": "Durch Fortfahren erkennen Sie an, dass Sie allein für die Verwaltung Ihrer Arbeitszeiten bei verschiedenen Arbeitgebern verantwortlich sind.",
+                "agreementStatus": "Vereinbarungsstatus",
+                "areYouEmployed": "Sind Sie Angestellt",
+                "areYouEmployedDescription": "Dies kann später geändert werden.",
+                "termsAcceptance": "Bedingungen Akzeptieren",
+                "termsAcceptanceDescription": "Bestätigen Sie, dass Sie diesen rechtlichen Bedingungen zustimmen.",
+                "note": "Hinweis: Ihre Auswahl hier bestimmt den rechtlichen Rahmen, der für Ihr Konto und die Schichtverwaltung gilt."
+            },
+            "step2": {
+                "title": "Wählen Sie Ihren Weg",
+                "description": "Definieren Sie Ihre Rolle, um Ihr MediShift-Erlebnis zu personalisieren.",
+                "professional": "Fachkraft",
+                "professionalDescription": "Finden Sie medizinische Schichten in hochwertigen Einrichtungen in Ihrer Nähe.",
+                "facility": "Einrichtung",
+                "facilityDescription": "Rekrutieren Sie qualifizierte Gesundheitstalente und verwalten Sie Ihre Schichten einfach.",
+                "organization": "Organisation",
+                "organizationDescription": "Zentralisierte Verwaltung für mehrere Kliniken und Gesundheitsketten."
+            },
+            "step3": {
+                "chain": {
+                    "title": "Organisationseinrichtung",
+                    "description": "Zugang auf Führungsebene erfordert eine manuelle Überprüfung durch unser Sicherheitsteam.",
+                    "phonePrefix": "Telefonvorwahl",
+                    "phoneNumber": "Telefonnummer",
+                    "phoneNumberPlaceholder": "079 000 00 00",
+                    "messageToSupport": "Nachricht an den Support",
+                    "messagePlaceholder": "Bitte beschreiben Sie Ihre Organisation (Anzahl der Kliniken, Standorte)..."
+                }
+            },
+            "step4": {
+                "title": "Identitätsüberprüfung",
+                "description": "Helfen Sie uns, eine sichere und vertrauenswürdige medizinische Umgebung aufrechtzuerhalten.",
+                "hasGLN": "Ich habe eine GLN-Nummer"
+            },
+            "buttons": {
+                "back": "Zurück",
+                "sendCode": "Code Senden",
+                "validate": "Validieren",
+                "contactAndFinish": "Kontaktieren und Beenden",
+                "verifying": "Wird überprüft...",
+                "completeAccount": "Konto Vervollständigen",
+                "nextStep": "Nächster Schritt"
+            }
         }
     },
     "userMenu": {

@@ -72,89 +72,128 @@
             "noRecentActivity": "Keine aktuellen Aktivitäten anzuzeigen"
         },
         "onboarding": {
-            "welcome": {
-                "title": "Willkommen bei MediShift!",
-                "description": "Lassen Sie uns mit einem kurzen Onboarding-Prozess beginnen, um Ihr Konto einzurichten.",
-                "continue": "Weiter"
+            "verify_account": "Verifizieren Sie Ihr Konto",
+            "verify_intro": "Bitte geben Sie unten Ihre Daten ein. Wir verwenden eine sichere KI-Verifizierung, um Ihr Konto zu zertifizieren.",
+            "step1": {
+                "title": "Rechtliche Überlegungen",
+                "facilityLegalNotice": "Rechtlicher Hinweis für Einrichtungen",
+                "facilityLegalText1": "Als Gesundheitseinrichtung, die InteriMed nutzt, müssen Sie die Einhaltung der Schweizer Arbeitsgesetze sicherstellen, wenn Sie temporäres Personal beschäftigen.",
+                "facilityLegalText2": "Sie sind dafür verantwortlich zu überprüfen, dass temporäre Mitarbeiter die maximalen Arbeitszeiten, Ruhezeiten und andere gesetzliche Anforderungen einhalten.",
+                "facilityLegalText3": "Bitte stellen Sie sicher, dass alle temporären Mitarbeiter die erforderlichen Qualifikationen und Arbeitserlaubnisse besitzen.",
+                "professionalLegalNotice": "Rechtlicher Hinweis für Fachkräfte",
+                "professionalLegalText1": "Für Mitarbeiter, die zu 100% arbeiten (normalerweise 40-42 Stunden/Woche), ist es nahezu unmöglich, legal zusätzliche Schichten in einer anderen Apotheke zu übernehmen.",
+                "professionalLegalText2": "Das Schweizer Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche (45 Stunden in einigen Einzelhandelsbereichen). Ein 100%-Mitarbeiter arbeitet typischerweise 42 Stunden, was nur 8 Stunden Maximum übrig lässt.",
+                "professionalLegalText3": "Gemäss Obligationenrecht (Art. 321a) müssen Sie eine schriftliche Genehmigung Ihres Hauptarbeitgebers einholen, um für einen Konkurrenten zu arbeiten.",
+                "professionalLegalText4": "Das Gesetz verlangt 11 aufeinanderfolgende Stunden Ruhe zwischen Schichten (kann einmal pro Woche auf 8 Stunden reduziert werden).",
+                "agreementStatus": "Status der Vereinbarung",
+                "areYouEmployed": "Sind Sie derzeit bei einer Einrichtung angestellt?",
+                "areYouEmployedDescription": "Aktivieren, wenn Sie für eine Organisation arbeiten",
+                "termsAcceptance": "Bedingungen und Rechtliche Überlegungen",
+                "termsAcceptanceDescription": "Ich verstehe und anerkenne die rechtlichen Überlegungen und Nutzungsbedingungen",
+                "note": "Durch Fortfahren bestätigen Sie, dass Sie die für Ihre Rolle geltenden rechtlichen Überlegungen gelesen und verstanden haben."
             },
-            "roleSelection": {
-                "title": "Welche Art von Konto benötigen Sie?",
-                "description": "Wählen Sie die Option, die Sie am besten beschreibt",
+            "step2": {
+                "title": "Wählen Sie Ihre Rolle",
+                "description": "Wählen Sie die Option, die Ihre Situation am besten beschreibt",
                 "professional": "Fachkraft",
                 "professionalDescription": "Ich bin eine Gesundheitsfachkraft auf der Suche nach Arbeitsmöglichkeiten",
-                "facility": "Unternehmen",
-                "facilityDescription": "Ich vertrete ein Unternehmen oder eine Einrichtung, die Fachkräfte sucht"
+                "facility": "Einrichtung",
+                "facilityDescription": "Ich vertrete ein Unternehmen oder eine Einrichtung, die Fachkräfte sucht",
+                "organization": "Organisation",
+                "organizationDescription": "Ich vertrete eine Apothekenkette oder Organisation"
             },
-            "companySearch": {
-                "title": "Haben Sie ein Unternehmen?",
-                "description": "Wenn Sie für ein Unternehmen arbeiten, suchen und wählen Sie es unten aus",
-                "noCompany": "Ich habe kein Unternehmen",
-                "yesCompany": "Ja, ich habe ein Unternehmen",
-                "searchLabel": "Suchen Sie nach Ihrem Unternehmen",
-                "searchPlaceholder": "Firmennamen eingeben...",
-                "searching": "Suche...",
-                "noResults": "Keine Unternehmen gefunden. Sie können ohne Auswahl fortfahren."
+            "step3": {
+                "chain": {
+                    "title": "Kontaktinformationen",
+                    "description": "Bitte geben Sie Ihre Kontaktdaten an, damit wir Ihnen bei der Einrichtung Ihres Organisationskontos helfen können",
+                    "phonePrefix": "Telefonvorwahl",
+                    "phoneNumber": "Telefonnummer",
+                    "phoneNumberPlaceholder": "Geben Sie Ihre Telefonnummer ein",
+                    "messageToSupport": "Nachricht an den Support",
+                    "messagePlaceholder": "Bitte beschreiben Sie Ihre Organisation und Ihre Bedürfnisse..."
+                }
             },
-            "confirmation": {
-                "title": "Bestätigen Sie Ihre Auswahl",
-                "accountType": "Kontotyp",
-                "company": "Unternehmen",
-                "noCompany": "Kein Unternehmen",
-                "confirm": "Bestätigen"
+            "step4": {
+                "title": "GLN-Verifizierung",
+                "description": "Haben Sie eine GLN (Global Location Number)?",
+                "hasGLN": "Ich habe eine GLN-Nummer"
             },
-            "profileGuide": {
-                "title": "Grossartig! Jetzt vervollständigen wir Ihr Profil",
-                "description": "Wir führen Sie Schritt für Schritt durch die Vervollständigung Ihres Profils. Jeder Abschnitt wird hervorgehoben, während Sie fortschreiten.",
-                "startProfile": "Profilausfüllung starten"
+            "professional_gln": {
+                "title": "GLN-Informationen",
+                "text1": "Berufsnummer erforderlich für zertifizierte Mediziner in der Schweiz (Apotheker, Zahnärzte, Ärzte usw.).",
+                "text2": "Für andere Berufe (Krankenschwestern, Assistenten usw.) ist diese Nummer nicht obligatorisch.",
+                "text3": "Aktivieren Sie dies, wenn Sie eine eigene GLN-Nummer haben."
+            },
+            "company_gln": {
+                "title": "GLN-Informationen",
+                "text1": "Die GLN (Global Location Number) ist eine eindeutige Kennung für Ihre Einrichtung oder Ihr Unternehmen.",
+                "text2": "Die Angabe Ihrer GLN hilft uns, Ihre Geschäftsdaten automatisch zu überprüfen und den Verifizierungsprozess zu beschleunigen.",
+                "text3": "Dieses Feld ist optional, wird aber für eine schnellere Kontoverifizierung empfohlen."
+            },
+            "input": {
+                "professional_gln": "Professionelle GLN",
+                "company_gln": "Firmen-GLN",
+                "professional_gln_optional": "Professionelle GLN (Optional)",
+                "company_gln_optional": "Firmen-GLN (Optional)"
+            },
+            "docs": {
+                "title": "Verifizierungsdokumente",
+                "facility_id": {
+                    "label": "1. Identitätsdokument der Verantwortlichen Person",
+                    "desc": "Laden Sie den Personalausweis einer im Register aufgeführten verantwortlichen Person hoch."
+                },
+                "facility_bill": {
+                    "label": "2. Rechnung / Steuerdokument",
+                    "desc": "Laden Sie eine aktuelle Rechnung oder ein Steuerdokument zur Verifizierung der Einrichtung hoch."
+                },
+                "select_id_type": "Ausweisart wählen",
+                "internal_ref": "Interne Referenz / Bestellnummer (Optional)",
+                "professional_id": "Identitätsdokument",
+                "select_doc_type": "Dokumenttyp auswählen",
+                "upload_id": "Identitätsdokument hochladen",
+                "upload_bill": "Rechnung hochladen"
             },
             "errors": {
-                "roleRequired": "Bitte wählen Sie eine Rolle",
-                "companyAnswerRequired": "Bitte beantworten Sie die Frage",
-                "companyRequired": "Bitte wählen Sie ein Unternehmen",
-                "searchFailed": "Unternehmenssuche fehlgeschlagen",
-                "updateFailed": "Onboarding konnte nicht abgeschlossen werden"
+                "service_high_demand": "Hohe Service-Nachfrage",
+                "wait_message": "Bitte warten Sie {{seconds}} Sekunden, bevor Sie es erneut versuchen",
+                "can_try_again": "Sie können es jetzt erneut versuchen.",
+                "verification_failed": "Verifizierung fehlgeschlagen",
+                "review_inputs": "Bitte überprüfen Sie Ihre Eingaben. Wenn Sie glauben, dass dies ein Fehler ist, kontaktieren Sie unseren dringenden Support unten.",
+                "contact_support": "Dringenden Support kontaktieren",
+                "report_issue": "Problem per E-Mail melden",
+                "describe_issue": "Beschreiben Sie das Problem, mit dem Sie konfrontiert sind..."
             },
-            "employedByCompany": "Sind Sie derzeit bei einem Unternehmen angestellt?",
-            "employedByCompanyDesc": "Aktivieren, wenn Sie für eine Organisation arbeiten",
-            "joinTeam": "Einem Team beitreten",
-            "joinTeamDesc": "Aktivieren, um Ihren Arbeitsplatz zu finden und beizutreten",
-            "legalConsiderations": {
-                "title": "Wichtige rechtliche Hinweise",
-                "intro": "Für Mitarbeiter, die zu 100% arbeiten (normalerweise 40-42 Stunden/Woche), ist es nahezu unmöglich, legal zusätzliche Schichten in einer anderen Apotheke zu übernehmen.",
-                "hoursCap": {
-                    "title": "1. Maximale Wochenstunden",
-                    "content": "Das Schweizer Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche (45 Stunden in einigen Einzelhandelsbereichen). Ein 100%-Mitarbeiter arbeitet typischerweise 42 Stunden, was nur 8 Stunden Maximum übrig lässt. Eine volle Samstagsschicht (9 Stunden) würde das Gesetz brechen. Beide Arbeitgeber haften, wenn sie vom anderen Job wissen."
-                },
-                "dutyOfLoyalty": {
-                    "title": "2. Treuepflicht",
-                    "content": "Gemäss Obligationenrecht (Art. 321a) müssen Sie eine schriftliche Genehmigung Ihres Hauptarbeitgebers einholen, um für einen Konkurrenten zu arbeiten. Die meisten Apothekeninhaber werden diese Genehmigung nicht erteilen, da sie erwarten, dass das Personal ruht und am Montag frisch ist."
-                },
-                "dailyRest": {
-                    "title": "3. Tägliche Ruhezeit",
-                    "content": "Das Gesetz verlangt 11 aufeinanderfolgende Stunden Ruhe zwischen Schichten (kann einmal pro Woche auf 8 Stunden reduziert werden). Beispiel: Um 18:30 aufhören und eine Abendschicht bis 23:00 arbeiten, dann um 08:00 am nächsten Morgen zurückkehren, ergibt nur 9 Stunden Ruhe (illegal)."
-                },
-                "holidays": {
-                    "title": "4. Arbeiten während Ferien",
-                    "content": "Urlaub ist gesetzlich zur Erholung bestimmt (Erholungszweck). Das Arbeiten für Geld während bezahlter Ferien kann dazu führen, dass Ihr Arbeitgeber sich weigert, das Urlaubsgehalt zu zahlen, oder sogar zur Kündigung wegen Vertragsbruchs führen."
-                },
-                "confirm": "Ich verstehe und anerkenne diese rechtlichen Hinweise"
+            "success": {
+                "verified_title": "Konto erfolgreich verifiziert!",
+                "professional_redirect": "Ihr berufliches Profil ist jetzt aktiv. Weiterleitung zur Vervollständigung Ihres Profils...",
+                "facility_redirect": "Ihr Einrichtungsprofil ist jetzt aktiv. Weiterleitung zur Vervollständigung Ihres Profils..."
             },
-            "generalWorkingLaws": {
-                "title": "Wichtige rechtliche Hinweise",
-                "warning": "Bitte beachten Sie die allgemeinen Arbeitsgesetze und -vorschriften, die für alle Arbeitnehmer gelten. Das Schweizer Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche (45 Stunden in einigen Einzelhandelsbereichen). Das Gesetz verlangt 11 aufeinanderfolgende Stunden Ruhe zwischen Schichten (kann einmal pro Woche auf 8 Stunden reduziert werden). Urlaub und Ruhezeiten sind gesetzlich zur Erholung bestimmt (Erholungszweck). Bitte stellen Sie sicher, dass Sie alle anwendbaren arbeitsrechtlichen Anforderungen bezüglich maximaler Arbeitszeiten, Ruhezeiten und anderen Vorschriften einhalten.",
-                "confirm": "Ich verstehe und anerkenne diese rechtlichen Hinweise"
+            "phone": {
+                "title": "Mobile Verifizierung",
+                "subtitle": "Geben Sie Ihre Telefonnummer ein, um einen sicheren Identitätscode zu erhalten.",
+                "secured_code": "Gesicherter Code",
+                "sent_text": "Wir haben einen Verifizierungscode an {{prefix}} {{number}} gesendet.",
+                "verified_title": "Telefon verifiziert",
+                "verified_text": "Ihre Telefonnummer {{prefix}} {{number}} wurde erfolgreich verifiziert.",
+                "verification_complete": "Verifizierung abgeschlossen",
+                "verify_continue": "Verifizieren und fortfahren",
+                "verifying": "Wird überprüft...",
+                "resend": "Code erneut senden",
+                "resend_wait": "Erneut senden in {{seconds}}s",
+                "change_number": "Nummer ändern",
+                "verification_code_label": "Verifizierungscode",
+                "sending": "Senden..."
             },
-            "separateWorkerGLM": {
-                "title": "Separater Mitarbeiter mit GLM",
-                "description": "Sie haben eine GLM (Manager), aber keine GLN. Ihre GLM-Einstellung wird in Ihrem Profil gespeichert.",
-                "saveButton": "GLM-Einstellung speichern",
-                "saving": "Speichern...",
-                "complete": "GLM-Einstellung gespeichert!",
-                "completeMessage": "Ihre GLM-Einstellung wurde in Ihrem Profil gespeichert. Sie können diese Einstellung in Ihren Profileinstellungen verwalten.",
-                "hasGLMNoGLN": "Ich habe einen GLM und Mitarbeiter ohne GLN",
-                "hasGLMNoGLNDesc": "Aktivieren, wenn Sie einen Manager (GLM) haben, aber keine eigene GLN"
-            },
-            "exitOnboarding": "Onboarding beenden"
+            "buttons": {
+                "back": "Zurück",
+                "nextStep": "Nächster Schritt",
+                "sendCode": "Code Senden",
+                "validate": "Validieren",
+                "contactAndFinish": "Kontaktieren & Beenden",
+                "verifying": "Wird überprüft...",
+                "completeAccount": "Konto Vervollständigen",
+                "verify_account": "Konto verifizieren"
+            }
         }
     },
     "userMenu": {

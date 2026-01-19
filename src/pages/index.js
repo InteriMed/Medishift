@@ -9,4 +9,7 @@ export { default as PrivacyPolicyPage } from './PrivacyPolicyPage';
 export { default as TermsOfServicePage } from './TermsOfServicePage';
 export { default as SitemapPage } from './SitemapPage';
 export { default as NotFoundPage } from './NotFound';
-export { default as TestPage } from './TestPage'; 
+export { default as TestPage } from './TestPage';
+export { default as TestPhonePage } from './TestPhonePage';
+export { default as TestGLNPage } from './TestGLNPage';
+export { default as OnboardingPage } from './Onboarding/OnboardingPage';

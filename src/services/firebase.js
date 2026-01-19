@@ -3,8 +3,8 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import {
   getFirestore,
   connectFirestoreEmulator,
-  memoryLocalCache,
-  initializeFirestore
+  initializeFirestore,
+  memoryLocalCache
 } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
@@ -30,13 +30,13 @@ import {
 
 // This consolidated file replaces both firebase.config.js and firebaseConfig.js
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || 'AIzaSyBKMnh477m8ZDmk7WhQZKPzb3VDe3PktDs',
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || 'interimed-620fd.firebaseapp.com',
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || 'interimed-620fd',
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || 'interimed-620fd.firebasestorage.app',
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '436488373074',
+  appId: process.env.REACT_APP_FIREBASE_APP_ID || '1:436488373074:web:60c3a26935b6238d9a308b',
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || 'G-66V8BS82V0'
 };
 
 if (!firebaseConfig.projectId || firebaseConfig.projectId !== 'interimed-620fd') {
@@ -44,9 +44,22 @@ if (!firebaseConfig.projectId || firebaseConfig.projectId !== 'interimed-620fd')
   firebaseConfig.projectId = 'interimed-620fd';
 }
 
-console.log('!!!! FIREBASE API KEY:', firebaseConfig.apiKey ? 'PRESENT' : 'MISSING');
-console.log('!!!! FIREBASE PROJECT ID:', firebaseConfig.projectId);
-console.log('!!!! FIREBASE AUTH DOMAIN:', firebaseConfig.authDomain);
+console.log('🔧 Firebase Configuration:');
+console.log('  API Key:', firebaseConfig.apiKey ? 'PRESENT ✅' : 'MISSING ❌');
+console.log('  Project ID:', firebaseConfig.projectId);
+console.log('  Auth Domain:', firebaseConfig.authDomain);
+console.log('  Storage Bucket:', firebaseConfig.storageBucket);
+console.log('  App ID:', firebaseConfig.appId ? 'PRESENT ✅' : 'MISSING ❌');
+
+if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'YOUR_API_KEY') {
+  console.error('❌ CRITICAL: Firebase API Key is missing or invalid!');
+  console.error('Please set REACT_APP_FIREBASE_API_KEY in your .env file');
+}
+
+if (firebaseConfig.projectId !== 'interimed-620fd') {
+  console.error('❌ CRITICAL: Project ID mismatch!');
+  console.error(`Expected: interimed-620fd, Got: ${firebaseConfig.projectId}`);
+}
 
 // Flag to control emulator usage - supports both explicit env var and development environment check
 const useEmulators = process.env.REACT_APP_USE_FIREBASE_EMULATORS === 'true';
@@ -72,15 +85,35 @@ if (getApps().length === 0) {
 const auth = getAuth(firebaseApp);
 let db;
 
-const DATABASE_ID = 'medishift';
+// Initialize Firestore - Attempt custom settings, fallback to default if any issues
+// Use window-level flag to persist across hot reloads
+const INIT_FLAG = '__FIRESTORE_INITIALIZED__';
+const isInitialized = typeof window !== 'undefined' && window[INIT_FLAG];
 
-// Initialize Firestore - Use the correct database ID as specified in firebase.json
-try {
-  db = getFirestore(firebaseApp, DATABASE_ID);
-  console.log(`✅ Firestore initialized with database ID: ${DATABASE_ID}`);
-} catch (error) {
-  console.warn('ℹ️ Firestore re-initialization:', error.message);
-  db = getFirestore(firebaseApp, DATABASE_ID);
+if (!isInitialized) {
+  try {
+    db = initializeFirestore(firebaseApp, {
+      localCache: memoryLocalCache()
+    }, 'medishift');
+
+    if (typeof window !== 'undefined') {
+      window[INIT_FLAG] = true;
+    }
+    console.log('✅ Firestore initialized with MEMORY CACHE (offline enabled) - Database: medishift');
+  } catch (error) {
+    // If it fails (likely because it was already initialized elsewhere), try to get the existing instance
+    console.warn('⚠️ initializeFirestore failed, attempting to get existing instance:', error);
+    try {
+      db = getFirestore(firebaseApp, 'medishift');
+      console.log('✅ Retrieved existing Firestore instance - Database: medishift');
+    } catch (e) {
+      console.error('🚨 CRITICAL: Could not initialize or retrieve Firestore:', e);
+      throw e;
+    }
+  }
+} else {
+  db = getFirestore(firebaseApp, 'medishift');
+  console.log('✅ Using existing Firestore instance - Database: medishift');
 }
 
 // Log connection status in development
@@ -88,7 +121,6 @@ if (typeof window !== 'undefined' && db) {
   if (process.env.NODE_ENV === 'development') {
     console.log('🌐 Browser online status:', navigator.onLine ? 'ONLINE' : 'OFFLINE');
     console.log('📦 Firestore instance ready for project:', firebaseConfig.projectId);
-    console.log('📦 Firestore database ID:', DATABASE_ID);
   }
 }
 const storage = getStorage(firebaseApp);
@@ -147,6 +179,10 @@ export const getFirebaseAuth = () => {
 // Authentication functions
 export const registerUser = async (email, password, displayName) => {
   try {
+    if (!db) {
+      throw new Error('Firestore database not initialized');
+    }
+
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -160,28 +196,47 @@ export const registerUser = async (email, password, displayName) => {
       lastName: '',
       phoneNumber: '',
       photoURL: user.photoURL || '',
-      role: 'professional', // Default role
-      createdAt: new Date(),
-      updatedAt: new Date()
+      role: 'professional',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
     };
 
     // Explicitly remove any professionalProfile field if it exists
     delete userData.professionalProfile;
 
-    // Create the user document
-    await setDoc(doc(db, 'users', user.uid), userData);
+    // Create the user document with error handling
+    const userDocRef = doc(db, 'users', user.uid);
+    await setDoc(userDocRef, userData);
+
+    // Verify the document was created
+    const verifyDoc = await getDoc(userDocRef);
+    if (!verifyDoc.exists()) {
+      throw new Error('Failed to create user document in Firestore');
+    }
+    console.log('✅ User document created successfully in Firestore');
 
     // Create a separate profile document based on role
     const profileData = {
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
     };
 
-    await setDoc(doc(db, 'professionalProfiles', user.uid), profileData);
+    const profileDocRef = doc(db, 'professionalProfiles', user.uid);
+    await setDoc(profileDocRef, profileData);
+
+    // Verify the profile document was created
+    const verifyProfileDoc = await getDoc(profileDocRef);
+    if (!verifyProfileDoc.exists()) {
+      console.warn('⚠️ Profile document creation may have failed');
+    } else {
+      console.log('✅ Profile document created successfully in Firestore');
+    }
 
     return user;
   } catch (error) {
-    console.error('Error registering user:', error);
+    console.error('❌ Error registering user:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
     throw error;
   }
 };
@@ -197,11 +252,29 @@ export const loginWithGoogle = async () => {
     console.log('Current origin:', window.location.origin);
 
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
     // Use popup for better reliability in some environments
     const result = await signInWithPopup(auth, provider);
+    console.log('✅ Google sign-in successful:', result.user.uid);
     return result.user;
   } catch (error) {
-    console.error('Google login error:', error);
+    console.error('❌ Google login error:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
+
+    if (error.code === 'auth/popup-blocked') {
+      throw new Error('Popup was blocked. Please allow popups for this site.');
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      throw new Error('Sign-in was cancelled.');
+    } else if (error.code === 'auth/network-request-failed') {
+      throw new Error('Network error. Please check your connection.');
+    } else if (error.code === 'auth/unauthorized-domain') {
+      throw new Error('This domain is not authorized for Google sign-in.');
+    }
+
     throw error;
   }
 };

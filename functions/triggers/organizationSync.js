@@ -18,7 +18,7 @@ const onOrganizationCreated = onDocumentCreated(
     {
         document: 'organizations/{orgId}',
         region: config.region,
-        database: 'medishift'
+        database: '(default)'
     },
     async (event) => {
         const orgData = event.data.data();
@@ -42,7 +42,7 @@ const onOrganizationUpdated = onDocumentUpdated(
     {
         document: 'organizations/{orgId}',
         region: config.region,
-        database: 'medishift'
+        database: '(default)'
     },
     async (event) => {
         const before = event.data.before.data();
@@ -100,7 +100,7 @@ const onOrganizationDeleted = onDocumentDeleted(
     {
         document: 'organizations/{orgId}',
         region: config.region,
-        database: 'medishift'
+        database: '(default)'
     },
     async (event) => {
         const orgData = event.data.data();

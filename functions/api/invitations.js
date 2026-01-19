@@ -3,8 +3,9 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
-const db = getFirestore('medishift');
+const db = getFirestore();
 
 const INVITATION_EXPIRY_DAYS = 30;
 
@@ -59,7 +60,7 @@ exports.generateFacilityRoleInvitation = onCall(async (request) => {
     const facilityData = facilitySnap.data();
     const employeesList = facilityData.employees || [];
     const admins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
-    
+
     if (!admins.includes(context.auth.uid)) {
       throw new HttpsError('permission-denied', 'You must be an admin of this facility to generate invitations');
     }
@@ -128,13 +129,13 @@ exports.generateFacilityRoleInvitation = onCall(async (request) => {
       toString: error?.toString(),
       type: typeof error
     };
-    
+
     logger.error('Error generating facility role invitation', errorDetails);
-    
+
     if (error instanceof HttpsError) {
       throw error;
     }
-    
+
     let errorMessage = 'Failed to generate invitation';
     if (error?.message) {
       errorMessage = error.message;
@@ -144,12 +145,12 @@ exports.generateFacilityRoleInvitation = onCall(async (request) => {
         errorMessage = errorStr;
       }
     }
-    
+
     logger.error('Throwing internal error', {
       originalError: errorDetails,
       errorMessage: errorMessage
     });
-    
+
     throw new HttpsError('internal', errorMessage);
   }
 });
@@ -313,7 +314,7 @@ exports.acceptFacilityInvitation = onCall(async (request) => {
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
       } else if (existingEmployee.rights !== 'admin') {
-        const updatedEmployees = employeesList.map(emp => 
+        const updatedEmployees = employeesList.map(emp =>
           emp.uid === userId ? { ...emp, rights: 'admin' } : emp
         );
         batch.update(facilityRef, {
@@ -325,12 +326,12 @@ exports.acceptFacilityInvitation = onCall(async (request) => {
 
     const workerRequirements = facilityData.operationalSettings?.workerRequirements || [];
     const roleIndex = workerRequirements.findIndex(r => r.id === roleId);
-    
+
     if (roleIndex >= 0) {
       const role = workerRequirements[roleIndex];
       const assignedWorkers = role.assignedWorkers || [];
       const workerIndex = assignedWorkers.findIndex(w => w.id === workerId);
-      
+
       if (workerIndex >= 0) {
         assignedWorkers[workerIndex] = {
           ...assignedWorkers[workerIndex],
@@ -348,12 +349,12 @@ exports.acceptFacilityInvitation = onCall(async (request) => {
         };
         assignedWorkers.push(newWorker);
       }
-      
+
       workerRequirements[roleIndex] = {
         ...role,
         assignedWorkers: assignedWorkers
       };
-      
+
       batch.update(facilityRef, {
         'operationalSettings.workerRequirements': workerRequirements,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
@@ -386,6 +387,104 @@ exports.acceptFacilityInvitation = onCall(async (request) => {
       throw error;
     }
     throw new HttpsError('internal', 'Failed to accept invitation');
+  }
+});
+
+/**
+ * Invites a new admin employee by email
+ * Sends an email with an invitation link/code
+ */
+exports.inviteAdminEmployee = onCall({ cors: true }, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'You must be signed in to invite employees');
+  }
+
+  const { inviteEmail, inviteRole, invitedByName, customMessage } = request.data;
+
+  if (!inviteEmail || !inviteRole) {
+    throw new HttpsError('invalid-argument', 'Email and Role are required');
+  }
+
+  try {
+    // Generate a random invitation code
+    const inviteCode = crypto.randomBytes(4).toString('hex').toUpperCase(); // 8 chars
+    const inviteToken = crypto.randomBytes(32).toString('hex');
+
+    // Save invitation to Firestore
+    const inviteRef = db.collection('adminInvitations').doc(inviteToken);
+    await inviteRef.set({
+      email: inviteEmail,
+      role: inviteRole,
+      code: inviteCode,
+      invitedBy: request.auth.uid,
+      invitedByName: invitedByName || 'An Admin',
+      status: 'pending',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)) // 7 days
+    });
+
+    // Send email (Using nodemailer)
+    const emailService = process.env.EMAIL_SERVICE || 'Generic';
+    let transporter;
+
+    if (emailService === 'SendGrid') {
+      transporter = nodemailer.createTransport({
+        host: 'smtp.sendgrid.net',
+        port: 587,
+        auth: {
+          user: 'apikey',
+          pass: process.env.SENDGRID_API_KEY
+        }
+      });
+    } else {
+      // Generic fallback for local/dev
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
+        port: process.env.SMTP_PORT || 2525,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD
+        }
+      });
+    }
+
+    const appLogo = 'https://interimed-620fd.firebasestorage.app/v0/b/interimed-620fd.firebasestorage.app/o/public%2Flogo.png?alt=media'; // Placeholder or actual logo URL
+    const signupLink = `${process.env.INVITATION_BASE_URL || 'https://MediShift.ch'}/signup?admin_invite=${inviteToken}`;
+
+    const mailOptions = {
+      from: '"MediShift Admin" <no-reply@interimed.ch>',
+      to: inviteEmail,
+      subject: 'Invitation to join MediShift Admin Team',
+      html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; borderRadius: 8px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <img src="${appLogo}" alt="MediShift Logo" style="height: 50px;" />
+            </div>
+            <h2 style="color: #1a73e8; text-align: center;">Welcome to the Team!</h2>
+            <p>Hello,</p>
+            <p>${customMessage || `You have been invited by <strong>${invitedByName || 'an administrator'}</strong> to join the MediShift Admin Team as a <strong>${inviteRole}</strong>.`}</p>
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; margin: 30px 0;">
+              <p style="margin-bottom: 10px; color: #5f6368;">Your invitation code:</p>
+              <h1 style="margin: 0; letter-spacing: 5px; color: #202124;">${inviteCode}</h1>
+            </div>
+            <p style="text-align: center;">
+              <a href="${signupLink}" style="background-color: #1a73e8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+                Complete Your Setup
+              </a>
+            </p>
+            <p style="color: #5f6368; font-size: 12px; margin-top: 40px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
+              This invitation will expire in 7 days. If you were not expecting this invitation, please ignore this email.
+            </p>
+          </div>
+        `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return { success: true, message: 'Invitation sent successfully' };
+  } catch (error) {
+    logger.error('Error inviting admin employee:', error);
+    throw new HttpsError('internal', error.message || 'Failed to send invitation');
   }
 });
 

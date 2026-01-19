@@ -1,6 +1,6 @@
 {
     "dashboard": {
-    "sidebar": {
+        "sidebar": {
             "overview": "Overview",
             "profile": "Profile",
             "contracts": "Contracts",
@@ -10,6 +10,22 @@
             "settings": "Settings",
             "incompleteProfile": "Your profile is incomplete",
             "completeProfileFirst": "Please complete your profile first"
+        },
+        "header": {
+            "profile": {
+                "title": "Profile"
+            },
+            "search": "Search...",
+            "createBusiness": "Create a business",
+            "createBusinessDesc": "Set up your facility profile",
+            "createProfessional": "Create Professional Profile",
+            "createProfessionalDesc": "Switch to personal account",
+            "resetProfile": "Reset Profile",
+            "resetProfileTitle": "Reset Profile",
+            "resetProfileMessage": "Are you sure you want to reset your profile? This will remove all your data and set your account back to the initial onboarding state. This action cannot be undone.",
+            "resetConfirm": "Reset Profile",
+            "profileResetSuccess": "Profile reset successfully",
+            "profileResetError": "Failed to reset profile"
         },
         "loading": "Loading dashboard data...",
         "error": "Error loading dashboard data",
@@ -28,6 +44,61 @@
             "upcomingJobs": "Upcoming Jobs",
             "recentActivity": "Recent Activity",
             "noRecentActivity": "No recent activity to display"
+        },
+        "onboarding": {
+            "step1": {
+                "title": "Legal Considerations",
+                "facilityLegalNotice": "Facility/Chain Legal Notice",
+                "facilityLegalText1": "As a facility representative, you are responsible for ensuring that all data provided is accurate and that you have the authority to act on behalf of the organization.",
+                "facilityLegalText2": "Swiss labor laws regarding maximum working hours (LTr) and rest periods must be strictly observed when scheduling shifts. Employers share liability for labor law violations if they are aware of a worker's secondary employment.",
+                "facilityLegalText3": "By proceeding, you agree to our Terms of Business and data processing agreements specifically tailored for healthcare facilities in Switzerland.",
+                "professionalLegalNotice": "Professional/Worker Legal Notice",
+                "professionalLegalText1": "Swiss Labor Law sets a strict maximum of 50 hours per week. If you work 100% (42h), taking extra shifts may be illegal without prior authorization.",
+                "professionalLegalText2": "The Duty of Loyalty (Art. 321a CO) requires you to obtain written permission from your main employer to work for a competitor.",
+                "professionalLegalText3": "You must alternate rest periods: 11 consecutive hours of rest are required between shifts. Working during paid holidays (vacation) is legally restricted to recovery purposes.",
+                "professionalLegalText4": "By proceeding, you acknowledge that you are solely responsible for managing your working hours across different employers.",
+                "agreementStatus": "Agreement Status",
+                "areYouEmployed": "Are You Employed",
+                "areYouEmployedDescription": "This can be changed later.",
+                "termsAcceptance": "Terms Acceptance",
+                "termsAcceptanceDescription": "Confirm you agree to these legal terms.",
+                "note": "Note: Your selection here determines the legal framework that will apply to your account and shift management."
+            },
+            "step2": {
+                "title": "Choose Your Path",
+                "description": "Define your role to personalize your MediShift experience.",
+                "professional": "Professional",
+                "professionalDescription": "Find medical shifts in high-quality facilities near you.",
+                "facility": "Facility",
+                "facilityDescription": "Recruit qualified health talent and manage your shifts easily.",
+                "organization": "Organization",
+                "organizationDescription": "Centralized management for multiple clinics and healthcare chains."
+            },
+            "step3": {
+                "chain": {
+                    "title": "Organization Setup",
+                    "description": "Executive access requires manual verification by our security team.",
+                    "phonePrefix": "Phone Prefix",
+                    "phoneNumber": "Phone Number",
+                    "phoneNumberPlaceholder": "079 000 00 00",
+                    "messageToSupport": "Message to Support",
+                    "messagePlaceholder": "Please describe your organization (number of clinics, locations)..."
+                }
+            },
+            "step4": {
+                "title": "Identity Verification",
+                "description": "Help us maintain a secure and trusted medical environment.",
+                "hasGLN": "I have a GLN number"
+            },
+            "buttons": {
+                "back": "Back",
+                "sendCode": "Send Code",
+                "validate": "Validate",
+                "contactAndFinish": "Contact & Finish",
+                "verifying": "Verifying...",
+                "completeAccount": "Complete Account",
+                "nextStep": "Next Step"
+            }
         }
     },
     "userMenu": {

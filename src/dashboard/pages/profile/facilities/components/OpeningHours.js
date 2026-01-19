@@ -8,15 +8,15 @@ import Button from '../../../../../components/BoxedInputFields/Button';
 import Switch from '../../../../../components/BoxedInputFields/Switch';
 
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1000px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border p-6 pb-4 shadow-md w-full max-w-[1000px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-xl border border-border p-6 pb-4 shadow-md w-full max-w-[1400px] mx-auto",
   sectionTitle: "text-2xl font-semibold",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
   subtitleRow: "flex items-end justify-between gap-4",
   mandatoryFieldLegend: "text-xs text-muted-foreground",
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "flex flex-col gap-6 w-full max-w-[1000px] mx-auto",
+  sectionsWrapper: "flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
   sectionCard: "bg-card rounded-xl border border-border p-6 shadow-md w-full",
   cardHeader: "flex items-center gap-4 mb-6",
   cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
@@ -33,7 +33,7 @@ const styles = {
   closedToggle: "flex items-center gap-2",
   closedBadge: "px-2 py-1 text-xs font-medium rounded-md bg-muted text-muted-foreground",
   timeSeparator: "self-end mb-2 text-muted-foreground font-medium",
-  formActions: "flex justify-end gap-4 w-full max-w-[1000px] mx-auto",
+  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto",
   errorUpload: "border-destructive"
 };
 

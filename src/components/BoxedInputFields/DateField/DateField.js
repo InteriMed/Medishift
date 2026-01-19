@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/boxedInputFields.css';
 import './DateField.css';
 
@@ -6,7 +6,9 @@ const DateField = ({
   label, 
   value, 
   onChange, 
-  marginBottom = '20px', 
+  marginBottom = '20px',
+  marginLeft,
+  marginRight,
   disabled = false,
   required = false,
   error = null,
@@ -14,7 +16,8 @@ const DateField = ({
   min,
   max
 }) => {
-  // Format date for input[type="date"] which expects YYYY-MM-DD format
+  const [isFocused, setIsFocused] = useState(false);
+
   const formatDateForInput = (date) => {
     if (!date) return '';
     
@@ -22,7 +25,6 @@ const DateField = ({
       const dateObj = new Date(date);
       if (isNaN(dateObj.getTime())) return '';
       
-      // Return in YYYY-MM-DD format
       return dateObj.toISOString().split('T')[0];
     } catch (e) {
       console.error("Error formatting date:", e);
@@ -30,22 +32,30 @@ const DateField = ({
     }
   };
 
-  // Handle date change from input
   const handleDateChange = (e) => {
     const dateValue = e.target.value;
     
     if (dateValue) {
-      // Convert string date to Date object
       const dateObj = new Date(dateValue);
       onChange(dateObj);
     } else {
       onChange(null);
     }
     
-    // Reset error on interaction
     if (error && onErrorReset) {
       onErrorReset();
     }
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    if (error && onErrorReset) {
+      onErrorReset();
+    }
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
   };
 
   const hasValue = value && !isNaN(new Date(value).getTime());
@@ -53,26 +63,36 @@ const DateField = ({
   return (
     <div 
       className={`boxed-inputfield-wrapper ${hasValue ? 'has-value' : ''}`} 
-      style={{ marginBottom }}
+      style={{ marginBottom, marginLeft, marginRight }}
     >
-      <div className={`boxed-inputfield-container ${error ? 'boxed-inputfield-container--error' : ''} ${disabled ? 'boxed-inputfield-container--disabled' : ''}`}>
-        <input
-          type="date"
-          className={`boxed-inputfield-input ${error ? 'boxed-inputfield-input--error' : ''}`}
-          value={formatDateForInput(value)}
-          onChange={handleDateChange}
-          disabled={disabled}
-          min={min}
-          max={max}
-          required={required}
-        />
-        
+      <div 
+        className={`boxed-inputfield-container ${error ? 'boxed-inputfield-container--error' : ''} ${disabled ? 'boxed-inputfield-container--disabled' : ''} ${hasValue ? 'has-value' : ''}`}
+      >
         {label && (
-          <label className={`boxed-inputfield-label ${hasValue ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}>
+          <label 
+            className={`boxed-inputfield-label ${(isFocused || hasValue) ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}
+          >
             {label}
             {required && <span className="boxed-inputfield-required">*</span>}
           </label>
         )}
+        
+        <input
+          type="date"
+          className={`boxed-inputfield-input 
+            ${isFocused ? 'boxed-inputfield-input--focused' : ''} 
+            ${hasValue ? 'boxed-inputfield-input--has-value' : ''} 
+            ${error ? 'boxed-inputfield-input--error' : ''}`}
+          value={formatDateForInput(value)}
+          onChange={handleDateChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          disabled={disabled}
+          min={min}
+          max={max}
+          required={required}
+          style={{ outline: 'none' }}
+        />
       </div>
       
       {error && (

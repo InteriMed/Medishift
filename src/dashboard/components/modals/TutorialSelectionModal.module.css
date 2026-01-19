@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: var(--z-index-popup, 11000);
+    z-index: var(--z-index-popup-above-tutorial, 200000);
     animation: fadeIn 0.2s ease-out;
 }
 

@@ -20,19 +20,20 @@ import Switch from '../../../../../components/BoxedInputFields/Switch';
 
 // Import the dropdown options hook
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
+import useAutoSave from '../../../../hooks/useAutoSave';
 
 
 // Tailwind styles
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1000px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1000px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
   sectionTitle: "text-2xl font-semibold mb-2",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
   subtitleRow: "flex items-end justify-between gap-4",
   mandatoryFieldLegend: "text-xs text-muted-foreground",
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1000px] mx-auto",
+  sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
   sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
@@ -44,7 +45,7 @@ const styles = {
   grid: "grid grid-cols-1 gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "md:col-span-2",
-  formActions: "flex justify-end gap-4 w-full max-w-[1000px] mx-auto"
+  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto"
 };
 
 const Settings = ({
@@ -54,6 +55,7 @@ const Settings = ({
   isSubmitting,
   onInputChange,
   onSaveAndContinue,
+  onSave,
   onCancel,
   getNestedValue,
 }) => {
@@ -63,6 +65,15 @@ const Settings = ({
   const dropdownOptionsFromHook = useDropdownOptions();
 
   const fieldsToRender = useMemo(() => config?.fields?.settings || [], [config]);
+
+  useAutoSave({
+    formData,
+    config,
+    activeTab: 'settings',
+    onInputChange,
+    onSave,
+    getNestedValue
+  });
 
   // Handle cancel with page reload
   const handleCancel = useCallback(() => {
@@ -402,7 +413,7 @@ const Settings = ({
       </div>
 
       {/* Account Management Section */}
-      <div className="w-full max-w-[1000px] mx-auto">
+      <div className="w-full max-w-[1400px] mx-auto">
         <div className={styles.sectionCard}>
           <div className={styles.cardHeader}>
             <div className={styles.cardIconWrapper}><FiUserX /></div>
@@ -416,17 +427,6 @@ const Settings = ({
         </div>
       </div>
 
-      {/* --- Action Buttons --- */}
-      <div className={styles.sectionCard}>
-        <div className={styles.formActions} style={{ marginTop: 0 }}>
-          <Button onClick={handleCancel} variant="secondary" disabled={isSubmitting}>
-            {t('common.cancel')}
-          </Button>
-          <Button onClick={onSaveAndContinue} variant="confirmation" disabled={isSubmitting}>
-            {isSubmitting ? t('common.saving') : t('common.saveAndContinue')}
-          </Button>
-        </div>
-      </div>
     </div>
   );
 };
@@ -442,6 +442,7 @@ Settings.propTypes = {
   isSubmitting: PropTypes.bool.isRequired,
   onInputChange: PropTypes.func.isRequired,
   onSaveAndContinue: PropTypes.func.isRequired,
+  onSave: PropTypes.func,
   onCancel: PropTypes.func.isRequired,
   getNestedValue: PropTypes.func.isRequired
 };

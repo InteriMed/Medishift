@@ -417,7 +417,7 @@
         "autoFillTitle": "Profil automatisch ausfüllen?",
         "autoFillDescription": "Wir haben Informationen aus Ihrem Dokument extrahiert. Bestehende Daten werden NICHT überschrieben. Fortfahren?",
         "autoFillAction": "Ausfüllen",
-        "fillEmptyFields": "Leere Felder füllen",
+        "fillProfile": "Profil ausfüllen",
         "overwriteAll": "Alle Daten überschreiben",
         "overwriteConfirmTitle": "Sind Sie sicher?",
         "overwriteConfirmDescription": "Dies wird ALLE bestehenden Daten in Ihrem Profil überschreiben. Dies kann nicht rückgängig gemacht werden.",

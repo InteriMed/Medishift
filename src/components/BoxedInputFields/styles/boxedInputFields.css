@@ -1,18 +1,17 @@
 :root {
-  --boxed-inputfield-height: 36px;
-  --boxed-inputfield-font-size: var(--font-size-small);
-  --boxed-inputfield-color-text: var(--text-color);
-  --boxed-inputfield-background: var(--background-div-color);
-  --boxed-inputfield-error-color: #e53e3e;
-  --boxed-inputfield-hover-background: var(--grey-3);
-  --boxed-inputfield-placeholder-color: var(--grey-1);
-  --boxed-inputfield-border-color: var(--grey-3);
-  --boxed-inputfield-label-color: var(--grey-1);
-  --boxed-inputfield-color-hover: var(--grey-3);
-  --boxed-inputfield-hover-color: var(--grey-3);
-  --boxed-inputfield-color-active: var(--color-logo-1);
-  --boxed-inputfield-focus-border-color: var(--color-logo-1);
-  --boxed-inputfield-label-focus-color: var(--color-logo-1);
+  --boxed-inputfield-height: 44px;
+  --boxed-inputfield-font-size: 14px;
+  --boxed-inputfield-color-text: #1e293b;
+  --boxed-inputfield-background: #ffffff;
+  --boxed-inputfield-error-color: #ef4444;
+  --boxed-inputfield-hover-background: #f8fafc;
+  --boxed-inputfield-placeholder-color: #94a3b8;
+  --boxed-inputfield-border-color: #e2e8f0;
+  --boxed-inputfield-label-color: #64748b;
+  --boxed-inputfield-color-active: #4f46e5;
+  --boxed-inputfield-focus-border-color: #4f46e5;
+  --boxed-inputfield-label-focus-color: #4f46e5;
+  --boxed-inputfield-radius: 12px;
 }
 
 .boxed-inputfield-container span {
@@ -28,34 +27,41 @@
   margin-left: var(--margin-left);
   margin-right: var(--margin-right);
   height: var(--boxed-inputfield-height);
-  /* transition: delay 0.3s !important; */
   border: none !important;
+  background: var(--boxed-inputfield-background);
+  border-radius: var(--boxed-inputfield-radius);
 }
 
 .boxed-inputfield-input {
-  line-height: var(--boxed-inputfield-height);
   width: 100%;
   height: var(--boxed-inputfield-height);
   text-align: left;
-  border-radius: 10px !important;
-  border: 1px solid hsl(var(--border) / 0.6) !important;
+  border-radius: var(--boxed-inputfield-radius) !important;
+  border: 2px solid var(--boxed-inputfield-border-color) !important;
   color: var(--boxed-inputfield-color-text);
-  padding: 0 12px;
-  transition: all 0.2s ease;
-  font-size: var(--font-size-small);
-  font-family: var(--font-family-text, 'Roboto', sans-serif);
+  padding: 0 16px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: var(--boxed-inputfield-font-size);
+  font-family: inherit;
   box-sizing: border-box;
   outline: none !important;
-  background-color: var(--background-div-color);
+  background-color: transparent;
+  font-weight: 500;
 }
 
 .boxed-inputfield-input:hover {
-  border-color: hsl(var(--border) / 0.6) !important;
+  border-color: #cbd5e1 !important;
+  background-color: var(--boxed-inputfield-hover-background);
 }
 
 .boxed-inputfield-input:focus {
-  border-color: var(--color-logo-1) !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--boxed-inputfield-focus-border-color) !important;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+  background-color: #ffffff;
+}
+
+.boxed-inputfield-input--has-value:not(:focus):not(.boxed-inputfield-input--error) {
+  border-color: var(--boxed-inputfield-border-color) !important;
 }
 
 /* Add styles to control date input placeholder color */
@@ -72,26 +78,27 @@
 
 /* Label styles */
 .boxed-inputfield-label {
-  padding: 0 4px;
+  padding: 0 6px;
   position: absolute;
   top: 50%;
   left: 12px;
-  max-height: 20px;
   transform: translateY(-50%);
-  font-size: var(--font-size-small);
-  font-family: var(--font-family-text, 'Roboto', sans-serif);
-  color: var(--grey-4);
+  font-size: var(--boxed-inputfield-font-size);
+  color: var(--boxed-inputfield-label-color);
   pointer-events: none;
-  transition: all 0.2s ease;
-  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   margin: 0;
   background-color: transparent;
-  z-index: 1;
-  font-weight: 500;
+  z-index: 10;
+  font-weight: 600;
 }
 
 .boxed-inputfield-label--focused {
-  color: var(--color-logo-1);
+  top: 0;
+  font-size: 12px;
+  background-color: #ffffff;
+  color: var(--boxed-inputfield-label-focus-color);
+  font-weight: 600;
 }
 
 .boxed-inputfield-input--show-placeholder::placeholder {
@@ -112,27 +119,40 @@
 
 .boxed-inputfield-options {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background-color: var(--background-div-color);
-  border-radius: 10px;
-  min-height: 20px;
-  display: none;
-  scrollbar-color: var(--grey-3) var(--background-div-color);
-  border: 1px solid hsl(var(--border) / 0.6);
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid var(--boxed-inputfield-border-color);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  overflow-y: auto;
+  overflow: hidden;
+  animation: dropdownIn 0.2s ease-out;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .boxed-inputfield-option {
-  padding: 5px 30px 5px 10px;
+  padding: 10px 16px;
   cursor: pointer;
-  height: 30px;
-  border-radius: 6px;
-  background-color: var(--background-div-color);
-  transition: background-color 0.3s;
-  color: var(--text-color);
+  background-color: transparent;
+  transition: all 0.2s ease;
+  color: #1e293b;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .option-tick {
@@ -175,27 +195,31 @@
 }
 
 .boxed-inputfield-option.selected {
-  background-color: var(--color-logo-1-light);
-  color: var(--text-color);
+  background-color: #f1f5f9;
+  color: var(--color-logo-1);
 }
 
 .boxed-inputfield-option.selected:hover {
-  background-color: var(--color-logo-1-light);
-  color: var(--text-color);
+  background-color: #e2e8f0;
 }
 
 .boxed-inputfield-option:hover {
-  background-color: var(--grey-1);
-  color: var(--text-color);
+  background-color: var(--boxed-inputfield-hover-background);
+  color: var(--color-logo-1);
 }
 
-.boxed-inputfield-option:hover span {
-  color: var(--text-color);
-}
-
-.boxed-inputfield-container--focused .boxed-inputfield-input:focus {
+/* Apply focused border style to parent container when hovering over dropdown options (for AddList dropdown) */
+.boxed-inputfield-container:has(.boxed-inputfield-option:hover),
+.boxed-inputfield-container--option-hovered {
   border-color: var(--color-logo-1) !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* Handle error state when hovering */
+.boxed-inputfield-error:has(.boxed-inputfield-option:hover),
+.boxed-inputfield-error.boxed-inputfield-container--option-hovered {
+  border-color: var(--boxed-inputfield-error-color) !important;
+  box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.1);
 }
 
 .boxed-inputfield-arrow--open {
@@ -246,31 +270,35 @@
 /* Update clear button styles */
 .boxed-inputfield-clear {
   position: absolute;
-  font-weight: 400;
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--grey-2);
-  border: none;
-  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
   opacity: 0;
-  padding: 2px 6px;
-  margin: 0;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  color: var(--text-color);
-  line-height: 1;
+  z-index: 20;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.boxed-inputfield-clear:hover {
+  background-color: #e2e8f0;
+  color: #64748b;
+  transform: translateY(-50%);
 }
 
 .boxed-inputfield-clear:hover {
   background-color: var(--grey-3);
-  transform: translateY(-50%) scale(1.1);
+  transform: translateY(-50%);
 }
 
 .has-value .boxed-inputfield-clear {
@@ -279,7 +307,11 @@
 
 .boxed-inputfield-container--focused,
 .has-value {
-  color: var(--grey-3);
+  color: inherit;
+}
+
+.has-value .boxed-inputfield-input:not(:focus):not(.boxed-inputfield-input--error) {
+  border-color: var(--boxed-inputfield-border-color) !important;
 }
 
 .remove-tag-button {
@@ -311,114 +343,98 @@
 }
 
 .boxed-inputfield-input--focused {
-  border: 1px solid hsl(var(--border) / 0.6) !important;
-}
-
-.boxed-inputfield-container--error .boxed-inputfield-input {
-  border: 1px solid var(--red-3) !important;
-}
-
-.boxed-inputfield-container--error .boxed-inputfield-label,
-.boxed-inputfield-container--error .boxed-inputfield,
-.boxed-inputfield-container--error .boxed-inputfield-arrow {
-  color: var(--red-3);
-}
-
-/* Add styles for the date input calendar icon */
-input[type="date"] {
-  margin-top: 0 !important;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-}
-
-/* Add styles for the date input calendar icon in error state */
-.boxed-inputfield-container--error input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(35%) sepia(91%) saturate(2476%) hue-rotate(345deg) brightness(100%) contrast(100%);
-  /* This filter attempts to color the icon red */
-  /* Direct color change is not supported, using filter as a workaround */
-  cursor: pointer;
-}
-
-.date-input-error::-webkit-calendar-picker-indicator {
-  filter: invert(25%) sepia(95%) saturate(5000%) hue-rotate(345deg) brightness(0.9) contrast(1.2);
-  cursor: pointer;
-  opacity: 1;
-}
-
-input[type="date"][style*="borderColor"][style*="error"]::-webkit-calendar-picker-indicator,
-input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calendar-picker-indicator {
-  filter: invert(25%) sepia(95%) saturate(5000%) hue-rotate(345deg) brightness(0.9) contrast(1.2);
-  cursor: pointer;
-  opacity: 1;
-}
-
-.boxed-inputfield-error-message {
-  color: var(--red-3);
-  font-size: var(--font-size-small);
-  margin-top: 4px;
-  display: block;
-}
-
-.boxed-inputfield-error-message--visible {
-  opacity: 1;
-}
-
-.boxed-inputfield-error-message::before {
-  content: "⚠️";
-  margin-right: 4px;
-}
-
-/* Add this to ensure consistent error message display */
-.show-error {
-  opacity: 1 !important;
-}
-
-.boxed-inputfield-container--focused .boxed-inputfield-input {
-  border: 1px solid hsl(var(--border) / 0.6) !important;
-}
-
-.boxed-inputfield-label--focused~.boxed-inputfield-input {
-  border: 1px solid hsl(var(--border) / 0.6) !important;
+  border: 2px solid var(--boxed-inputfield-focus-border-color) !important;
 }
 
 .boxed-inputfield-error .boxed-inputfield-input {
-  border: 1px solid var(--red-3) !important;
-  color: var(--red-3) !important;
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
+  color: var(--boxed-inputfield-error-color) !important;
+  font-size: var(--boxed-inputfield-font-size) !important;
+  font-weight: 500;
 }
 
+
 .boxed-inputfield-error .boxed-inputfield-arrow {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
 }
 
 .boxed-inputfield-error .boxed-inputfield-label {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
 }
 
 /* Increased specificity for date input error border */
 .boxed-inputfield-container--error .boxed-inputfield-input {
-  border: 1px solid var(--red-3) !important;
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
+  font-size: var(--boxed-inputfield-font-size);
+  font-weight: 500;
 }
 
 .boxed-inputfield-container--error .boxed-inputfield-arrow {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
 }
 
 .boxed-inputfield-container--error .boxed-inputfield-clear {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
 }
 
 .boxed-inputfield-container--error .boxed-inputfield-input {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
+  font-size: var(--boxed-inputfield-font-size) !important;
+  font-weight: 500;
 }
 
+
 .boxed-inputfield-container--error input[type="date"]::-webkit-datetime-edit {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
 }
 
 .boxed-inputfield-container input[type="date"]::-webkit-datetime-edit {
   padding-left: 0px;
+  font-size: var(--boxed-inputfield-font-size);
+  font-weight: 500;
+  color: var(--boxed-inputfield-color-text);
+}
+
+.boxed-inputfield-input[type="date"]::-webkit-datetime-edit-text {
+  color: var(--boxed-inputfield-color-text);
+  font-weight: 500;
+}
+
+.boxed-inputfield-input[type="date"]::-webkit-datetime-edit-month-field,
+.boxed-inputfield-input[type="date"]::-webkit-datetime-edit-day-field,
+.boxed-inputfield-input[type="date"]::-webkit-datetime-edit-year-field {
+  color: var(--boxed-inputfield-color-text);
+  font-weight: 500;
+}
+
+.boxed-inputfield-input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.boxed-inputfield-input[type="date"]::-webkit-datetime-edit-day-field:focus,
+.boxed-inputfield-input[type="date"]::-webkit-datetime-edit-year-field:focus {
+  background-color: rgba(79, 70, 229, 0.1);
+  color: var(--boxed-inputfield-focus-border-color);
+  border-radius: 4px;
+}
+
+.boxed-inputfield-input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+  margin-left: 8px;
+  filter: brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(1000%) hue-rotate(200deg) brightness(95%) contrast(85%);
+}
+
+.boxed-inputfield-input[type="date"]:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+.boxed-inputfield-input[type="date"]:focus::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  filter: brightness(0) saturate(100%) invert(30%) sepia(95%) saturate(2000%) hue-rotate(230deg) brightness(95%) contrast(90%);
+}
+
+.boxed-inputfield-container--error .boxed-inputfield-input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(7000%) hue-rotate(340deg) brightness(95%) contrast(90%);
 }
 
 .date-input-error::-webkit-datetime-edit,
@@ -435,11 +451,11 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 /* Paragraph input styles */
 .boxed-paragraph-container {
   position: relative;
-  padding: 8px 16px;
-  background-color: var(--background-div-color);
-  border: 1px solid hsl(var(--border) / 0.6);
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border: 2px solid var(--boxed-inputfield-border-color);
+  border-radius: 16px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .boxed-paragraph-input {
@@ -452,12 +468,13 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 }
 
 .boxed-paragraph-container--focused {
-  border-color: var(--color-logo-1);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  border-color: var(--boxed-inputfield-focus-border-color);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+  background-color: #ffffff;
 }
 
 .boxed-paragraph-container--error {
-  border-color: var(--red-3);
+  border-color: var(--boxed-inputfield-error-color);
 }
 
 .boxed-paragraph-container--disabled {
@@ -497,7 +514,7 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 }
 
 .boxed-paragraph-container--error .boxed-paragraph-label--active {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
 }
 
 .boxed-paragraph-input {
@@ -539,11 +556,11 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 }
 
 .boxed-inputfield-password-toggle--error {
-  color: var(--red-3) !important;
+  color: var(--boxed-inputfield-error-color) !important;
 }
 
 .boxed-inputfield-container--error .boxed-inputfield-password-toggle {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
 }
 
 .email-box {
@@ -573,8 +590,9 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 
 .boxed-inputfield-container--focused {
   border-color: var(--color-logo-1);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  /* box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); */
 }
+
 
 .boxed-inputfield-container--error {
   border-color: var(--danger);
@@ -584,16 +602,23 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
   background-color: var(--disabled-bg, var(--background-div-color));
   opacity: 0.7;
   cursor: not-allowed;
+  font-size: var(--boxed-inputfield-font-size) !important;
 }
+
+.boxed-inputfield-container--error .boxed-inputfield-input {
+  font-size: var(--boxed-inputfield-font-size) !important;
+}
+
 
 
 .boxed-inputfield-label--focused {
   top: 0;
-  font-size: var(--font-size-small);
+  font-size: 12px;
   transform: translateY(-50%);
   background-color: var(--background-div-color);
   color: var(--color-logo-1);
 }
+
 
 .boxed-inputfield-container--error .boxed-inputfield-label--focused {
   color: var(--danger);
@@ -745,7 +770,7 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 }
 
 .boxed-date-container--error {
-  border-color: var(--danger);
+  border: 1px solid var(--danger);
 }
 
 .boxed-date-selects {
@@ -881,8 +906,8 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   max-height: 200px;
   overflow-y: auto;
-  z-index: 11000;
-  /* Higher than onboarding overlays (10000) */
+  z-index: 200000;
+  /* Higher than tutorial components (100000) */
 }
 
 .boxed-multi-dropdown-option {
@@ -911,32 +936,51 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 .boxed-dropdown-container {
   position: relative;
   padding: 0 16px;
-  background-color: var(--background-div-color);
-  border: 1px solid hsl(var(--border) / 0.6);
-  border-radius: 8px;
+  background-color: #ffffff;
+  border: 2px solid var(--boxed-inputfield-border-color);
+  border-radius: var(--boxed-inputfield-radius);
   display: flex;
   align-items: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   height: var(--boxed-inputfield-height);
   box-sizing: border-box;
 }
 
 .boxed-dropdown-container:hover {
-  border-color: hsl(var(--border) / 0.6);
+  border-color: #cbd5e1;
+  background-color: var(--boxed-inputfield-hover-background);
 }
 
 .boxed-dropdown-container--focused {
-  border-color: var(--color-logo-1);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  border-color: var(--color-logo-1) !important;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+  background-color: #ffffff;
+}
+
+/* Apply focused border style to parent when hovering over dropdown options */
+/* Using :has() selector for modern browsers */
+.boxed-dropdown-container:has(.boxed-dropdown-option:hover),
+/* Fallback using class for browsers that don't support :has() */
+.boxed-dropdown-container--option-hovered {
+  border-color: var(--color-logo-1) !important;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+  background-color: #ffffff;
+}
+
+/* Also handle error state when hovering */
+.boxed-dropdown-container--error:has(.boxed-dropdown-option:hover),
+.boxed-dropdown-container--error.boxed-dropdown-container--option-hovered {
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
+  box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.1);
 }
 
 .boxed-dropdown-container--error {
-  border-color: var(--boxed-inputfield-error-color) !important;
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
 }
 
 .boxed-dropdown-container--error.boxed-dropdown-container--focused {
-  border-color: var(--boxed-inputfield-error-color) !important;
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
   box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.1);
 }
 
@@ -981,6 +1025,17 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 
 .boxed-dropdown-placeholder {
   color: var(--grey-3);
+  font-weight: 500;
+}
+
+.boxed-dropdown-selected--error .boxed-dropdown-placeholder {
+  color: var(--boxed-inputfield-error-color) !important;
+}
+
+.boxed-inputfield-error .boxed-inputfield-input::placeholder {
+  color: var(--boxed-inputfield-error-color) !important;
+  opacity: 1;
+  /* Ensure Firefox shows the color fully */
 }
 
 .boxed-dropdown-arrow {
@@ -1004,8 +1059,8 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
   background-color: var(--background-div-color);
   border: 1px solid hsl(var(--border) / 0.6);
   border-radius: 10px;
-  z-index: 11000;
-  /* Higher than onboarding overlays (10000) */
+  z-index: 200000;
+  /* Higher than tutorial components (100000) */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   margin-top: 4px;
 }
@@ -1060,7 +1115,9 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 /* Add or update these styles in boxedInputFields.css */
 
 .boxed-inputfield-container--error .boxed-inputfield-input {
-  border-color: var(--boxed-inputfield-error-color) !important;
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
+  font-size: var(--boxed-inputfield-font-size);
+  font-weight: 500;
 }
 
 .boxed-inputfield-label--error {
@@ -1072,13 +1129,13 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 }
 
 .boxed-inputfield-required {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
   margin-left: 2px;
   font-size: var(--font-size-small);
 }
 
 .checkbox-required {
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
   margin-left: 2px;
 }
 
@@ -1096,12 +1153,14 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 }
 
 .boxed-date-selects--error .boxed-date-select {
-  border-color: var(--red-3) !important;
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
+  font-size: var(--boxed-inputfield-font-size);
 }
 
 .boxed-date-select--error {
-  border-color: var(--red-3) !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e53e3e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
+  font-size: var(--boxed-inputfield-font-size);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
 }
 
 .boxed-dropdown-search {
@@ -1120,7 +1179,9 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 }
 
 .boxed-inputfield-input--error {
-  border-color: var(--boxed-inputfield-error-color) !important;
+  border: 2px solid var(--boxed-inputfield-error-color) !important;
+  font-size: var(--boxed-inputfield-font-size);
+  font-weight: 500;
 }
 
 .boxed-inputfield-password-toggle--error {
@@ -1134,23 +1195,10 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 /* Add styles for required field indicators in dropdown placeholders */
 .boxed-dropdown-placeholder.required::after {
   content: ' *';
-  color: var(--red-3);
+  color: var(--boxed-inputfield-error-color);
 }
 
-/* Ensure dropdown containers have consistent height with other inputs */
-.boxed-dropdown-container {
-  position: relative;
-  padding: 0 16px;
-  background-color: var(--background-div-color);
-  border: 1px solid hsl(var(--border) / 0.6);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  height: var(--boxed-inputfield-height);
-  box-sizing: border-box;
-}
+/* Inherited */
 
 /* Improve dropdown selected text alignment */
 .boxed-dropdown-selected {
@@ -1170,24 +1218,37 @@ input[type="date"][style*="var(--boxed-inputfield-error-color)"]::-webkit-calend
 /* Ensure dropdown placeholder has consistent styling */
 .boxed-dropdown-placeholder {
   color: var(--grey-3);
+  font-weight: 500;
 }
 
 /* Fix date selects to match other input heights */
 .boxed-date-select {
   flex: 1;
   padding: 0 16px;
-  border: 1px solid hsl(var(--border) / 0.6);
-  border-radius: 10px;
-  font-size: var(--font-size-small);
-  background-color: var(--background-div-color);
+  border: 2px solid var(--boxed-inputfield-border-color);
+  border-radius: var(--boxed-inputfield-radius);
+  font-size: var(--boxed-inputfield-font-size);
+  background-color: #ffffff;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23757575' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   padding-right: 2rem;
   cursor: pointer;
   height: var(--boxed-inputfield-height);
+  transition: all 0.2s ease;
   box-sizing: border-box;
+}
+
+.boxed-date-select:hover {
+  border-color: #cbd5e1;
+  background-color: var(--boxed-inputfield-hover-background);
+}
+
+.boxed-date-select:focus {
+  outline: none;
+  border-color: var(--boxed-inputfield-focus-border-color);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
 
 /* Ensure date container has consistent styling */

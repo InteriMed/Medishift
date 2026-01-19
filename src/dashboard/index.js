@@ -5,6 +5,10 @@ import { SidebarProvider } from './contexts/SidebarContext';
 import { PageMobileProvider } from './contexts/PageMobileContext';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner';
+import AdminRoute from './admin/AdminRoute';
+import AdminLayout from './admin/components/AdminLayout';
+import { WORKSPACE_TYPES } from '../utils/sessionAuth';
+import { WorkspaceAwareNavigate, WorkspaceDefaultRedirect } from './components/WorkspaceAwareNavigate';
 
 // Import PersonalDashboard directly instead of lazy-loading
 import PersonalDashboard from './pages/personalDashboard/PersonalDashboard';
@@ -20,9 +24,23 @@ const Marketplace = lazy(() => import('./pages/marketplace/Marketplace'));
 const PayrollDashboard = lazy(() => import('./pages/payroll/PayrollDashboard'));
 const OrganizationDashboard = lazy(() => import('./pages/organization/OrganizationDashboard'));
 
+// Admin pages
+const ExecutiveDashboard = lazy(() => import('./admin/pages/ExecutiveDashboard'));
+const UserVerificationQueue = lazy(() => import('./admin/UserVerificationQueue'));
+const UserCRM = lazy(() => import('./admin/pages/operations/UserCRM'));
+const ShiftCommandCenter = lazy(() => import('./admin/pages/operations/ShiftCommandCenter'));
+const RevenueAnalysis = lazy(() => import('./admin/pages/finance/RevenueAnalysis'));
+const SpendingsTracker = lazy(() => import('./admin/pages/finance/SpendingsTracker'));
+const AccountsReceivable = lazy(() => import('./admin/pages/finance/AccountsReceivable'));
+const BalanceSheet = lazy(() => import('./admin/pages/finance/BalanceSheet'));
+const AuditLogs = lazy(() => import('./admin/pages/system/AuditLogs'));
+const NotificationsCenter = lazy(() => import('./admin/pages/system/NotificationsCenter'));
+const PayrollExport = lazy(() => import('./admin/pages/payroll/PayrollExport'));
+const EmployeeManagement = lazy(() => import('./admin/pages/management/EmployeeManagement'));
+
 const Dashboard = () => {
   const location = useLocation();
-  const { profileComplete, isLoading, user, userProfile } = useDashboard();
+  const { profileComplete, isLoading, user, userProfile, selectedWorkspace } = useDashboard();
 
   // Combine user data from both user and userProfile for compatibility with existing components
   const userData = user ? {
@@ -38,8 +56,9 @@ const Dashboard = () => {
     }
   } : null;
 
-  // Check if user is a facility (for payroll/organization access)
-  const isFacility = userData?.role === 'facility' || userData?.accountType === 'facility';
+  const isPersonalWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.PERSONAL;
+  const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
+  const isAdminWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN;
 
   return (
     <SidebarProvider>
@@ -50,44 +69,66 @@ const Dashboard = () => {
               <LoadingSpinner />
             ) : (
               <Routes>
-                <Route path="/" element={<Navigate to="overview" replace />} />
+                <Route path="/" element={<WorkspaceDefaultRedirect />} />
                 <Route path="overview" element={<PersonalDashboard />} />
 
-                {/* Fallback route specifically for the dashboard homepage */}
                 <Route path="personal" element={<PersonalDashboard />} />
 
-                {/* Always allow access to the profile page so users can complete their profile */}
                 <Route path="profile/*" element={<Profile />} />
 
-                {/* Restrict access to other routes if profile is not complete */}
                 <Route
                   path="calendar/*"
-                  element={<Calendar userData={userData} />}
+                  element={isPersonalWorkspace ? <Calendar userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
                 />
                 <Route
                   path="messages/*"
-                  element={<Messages userData={userData} />}
+                  element={isPersonalWorkspace ? <Messages userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
                 />
                 <Route
                   path="contracts/*"
-                  element={<Contracts userData={userData} />}
+                  element={isPersonalWorkspace ? <Contracts userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
                 />
                 <Route
                   path="marketplace/*"
-                  element={<Marketplace userData={userData} />}
+                  element={isPersonalWorkspace ? <Marketplace userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
                 />
 
-                {/* 🇨🇭 Swiss Compliance - Phase 1: Payroll Management (Facilities only) */}
                 <Route
                   path="payroll/*"
-                  element={profileComplete && isFacility ? <PayrollDashboard /> : <Navigate to="/dashboard/overview" replace />}
+                  element={isTeamWorkspace ? <PayrollDashboard /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
                 />
 
-                {/* 🔵 Phase 2: Organization Management (Facilities only) */}
                 <Route
                   path="organization/*"
-                  element={profileComplete && isFacility ? <OrganizationDashboard /> : <Navigate to="/dashboard/overview" replace />}
+                  element={isTeamWorkspace ? <OrganizationDashboard /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
                 />
+
+                <Route
+                  path="admin/*"
+                  element={
+                    isAdminWorkspace ? (
+                      <AdminRoute>
+                        <AdminLayout />
+                      </AdminRoute>
+                    ) : (
+                      <WorkspaceAwareNavigate to="/dashboard/overview" />
+                    )
+                  }
+                >
+                  <Route index element={<Navigate to="portal" replace />} />
+                  <Route path="portal" element={<ExecutiveDashboard />} />
+                  <Route path="verification" element={<UserVerificationQueue />} />
+                  <Route path="operations/users" element={<UserCRM />} />
+                  <Route path="operations/shifts" element={<ShiftCommandCenter />} />
+                  <Route path="finance/revenue" element={<RevenueAnalysis />} />
+                  <Route path="finance/spendings" element={<SpendingsTracker />} />
+                  <Route path="finance/ar" element={<AccountsReceivable />} />
+                  <Route path="finance/balance-sheet" element={<BalanceSheet />} />
+                  <Route path="system/audit" element={<AuditLogs />} />
+                  <Route path="system/notifications" element={<NotificationsCenter />} />
+                  <Route path="payroll/export" element={<PayrollExport />} />
+                  <Route path="management/employees" element={<EmployeeManagement />} />
+                </Route>
 
                 <Route path="*" element={<div>Path not found: {location.pathname}</div>} />
               </Routes>

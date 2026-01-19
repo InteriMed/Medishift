@@ -11,6 +11,7 @@ import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Fie
 import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import { useDropdownOptions } from '../../../pages/profile/utils/DropdownListsImports';
 import { FiX, FiPhone, FiCheck } from 'react-icons/fi';
+import { formatPhoneNumber } from '../../../onboarding/utils/glnVerificationUtils';
 
 const CreateOrganizationModal = ({ isOpen, onClose, onSuccess }) => {
   const { t } = useTranslation(['organization', 'dashboard', 'common', 'dashboardProfile']);
@@ -149,13 +150,11 @@ const CreateOrganizationModal = ({ isOpen, onClose, onSuccess }) => {
         }
       }
 
-      let cleanedPhoneNumber = phoneNumber.replace(/\s|-|\(|\)/g, '');
+      const { cleanNumber, cleanPrefix, fullNumber: fullPhoneNumber } = formatPhoneNumber(phoneNumber, phonePrefix);
 
-      if (cleanedPhoneNumber.startsWith('0')) {
-        cleanedPhoneNumber = cleanedPhoneNumber.substring(1);
-      }
-
-      const fullPhoneNumber = phonePrefix ? `${phonePrefix}${cleanedPhoneNumber}` : cleanedPhoneNumber;
+      // Update local state for consistency
+      setPhoneNumber(cleanNumber);
+      setPhonePrefix(cleanPrefix);
 
       const phoneProvider = new PhoneAuthProvider(auth);
       const verificationId = await phoneProvider.verifyPhoneNumber(
@@ -199,12 +198,13 @@ const CreateOrganizationModal = ({ isOpen, onClose, onSuccess }) => {
       if (currentUser) {
         await linkWithCredential(auth.currentUser, phoneCredential);
 
+        const { cleanNumber, cleanPrefix } = formatPhoneNumber(phoneNumber, phonePrefix);
         const userDocRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userDocRef, {
-          'contact.primaryPhonePrefix': phonePrefix,
-          'contact.primaryPhone': phoneNumber,
-          'primaryPhonePrefix': phonePrefix,
-          'primaryPhone': phoneNumber,
+          'contact.primaryPhonePrefix': cleanPrefix,
+          'contact.primaryPhone': cleanNumber,
+          'primaryPhonePrefix': cleanPrefix,
+          'primaryPhone': cleanNumber,
           isPhoneVerified: true,
           phoneVerifiedAt: new Date(),
           updatedAt: new Date()

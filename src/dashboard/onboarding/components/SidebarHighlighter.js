@@ -147,15 +147,6 @@ const SidebarHighlighter = () => {
         return; // Let the click happen but don't advance
       }
 
-      // Check if this step should pause after click
-      if (stepData?.pauseAfterClick) {
-        console.log(`[SidebarHighlighter] Step has pauseAfterClick flag, pausing tutorial`);
-        // Don't prevent default - let the button click happen
-        // Don't call nextStep - tutorial will pause
-        // The tutorial will resume when user manually continues
-        return; // Let the click happen but don't advance
-      }
-
       // For other links, prevent default and navigate programmatically
       e.preventDefault();
       e.stopPropagation();
@@ -168,10 +159,8 @@ const SidebarHighlighter = () => {
           navigate(navigationPath);
         }
 
-        // Then move to next step after a short delay
-        setTimeout(() => {
-          nextStep();
-        }, 300);
+        // Do NOT automatically advance to next step - user must click Next button
+        console.log(`[SidebarHighlighter] Navigation complete, waiting for user to click Next`);
       }, 100);
     };
 
@@ -633,8 +622,75 @@ const SidebarHighlighter = () => {
   }, [activeTutorial, currentStep, stepData, positionHighlightBox, cleanup, isTutorialActive, handleResize]); // Removed isMainSidebarCollapsed - not needed here
 
 
-  // Don't render anything - highlights are now handled directly by components
-  return null;
+  const isUploadButton = !!stepData?.highlightUploadButton;
+  const isProfileTab = !!stepData?.highlightTab;
+  const isSidebarItem = !!stepData?.highlightSidebarItem || !!stepData?.highlightSidebar;
+
+  // Use ref to check if the target element is inside a sidebar (more robust for mobile)
+  const isInSidebar = targetElement?.closest('aside');
+  const requiresInteraction = stepData?.requiresInteraction !== undefined ? stepData.requiresInteraction : false;
+
+  if (!highlightBox) {
+    return null;
+  }
+
+  // Early return for elements that handle their own highlighting
+  if (isSidebarItem || isProfileTab || isUploadButton || isInSidebar) {
+    return (
+      <>
+        {isUploadButton && (
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              [data-tutorial="profile-upload-button"] {
+                color: #000000 !important;
+              }
+              [data-tutorial="profile-upload-button"] span {
+                color: #000000 !important;
+              }
+              [data-tutorial="profile-upload-button"] svg {
+                color: #000000 !important;
+              }
+            `}} />
+        )}
+      </>
+    );
+  }
+
+  const shouldShowOverlay = highlightBox && requiresInteraction;
+
+  const uploadButtonStyles = `
+    [data-tutorial="profile-upload-button"] {
+      color: #000000 !important;
+    }
+    [data-tutorial="profile-upload-button"] span {
+      color: #000000 !important;
+    }
+    [data-tutorial="profile-upload-button"] svg {
+      color: #000000 !important;
+    }
+  `;
+
+  return (
+    <>
+      {isUploadButton && (
+        <style dangerouslySetInnerHTML={{ __html: uploadButtonStyles }} />
+      )}
+      {shouldShowOverlay && (
+        <div
+          style={{
+            ...highlightBox,
+            backgroundColor: 'rgba(37, 99, 235, 0.05)',
+            border: '1px solid rgba(37, 99, 235, 0.4)',
+            boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.2), 0 0 0 4px rgba(37, 99, 235, 0.1), 0 0 15px rgba(37, 99, 235, 0.3)',
+            animation: 'pulse-tab-highlight 2s ease-in-out infinite',
+            pointerEvents: requiresInteraction ? 'auto' : 'none',
+            zIndex: requiresInteraction ? 10000 : 2500
+          }}
+          data-testid="tutorial-highlight-box"
+        />
+      )}
+    </>
+  );
 };
 
 export default SidebarHighlighter;

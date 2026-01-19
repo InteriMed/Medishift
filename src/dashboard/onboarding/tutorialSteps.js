@@ -56,6 +56,7 @@ export const tutorialSteps = {
       content: 'Start by filling out your personal information like name, address, and contact details. You can upload your CV using the Auto Fill button to speed up the process, or fill in the information manually.',
       targetSelector: '[data-tutorial="profile-upload-button"]',
       targetArea: 'content',
+      highlightTab: 'personalDetails',
       highlightUploadButton: true,
       navigationPath: '/dashboard/profile/personalDetails',
       requiresInteraction: true,
@@ -74,6 +75,7 @@ export const tutorialSteps = {
       targetSelector: 'button[data-tab="professionalBackground"]',
       targetArea: 'content',
       highlightTab: 'professionalBackground',
+      highlightUploadButton: true,
       navigationPath: '/dashboard/profile/professionalBackground',
       requiresInteraction: true,
       customButtons: [
@@ -91,6 +93,7 @@ export const tutorialSteps = {
       targetSelector: 'button[data-tab="billingInformation"]',
       targetArea: 'content',
       highlightTab: 'billingInformation',
+      highlightUploadButton: true,
       navigationPath: '/dashboard/profile/billingInformation',
       requiresInteraction: true,
       customButtons: [
@@ -108,6 +111,7 @@ export const tutorialSteps = {
       targetSelector: 'button[data-tab="documentUploads"]',
       targetArea: 'content',
       highlightTab: 'documentUploads',
+      highlightUploadButton: true,
       navigationPath: '/dashboard/profile/documentUploads',
       requiresInteraction: true,
       customButtons: [
@@ -128,8 +132,8 @@ export const tutorialSteps = {
       navigationPath: '/dashboard/profile/settings',
       highlightTab: 'settings',
       actionButton: {
-        text: 'Continue to Next Section',
-        action: 'start_calendar_tutorial'
+        text: 'Continue to Messages',
+        action: 'start_messages_tutorial'
       }
     }
   ],

@@ -158,8 +158,10 @@ export const createWorkspaceSession = async (userId, workspaceType, facilityId =
       }
 
       const facilityData = facilityDoc.data();
-      const isAdmin = facilityData.admin && facilityData.admin.includes(userId);
-      const isEmployee = facilityData.employees && facilityData.employees.includes(userId);
+      const adminsList = facilityData.admins || facilityData.admin || [];
+      const employeesList = facilityData.employees || [];
+      const isAdmin = adminsList.includes(userId) || employeesList.some(emp => emp.uid === userId && emp.rights === 'admin');
+      const isEmployee = employeesList.some(emp => emp.uid === userId);
 
       if (!isAdmin && !isEmployee) {
         console.warn(`[SessionAuth] User ${userId} not found in facility ${facilityId} admin/employees`);

@@ -1,0 +1,11 @@
+{
+    "users": {
+        "crm": "Gestion Utilisateurs"
+    },
+    "verification": {
+        "title": "Vérification",
+        "pending": "En attente",
+        "verified": "Vérifié",
+        "rejected": "Rejeté"
+    }
+}

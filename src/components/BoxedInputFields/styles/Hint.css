@@ -27,7 +27,8 @@
   position: absolute;
   border-width: 5px;
   border-style: solid;
-  border-color: transparent; /* Reset border color */
+  border-color: transparent;
+  /* Reset border color */
 }
 
 /* Default Bottom Arrow */
@@ -50,19 +51,48 @@
 .hint-tooltip[data-arrow-position="left"]::after {
   top: 50%;
   right: 100%;
-  margin-top: -5px; /* Center vertically */
+  margin-top: -5px;
+  /* Center vertically */
   border-right-color: var(--color-logo-1);
 }
 
 /* Right Arrow */
 .hint-tooltip[data-arrow-position="right"]::after {
   top: 50%;
-  left: 100%; 
-  margin-top: -5px; /* Center vertically */
+  left: 100%;
+  margin-top: -5px;
+  /* Center vertically */
   border-left-color: var(--color-logo-1);
 }
 
 .hint-container:hover .hint-tooltip {
   visibility: visible;
   opacity: 1;
+}
+
+/* Danger variant styles - using same red as error states */
+.hint-icon-danger {
+  color: #ef4444;
+  /* Same as --boxed-inputfield-error-color */
+}
+
+.hint-tooltip-danger {
+  background-color: #ef4444;
+  /* Same as --boxed-inputfield-error-color */
+}
+
+.hint-tooltip-danger[data-arrow-position="bottom"]::after {
+  border-top-color: #ef4444;
+}
+
+.hint-tooltip-danger[data-arrow-position="top"]::after {
+  border-bottom-color: #ef4444;
+}
+
+.hint-tooltip-danger[data-arrow-position="left"]::after {
+  border-right-color: #ef4444;
+}
+
+.hint-tooltip-danger[data-arrow-position="right"]::after {
+  border-left-color: #ef4444;
 }

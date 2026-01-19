@@ -13,6 +13,7 @@ import { useTutorial } from '../../contexts/TutorialContext';
 import { normalizePathname } from '../../utils/pathUtils';
 import useProfileData from '../../hooks/useProfileData';
 import { useNotification } from '../../../contexts/NotificationContext';
+import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 
 export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen = false, onBackButtonClick, showBackButton = false }) {
   const location = useLocation();
@@ -37,10 +38,17 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   const handleResetProfile = async () => {
     setIsResetting(true);
     try {
-      await resetProfile();
+      // Determine which profile to reset based on current workspace type
+      const isFacilityWorkspace = selectedWorkspace?.type === 'team';
+      const targetRole = isFacilityWorkspace ? 'facility' : 'professional';
+      const targetProfileType = user?.profileType;
+
+      console.log(`[Header] Resetting ${targetRole} profile for user: ${user?.uid}`);
+      await resetProfile(targetRole, targetProfileType);
+
       showNotification(t('dashboard.header.profileResetSuccess', 'Profile reset successfully'), 'success');
       setShowResetConfirm(false);
-      setProfileMenuOpen(false);
+      if (setProfileMenuOpen) setProfileMenuOpen(false);
       window.location.reload();
     } catch (error) {
       console.error('Error resetting profile:', error);
@@ -134,6 +142,9 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   const shouldShowWorkspaceSelector = !isLoading && isTutorialReady && !showFirstTimeModal && (isProfessional || isFacility || hasFacilityMemberships || hasWorkspaces || forceShowWorkspaceSelector);
 
   const getHeaderColor = () => {
+    if (selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN) {
+      return '#dc2626';
+    }
     if (selectedWorkspace?.type === 'team' || isFacility) {
       return 'var(--color-logo-2, #29517b)';
     }
@@ -213,8 +224,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   return (
     <header
       className={cn(
-        "min-h-16 border-b border-transparent",
-        "flex items-center justify-between px-4 sm:px-6 sticky top-0 transition-all duration-300",
+        "min-h-16 border-b border-transparent w-full",
+        "flex items-center justify-between px-4 sm:px-6 fixed top-0 left-0 right-0 transition-all duration-300",
         "shadow-sm"
       )}
       style={{
@@ -223,9 +234,20 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         color: '#ffffff'
       }}
     >
-
-      {/* Left: Mobile Menu Button & Page Title */}
+      {/* Left: Logo, Mobile Menu Button & Page Title */}
       <div className="flex items-center gap-4 flex-shrink-0">
+        {/* Logo Section */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <img
+            src="/logo white.png"
+            alt="MediShift"
+            className="h-8 w-auto object-contain shrink-0"
+          />
+          <span className="text-xl font-bold text-white hidden md:block">
+            MediShift
+          </span>
+        </div>
+
         {/* Mobile: Back Button (when in detail view) or Menu Button */}
         {showBackButton && onBackButtonClick ? (
           <button
@@ -442,8 +464,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                   <FiSettings className="w-4 h-4 text-black" /> Settings
                 </button>
                 <div className="my-1 h-px bg-border" />
-                <button 
-                  onClick={() => { setShowResetConfirm(true); }} 
+                <button
+                  onClick={() => { setShowResetConfirm(true); }}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-destructive/10 text-black text-sm"
                 >
                   <FiRefreshCw className="w-4 h-4 text-black" /> {t('dashboard.header.resetProfile', 'Reset Profile')}

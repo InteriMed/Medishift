@@ -153,4 +153,5 @@
   --z-index-onboarding-overlay: 10000;
   --z-index-workspace-dropdown: 15000;
   --z-index-max: 99999;
+  --z-index-popup-above-tutorial: 200000;
 }

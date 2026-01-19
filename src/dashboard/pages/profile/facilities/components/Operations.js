@@ -9,15 +9,15 @@ import DropdownField from '../../../../../components/BoxedInputFields/Dropdown-F
 import Switch from '../../../../../components/BoxedInputFields/Switch';
 
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1000px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border p-6 pb-4 shadow-md w-full max-w-[1000px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-xl border border-border p-6 pb-4 shadow-md w-full max-w-[1400px] mx-auto",
   sectionTitle: "text-2xl font-semibold mb-2",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
   subtitleRow: "flex items-end justify-between gap-4",
   mandatoryFieldLegend: "text-xs text-muted-foreground",
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "flex flex-col gap-6 w-full max-w-[1000px] mx-auto",
+  sectionsWrapper: "flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
   sectionCard: "bg-card rounded-xl border border-border p-6 shadow-md w-full",
   cardHeader: "flex items-center gap-4 mb-6",
   cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
@@ -26,7 +26,7 @@ const styles = {
   cardTitleH3Style: { color: 'hsl(var(--card-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   grid: "grid grid-cols-1 gap-6",
   fieldWrapper: "space-y-2",
-  formActions: "flex justify-end gap-4 w-full max-w-[1000px] mx-auto",
+  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto",
   openingHoursGrid: "grid grid-cols-1 md:grid-cols-2 gap-3",
   dayRow: "flex flex-col gap-3 p-4 border border-border/60 rounded-lg bg-card/50 transition-all hover:border-primary/30",
   dayRowClosed: "opacity-60",
@@ -95,13 +95,13 @@ const Operations = ({
       const isClosed = dayValue === 'closed' || dayValue === '';
       let openingTime = '08:00';
       let closingTime = '18:00';
-      
+
       if (!isClosed && dayValue.includes('-')) {
         const parts = dayValue.split('-');
         openingTime = parts[0]?.trim() || '08:00';
         closingTime = parts[1]?.trim() || '18:00';
       }
-      
+
       return {
         ...day,
         isClosed,
@@ -115,7 +115,7 @@ const Operations = ({
   const handleDayHoursChange = useCallback((dayKey, field, value) => {
     const currentHours = getNestedValue(formData, 'operationalSettings.standardOpeningHours') || {};
     const dayData = openingHours.find(d => d.key === dayKey);
-    
+
     if (field === 'isClosed') {
       const newValue = value ? 'closed' : `${dayData.openingTime}-${dayData.closingTime}`;
       onInputChange(`operationalSettings.standardOpeningHours.${dayKey}`, newValue);
@@ -206,8 +206,8 @@ const Operations = ({
 
           <div className={styles.openingHoursGrid}>
             {openingHours.map(day => (
-              <div 
-                key={day.key} 
+              <div
+                key={day.key}
                 className={`${styles.dayRow} ${day.isClosed ? styles.dayRowClosed : ''}`}
               >
                 <div className={styles.dayHeader}>
@@ -342,9 +342,8 @@ const Operations = ({
                 <button
                   type="button"
                   onClick={() => handleUpdateWorkerRequirement(requirement.id, 'appliesToAllDays', !requirement.appliesToAllDays)}
-                  className={`${styles.everydayPill} ${
-                    requirement.appliesToAllDays ? styles.everydayPillActive : styles.everydayPillInactive
-                  }`}
+                  className={`${styles.everydayPill} ${requirement.appliesToAllDays ? styles.everydayPillActive : styles.everydayPillInactive
+                    }`}
                 >
                   {t('operations.everyday')}
                 </button>
@@ -359,18 +358,17 @@ const Operations = ({
                     {DAYS_OF_WEEK.map(day => {
                       const isSelected = requirement.specificDays?.includes(day.key);
                       const dayHours = openingHours.find(d => d.key === day.key);
-                      const dayTime = dayHours && !dayHours.isClosed 
+                      const dayTime = dayHours && !dayHours.isClosed
                         ? `${dayHours.openingTime} - ${dayHours.closingTime}`
                         : null;
-                      
+
                       return (
                         <div key={day.key} className="flex flex-col items-center">
                           <button
                             type="button"
                             onClick={() => handleUpdateWorkerRequirement(requirement.id, 'toggleDay', day.key)}
-                            className={`${styles.weekdayChip} ${
-                              isSelected ? styles.weekdayChipActive : styles.weekdayChipInactive
-                            }`}
+                            className={`${styles.weekdayChip} ${isSelected ? styles.weekdayChipActive : styles.weekdayChipInactive
+                              }`}
                           >
                             {t(day.labelKey)}
                           </button>

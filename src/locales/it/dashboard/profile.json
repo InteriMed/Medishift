@@ -480,7 +480,7 @@
         "autoFillTitle": "Compilazione Automatica?",
         "autoFillDescription": "Abbiamo estratto informazioni. I dati esistenti NON saranno sovrascritti. Procedere?",
         "autoFillAction": "Compila",
-        "fillEmptyFields": "Riempi Campi Vuoti",
+        "fillProfile": "Compila Profilo",
         "overwriteAll": "Sovrascrivi Tutto",
         "overwriteConfirmTitle": "Sei sicuro?",
         "overwriteConfirmDescription": "Tutti i dati verranno sovrascritti. Azione irreversibile.",

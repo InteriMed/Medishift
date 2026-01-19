@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase';
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot, updateDoc } from 'firebase/firestore';
@@ -12,6 +13,7 @@ import {
   getAvailableWorkspaces,
   WORKSPACE_TYPES
 } from '../../utils/sessionAuth';
+import { buildDashboardUrl, getDefaultRouteForWorkspace } from '../utils/pathUtils';
 
 const DashboardContext = createContext(null);
 
@@ -22,6 +24,8 @@ const COOKIE_EXPIRY_DAYS = 7; // Set cookies to expire after 7 days
 
 export const DashboardProvider = ({ children }) => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [dashboardData] = useState(null);
   const [userPreferences, setUserPreferences] = useState(null);
   const [notifications] = useState([]);
@@ -144,23 +148,31 @@ export const DashboardProvider = ({ children }) => {
   };
 
   // Helper function to determine the next incomplete profile section
-  // This should match the logic used in Profile.js for tab completion
   const getNextIncompleteProfileSection = (userData) => {
     if (!userData) return null;
 
-    // For now, return a simple logic based on what we can determine
-    // The actual profile data is in professionalProfiles collection
-    // This function is called from DashboardContext which only has users data
-    // So we'll use a simplified approach until we can access the full profile data
+    // 1. Personal Details (Basic Identity & Contact)
+    const personalFields = ['firstName', 'lastName', 'email', 'phoneNumber'];
+    const hasPersonalDetails = personalFields.every(field =>
+      userData[field] && String(userData[field]).trim() !== ''
+    );
+    if (!hasPersonalDetails) return 'personalDetails';
 
-    // If the user doesn't have basic info, start with personal details
-    if (!userData.firstName || !userData.lastName || !userData.email) {
-      return 'personalDetails';
-    }
-
-    // If they have basic info but profile is not complete, assume professional background
+    // 2. Professional Background (Assumed incomplete if not explicitly marked complete)
+    // In a real app, we'd check if education/workExperience arrays have items
     if (!userData.isProfessionalProfileComplete) {
-      return 'professionalBackground';
+      // Check if they at least have specialties set
+      if (!userData.specialties || (Array.isArray(userData.specialties) && userData.specialties.length === 0)) {
+        return 'professionalBackground';
+      }
+
+      // Check if they have billing info (simplified)
+      if (!userData.bankDetails && !userData.banking && !userData.payrollData) {
+        return 'billingInformation';
+      }
+
+      // Assume the rest is Document Uploads
+      return 'documentUploads';
     }
 
     return null; // Profile is complete
@@ -227,11 +239,15 @@ export const DashboardProvider = ({ children }) => {
         return;
       }
 
-      // Optimization: if we already have the user data for this UID, don't refetch
-      if (user && user.uid === currentUser.uid) {
+      // Optimization: if we already have the user data for this UID AND valid profile flags, don't refetch
+      // We must allow it to run if flags are undefined (e.g. from onSnapshot initialization)
+      if (user && user.uid === currentUser.uid && typeof user.hasProfessionalProfile !== 'undefined') {
         setIsLoading(false);
         return;
       }
+
+      let fetchedUser = null;
+
 
       try {
         setIsLoading(true);
@@ -277,6 +293,7 @@ export const DashboardProvider = ({ children }) => {
 
 
           // Set user state with basic data
+          fetchedUser = basicUserData;
           setUser(basicUserData);
           setUserProfile(basicUserData);
           setProfileComplete(false);
@@ -328,6 +345,7 @@ export const DashboardProvider = ({ children }) => {
 
           // Ensure uid is included in the user object
           const userWithId = { ...userData, uid: currentUser.uid };
+          fetchedUser = userWithId;
           setUser(userWithId);
           setUserProfile(userWithId);
           setProfileComplete(isProfessionalProfileComplete);
@@ -357,10 +375,49 @@ export const DashboardProvider = ({ children }) => {
           }
         }
 
-
-      } finally {
-        setIsLoading(false);
       }
+
+      // This handles cases where users collection might be out of sync or ambiguous
+      try {
+        const profDocRef = doc(db, 'professionalProfiles', currentUser.uid);
+        const facDocRef = doc(db, 'facilityProfiles', currentUser.uid);
+
+        const [profDoc, facDoc] = await Promise.all([
+          getDoc(profDocRef),
+          getDoc(facDocRef)
+        ]);
+
+        const hasProfessionalProfile = profDoc.exists();
+        const hasFacilityProfile = facDoc.exists();
+
+        // Augment user data with profile existence flags
+        if (fetchedUser) {
+          setUser(prev => ({
+            ...prev,
+            hasProfessionalProfile,
+            hasFacilityProfile
+          }));
+          fetchedUser.hasProfessionalProfile = hasProfessionalProfile;
+          fetchedUser.hasFacilityProfile = hasFacilityProfile;
+        }
+
+        // CRITICAL: Check role mismatch against fetched data
+        if (hasFacilityProfile && (fetchedUser && (fetchedUser.role !== 'facility' && fetchedUser.role !== 'company'))) {
+          console.log("[DashboardContext] Detected Facility Profile but mismatched role. Correcting to 'facility'.");
+          if (fetchedUser) {
+            setUser(prev => ({ ...prev, role: 'facility', hasProfessionalProfile, hasFacilityProfile }));
+          }
+        } else if (hasProfessionalProfile && (fetchedUser && fetchedUser.role !== 'professional') && !hasFacilityProfile) {
+          console.log("[DashboardContext] Detected Professional Profile but mismatched role. Correcting to 'professional'.");
+          if (fetchedUser) {
+            setUser(prev => ({ ...prev, role: 'professional', hasProfessionalProfile, hasFacilityProfile }));
+          }
+        }
+      } catch (profileCheckError) {
+        console.error("[DashboardContext] Error checking profile existence:", profileCheckError);
+      }
+
+      setIsLoading(false);
     };
 
     fetchUserData();
@@ -392,10 +449,17 @@ export const DashboardProvider = ({ children }) => {
             setCookieValues(currentUser.uid, isProfessionalProfileComplete, isTutorialPassed);
           }
 
-          // Update user data in state
           // Update user data in state, ensuring uid is included
           const userWithId = { ...userData, uid: docSnapshot.id };
-          setUser(userWithId);
+
+          // CRITICAL: Preserve runtime flags (profile existence) that are not in Firestore
+          // This prevents the snapshot listener from clobbering the flags set by fetchUserData
+          setUser(prev => ({
+            ...userWithId,
+            hasProfessionalProfile: prev?.hasProfessionalProfile,
+            hasFacilityProfile: prev?.hasFacilityProfile
+          }));
+
           setUserProfile(userWithId);
         }
       }, (error) => {
@@ -405,7 +469,7 @@ export const DashboardProvider = ({ children }) => {
       // Clean up listener on unmount
       return () => unsubscribe();
     }
-  }, [currentUser, profileComplete, tutorialPassed, user]);
+  }, [currentUser, profileComplete, tutorialPassed]);
 
   useEffect(() => {
     if (user) {
@@ -481,7 +545,15 @@ export const DashboardProvider = ({ children }) => {
       // Store workspace selection in cookie for persistence
       setWorkspaceCookie(workspace);
 
-      // console.log('[DashboardContext] Workspace switched successfully');
+      // Navigate to correct default route based on workspace type with workspace in URL
+      const defaultRoute = getDefaultRouteForWorkspace(workspace.type);
+      const routeWithWorkspace = buildDashboardUrl(defaultRoute.replace('/dashboard', ''), workspace.id);
+      navigate(routeWithWorkspace, { replace: true });
+
+      // Auto-reload to ensure clean state separation between workspaces
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
 
     } catch (error) {
       console.error('[DashboardContext] Error switching workspace:', error);
@@ -533,15 +605,30 @@ export const DashboardProvider = ({ children }) => {
 
     // console.log('[DashboardContext] Available workspaces:', availableWorkspaces);
 
-    // Try to restore workspace from cookie
-    const savedWorkspace = getWorkspaceCookie();
+    // Try to restore workspace from URL first, then cookie
+    const urlParams = new URLSearchParams(location.search);
+    const workspaceIdFromUrl = urlParams.get('workspace');
+    let workspaceFromUrl = null;
+    if (workspaceIdFromUrl) {
+      workspaceFromUrl = availableWorkspaces.find(w => w.id === workspaceIdFromUrl);
+    }
+
+    // Try to restore workspace from cookie if not in URL
+    const savedWorkspace = workspaceFromUrl || getWorkspaceCookie();
 
     // Check if we already have a selected workspace that is valid
     if (selectedWorkspace) {
       // If the current selected workspace is still in the available list, we're good
       const stillAvailable = availableWorkspaces.find(w => w.id === selectedWorkspace.id);
       if (stillAvailable) {
-        // console.log('[DashboardContext] Keeping current selected workspace:', selectedWorkspace);
+        // Always ensure workspace is in URL
+        const searchParams = new URLSearchParams(location.search);
+        const currentWorkspaceInUrl = searchParams.get('workspace');
+        if (!currentWorkspaceInUrl || currentWorkspaceInUrl !== selectedWorkspace.id) {
+          searchParams.set('workspace', selectedWorkspace.id);
+          const newUrl = `${location.pathname}?${searchParams.toString()}`;
+          navigate(newUrl, { replace: true });
+        }
         return;
       }
     }
@@ -561,7 +648,12 @@ export const DashboardProvider = ({ children }) => {
 
       if (hasValidSession) {
         setSelectedWorkspace(savedWorkspace);
-        // console.log('[DashboardContext] Valid session found, workspace restored');
+        // Update URL with workspace - ensure it's always present
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.set('workspace', savedWorkspace.id);
+        const defaultRoute = getDefaultRouteForWorkspace(savedWorkspace.type);
+        const routeWithWorkspace = buildDashboardUrl(defaultRoute.replace('/dashboard', ''), savedWorkspace.id);
+        navigate(routeWithWorkspace, { replace: true });
       } else {
         // console.log('[DashboardContext] No valid session, creating new one');
         switchWorkspace(savedWorkspace);
@@ -588,8 +680,13 @@ export const DashboardProvider = ({ children }) => {
       console.log('[DashboardContext] No workspaces available for user');
       setSelectedWorkspace(null);
       clearWorkspaceCookie();
+      // Remove workspace from URL if no workspaces available
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.delete('workspace');
+      const newUrl = searchParams.toString() ? `${location.pathname}?${searchParams.toString()}` : location.pathname;
+      navigate(newUrl, { replace: true });
     }
-  }, [user, switchWorkspace, selectedWorkspace]);
+  }, [user, switchWorkspace, selectedWorkspace, location, navigate]);
 
   // Validate workspace session periodically
   useEffect(() => {

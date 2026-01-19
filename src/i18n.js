@@ -86,6 +86,7 @@ export const routeMappings = {
     forgotPassword: 'forgot-password',
     dashboard: 'dashboard',
     loading: 'loading',
+    onboarding: 'onboarding',
     notFound: 'not-found'
   },
   fr: {
@@ -105,6 +106,7 @@ export const routeMappings = {
     forgotPassword: 'forgot-password',
     dashboard: 'dashboard',
     loading: 'loading',
+    onboarding: 'onboarding',
     notFound: 'not-found'
   },
   de: {
@@ -124,6 +126,7 @@ export const routeMappings = {
     forgotPassword: 'forgot-password',
     dashboard: 'dashboard',
     loading: 'loading',
+    onboarding: 'onboarding',
     notFound: 'not-found'
   },
   it: {
@@ -143,6 +146,7 @@ export const routeMappings = {
     forgotPassword: 'forgot-password',
     dashboard: 'dashboard',
     loading: 'loading',
+    onboarding: 'onboarding',
     notFound: 'not-found'
   }
 };

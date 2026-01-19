@@ -1,7 +1,7 @@
 // FILE: /src/hooks/useProfileData.js (Updated)
 
 import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc, setDoc, updateDoc, Timestamp, enableNetwork } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -67,18 +67,15 @@ const useProfileData = () => {
 
 
   const fetchProfileData = useCallback(async () => {
-    if (!currentUser) { /* ... */ setIsLoading(false); setProfileData(null); return null; }
-    setIsLoading(true); setError(null);
-    // console.log('[useProfileData] Fetching data for:', currentUser.uid);
+    if (!currentUser) {
+      setIsLoading(false);
+      setProfileData(null);
+      return null;
+    }
+    setIsLoading(true);
+    setError(null);
 
     try {
-      // Ensure network is enabled before fetching
-      try {
-        await enableNetwork(db);
-      } catch (networkError) {
-        console.warn('[useProfileData] Network enable warning:', networkError.message);
-      }
-
       const TIMEOUT_MS = 4000;
       const fetchUserDoc = getDoc(doc(db, 'users', currentUser.uid));
       const timeoutPromise = new Promise((_, reject) =>
@@ -89,13 +86,11 @@ const useProfileData = () => {
 
       if (!userDoc.exists()) {
         console.warn('[useProfileData] User document not found. Call initializeProfileDocument.');
-        setIsLoading(false);
-        return { uid: currentUser.uid, email: currentUser.email, role: 'professional', profileType: getDefaultProfileType('professional') }; // Provide minimal for init
+        return { uid: currentUser.uid, email: currentUser.email, role: 'professional', profileType: getDefaultProfileType('professional') };
       }
 
       const userData = convertTimestamps(userDoc.data());
-      // Ensure role and profileType exist, defaulting if necessary
-      const userRole = userData.role || 'professional'; // Default to professional if not set
+      const userRole = userData.role || 'professional';
       const userProfileType = userData.profileType || getDefaultProfileType(userRole);
 
       if (!userData.role || !userData.profileType) {
@@ -104,7 +99,6 @@ const useProfileData = () => {
 
       const profileCollection = getProfileCollectionName(userRole);
 
-      // Also protect the second fetch with timeout
       const fetchProfileDoc = getDoc(doc(db, profileCollection, currentUser.uid));
       const profileTimeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS)
@@ -112,11 +106,10 @@ const useProfileData = () => {
 
       const profileDoc = await Promise.race([fetchProfileDoc, profileTimeoutPromise]);
 
-      let fetchedData = { ...userData, role: userRole, profileType: userProfileType }; // Ensure role/type are on the final object
+      let fetchedData = { ...userData, role: userRole, profileType: userProfileType };
       if (profileDoc.exists()) {
         const specificProfileData = convertTimestamps(profileDoc.data());
         fetchedData = { ...fetchedData, ...specificProfileData };
-        // console.log(`[useProfileData] Merged User and ${userRole} Profile data fetched.`);
       } else {
         console.warn(`[useProfileData] Profile document in ${profileCollection} not found.`);
       }
@@ -126,40 +119,26 @@ const useProfileData = () => {
 
     } catch (err) {
       console.error('[useProfileData] Error fetching profile data:', err);
-
-      if (err.message === 'Request timed out') {
-        console.warn('[useProfileData] Fetch timed out - using fallback/offline mode');
-        // Return minimal valid data structure to allow UI to render (or show offline specific UI)
-        // If we have previously loaded data, we could return that, but here we just return minimal valid object
-        const offlineData = { uid: currentUser.uid, email: currentUser.email, role: 'professional', profileType: getDefaultProfileType('professional'), isOffline: true };
-        setProfileData(offlineData);
-        setIsLoading(false);
-        return offlineData;
-      }
-
-      // Handle offline errors specifically
-      if (err.code === 'unavailable' || err.message?.includes('offline') || err.message?.includes('Failed to get document because the client is offline')) {
-        console.warn('[useProfileData] Client is offline, attempting to enable network and retry...');
-        try {
-          // ... retry logic (omitted for brevity, or we can keep it inside a new block?)
-          // actually the Retry logic block below is huge. Let's simplfy and rely on the timeout fallback.
-          // If network is strictly offline, getDoc might fail fast or hang.
-          // If it fails fast with 'unavailable', we can just return minimal data too.
-
-          const offlineData = { uid: currentUser.uid, email: currentUser.email, role: 'professional', profileType: getDefaultProfileType('professional'), isOffline: true };
-          setProfileData(offlineData);
-          setIsLoading(false);
-          return offlineData;
-
-        } catch (retryError) {
-          // ...
-          return null;
-        }
-      }
-
       setError(err.message || 'Failed to fetch profile data');
-      return null;
-    } finally { setIsLoading(false); }
+
+      // Return minimal valid data structure to allow UI to render (or show offline specific UI)
+      const offlineData = {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        role: 'professional',
+        profileType: getDefaultProfileType('professional'),
+        isOffline: true
+      };
+
+      if (err.message === 'Request timed out' || err.code === 'unavailable' || err.message?.includes('offline')) {
+        console.warn('[useProfileData] Fetch timed out or client offline - using fallback mode');
+      }
+
+      setProfileData(offlineData);
+      return offlineData;
+    } finally {
+      setIsLoading(false);
+    }
   }, [currentUser, getProfileCollectionName, getDefaultProfileType]);
 
   useEffect(() => {
@@ -335,14 +314,14 @@ const useProfileData = () => {
     }
   };
 
-  const resetProfile = useCallback(async () => {
+  const resetProfile = useCallback(async (targetRole, targetProfileType) => {
     if (!currentUser) throw new Error("Not authenticated");
-    if (!profileData) throw new Error("Profile data not loaded");
 
     setIsLoading(true);
     try {
-      const userRole = profileData.role || 'professional';
-      const userProfileType = profileData.profileType || getDefaultProfileType(userRole);
+      // Use provided role/type or fallback to current profile data
+      const userRole = targetRole || profileData?.role || 'professional';
+      const userProfileType = targetProfileType || profileData?.profileType || (typeof getDefaultProfileType === 'function' ? getDefaultProfileType(userRole) : 'doctor');
       const profileCollection = getProfileCollectionName(userRole);
 
       const userDocRef = doc(db, 'users', currentUser.uid);
@@ -358,28 +337,57 @@ const useProfileData = () => {
 
       const now = Timestamp.now();
 
-      const resetUserData = {
-        uid: currentUser.uid,
-        email: currentUser.email,
+      const existingProfileData = profileDoc.exists() ? profileDoc.data() : null;
+      const autofillData = existingProfileData?.autofill || null;
+
+      // Only reset user document fields relevant to this profile type
+      const userUpdates = {
         role: userRole,
         profileType: userProfileType,
-        createdAt: userData.createdAt || now,
         updatedAt: now,
-        firstName: currentUser.displayName?.split(' ')[0] || '',
-        lastName: currentUser.displayName?.split(' ').slice(1).join(' ') || '',
-        photoURL: currentUser.photoURL || ''
       };
 
-      await setDoc(userDocRef, resetUserData);
+      // Reset completion flags based on which profile is being reset
+      if (userRole === 'professional') {
+        userUpdates.isProfessionalProfileComplete = false;
+        userUpdates.tutorialPassed = false;
 
+        // Also reset name fields to auth defaults if resetting professional
+        userUpdates.firstName = currentUser.displayName?.split(' ')[0] || userData.firstName || '';
+        userUpdates.lastName = currentUser.displayName?.split(' ').slice(1).join(' ') || userData.lastName || '';
+      } else if (userRole === 'facility' || userRole === 'company') {
+        // Reset facility-specific flags in user doc if any exist
+        userUpdates.isFacilityProfileComplete = false;
+      }
+
+      await updateDoc(userDocRef, userUpdates);
+
+      // Reset the specific Profile Document (Professional or Facility)
       const resetProfileData = {
         userId: currentUser.uid,
         createdAt: profileDoc.exists() ? profileDoc.data().createdAt : now,
         updatedAt: now,
-        ...(userRole === 'professional' ? { education: [], licensesCertifications: [] } : {}),
-        ...(userRole === 'facility' || userRole === 'company' ? { facilityName: `${resetUserData.firstName || 'New'} ${userProfileType || ''}`.trim() } : {})
+        ...(userRole === 'professional' ? {
+          education: [],
+          licensesCertifications: [],
+          identity: {
+            legalFirstName: userUpdates.firstName || userData.firstName || '',
+            legalLastName: userUpdates.lastName || userData.lastName || ''
+          },
+          contact: {
+            email: currentUser.email
+          }
+        } : {
+          facilityName: `${userData.firstName || 'New'} ${userProfileType || ''}`.trim(),
+          facilityDetails: {}
+        })
       };
 
+      if (autofillData) {
+        resetProfileData.autofill = autofillData;
+      }
+
+      // Merge: false ensures we completely wipe the previous profile data
       await setDoc(profileDocRef, resetProfileData, { merge: false });
 
       await fetchProfileData();

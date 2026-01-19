@@ -154,7 +154,60 @@
                 "hasGLMNoGLN": "Ho un GLM e Lavoratore senza GLN",
                 "hasGLMNoGLNDesc": "Attiva se hai un manager (GLM) ma non hai il tuo GLN"
             },
-            "exitOnboarding": "Esci dall'Onboarding"
+            "exitOnboarding": "Esci dall'Onboarding",
+            "step1": {
+                "title": "Considerazioni Legali",
+                "facilityLegalNotice": "Avviso Legale Struttura/Catena",
+                "facilityLegalText1": "Come rappresentante di una struttura, sei responsabile di garantire che tutti i dati forniti siano accurati e che tu abbia l'autorità di agire per conto dell'organizzazione.",
+                "facilityLegalText2": "Le leggi sul lavoro svizzere riguardanti le ore di lavoro massime (LTr) e i periodi di riposo devono essere rigorosamente rispettate durante la pianificazione dei turni. I datori di lavoro condividono la responsabilità per le violazioni del diritto del lavoro se sono a conoscenza di un impiego secondario di un lavoratore.",
+                "facilityLegalText3": "Proseguendo, accetti i nostri Termini di Servizio e gli accordi di elaborazione dei dati specificamente adattati per le strutture sanitarie in Svizzera.",
+                "professionalLegalNotice": "Avviso Legale Professionista/Lavoratore",
+                "professionalLegalText1": "La Legge sul Lavoro Svizzera stabilisce un massimo rigoroso di 50 ore settimanali. Se lavori al 100% (42h), accettare turni extra può essere illegale senza autorizzazione preventiva.",
+                "professionalLegalText2": "Il Dovere di Lealtà (Art. 321a CO) ti richiede di ottenere il permesso scritto dal tuo datore di lavoro principale per lavorare per un concorrente.",
+                "professionalLegalText3": "Devi alternare i periodi di riposo: sono richieste 11 ore consecutive di riposo tra i turni. Lavorare durante le ferie pagate (vacanze) è legalmente limitato a scopi di recupero.",
+                "professionalLegalText4": "Proseguendo, riconosci di essere l'unico responsabile della gestione delle tue ore di lavoro presso diversi datori di lavoro.",
+                "agreementStatus": "Stato dell'Accordo",
+                "areYouEmployed": "Sei Impiegato",
+                "areYouEmployedDescription": "Questo può essere modificato in seguito.",
+                "termsAcceptance": "Accettazione dei Termini",
+                "termsAcceptanceDescription": "Conferma di accettare questi termini legali.",
+                "note": "Nota: La tua selezione qui determina il quadro giuridico che si applicherà al tuo account e alla gestione dei turni."
+            },
+            "step2": {
+                "title": "Scegli il Tuo Percorso",
+                "description": "Definisci il tuo ruolo per personalizzare la tua esperienza MediShift.",
+                "professional": "Professionista",
+                "professionalDescription": "Trova turni medici in strutture di alta qualità vicino a te.",
+                "facility": "Struttura",
+                "facilityDescription": "Recluta talenti sanitari qualificati e gestisci facilmente i tuoi turni.",
+                "organization": "Organizzazione",
+                "organizationDescription": "Gestione centralizzata per più cliniche e catene sanitarie."
+            },
+            "step3": {
+                "chain": {
+                    "title": "Configurazione Organizzazione",
+                    "description": "L'accesso esecutivo richiede una verifica manuale da parte del nostro team di sicurezza.",
+                    "phonePrefix": "Prefisso Telefonico",
+                    "phoneNumber": "Numero di Telefono",
+                    "phoneNumberPlaceholder": "079 000 00 00",
+                    "messageToSupport": "Messaggio al Supporto",
+                    "messagePlaceholder": "Descrivi la tua organizzazione (numero di cliniche, sedi)..."
+                }
+            },
+            "step4": {
+                "title": "Verifica Identità",
+                "description": "Aiutaci a mantenere un ambiente medico sicuro e affidabile.",
+                "hasGLN": "Ho un numero GLN"
+            },
+            "buttons": {
+                "back": "Indietro",
+                "sendCode": "Invia Codice",
+                "validate": "Valida",
+                "contactAndFinish": "Contatta e Termina",
+                "verifying": "Verifica in corso...",
+                "completeAccount": "Completa Account",
+                "nextStep": "Passo Successivo"
+            }
         }
     },
     "userMenu": {

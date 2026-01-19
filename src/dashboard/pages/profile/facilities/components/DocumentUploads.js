@@ -13,18 +13,19 @@ import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
 
 // --- Import Storage Service ---
 import { uploadFile } from '../../../../../services/storageService';
+import useAutoSave from '../../../../hooks/useAutoSave';
 
 // Tailwind styles (copied from Professional DocumentUploads.js)
 const styles = {
-    sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1000px] mx-auto",
-    headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1000px] mx-auto",
+    sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+    headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
     sectionTitle: "text-2xl font-semibold mb-2",
     sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     sectionSubtitle: "text-sm font-medium text-muted-foreground",
     subtitleRow: "flex items-end justify-between gap-4",
     mandatoryFieldLegend: "text-xs text-muted-foreground",
     mandatoryMark: "text-destructive",
-    sectionsWrapper: "facility-uploads-wrapper flex flex-col gap-6 w-full max-w-[1000px] mx-auto",
+    sectionsWrapper: "facility-uploads-wrapper flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
     leftColumn: "flex flex-col gap-6 flex-1",
     rightColumn: "flex flex-col gap-6 flex-1",
     sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
@@ -33,7 +34,7 @@ const styles = {
     cardTitle: "flex-1",
     cardTitleH3: "m-0",
     cardTitleH3Style: { color: 'hsl(var(--card-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-    formActions: "flex justify-end gap-4 w-full max-w-[1000px] mx-auto",
+    formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto",
     sectionContent: "space-y-4",
     errorText: "text-destructive text-sm mt-2",
     errorUpload: "border-destructive"
@@ -79,6 +80,7 @@ const DocumentUploads = ({
     onInputChange,
     onArrayChange,
     onSaveAndContinue,
+    onSave,
     onCancel,
     getNestedValue,
 }) => {
@@ -86,6 +88,28 @@ const DocumentUploads = ({
     const { upload, uploadState } = useFileUpload();
 
     const documentFieldsConfig = useMemo(() => config?.fields?.documentUploads || [], [config]);
+
+    const extractTabData = useCallback(() => {
+        if (!formData) return null;
+        const tabData = {};
+        documentFieldsConfig.forEach(field => {
+            const value = getNestedValue(formData, field.name);
+            if (value !== undefined && value !== null) {
+                tabData[field.name] = value;
+            }
+        });
+        return tabData;
+    }, [formData, documentFieldsConfig, getNestedValue]);
+
+    useAutoSave({
+        formData,
+        config,
+        activeTab: 'facilityDocuments',
+        onInputChange,
+        onSave,
+        getNestedValue,
+        extractTabData
+    });
 
     const handleCancel = useCallback(() => {
         if (onCancel) onCancel();
@@ -372,16 +396,6 @@ const DocumentUploads = ({
                     </div>
                 </div>
 
-                <div className={styles.sectionCard}>
-                    <div className={styles.formActions} style={{ marginTop: 0 }}>
-                        <Button onClick={handleCancel} variant="secondary" disabled={isSubmitting || uploadState.isLoading}>
-                            {t('common.cancel')}
-                        </Button>
-                        <Button onClick={onSaveAndContinue} variant="confirmation" disabled={isSubmitting || uploadState.isLoading}>
-                            {isSubmitting ? t('common.saving') : t('common.saveAndContinue')}
-                        </Button>
-                    </div>
-                </div>
             </div>
         </>
     );

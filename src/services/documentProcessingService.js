@@ -10,6 +10,22 @@ import { doc, getDoc, deleteDoc } from 'firebase/firestore';
  */
 export const getCachedExtractedData = async (userId) => {
     try {
+        // Try to get from localStorage first (fastest)
+        const localKey = `autofill_cache_${userId}`;
+        const localDataRaw = localStorage.getItem(localKey);
+        if (localDataRaw) {
+            try {
+                const localData = JSON.parse(localDataRaw);
+                const now = Date.now();
+                if (localData.expiresAt > now) {
+                    console.log('[DocumentProcessing] Found valid data in localStorage');
+                    return localData.data;
+                }
+            } catch (e) {
+                console.error('[DocumentProcessing] Error parsing localStorage data:', e);
+            }
+        }
+
         const { doc, getDoc } = await import('firebase/firestore');
         const { db } = await import('./firebase');
 
@@ -37,6 +53,13 @@ export const getCachedExtractedData = async (userId) => {
             }
         }
 
+        // Sync back to localStorage if it was missing
+        localStorage.setItem(localKey, JSON.stringify({
+            data: autofill.data,
+            expiresAt: autofill.expiresAt.toMillis(),
+            savedAt: autofill.savedAt.toMillis()
+        }));
+
         return autofill.data;
     } catch (error) {
         console.error('[DocumentProcessing] Error getting cached data from profile:', error);
@@ -45,7 +68,7 @@ export const getCachedExtractedData = async (userId) => {
 };
 
 /**
- * Save extracted data to professional profile in Firestore
+ * Save extracted data to professional profile in Firestore and localStorage
  * Data persists for user to reuse in case of issues
  * @param {string} userId - User ID
  * @param {Object} data - Extracted data to cache
@@ -58,11 +81,27 @@ export const saveCachedExtractedData = async (userId, data) => {
         const profileRef = doc(db, 'professionalProfiles', userId);
         const profileDoc = await getDoc(profileRef);
 
+        const now = Date.now();
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        const expiresAtMs = now + thirtyDaysMs;
+
         const autofillData = {
             data,
             savedAt: Timestamp.now(),
-            expiresAt: Timestamp.fromMillis(Date.now() + (30 * 24 * 60 * 60 * 1000)) // 30 days
+            expiresAt: Timestamp.fromMillis(expiresAtMs)
         };
+
+        // Save to localStorage
+        try {
+            const localKey = `autofill_cache_${userId}`;
+            localStorage.setItem(localKey, JSON.stringify({
+                data,
+                savedAt: now,
+                expiresAt: expiresAtMs
+            }));
+        } catch (lsError) {
+            console.error('[DocumentProcessing] Error saving to localStorage:', lsError);
+        }
 
         if (profileDoc.exists()) {
             await updateDoc(profileRef, {
@@ -78,7 +117,7 @@ export const saveCachedExtractedData = async (userId, data) => {
             });
         }
 
-        console.log('[DocumentProcessing] Saved extracted data to professional profile');
+        console.log('[DocumentProcessing] Saved extracted data to professional profile (DB & Local)');
     } catch (error) {
         console.error('[DocumentProcessing] Error saving cached data to profile:', error);
     }
@@ -113,7 +152,7 @@ export const clearCachedExtractedData = async (userId) => {
  * @param {string} documentType - Type of document ('cv', 'resume', 'businessDocument')
  * @returns {Promise<Object>} Extracted and structured data
  */
-export const processDocumentWithAI = async (documentUrl, documentType = 'cv', storagePath = null, mimeType = null) => {
+export const processDocumentWithAI = async (documentUrl, documentType = 'cv', storagePath = null, mimeType = null, dropdownOptions = null) => {
     try {
         // console.log('[DocumentProcessing] Processing document:', { documentUrl, documentType, storagePath, mimeType });
 
@@ -147,7 +186,8 @@ export const processDocumentWithAI = async (documentUrl, documentType = 'cv', st
                         documentUrl,
                         documentType,
                         storagePath,
-                        mimeType
+                        mimeType,
+                        dropdownOptions
                     }
                 }),
                 // signal: controller.signal
@@ -263,12 +303,18 @@ export const mergeExtractedData = (existingData, extractedData) => {
 
         if (identity) {
             Object.entries(identity).forEach(([key, value]) => {
-                setNestedValue(merged, `identity.${key}`, value);
+                // Map basic identity fields to the specific naming used in the profile config
+                if (key === 'firstName') setNestedValue(merged, 'identity.legalFirstName', value);
+                else if (key === 'lastName') setNestedValue(merged, 'identity.legalLastName', value);
+                else setNestedValue(merged, `identity.${key}`, value);
             });
         }
 
         if (address) {
             Object.entries(address).forEach(([key, value]) => {
+                // Map address fields to residentialAddress group used in professional profiles
+                setNestedValue(merged, `contact.residentialAddress.${key}`, value);
+                // Also map to top-level address for consistency if needed by other components
                 setNestedValue(merged, `address.${key}`, value);
             });
         }
@@ -280,22 +326,21 @@ export const mergeExtractedData = (existingData, extractedData) => {
         }
     }
 
-    // Merge professional background
+    // Merge professional background - REPLACE arrays instead of adding
     if (extractedData.professionalBackground) {
         const { professionalSummary, studies, qualifications, skills, specialties, workExperience } = extractedData.professionalBackground;
 
         if (professionalSummary) {
             setNestedValue(merged, 'professionalDetails.professionalSummary', professionalSummary);
-            // Also map to bio field used in PersonalDetails form
             if (!merged.bio || merged.bio === '') {
                 merged.bio = professionalSummary;
             }
         }
 
+        merged.professionalDetails = merged.professionalDetails || {};
+
         if (studies && Array.isArray(studies)) {
-            const existingStudies = merged.professionalDetails?.education || [];
-            merged.professionalDetails = merged.professionalDetails || {};
-            merged.professionalDetails.education = [...existingStudies, ...studies];
+            merged.professionalDetails.education = studies;
         }
 
         if (qualifications && Array.isArray(qualifications)) {
@@ -352,27 +397,19 @@ export const mergeExtractedData = (existingData, extractedData) => {
                 return cleaned;
             });
 
-            const existingQualifications = merged.professionalDetails?.qualifications || [];
-            merged.professionalDetails = merged.professionalDetails || {};
-            merged.professionalDetails.qualifications = [...existingQualifications, ...filteredQualifications];
+            merged.professionalDetails.qualifications = filteredQualifications;
         }
 
         if (skills && Array.isArray(skills)) {
-            const existingSkills = merged.professionalDetails?.skills || [];
-            merged.professionalDetails = merged.professionalDetails || {};
-            merged.professionalDetails.skills = [...existingSkills, ...skills];
+            merged.professionalDetails.skills = skills;
         }
 
         if (specialties && Array.isArray(specialties)) {
-            const existingSpecialties = merged.professionalDetails?.specialties || [];
-            merged.professionalDetails = merged.professionalDetails || {};
-            merged.professionalDetails.specialties = [...existingSpecialties, ...specialties];
+            merged.professionalDetails.specialties = specialties;
         }
 
         if (workExperience && Array.isArray(workExperience)) {
-            const existingWorkExp = merged.professionalDetails?.workExperience || [];
-            merged.professionalDetails = merged.professionalDetails || {};
-            merged.professionalDetails.workExperience = [...existingWorkExp, ...workExperience];
+            merged.professionalDetails.workExperience = workExperience;
         }
     }
 
@@ -380,6 +417,9 @@ export const mergeExtractedData = (existingData, extractedData) => {
     if (extractedData.billingInformation?.bankDetails) {
         const { bankDetails } = extractedData.billingInformation;
         Object.entries(bankDetails).forEach(([key, value]) => {
+            // Map bankDetails to banking group used in professional profiles
+            setNestedValue(merged, `banking.${key}`, value);
+            // Backup for legacy components
             setNestedValue(merged, `bankDetails.${key}`, value);
         });
     }

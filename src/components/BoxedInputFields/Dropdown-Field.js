@@ -52,11 +52,13 @@ const SimpleDropdown = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isOptionHovered, setIsOptionHovered] = useState(false);
   const dropdownRef = useRef(null);
 
   // Get the display value
   const selectedOption = options.find(opt => String(opt.value) === String(value));
-  const displayText = selectedOption ? selectedOption.label : placeholder;
+  // Show error message in placeholder if error exists and no value is selected
+  const displayText = selectedOption ? selectedOption.label : (error && typeof error === 'string' ? error : placeholder);
 
   // Filter options based on search query
   const filteredOptions = searchable
@@ -84,10 +86,11 @@ const SimpleDropdown = ({
     };
   }, [isOpen]);
 
-  // Reset search query when dropdown closes
+  // Reset search query and hover state when dropdown closes
   useEffect(() => {
     if (!isOpen) {
       setSearchQuery('');
+      setIsOptionHovered(false);
     }
   }, [isOpen]);
 
@@ -125,12 +128,16 @@ const SimpleDropdown = ({
         </label>
       )}
 
-      <div className={`boxed-dropdown-container ${error ? 'boxed-dropdown-container--error' : ''} ${isOpen ? 'boxed-dropdown-container--focused' : ''}`}>
+      <div className={`boxed-dropdown-container ${error ? 'boxed-dropdown-container--error' : ''} ${isOpen ? 'boxed-dropdown-container--focused' : ''} ${isOptionHovered ? 'boxed-dropdown-container--option-hovered' : ''}`}>
         <div
           className={`boxed-dropdown-selected ${error ? 'boxed-dropdown-selected--error' : ''}`}
           onClick={() => setIsOpen(!isOpen)}
         >
-          {displayText}
+          {selectedOption ? (
+            displayText
+          ) : (
+            <span className="boxed-dropdown-placeholder">{displayText}</span>
+          )}
         </div>
 
         <div
@@ -163,6 +170,8 @@ const SimpleDropdown = ({
                   key={option.value}
                   className={`boxed-dropdown-option ${String(option.value) === String(value) ? 'boxed-dropdown-option--selected' : ''}`}
                   onClick={() => handleSelect(option)}
+                  onMouseEnter={() => setIsOptionHovered(true)}
+                  onMouseLeave={() => setIsOptionHovered(false)}
                 >
                   {option.label}
                 </div>

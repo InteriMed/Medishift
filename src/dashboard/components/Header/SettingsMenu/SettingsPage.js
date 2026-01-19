@@ -127,19 +127,16 @@ const SettingsPage = () => {
     }
   };
   
-  // Handle profile picture upload
   const handleProfilePictureChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check file size (2MB limit)
     const fileSizeInMB = file.size / (1024 * 1024);
     if (fileSizeInMB > 2) {
       setPictureError(t('accountBasics.errors.fileTooLarge'));
       return;
     }
 
-    // Check file type
     if (!file.type.startsWith('image/')) {
       setPictureError(t('accountBasics.errors.invalidFileType'));
       return;
@@ -149,12 +146,21 @@ const SettingsPage = () => {
     setPictureError('');
 
     try {
-      // Create a data URL for preview
       const reader = new FileReader();
       reader.onload = async (event) => {
-        // Upload the image to Firebase and retrieve the URL
         const photoURL = await uploadImageAndRetrieveURL(currentUser.uid, event.target.result);
+        const updatedFormData = {
+          ...formData,
+          documents: {
+            ...(formData.documents || {}),
+            profile_picture: photoURL
+          },
+          profilePicture: photoURL
+        };
+        handleInputChange('documents.profile_picture', photoURL);
         handleInputChange('profilePicture', photoURL);
+        setFormData(updatedFormData);
+        await updateProfileData(updatedFormData);
         setIsUploadingPicture(false);
       };
       reader.readAsDataURL(file);
@@ -356,8 +362,8 @@ const SettingsPage = () => {
     return <div className={styles.loadingContainer}>Loading settings...</div>;
   }
   
-  // Get display profile info
   const displayProfile = profileData || currentUser || {};
+  const profilePicture = displayProfile?.documents?.profile_picture || displayProfile?.profilePicture || currentUser?.photoURL;
 
   return (
     <div className={styles.settingsPageContainer}>
@@ -387,10 +393,10 @@ const SettingsPage = () => {
                 className={unifiedStyles.profilePictureContainer}
                 onClick={() => fileInputRef.current.click()}
               >
-                {displayProfile?.profilePicture ? (
+                {profilePicture ? (
                   <div className={unifiedStyles.profilePictureWrapper}>
                     <img 
-                      src={displayProfile.profilePicture} 
+                      src={profilePicture} 
                       alt={`${displayProfile.firstName} ${displayProfile.lastName}`} 
                       className={unifiedStyles.profilePicture}
                     />
@@ -400,7 +406,7 @@ const SettingsPage = () => {
                   </div>
                 ) : (
                   <div className={unifiedStyles.profileInitialsWrapper}>
-                    <div className={unifiedStyles.profileInitials}>
+                    <div className={unifiedStyles.profileInitials} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {displayProfile?.firstName?.[0] || ''}{displayProfile?.lastName?.[0] || ''}
                     </div>
                     <div className={unifiedStyles.profilePictureOverlay}>

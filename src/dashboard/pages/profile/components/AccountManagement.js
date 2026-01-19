@@ -225,6 +225,7 @@ const AccountManagement = ({
       const reader = new FileReader();
       reader.onload = async (event) => {
         const photoURL = await uploadImageAndRetrieveURL(currentUser.uid, event.target.result);
+        onInputChange('documents.profile_picture', photoURL);
         onInputChange('profilePicture', photoURL);
         setIsUploadingPicture(false);
       };
@@ -285,6 +286,7 @@ const AccountManagement = ({
   };
 
   const displayProfile = formData || currentUser || {};
+  const profilePicture = getNestedValue(formData, 'documents.profile_picture') || getNestedValue(formData, 'profilePicture') || formData?.profilePicture || currentUser?.photoURL;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-[1200px] mx-auto px-4 py-6">

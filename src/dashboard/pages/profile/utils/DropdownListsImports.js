@@ -6,20 +6,34 @@ import { useTranslation } from 'react-i18next';
  * for use in profile components
  */
 export const useDropdownOptions = () => {
-  const { i18n } = useTranslation(['dropdowns', 'common']);
+  const { i18n, ready } = useTranslation(['dropdowns', 'common']);
 
-  // Get the current language's dropdown translations
   const dropdownTranslations = useMemo(() => {
-    // Try to get from 'dropdowns' namespace first
+    if (!ready) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('⏳ Waiting for translations to load...');
+      }
+      return {};
+    }
+
     const translations = i18n.getResourceBundle(i18n.language, 'dropdowns');
 
     if (!translations || Object.keys(translations).length === 0) {
       console.warn(`⚠️ Dropdown translations not found for language: ${i18n.language}`);
+      console.warn('Available languages:', i18n.languages);
+      console.warn('Available namespaces:', i18n.options.ns);
+      
+      const fallbackTranslations = i18n.getResourceBundle(i18n.options.fallbackLng || 'en', 'dropdowns');
+      if (fallbackTranslations && Object.keys(fallbackTranslations).length > 0) {
+        console.warn('Using fallback language translations');
+        return fallbackTranslations;
+      }
+      
       return {};
     }
 
     return translations;
-  }, [i18n]);
+  }, [i18n, ready]);
 
   /**
    * Helper function to directly generate dropdown options from translation entries
@@ -55,22 +69,25 @@ export const useDropdownOptions = () => {
     }
   }, [dropdownTranslations]);
 
-  // Define all the options sets we need in our application
   const optionSets = {
-    // Basic information options
-    workPermits: useMemo(() => createOptionsFromObject('workPermits'), [createOptionsFromObject]),
-    countries: useMemo(() => createOptionsFromObject('countries'), [createOptionsFromObject]),
-    cantons: useMemo(() => createOptionsFromObject('cantons'), [createOptionsFromObject]),
-
-    // Professional options 
-    education: useMemo(() => createOptionsFromObject('education'), [createOptionsFromObject]),
-    contractTypes: useMemo(() => createOptionsFromObject('contractTypes'), [createOptionsFromObject]),
-    availability: useMemo(() => createOptionsFromObject('availability'), [createOptionsFromObject]),
-    jobRoles: useMemo(() => createOptionsFromObject('jobRoles'), [createOptionsFromObject]),
-    skills: useMemo(() => createOptionsFromObject('skills'), [createOptionsFromObject]),
-    languages: useMemo(() => createOptionsFromObject('languages'), [createOptionsFromObject]),
-    jobPreferences: useMemo(() => createOptionsFromObject('jobPreferences'), [createOptionsFromObject]),
-    phonePrefixes: useMemo(() => createOptionsFromObject('phonePrefixes'), [createOptionsFromObject]),
+    workPermits: useMemo(() => createOptionsFromObject('workPermits'), [createOptionsFromObject, dropdownTranslations]),
+    countries: useMemo(() => createOptionsFromObject('countries'), [createOptionsFromObject, dropdownTranslations]),
+    cantons: useMemo(() => createOptionsFromObject('cantons'), [createOptionsFromObject, dropdownTranslations]),
+    education: useMemo(() => createOptionsFromObject('education'), [createOptionsFromObject, dropdownTranslations]),
+    contractTypes: useMemo(() => createOptionsFromObject('contractTypes'), [createOptionsFromObject, dropdownTranslations]),
+    availability: useMemo(() => createOptionsFromObject('availability'), [createOptionsFromObject, dropdownTranslations]),
+    jobRoles: useMemo(() => createOptionsFromObject('jobRoles'), [createOptionsFromObject, dropdownTranslations]),
+    skills: useMemo(() => createOptionsFromObject('skills'), [createOptionsFromObject, dropdownTranslations]),
+    languages: useMemo(() => createOptionsFromObject('languages'), [createOptionsFromObject, dropdownTranslations]),
+    jobPreferences: useMemo(() => createOptionsFromObject('jobPreferences'), [createOptionsFromObject, dropdownTranslations]),
+    phonePrefixes: useMemo(() => {
+      const options = createOptionsFromObject('phonePrefixes');
+      if (process.env.NODE_ENV !== 'production' && (!options || options.length === 0)) {
+        console.warn('⚠️ phonePrefixes options are empty. Available translation keys:', Object.keys(dropdownTranslations));
+        console.warn('⚠️ phonePrefixes translation object:', dropdownTranslations['phonePrefixes']);
+      }
+      return options;
+    }, [createOptionsFromObject, dropdownTranslations]),
   };
 
   // Create a standardized options object with consistent naming
@@ -95,16 +112,22 @@ export const useDropdownOptions = () => {
     educationLevelOptions: optionSets.education
   };
 
-  // Log stats in development mode
   if (process.env.NODE_ENV !== 'production') {
     const stats = Object.entries(allOptions)
       .map(([key, options]) => ({ key, count: options?.length || 0 }))
       .filter(item => item.count > 0);
 
     if (stats.length > 0) {
-      // console.debug('✅ Loaded dropdown options:', stats);
+      console.debug('✅ Loaded dropdown options:', stats);
     } else {
-      // console.warn('⚠️ No dropdown options were loaded');
+      console.warn('⚠️ No dropdown options were loaded');
+    }
+
+    if (!allOptions.phonePrefixOptions || allOptions.phonePrefixOptions.length === 0) {
+      console.error('❌ phonePrefixOptions is empty!');
+      console.error('Current language:', i18n.language);
+      console.error('Available translation keys:', Object.keys(dropdownTranslations));
+      console.error('phonePrefixes translation:', dropdownTranslations['phonePrefixes']);
     }
   }
 

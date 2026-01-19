@@ -1,0 +1,373 @@
+{
+  "auth": {
+    "login": {
+      "button": "Se connecter"
+    },
+    "signup": {
+      "button": "S'inscrire"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "comingSoon": "Coming Soon",
+    "underDevelopment": "This page is currently under development.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "remove": "Remove",
+    "update": "Update",
+    "submit": "Submit",
+    "warning": "Warning",
+    "info": "Information",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "finish": "Finish",
+    "required": "Required",
+    "optional": "Optional",
+    "select": "Select",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "show": "Show",
+    "hide": "Hide",
+    "view": "View",
+    "preview": "Preview",
+    "download": "Download",
+    "upload": "Upload",
+    "close": "Close",
+    "open": "Open",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "enable": "Enable",
+    "disable": "Disable",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "confirm": "Confirm",
+    "reject": "Reject",
+    "approve": "Approve",
+    "decline": "Decline",
+    "accept": "Accept",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "forgotPassword": "Forgot Password",
+    "resetPassword": "Reset Password",
+    "changePassword": "Change Password",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "support": "Support",
+    "contact": "Contact",
+    "about": "About",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "messages": "Messages",
+    "dashboard": "Dashboard",
+    "home": "Accueil",
+    "forFacilities": "Etablissements",
+    "forProfessionals": "Professionnels",
+    "aboutUs": "Interimed",
+    "blog": "Blog",
+    "faq": "FAQ"
+  },
+  "navbar": {
+    "home": "Accueil",
+    "pharmacies": "Établissements",
+    "professionals": "Professionnels",
+    "about": "À propos",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "blog": "Blog",
+    "login": "Connexion",
+    "register": "Inscription"
+  },
+  "footer": {
+    "links": {
+      "pharmacy": "Pharmacy",
+      "hospitalPharmacy": "Hospital Pharmacy",
+      "clinic": "Clinic",
+      "soon": "More to come soon",
+      "ephad": "EPHAD",
+      "faqCompany": "FAQ Company",
+      "pharmacyDoctor": "Pharmacy Doctor",
+      "pharmacyTechnician": "Pharmacy Assistant",
+      "nurse": "Nurse",
+      "caregiver": "Caregiver",
+      "faqCandidate": "FAQ Candidate",
+      "legal": "Legal Notice",
+      "companies": "Companies",
+      "tempWorkers": "Temporary Workers",
+      "practical": "Practical",
+      "about": "About",
+      "recruiting": "We are hiring 🚀",
+      "press": "Press",
+      "salaries": "Salaries in Pharmacy",
+      "legalNotice": "Legal Notice",
+      "terms": "Terms of Use",
+      "contact": "Contact"
+    },
+    "newsletter": {
+      "title": "Abonnez-vous à notre newsletter",
+      "placeholder": "Votre adresse e-mail",
+      "subscribe": "S'abonner",
+      "submitting": "En cours...",
+      "success": "Merci pour votre inscription!",
+      "error": "Une erreur s'est produite. Veuillez réessayer plus tard.",
+      "invalidEmail": "Veuillez entrer une adresse e-mail valide",
+      "rateLimitExceeded": "Vous avez atteint le nombre maximum d'inscriptions. Veuillez réessayer plus tard.",
+      "consent": "En vous inscrivant, vous acceptez de recevoir nos e-mails et confirmez avoir lu notre politique de confidentialité."
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "tooLong": "This field cannot exceed {{max}} characters",
+    "email": "Please enter a valid email address",
+    "password": {
+      "minLength": "Password must be at least 8 characters",
+      "noMatch": "Passwords do not match",
+      "wrong": "Current password is incorrect"
+    },
+    "phone": "Please enter a valid phone number",
+    "postalCode": "Please enter a valid 4-digit postal code",
+    "ahvFormat": "Please enter a valid AHV number (756.XXXX.XXXX.XX)"
+  },
+  "jobRoles": {
+    "pharmacist": "Pharmacist",
+    "pharmacy_assistant": "Pharmacy Assistant",
+    "pharmacy_technician": "Pharmacy Technician",
+    "nurse": "Nurse",
+    "physician": "Physician",
+    "medical_assistant": "Medical Assistant",
+    "dental_assistant": "Dental Assistant",
+    "veterinary_assistant": "Veterinary Assistant"
+  },
+  "skills": {
+    "patient_care": "Patient Care",
+    "medication_management": "Medication Management",
+    "inventory_management": "Inventory Management",
+    "compounding": "Pharmaceutical Compounding",
+    "customer_service": "Customer Service",
+    "clinical_trials": "Clinical Trials",
+    "vaccination": "Vaccination",
+    "health_education": "Health Education"
+  },
+  "languages": {
+    "de_native": "German (Native)",
+    "de_c2": "German (C2)",
+    "de_c1": "German (C1)",
+    "de_b2": "German (B2)",
+    "de_b1": "German (B1)",
+    "fr_native": "French (Native)",
+    "fr_c2": "French (C2)",
+    "fr_c1": "French (C1)",
+    "fr_b2": "French (B2)",
+    "fr_b1": "French (B1)",
+    "it_native": "Italian (Native)",
+    "it_c2": "Italian (C2)",
+    "it_c1": "Italian (C1)",
+    "it_b2": "Italian (B2)",
+    "it_b1": "Italian (B1)",
+    "en_native": "English (Native)",
+    "en_c2": "English (C2)",
+    "en_c1": "English (C1)",
+    "en_b2": "English (B2)",
+    "en_b1": "English (B1)"
+  },
+  "workPermits": {
+    "notApplicable": "Not Applicable (Swiss Citizen)",
+    "B": "B - Residence Permit (5 years)",
+    "C": "C - Settlement Permit (Permanent)",
+    "G": "G - Cross-Border Commuter Permit",
+    "L": "L - Short-Term Residence Permit",
+    "other": "Other"
+  },
+  "education": {
+    "highSchool": "High School Diploma",
+    "vocational": "Vocational Training",
+    "bachelors": "Bachelor's Degree",
+    "masters": "Master's Degree",
+    "doctorate": "Doctorate / PhD",
+    "other": "Other"
+  },
+  "jobPreferences": {
+    "activelyLooking": "Actively Looking for Work",
+    "openToOffers": "Open to Offers",
+    "notLooking": "Not Looking Right Now",
+    "permanent": "Permanent (Unbefristet)",
+    "fixedTerm": "Fixed-Term (Befristet)",
+    "temporary": "Temporary/Locum (Temporär)",
+    "freelance": "Freelance/Project-Based"
+  },
+  "navigation": {
+    "forPharmacies": "Établissements",
+    "forProfessionals": "Professionnels",
+    "aboutUs": "À propos",
+    "contact": "Contact",
+    "blog": "Blog",
+    "sitemap": {
+      "title": "Plan du site",
+      "introduction": "This is the sitemap for InteriMed. It shows the structure of our website and the pages available.",
+      "corePages": {
+        "title": "Core Pages",
+        "home": "Home",
+        "forFacilities": "For Facilities",
+        "forProfessionals": "For Professionals",
+        "aboutUs": "About Us",
+        "contact": "Contact",
+        "blog": "Blog",
+        "faq": "FAQ",
+        "login": "Login",
+        "signup": "Sign Up"
+      },
+      "resources": {
+        "title": "Resources"
+      },
+      "legal": {
+        "title": "Legal & Compliance"
+      },
+      "account": {
+        "title": "Account Access"
+      },
+      "thisPage": {
+        "title": "This Page",
+        "sitemap": "Sitemap"
+      }
+    }
+  },
+  "buttons": {
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "contactUs": "Contact Us",
+    "viewAll": "View All",
+    "readMore": "Read More",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "pages": {
+    "not_found": {
+      "title": "Wow, Vous êtes rapide !",
+      "description": "La page que vous recherchez n'existe pas ou n'a pas encore été déployée, mais laissez-nous votre contact, dans la newsletter ou inscrivez-vous déjà. Nous vous contacterons bientôt !",
+      "message": "Veuillez revenir bientôt pendant que nous finalisons notre plateforme de santé.",
+      "return_home": "Retour à l'accueil"
+    }
+  },
+  "professionals": {
+    "features": {
+      "title": "Platform Features",
+      "feature1": {
+        "title": "Smart Matching",
+        "description": "Our algorithm matches you with positions that fit your qualifications and preferences."
+      },
+      "feature2": {
+        "title": "Secure Messaging",
+        "description": "Communicate directly with pharmacies through our secure messaging system."
+      },
+      "feature3": {
+        "title": "Digital Profile",
+        "description": "Create a comprehensive profile showcasing your skills, experience, and availability."
+      },
+      "feature4": {
+        "title": "Availability Calendar",
+        "description": "Set your availability and manage your schedule with our intuitive calendar tool."
+      },
+      "feature5": {
+        "title": "Contract Management",
+        "description": "Review and manage your contracts and agreements all in one place."
+      },
+      "feature6": {
+        "title": "Support & Resources",
+        "description": "Access helpful resources and our support team whenever you need assistance."
+      }
+    },
+    "whoCanJoin": {
+      "title": "Who Can Join InteriMed?",
+      "qualification1": {
+        "title": "Licensed Pharmacists",
+        "description": "Professionals with valid Swiss pharmacy licenses or recognized international equivalents."
+      },
+      "qualification2": {
+        "title": "Pharmacy Technicians",
+        "description": "Certified pharmacy technicians with relevant qualifications and experience."
+      },
+      "qualification3": {
+        "title": "Pharmacy Assistants",
+        "description": "Trained pharmacy assistants looking for flexible work opportunities."
+      },
+      "qualification4": {
+        "title": "Pharmacy Students",
+        "description": "Advanced pharmacy students seeking practical experience (with appropriate supervision)."
+      },
+      "qualification5": {
+        "title": "Pharmaceutical Specialists",
+        "description": "Specialists with expertise in specific areas of pharmacy practice."
+      }
+    },
+    "gettingStarted": {
+      "title": "Getting Started is Easy",
+      "step1": {
+        "title": "Create Your Profile",
+        "description": "Sign up and build your professional profile with your qualifications and experience."
+      },
+      "step2": {
+        "title": "Set Your Preferences",
+        "description": "Specify your availability, location preferences, and the types of positions you're interested in."
+      },
+      "step3": {
+        "title": "Connect with Pharmacies",
+        "description": "Start receiving matching opportunities and connect directly with pharmacies."
+      },
+      "cta": "Create Your Profile Now"
+    }
+  },
+  "routes": {
+    "home": "accueil",
+    "about": "a-propos",
+    "professionals": "professionnels",
+    "facilities": "etablissements",
+    "pharmacies": "pharmacies",
+    "faq": "faq",
+    "contact": "contact",
+    "blog": "blog",
+    "privacy": "politique-de-confidentialite",
+    "terms": "conditions-d-utilisation",
+    "sitemap": "plan-du-site",
+    "login": "connexion",
+    "signup": "inscription",
+    "forgotPassword": "mot-de-passe-oublie",
+    "dashboard": "tableau-de-bord",
+    "loading": "chargement",
+    "notFound": "page-non-trouvee"
+  },
+  "save": "Enregistrer",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "move": "Déplacer",
+  "apply": "Appliquer",
+  "dashboard": {
+    "calendar": {
+      "previousMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "today": "Aujourd'hui",
+      "createEvent": "Créer un événement",
+      "dayView": "Jour",
+      "weekView": "Semaine",
+      "categories": "Catégories",
+      "allCategories": "Toutes les catégories",
+      "upcomingEvents": "Événements à venir"
+    }
+  }
+}

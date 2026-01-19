@@ -3,8 +3,11 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import useProfileData from '../../../../hooks/useProfileData';
+import useAutoSave from '../../../../hooks/useAutoSave';
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
-import { FiUser, FiMapPin, FiPhone, FiInfo, FiFileText } from 'react-icons/fi';
+import { FiUser, FiMapPin, FiPhone, FiInfo, FiFileText, FiEdit2, FiEye, FiTrash2, FiX } from 'react-icons/fi';
+import { generateBasicProfilePicture, isGoogleUser } from '../../../../../utils/profilePictureUtils';
+import '../../../../../styles/modals.css';
 
 // --- Import Base Components ---
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
@@ -13,19 +16,20 @@ import TextareaField from '../../../../../components/BoxedInputFields/TextareaFi
 import Button from '../../../../../components/BoxedInputFields/Button';
 
 // --- 
-const DEFAULT_BIO = "A recent graduate with a Master's degree in Pharmaceutical Sciences from ETH Zurich, specializing in research and immunology. William Abhamon possesses extensive hands-on experience in cutting-edge pharmaceutical research, including developing antibody fragments, investigating receptor aggregation, and studying protein-RNA interactions. Complementing his strong scientific background, he brings practical pharmacy experience, leadership skills from student associations, and proficiency in advanced scientific software and programming languages.";
+// Default bio is now empty to allow AI extraction or manual entry
+const DEFAULT_BIO = "";
 
 // Tailwind styles
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1000px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1000px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
   subtitleRow: "flex items-end justify-between gap-4",
   mandatoryFieldLegend: "text-xs text-muted-foreground",
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "personal-details-sections-wrapper flex flex-col gap-6 w-full max-w-[1000px] mx-auto",
+  sectionsWrapper: "personal-details-sections-wrapper flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
   sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
@@ -38,7 +42,7 @@ const styles = {
   gridSingle: "grid grid-cols-1 gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "md:col-span-2",
-  formActions: "flex justify-end gap-4 w-full max-w-[1000px] mx-auto"
+  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto"
 };
 
 const PersonalDetails = ({
@@ -48,6 +52,7 @@ const PersonalDetails = ({
   isSubmitting,
   onInputChange,
   onSaveAndContinue,
+  onSave,
   onCancel,
   getNestedValue,
   onTriggerUpload,
@@ -60,6 +65,17 @@ const PersonalDetails = ({
   const [pictureError, setPictureError] = useState('');
   const fileInputRef = useRef(null);
   const [showStepGuide] = useState(true);
+  const [showPicturePopup, setShowPicturePopup] = useState(false);
+  const [popupImageSrc, setPopupImageSrc] = useState(null);
+
+  useAutoSave({
+    formData,
+    config,
+    activeTab: 'personalDetails',
+    onInputChange,
+    onSave,
+    getNestedValue
+  });
 
   useEffect(() => {
     if (onStepGuideVisibilityChange) {
@@ -149,11 +165,88 @@ const PersonalDetails = ({
     try {
       const reader = new FileReader();
       reader.onload = async (event) => {
-        const photoURL = await uploadImageAndRetrieveURL(currentUser.uid, event.target.result);
-        onInputChange('profilePicture', photoURL);
+        setPopupImageSrc(event.target.result);
+        setShowPicturePopup(true);
         setIsUploadingPicture(false);
       };
       reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error reading profile picture:', error);
+      setPictureError(t('accountBasics.errors.uploadFailed'));
+      setIsUploadingPicture(false);
+    }
+  };
+
+  const handleViewPicture = (e) => {
+    e.stopPropagation();
+    if (profilePicture) {
+      setPopupImageSrc(profilePicture);
+      setShowPicturePopup(true);
+    }
+  };
+
+  const handleDeletePicture = async (e) => {
+    e.stopPropagation();
+    if (window.confirm(t('common.confirmDeletePicture', 'Are you sure you want to delete your profile picture?'))) {
+      try {
+        const displayProfile = formData || currentUser || {};
+        const firstName = displayProfile?.firstName || displayProfile?.identity?.legalFirstName || '';
+        const lastName = displayProfile?.lastName || displayProfile?.identity?.legalLastName || '';
+
+        setIsUploadingPicture(true);
+        try {
+          if (isGoogleUser(currentUser) && currentUser?.photoURL) {
+            const basicPictureDataUrl = generateBasicProfilePicture(firstName, lastName);
+            const photoURL = await uploadImageAndRetrieveURL(currentUser.uid, basicPictureDataUrl);
+            onInputChange('documents.profile_picture', photoURL);
+            onInputChange('profilePicture', photoURL);
+            if (onSave) {
+              await onSave();
+            }
+            setPictureError('');
+          } else {
+            onInputChange('documents.profile_picture', null);
+            onInputChange('profilePicture', null);
+            if (onSave) {
+              await onSave();
+            }
+            setPictureError('');
+          }
+        } catch (error) {
+          console.error('Error deleting profile picture:', error);
+          setPictureError(t('accountBasics.errors.uploadFailed'));
+        } finally {
+          setIsUploadingPicture(false);
+        }
+      } catch (error) {
+        console.error('Error deleting profile picture:', error);
+        setPictureError(t('accountBasics.errors.uploadFailed'));
+        setIsUploadingPicture(false);
+      }
+    }
+  };
+
+  const handleEditPicture = (e) => {
+    e.stopPropagation();
+    fileInputRef.current?.click();
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!popupImageSrc) return;
+
+    setIsUploadingPicture(true);
+    setPictureError('');
+
+    try {
+      const photoURL = await uploadImageAndRetrieveURL(currentUser.uid, popupImageSrc);
+      onInputChange('documents.profile_picture', photoURL);
+      onInputChange('profilePicture', photoURL);
+      if (onSave) {
+        await onSave();
+      }
+      setShowPicturePopup(false);
+      setPopupImageSrc(null);
+      setIsUploadingPicture(false);
     } catch (error) {
       console.error('Error uploading profile picture:', error);
       setPictureError(t('accountBasics.errors.uploadFailed'));
@@ -161,11 +254,33 @@ const PersonalDetails = ({
     }
   };
 
+  const handleCancelUpload = () => {
+    setShowPicturePopup(false);
+    const isViewingExisting = popupImageSrc === profilePicture;
+    if (!isViewingExisting && fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    if (!isViewingExisting) {
+      setPopupImageSrc(null);
+    }
+  };
+
+  const handleClosePopup = () => {
+    setShowPicturePopup(false);
+    const isViewingExisting = popupImageSrc === profilePicture;
+    if (!isViewingExisting) {
+      setPopupImageSrc(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const displayProfile = formData || currentUser || {};
-  const profilePicture = getNestedValue(formData, 'profilePicture') || formData?.profilePicture || currentUser?.photoURL;
+  const profilePicture = getNestedValue(formData, 'documents.profile_picture') || getNestedValue(formData, 'profilePicture') || formData?.profilePicture || currentUser?.photoURL;
 
   const renderField = (fieldConfig, groupKey) => {
-    const { name, type, required, labelKey, optionsKey, placeholder } = fieldConfig;
+    const { name, type, required, labelKey, optionsKey, placeholder, disabled, readOnly } = fieldConfig;
     const label = t(labelKey, name);
     const value = getNestedValue(formData, name);
     const error = getNestedValue(errors, name);
@@ -175,7 +290,9 @@ const PersonalDetails = ({
       label: label,
       error: error,
       required: required,
-      wrapperClassName: styles.fieldWrapper
+      wrapperClassName: styles.fieldWrapper,
+      disabled: disabled || readOnly,
+      readOnly: readOnly
     };
 
     if (type === 'date') {
@@ -289,10 +406,14 @@ const PersonalDetails = ({
         <div className={styles.headerCard}>
           <div className="flex items-center gap-6 mb-4">
             <div
-              className="relative group cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
+              className="relative group cursor-pointer md:cursor-default"
+              onClick={(e) => {
+                if (window.innerWidth < 768) {
+                  handleEditPicture(e);
+                }
+              }}
             >
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-border group-hover:border-primary transition-colors">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-border group-hover:border-primary transition-colors md:cursor-default">
                 {profilePicture ? (
                   <img
                     src={profilePicture}
@@ -300,13 +421,47 @@ const PersonalDetails = ({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center text-2xl font-bold text-muted-foreground">
+                  <div className="w-full h-full bg-muted flex items-center justify-center text-2xl font-bold text-muted-foreground" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {displayProfile?.firstName?.[0] || displayProfile?.identity?.legalFirstName?.[0] || 'U'}{displayProfile?.lastName?.[0] || displayProfile?.identity?.legalLastName?.[0] || ''}
                   </div>
                 )}
               </div>
-              <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-xs text-white font-medium">{t('common.edit')}</span>
+              <div className="absolute inset-0 bg-black/50 rounded-full hidden md:flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {profilePicture ? (
+                  <>
+                    <button
+                      onClick={handleViewPicture}
+                      className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                      title={t('common.view', 'View')}
+                    >
+                      <FiEye className="w-4 h-4 text-white" />
+                    </button>
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={handleEditPicture}
+                        className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                        title={t('common.edit', 'Edit')}
+                      >
+                        <FiEdit2 className="w-4 h-4 text-white" />
+                      </button>
+                      <button
+                        onClick={handleDeletePicture}
+                        className="p-2 rounded-full bg-white/20 hover:bg-red-500/50 transition-colors"
+                        title={t('common.delete', 'Delete')}
+                      >
+                        <FiTrash2 className="w-4 h-4 text-white" />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleEditPicture}
+                    className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                    title={t('common.edit', 'Edit')}
+                  >
+                    <FiEdit2 className="w-4 h-4 text-white" />
+                  </button>
+                )}
               </div>
               <input
                 type="file"
@@ -409,25 +564,62 @@ const PersonalDetails = ({
           </div>
         </div>
 
-        <div className={styles.sectionCard}>
-          <div className={styles.formActions} style={{ marginTop: 0 }}>
-            <Button
-              onClick={handleCancel}
-              variant="secondary"
-              disabled={isSubmitting}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={onSaveAndContinue}
-              variant="confirmation"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? t('common.saving') : t('common.saveAndContinue')}
-            </Button>
+      </div>
+
+      {showPicturePopup && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleClosePopup();
+            }
+          }}
+        >
+          <div className="modal-content" style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h2>{popupImageSrc === profilePicture ? t('common.view', 'View Profile Picture') : t('common.preview', 'Preview Profile Picture')}</h2>
+              <button
+                className="modal-close-btn"
+                onClick={handleClosePopup}
+                aria-label={t('common.close', 'Close')}
+              >
+                <FiX />
+              </button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '24px' }}>
+              {popupImageSrc && (
+                <img
+                  src={popupImageSrc}
+                  alt="Profile Preview"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '60vh',
+                    objectFit: 'contain',
+                    borderRadius: '8px'
+                  }}
+                />
+              )}
+            </div>
+            {popupImageSrc !== profilePicture && (
+              <div className="modal-footer">
+                <button
+                  onClick={handleCancelUpload}
+                  className="modal-btn modal-btn-secondary"
+                >
+                  {t('common.cancel', 'Cancel')}
+                </button>
+                <button
+                  onClick={handleConfirmUpload}
+                  className="modal-btn modal-btn-primary"
+                  disabled={isUploadingPicture}
+                >
+                  {isUploadingPicture ? t('accountBasics.uploading', 'Uploading...') : t('common.confirm', 'Confirm')}
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 };
@@ -443,6 +635,7 @@ PersonalDetails.propTypes = {
   isSubmitting: PropTypes.bool.isRequired,
   onInputChange: PropTypes.func.isRequired,
   onSaveAndContinue: PropTypes.func.isRequired,
+  onSave: PropTypes.func,
   onCancel: PropTypes.func.isRequired,
   getNestedValue: PropTypes.func.isRequired,
   onTriggerUpload: PropTypes.func,

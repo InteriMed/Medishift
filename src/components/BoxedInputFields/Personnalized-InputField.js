@@ -52,7 +52,9 @@ function PersonnalizedInputField({
     showClearButton = true,
     type = "text",
     name,
-    required
+    required,
+    disabled = false,
+    readOnly = false
 }) {
     const [isFocused, setIsFocused] = useState(false);
     const { showError } = useNotification();
@@ -104,7 +106,7 @@ function PersonnalizedInputField({
             style={{ marginBottom, marginLeft, marginRight }}
         >
             <div
-                className={`boxed-inputfield-container ${error ? 'boxed-inputfield-container--error' : ''} ${value ? 'has-value' : ''}`}
+                className={`boxed-inputfield-container ${error ? 'boxed-inputfield-container--error' : ''} ${value ? 'has-value' : ''} ${disabled || readOnly ? 'boxed-inputfield-container--disabled' : ''}`}
             >
                 {label && (
                     <label className={`boxed-inputfield-label ${(isFocused || value) ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}>
@@ -117,7 +119,8 @@ function PersonnalizedInputField({
                     className={`boxed-inputfield-input 
                         ${isFocused ? 'boxed-inputfield-input--focused' : ''} 
                         ${value ? 'boxed-inputfield-input--has-value' : ''} 
-                        ${error ? 'boxed-inputfield-input--error' : ''}`}
+                        ${error ? 'boxed-inputfield-input--error' : ''}
+                        ${disabled || readOnly ? 'boxed-inputfield-input--disabled' : ''}`}
                     type={type}
                     name={name}
                     required={required}
@@ -127,9 +130,11 @@ function PersonnalizedInputField({
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     style={{ outline: 'none' }}
+                    disabled={disabled}
+                    readOnly={readOnly}
                 />
 
-                {value && showClearButton && (
+                {value && showClearButton && !disabled && !readOnly && (
                     <button
                         className="boxed-inputfield-clear"
                         onClick={handleClear}

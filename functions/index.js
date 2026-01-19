@@ -8,7 +8,7 @@ setGlobalOptions({ region: "europe-west6" });
 // Initialize Firebase Admin
 const admin = require('firebase-admin');
 admin.initializeApp({
-  databaseId: 'medishift',
+  databaseId: '(default)',
   storageBucket: 'interimed-620fd.firebasestorage.app'
 });
 
@@ -154,6 +154,10 @@ module.exports.accountDelete = accountManagement.deleteAccount;                 
 module.exports.accountBonusEligibility = accountManagement.checkBonusEligibility; // Anti-fraud check
 module.exports.accountDataExport = accountManagement.dataExport;                // GDPR data export
 
+// USER MANAGEMENT - Export from api/userManagement.js
+const userManagement = require('./api/userManagement');
+module.exports.disableUser = userManagement.disableUser;
+
 // =========================================================================
 //  📧 FACILITY INVITATIONS - Role Invitation System
 // =========================================================================
@@ -162,4 +166,5 @@ module.exports.accountDataExport = accountManagement.dataExport;                
 module.exports.generateFacilityRoleInvitation = invitationFunctions.generateFacilityRoleInvitation;
 module.exports.getInvitationDetails = invitationFunctions.getInvitationDetails;
 module.exports.acceptFacilityInvitation = invitationFunctions.acceptFacilityInvitation;
+module.exports.inviteAdminEmployee = invitationFunctions.inviteAdminEmployee;
 

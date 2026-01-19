@@ -58,10 +58,10 @@ const TutorialSelectionModal = ({
     };
 
     return createPortal(
-        <div className={styles.overlay} onClick={handleOverlayClick}>
-            <div className={styles.modal} role="dialog" aria-labelledby="tutorial-modal-title" aria-modal="true">
-                <div className={styles.header}>
-                    <h2 id="tutorial-modal-title" className={styles.title}>
+        <div className="modal-overlay" onClick={handleOverlayClick}>
+            <div className="modal-content" role="dialog" aria-labelledby="tutorial-modal-title" aria-modal="true">
+                <div className="modal-header flex-col items-start gap-1">
+                    <h2 id="tutorial-modal-title" className="modal-title">
                         {t('dashboard.tutorial.selectionTitle', 'Choose Tutorial Mode')}
                     </h2>
                     <p className={styles.subtitle}>
@@ -69,56 +69,58 @@ const TutorialSelectionModal = ({
                     </p>
                 </div>
 
-                <div className={styles.currentPageInfo}>
-                    <p className={styles.currentPageLabel}>
-                        {t('dashboard.tutorial.currentPage', 'Current Page')}
-                    </p>
-                    <p className={styles.currentPageName}>
-                        {formatPageName(currentPageName)}
-                    </p>
+                <div className="modal-body custom-scrollbar">
+                    <div className={styles.currentPageInfo}>
+                        <p className={styles.currentPageLabel}>
+                            {t('dashboard.tutorial.currentPage', 'Current Page')}
+                        </p>
+                        <p className={styles.currentPageName}>
+                            {formatPageName(currentPageName)}
+                        </p>
+                    </div>
+
+                    <div className={styles.options}>
+                        <button
+                            className={styles.optionButton}
+                            onClick={handleStartCurrent}
+                            aria-label={t('dashboard.tutorial.currentPageOnly', 'Start tutorial for current page only')}
+                        >
+                            <div className={styles.optionIcon}>
+                                <FiTarget />
+                            </div>
+                            <div className={styles.optionContent}>
+                                <h3 className={styles.optionTitle}>
+                                    {t('dashboard.tutorial.currentPageOnlyTitle', 'Current Page Only')}
+                                </h3>
+                                <p className={styles.optionDescription}>
+                                    {t('dashboard.tutorial.currentPageOnlyDesc', 'Learn about the features on this page')}
+                                </p>
+                            </div>
+                        </button>
+
+                        <button
+                            className={styles.optionButton}
+                            onClick={handleStartAll}
+                            aria-label={t('dashboard.tutorial.allPages', 'Start complete tutorial from the beginning')}
+                        >
+                            <div className={styles.optionIcon}>
+                                <FiPlay />
+                            </div>
+                            <div className={styles.optionContent}>
+                                <h3 className={styles.optionTitle}>
+                                    {t('dashboard.tutorial.allPagesTitle', 'Complete Tutorial')}
+                                </h3>
+                                <p className={styles.optionDescription}>
+                                    {t('dashboard.tutorial.allPagesDesc', 'Start from the beginning and explore all features')}
+                                </p>
+                            </div>
+                        </button>
+                    </div>
                 </div>
 
-                <div className={styles.options}>
+                <div className="modal-footer">
                     <button
-                        className={styles.optionButton}
-                        onClick={handleStartCurrent}
-                        aria-label={t('dashboard.tutorial.currentPageOnly', 'Start tutorial for current page only')}
-                    >
-                        <div className={styles.optionIcon}>
-                            <FiTarget />
-                        </div>
-                        <div className={styles.optionContent}>
-                            <h3 className={styles.optionTitle}>
-                                {t('dashboard.tutorial.currentPageOnlyTitle', 'Current Page Only')}
-                            </h3>
-                            <p className={styles.optionDescription}>
-                                {t('dashboard.tutorial.currentPageOnlyDesc', 'Learn about the features on this page')}
-                            </p>
-                        </div>
-                    </button>
-
-                    <button
-                        className={styles.optionButton}
-                        onClick={handleStartAll}
-                        aria-label={t('dashboard.tutorial.allPages', 'Start complete tutorial from the beginning')}
-                    >
-                        <div className={styles.optionIcon}>
-                            <FiPlay />
-                        </div>
-                        <div className={styles.optionContent}>
-                            <h3 className={styles.optionTitle}>
-                                {t('dashboard.tutorial.allPagesTitle', 'Complete Tutorial')}
-                            </h3>
-                            <p className={styles.optionDescription}>
-                                {t('dashboard.tutorial.allPagesDesc', 'Start from the beginning and explore all features')}
-                            </p>
-                        </div>
-                    </button>
-                </div>
-
-                <div className={styles.footer}>
-                    <button
-                        className={styles.cancelButton}
+                        className="modal-btn modal-btn-secondary"
                         onClick={onClose}
                         aria-label={t('common.cancel', 'Cancel')}
                     >

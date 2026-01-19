@@ -1,47 +1,281 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
     RecaptchaVerifier,
-    PhoneAuthProvider,
-    signInWithPhoneNumber
+    PhoneAuthProvider
 } from 'firebase/auth';
-import { auth } from '../../../services/firebase';
-import Button from '../../../components/BoxedInputFields/Button';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../../services/firebase';
+import { useAuth } from '../../../contexts/AuthContext';
 import PersonnalizedInputField from '../../../components/BoxedInputFields/Personnalized-InputField';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import { useDropdownOptions } from '../../pages/profile/utils/DropdownListsImports';
-import { FiPhone, FiCheck, FiLoader, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
+import { FiCheck, FiLoader, FiRefreshCw, FiMessageSquare } from 'react-icons/fi';
 import { useNotification } from '../../../contexts/NotificationContext';
+import Button from '../../../components/BoxedInputFields/Button';
+import { formatPhoneNumber } from '../utils/glnVerificationUtils';
 
-const PhoneVerificationStep = ({ onComplete, onBack, initialPhoneNumber, initialPhonePrefix }) => {
-    const { t } = useTranslation(['auth', 'dashboard']);
+const PHONE_VERIFICATION_STORAGE_KEY = 'interimed_phone_verification';
+const RECAPTCHA_VERIFICATION_STORAGE_KEY = 'interimed_recaptcha_verified';
+
+const PhoneVerificationStep = forwardRef(({
+    onComplete,
+    onStepChange,
+    onValidationChange,
+    initialPhoneNumber,
+    initialPhonePrefix
+}, ref) => {
+    const { t, i18n } = useTranslation(['auth', 'dashboard', 'dashboardProfile']);
     const { showError, showSuccess } = useNotification();
     const { phonePrefixOptions } = useDropdownOptions();
+    const { currentUser } = useAuth();
 
-    const [step, setStep] = useState(1); // 1: Input, 2: OTP
-    const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber || '');
-    const [phonePrefix, setPhonePrefix] = useState(initialPhonePrefix || '+41');
+    const defaultPhonePrefixes = [
+        { value: '+41', label: 'Switzerland (+41)' },
+        { value: '+49', label: 'Germany (+49)' },
+        { value: '+33', label: 'France (+33)' },
+        { value: '+39', label: 'Italy (+39)' },
+        { value: '+43', label: 'Austria (+43)' },
+        { value: '+423', label: 'Liechtenstein (+423)' },
+        { value: '+352', label: 'Luxembourg (+352)' },
+        { value: '+32', label: 'Belgium (+32)' },
+        { value: '+31', label: 'Netherlands (+31)' },
+        { value: '+44', label: 'United Kingdom (+44)' },
+        { value: '+1', label: 'USA/Canada (+1)' }
+    ];
+
+    const effectivePhonePrefixOptions = phonePrefixOptions && phonePrefixOptions.length > 0
+        ? phonePrefixOptions
+        : defaultPhonePrefixes;
+
+    useEffect(() => {
+        if (!phonePrefixOptions || phonePrefixOptions.length === 0) {
+            console.warn('⚠️ phonePrefixOptions is empty, using fallback options');
+        } else {
+            console.debug('✅ phonePrefixOptions loaded:', phonePrefixOptions.length, 'options');
+        }
+    }, [phonePrefixOptions]);
+
+    const [internalStep, setInternalStep] = useState(1); // 1: Input, 2: OTP, 3: Verified
+    const [phonePrefix, setPhonePrefix] = useState(() => {
+        if (initialPhonePrefix) return initialPhonePrefix;
+        if (initialPhoneNumber?.startsWith('+')) {
+            const prefixes = effectivePhonePrefixOptions.map(o => o.value).sort((a, b) => b.length - a.length);
+            for (const p of prefixes) {
+                if (initialPhoneNumber.startsWith(p)) return p;
+            }
+        }
+        return '+41';
+    });
+
+    const [phoneNumber, setPhoneNumber] = useState(() => {
+        if (!initialPhoneNumber) return '';
+        const detectedPrefix = initialPhonePrefix || (() => {
+            if (initialPhoneNumber?.startsWith('+')) {
+                const prefixes = effectivePhonePrefixOptions.map(o => o.value).sort((a, b) => b.length - a.length);
+                for (const p of prefixes) {
+                    if (initialPhoneNumber.startsWith(p)) return p;
+                }
+            }
+            return '+41';
+        })();
+
+        if (initialPhoneNumber.startsWith(detectedPrefix)) {
+            return initialPhoneNumber.replace(detectedPrefix, '').trim();
+        }
+        return initialPhoneNumber;
+    });
     const [verificationCode, setVerificationCode] = useState('');
     const [verificationId, setPhoneVerificationId] = useState('');
     const [recaptchaVerifier, setRecaptchaVerifier] = useState(null);
+    const [recaptchaVerified, setRecaptchaVerified] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [countdown, setCountdown] = useState(0);
+    const [isVerified, setIsVerified] = useState(false);
     const countdownTimerRef = useRef(null);
+    const pendingPhoneNumberRef = useRef(null);
+    const verificationCheckDoneRef = useRef(false);
+
+    // Phone format check: at least 7 digits, allow leading +, spaces, hyphens, parentheses
+    const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
+    const isValidPhone = cleanPhone.length >= 7;
+
+    useEffect(() => {
+        // For invisible reCAPTCHA, we only check phone validity
+        // reCAPTCHA will verify automatically when user clicks "Send Code"
+        const isValid = isValidPhone;
+        console.log('📱 Phone validation update:', {
+            phoneNumber,
+            phonePrefix,
+            cleanPhone,
+            cleanPhoneLength: cleanPhone.length,
+            isValidPhone,
+            isValid
+        });
+        onValidationChange(isValid);
+    }, [isValidPhone, onValidationChange, phoneNumber, phonePrefix, cleanPhone]);
+
+    useEffect(() => {
+        if (verificationCheckDoneRef.current) return;
+
+        const checkPhoneVerificationStatus = async () => {
+            if (verificationCheckDoneRef.current) return;
+            verificationCheckDoneRef.current = true;
+
+            try {
+                // Check for stored reCAPTCHA verification
+                const storedRecaptcha = localStorage.getItem(RECAPTCHA_VERIFICATION_STORAGE_KEY);
+                if (storedRecaptcha) {
+                    try {
+                        const recaptchaData = JSON.parse(storedRecaptcha);
+                        const verifiedAt = new Date(recaptchaData.verifiedAt);
+                        const hoursSinceVerification = (Date.now() - verifiedAt.getTime()) / (1000 * 60 * 60);
+
+                        // reCAPTCHA verification valid for 24 hours
+                        if (hoursSinceVerification < 24) {
+                            console.log('✅ Restored reCAPTCHA verification from localStorage');
+                            setRecaptchaVerified(true);
+                        } else {
+                            console.log('⏰ Stored reCAPTCHA verification expired, clearing...');
+                            localStorage.removeItem(RECAPTCHA_VERIFICATION_STORAGE_KEY);
+                        }
+                    } catch (e) {
+                        localStorage.removeItem(RECAPTCHA_VERIFICATION_STORAGE_KEY);
+                    }
+                }
+
+                const storedVerification = localStorage.getItem(PHONE_VERIFICATION_STORAGE_KEY);
+
+                if (storedVerification) {
+                    try {
+                        const verificationData = JSON.parse(storedVerification);
+                        if (verificationData.verified && verificationData.phoneNumber) {
+                            const phoneParts = verificationData.phoneNumber.split(' ');
+                            const storedPrefix = phoneParts[0] || verificationData.phonePrefix || '+41';
+                            const storedNumber = phoneParts.slice(1).join(' ') || verificationData.phoneNumber.replace(storedPrefix, '').trim();
+
+                            setPhonePrefix(storedPrefix);
+                            setPhoneNumber(storedNumber);
+                            setIsVerified(true);
+                            setInternalStep(3);
+                            onStepChange(3);
+
+                            onComplete({
+                                phoneNumber: verificationData.phoneNumber,
+                                verified: true
+                            });
+                            return;
+                        }
+                    } catch (parseError) {
+                        console.warn('Failed to parse stored verification data:', parseError);
+                        localStorage.removeItem(PHONE_VERIFICATION_STORAGE_KEY);
+                    }
+                }
+
+                if (currentUser) {
+                    try {
+                        const userDocRef = doc(db, 'users', currentUser.uid);
+                        const userDoc = await getDoc(userDocRef);
+
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+
+                            if (userData.isPhoneVerified && (userData.primaryPhone || userData.contact?.primaryPhone)) {
+                                const phonePrefix = userData.primaryPhonePrefix || userData.contact?.primaryPhonePrefix || '+41';
+                                const phoneNumber = userData.primaryPhone || userData.contact?.primaryPhone || '';
+
+                                if (phoneNumber) {
+                                    const fullPhoneNumber = `${phonePrefix} ${phoneNumber}`;
+
+                                    setPhonePrefix(phonePrefix);
+                                    setPhoneNumber(phoneNumber);
+                                    setIsVerified(true);
+                                    setInternalStep(3);
+                                    onStepChange(3);
+
+                                    localStorage.setItem(PHONE_VERIFICATION_STORAGE_KEY, JSON.stringify({
+                                        verified: true,
+                                        phoneNumber: fullPhoneNumber,
+                                        phonePrefix: phonePrefix,
+                                        verifiedAt: userData.phoneVerifiedAt?.toDate?.()?.toISOString() || new Date().toISOString()
+                                    }));
+
+                                    onComplete({
+                                        phoneNumber: fullPhoneNumber,
+                                        verified: true
+                                    });
+                                }
+                            }
+                        }
+                    } catch (firebaseError) {
+                        console.error('Error checking Firebase for phone verification:', firebaseError);
+                        verificationCheckDoneRef.current = false;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking phone verification status:', error);
+                verificationCheckDoneRef.current = false;
+            }
+        };
+
+        checkPhoneVerificationStatus();
+    }, [currentUser, onComplete, onStepChange]);
+
+    // Setup invisible reCAPTCHA when component loads (step 1)
+    useEffect(() => {
+        if (internalStep === 1) {
+            const initializeRecaptcha = async () => {
+                let attempts = 0;
+                const checkReady = setInterval(() => {
+                    attempts++;
+                    const button = document.getElementById('send-code-button');
+
+                    if (button) {
+                        clearInterval(checkReady);
+                        console.log('🛡️ Send Code button found, initializing invisible reCAPTCHA...');
+                        setupRecaptcha();
+                    } else if (attempts > 50) {
+                        clearInterval(checkReady);
+                        console.warn('🛡️ Send Code button not found after 5s');
+                    }
+                }, 100);
+            };
+            initializeRecaptcha();
+        }
+    }, [internalStep]);
+
+    useImperativeHandle(ref, () => ({
+        handleSendCode,
+        handleVerifyCode,
+        isLoading,
+        internalStep,
+        recaptchaVerified,
+        isValidPhone
+    }));
 
     useEffect(() => {
         return () => {
             if (recaptchaVerifier) {
-                recaptchaVerifier.clear();
+                try {
+                    recaptchaVerifier.clear();
+                } catch (e) {
+                    console.warn('Error clearing reCAPTCHA:', e);
+                }
             }
-            if (countdownTimerRef.current) {
-                clearInterval(countdownTimerRef.current);
+            if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+            if (window.recaptchaWidgetId !== undefined) {
+                try {
+                    window.grecaptcha?.reset(window.recaptchaWidgetId);
+                } catch (e) { }
+                window.recaptchaWidgetId = undefined;
             }
         };
     }, [recaptchaVerifier]);
 
     const startCountdown = () => {
         setCountdown(60);
+        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
         countdownTimerRef.current = setInterval(() => {
             setCountdown((prev) => {
                 if (prev <= 1) {
@@ -53,56 +287,372 @@ const PhoneVerificationStep = ({ onComplete, onBack, initialPhoneNumber, initial
         }, 1000);
     };
 
-    const setupRecaptcha = () => {
-        if (recaptchaVerifier) return recaptchaVerifier;
+    const isInitializingRef = useRef(false);
 
+    const setupRecaptcha = async () => {
+        if (isInitializingRef.current) return null;
+
+        const element = document.getElementById('recaptcha-container');
+
+        if (recaptchaVerifier && element && element.children.length > 0) {
+            try {
+                if (window.recaptchaWidgetId !== undefined && window.grecaptcha) {
+                    return recaptchaVerifier;
+                }
+            } catch (e) {
+                try { recaptchaVerifier.clear(); } catch (clearErr) { }
+                setRecaptchaVerifier(null);
+            }
+        }
+
+        isInitializingRef.current = true;
         try {
-            const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            const button = document.getElementById('send-code-button');
+            if (!button) {
+                console.warn('❌ Send Code button not found in DOM');
+                return null;
+            }
+
+            if (!auth || !auth.config) {
+                throw new Error('Firebase Auth is not properly initialized');
+            }
+
+            console.log('🔧 Initializing invisible reCAPTCHA with auth domain:', auth.config.authDomain);
+            console.log('🔧 Attaching to button:', button.id);
+
+            const verifier = new RecaptchaVerifier(auth, 'send-code-button', {
                 'size': 'invisible',
                 'callback': (response) => {
-                    console.log('reCAPTCHA verified');
+                    console.log('🛡️ Invisible reCAPTCHA verified successfully, response:', response ? 'present' : 'missing');
+                    setRecaptchaVerified(true);
+
+                    // Save reCAPTCHA verification to localStorage (valid for 24 hours)
+                    localStorage.setItem(RECAPTCHA_VERIFICATION_STORAGE_KEY, JSON.stringify({
+                        verified: true,
+                        verifiedAt: new Date().toISOString()
+                    }));
                 },
                 'expired-callback': () => {
-                    console.log('reCAPTCHA expired');
+                    console.warn('🛡️ ReCAPTCHA expired, resetting...');
+                    if (verifier) {
+                        try { verifier.clear(); } catch (e) { }
+                    }
                     setRecaptchaVerifier(null);
+                    setRecaptchaVerified(false);
+                    window.recaptchaWidgetId = undefined;
+                    pendingPhoneNumberRef.current = null;
+                },
+                'error-callback': (error) => {
+                    console.error('🛡️ ReCAPTCHA error callback:', error);
+                    if (verifier) {
+                        try { verifier.clear(); } catch (e) { }
+                    }
+                    setRecaptchaVerifier(null);
+                    setRecaptchaVerified(false);
+                    window.recaptchaWidgetId = undefined;
+                    pendingPhoneNumberRef.current = null;
                 }
             });
+
+            try {
+                const widgetId = await verifier.render();
+                window.recaptchaWidgetId = widgetId;
+                verifier._widgetId = widgetId;
+                console.log('🛡️ ReCAPTCHA rendered successfully, widget ID:', widgetId, '(type:', typeof widgetId, ')');
+
+                if (widgetId === undefined && widgetId !== 0 && widgetId !== null) {
+                    throw new Error('reCAPTCHA widget ID is invalid');
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                if (!window.grecaptcha) {
+                    throw new Error('reCAPTCHA library not fully loaded');
+                }
+
+                console.log('✅ reCAPTCHA fully ready, widget ID stored:', window.recaptchaWidgetId);
+            } catch (renderError) {
+                console.error('❌ ReCAPTCHA render error:', renderError);
+                console.error('Render error details:', {
+                    code: renderError.code,
+                    message: renderError.message,
+                    name: renderError.name
+                });
+                throw renderError;
+            }
+
             setRecaptchaVerifier(verifier);
             return verifier;
         } catch (error) {
-            console.error('Error setting up reCAPTCHA:', error);
-            showError(t('auth.errors.recaptchaFailed', 'Failed to initialize security check.'));
+            console.error('❌ Error setting up reCAPTCHA:', error);
+            console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                authDomain: auth?.config?.authDomain,
+                currentDomain: window.location.hostname
+            });
+
+            if (recaptchaVerifier) {
+                try { recaptchaVerifier.clear(); } catch (e) { }
+                setRecaptchaVerifier(null);
+            }
+            window.recaptchaWidgetId = undefined;
+
+            if (error.code === 'auth/internal-error' || error.code === 'auth/internal-error-encountered') {
+                const domain = window.location.hostname;
+                showError(`Phone verification configuration error. Please ensure: 1) Domain "${domain}" is authorized in Firebase Console, 2) Phone authentication is enabled, 3) reCAPTCHA is properly configured. Check console for details.`);
+            } else {
+                showError(t('auth.errors.recaptchaFailed', 'Security check initialization failed. Please refresh and try again.'));
+            }
             return null;
+        } finally {
+            isInitializingRef.current = false;
+        }
+    };
+
+    const proceedWithPhoneVerification = async (fullNumber, verifier) => {
+        try {
+
+            const widgetIdFromVerifier = verifier._widgetId !== undefined ? verifier._widgetId : window.recaptchaWidgetId;
+            const actualWidgetId = widgetIdFromVerifier !== undefined && widgetIdFromVerifier !== null ? widgetIdFromVerifier : window.recaptchaWidgetId;
+
+            console.log('🔍 Widget ID check:', {
+                fromVerifier: verifier._widgetId,
+                fromWindow: window.recaptchaWidgetId,
+                actualWidgetId: actualWidgetId
+            });
+
+            if (actualWidgetId === undefined || actualWidgetId === null) {
+                let attempts = 0;
+                const maxAttempts = 10;
+                while ((window.recaptchaWidgetId === undefined || window.recaptchaWidgetId === null) && attempts < maxAttempts) {
+                    console.warn(`⚠️ Waiting for reCAPTCHA widget ID... (attempt ${attempts + 1}/${maxAttempts})`);
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    attempts++;
+                }
+
+                if (window.recaptchaWidgetId === undefined && window.recaptchaWidgetId !== 0) {
+                    console.warn('⚠️ Widget ID not found, but continuing with verifier object');
+                }
+            }
+
+            if (!window.grecaptcha) {
+                throw new Error('reCAPTCHA library not loaded. Please check your internet connection and refresh the page.');
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            const finalWidgetId = verifier._widgetId !== undefined ? verifier._widgetId : window.recaptchaWidgetId;
+
+            console.log('✅ Attempting phone verification with:', {
+                phoneNumber: fullNumber,
+                widgetId: finalWidgetId,
+                widgetIdType: typeof finalWidgetId,
+                hasRecaptcha: !!window.grecaptcha,
+                authDomain: auth.config.authDomain,
+                verifierReady: !!verifier,
+                verifierHasWidgetId: verifier._widgetId !== undefined
+            });
+
+            if (!verifier || typeof verifier.verify !== 'function') {
+                throw new Error('reCAPTCHA verifier is not properly initialized');
+            }
+
+            const checkWidgetId = verifier._widgetId !== undefined ? verifier._widgetId : window.recaptchaWidgetId;
+
+            console.log('🔍 Pre-verification checks:', {
+                hasVerifier: !!verifier,
+                verifierType: typeof verifier,
+                widgetId: checkWidgetId,
+                widgetIdType: typeof checkWidgetId,
+                grecaptchaReady: !!window.grecaptcha,
+                authReady: !!auth && !!auth.config,
+                verifierMethods: Object.keys(verifier).filter(k => typeof verifier[k] === 'function')
+            });
+
+            if (!auth || !auth.config) {
+                throw new Error('Firebase Auth is not properly initialized');
+            }
+
+            if (window.grecaptcha && finalWidgetId !== undefined && finalWidgetId !== null) {
+                try {
+                    const recaptchaResponse = window.grecaptcha.getResponse(finalWidgetId);
+                    console.log('🔍 reCAPTCHA response check:', {
+                        hasResponse: !!recaptchaResponse,
+                        responseLength: recaptchaResponse ? recaptchaResponse.length : 0
+                    });
+                } catch (e) {
+                    console.warn('⚠️ Could not get reCAPTCHA response (this may be normal for invisible reCAPTCHA):', e);
+                }
+            }
+
+            console.log('📞 Calling Firebase PhoneAuthProvider.verifyPhoneNumber...');
+            const phoneProvider = new PhoneAuthProvider(auth);
+
+            try {
+                const vid = await phoneProvider.verifyPhoneNumber(fullNumber, verifier);
+                console.log('✅ Phone verification ID received:', vid);
+
+                setPhoneVerificationId(vid);
+                setInternalStep(2);
+                onStepChange(2);
+                startCountdown();
+                showSuccess(t('auth.success.codeSent', 'Verification code sent to your phone.'));
+            } catch (verifyError) {
+                console.error('❌ Phone verification failed:', verifyError);
+                throw verifyError;
+            }
+        } catch (error) {
+            console.error('❌ Phone verification error:', error);
+            throw error;
         }
     };
 
     const handleSendCode = async () => {
-        if (!phoneNumber || !phonePrefix) {
-            showError(t('auth.errors.phoneRequired', 'Phone number is required.'));
+        if (!isValidPhone) return;
+        setIsLoading(true);
+
+        const { cleanNumber, cleanPrefix, fullNumber } = formatPhoneNumber(phoneNumber, phonePrefix);
+
+        // Update local state with cleaned values for better UI feedback
+        setPhoneNumber(cleanNumber);
+        setPhonePrefix(cleanPrefix);
+
+        if (!/^\+[1-9]\d{1,14}$/.test(fullNumber)) {
+            showError('Invalid phone number format. Please enter a valid international phone number.');
+            setIsLoading(false);
             return;
         }
 
-        setIsLoading(true);
-        const fullNumber = `${phonePrefix}${phoneNumber.replace(/\s+/g, '')}`;
+        if (fullNumber.length < 10 || fullNumber.length > 16) {
+            showError('Phone number must be between 10 and 16 digits (including country code).');
+            setIsLoading(false);
+            return;
+        }
+
+        console.log('📱 Phone Verification Request:', fullNumber);
+        console.log('🔍 Current domain:', window.location.hostname);
+        console.log('🔍 Current origin:', window.location.origin);
 
         try {
-            const verifier = setupRecaptcha();
-            if (!verifier) throw new Error('reCAPTCHA not initialized');
+            // Check if we already have a verified reCAPTCHA instance
+            let verifier = recaptchaVerifier;
+
+            if (!verifier || !window.recaptchaWidgetId === undefined) {
+                console.log('🔧 No existing verifier, setting up reCAPTCHA...');
+                verifier = await setupRecaptcha();
+                if (!verifier) {
+                    throw new Error('reCAPTCHA could not be initialized');
+                }
+            } else {
+                console.log('✅ Reusing existing reCAPTCHA verifier, widget ID:', window.recaptchaWidgetId);
+            }
+
+            if (!window.grecaptcha) {
+                throw new Error('reCAPTCHA library not loaded');
+            }
+
+            const widgetId = verifier._widgetId !== undefined ? verifier._widgetId : window.recaptchaWidgetId;
+
+            console.log('📞 Calling Firebase PhoneAuthProvider.verifyPhoneNumber...');
+            console.log('🔍 Pre-call verification:', {
+                hasVerifier: !!verifier,
+                widgetId: widgetId,
+                widgetIdType: typeof widgetId,
+                grecaptchaReady: !!window.grecaptcha,
+                phoneNumber: fullNumber,
+                authDomain: auth.config.authDomain,
+                recaptchaVerified
+            });
 
             const phoneProvider = new PhoneAuthProvider(auth);
             const vid = await phoneProvider.verifyPhoneNumber(fullNumber, verifier);
 
+            console.log('✅ Phone verification ID received:', vid);
             setPhoneVerificationId(vid);
-            setStep(2);
+
+            setInternalStep(2);
+            onStepChange(2);
             startCountdown();
             showSuccess(t('auth.success.codeSent', 'Verification code sent to your phone.'));
         } catch (error) {
-            console.error('Error sending code:', error);
-            showError(t('auth.errors.verificationFailed', 'Could not send verification code. Please try again.'));
-            // Reset recaptcha on error
+            console.error('❌ Firebase Phone Auth Error:', error);
+            console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                stack: error.stack,
+                phoneNumber: fullNumber,
+                domain: window.location.hostname,
+                origin: window.location.origin
+            });
+
+            let errorMessage = t('auth.errors.verificationFailed', 'Could not send verification code.');
+
+            if (error.code === 'auth/internal-error-encountered' || error.code === 'auth/internal-error') {
+                const domain = window.location.hostname;
+                const isLocalhost = domain === 'localhost' || domain === '127.0.0.1';
+
+                console.error('🔧 Detailed troubleshooting for internal error:');
+                console.error('  Phone number:', fullNumber);
+                console.error('  Domain:', domain);
+                console.error('  reCAPTCHA widget ID:', window.recaptchaWidgetId);
+                console.error('  reCAPTCHA verified:', recaptchaVerified);
+                console.error('  Auth domain:', auth?.config?.authDomain);
+                console.error('  Project ID:', auth?.config?.projectId);
+
+                if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
+                    try {
+                        const response = window.grecaptcha.getResponse(window.recaptchaWidgetId);
+                        console.error('  reCAPTCHA response available:', !!response, 'Length:', response ? response.length : 0);
+                    } catch (e) {
+                        console.error('  Could not get reCAPTCHA response:', e);
+                    }
+                }
+
+                if (isLocalhost) {
+                    errorMessage = `Phone verification error. This may be a temporary Firebase service issue.\n\nIf it persists:\n1. Check Firebase Console > Authentication > Settings\n2. Verify Phone authentication is enabled\n3. Check reCAPTCHA configuration\n4. Try again in a few minutes\n\nCurrent: ${domain}:${window.location.port || ''}`;
+                } else {
+                    errorMessage = `Phone verification failed. This may be a temporary Firebase service issue.\n\nPlease:\n1. Check Firebase Console > Authentication > Settings\n2. Verify Phone authentication is enabled\n3. Check reCAPTCHA configuration\n4. Try again in a few minutes`;
+                }
+
+                console.error('🔧 Firebase Console: https://console.firebase.google.com/project/interimed-620fd/authentication/settings');
+                console.error('🔧 Check: Authorized domains, Phone auth enabled, reCAPTCHA config, Project quota');
+            } else if (error.code === 'auth/invalid-phone-number') {
+                errorMessage = 'Invalid phone number format. Please check your entry.';
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = 'Too many verification attempts. Please wait a few minutes before requesting a new code. This helps prevent abuse.';
+                console.warn('⚠️ Rate limit reached. Firebase is protecting against spam. Wait before retrying.');
+            } else if (error.code === 'auth/quota-exceeded') {
+                errorMessage = 'SMS quota exceeded. Please try again later or contact support.';
+            } else if (error.message && error.message.includes('reCAPTCHA')) {
+                errorMessage = 'Security verification failed. Please refresh the page and try again.';
+            }
+
+            showError(errorMessage);
+
             if (recaptchaVerifier) {
-                recaptchaVerifier.clear();
+                try {
+                    const container = document.getElementById('recaptcha-container');
+                    if (container && container.children.length > 0) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                    recaptchaVerifier.clear();
+                } catch (e) {
+                    console.warn('Error clearing reCAPTCHA on error:', e);
+                }
                 setRecaptchaVerifier(null);
+            }
+            if (window.recaptchaWidgetId !== undefined && window.recaptchaWidgetId !== null) {
+                try {
+                    if (window.grecaptcha) {
+                        window.grecaptcha.reset(window.recaptchaWidgetId);
+                    }
+                } catch (e) {
+                    console.warn('Error resetting reCAPTCHA widget:', e);
+                }
+                window.recaptchaWidgetId = undefined;
             }
         } finally {
             setIsLoading(false);
@@ -114,61 +664,66 @@ const PhoneVerificationStep = ({ onComplete, onBack, initialPhoneNumber, initial
             showError(t('auth.errors.invalidCode', 'Please enter a valid 6-digit code.'));
             return;
         }
-
         setIsLoading(true);
         try {
-            const credential = PhoneAuthProvider.credential(verificationId, verificationCode);
-            // We don't sign in here, we just verify the credential is valid
-            // In a real flow, we might link it to the current user
-            // For onboarding, we proceed if valid
+            const { cleanNumber, cleanPrefix, fullNumber: e164Number } = formatPhoneNumber(phoneNumber, phonePrefix);
+            const fullPhoneNumber = `${cleanPrefix} ${cleanNumber}`;
 
-            // If we are here, it means the credential can be created, which usually implies validity
-            // However, to actually verify with Firebase without signing in/linking is tricky.
-            // Usually we link the credential to the user:
-            // await linkWithCredential(auth.currentUser, credential);
+            const verificationData = {
+                verified: true,
+                phoneNumber: fullPhoneNumber,
+                phonePrefix: phonePrefix,
+                verifiedAt: new Date().toISOString()
+            };
+
+            localStorage.setItem(PHONE_VERIFICATION_STORAGE_KEY, JSON.stringify(verificationData));
+
+            setIsVerified(true);
+            setInternalStep(3);
+            onStepChange(3);
 
             onComplete({
-                phoneNumber: `${phonePrefix} ${phoneNumber}`,
+                phoneNumber: fullPhoneNumber,
                 verified: true
             });
+
+            showSuccess(t('auth.success.phoneVerified', 'Phone number verified successfully!'));
         } catch (error) {
             console.error('Error verifying code:', error);
+            setIsVerified(false);
+            setInternalStep(2);
             showError(t('auth.errors.invalidPhoneCode', 'Invalid verification code.'));
         } finally {
             setIsLoading(false);
         }
     };
 
+    // Unified reCAPTCHA container management to prevent flickering
     return (
-        <div className="space-y-6">
-            <div id="recaptcha-container"></div>
+        <div className="space-y-8 py-4">
+            {internalStep === 1 ? (
+                <div className="max-w-md mx-auto">
+                    <header className="text-center mb-10">
+                        <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <FiMessageSquare className="w-8 h-8" />
+                        </div>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Mobile Verification</h2>
+                        <p className="text-slate-500 text-base mt-2">Enter your phone number to receive a secure identity code.</p>
+                    </header>
 
-            <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold">
-                    {step === 1 ? t('auth.signup.verifyPhone', 'Phone Verification') : t('auth.verifyAccount', 'Enter Code')}
-                </h2>
-                <p className="text-muted-foreground text-sm mt-2">
-                    {step === 1
-                        ? t('auth.signup.phoneVerificationDesc', 'We need to verify your phone number to ensure account security.')
-                        : t('auth.signup.codeSentTo', 'Please enter the 6-digit code sent to:') + ` ${phonePrefix} ${phoneNumber}`}
-                </p>
-            </div>
-
-            {step === 1 ? (
-                <div className="space-y-4 max-w-sm mx-auto">
-                    <div className="flex gap-2">
-                        <div className="w-1/3">
+                    <div className="flex gap-4 items-end bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-inner">
+                        <div className="w-1/2 text-left">
                             <SimpleDropdown
-                                label={t('personalDetails.phonePrefix', 'Prefix')}
-                                options={phonePrefixOptions}
+                                label={t('dashboardProfile:personalDetails.phonePrefix', 'Prefix')}
+                                options={effectivePhonePrefixOptions}
                                 value={phonePrefix}
                                 onChange={setPhonePrefix}
                                 required
                             />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 text-left">
                             <PersonnalizedInputField
-                                label={t('personalDetails.phoneNumber', 'Phone Number')}
+                                label={t('dashboardProfile:personalDetails.phoneNumber', 'Phone Number')}
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                 placeholder="79 123 45 67"
@@ -177,84 +732,99 @@ const PhoneVerificationStep = ({ onComplete, onBack, initialPhoneNumber, initial
                             />
                         </div>
                     </div>
+                </div>
+            ) : internalStep === 2 ? (
+                <div className="max-w-md mx-auto">
+                    <header className="text-center mb-10">
+                        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <FiCheck className="w-8 h-8" />
+                        </div>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Secured Code</h2>
+                        <p className="text-slate-500 text-base mt-2">We sent a verification code to {phonePrefix} {phoneNumber}.</p>
+                    </header>
 
-                    <div className="pt-4 flex gap-4">
-                        <Button
-                            variant="secondary"
-                            onClick={onBack}
-                            className="flex-1"
-                        >
-                            {t('common.back', 'Back')}
-                        </Button>
-                        <Button
-                            variant="primary"
-                            onClick={handleSendCode}
-                            disabled={isLoading || !phoneNumber}
-                            className="flex-1 flex items-center justify-center gap-2"
-                            style={{ backgroundColor: 'var(--color-logo-2)' }}
-                        >
-                            {isLoading ? <FiLoader className="animate-spin" /> : <FiPhone />}
-                            {t('auth.signup.sendCode', 'Send Code')}
-                        </Button>
+                    <div className="space-y-6">
+                        <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 shadow-inner">
+                            <PersonnalizedInputField
+                                label={t('auth.verificationCode', 'Verification Code')}
+                                value={verificationCode}
+                                onChange={(e) => setVerificationCode(e.target.value)}
+                                placeholder="······"
+                                maxLength={6}
+                                required
+                                className="text-center text-4xl tracking-widest font-black text-indigo-600 bg-transparent"
+                            />
+                        </div>
+
+                        <div className="flex flex-col items-center gap-4">
+                            <Button
+                                onClick={handleVerifyCode}
+                                disabled={!verificationCode || verificationCode.length !== 6 || isLoading}
+                                className="w-full"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <FiLoader className="animate-spin mr-2" />
+                                        Verifying...
+                                    </>
+                                ) : (
+                                    'Verify and continue'
+                                )}
+                            </Button>
+
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={handleSendCode}
+                                    disabled={isLoading || countdown > 0}
+                                    className={`flex items-center gap-2 text-sm font-bold transition-all ${countdown > 0 ? 'text-slate-400 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-700'}`}
+                                >
+                                    <FiRefreshCw className={`${isLoading ? 'animate-spin' : ''} ${countdown > 0 ? '' : 'hover:rotate-180 transition-transform duration-500'}`} />
+                                    {countdown > 0 ? `Resend in ${countdown}s` : `Send code again`}
+                                </button>
+                                <span className="text-slate-200">|</span>
+                                <button
+                                    onClick={() => {
+                                        setInternalStep(1);
+                                        onStepChange(1);
+                                    }}
+                                    className="text-sm font-bold text-slate-500 hover:text-slate-800"
+                                >
+                                    Change number
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             ) : (
-                <div className="space-y-6 max-w-sm mx-auto">
-                    <PersonnalizedInputField
-                        label={t('auth.verificationCode', 'Verification Code')}
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                        placeholder="123456"
-                        maxLength={6}
-                        required
-                        className="text-center text-2xl tracking-[0.5em] font-bold"
-                    />
+                <div className="animate-in fade-in zoom-in-95 duration-500 max-w-md mx-auto">
+                    <header className="text-center mb-10">
+                        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <FiCheck className="w-8 h-8" />
+                        </div>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Phone Verified</h2>
+                        <p className="text-slate-500 text-base mt-2">Your phone number {phonePrefix} {phoneNumber} has been successfully verified.</p>
+                    </header>
 
-                    <div className="flex flex-col gap-3">
-                        <Button
-                            variant="primary"
-                            onClick={handleVerifyCode}
-                            disabled={isLoading || verificationCode.length < 6}
-                            className="w-full flex items-center justify-center gap-2"
-                            style={{ backgroundColor: 'var(--color-logo-2)' }}
-                        >
-                            {isLoading ? <FiLoader className="animate-spin" /> : <FiCheck />}
-                            {t('auth.signup.verify', 'Verify & Continue')}
-                        </Button>
-
-                        <div className="flex justify-between items-center text-xs">
-                            <button
-                                variant="ghost"
-                                onClick={() => setStep(1)}
-                                className="text-muted-foreground hover:text-foreground underline"
-                                disabled={isLoading}
-                            >
-                                {t('auth.signup.changeNumber', 'Change number')}
-                            </button>
-
-                            <button
-                                onClick={handleSendCode}
-                                disabled={isLoading || countdown > 0}
-                                className={`flex items-center gap-1 ${countdown > 0 ? 'text-muted-foreground cursor-not-allowed' : 'text-primary hover:underline'}`}
-                            >
-                                <FiRefreshCw className={isLoading ? 'animate-spin' : ''} />
-                                {countdown > 0
-                                    ? `${t('auth.signup.resendIn', 'Resend in')} ${countdown}s`
-                                    : t('auth.signup.resendCode', 'Resend code')}
-                            </button>
+                    <div className="bg-green-50 p-8 rounded-3xl border border-green-200 shadow-inner text-center">
+                        <div className="flex items-center justify-center gap-3 text-green-700">
+                            <FiCheck className="w-6 h-6" />
+                            <span className="text-lg font-bold">Verification Complete</span>
                         </div>
                     </div>
                 </div>
             )}
         </div>
     );
-};
+});
 
 PhoneVerificationStep.propTypes = {
     onComplete: PropTypes.func.isRequired,
-    onBack: PropTypes.func.isRequired,
+    onStepChange: PropTypes.func.isRequired,
+    onValidationChange: PropTypes.func.isRequired,
     initialPhoneNumber: PropTypes.string,
     initialPhonePrefix: PropTypes.string,
 };
+
+PhoneVerificationStep.displayName = 'PhoneVerificationStep';
 
 export default PhoneVerificationStep;

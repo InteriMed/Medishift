@@ -156,7 +156,7 @@ const ColorPicker = ({
             left: `${popupPosition.left}px`,
             maxHeight: '90vh',
             overflowY: 'auto',
-            zIndex: 'var(--z-index-popup, 11000)'
+            zIndex: 'var(--z-index-popup-above-tutorial, 200000)'
           }}
           onClick={(e) => e.stopPropagation()}
         >

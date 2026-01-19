@@ -32,7 +32,7 @@ const healthRegistryAPI = onCall(async (request) => {
       nationalityId: null,
       permissionCantonId: null,
       privateLawCetTitleKindIds: null,
-      professionId: 2,
+      professionId: null,
       professionalPracticeLicenseId: null,
       street: null,
       zip: null
@@ -214,12 +214,12 @@ const uidAPI = onCall(async (request) => {
   try {
     const uidFormatted = uid.trim().toUpperCase();
     const detailUrl = `https://www.uid.admin.ch/Detail.aspx?uid_id=${encodeURIComponent(uidFormatted)}`;
-    
+
     logger.info('Fetching UID data from:', detailUrl);
-    
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
-    
+
     let response;
     try {
       response = await fetch(detailUrl, {
@@ -248,17 +248,17 @@ const uidAPI = onCall(async (request) => {
     }
 
     const html = await response.text();
-    
+
     if (!html || html.length === 0) {
       throw new Error('Empty response from UID registry');
     }
-    
+
     logger.info('HTML received, length:', html.length);
-    
+
     if (html.includes('Error') && html.includes('unbekannt')) {
       throw new Error('UID not found or invalid');
     }
-    
+
     const extractUIDData = (htmlContent) => {
       const data = {
         uid: uidFormatted,
@@ -418,7 +418,7 @@ const uidAPI = onCall(async (request) => {
     };
 
     const extractedData = extractUIDData(html);
-    
+
     logger.info('Extracted data:', JSON.stringify(extractedData, null, 2));
 
     return {
@@ -430,9 +430,9 @@ const uidAPI = onCall(async (request) => {
     logger.error('Error stack:', error.stack);
     logger.error('Error message:', error.message);
     logger.error('Error name:', error.name);
-    
+
     const errorMessage = error.message || error.toString() || 'Failed to query UID registry';
-    
+
     return {
       success: false,
       error: `UID API Error: ${errorMessage}`,

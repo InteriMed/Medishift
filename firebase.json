@@ -14,9 +14,7 @@
     "rules": "storage.rules"
   },
   "database": {
-    "medishift": {
-      "rules": "database.rules.json"
-    }
+    "rules": "database.rules.json"
   },
   "emulators": {
     "auth": {

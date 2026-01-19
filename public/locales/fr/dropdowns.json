@@ -33,6 +33,19 @@
     "ZG": "Zug",
     "ZH": "Zurich"
   },
+  "phonePrefixes": {
+    "+41": "Suisse (+41)",
+    "+49": "Allemagne (+49)",
+    "+33": "France (+33)",
+    "+39": "Italie (+39)",
+    "+43": "Autriche (+43)",
+    "+423": "Liechtenstein (+423)",
+    "+352": "Luxembourg (+352)",
+    "+32": "Belgique (+32)",
+    "+31": "Pays-Bas (+31)",
+    "+44": "Royaume-Uni (+44)",
+    "+1": "États-Unis/Canada (+1)"
+  },
   "nationality": {
     "swiss": "Swiss",
     "german": "German",

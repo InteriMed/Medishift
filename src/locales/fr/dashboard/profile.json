@@ -37,7 +37,6 @@
     "profileSaved": "Profile saved successfully!",
     "unsavedChangesWarningNavigate": "You have unsaved changes. Would you like to save before switching tabs?"
   },
-
   "profile": {
     "title": "Profile Settings",
     "subtitle": "Manage your personal and professional information",
@@ -364,7 +363,9 @@
     "uploadReference": "Upload Reference Letter",
     "other": "Other Supporting Documents",
     "otherDescription": "Upload any other relevant documents to support your profile.",
-    "uploadOther": "Upload Other Document"
+    "uploadOther": "Upload Other Document",
+    "fillProfile": "Remplir le profil",
+    "autoFillDescription": "Nous avons extrait des informations de votre document. Cela remplira les champs vides de votre profil (Détails personnels, Parcours professionnel, etc.). Les données existantes ne seront PAS écrasées. Voulez-vous continuer ?"
   },
   "onboarding": {
     "title": "Onboarding",
@@ -380,4 +381,4 @@
     "previousSection": "Previous Section"
   },
   "userRole": "Healthcare Professional"
-} 
+}
