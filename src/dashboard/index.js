@@ -49,7 +49,6 @@ const Dashboard = () => {
   const userData = user ? {
     ...user,
     ...userProfile,
-    // Ensure common fields are accessible
     uid: user.uid,
     firebase_uid: user.uid,
     userId: user.uid,
@@ -62,6 +61,11 @@ const Dashboard = () => {
   const isPersonalWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.PERSONAL;
   const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
   const isAdminWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN;
+
+  // Check if we're waiting for admin workspace to be set from URL
+  const urlParams = new URLSearchParams(location.search);
+  const requestedWorkspace = urlParams.get('workspace');
+  const isWaitingForAdminWorkspace = requestedWorkspace === 'admin' && !selectedWorkspace;
 
   return (
     <SidebarProvider>
@@ -113,6 +117,8 @@ const Dashboard = () => {
                       <AdminRoute>
                         <AdminLayout />
                       </AdminRoute>
+                    ) : isWaitingForAdminWorkspace ? (
+                      <LoadingSpinner />
                     ) : (
                       <WorkspaceAwareNavigate to="/dashboard/overview" />
                     )

@@ -141,10 +141,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   const isProfessional = user?.role === 'professional';
   const isFacility = user?.role === 'facility' || user?.role === 'company';
   const hasFacilityMemberships = user?.facilityMemberships && Array.isArray(user.facilityMemberships) && user.facilityMemberships.length > 0;
-  const hasWorkspaces = workspaces && Array.isArray(workspaces) && workspaces.length > 0;
-  const forceShowWorkspaceSelector = isFacility; // Always show for facilities to allow adding profiles
 
-  const shouldShowWorkspaceSelector = !isLoading && isTutorialReady && !showFirstTimeModal && (isProfessional || isFacility || hasFacilityMemberships || hasWorkspaces || forceShowWorkspaceSelector);
+  const shouldShowWorkspaceSelector = !isLoading && isTutorialReady && !showFirstTimeModal;
 
   const getHeaderColor = () => {
     if (selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN) {
@@ -248,7 +246,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   return (
     <header
       className={cn(
-        "h-20 border-b border-transparent w-full",
+        "min-h-16 border-b border-transparent w-full",
         "flex items-center px-4 sm:px-6 fixed top-0 left-0 right-0 transition-all duration-300",
         "shadow-sm"
       )}
@@ -298,8 +296,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         )}
       </div>
 
-      {/* Center: Page Title & Workspace Selector */}
-      <div className="flex-1 flex items-center justify-center min-w-0 px-4">
+      {/* Left-Center: Page Title & Workspace Selector */}
+      <div className="flex-1 flex items-center justify-start min-w-0 px-4 ml-4 gap-6">
         {/* Page Icon & Title */}
         {Icon && (
           <div key={`${location.pathname}-${i18n.language}`} className="flex items-center gap-2 flex-shrink-0">
@@ -310,9 +308,9 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           </div>
         )}
         
-        {/* Workspace Selector (below title on smaller screens) */}
+        {/* Workspace Selector */}
         {!isLoading && shouldShowWorkspaceSelector && (
-          <div className="ml-4">
+          <div>
             <HeaderWorkspaceSelector
               workspaces={sortedWorkspaces}
               selectedWorkspace={selectedWorkspace}
@@ -463,6 +461,24 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         >
           <FiHelpCircle className="h-5 w-5" />
         </button>
+
+        {/* Language Selector */}
+        <div className="flex items-center gap-0.5 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-sm p-0.5" style={{ height: 'var(--boxed-inputfield-height)' }}>
+          {['en', 'fr', 'de'].map((lang) => (
+            <button
+              key={lang}
+              onClick={() => i18n.changeLanguage(lang)}
+              className={cn(
+                "h-full px-2.5 rounded-lg text-xs font-semibold uppercase transition-all",
+                i18n.language === lang || (i18n.language?.startsWith(lang))
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-white/80 hover:text-white hover:bg-white/10"
+              )}
+            >
+              {lang}
+            </button>
+          ))}
+        </div>
 
         {/* Profile */}
         <div className="relative" ref={profileMenuRef}>

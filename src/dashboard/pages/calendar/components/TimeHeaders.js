@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { getMultipleWeeks, getMultipleDays, getShortDays, isSameDay } from '../utils/dateHelpers';
 
-const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, handleDayClick, scrollContainerRef, numWeeks = 7, numDays = 30 }) => {
+const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, handleDayClick, scrollContainerRef, numWeeks = 7, numDays = 30, setView }) => {
   const { t, i18n } = useTranslation();
   const today = new Date();
   const referenceDate = propReferenceDate || currentDate;
@@ -42,7 +42,6 @@ const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, hand
         return (
           <div
             key={index}
-            onClick={() => handleDayClick(date)}
             className="flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-muted/50 pb-2"
             style={{
               width: view === 'day' ? `${100 / allDays.length}%` : `${100 / allDays.length}%`,
@@ -51,16 +50,36 @@ const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, hand
               minHeight: '3rem'
             }}
           >
-            <div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider mb-1">
+            <div className="uppercase text-muted-foreground tracking-wider mb-1" style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
               {shortDays[dayIndex]}
             </div>
             <div
-              className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all ${isToday
+              onClick={() => {
+                const clickedDate = new Date(date);
+                clickedDate.setHours(0, 0, 0, 0);
+                const currDate = new Date(currentDate);
+                currDate.setHours(0, 0, 0, 0);
+                
+                const isSameDate = clickedDate.getTime() === currDate.getTime();
+                
+                if (isSameDate && view === 'day' && setView) {
+                  setView('week');
+                } else if (!isSameDate) {
+                  handleDayClick(date);
+                  if (setView) {
+                    setView('day');
+                  }
+                } else if (isSameDate && view === 'week' && setView) {
+                  setView('day');
+                }
+              }}
+              className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${isToday
                 ? 'bg-primary text-primary-foreground'
                 : isCurrentDay
                   ? 'bg-muted text-foreground'
                   : 'text-foreground'
                 }`}
+              style={{ fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)' }}
             >
               {date.getDate()}
             </div>

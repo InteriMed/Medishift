@@ -22,10 +22,10 @@ const ROLE_PERMISSIONS = {
   [ADMIN_ROLES.SUPPORT]: [PERMISSIONS.IMPERSONATE_USERS]
 };
 
-const hasPermission = (userRoles, permission) => {
-  if (!userRoles || !Array.isArray(userRoles)) return false;
-  const adminRoles = userRoles.filter(role => Object.values(ADMIN_ROLES).includes(role));
-  for (const role of adminRoles) {
+const hasPermission = (adminRoles, permission) => {
+  if (!adminRoles || !Array.isArray(adminRoles)) return false;
+  const validAdminRoles = adminRoles.filter(role => Object.values(ADMIN_ROLES).includes(role));
+  for (const role of validAdminRoles) {
     const rolePermissions = ROLE_PERMISSIONS[role] || [];
     if (rolePermissions.includes(permission)) {
       return true;
@@ -63,9 +63,9 @@ exports.startImpersonation = onCall({ database: 'medishift', cors: true }, async
   try {
     const db = admin.firestore();
 
-    const adminDoc = await db.collection('users').doc(adminId).get();
-    if (!adminDoc.exists) {
-      throw new HttpsError('not-found', 'Admin user not found');
+    const adminDoc = await db.collection('admins').doc(adminId).get();
+    if (!adminDoc.exists || adminDoc.data().isActive === false) {
+      throw new HttpsError('permission-denied', 'You do not have permission to impersonate users');
     }
 
     const adminData = adminDoc.data();

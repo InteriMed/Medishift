@@ -10,13 +10,15 @@ exports.disableUser = onCall({ cors: true, database: 'medishift' }, async (reque
         throw new HttpsError('unauthenticated', 'You must be signed in to disable users');
     }
 
-    // Check for admin role (assuming super_admin or admin role covers this)
     const callerId = request.auth.uid;
-    const callerDoc = await admin.firestore().collection('users').doc(callerId).get();
-    const callerData = callerDoc.data();
-    const isAdmin = (callerData?.roles || []).some(role => ['super_admin', 'ops_manager'].includes(role));
-
-    if (!isAdmin) {
+    const adminDoc = await admin.firestore().collection('admins').doc(callerId).get();
+    
+    if (!adminDoc.exists || adminDoc.data().isActive === false) {
+        throw new HttpsError('permission-denied', 'You do not have permission to disable users');
+    }
+    
+    const adminRoles = adminDoc.data().roles || [];
+    if (!adminRoles.includes('super_admin') && !adminRoles.includes('ops_manager')) {
         throw new HttpsError('permission-denied', 'You do not have permission to disable users');
     }
 

@@ -49,6 +49,29 @@ const ProfileHeader = ({
 
   const tabs = config?.tabs || [];
 
+  const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads', 'facilityCoreDetails', 'facilityLegalBilling', 'facilityDocuments'];
+
+  const getMaxHighlightableIndex = () => {
+    if (!maxAccessedProfileTab) return 0;
+    const maxIndex = tabOrder.indexOf(maxAccessedProfileTab);
+    if (maxIndex === -1) return 0;
+    const maxCompleted = isTabCompleted(profile, maxAccessedProfileTab, config);
+    return maxCompleted ? maxIndex + 1 : maxIndex;
+  };
+
+  const computedHighlightTabId = (() => {
+    const maxHighlightIdx = getMaxHighlightableIndex();
+    if (!highlightTabId) return null;
+    const highlightIdx = tabOrder.indexOf(highlightTabId);
+    if (highlightIdx === -1) return highlightTabId;
+    if (highlightIdx <= maxHighlightIdx) return highlightTabId;
+    const clampedTab = tabOrder[maxHighlightIdx];
+    if (clampedTab && !isTabCompleted(profile, clampedTab, config)) {
+      return clampedTab;
+    }
+    return null;
+  })();
+
   // Tabs that are locked for Team Access mode
   const lockedTabsForTeam = ['professionalBackground', 'billingInformation', 'documentUploads'];
 
@@ -68,9 +91,9 @@ const ProfileHeader = ({
       }
     }
 
-    // Check if tab is locked for team access mode (after tutorial) - only if accessMode is explicitly 'team' and tutorial is NOT active
-    if (accessMode === 'team' && !isTutorialActive && lockedTabsForTeam.includes(tabId)) {
-      console.log('[ProfileHeader] Tab locked for Team Access, showing AccessLevelChoicePopup:', tabId);
+    // Check if tab is locked for team/loading access mode (after tutorial) - only if accessMode is 'team' or 'loading' and tutorial is NOT active
+    if ((accessMode === 'team' || accessMode === 'loading') && !isTutorialActive && lockedTabsForTeam.includes(tabId)) {
+      console.log('[ProfileHeader] Tab locked for Team/Loading Access, showing AccessLevelChoicePopup:', tabId);
       setPendingTabId(tabId);
       setShowAccessLevelPopup(true);
       return;
@@ -138,7 +161,7 @@ const ProfileHeader = ({
 
   return (
     <div className={cn(
-      "w-full h-fit bg-card rounded-xl border border-border/60 transition-all duration-300 ease-in-out overflow-x-hidden",
+      "w-full h-fit bg-card rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out overflow-x-hidden",
       collapsed ? "p-2" : "p-4"
     )}>
       {onToggle && !isMobile && (
@@ -166,12 +189,12 @@ const ProfileHeader = ({
         </div>
       )}
 
-      <nav className={cn("flex flex-col", "gap-3")}>
+      <nav className={cn("flex flex-col overflow-y-auto max-h-[calc(100vh-280px)]", "gap-3")} style={{ scrollbarWidth: 'thin' }}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const isCompleted = isTabCompleted(profile, tab.id, config);
           const isAccessible = isTabAccessible(profile, tab.id, config);
-          const isHighlighted = highlightTabId === tab.id && !isCompleted;
+          const isHighlighted = computedHighlightTabId === tab.id && !isCompleted;
           const isLockedForTeam = accessMode === 'team' && lockedTabsForTeam.includes(tab.id);
 
           // For Team Access locked tabs, render as clickable but with lock icon

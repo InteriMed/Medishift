@@ -6,6 +6,7 @@ export const useProfileValidation = (formData, profileConfig, activeTab, isLoadi
     const { t } = useTranslation(['validation']);
     const [errors, setErrors] = useState({});
     const initialValidationRun = useRef(false);
+    const prevActiveTab = useRef(null);
 
     const validateCurrentTabData = useCallback((dataToValidate = null, tabId = null, silent = false) => {
         const data = dataToValidate || formData;
@@ -126,7 +127,17 @@ export const useProfileValidation = (formData, profileConfig, activeTab, isLoadi
     }, [isLoadingConfig, isLoadingData, profileConfig, formData, activeTab, validateCurrentTabData]);
 
     useEffect(() => {
+        if (!isLoadingConfig && !isLoadingData && profileConfig && formData && activeTab === 'professionalBackground') {
+            validateCurrentTabData(null, null, false);
+        }
+        prevActiveTab.current = activeTab;
+    }, [activeTab, isLoadingConfig, isLoadingData, profileConfig, formData, validateCurrentTabData]);
+
+    useEffect(() => {
         if (!isLoadingConfig && !isLoadingData && profileConfig && formData && activeTab && initialValidationRun.current) {
+            if (activeTab === 'professionalBackground') {
+                return;
+            }
             const timeoutId = setTimeout(() => {
                 setErrors({});
             }, 400);
@@ -136,7 +147,10 @@ export const useProfileValidation = (formData, profileConfig, activeTab, isLoadi
 
     useEffect(() => {
         if (!isLoadingConfig && !isLoadingData && profileConfig && formData && activeTab && initialValidationRun.current) {
-            // Validate silently to update internal state without showing errors
+            if (activeTab === 'professionalBackground') {
+                validateCurrentTabData(null, null, false);
+                return;
+            }
             const timeoutId = setTimeout(() => {
                 validateCurrentTabData(null, null, true);
             }, 300);

@@ -5,7 +5,7 @@ import { db } from '../../../../services/firebase';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import PropTypes from 'prop-types';
 import { cn } from '../../../../utils/cn';
-import { FiSend, FiUser, FiX } from 'react-icons/fi';
+import { FiSend, FiUser, FiX, FiCheck } from 'react-icons/fi';
 import formatMessageText from '../utils/formatMessageText';
 
 /**
@@ -242,7 +242,7 @@ const ConversationView = ({
     {conversation.photoURL && (
       <button
         onClick={() => setShowProfileImage(true)}
-        className="shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-border hover:border-primary/50 transition-colors cursor-pointer"
+        className="shrink-0 w-12 h-12 rounded-full overflow-hidden border-2 border-border hover:border-primary/50 transition-colors cursor-pointer"
       >
         <img
           src={conversation.photoURL}
@@ -252,8 +252,8 @@ const ConversationView = ({
       </button>
     )}
     {!conversation.photoURL && (
-      <div className="shrink-0 w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
-        <FiUser className="w-5 h-5 text-primary" />
+      <div className="shrink-0 w-12 h-12 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
+        <FiUser className="w-6 h-6 text-primary" />
       </div>
     )}
 
@@ -384,45 +384,64 @@ const ConversationView = ({
                         </div>
                       )}
 
-                      {/* Message content */}
-                      <div className={cn(
-                        "flex flex-col gap-1.5 max-w-[70%] message-bubble-animate",
-                        isCurrentUser ? "items-end" : "items-start"
-                      )} style={{ animationDelay: `${index * 0.05}s` }}>
-                        {/* Sender name for recipient messages */}
-                        {!isCurrentUser && !isSameSender && (
-                          <span className="text-xs font-medium text-muted-foreground px-1">
-                            {message.senderName || conversation.displayName || t('messages:status.unknownUser')}
-                          </span>
-                        )}
-
+                        {/* Message content */}
                         <div className={cn(
-                          "px-4 py-3 rounded-2xl shadow-sm",
-                          isCurrentUser
-                            ? "bg-primary text-primary-foreground rounded-br-sm"
-                            : "bg-muted/50 text-foreground border border-border/50 rounded-bl-sm"
-                        )}>
+                          "flex flex-col gap-1 max-w-[70%] message-bubble-animate",
+                          isCurrentUser ? "items-end" : "items-start"
+                        )} style={{ animationDelay: `${index * 0.05}s` }}>
+                          {/* Sender name for recipient messages */}
+                          {!isCurrentUser && !isSameSender && (
+                            <span className="text-xs font-medium text-muted-foreground px-1 mb-0.5">
+                              {message.senderName || conversation.displayName || t('messages:status.unknownUser')}
+                            </span>
+                          )}
+
                           <div className={cn(
-                            "text-sm leading-relaxed break-words message-text-animate",
-                            isCurrentUser ? "text-primary-foreground" : "text-foreground"
-                          )} style={{ margin: 0, animationDelay: `${index * 0.05 + 0.1}s` }}>
-                            {formatMessageText(message.text)}
+                            "px-4 py-2.5 shadow-sm relative group",
+                            isCurrentUser
+                              ? "bg-primary text-primary-foreground rounded-2xl rounded-tr-sm"
+                              : "bg-card text-card-foreground border border-border/50 rounded-2xl rounded-tl-sm"
+                          )}>
+                            <div className={cn(
+                              "text-sm leading-relaxed break-words message-text-animate whitespace-pre-wrap",
+                              isCurrentUser ? "text-primary-foreground" : "text-foreground"
+                            )} style={{ margin: 0, animationDelay: `${index * 0.05 + 0.1}s` }}>
+                              {formatMessageText(message.text)}
+                            </div>
+                            
+                            {/* Timestamp & Status inside bubble for better look */}
+                            <div className={cn(
+                              "flex items-center gap-1 mt-1 select-none",
+                              isCurrentUser ? "justify-end opacity-90" : "justify-end opacity-70"
+                            )}>
+                              <span className="text-[10px]">
+                                {message.timestamp?.toDate
+                                  ? new Date(message.timestamp.toDate()).toLocaleTimeString(undefined, {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })
+                                  : t('messages:status.sending')}
+                              </span>
+                              {isCurrentUser && (
+                                <span className="flex items-center">
+                                  {message.status === 'sent' && <FiCheck className="w-3 h-3" />}
+                                  {message.status === 'delivered' && (
+                                    <div className="flex">
+                                      <FiCheck className="w-3 h-3" />
+                                      <FiCheck className="w-3 h-3 -ml-1.5" />
+                                    </div>
+                                  )}
+                                  {message.status === 'read' && (
+                                    <div className="flex text-blue-200">
+                                      <FiCheck className="w-3 h-3" />
+                                      <FiCheck className="w-3 h-3 -ml-1.5" />
+                                    </div>
+                                  )}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-
-                        {/* Timestamp */}
-                        <span className={cn(
-                          "text-xs text-muted-foreground px-1",
-                          isCurrentUser ? "text-right" : "text-left"
-                        )}>
-                          {message.timestamp?.toDate
-                            ? new Date(message.timestamp.toDate()).toLocaleTimeString(undefined, {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })
-                            : t('messages:status.sending')}
-                        </span>
-                      </div>
 
                       {/* Avatar for current user messages - Right side */}
                       {isCurrentUser && (

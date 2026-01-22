@@ -193,14 +193,12 @@ export const DashboardProvider = ({ children }) => {
     return null; // Profile is complete
   };
 
-  // New function to refresh user data from Firestore
   const refreshUserData = async () => {
     if (!currentUser) return;
 
     try {
       const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
 
-      // Determine profile collection
       const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? 'facilityProfiles' : 'professionalProfiles';
       const profileDoc = await getDoc(doc(db, collectionName, currentUser.uid));
 
@@ -208,8 +206,21 @@ export const DashboardProvider = ({ children }) => {
         const userData = userDoc.data();
         const profileData = profileDoc.exists() ? profileDoc.data() : {};
 
-        // Combine data, prioritizing profileData for tutorial and profile completion
-        const combinedData = { ...userData, ...profileData, uid: currentUser.uid };
+        let adminData = null;
+        try {
+          const adminDoc = await getDoc(doc(db, 'admins', currentUser.uid));
+          if (adminDoc.exists()) {
+            const data = adminDoc.data();
+            if (data.isActive !== false) {
+              adminData = data;
+              adminDataRef.current = data;
+            }
+          }
+        } catch (adminErr) {
+          console.debug('[DashboardContext] Admin check skipped in refresh');
+        }
+
+        const combinedData = { ...userData, ...profileData, uid: currentUser.uid, adminData };
 
         const isProfileComplete = combinedData.hasOwnProperty('isProfessionalProfileComplete')
           ? combinedData.isProfessionalProfileComplete
@@ -309,6 +320,23 @@ export const DashboardProvider = ({ children }) => {
           const facDocData = facDoc.exists() ? facDoc.data() : {};
           const profileData = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? facDocData : profDocData;
 
+          let adminData = null;
+          try {
+            const adminDoc = await getDoc(doc(db, 'admins', currentUser.uid));
+            if (adminDoc.exists()) {
+              const data = adminDoc.data();
+              if (data.isActive !== false) {
+                adminData = data;
+                adminDataRef.current = data;
+                console.log('[DashboardContext] Admin data loaded for user:', currentUser.uid);
+              }
+            } else {
+              console.log('[DashboardContext] No admin document found for user:', currentUser.uid);
+            }
+          } catch (adminErr) {
+            console.warn('[DashboardContext] Failed to fetch admin document:', adminErr.code || adminErr.message);
+          }
+
           const isProfileComplete = profileData.hasOwnProperty('isProfessionalProfileComplete')
             ? profileData.isProfessionalProfileComplete
             : checkProfileCompleteness(profileData);
@@ -330,7 +358,8 @@ export const DashboardProvider = ({ children }) => {
             ...profileData,
             uid: currentUser.uid,
             hasProfessionalProfile: profDoc.exists(),
-            hasFacilityProfile: facDoc.exists()
+            hasFacilityProfile: facDoc.exists(),
+            adminData: adminData
           };
 
           fetchedUser = userWithId;
@@ -374,7 +403,8 @@ export const DashboardProvider = ({ children }) => {
           setUser(prev => ({
             ...userWithId,
             hasProfessionalProfile: prev?.hasProfessionalProfile,
-            hasFacilityProfile: prev?.hasFacilityProfile
+            hasFacilityProfile: prev?.hasFacilityProfile,
+            adminData: prev?.adminData || adminDataRef.current
           }));
           setUserProfile(userWithId);
         }
@@ -399,7 +429,11 @@ export const DashboardProvider = ({ children }) => {
             setCookieValues(currentUser.uid, isProfileComplete, isTutorialPassed);
           }
 
-          setUser(prev => ({ ...prev, ...profileData }));
+          setUser(prev => ({ 
+            ...prev, 
+            ...profileData,
+            adminData: prev?.adminData || adminDataRef.current
+          }));
         }
       }, (error) => {
         console.debug("Profile document listener error (likely missing doc yet):", error.message);
@@ -511,25 +545,37 @@ export const DashboardProvider = ({ children }) => {
       setSelectedWorkspace(workspace);
       setWorkspaceCookie(workspace);
 
-      // Simply update the URL with the new workspace ID while preserving the current path
-      // This fulfills the user request to remove redirecting logic to default routes
-      const currentPath = location.pathname;
-      const searchParams = new URLSearchParams(location.search);
-      searchParams.set('workspace', workspace.id);
-
-      const targetUrl = `${currentPath}?${searchParams.toString()}${location.hash}`;
-      console.log('[DashboardContext] switchWorkspace: Updating URL workspace parameter:', targetUrl);
-
-      navigate(targetUrl, { replace: true });
-
-      // Only reload if we were previously in a different workspace type to clean up state
-      // but without changing the user's current route
+      // Handle workspace navigation based on type changes
       const typeChanged = selectedWorkspace && selectedWorkspace.type !== workspace.type;
+      
       if (typeChanged) {
-        console.log('[DashboardContext] Workspace type changed, performing safe reload');
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
+        // If switching workspace types, navigate to appropriate default page and reload
+        console.log('[DashboardContext] Workspace type changed, navigating to default page');
+        
+        const searchParams = new URLSearchParams();
+        searchParams.set('workspace', workspace.id);
+        
+        let targetUrl;
+        if (workspace.type === WORKSPACE_TYPES.ADMIN) {
+          targetUrl = `/dashboard/admin/portal?${searchParams.toString()}`;
+        } else if (workspace.type === WORKSPACE_TYPES.TEAM) {
+          targetUrl = `/dashboard/overview?${searchParams.toString()}`;
+        } else if (workspace.type === WORKSPACE_TYPES.PERSONAL) {
+          targetUrl = `/dashboard/overview?${searchParams.toString()}`;
+        } else {
+          targetUrl = `/dashboard/overview?${searchParams.toString()}`;
+        }
+        
+        // Use window.location to ensure full reload with new workspace context
+        window.location.href = targetUrl;
+      } else {
+        // Same workspace type, just update the URL parameter
+        const currentPath = location.pathname;
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.set('workspace', workspace.id);
+        const targetUrl = `${currentPath}?${searchParams.toString()}${location.hash}`;
+        console.log('[DashboardContext] switchWorkspace: Updating URL workspace parameter:', targetUrl);
+        navigate(targetUrl, { replace: true });
       }
 
     } catch (error) {
@@ -612,6 +658,9 @@ export const DashboardProvider = ({ children }) => {
     window.location.href = '/en/contact';
   }, []);
 
+  // Store adminData in a ref to prevent it from being lost by onSnapshot updates
+  const adminDataRef = useRef(null);
+
   // Initialize workspaces and selected workspace
   // Use a ref to track the last processed user to prevent infinite loops
   // The user object changes on every Firestore update (including tutorial steps),
@@ -624,7 +673,8 @@ export const DashboardProvider = ({ children }) => {
       path: location.pathname,
       search: location.search,
       user: user?.uid,
-      selectedWorkspace: selectedWorkspace?.id
+      selectedWorkspace: selectedWorkspace?.id,
+      hasAdminData: !!user?.adminData || !!adminDataRef.current
     });
 
     // Skip if no user
@@ -632,6 +682,19 @@ export const DashboardProvider = ({ children }) => {
       console.log('[DashboardContext] No user, returning early');
       lastProcessedUserRef.current = null;
       return;
+    }
+
+    // If URL requests admin workspace but adminData hasn't loaded yet, wait
+    const urlParamsEarly = new URLSearchParams(location.search);
+    const requestedWorkspace = urlParamsEarly.get('workspace');
+    if (requestedWorkspace === 'admin' && !user.adminData && !adminDataRef.current) {
+      console.log('[DashboardContext] Admin workspace requested but adminData not loaded yet, waiting...');
+      return;
+    }
+
+    // Ensure user has adminData from ref if not already present
+    if (!user.adminData && adminDataRef.current) {
+      user.adminData = adminDataRef.current;
     }
 
     // AGGRESSIVE BYPASS: If on profile path with workspace param, just set workspace and return
@@ -675,12 +738,11 @@ export const DashboardProvider = ({ children }) => {
       }
     }
 
-    // Create a hash/string of relevant fields that should trigger workspace re-initialization
-    // We strictly ignore 'updatedAt', 'tutorialProgress', etc.
     const currentUserHash = JSON.stringify({
       uid: user.uid,
       role: user.role,
-      roles: user.roles, // Ensure we catch role changes
+      roles: user.roles,
+      adminData: user.adminData ? { roles: user.adminData.roles, isActive: user.adminData.isActive } : null,
       facilityMemberships: user.facilityMemberships?.map(m => m.facilityProfileId).sort()
     });
 

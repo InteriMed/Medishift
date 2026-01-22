@@ -3,6 +3,7 @@ import Sidebar from '../Sidebar/Sidebar';
 import Header from '../Header/Header';
 import { useLocation } from 'react-router-dom';
 import { useTutorial } from '../../contexts/TutorialContext';
+import './DashboardLayout.css';
 
 /**
  * DashboardLayout Component
@@ -32,7 +33,6 @@ const DashboardLayout = ({ children }) => {
       height: '100vh',
       width: '100vw',
       overflow: 'hidden',
-      backgroundColor: 'var(--dashboard-bg, #f8f9fa)',
       position: window.innerWidth <= 1110 ? 'relative' : undefined,
     },
     dashboardContent: {
@@ -152,15 +152,8 @@ const DashboardLayout = ({ children }) => {
   };
 
   return (
-    <>
-      <style>{`
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
-      <div style={styles.dashboardContainer}>
+    <div className="dashboard-layout-wrapper">
+      <div className="dashboard-layout-content" style={styles.dashboardContainer}>
         <Header
           sidebarDisabled={isSidebarDisabled}
         />
@@ -190,7 +183,7 @@ const DashboardLayout = ({ children }) => {
         </div>
       </div>
     </div>
-    </>
+    </div>
   );
 };
 

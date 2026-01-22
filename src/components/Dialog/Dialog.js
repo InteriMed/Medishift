@@ -16,7 +16,8 @@ const Dialog = ({
   blurred_background = true,
   position = null,
   showCloseButton = true,
-  centerTitle = false
+  centerTitle = false,
+  titleIcon = null
 }) => {
   // Initialize isVisible based on isOpen for immediate display (especially for tooltips)
   const [isVisible, setIsVisible] = useState(isOpen && !!position);
@@ -149,8 +150,10 @@ const Dialog = ({
                   {title && (
                     <h2 className={cn(
                       position ? "text-lg" : "text-2xl",
-                      "font-bold text-slate-900 mb-2 tracking-tight"
+                      "font-bold text-slate-900 mb-2 tracking-tight",
+                      "flex items-center gap-2"
                     )} style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
+                      {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
                       {title}
                     </h2>
                   )}
@@ -162,8 +165,10 @@ const Dialog = ({
                   {title && (
                     <h2 className={cn(
                       position ? "text-lg" : "text-2xl",
-                      "font-bold text-slate-900 mb-2 tracking-tight"
+                      "font-bold text-slate-900 mb-2 tracking-tight",
+                      "flex items-center justify-center gap-2"
                     )} style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
+                      {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
                       {title}
                     </h2>
                   )}
@@ -192,7 +197,7 @@ const Dialog = ({
             </div>
 
             {actions && (
-              <div className={cn("flex justify-end gap-3", position ? "mt-6" : "mt-8")}>
+              <div className={cn("flex justify-end", position ? "mt-6 gap-2" : "mt-8 gap-3")}>
                 {actions}
               </div>
             )}
@@ -243,7 +248,8 @@ const Dialog = ({
               <div className="flex-1">
                 {getHeaderIcon()}
                 {title && (
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight" style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight flex items-center gap-2" style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
+                    {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
                     {title}
                   </h2>
                 )}
@@ -253,7 +259,8 @@ const Dialog = ({
               <div className="w-full text-center relative">
                 {getHeaderIcon()}
                 {title && (
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight" style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight flex items-center justify-center gap-2" style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
+                    {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
                     {title}
                   </h2>
                 )}

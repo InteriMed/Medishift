@@ -28,13 +28,22 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return isAuthenticated() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             (
-               (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
-                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['super_admin', 'ops_manager', 'finance', 'recruiter', 'support', 'external_payroll'])) ||
-               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
-             );
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         (
+           (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['super_admin', 'ops_manager', 'finance', 'recruiter', 'support', 'external_payroll'])) ||
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+         )) ||
+        (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive == true)
+      );
+    }
+    
+    // Admins collection
+    match /admins/{adminId} {
+      allow read: if isAuthenticated() && (request.auth.uid == adminId || isAdmin());
+      allow write: if false;
     }
     
     // Workers collection

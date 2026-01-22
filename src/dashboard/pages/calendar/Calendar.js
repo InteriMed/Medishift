@@ -40,6 +40,8 @@ const Calendar = ({ userData }) => {
   const headerScrollRef = useRef(null);
 
   const [calendarMode, setCalendarMode] = useState('calendar');
+  const [showMiniCalendar, setShowMiniCalendar] = useState(true);
+  const [showUpcomingEvents, setShowUpcomingEvents] = useState(true);
 
   const isTeamWorkspace = selectedWorkspace?.type === 'team';
   
@@ -639,7 +641,7 @@ const Calendar = ({ userData }) => {
   return (
     <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
       {/* 1. Top Bar */}
-      <div className="shrink-0 w-full z-20 bg-gradient-to-r from-card/95 via-card/80 to-transparent backdrop-blur-sm border-b border-border/60 shadow-sm flex items-center justify-between gap-4 px-6 sm:px-8 py-5 min-h-[84px]">
+      <div className="shrink-0 w-full z-20 bg-white flex items-center justify-between gap-4 px-6 sm:px-8 py-3 min-h-16">
         {/* Tutorial Mock: Calendar View Options */}
         {isTutorialActive && activeTutorial === 'calendar' && (
           <div className="calendar-view-options flex gap-2 mr-4">
@@ -666,13 +668,17 @@ const Calendar = ({ userData }) => {
           setCalendarMode={setCalendarMode}
           isTeamWorkspace={isTeamWorkspace}
           handleCreateEventClick={() => handleCreateEventClick(currentDate)}
+          showMiniCalendar={showMiniCalendar}
+          setShowMiniCalendar={setShowMiniCalendar}
+          showUpcomingEvents={showUpcomingEvents}
+          setShowUpcomingEvents={setShowUpcomingEvents}
         />
       </div>
 
       {/* 2. Main Split Content */}
       <div className={cn(
-        "flex-1 flex overflow-hidden relative",
-        calendarMode === 'team' ? "p-0" : "p-4 gap-4"
+        "flex-1 flex relative min-h-0",
+        calendarMode === 'team' ? "p-0 overflow-hidden" : "p-6 gap-6"
       )}>
         {calendarMode === 'team' && isTeamWorkspace ? (
           <div className="w-full h-full">
@@ -694,31 +700,36 @@ const Calendar = ({ userData }) => {
           <>
             {/* Left: Sidebar */}
             <div className={cn(
-              "dashboard-sidebar-container",
+              "dashboard-sidebar-container min-h-0",
               isMainSidebarCollapsed ? "flex" : (isSidebarCollapsed ? "hidden lg:flex w-0 overflow-hidden" : "flex")
             )}>
-              <CalendarSidebar
-                currentDate={currentDate}
-                setCurrentDate={setCurrentDate}
-                handleUpcomingEventClick={handleUpcomingEventClick}
-                events={filteredEvents}
-                isSidebarCollapsed={isSidebarCollapsed}
-                handleCreateEventClick={() => handleCreateEventClick(currentDate)}
-                handleDayClick={handleDayClick}
-                showHeaderDateDropdown={showHeaderDateDropdown}
-                setShowHeaderDateDropdown={setShowHeaderDateDropdown}
-                handleHeaderDateClick={handleHeaderDateClick}
-                dropdownPosition={dropdownPosition}
-                toggleSidebar={toggleSidebar}
-                view={view}
-                visibleWeekStart={visibleWeekStart}
-                visibleWeekEnd={visibleWeekEnd}
-              />
+              <div className="dashboard-sidebar-inner p-0 overflow-hidden !bg-transparent !border-0 !shadow-none">
+                <CalendarSidebar
+                  currentDate={currentDate}
+                  setCurrentDate={setCurrentDate}
+                  handleUpcomingEventClick={handleUpcomingEventClick}
+                  events={filteredEvents}
+                  isSidebarCollapsed={isSidebarCollapsed}
+                  handleCreateEventClick={() => handleCreateEventClick(currentDate)}
+                  handleDayClick={handleDayClick}
+                  showHeaderDateDropdown={showHeaderDateDropdown}
+                  setShowHeaderDateDropdown={setShowHeaderDateDropdown}
+                  handleHeaderDateClick={handleHeaderDateClick}
+                  dropdownPosition={dropdownPosition}
+                  toggleSidebar={toggleSidebar}
+                  view={view}
+                  visibleWeekStart={visibleWeekStart}
+                  visibleWeekEnd={visibleWeekEnd}
+                  showMiniCalendar={showMiniCalendar}
+                  showUpcomingEvents={showUpcomingEvents}
+                />
+              </div>
             </div>
 
             {/* Right: Main Calendar Grid */}
-            <div className="flex-1 flex flex-col relative min-w-0 transition-all duration-300 bg-card border border-border/60 rounded-xl overflow-hidden">
-              <div className="flex-1 overflow-hidden relative calendar-grid flex flex-col">
+            <div className="dashboard-main-content overflow-hidden min-h-0">
+              <div className="flex-1 flex flex-col relative min-w-0 min-h-0 transition-all duration-300 bg-card backdrop-blur-sm rounded-2xl overflow-hidden h-full">
+                <div className="flex-1 overflow-hidden relative calendar-grid flex flex-col">
             {/* Time Headers - scrollable horizontally (no scrollbar) */}
             <div className="flex flex-shrink-0" style={{ margin: 0, padding: 0 }}>
               {/* Time column header - above day headers */}
@@ -727,8 +738,6 @@ const Calendar = ({ userData }) => {
                 style={{
                   width: '4rem',
                   minHeight: '3rem',
-                  borderLeft: '1px solid hsl(var(--border))',
-                  borderRight: '1px solid hsl(var(--border))',
                   boxSizing: 'border-box',
                   margin: 0,
                   padding: 0
@@ -755,6 +764,7 @@ const Calendar = ({ userData }) => {
                   scrollContainerRef={headerScrollRef}
                   numWeeks={numWeeks}
                   numDays={numDays}
+                  setView={setView}
                 />
               </div>
             </div>
@@ -772,8 +782,6 @@ const Calendar = ({ userData }) => {
                     left: 0,
                     top: 0,
                     alignSelf: 'flex-start',
-                    borderLeft: '1px solid hsl(var(--border))',
-                    borderRight: '1px solid hsl(var(--border))',
                     boxSizing: 'border-box',
                     margin: 0,
                     padding: 0
@@ -829,6 +837,7 @@ const Calendar = ({ userData }) => {
             </div>
             </div>
             </div>
+          </div>
           </>
         )}
       </div>

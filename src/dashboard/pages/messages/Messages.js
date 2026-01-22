@@ -188,7 +188,7 @@ const Messages = () => {
       {
         id: 'tutorial-doctor-smith',
         displayName: t('messages:tutorial.doctorName'),
-        photoURL: null,
+        photoURL: 'https://ui-avatars.com/api/?name=Doctor+Smith&background=0D8ABC&color=fff',
         lastMessage: { text: t('messages:tutorial.doctorMessage') },
         lastMessageTimestamp: { toDate: () => twoHoursAgo },
         createdAt: { toDate: () => new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) },
@@ -203,7 +203,7 @@ const Messages = () => {
       {
         id: 'tutorial-lausanne-clinic',
         displayName: t('messages:tutorial.hospitalName'),
-        photoURL: null,
+        photoURL: 'https://ui-avatars.com/api/?name=Lausanne+Clinic&background=28a745&color=fff',
         lastMessage: { text: t('messages:tutorial.hospitalMessage') },
         lastMessageTimestamp: { toDate: () => oneDayAgo },
         createdAt: { toDate: () => new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000) },
@@ -334,7 +334,7 @@ const Messages = () => {
     )} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
       {/* Page Top Bar - Search and Filters Only (Title in main header) */}
       <div className={cn(
-        "shrink-0 w-full z-20 bg-gradient-to-r from-card/95 via-card/80 to-transparent backdrop-blur-sm border-b border-border/60 shadow-sm min-h-[84px] py-5",
+        "shrink-0 w-full z-20 bg-white border-b border-border/60 shadow-sm min-h-16 py-3",
         isMobile ? "px-4" : "px-6 sm:px-8"
       )}>
         {isMobile ? (
@@ -439,8 +439,8 @@ const Messages = () => {
 
             {/* Right: Unread Count */}
             {unreadCount > 0 && (
-              <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 bg-destructive/10 rounded-lg border border-destructive/20">
-                <span className="text-xs font-medium text-muted-foreground m-0">{t('messages:unread')}</span>
+              <div className="shrink-0 flex items-center gap-2 px-4 bg-destructive/10 rounded-xl border-2 border-destructive/20" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                <span className="text-sm font-medium text-muted-foreground m-0">{t('messages:unread')}</span>
                 <span className="text-sm font-bold text-destructive m-0">{unreadCount}</span>
               </div>
             )}
@@ -450,8 +450,8 @@ const Messages = () => {
 
       {/* 2. Main Split Content */}
       <div className={cn(
-        "flex-1 flex overflow-hidden min-h-0 relative",
-        isMobile ? "p-0" : "p-4 gap-4"
+        "flex-1 flex min-h-0 relative",
+        isMobile ? "p-0 overflow-hidden" : "p-6 gap-6 overflow-visible"
       )}>
         {/* Left: Conversations List Sidebar (No search/filters, just list) */}
         <div className={cn(
@@ -470,19 +470,19 @@ const Messages = () => {
           )}>
             {/* Conversations List */}
             {filteredConversations.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 ring-4 ring-background">
                   <FiMessageSquare className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
                 </div>
-                <p className="text-sm font-medium" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', margin: 0 }}>
+                <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
                   {searchTerm || unreadOnly || dateRange ? t('messages:empty.noMessagesFound') : t('messages:empty.noConversationsYet')}
-                </p>
-                <p className="text-xs" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', margin: 0 }}>
+                </h2>
+                <p className="mb-6" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
                   {searchTerm || unreadOnly || dateRange ? t('messages:empty.adjustFilters') : t('messages:empty.startConversation')}
                 </p>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+              <div className="flex-1 overflow-y-auto">
                 <ConversationsList
                   conversations={filteredConversations}
                   selectedConversationId={selectedConversation?.id}
@@ -500,11 +500,11 @@ const Messages = () => {
           "dashboard-main-content",
           isMobile && selectedConversation ? "translate-x-0 dashboard-main-content-mobile" : "dashboard-main-content-desktop"
         )}>
-          {selectedConversation ? (
-            <div className={cn(
-              "dashboard-main-inner",
-              isMobile && "dashboard-main-inner-mobile"
-            )}>
+          <div className={cn(
+            "dashboard-main-inner",
+            isMobile && "dashboard-main-inner-mobile"
+          )}>
+            {selectedConversation ? (
               <ConversationView
                 conversation={selectedConversation}
                 currentUser={user}
@@ -512,20 +512,18 @@ const Messages = () => {
                 workspaceContext={selectedWorkspace}
                 isTutorial={selectedConversation?.isTutorial}
               />
-            </div>
-          ) : (
-            <div className="w-full flex flex-col items-center justify-center p-8 text-center z-0 min-h-[400px]">
-              <div className="max-w-md w-full bg-card p-8 rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm animate-in fade-in zoom-in-95 duration-500 mx-auto">
-                <div className="w-16 h-16 mx-auto rounded-full bg-muted/50 flex items-center justify-center mb-6 ring-4 ring-background">
-                  <FiMessageSquare className="text-muted-foreground w-8 h-8" />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 ring-4 ring-background">
+                  <FiMessageSquare className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
                 </div>
-                <h2 className="text-xl font-bold text-foreground mb-2">{t('messages:selectConversation.title')}</h2>
-                <p className="text-muted-foreground mb-6">
+                <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('messages:selectConversation.title')}</h2>
+                <p className="mb-6" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
                   {t('messages:selectConversation.subtitle')}
                 </p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

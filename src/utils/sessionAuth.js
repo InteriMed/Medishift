@@ -96,21 +96,51 @@ const hasTeamAccess = (userData, facilityId) => {
 };
 
 /**
- * Check if user has admin access
- * @param {Object} userData - User document from Firestore
+ * Check if user has admin access (sync version using cached adminData)
+ * @param {Object} userData - User document from Firestore (must include adminData if admin)
  * @returns {boolean} True if user has admin access
  */
 export const hasAdminAccess = (userData) => {
   if (!userData) return false;
   
-  // Check roles array for admin roles
-  if (userData.roles && Array.isArray(userData.roles)) {
-    const adminRoles = ['admin', 'super_admin', 'ops_manager', 'finance', 'recruiter', 'support'];
-    return userData.roles.some(role => adminRoles.includes(role));
+  if (userData.adminData && userData.adminData.isActive !== false) {
+    return true;
   }
   
-  // Fallback to singular role field for backward compatibility
-  return userData.role === 'admin';
+  return false;
+};
+
+/**
+ * Fetch admin document for a user
+ * @param {string} userId - Firebase Auth UID
+ * @returns {Promise<Object|null>} Admin document data or null
+ */
+export const fetchAdminData = async (userId) => {
+  if (!userId) return null;
+  
+  try {
+    const adminDoc = await getDoc(doc(db, 'admins', userId));
+    if (adminDoc.exists()) {
+      const data = adminDoc.data();
+      if (data.isActive !== false) {
+        return data;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('[SessionAuth] Error fetching admin data:', error);
+    return null;
+  }
+};
+
+/**
+ * Get admin roles from admin document
+ * @param {Object} adminData - Admin document data
+ * @returns {Array} Array of admin roles
+ */
+export const getAdminRoles = (adminData) => {
+  if (!adminData) return [];
+  return adminData.roles || [];
 };
 
 /**
@@ -180,7 +210,8 @@ export const createWorkspaceSession = async (userId, workspaceType, facilityId =
         return null;
       }
     } else if (workspaceType === WORKSPACE_TYPES.ADMIN) {
-      if (!hasAdminAccess(userData)) {
+      const adminData = await fetchAdminData(userId);
+      if (!adminData) {
         console.warn(`[SessionAuth] User ${userId} lacks admin access`);
         return null;
       }
@@ -294,7 +325,7 @@ export const clearAllWorkspaceSessions = () => {
  * Get available workspaces for a user
  * STRICT: Only returns workspaces if corresponding profile documents exist
  * Order: Facility -> Professional -> Admin
- * @param {Object} userData - User document from Firestore (must include hasFacilityProfile, hasProfessionalProfile)
+ * @param {Object} userData - User document from Firestore (must include hasFacilityProfile, hasProfessionalProfile, adminData)
  * @returns {Array} Array of available workspace objects
  */
 export const getAvailableWorkspaces = (userData) => {

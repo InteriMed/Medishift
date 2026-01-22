@@ -114,7 +114,8 @@ export const TutorialProvider = ({ children }) => {
             console.log("[TutorialContext] Loaded accessMode from profile:", savedAccessMode);
             setAccessModeState(savedAccessMode);
           } else if (!savedAccessMode && !accessMode) {
-            console.log("[TutorialContext] No tutorialAccessMode found - leaving as null until user chooses");
+            console.log("[TutorialContext] No tutorialAccessMode found - setting to 'loading' (pending choice)");
+            setAccessModeState('loading');
           }
         }
       } catch (error) {
@@ -321,6 +322,13 @@ export const TutorialProvider = ({ children }) => {
       } catch (error) {
         console.error('[TutorialContext] Error resetting maxAccessedProfileTab in localStorage:', error);
       }
+      
+      // Set initial access mode to 'loading' when starting profile tutorial (if not already set to team/full)
+      if (!accessMode || accessMode === null || accessMode === 'loading') {
+        console.log('[TutorialContext] Setting initial accessMode to "loading" for profile tutorial (pending user choice)');
+        setAccessModeState('loading');
+        // Don't save 'loading' to Firestore - it's a temporary state
+      }
     }
 
     // Proceed with starting the tutorial
@@ -333,7 +341,7 @@ export const TutorialProvider = ({ children }) => {
       await saveTutorialProgress(feature, startStep);
     });
     setIsBusy(false);
-  }, [isBusy, safelyUpdateTutorialState, currentUser, saveTutorialProgress, completedTutorials]);
+  }, [isBusy, safelyUpdateTutorialState, currentUser, saveTutorialProgress, completedTutorials, accessMode, onboardingType]);
 
   // Store startTutorial in ref for use in useEffect
   useEffect(() => {
@@ -404,6 +412,8 @@ export const TutorialProvider = ({ children }) => {
           const onboardingCompleted = professionalCompleted || facilityCompleted || legacyCompleted || onboardingStatusDone;
           const isVerifiedProfile = !!userData.GLN_certified || !!userData.isVerified || bypassedGLN;
 
+          const isAdmin = !!(userData.adminData && userData.adminData.isActive !== false);
+          
           console.log("[TutorialContext] Workspace status check details:", {
             uid: userData.uid,
             role: userData.role,
@@ -415,14 +425,8 @@ export const TutorialProvider = ({ children }) => {
             isVerifiedProfile,
             hasProfessionalProfile: userData.hasProfessionalProfile,
             hasFacilityProfile: userData.hasFacilityProfile,
-            isAdmin: userData.role === 'admin' || (userData.roles && userData.roles.includes('admin'))
+            isAdmin
           });
-
-          /**
-           * Workspace Existence Check (HIGHEST PRIORITY)
-           * Only run this once the flags have been definitively set by DashboardContext.
-           */
-          const isAdmin = userData.role === 'admin' || (userData.roles && userData.roles.includes('admin'));
           const hasProfessionalProfile = userData.hasProfessionalProfile;
           const hasFacilityProfile = userData.hasFacilityProfile;
 
@@ -653,13 +657,12 @@ export const TutorialProvider = ({ children }) => {
     if (isTutorialActive || showFirstTimeModal) {
       console.log("[TutorialContext] Tutorial is active, stopping it");
 
-      // MANDATORY LIMITATION: User can only stop tutorial if:
-      // - Profile is finished OR
-      // - Access mode is 'team' (quick access) OR
-      // - Access mode is 'full' (show popup to let them choose)
+      // Check if currently in profile tutorial
+      const isInProfileTutorial = activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs';
       const isProfileTutorialComplete = completedTutorials?.profileTabs === true || completedTutorials?.facilityProfileTabs === true;
       
-      if (!isProfileTutorialComplete) {
+      // MANDATORY LIMITATION: Only apply restrictions for PROFILE tutorial (not dashboard or other tutorials)
+      if (isInProfileTutorial && !isProfileTutorialComplete) {
         if (accessMode === 'team') {
           console.log("[TutorialContext] Team access mode - allowing tutorial stop");
           // Allow stopping tutorial with team access
@@ -669,8 +672,10 @@ export const TutorialProvider = ({ children }) => {
           setShowAccessLevelModal(true);
           return;
         } else {
-          // No access mode set - must complete profile first
-          showError?.("Please complete your profile configuration before stopping the tutorial.");
+          // accessMode is 'loading' or null - show access popup instead of error
+          console.log("[TutorialContext] Access mode pending - showing access popup");
+          setAllowAccessLevelModalClose(true);
+          setShowAccessLevelModal(true);
           return;
         }
       }
@@ -1082,13 +1087,19 @@ export const TutorialProvider = ({ children }) => {
               await setTutorialComplete(true);
               
               // ALWAYS upgrade to full access after profile completion (regardless of current mode)
-              console.log("[TutorialContext] Setting access mode to 'full' after profile completion");
+              console.log("[TutorialContext] Setting access mode to 'full' after profile completion - saving to Firestore");
               setAccessModeState('full');
-              await updateDoc(profileDocRef, {
-                tutorialAccessMode: 'full',
-                profileCompleted: true,
-                profileCompletedAt: serverTimestamp()
-              });
+              
+              try {
+                await updateDoc(profileDocRef, {
+                  tutorialAccessMode: 'full',
+                  profileCompleted: true,
+                  profileCompletedAt: serverTimestamp()
+                });
+                console.log("[TutorialContext] ✅ Access mode 'full' successfully saved to Firestore");
+              } catch (saveError) {
+                console.error("[TutorialContext] ❌ Error saving access mode 'full' to Firestore:", saveError);
+              }
             }
 
             if (currentIndex !== -1 && currentIndex < mandatoryOnboardingTutorials.length - 1) {
@@ -1314,15 +1325,12 @@ export const TutorialProvider = ({ children }) => {
       return;
     }
 
-    // REMOVED: Access mode choice tooltip handling (step deleted)
-
-    // MANDATORY LIMITATION: User can only skip/quit tutorial if:
-    // - Profile is finished OR
-    // - Access mode is 'team' (quick access) OR
-    // - Access mode is 'full' (show popup to let them choose)
+    // Check if currently in profile tutorial
+    const isInProfileTutorial = activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs';
     const isProfileTutorialComplete = completedTutorials?.profileTabs === true || completedTutorials?.facilityProfileTabs === true;
     
-    if (!isProfileTutorialComplete) {
+    // MANDATORY LIMITATION: Only apply restrictions for PROFILE tutorial (not dashboard or other tutorials)
+    if (isInProfileTutorial && !isProfileTutorialComplete) {
       if (accessMode === 'team') {
         console.log("[TutorialContext] Team access mode - allowing tutorial skip");
         // Allow skipping tutorial with team access
@@ -1332,8 +1340,10 @@ export const TutorialProvider = ({ children }) => {
         setShowAccessLevelModal(true);
         return;
       } else {
-        // No access mode set - must complete profile first
-        showError?.("Please complete your profile configuration before skipping the tutorial.");
+        // accessMode is 'loading' or null - show access popup instead of error
+        console.log("[TutorialContext] Access mode pending - showing access popup");
+        setAllowAccessLevelModalClose(true);
+        setShowAccessLevelModal(true);
         return;
       }
     }
@@ -1405,6 +1415,12 @@ export const TutorialProvider = ({ children }) => {
     setAccessModeState(mode);
     setShowAccessLevelModal(false);
     setAllowAccessLevelModalClose(false);
+
+    // 'loading' is a temporary state - don't save to Firestore, just close popup
+    if (mode === 'loading') {
+      console.log("[TutorialContext] Access mode set to 'loading' (temporary state, not saved to Firestore)");
+      return;
+    }
 
     try {
       // Determine the profile collection based on onboarding type

@@ -186,6 +186,8 @@ module.exports.generateFacilityRoleInvitation = invitationFunctions.generateFaci
 module.exports.getInvitationDetails = invitationFunctions.getInvitationDetails;
 module.exports.acceptFacilityInvitation = invitationFunctions.acceptFacilityInvitation;
 module.exports.inviteAdminEmployee = invitationFunctions.inviteAdminEmployee;
+module.exports.acceptAdminInvitation = invitationFunctions.acceptAdminInvitation;
+module.exports.getAdminInvitationDetails = invitationFunctions.getAdminInvitationDetails;
 
 // LINKEDIN JOB SCRAPER - Export from api/linkedinJobScraper.js
 const linkedinJobScraper = require('./api/linkedinJobScraper');

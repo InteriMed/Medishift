@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useDashboard } from '../../contexts/DashboardContext';
 import { hasPermission, PERMISSIONS } from '../utils/rbac';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
@@ -28,10 +29,12 @@ const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
     const { t } = useTranslation(['admin']);
     const location = useLocation();
     const { userProfile } = useAuth();
+    const { user } = useDashboard();
     const [pendingCount, setPendingCount] = useState(0);
     const [urgentCount, setUrgentCount] = useState(0);
 
-    const userRoles = userProfile?.roles || [];
+    // Get admin roles from AuthContext userProfile or DashboardContext user
+    const userRoles = userProfile?.adminData?.roles || user?.adminData?.roles || [];
 
     // Load badge counts
     useEffect(() => {

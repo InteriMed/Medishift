@@ -284,9 +284,16 @@ exports.updateUserProfile = onCallV2(
 
         if (!profileDoc.exists) {
           const onboardingProgress = currentUserData.onboardingProgress || {};
-          const isAdmin = currentUserData.role === 'admin' || 
-                        (currentUserData.roles && Array.isArray(currentUserData.roles) && 
-                         currentUserData.roles.some(r => ['admin', 'super_admin', 'ops_manager'].includes(r)));
+          
+          let isAdmin = false;
+          try {
+            const adminDoc = await db.collection('admins').doc(userId).get();
+            if (adminDoc.exists && adminDoc.data().isActive !== false) {
+              isAdmin = true;
+            }
+          } catch (adminCheckError) {
+            functions.logger.debug('Admin check failed, continuing without admin status');
+          }
           
           let onboardingCompleted = false;
           if (currentRole === 'facility') {

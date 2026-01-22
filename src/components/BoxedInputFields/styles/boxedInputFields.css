@@ -116,6 +116,10 @@
   font-weight: 600;
 }
 
+.boxed-inputfield-input::placeholder {
+  opacity: 0;
+}
+
 .boxed-inputfield-input--show-placeholder::placeholder {
   opacity: 1;
 }
@@ -141,7 +145,7 @@
   border-radius: 16px;
   border: 1px solid var(--boxed-inputfield-border-color);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 10000;
   overflow: hidden;
   animation: dropdownIn 0.2s ease-out;
 }
@@ -183,7 +187,7 @@
   background-color: var(--background-div-color);
   position: sticky;
   top: 0;
-  z-index: 1001;
+  z-index: 10001;
   border-bottom: 1px solid hsl(var(--border) / 0.6);
 }
 

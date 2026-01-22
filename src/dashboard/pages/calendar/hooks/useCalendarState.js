@@ -109,17 +109,8 @@ export const useCalendarState = (initialDate = new Date()) => {
     setWeekScrollOffset(0);
     setDayScrollOffset(0);
 
-    const isSameDate = currentDate.toDateString() === date.toDateString();
-
-    if (view === 'day' && isSameDate) {
-      setView('week');
-    } else if (view === 'week') {
-      setCurrentDate(date);
-      setView('day');
-    } else {
-      setCurrentDate(date);
-    }
-  }, [currentDate, view, setView]);
+    setCurrentDate(date);
+  }, [currentDate]);
 
   // Handle upcoming event click
   const handleUpcomingEventClick = useCallback((eventDate) => {

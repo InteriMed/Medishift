@@ -3,15 +3,7 @@
  */
 export const isPlatformAdmin = (user) => {
     if (!user) return false;
-
-    // Check roles array
-    if (user.roles && Array.isArray(user.roles)) {
-        const adminRoles = ['admin', 'super_admin', 'ops_manager', 'finance', 'recruiter', 'support'];
-        return user.roles.some(role => adminRoles.includes(role));
-    }
-
-    // Check single role
-    return user.role === 'admin';
+    return !!(user.adminData && user.adminData.isActive !== false);
 };
 
 /**

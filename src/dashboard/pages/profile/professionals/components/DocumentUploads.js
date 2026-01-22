@@ -15,22 +15,25 @@ import useAutoSave from '../../../../hooks/useAutoSave';
 
 const styles = {
     sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-    headerCard: "bg-card rounded-xl border border-border/60 px-6 py-2 shadow-sm w-full max-w-[1400px] mx-auto h-16 flex items-center",
+    headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
     sectionTitle: "text-2xl font-semibold mb-0",
-    sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-    sectionSubtitle: "text-sm font-medium text-muted-foreground",
+    sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+    sectionSubtitle: "text-sm font-medium",
+    sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     subtitleRow: "flex items-end justify-between gap-4",
-    mandatoryFieldLegend: "text-xs text-muted-foreground",
+    mandatoryFieldLegend: "text-xs",
+    mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     mandatoryMark: "text-destructive",
     sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
     leftColumn: "flex flex-col gap-6 flex-1",
     rightColumn: "flex flex-col gap-6 flex-1",
-    sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
+    sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
     cardHeader: "flex items-center gap-4 mb-4",
-    cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
+    cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+    cardIconStyle: { color: 'var(--primary-color)' },
     cardTitle: "flex-1",
     cardTitleH3: "m-0",
-    cardTitleH3Style: { color: 'hsl(var(--card-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+    cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto",
     sectionContent: "space-y-4",
     errorText: "text-destructive text-sm mt-2",
@@ -780,10 +783,9 @@ const DocumentUploads = ({
     return (
         <div className={styles.sectionContainer}>
             <div className={styles.headerCard}>
-                <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('documents.title')}</h2>
-                <div className={styles.subtitleRow}>
-                    <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('documents.subtitle')}</p>
-                    <div className={styles.mandatoryFieldLegend}><span className={styles.mandatoryMark}>*</span> {t('common.mandatoryFields')}</div>
+                <div className="flex flex-col gap-1 flex-1">
+                    <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('documents.title')}</h2>
+                    <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('documents.subtitle')}</p>
                 </div>
             </div>
 

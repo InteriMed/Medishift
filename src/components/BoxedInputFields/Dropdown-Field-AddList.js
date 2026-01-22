@@ -276,7 +276,7 @@ function DropdownField({
                 )}
 
                 <input
-                    className="boxed-inputfield-input"
+                    className={`boxed-inputfield-input ${isFocused ? 'boxed-inputfield-input--show-placeholder' : ''}`}
                     type="text"
                     value={searchTerm}
                     onChange={handleInputChange}

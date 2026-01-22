@@ -427,7 +427,35 @@
     "spousePercentage": "Pensum %",
     "spouseDetails": "Partnerdetails",
     "spouseNameOptional": "Partnername (optional)",
-    "spouseBirthdateOptional": "Partner Geburtsdatum (optional)"
+    "spouseBirthdateOptional": "Partner Geburtsdatum (optional)",
+    "taxCanton": "Steuerkanton",
+    "permitNumber": "Bewilligungsnummer",
+    "issuingCanton": "Ausstellender Kanton",
+    "bankingAccessTitle": "Sicherer Bankzugang",
+    "secureAccess": "Sicherer Bankzugang",
+    "bankingAccessMessage": "Zur Sicherheit bestätigen Sie Ihre Identität.",
+    "bankingAccessGranted": "Zugang gewährt",
+    "verificationMethod": "Verifizierungsmethode wählen",
+    "sendToEmail": "Code per E-Mail senden",
+    "sendToPhone": "Code per SMS senden",
+    "sendCode": "Code senden",
+    "sendCodeError": "Fehler beim Senden des Codes",
+    "codeSent": "Code erfolgreich gesendet",
+    "codeSentTo": "Code gesendet an",
+    "yourEmail": "Ihre E-Mail",
+    "yourPhone": "Ihr Telefon",
+    "backToMethodSelection": "Zurück zur Methodenauswahl",
+    "accessCodeLabel": "6-stelligen Code eingeben",
+    "accessCodePlaceholder": "000000",
+    "accessValidityInfo": "Zugang für 1 Stunde gültig",
+    "resendCode": "Code erneut senden",
+    "unlockBanking": "Bankdaten entsperren",
+    "invalidAccessCode": "Ungültiger Code",
+    "accessCodeError": "Fehler bei der Code-Verifizierung",
+    "sendTestEmail": "Test-E-Mail senden",
+    "testEmailSent": "Test-E-Mail erfolgreich gesendet",
+    "testEmailFailed": "Test-E-Mail fehlgeschlagen",
+    "sendingCode": "Code wird gesendet..."
   },
   "documents": {
     "title": "Dokumente",
@@ -606,8 +634,10 @@
       "success": "Daten erfolgreich exportiert",
       "error": "Fehler beim Export"
     },
-    "savedSuccessfully": "Saved Successfully",
-    "saveFailed": "Save Failed",
+    "savedSuccessfully": "Erfolgreich gespeichert",
+    "saveFailed": "Speichern fehlgeschlagen",
+    "premiumFeatureRequired": "Premium-Abonnement erforderlich",
+    "premiumFeature": "Premium-Funktion",
     "leaveFacility": {
       "success": "Success",
       "error": "Error",
@@ -683,7 +713,37 @@
   "subscription": {
     "free": "Kostenlos",
     "premium": "Premium",
-    "status": "Abonnement"
+    "status": "Abonnement",
+    "title": "Abonnement-Plan",
+    "subtitle": "Wählen Sie den Plan, der am besten zu Ihnen passt",
+    "currentPlan": "Aktueller Plan",
+    "perMonth": "pro Monat",
+    "upgrading": "Upgrade läuft...",
+    "upgrade": "Upgrade",
+    "upgradeToPremium": "Auf Premium upgraden",
+    "classic": {
+      "title": "Klassisch",
+      "price": "Kostenlos"
+    },
+    "premium": {
+      "title": "Premium",
+      "price": "CHF 29.90"
+    },
+    "features": {
+      "classic": {
+        "basicMatching": "Einfache Job-Vermittlung",
+        "emailNotifications": "E-Mail-Benachrichtigungen",
+        "profileManagement": "Profilverwaltung",
+        "documentStorage": "Dokumentenspeicher"
+      },
+      "premium": {
+        "priorityMatching": "Prioritäts-Job-Vermittlung",
+        "smsNotifications": "SMS-Benachrichtigungen",
+        "advancedAnalytics": "Erweiterte Analysen",
+        "dedicatedSupport": "Dedizierter Support",
+        "bankingAccess": "Erweiterter Bankzugang"
+      }
+    }
   },
   "operations": {
     "addWorkerRequirement": "Add Worker Requirement",

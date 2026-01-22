@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { get, set, cloneDeep } from 'lodash';
@@ -28,31 +28,35 @@ import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye } fro
 // Tailwind styles
 const styles = {
    sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-   headerCard: "bg-card rounded-xl border border-border/60 px-6 py-2 shadow-sm w-full max-w-[1400px] mx-auto h-16 flex items-center",
+   headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
    sectionTitle: "text-2xl font-semibold mb-0",
-   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-   sectionSubtitle: "text-sm font-medium text-muted-foreground",
+   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+   sectionSubtitle: "text-sm font-medium",
+   sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
    subtitleRow: "flex items-end justify-between gap-4",
-   mandatoryFieldLegend: "text-xs text-muted-foreground",
+   mandatoryFieldLegend: "text-xs",
+   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
    mandatoryMark: "text-destructive",
    sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
    leftColumn: "flex flex-col gap-6 flex-1",
    rightColumn: "flex flex-col gap-6 flex-1",
-   sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
+   sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
    cardHeader: "flex items-center gap-4 mb-0",
-   cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
+   cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+   cardIconStyle: { color: 'var(--primary-color)' },
    cardTitle: "flex-1",
    cardTitleH3: "m-0",
-   cardTitleH3Style: { color: 'hsl(var(--card-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-   itemTitleStyle: { color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', fontSize: 'var(--font-size-small)', fontWeight: '500' },
+   cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+   itemTitleStyle: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', fontSize: 'var(--font-size-small)', fontWeight: '500' },
    grid: "grid grid-cols-1 gap-6 !grid-cols-1",
    gridSingle: "grid grid-cols-1 gap-6",
    fieldWrapper: "space-y-2",
    fullWidth: "",
    sectionContent: "space-y-4",
    formSectionError: "border-destructive/50",
-   emptyStateText: "text-center text-muted-foreground py-8",
-   addItemForm: "rounded-lg p-6 border border-border/60 mt-4",
+   emptyStateText: "text-center py-8",
+   emptyStateTextStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+   addItemForm: "rounded-2xl p-6 border border-border/50 mt-4",
    itemDisplayLine: "flex flex-col",
    itemContent: "flex flex-col gap-1",
    itemActions: "flex gap-2",
@@ -104,6 +108,12 @@ const ProfessionalBackground = ({
       onTabCompleted,
       isTutorialActive
    });
+
+   useEffect(() => {
+      if (validateCurrentTabData && formData && config) {
+         validateCurrentTabData(null, null, false);
+      }
+   }, [validateCurrentTabData, formData, config]);
 
    // Handle cancel with page reload
    const handleCancel = useCallback(() => {
@@ -735,10 +745,9 @@ const ProfessionalBackground = ({
    return (
       <div className={styles.sectionContainer}>
          <div className={styles.headerCard}>
-            <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('professionalBackground.title')}</h2>
-            <div className={styles.subtitleRow}>
-               <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('professionalBackground.subtitle')}</p>
-               <div className={styles.mandatoryFieldLegend}><span className={styles.mandatoryMark}>*</span> {t('common.mandatoryFields')}</div>
+            <div className="flex flex-col gap-1 flex-1">
+               <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('professionalBackground.title')}</h2>
+               <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('professionalBackground.subtitle')}</p>
             </div>
          </div>
 

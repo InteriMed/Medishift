@@ -5,6 +5,7 @@ import Dialog from '../../../../components/Dialog/Dialog';
 import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import Button from '../../../../components/BoxedInputFields/Button';
 import { FiLock, FiUnlock, FiMail, FiPhone, FiShield, FiArrowLeft } from 'react-icons/fi';
+import SpinnerLoader from '../../../../components/LoadingAnimations/SpinnerLoader';
 
 const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, userPhonePrefix }) => {
   const { t } = useTranslation(['dashboardProfile', 'common']);
@@ -83,7 +84,8 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
       const result = await verifyBankingAccess({ code: accessCode });
 
       if (result.data.success) {
-        const expiresAt = Date.now() + (60 * 60 * 1000);
+        const editDurationMs = result.data.editDuration || (60 * 60 * 1000);
+        const expiresAt = Date.now() + editDurationMs;
         localStorage.setItem('bankingAccessGranted', expiresAt.toString());
         
         setAccessCode('');
@@ -133,78 +135,97 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
         </div>
 
         {!codeSent ? (
-          <>
+          <div className="relative">
+            {sendingCode && (
+              <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
+                <SpinnerLoader size="small" />
+              </div>
+            )}
             <div className="space-y-4">
               <p className="text-sm font-medium text-center text-foreground">
                 {t('billingInformation.verificationMethod', 'Choose verification method')}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                  onClick={() => setVerificationMethod('email')}
-                  className={`border-2 rounded-xl p-6 hover:border-blue-600 transition-colors flex flex-col items-center text-center ${
-                    verificationMethod === 'email'
-                      ? 'border-blue-600 bg-blue-500/5'
-                      : 'border-border'
-                  }`}
-                >
-                  <div className={`p-3 rounded-lg mb-3 ${
-                    verificationMethod === 'email' 
-                      ? 'bg-blue-500/10 text-blue-600' 
-                      : 'bg-muted text-muted-foreground'
-                  }`}>
-                    <FiMail size={24} />
-                  </div>
-                  <div className={`font-semibold mb-1 ${verificationMethod === 'email' ? 'text-blue-600' : 'text-foreground'}`}>
-                    {t('common:email', 'Email')}
-                  </div>
-                  <div className="text-xs text-muted-foreground mb-2">
-                    {t('billingInformation.sendToEmail', 'Send code to your email')}
-                  </div>
-                  {userEmail && (
-                    <div className={`text-xs font-mono px-2 py-1 rounded ${
+                <div className="relative">
+                  <button
+                    onClick={() => setVerificationMethod('email')}
+                    className={`border-2 rounded-xl p-6 hover:border-blue-600 transition-colors flex flex-col items-center text-center w-full ${
+                      verificationMethod === 'email'
+                        ? 'border-blue-600 bg-blue-500/5'
+                        : 'border-border'
+                    }`}
+                  >
+                    <div className={`p-3 rounded-lg mb-3 ${
                       verificationMethod === 'email' 
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-foreground' 
-                        : 'bg-muted/50 text-foreground'
+                        ? 'bg-blue-500/10 text-blue-600' 
+                        : 'bg-muted text-muted-foreground'
                     }`}>
-                      {userEmail}
+                      <FiMail size={24} />
+                    </div>
+                    <div className={`font-semibold mb-1 ${verificationMethod === 'email' ? 'text-blue-600' : 'text-foreground'}`}>
+                      {t('common:email', 'Email')}
+                    </div>
+                    <div className="text-xs text-muted-foreground mb-2">
+                      {t('billingInformation.sendToEmail', 'Send code to your email')}
+                    </div>
+                    {userEmail && (
+                      <div className={`text-xs font-mono px-2 py-1 rounded ${
+                        verificationMethod === 'email' 
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-foreground' 
+                          : 'bg-muted/50 text-foreground'
+                      }`}>
+                        {userEmail}
+                      </div>
+                    )}
+                  </button>
+                  {error && verificationMethod === 'email' && (
+                    <div className="absolute inset-0 bg-background/90 backdrop-blur-sm rounded-xl border-2 flex items-center justify-center p-4" style={{ borderColor: 'var(--boxed-inputfield-error-color, #ef4444)' }}>
+                      <p className="text-sm text-center font-medium" style={{ color: 'var(--boxed-inputfield-error-color, #ef4444)' }}>{error}</p>
                     </div>
                   )}
-                </button>
-                <button
-                  onClick={() => setVerificationMethod('phone')}
-                  className={`border-2 rounded-xl p-6 hover:border-green-600 transition-colors flex flex-col items-center text-center ${
-                    verificationMethod === 'phone'
-                      ? 'border-green-600 bg-green-500/5'
-                      : 'border-border'
-                  }`}
-                >
-                  <div className={`p-3 rounded-lg mb-3 ${
-                    verificationMethod === 'phone' 
-                      ? 'bg-green-500/10 text-green-600' 
-                      : 'bg-muted text-muted-foreground'
-                  }`}>
-                    <FiPhone size={24} />
-                  </div>
-                  <div className={`font-semibold mb-1 ${verificationMethod === 'phone' ? 'text-green-600' : 'text-foreground'}`}>
-                    {t('common:phone', 'Phone')}
-                  </div>
-                  <div className="text-xs text-muted-foreground mb-2">
-                    {t('billingInformation.sendToPhone', 'Send code via SMS')}
-                  </div>
-                  {formattedPhone && (
-                    <div className={`text-xs font-mono px-2 py-1 rounded ${
+                </div>
+                <div className="relative">
+                  <button
+                    onClick={() => setVerificationMethod('phone')}
+                    className={`border-2 rounded-xl p-6 hover:border-green-600 transition-colors flex flex-col items-center text-center w-full ${
+                      verificationMethod === 'phone'
+                        ? 'border-green-600 bg-green-500/5'
+                        : 'border-border'
+                    }`}
+                  >
+                    <div className={`p-3 rounded-lg mb-3 ${
                       verificationMethod === 'phone' 
-                        ? 'bg-green-100 dark:bg-green-900/30 text-foreground' 
-                        : 'bg-muted/50 text-foreground'
+                        ? 'bg-green-500/10 text-green-600' 
+                        : 'bg-muted text-muted-foreground'
                     }`}>
-                      {formattedPhone}
+                      <FiPhone size={24} />
+                    </div>
+                    <div className={`font-semibold mb-1 ${verificationMethod === 'phone' ? 'text-green-600' : 'text-foreground'}`}>
+                      {t('common:phone', 'Phone')}
+                    </div>
+                    <div className="text-xs text-muted-foreground mb-2">
+                      {t('billingInformation.sendToPhone', 'Send code via SMS')}
+                    </div>
+                    {formattedPhone && (
+                      <div className={`text-xs font-mono px-2 py-1 rounded ${
+                        verificationMethod === 'phone' 
+                          ? 'bg-green-100 dark:bg-green-900/30 text-foreground' 
+                          : 'bg-muted/50 text-foreground'
+                      }`}>
+                        {formattedPhone}
+                      </div>
+                    )}
+                  </button>
+                  {error && verificationMethod === 'phone' && (
+                    <div className="absolute inset-0 bg-background/90 backdrop-blur-sm rounded-xl border-2 flex items-center justify-center p-4" style={{ borderColor: 'var(--boxed-inputfield-error-color, #ef4444)' }}>
+                      <p className="text-sm text-center font-medium" style={{ color: 'var(--boxed-inputfield-error-color, #ef4444)' }}>{error}</p>
                     </div>
                   )}
-                </button>
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-3 justify-end pt-4 border-t border-border">
+            <div className="flex justify-between pt-4">
               <button
                 onClick={handleCancel}
                 disabled={sendingCode}
@@ -224,7 +245,7 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
                 {sendingCode ? t('common:sending', 'Sending...') : t('billingInformation.sendCode', 'Send Code')}
               </button>
             </div>
-          </>
+          </div>
         ) : (
           <>
             <div className="text-center mb-4">
@@ -293,7 +314,7 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
               </div>
             </div>
 
-            <div className="flex gap-3 justify-end pt-4 border-t border-border">
+            <div className="flex justify-between pt-4 border-t border-border">
               <button
                 onClick={handleCancel}
                 disabled={isVerifying}

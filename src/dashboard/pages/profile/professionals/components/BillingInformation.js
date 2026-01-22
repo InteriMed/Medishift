@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import classNames from 'classnames';
-import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2 } from 'react-icons/fi';
+import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2, FiMail } from 'react-icons/fi';
 import { httpsCallable } from 'firebase/functions';
 
-import Switch from '../../../../../components/BoxedInputFields/Switch';
+import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSwitchField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import Button from '../../../../../components/BoxedInputFields/Button';
@@ -22,23 +22,26 @@ import { useDropdownOptions } from '../../utils/DropdownListsImports';
 // Tailwind styles
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 px-6 py-2 shadow-sm w-full max-w-[1400px] mx-auto h-16 flex items-center",
+  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
   sectionTitle: "text-2xl font-semibold mb-0",
-  sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  sectionSubtitle: "text-sm font-medium text-muted-foreground",
+  sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+  sectionSubtitle: "text-sm font-medium",
+  sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   subtitleRow: "flex items-end justify-between gap-4",
-  mandatoryFieldLegend: "text-xs text-muted-foreground",
+  mandatoryFieldLegend: "text-xs",
+  mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   hiringMandatoryMark: "text-orange-500",
   sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
-  sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
+  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full overflow-visible",
   cardHeader: "flex items-center gap-4 mb-0",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
+  cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+  cardIconStyle: { color: 'var(--primary-color)' },
   cardTitle: "flex-1",
   cardTitleH3: "m-0",
-  cardTitleH3Style: { color: 'hsl(var(--card-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "grid grid-cols-1 gap-6",
+  cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+  grid: "grid grid-cols-1 gap-6 overflow-visible",
   gridSingle: "grid grid-cols-1 gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "md:col-span-2",
@@ -124,6 +127,21 @@ const BillingInformation = ({
     return result;
   }, [onSave, sendBankingUpdateNotification]);
 
+  const handleTestEmail = useCallback(async () => {
+    try {
+      const notifyBankingUpdate = httpsCallable(functions, 'notifyBankingUpdate');
+      const ibanLast4 = formData?.banking?.iban ? formData.banking.iban.slice(-4) : 'XXXX';
+      await notifyBankingUpdate({
+        bankName: formData?.banking?.bankName || 'Test Bank',
+        ibanLast4
+      });
+      alert(t('billingInformation.testEmailSent', 'Test email sent successfully'));
+    } catch (error) {
+      console.error('[BillingInfo] Failed to send test email:', error);
+      alert(t('billingInformation.testEmailFailed', 'Failed to send test email'));
+    }
+  }, [formData?.banking, t]);
+
   const checkBankingAccess = useCallback(() => {
     const accessExpiry = localStorage.getItem('bankingAccessGranted');
     if (!accessExpiry) return false;
@@ -136,8 +154,22 @@ const BillingInformation = ({
     return true;
   }, []);
 
+  const hasExistingBankingInfo = useMemo(() => {
+    return formData?.banking && (
+      formData.banking.iban || 
+      formData.banking.bankName || 
+      formData.banking.accountHolderName
+    );
+  }, [formData]);
+
   useEffect(() => {
-    setHasBankingAccess(checkBankingAccess());
+    if (!hasExistingBankingInfo) {
+      const expiresAt = Date.now() + (60 * 60 * 1000);
+      localStorage.setItem('bankingAccessGranted', expiresAt.toString());
+      setHasBankingAccess(true);
+    } else {
+      setHasBankingAccess(checkBankingAccess());
+    }
     
     const interval = setInterval(() => {
       const stillHasAccess = checkBankingAccess();
@@ -147,7 +179,7 @@ const BillingInformation = ({
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [checkBankingAccess, hasBankingAccess]);
+  }, [checkBankingAccess, hasBankingAccess, hasExistingBankingInfo]);
 
   const handleBankingAccessSuccess = () => {
     setHasBankingAccess(true);
@@ -194,14 +226,6 @@ const BillingInformation = ({
     isTutorialActive,
     disableLocalStorage: true
   });
-
-  const hasExistingBankingInfo = useMemo(() => {
-    return formData?.banking && (
-      formData.banking.iban || 
-      formData.banking.bankName || 
-      formData.banking.accountHolderName
-    );
-  }, [formData]);
 
   const hasExistingBillingInfo = useMemo(() => {
     return formData && (
@@ -342,7 +366,6 @@ const BillingInformation = ({
       case 'dropdown':
         const options = getDropdownOptions(optionsKey);
 
-        // Debug option loading issues
         if (options.length === 0 && process.env.NODE_ENV !== 'production') {
           console.warn(`No options found for dropdown ${name} with optionsKey ${optionsKey}`);
         }
@@ -350,21 +373,21 @@ const BillingInformation = ({
         return (
           <SimpleDropdown
             key={name}
-            label={commonProps.label}
+            label={label}
             options={options}
             value={value}
             onChange={(newValue) => {
-              console.log('SimpleDropdown onChange:', { name, newValue });
               wrappedOnInputChange(name, newValue);
             }}
             placeholder={placeholder || t('common.selectPlaceholder', 'Select...')}
-            required={commonProps.required}
+            required={isActuallyRequired}
             error={commonProps.error}
           />
         );
       case 'checkbox':
+      case 'switch':
         return (
-          <Switch
+          <BoxedSwitchField
             key={name}
             label={label}
             checked={!!value}
@@ -378,7 +401,9 @@ const BillingInformation = ({
         return (
           <InputField
             key={name}
-            {...commonProps}
+            label={label}
+            error={error}
+            required={isActuallyRequired}
             name={name}
             type={type === 'number' ? 'number' : 'text'}
             value={value || ''}
@@ -455,10 +480,9 @@ const BillingInformation = ({
     <div className={styles.sectionContainer} style={{ position: 'relative' }}>
       <div className={styles.sectionContainer}>
         <div className={styles.headerCard}>
-          <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('billingInformation.title')}</h2>
-          <div className={styles.subtitleRow}>
-            <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('billingInformation.subtitle', 'Provide your employment and billing details.')}</p>
-            <div className={styles.mandatoryFieldLegend}><span className={styles.hiringMandatoryMark}>*</span> {t('billingInformation.hiringRequiredLegend')}</div>
+          <div className="flex flex-col gap-1 flex-1">
+            <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('billingInformation.title')}</h2>
+            <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('billingInformation.subtitle', 'Provide your employment and billing details.')}</p>
           </div>
         </div>
 
@@ -467,7 +491,7 @@ const BillingInformation = ({
           <div className={styles.leftColumn}>
             {/* Employment Eligibility Section */}
             {groupedFields.employmentEligibility && (
-              <div className={styles.sectionCard}>
+              <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 10 }}>
                 <div className={styles.grid}>
                   <div className={styles.cardHeader}>
                     <div className={styles.cardIconWrapper}><FiBriefcase /></div>
@@ -482,7 +506,7 @@ const BillingInformation = ({
 
             {/* Banking Information Section */}
             {groupedFields.banking && (
-              <div className={styles.sectionCard}>
+              <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 5 }}>
                 <div className={styles.grid}>
                   <div className={styles.cardHeader}>
                     <div className={styles.cardIconWrapper}><FiCreditCard /></div>
@@ -504,6 +528,13 @@ const BillingInformation = ({
                         {t('billingInformation.bankingAccessGranted', 'Access granted')}
                       </div>
                     )}
+                    <button
+                      onClick={handleTestEmail}
+                      className="p-2 text-muted-foreground hover:text-blue-600 transition-colors"
+                      title={t('billingInformation.sendTestEmail', 'Send Test Email')}
+                    >
+                      <FiMail className="w-4 h-4" />
+                    </button>
                   </div>
                   {groupedFields.banking.map(renderField)}
                 </div>

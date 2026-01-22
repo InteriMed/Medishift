@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '../../contexts/DashboardContext';
 
 
-// Temporary empty styles object until Tailwind classes are implemented
-const styles = {};
+import styles from './personalDashboard.module.css';
 
 const PersonalDashboard = () => {
   const navigate = useNavigate();
@@ -90,24 +89,24 @@ const PersonalDashboard = () => {
         <div className={styles.metricsGrid} data-tutorial="metrics-grid">
           {/* Placeholder for metrics */}
           <div className={styles.metricCard} data-tutorial="metric-contracts">
-            <h3>Total Contracts</h3>
+            <h3 className={styles.metricTitle}>Total Contracts</h3>
             <p className={styles.metricValue}>{dashboardData?.metrics?.totalContracts || 0}</p>
           </div>
 
           <div className={styles.metricCard} data-tutorial="metric-hours">
-            <h3>Active Hours</h3>
+            <h3 className={styles.metricTitle}>Active Hours</h3>
             <p className={styles.metricValue}>{dashboardData?.metrics?.activeHours || 0}</p>
           </div>
 
           <div className={styles.metricCard} data-tutorial="metric-earnings">
-            <h3>Earnings</h3>
+            <h3 className={styles.metricTitle}>Earnings</h3>
             <p className={styles.metricValue}>
               ${dashboardData?.metrics?.earnings?.toLocaleString() || 0}
             </p>
           </div>
 
           <div className={styles.metricCard} data-tutorial="metric-jobs">
-            <h3>Upcoming Jobs</h3>
+            <h3 className={styles.metricTitle}>Upcoming Jobs</h3>
             <p className={styles.metricValue}>{dashboardData?.metrics?.upcomingJobs || 0}</p>
           </div>
         </div>

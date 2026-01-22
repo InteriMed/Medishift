@@ -27,18 +27,14 @@ const setBankingAccessCode = onCall(
     }
 
     const db = getFirestore(admin.app(), 'medishift');
-    const callerDoc = await db.collection('users').doc(auth.uid).get();
+    const adminDoc = await db.collection('admins').doc(auth.uid).get();
     
-    if (!callerDoc.exists) {
-      throw new HttpsError('not-found', 'Caller not found');
+    if (!adminDoc.exists || adminDoc.data().isActive === false) {
+      throw new HttpsError('permission-denied', 'Only administrators can set banking access codes');
     }
 
-    const callerData = callerDoc.data();
-    const isAdmin = callerData.role === 'admin' || 
-                   callerData.role === 'super_admin' ||
-                   (callerData.roles && callerData.roles.some(r => ['admin', 'super_admin'].includes(r)));
-
-    if (!isAdmin) {
+    const adminRoles = adminDoc.data().roles || [];
+    if (!adminRoles.includes('super_admin') && !adminRoles.includes('ops_manager') && !adminRoles.includes('finance')) {
       throw new HttpsError('permission-denied', 'Only administrators can set banking access codes');
     }
 
@@ -284,8 +280,8 @@ const requestBankingAccessCode = onCall(
                   <p style="color: #666; line-height: 1.6;">
                     This code will expire in <strong>15 minutes</strong>.
                   </p>
-                  <p style="color: #666; line-height: 1.6;">
-                    If you didn't request this code, please ignore this email or contact support if you have concerns.
+                  <p style="color: #cc0000; line-height: 1.6; font-weight: bold;">
+                    If you did not request this code, please contact support immediately.
                   </p>
                   <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
                   <p style="color: #999; font-size: 12px; text-align: center;">
@@ -338,7 +334,7 @@ const requestBankingAccessCode = onCall(
                   {
                     destinations: [{ to: fullPhone.substring(1) }],
                     from: infobipSender,
-                    text: `Your MediShift banking access code is: ${tempCode}. Valid for 15 minutes.`
+                    text: `Your MediShift banking access code is: ${tempCode}. Valid for 15 minutes. If you did not request this code, please contact support immediately.`
                   }
                 ]
               });

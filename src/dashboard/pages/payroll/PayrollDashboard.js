@@ -341,16 +341,18 @@ const PayrollDashboard = () => {
 
     // Empty State
     const EmptyState = () => (
-        <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
-                <FiFileText className="w-8 h-8 text-muted-foreground" />
+        <div className="dashboard-empty-state">
+            <div className="dashboard-empty-state-card">
+                <div className="dashboard-empty-state-icon">
+                    <FiFileText className="w-8 h-8" />
+                </div>
+                <h2 className="dashboard-empty-state-title">
+                    {t('payroll:empty.title', 'No payroll requests yet')}
+                </h2>
+                <p className="dashboard-empty-state-description">
+                    {t('payroll:empty.description', 'When you confirm shifts with workers, payroll requests will appear here.')}
+                </p>
             </div>
-            <h3 className="text-lg font-medium text-foreground mb-2">
-                {t('payroll:empty.title', 'No payroll requests yet')}
-            </h3>
-            <p className="text-muted-foreground max-w-sm mx-auto">
-                {t('payroll:empty.description', 'When you confirm shifts with workers, payroll requests will appear here.')}
-            </p>
         </div>
     );
 

@@ -418,16 +418,14 @@ const MetricCard = ({ title, value, icon: Icon, color, urgent, trend }) => {
   };
 
   return (
-    <div style={{
-      backgroundColor: 'var(--background-div-color)',
-      borderRadius: 'var(--border-radius-md)',
-      padding: 'var(--spacing-lg)',
-      boxShadow: 'var(--shadow-sm)',
-      border: '1px solid var(--grey-2)',
-      ...(urgent && { boxShadow: '0 0 0 2px var(--red-3)' })
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--spacing-md)' }}>
-        <div style={{ padding: 'var(--spacing-md)', borderRadius: 'var(--border-radius-sm)', ...colorStyles[color] }}>
+    <div
+      className="metric-card"
+      style={{
+        ...(urgent && { boxShadow: '0 0 0 2px var(--red-3)' })
+      }}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className="metric-icon-container" style={colorStyles[color]}>
           <Icon size={24} />
         </div>
         {trend && trend.length > 0 && (
@@ -436,8 +434,8 @@ const MetricCard = ({ title, value, icon: Icon, color, urgent, trend }) => {
           </div>
         )}
       </div>
-      <h3 style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-light-color)', marginBottom: 'var(--spacing-xs)' }}>{title}</h3>
-      <p style={{ fontSize: 'var(--font-size-xxxlarge)', fontWeight: 'var(--font-weight-large)', color: 'var(--text-color)' }}>{value}</p>
+      <h3 className="metric-title">{title}</h3>
+      <p className="metric-value">{value}</p>
     </div>
   );
 };

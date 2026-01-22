@@ -113,26 +113,20 @@ const AdminDashboard = () => {
           return (
             <div
               key={index}
-              style={{
-                backgroundColor: 'var(--background-div-color)',
-                borderRadius: 'var(--border-radius-md)',
-                padding: 'var(--spacing-lg)',
-                boxShadow: 'var(--shadow-sm)',
-                border: '1px solid var(--grey-2)'
-              }}
+              className="metric-card"
             >
               <div className="flex items-center justify-between mb-4">
                 <div
-                  className="p-3 rounded-lg"
+                  className="metric-icon-container"
                   style={{ backgroundColor: card.bgColor }}
                 >
                   <Icon size={24} style={{ color: card.color }} />
                 </div>
               </div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
+              <h3 className="metric-title">
                 {card.title}
               </h3>
-              <p className="text-2xl font-bold" style={{ color: card.color }}>
+              <p className="metric-value" style={{ color: card.color }}>
                 {card.value}
               </p>
             </div>

@@ -255,7 +255,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
   return (
     <aside
       className={cn(
-        "fixed left-0 top-16 h-[calc(100vh-4rem)] bg-sidebar shadow-xl shadow-foreground/5 transition-all duration-300 ease-in-out overflow-x-hidden",
+        "fixed left-0 top-16 h-[calc(100vh-4rem)] bg-sidebar transition-all duration-300 ease-in-out overflow-x-hidden",
         collapsed ? "w-[70px]" : "w-64",
         isMobile
           ? "z-[60] flex flex-col md:!hidden"
@@ -444,12 +444,12 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
               onClick={(e) => {
                 const isCurrentlyOnProfile = location.pathname.includes('/profile');
                 const isClickingOtherTab = !item.path.includes('/profile');
-                const isInTeamMode = accessMode === 'team';
+                const shouldShowAccessPopup = accessMode === 'team' || accessMode === 'loading';
                 
-                if (isCurrentlyOnProfile && isClickingOtherTab && isInTeamMode) {
+                if (isCurrentlyOnProfile && isClickingOtherTab && shouldShowAccessPopup) {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('[Sidebar] On profile with team mode - showing AccessLevelChoicePopup for:', item.path);
+                  console.log('[Sidebar] On profile with team/loading mode - showing AccessLevelChoicePopup for:', item.path);
                   console.log('[Sidebar] State:', { isTutorialActive, accessMode, isCurrentlyOnProfile, isClickingOtherTab });
                   if (typeof setAllowAccessLevelModalClose === 'function') {
                     setAllowAccessLevelModalClose(true);

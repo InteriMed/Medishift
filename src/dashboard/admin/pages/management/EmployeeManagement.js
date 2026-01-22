@@ -30,25 +30,21 @@ const EmployeeManagement = () => {
   const loadEmployees = async () => {
     setLoading(true);
     try {
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('roles', 'array-contains-any', ['super_admin', 'ops_manager', 'finance', 'recruiter', 'support', 'external_payroll']));
-      const snapshot = await getDocs(q);
+      const adminsRef = collection(db, 'admins');
+      const snapshot = await getDocs(adminsRef);
 
       const employeesList = [];
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        const adminRoles = (data.roles || []).filter(role =>
-          ['super_admin', 'ops_manager', 'finance', 'recruiter', 'support', 'external_payroll'].includes(role)
-        );
-        if (adminRoles.length > 0) {
+        if (data.isActive !== false) {
           employeesList.push({
             id: docSnap.id,
             email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            roles: adminRoles,
+            displayName: data.displayName,
+            roles: data.roles || [],
             createdAt: data.createdAt?.toDate?.() || data.createdAt,
-            lastLoginAt: data.lastLoginAt?.toDate?.() || data.lastLoginAt
+            invitedBy: data.invitedBy,
+            isActive: data.isActive !== false
           });
         }
       });

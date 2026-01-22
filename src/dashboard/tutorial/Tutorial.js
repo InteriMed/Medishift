@@ -137,10 +137,10 @@ const Tutorial = () => {
           setAccessMode('team');
         }}
         onContinueOnboarding={() => {
-          console.log('[Tutorial] onContinueOnboarding called - Full Access selected (staying in team mode until profile completed)');
-          // Don't change access mode or navigate automatically
-          // User will click on the tab themselves
+          console.log('[Tutorial] onContinueOnboarding called - Continue Profile selected, keeping accessMode as loading');
+          // Keep accessMode at 'loading' - user is continuing but hasn't committed to full yet
           // Access mode will change to 'full' only after profile completion
+          setAccessMode('loading');
         }}
         glnVerified={glnVerified}
         allowClose={allowAccessLevelModalClose !== undefined ? allowAccessLevelModalClose : false}

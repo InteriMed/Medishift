@@ -156,8 +156,8 @@ const Marketplace = () => {
     <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500 min-h-0 marketplace-page">
       {/* 1. Page Top Bar - 2 Column Layout */}
       <div className={cn(
-        "shrink-0 w-full z-20 bg-gradient-to-r from-card/95 via-card/80 to-transparent backdrop-blur-sm px-6 sm:px-8 border-b border-border/60 shadow-sm flex flex-col transition-all",
-        isFiltersExpanded ? 'py-6 min-h-[100px]' : 'py-5 min-h-[84px]'
+        "shrink-0 w-full z-20 bg-white px-6 sm:px-8 border-b border-border/60 shadow-sm flex flex-col transition-all",
+        isFiltersExpanded ? 'py-4 min-h-[80px]' : 'py-3 min-h-16'
       )}>
         <div className="grid grid-cols-2 items-start gap-3 w-full">
           {/* Left Column: Search + Dates */}
@@ -188,7 +188,8 @@ const Marketplace = () => {
                   type="date"
                   value={filters.fromDate || ''}
                   onChange={(e) => handleFilterChange('fromDate', e.target.value)}
-                  className="w-full h-9 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring transition-all uppercase-placeholder"
+                  className="w-full px-3 rounded-xl border-2 border-input bg-background text-sm font-medium focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                  style={{ height: 'var(--boxed-inputfield-height)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
                   placeholder={t('marketplace:placeholders.from')}
                 />
               </div>
@@ -199,7 +200,8 @@ const Marketplace = () => {
                   type="date"
                   value={filters.toDate || ''}
                   onChange={(e) => handleFilterChange('toDate', e.target.value)}
-                  className="w-full h-9 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                  className="w-full px-3 rounded-xl border-2 border-input bg-background text-sm font-medium focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                  style={{ height: 'var(--boxed-inputfield-height)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
                   placeholder={t('marketplace:placeholders.to')}
                 />
               </div>
@@ -212,14 +214,15 @@ const Marketplace = () => {
             <button
               onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
               className={cn(
-                "h-9 w-9 flex items-center justify-center rounded-lg border transition-all relative shrink-0",
+                "flex items-center justify-center rounded-xl border-2 transition-all relative shrink-0",
                 isFiltersExpanded
                   ? "bg-[var(--color-logo-1)] border-[var(--color-logo-1)] text-white"
-                  : "bg-background border-border text-muted-foreground hover:text-foreground"
+                  : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
               )}
+              style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
               title="Filters"
             >
-              <FiFilter className={`w-3.5 h-3.5 ${isFiltersExpanded ? 'text-white' : ''}`} />
+              <FiFilter className={`w-4 h-4 ${isFiltersExpanded ? 'text-white' : ''}`} />
               {activeCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
                   {activeCount}
@@ -230,46 +233,48 @@ const Marketplace = () => {
             {/* Clear Filters Button */}
             <button
               onClick={handleClearAllFilters}
-              className="h-9 w-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted text-muted-foreground transition-all shrink-0"
+              className="flex items-center justify-center rounded-xl border-2 border-input hover:bg-muted hover:border-muted-foreground/30 text-muted-foreground transition-all shrink-0"
+              style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
               title="Clear filters"
             >
-              <FiX className="w-3.5 h-3.5" />
+              <FiX className="w-4 h-4" />
             </button>
 
             {/* Apply Button */}
             <button
               onClick={applyFilters}
-              className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
+              className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
+              style={{ height: 'var(--boxed-inputfield-height)' }}
             >
-              <FiCheck className="w-3.5 h-3.5" />
+              <FiCheck className="w-4 h-4" />
               {t('marketplace:filter.apply', 'Apply')}
             </button>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 border border-border rounded-lg p-0.5 bg-background shrink-0">
+            <div className="flex items-center gap-1 border-2 border-input rounded-xl p-0.5 bg-background shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
               <button
                 onClick={() => setViewMode('grid')}
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded transition-all",
+                  "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
                   viewMode === 'grid'
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 title={t('marketplace:view.grid', 'Grid view')}
               >
-                <FiGrid className="w-3.5 h-3.5" />
+                <FiGrid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded transition-all",
+                  "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
                   viewMode === 'list'
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 title={t('marketplace:view.list', 'List view')}
               >
-                <FiList className="w-3.5 h-3.5" />
+                <FiList className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -346,7 +351,7 @@ const Marketplace = () => {
               <div className="dashboard-empty-state">
                 <div className="dashboard-empty-state-card">
                   <div className="dashboard-empty-state-icon">
-                    <FiInbox className="text-muted-foreground w-8 h-8" />
+                    <FiInbox className="w-8 h-8" />
                   </div>
                   <h2 className="dashboard-empty-state-title">{t('marketplace:noResults.title', 'No positions found')}</h2>
                   <p className="dashboard-empty-state-description">

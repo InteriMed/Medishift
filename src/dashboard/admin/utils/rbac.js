@@ -64,15 +64,29 @@ export const ROLE_PERMISSIONS = {
   ]
 };
 
-export const getAdminRoles = (userRoles) => {
-  if (!userRoles || !Array.isArray(userRoles)) return [];
-  return userRoles.filter(role => Object.values(ADMIN_ROLES).includes(role));
+export const getAdminRolesFromUserProfile = (userProfile) => {
+  if (!userProfile?.adminData?.roles) return [];
+  return userProfile.adminData.roles.filter(role => Object.values(ADMIN_ROLES).includes(role));
 };
 
-export const hasPermission = (userRoles, permission) => {
-  if (!userRoles || !Array.isArray(userRoles)) return false;
+export const getAdminRoles = (adminDataOrRoles) => {
+  if (!adminDataOrRoles) return [];
+  
+  if (Array.isArray(adminDataOrRoles)) {
+    return adminDataOrRoles.filter(role => Object.values(ADMIN_ROLES).includes(role));
+  }
+  
+  if (adminDataOrRoles.roles && Array.isArray(adminDataOrRoles.roles)) {
+    return adminDataOrRoles.roles.filter(role => Object.values(ADMIN_ROLES).includes(role));
+  }
+  
+  return [];
+};
 
-  const adminRoles = getAdminRoles(userRoles);
+export const hasPermission = (adminDataOrRoles, permission) => {
+  const adminRoles = getAdminRoles(adminDataOrRoles);
+  
+  if (adminRoles.length === 0) return false;
 
   for (const role of adminRoles) {
     const rolePermissions = ROLE_PERMISSIONS[role] || [];
@@ -84,19 +98,17 @@ export const hasPermission = (userRoles, permission) => {
   return false;
 };
 
-export const hasAnyRole = (userRoles, allowedRoles) => {
-  if (!userRoles || !Array.isArray(userRoles)) return false;
-  const adminRoles = getAdminRoles(userRoles);
+export const hasAnyRole = (adminDataOrRoles, allowedRoles) => {
+  const adminRoles = getAdminRoles(adminDataOrRoles);
   return adminRoles.some(role => allowedRoles.includes(role));
 };
 
-export const hasAllRoles = (userRoles, requiredRoles) => {
-  if (!userRoles || !Array.isArray(userRoles)) return false;
-  const adminRoles = getAdminRoles(userRoles);
+export const hasAllRoles = (adminDataOrRoles, requiredRoles) => {
+  const adminRoles = getAdminRoles(adminDataOrRoles);
   return requiredRoles.every(role => adminRoles.includes(role));
 };
 
-export const isSuperAdmin = (userRoles) => {
-  return hasAnyRole(userRoles, [ADMIN_ROLES.SUPER_ADMIN]);
+export const isSuperAdmin = (adminDataOrRoles) => {
+  return hasAnyRole(adminDataOrRoles, [ADMIN_ROLES.SUPER_ADMIN]);
 };
 

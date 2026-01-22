@@ -9,12 +9,34 @@ const functions = getFunctions(firebaseApp, 'europe-west6');
 export const isAdmin = (userProfile) => {
   if (!userProfile) return false;
   
-  if (userProfile.roles && Array.isArray(userProfile.roles)) {
-    const adminRoles = ['admin', 'super_admin', 'ops_manager', 'finance', 'recruiter', 'support'];
-    return userProfile.roles.some(role => adminRoles.includes(role));
+  if (userProfile.adminData && userProfile.adminData.isActive !== false) {
+    return true;
   }
   
-  return userProfile.role === 'admin';
+  return false;
+};
+
+export const fetchAdminDocument = async (userId) => {
+  if (!userId) return null;
+  
+  try {
+    const adminDoc = await getDoc(doc(db, 'admins', userId));
+    if (adminDoc.exists()) {
+      const data = adminDoc.data();
+      if (data.isActive !== false) {
+        return data;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching admin document:', error);
+    return null;
+  }
+};
+
+export const getAdminRolesFromDoc = (adminData) => {
+  if (!adminData) return [];
+  return adminData.roles || [];
 };
 
 export const impersonateUser = async (targetUserId) => {

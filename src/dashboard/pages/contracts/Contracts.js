@@ -270,7 +270,7 @@ const Contracts = () => {
             isMobile && "overflow-y-hidden"
         )} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
             <div className={cn(
-                "shrink-0 w-full z-20 bg-gradient-to-r from-card/95 via-card/80 to-transparent backdrop-blur-sm border-b border-border/60 shadow-sm min-h-[84px] py-5 flex items-center",
+                "shrink-0 w-full z-20 bg-white border-b border-border/60 shadow-sm min-h-16 py-3 flex items-center",
                 isMobile ? "px-4" : "px-6 sm:px-8"
             )}>
                 {isMobile ? (
@@ -374,8 +374,8 @@ const Contracts = () => {
             </div>
 
             <div className={cn(
-                "flex-1 flex overflow-hidden min-h-0 relative",
-                isMobile ? "p-0" : "p-4 gap-4"
+                "flex-1 flex min-h-0 relative",
+                isMobile ? "p-0 overflow-hidden" : "p-6 gap-6 overflow-visible"
             )}>
                 <div className={cn(
                     "dashboard-sidebar-container",
@@ -391,12 +391,12 @@ const Contracts = () => {
                         isMobile && "dashboard-sidebar-inner-mobile"
                     )}>
                         {!hasAnyContracts && (!isTutorialActive || activeTutorial !== 'contracts') ? (
-                            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
-                                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 ring-4 ring-background">
                                     <FiInbox className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
                                 </div>
-                                <p className="text-sm font-medium" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', margin: 0 }}>{t('contracts:noContracts')}</p>
-                                <p className="text-xs" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', margin: 0 }}>{t('contracts:startApplying')}</p>
+                                <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('contracts:noContracts')}</h2>
+                                <p className="mb-6" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('contracts:startApplying')}</p>
                             </div>
                         ) : !hasAnyContracts && isTutorialActive && activeTutorial === 'contracts' ? (
                             <div className="flex-1 overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
@@ -409,12 +409,12 @@ const Contracts = () => {
                                 />
                             </div>
                         ) : !hasContracts ? (
-                            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
-                                <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center">
+                            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                                <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mb-6 ring-4 ring-background">
                                     <FiSearch className="w-8 h-8" style={{ color: 'var(--text-light-color)' }} />
                                 </div>
-                                <p className="text-sm font-medium" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', margin: 0 }}>{t('contracts:noMatches')}</p>
-                                <p className="text-xs" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', margin: 0 }}>{t('contracts:adjustFilters')}</p>
+                                <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('contracts:noMatches')}</h2>
+                                <p className="mb-6" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('contracts:adjustFilters')}</p>
                             </div>
                         ) : (
                             <div className="flex-1 overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
@@ -432,44 +432,44 @@ const Contracts = () => {
 
                 <div className={cn(
                     "dashboard-main-content",
-                    isMobile && selectedContract ? "translate-x-0 overflow-hidden dashboard-main-content-mobile" : "overflow-hidden dashboard-main-content-desktop"
+                    isMobile && selectedContract ? "translate-x-0 dashboard-main-content-mobile" : "dashboard-main-content-desktop"
                 )}>
-                    {selectedContract ? (
-                        <div className={cn(
-                            "dashboard-main-inner flex flex-col",
-                            isMobile && "dashboard-main-inner-mobile"
-                        )}>
-                            {isPdfView ? (
-                                <div className="h-full p-4 bg-gray-100 overflow-y-auto">
-                                    <ContractPdfView contract={selectedContract} onClose={handleClosePdfView} />
+                    <div className={cn(
+                        "dashboard-main-inner flex flex-col",
+                        isMobile && "dashboard-main-inner-mobile"
+                    )}>
+                        {selectedContract ? (
+                            <>
+                                {isPdfView ? (
+                                    <div className="h-full p-4 bg-gray-100 overflow-y-auto">
+                                        <ContractPdfView contract={selectedContract} onClose={handleClosePdfView} />
+                                    </div>
+                                ) : (
+                                    <div className="h-full overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+                                        <ContractDetails
+                                            contract={selectedContract}
+                                            onClose={handleCloseDetails}
+                                            workspaceContext={selectedWorkspace}
+                                            userPermissions={userPermissions}
+                                            onToggleView={handleToggleView}
+                                            isPdfView={isPdfView}
+                                            isMobile={isMobile}
+                                        />
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center">
+                                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 ring-4 ring-background">
+                                    <FiFileText className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
                                 </div>
-                            ) : (
-                                <div className="h-full overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
-                                    <ContractDetails
-                                        contract={selectedContract}
-                                        onClose={handleCloseDetails}
-                                        workspaceContext={selectedWorkspace}
-                                        userPermissions={userPermissions}
-                                        onToggleView={handleToggleView}
-                                        isPdfView={isPdfView}
-                                        isMobile={isMobile}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="dashboard-empty-state">
-                            <div className="dashboard-empty-state-card">
-                                <div className="dashboard-empty-state-icon">
-                                    <FiFileText className="text-muted-foreground w-8 h-8" />
-                                </div>
-                                <h2 className="dashboard-empty-state-title">{t('contracts:selectContract')}</h2>
-                                <p className="dashboard-empty-state-description">
+                                <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('contracts:selectContract')}</h2>
+                                <p className="mb-6" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
                                     {t('contracts:selectContractDesc')}
                                 </p>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
 

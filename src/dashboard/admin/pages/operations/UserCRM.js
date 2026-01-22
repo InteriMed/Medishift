@@ -415,7 +415,13 @@ const UserCRM = () => {
       };
 
       await setDoc(doc(db, 'professionalProfiles', userId), profileData);
-      await updateDoc(doc(db, 'users', userId), { roles: arrayUnion('professional'), professionalProfileId: userId, updatedAt: serverTimestamp() });
+      await updateDoc(doc(db, 'users', userId), { 
+        hasProfessionalProfile: true,
+        role: 'professional',
+        roles: arrayUnion('professional'), 
+        professionalProfileId: userId, 
+        updatedAt: serverTimestamp() 
+      });
       await loadUserDetails(userId);
       alert('Professional Profile created.');
     } catch (error) {
@@ -525,6 +531,8 @@ const UserCRM = () => {
       };
       await setDoc(doc(db, 'facilityProfiles', newFacilityId), facilityData);
       await updateDoc(doc(db, 'users', userId), {
+        hasFacilityProfile: true,
+        role: 'facility',
         facilityMemberships: arrayUnion({ facilityId: newFacilityId, facilityName: newFacilityName, role: 'admin', facilityProfileId: newFacilityId }),
         roles: arrayUnion('facility', `facility_admin_${newFacilityId}`),
         updatedAt: serverTimestamp()

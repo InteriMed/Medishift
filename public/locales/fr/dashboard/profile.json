@@ -24,6 +24,8 @@
     "copy": "Copier",
     "autofillTabSuccess": "Remplissage automatique réussi",
     "autofillSuccess": "Remplissage automatique réussi",
+    "autofillOptions": "Options de remplissage auto",
+    "betaFill": "Remplissage bêta",
     "cached": "En cache",
     "other": "Autre",
     "view": "Voir",
@@ -56,6 +58,7 @@
     "title": "Paramètres du profil",
     "subtitle": "Gérez vos informations personnelles et professionnelles",
     "completeProfile": "Complétez votre profil",
+    "profileCompletion": "Complétion du profil",
     "completeProfileDesc": "Votre profil est complété à {{percentage}}%. Complétez toutes les sections pour augmenter votre visibilité auprès des employeurs.",
     "loading": "Chargement des informations du profil...",
     "sectionUpdated": "Section du profil mise à jour avec succès",
@@ -249,6 +252,11 @@
   "professionalBackground": {
     "title": "Parcours professionnel",
     "subtitle": "Présentez votre formation, votre expérience professionnelle et vos qualifications.",
+    "educationDescription": "Présentez votre formation, votre expérience professionnelle et vos qualifications.",
+    "qualifications": "Qualifications",
+    "qualificationsDescription": "Présentez votre formation, votre expérience professionnelle et vos qualifications.",
+    "noQualifications": "Aucune entrée ajoutée pour le moment.",
+    "workExperienceDescription": "Présentez votre formation, votre expérience professionnelle et vos qualifications.",
     "education": "Formation",
     "addEducation": "Ajouter une formation",
     "updateEducation": "Mettre à jour la formation",
@@ -418,7 +426,18 @@
     "spouseNameOptional": "Nom du conjoint (optionnel)",
     "spouseBirthdateOptional": "Date de naissance du conjoint (optionnel)",
     "employmentEligibilityTitle": "Éligibilité à l'emploi",
-    "payrollDataTitle": "Données de paie"
+    "payrollDataTitle": "Données de paie",
+    "civilStatus": "État civil",
+    "taxCanton": "Canton fiscal",
+    "permitNumber": "Numéro de permis",
+    "issuingCanton": "Canton émetteur",
+    "sendTestEmail": "Envoyer un e-mail test",
+    "testEmailSent": "E-mail test envoyé avec succès",
+    "testEmailFailed": "Échec de l'envoi de l'e-mail test",
+    "sendingCode": "Envoi du code...",
+    "codeSentTo": "Code envoyé à",
+    "yourEmail": "votre e-mail",
+    "yourPhone": "votre téléphone"
   },
   "documents": {
     "title": "Téléchargement de documents",
@@ -496,6 +515,7 @@
     "savedSuccessfully": "Enregistré avec succès",
     "saveFailed": "Échec de l'enregistrement",
     "title": "Paramètres",
+    "subtitle": "Gérez vos préférences de plateforme et paramètres de notification.",
     "generalTab": "Onglet général",
     "advancedTab": "Onglet avancé",
     "dangerZone": "Zone dangereuse",
@@ -522,7 +542,6 @@
       "reauthMessage": "Message de ré-authentification",
       "subtitle": "Sous-titre"
     },
-    "subtitle": "Sous-titre",
     "operationalSettingsTitle": "Paramètres opérationnels",
     "contractSettingsTitle": "Paramètres de contrat",
     "platformSettingsTitle": "Paramètres de plateforme",
@@ -530,7 +549,20 @@
     "marketplaceSettingsTitle": "Paramètres de marketplace",
     "availabilitySettingsTitle": "Paramètres de disponibilité",
     "notificationPreferencesTitle": "Préférences de notification",
+    "availabilityType": "Type de disponibilité",
+    "minHoursPerWeek": "Heures minimum par semaine",
+    "noticePeriodDays": "Délai de préavis (jours)",
+    "earliestStartDate": "Date de début au plus tôt",
     "availabilityNotes": "Notes de disponibilité",
+    "activeOnMarketplace": "Actif sur le marketplace",
+    "emailNotifications": "Notifications par e-mail",
+    "pushNotifications": "Notifications push",
+    "smsNotifications": "Notifications SMS",
+    "marketplaceNotifications": "Mises à jour du marketplace",
+    "scheduleNotifications": "Changements de planning",
+    "contractNotifications": "Mises à jour des contrats",
+    "premiumFeatureRequired": "Abonnement Premium requis pour cette fonctionnalité",
+    "premiumFeature": "Fonctionnalité Premium",
     "leaveFacility": {
       "success": "Succès",
       "error": "Erreur",
@@ -612,7 +644,37 @@
   "subscription": {
     "status": "Statut",
     "premium": "Premium",
-    "free": "Gratuit"
+    "free": "Gratuit",
+    "title": "Plan d'abonnement",
+    "subtitle": "Choisissez le plan qui correspond le mieux à vos besoins",
+    "currentPlan": "Plan actuel",
+    "perMonth": "par mois",
+    "upgrading": "Mise à niveau...",
+    "upgrade": "Améliorer",
+    "upgradeToPremium": "Passer à Premium",
+    "classic": {
+      "title": "Classique",
+      "price": "Gratuit"
+    },
+    "premium": {
+      "title": "Premium",
+      "price": "CHF 29.90"
+    },
+    "features": {
+      "classic": {
+        "basicMatching": "Correspondance d'emploi basique",
+        "emailNotifications": "Notifications par e-mail",
+        "profileManagement": "Gestion du profil",
+        "documentStorage": "Stockage de documents"
+      },
+      "premium": {
+        "priorityMatching": "Correspondance d'emploi prioritaire",
+        "smsNotifications": "Notifications SMS",
+        "advancedAnalytics": "Analyses avancées",
+        "dedicatedSupport": "Support dédié",
+        "bankingAccess": "Accès bancaire amélioré"
+      }
+    }
   },
   "restartTutorial": {
     "title": "Débloquer l'accès complet",

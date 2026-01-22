@@ -220,18 +220,19 @@ const MiniCalendar = ({
   });
 
   return (
-    <div className="w-full bg-card rounded-xl border border-border/60 p-4 select-none">
+    <div className="w-full bg-card backdrop-blur-sm rounded-2xl p-3 select-none">
       {/* Header with Navigation */}
-      <div className="flex items-center justify-between mb-0 px-1">
-        <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-          <div className="relative group cursor-pointer hover:bg-muted/50 px-2.5 py-1.5 rounded-lg transition-colors"
+      <div className="flex items-center justify-between mb-0 px-0.5">
+        <div className="flex items-center gap-1 text-foreground" style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
+          <div className="relative group cursor-pointer hover:bg-muted/50 px-2 py-1 rounded-lg transition-colors"
             onClick={() => { setShowMonthDropdown(!showMonthDropdown); setShowYearDropdown(false); }}
             ref={monthDropdownRef}>
             <span className="capitalize">{formatMonth()}</span>
             {showMonthDropdown && (
               <div className="absolute top-full left-0 mt-1 w-36 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-30 py-1">
                 {monthOptions.map(m => (
-                  <div key={m.value} className={cn("px-3 py-2 hover:bg-muted text-sm cursor-pointer flex justify-between items-center", calendarDate.getMonth() === m.value && "bg-primary/10 text-primary font-medium")}
+                  <div key={m.value} className={cn("px-3 py-2 hover:bg-muted cursor-pointer flex justify-between items-center", calendarDate.getMonth() === m.value && "bg-primary/10 text-primary")}
+                    style={{ fontSize: 'var(--font-size-medium)', fontWeight: calendarDate.getMonth() === m.value ? 'var(--font-weight-medium)' : 'var(--font-weight-normal)' }}
                     onClick={(e) => { e.stopPropagation(); handleMonthChange(m.value); }}>
                     {m.label}
                     {calendarDate.getMonth() === m.value && <FiCheck size={14} />}
@@ -240,14 +241,15 @@ const MiniCalendar = ({
               </div>
             )}
           </div>
-          <div className="relative group cursor-pointer hover:bg-muted/50 px-2.5 py-1.5 rounded-lg transition-colors"
+          <div className="relative group cursor-pointer hover:bg-muted/50 px-2 py-1 rounded-lg transition-colors"
             onClick={() => { setShowYearDropdown(!showYearDropdown); setShowMonthDropdown(false); }}
             ref={yearDropdownRef}>
             <span>{formatYear()}</span>
             {showYearDropdown && (
               <div className="absolute top-full left-0 mt-1 w-24 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-30 py-1">
                 {yearOptions.map(y => (
-                  <div key={y.value} className={cn("px-3 py-2 hover:bg-muted text-sm cursor-pointer flex justify-between items-center", calendarDate.getFullYear() === y.value && "bg-primary/10 text-primary font-medium")}
+                  <div key={y.value} className={cn("px-3 py-2 hover:bg-muted cursor-pointer flex justify-between items-center", calendarDate.getFullYear() === y.value && "bg-primary/10 text-primary")}
+                    style={{ fontSize: 'var(--font-size-medium)', fontWeight: calendarDate.getFullYear() === y.value ? 'var(--font-weight-medium)' : 'var(--font-weight-normal)' }}
                     onClick={(e) => { e.stopPropagation(); handleYearChange(y.value); }}>
                     {y.label}
                     {calendarDate.getFullYear() === y.value && <FiCheck size={14} />}
@@ -258,26 +260,26 @@ const MiniCalendar = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
-          <button className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors" onClick={() => navigateMonth(-1)}>
+        <div className="flex items-center gap-0.5">
+          <button className="p-1 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors" onClick={() => navigateMonth(-1)}>
             <FiChevronLeft size={16} />
           </button>
-          <button className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors" onClick={() => navigateMonth(1)}>
+          <button className="p-1 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors" onClick={() => navigateMonth(1)}>
             <FiChevronRight size={16} />
           </button>
         </div>
       </div>
 
       {/* Days Grid */}
-      <div className="grid grid-cols-7 mb-2.5 text-center">
+      <div className="grid grid-cols-7 mb-1.5 text-center">
         {shortDays.map((day, index) => (
-          <div key={index} className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider py-1.5">
+          <div key={index} className="text-muted-foreground uppercase tracking-wider py-1" style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
             {day.substr(0, 1)}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-y-2">
+      <div className="grid grid-cols-7 gap-y-1">
         {calendarDays.map((dayInfo, index) => {
           const { date, isCurrentMonth } = dayInfo;
           const isSelected = isSameDay(date, currentDate);
@@ -293,25 +295,27 @@ const MiniCalendar = ({
               key={index}
               onClick={() => handleDayClick(date)}
               className={cn(
-                "relative flex items-center justify-center text-sm cursor-pointer transition-all h-9",
+                "relative flex items-center justify-center cursor-pointer transition-all h-7",
                 // Width: Highlighted items fill the cell
-                isHighlight ? "w-full" : "w-9 mx-auto rounded-lg",
+                isHighlight ? "w-full" : "w-7 mx-auto rounded-lg",
                 // Rounding
                 isHighlight && view === 'week'
                   ? cn(isWeekStart && "rounded-l-lg", isWeekEnd && "rounded-r-lg")
                   : "rounded-lg",
 
                 // Text styling
-                !isCurrentMonth && !isHighlight ? "text-muted-foreground/30" : isHighlight ? "text-foreground font-bold" : "text-foreground",
+                !isCurrentMonth && !isHighlight ? "text-muted-foreground/30" : "text-foreground",
 
                 // Hover effect
                 !isHighlight && "hover:bg-muted/50"
               )}
-              style={
-                isHighlight
+              style={{
+                ...(isHighlight
                   ? { backgroundColor: 'color-mix(in srgb, var(--color-logo-1), transparent 85%)' }
-                  : {}
-              }
+                  : {}),
+                fontSize: 'var(--font-size-small)',
+                fontWeight: isHighlight ? 'var(--font-weight-large)' : 'var(--font-weight-normal)'
+              }}
             >
               <span className="z-10 relative">{date.getDate()}</span>
 
@@ -319,9 +323,9 @@ const MiniCalendar = ({
               {dayEvents.length > 0 && (
                 <div className="absolute bottom-0 flex gap-0.5 justify-center">
                   {dayEvents.length > 3
-                    ? <span className="w-1.5 h-1.5 rounded-full bg-primary/70" />
+                    ? <span className="w-1 h-1 rounded-full bg-primary/70" />
                     : dayEvents.slice(0, 3).map((_, i) => (
-                      <span key={i} className="w-1.5 h-1.5 rounded-full bg-primary/60" />
+                      <span key={i} className="w-1 h-1 rounded-full bg-primary/60" />
                     ))
                   }
                 </div>

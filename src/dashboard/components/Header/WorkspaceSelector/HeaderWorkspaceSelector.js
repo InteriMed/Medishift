@@ -42,7 +42,6 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
     };
   }, []);
 
-  // Close dropdown on escape key
   useEffect(() => {
     const handleEscapeKey = (event) => {
       if (event.key === 'Escape') {
@@ -57,11 +56,6 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
       };
     }
   }, [dropdownOpen]);
-
-  // Hide selector if no workspaces are available
-  if (!workspaces || workspaces.length === 0) {
-    return null;
-  }
 
   const getWorkspaceIcon = (workspaceType) => {
     if (workspaceType === WORKSPACE_TYPES.PERSONAL) return <FiUser />;
@@ -91,18 +85,19 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
   };
 
   const displayWorkspace = selectedWorkspace || (workspaces && workspaces.length > 0 ? workspaces[0] : null);
+  const hasWorkspaces = workspaces && workspaces.length > 0;
+  const defaultColor = LOGO_COLOR_1;
 
   return (
     <div className="relative" ref={dropdownRef} data-tutorial="workspace-selector">
       <button
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all shadow-sm hover:shadow hover:opacity-90"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all hover:opacity-90"
         onClick={toggleDropdown}
         aria-expanded={dropdownOpen}
         aria-haspopup="listbox"
         aria-label="Select workspace"
         style={{
-          borderColor: getWorkspaceColor(displayWorkspace?.type),
-          backgroundColor: getWorkspaceColor(displayWorkspace?.type),
+          backgroundColor: displayWorkspace ? getWorkspaceColor(displayWorkspace?.type) : defaultColor,
         }}
       >
         {displayWorkspace ? (
@@ -127,7 +122,21 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
             </div>
           </>
         ) : (
-          <span className="text-sm text-white">Select Workspace</span>
+          <>
+            <div
+              className="flex items-center justify-center w-6 h-6 rounded-md"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                color: '#ffffff'
+              }}
+            >
+              <FiUser />
+            </div>
+            <span className="text-sm font-medium text-white">Select Workspace</span>
+            <div style={{ color: '#ffffff' }}>
+              {dropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
+            </div>
+          </>
         )}
       </button>
 
@@ -136,16 +145,22 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
           className="absolute top-full left-0 mt-2 w-72 rounded-xl border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
           style={{
             backgroundColor: 'var(--background-div-color, #ffffff)',
-            zIndex: 15000 // Higher than onboarding overlays
+            zIndex: 15000
           }}
           role="listbox"
         >
           <div className="p-2">
-            <div className="text-xs font-semibold text-muted-foreground px-3 py-2 mb-1">
-              Current Workspace
-            </div>
+            {hasWorkspaces ? (
+              <div className="text-xs font-semibold text-muted-foreground px-3 py-2 mb-1">
+                Current Workspace
+              </div>
+            ) : (
+              <div className="text-xs text-muted-foreground px-3 py-2 mb-1">
+                No workspaces available. Complete onboarding to access workspaces.
+              </div>
+            )}
 
-            {workspaces.map((workspace, index) => {
+            {hasWorkspaces && workspaces.map((workspace, index) => {
               const isSelected = selectedWorkspace?.id === workspace.id;
               const workspaceColor = getWorkspaceColor(workspace.type);
 
@@ -199,7 +214,6 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
               );
             })}
 
-            {/* Footer / Children Content (e.g., Create Business Button) */}
             {children}
           </div>
         </div>

@@ -2,7 +2,6 @@
   background-color: var(--background-div-color, #ffffff);
   border-radius: 10px;
   padding: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--grey-1, #e0e0e0);
   max-width: 100%;
 }
@@ -20,6 +19,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+  padding-bottom: 12px;
 }
 
 .dateControls {

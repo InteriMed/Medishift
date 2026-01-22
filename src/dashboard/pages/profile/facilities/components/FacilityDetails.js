@@ -17,22 +17,25 @@ import useAutoSave from '../../../../hooks/useAutoSave';
 // Tailwind styles (copied from PersonalDetails.js to ensure consistency)
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 px-6 py-2 shadow-sm w-full max-w-[1400px] mx-auto h-16 flex items-center",
+  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
   sectionTitle: "text-2xl font-semibold mb-0",
-  sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  sectionSubtitle: "text-sm font-medium text-muted-foreground",
+  sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+  sectionSubtitle: "text-sm font-medium",
+  sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   subtitleRow: "flex items-end justify-between gap-4",
-  mandatoryFieldLegend: "text-xs text-muted-foreground",
+  mandatoryFieldLegend: "text-xs",
+  mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   mandatoryMark: "text-destructive",
   sectionsWrapper: "facility-details-sections-wrapper flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
-  sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
+  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
   cardHeader: "flex items-center gap-4 mb-0",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
+  cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+  cardIconStyle: { color: 'var(--primary-color)' },
   cardTitle: "flex-1",
   cardTitleH3: "m-0",
-  cardTitleH3Style: { color: 'hsl(var(--card-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+  cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   grid: "grid grid-cols-1 gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "md:col-span-2",
@@ -294,12 +297,9 @@ const FacilityDetails = ({
       <div className={`${styles.sectionContainer} facility-details-container`}>
         {/* Title Card */}
         <div className={styles.headerCard}>
-          <div className="flex-1">
+          <div className="flex flex-col gap-1 flex-1">
             <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{currentTabConfig ? t(currentTabConfig.labelKey) : activeTab}</h2>
-            <div className={styles.subtitleRow}>
-              <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('facilityDetails.subtitle', 'Please ensure facility details are accurate and up to date.')}</p>
-              <div className={styles.mandatoryFieldLegend}><span className={styles.mandatoryMark}>*</span> {t('common.mandatoryFields')}</div>
-            </div>
+            <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('facilityDetails.subtitle', 'Please ensure facility details are accurate and up to date.')}</p>
           </div>
         </div>
 

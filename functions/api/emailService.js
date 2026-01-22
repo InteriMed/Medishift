@@ -100,17 +100,14 @@ const sendAdminEmail = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userDoc = await db.collection('users').doc(auth.uid).get();
-    if (!userDoc.exists) {
-      throw new HttpsError('not-found', 'User not found');
+    const adminDoc = await db.collection('admins').doc(auth.uid).get();
+    if (!adminDoc.exists || adminDoc.data().isActive === false) {
+      throw new HttpsError('permission-denied', 'Only administrators can send emails');
     }
 
-    const userData = userDoc.data();
-    const isAdmin = userData.role === 'admin' ||
-      userData.role === 'super_admin' ||
-      (userData.roles && userData.roles.some(r => ['admin', 'super_admin'].includes(r)));
-
-    if (!isAdmin) {
+    const adminData = adminDoc.data();
+    const adminRoles = adminData.roles || [];
+    if (!adminRoles.includes('super_admin') && !adminRoles.includes('ops_manager')) {
       throw new HttpsError('permission-denied', 'Only administrators can send emails');
     }
 
@@ -182,17 +179,14 @@ const sendSupportResponse = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userDoc = await db.collection('users').doc(auth.uid).get();
-    if (!userDoc.exists) {
-      throw new HttpsError('not-found', 'User not found');
+    const adminDoc = await db.collection('admins').doc(auth.uid).get();
+    if (!adminDoc.exists || adminDoc.data().isActive === false) {
+      throw new HttpsError('permission-denied', 'Only support staff can respond to tickets');
     }
 
-    const userData = userDoc.data();
-    const isAdmin = userData.role === 'admin' ||
-      userData.role === 'super_admin' ||
-      (userData.roles && userData.roles.some(r => ['admin', 'super_admin', 'support'].includes(r)));
-
-    if (!isAdmin) {
+    const adminData = adminDoc.data();
+    const adminRoles = adminData.roles || [];
+    if (!adminRoles.includes('super_admin') && !adminRoles.includes('ops_manager') && !adminRoles.includes('support')) {
       throw new HttpsError('permission-denied', 'Only support staff can respond to tickets');
     }
 

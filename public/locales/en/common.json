@@ -590,5 +590,6 @@
   "create": "Create",
   "refresh": "Refresh",
   "settings": "Settings",
-  "back": "Back"
+  "back": "Back",
+  "collapse": "Collapse"
 }

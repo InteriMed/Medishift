@@ -9,7 +9,7 @@ import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 
 const AdminRoute = ({ children }) => {
   const { currentUser, userProfile, loading } = useAuth();
-  const { selectedWorkspace } = useDashboard();
+  const { selectedWorkspace, user } = useDashboard();
 
   if (loading) {
     return <LoadingSpinner />;
@@ -20,7 +20,14 @@ const AdminRoute = ({ children }) => {
     return <Navigate to={redirectPath} replace />;
   }
 
-  if (!isAdmin(userProfile)) {
+  // Check admin status from both AuthContext userProfile and DashboardContext user
+  const hasAdminAccess = isAdmin(userProfile) || isAdmin(user);
+  
+  if (!hasAdminAccess) {
+    // If workspace is admin type, wait a bit for adminData to load
+    if (selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN) {
+      return <LoadingSpinner />;
+    }
     const redirectPath = selectedWorkspace ? buildDashboardUrl('/overview', selectedWorkspace.id) : '/dashboard/overview';
     return <Navigate to={redirectPath} replace />;
   }

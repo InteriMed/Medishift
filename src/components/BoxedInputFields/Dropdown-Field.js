@@ -106,13 +106,6 @@ const SimpleDropdown = ({
     setIsOpen(false);
   };
 
-  // Extract plain label text when a React element is provided to avoid duplicate asterisks
-  let labelContent = label;
-  if (React.isValidElement(label) && label.props && label.props.children) {
-    const children = label.props.children;
-    labelContent = Array.isArray(children) ? children[0] : children;
-  }
-
   // Use label if provided, otherwise use placeholder as floating label
   const floatingLabel = label || placeholder;
   const hasValue = !!selectedOption;
@@ -127,7 +120,7 @@ const SimpleDropdown = ({
         {/* Floating label */}
         {label && (
           <label className={`boxed-inputfield-label ${(isOpen || hasValue) ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}>
-            {labelContent || placeholder}
+            {label || placeholder}
             {required && !hasRequiredIndicator(floatingLabel) && <span className="boxed-inputfield-required">*</span>}
           </label>
         )}
@@ -136,7 +129,7 @@ const SimpleDropdown = ({
           className={`boxed-dropdown-selected ${error ? 'boxed-dropdown-selected--error' : ''} ${!selectedOption ? 'boxed-dropdown-placeholder' : ''}`}
           onClick={() => setIsOpen(!isOpen)}
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? selectedOption.label : (isOpen ? placeholder : '')}
         </div>
 
         <div

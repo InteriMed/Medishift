@@ -82,7 +82,8 @@ function BoxedSwitchField({
 
     const handleContainerClick = (e) => {
         if (!disabled) {
-            if (e.target.type !== 'checkbox') {
+            const isInsideSwitch = e.target.closest('.boxed-switchfield-switch-label');
+            if (e.target.type !== 'checkbox' && !isInsideSwitch) {
                 const newChecked = !checked;
                 if (onChange) {
                     onChange(newChecked);
@@ -90,6 +91,20 @@ function BoxedSwitchField({
                 if (error && onErrorReset) {
                     onErrorReset();
                 }
+            }
+            setIsFocused(true);
+        }
+    };
+
+    const handleSwitchClick = (e) => {
+        e.stopPropagation();
+        if (!disabled) {
+            const newChecked = !checked;
+            if (onChange) {
+                onChange(newChecked);
+            }
+            if (error && onErrorReset) {
+                onErrorReset();
             }
             setIsFocused(true);
         }
@@ -117,7 +132,7 @@ function BoxedSwitchField({
                 )}
 
                 <div className="boxed-switchfield-content">
-                    <label className="boxed-switchfield-switch-label">
+                    <div className="boxed-switchfield-switch-label" onClick={handleSwitchClick}>
                         <input
                             type="checkbox"
                             name={name}
@@ -127,9 +142,10 @@ function BoxedSwitchField({
                             onBlur={handleBlur}
                             disabled={disabled}
                             className="boxed-switchfield-switch-input"
+                            onClick={(e) => e.stopPropagation()}
                         />
                         <span className={`boxed-switchfield-slider round ${checked ? 'boxed-switchfield-slider--checked' : ''} ${error ? 'boxed-switchfield-slider--error' : ''}`}></span>
-                    </label>
+                    </div>
                 </div>
             </div>
         </div>

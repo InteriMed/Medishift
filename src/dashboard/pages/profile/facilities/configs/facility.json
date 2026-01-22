@@ -6,6 +6,7 @@
       { "id": "facilityCoreDetails", "labelKey": "tabs.facilityCoreDetails" },
       { "id": "facilityLegalBilling", "labelKey": "tabs.facilityLegalBilling" },
       { "id": "facilityDocuments", "labelKey": "tabs.facilityDocuments" },
+      { "id": "account", "labelKey": "tabs.account" },
       { "id": "settings", "labelKey": "tabs.settings" }
     ],
   

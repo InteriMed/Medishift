@@ -23,7 +23,6 @@
   overflow-x: hidden;
   border-radius: 12px;
   margin-right: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .sidebarContainer::-webkit-scrollbar {
@@ -169,8 +168,7 @@
 }
 
 .headerCard {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(8px);
+  background: white;
   padding: 2rem;
   border: 1px solid var(--border-light, #e2e8f0);
   border-radius: 12px;
@@ -179,7 +177,6 @@
   flex-direction: column;
   justify-content: center;
   margin-top: 0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .sectionTitle {
@@ -209,13 +206,10 @@
 }
 
 .sectionCard {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(8px);
+  background: white;
   border-radius: 12px;
   border: 1px solid var(--border-light, #e2e8f0);
   padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cardHeader {
@@ -281,7 +275,6 @@
   padding: 20px;
   background-color: var(--background-div-color, #ffffff);
   border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
 }
 

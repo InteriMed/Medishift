@@ -42,11 +42,21 @@ const verifyBankingAccessCode = onCall(
       const tempCode = userData.security?.tempBankingCode;
       const tempCodeExpiry = userData.security?.tempBankingCodeExpiry;
       
+      console.log('[Banking Verify] User:', userId);
+      console.log('[Banking Verify] Collection:', collectionName);
+      console.log('[Banking Verify] Input code:', code, 'Type:', typeof code);
+      console.log('[Banking Verify] Stored tempCode:', tempCode, 'Type:', typeof tempCode);
+      console.log('[Banking Verify] Stored tempCodeExpiry:', tempCodeExpiry);
+      
       if (tempCode && tempCodeExpiry) {
         const expiryDate = tempCodeExpiry.toDate ? tempCodeExpiry.toDate() : new Date(tempCodeExpiry);
+        console.log('[Banking Verify] Expiry date:', expiryDate, 'Now:', new Date());
+        console.log('[Banking Verify] Is expired:', Date.now() >= expiryDate.getTime());
         
         if (Date.now() < expiryDate.getTime()) {
-          if (code === tempCode) {
+          console.log('[Banking Verify] Code comparison:', code, '===', tempCode, '?', code === tempCode);
+          console.log('[Banking Verify] Trimmed comparison:', code.trim(), '===', String(tempCode).trim(), '?', code.trim() === String(tempCode).trim());
+          if (code.trim() === String(tempCode).trim()) {
             await db.collection(collectionName).doc(userId).update({
               'security.lastBankingAccessGranted': new Date(),
               'security.failedBankingAccessAttempts': 0,
@@ -63,14 +73,24 @@ const verifyBankingAccessCode = onCall(
             });
 
             return { success: true };
+          } else {
+            console.log('[Banking Verify] Code mismatch - input:', code, 'stored:', tempCode);
+            await db.collection(collectionName).doc(userId).update({
+              'security.failedBankingAccessAttempts': (userData.security?.failedBankingAccessAttempts || 0) + 1,
+              'security.lastFailedBankingAccess': new Date()
+            });
+            throw new HttpsError('permission-denied', 'Invalid access code');
           }
         } else {
+          console.log('[Banking Verify] Code expired');
           await db.collection(collectionName).doc(userId).update({
             'security.tempBankingCode': null,
             'security.tempBankingCodeExpiry': null
           });
           throw new HttpsError('deadline-exceeded', 'Verification code has expired. Please request a new one.');
         }
+      } else {
+        console.log('[Banking Verify] No temp code found, checking permanent hash');
       }
       
       const storedHash = userData.bankingAccessHash;

@@ -184,14 +184,14 @@ const OrganizationDashboard = () => {
 
     // Facility Card Component
     const FacilityCard = ({ facility, canRemove }) => (
-        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-shadow">
+        <div className="dashboard-card hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+                    <div className="metric-icon-container bg-primary/10 text-primary">
                         <FiHome className="w-5 h-5" />
                     </div>
                     <div>
-                        <h4 className="font-medium text-foreground">
+                        <h4 className="font-semibold text-foreground">
                             {facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility')}
                         </h4>
                         <p className="text-sm text-muted-foreground">
@@ -217,8 +217,8 @@ const OrganizationDashboard = () => {
 
             {/* Chain Admin Badge */}
             {facility.chainAdmins?.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-border">
-                    <div className="flex items-center gap-2 text-xs text-green-600">
+                <div className="mt-3 pt-3 border-t border-border/50">
+                    <div className="flex items-center gap-2 text-xs text-green-600 font-medium">
                         <FiShield className="w-3.5 h-3.5" />
                         <span>{t('organization:labels.chainAdminsSynced', 'Chain admins synced')}</span>
                     </div>

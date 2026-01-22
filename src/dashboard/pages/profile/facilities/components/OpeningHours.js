@@ -9,20 +9,19 @@ import Switch from '../../../../../components/BoxedInputFields/Switch';
 
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border p-6 pb-4 shadow-md w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
   sectionTitle: "text-2xl font-semibold",
-  sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  sectionSubtitle: "text-sm font-medium text-muted-foreground",
-  subtitleRow: "flex items-end justify-between gap-4",
-  mandatoryFieldLegend: "text-xs text-muted-foreground",
-  mandatoryMark: "text-destructive",
+  sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+  sectionSubtitle: "text-sm font-medium",
+  sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionsWrapper: "flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
-  sectionCard: "bg-card rounded-xl border border-border p-6 shadow-md w-full",
+  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
   cardHeader: "flex items-center gap-4 mb-6",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
+  cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+  cardIconStyle: { color: 'var(--primary-color)' },
   cardTitle: "flex-1",
   cardTitleH3: "m-0",
-  cardTitleH3Style: { color: 'hsl(var(--card-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+  cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   openingHoursGrid: "grid grid-cols-1 md:grid-cols-2 gap-3",
   dayRow: "flex flex-col gap-3 p-4 border border-border/60 rounded-lg bg-card/50 transition-all hover:border-primary/30",
   dayRowClosed: "opacity-60",
@@ -107,11 +106,11 @@ const OpeningHours = ({
   return (
     <div className={styles.sectionContainer}>
       <div className={styles.headerCard}>
-        <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>
-          {t('operations.openingHoursTitle')}
-        </h2>
-        <div className={styles.subtitleRow}>
-          <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+        <div className="flex flex-col gap-1 flex-1">
+          <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>
+            {t('operations.openingHoursTitle')}
+          </h2>
+          <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>
             {t('operations.subtitle')}
           </p>
         </div>

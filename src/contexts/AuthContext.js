@@ -169,7 +169,23 @@ export const AuthProvider = ({ children }) => {
             console.log(`[AuthContext] ✅ User document created for ${user.uid}`);
           };
 
-          // Get additional user data from Firestore with timeout
+          const fetchAdminData = async (userId) => {
+            try {
+              const adminDocRef = doc(db, 'admins', userId);
+              const adminDoc = await getDoc(adminDocRef);
+              if (adminDoc.exists()) {
+                const data = adminDoc.data();
+                if (data.isActive !== false) {
+                  return data;
+                }
+              }
+              return null;
+            } catch (err) {
+              console.debug('[AuthContext] Admin data fetch error:', err.message);
+              return null;
+            }
+          };
+
           const fetchData = async () => {
             if (!db) {
               throw new Error('Firestore database not initialized');
@@ -179,7 +195,6 @@ export const AuthProvider = ({ children }) => {
             const userDocRef = doc(db, 'users', user.uid);
             
             try {
-              // Use a shorter timeout for the initial read
               const quickReadPromise = getDoc(userDocRef);
               const quickTimeout = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Quick read timeout')), 5000)
@@ -187,7 +202,6 @@ export const AuthProvider = ({ children }) => {
               
               let userDoc;
               try {
-                // Catch any rejections from quickReadPromise that occur after timeout
                 quickReadPromise.catch(err => {
                   if (err.message !== 'Quick read timeout') {
                     console.debug('[AuthContext] Background quick read error (after timeout):', err.message);
@@ -195,7 +209,6 @@ export const AuthProvider = ({ children }) => {
                 });
                 userDoc = await Promise.race([quickReadPromise, quickTimeout]);
               } catch (quickError) {
-                // If quick read fails, try creating document directly
                 console.log(`[AuthContext] Quick read failed, creating user document directly for ${user.uid}`);
                 await createUserDocument(user, userDocRef);
                 userDoc = await getDoc(userDocRef);
@@ -204,17 +217,30 @@ export const AuthProvider = ({ children }) => {
               if (userDoc.exists()) {
                 const userData = userDoc.data();
                 console.log(`[AuthContext] User document found for ${user.uid}`);
-                setUserProfile({ id: userDoc.id, ...userData });
+                
+                const adminData = await fetchAdminData(user.uid);
+                const profileWithAdmin = { 
+                  id: userDoc.id, 
+                  ...userData,
+                  adminData: adminData
+                };
+                
+                setUserProfile(profileWithAdmin);
                 await checkOnboardingStatus(user.uid, userData);
               } else {
                 console.log(`[AuthContext] User document doesn't exist, creating for ${user.uid}`);
                 await createUserDocument(user, userDocRef);
                 
-                // Fetch the newly created document
                 const newUserDoc = await getDoc(userDocRef);
                 if (newUserDoc.exists()) {
                   const userData = newUserDoc.data();
-                  setUserProfile({ id: newUserDoc.id, ...userData });
+                  const adminData = await fetchAdminData(user.uid);
+                  const profileWithAdmin = { 
+                    id: newUserDoc.id, 
+                    ...userData,
+                    adminData: adminData
+                  };
+                  setUserProfile(profileWithAdmin);
                   await checkOnboardingStatus(user.uid, userData);
                 } else {
                   await checkOnboardingStatus(user.uid);
@@ -222,7 +248,6 @@ export const AuthProvider = ({ children }) => {
               }
             } catch (docError) {
               console.error(`[AuthContext] Error with user document:`, docError);
-              // Try to create document anyway as fallback
               try {
                 console.log(`[AuthContext] Fallback: Creating user document for ${user.uid}`);
                 await createUserDocument(user, userDocRef);
@@ -449,13 +474,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Manually refresh user data
   const refreshUserData = async () => {
     if (currentUser) {
       try {
         const profile = await getUserProfile(currentUser.uid);
-        setUserProfile(profile);
-        return profile;
+        
+        let adminData = null;
+        try {
+          const adminDocRef = doc(db, 'admins', currentUser.uid);
+          const adminDoc = await getDoc(adminDocRef);
+          if (adminDoc.exists()) {
+            const data = adminDoc.data();
+            if (data.isActive !== false) {
+              adminData = data;
+            }
+          }
+        } catch (err) {
+          console.debug('[AuthContext] Admin data refresh error:', err.message);
+        }
+        
+        const profileWithAdmin = {
+          ...profile,
+          adminData: adminData
+        };
+        
+        setUserProfile(profileWithAdmin);
+        return profileWithAdmin;
       } catch (err) {
         console.error("Error refreshing user data:", err);
         throw err;

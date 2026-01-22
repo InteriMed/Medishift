@@ -490,7 +490,35 @@
     "spousePercentage": "% Attività",
     "spouseDetails": "Dettagli Coniuge",
     "spouseNameOptional": "Nome Coniuge (opzionale)",
-    "spouseBirthdateOptional": "Nascita Coniuge (opzionale)"
+    "spouseBirthdateOptional": "Nascita Coniuge (opzionale)",
+    "taxCanton": "Cantone Fiscale",
+    "permitNumber": "Numero Permesso",
+    "issuingCanton": "Cantone Emittente",
+    "bankingAccessTitle": "Accesso Bancario Sicuro",
+    "secureAccess": "Accesso Bancario Sicuro",
+    "bankingAccessMessage": "Per sicurezza, conferma la tua identità.",
+    "bankingAccessGranted": "Accesso concesso",
+    "verificationMethod": "Scegli metodo di verifica",
+    "sendToEmail": "Invia codice via email",
+    "sendToPhone": "Invia codice via SMS",
+    "sendCode": "Invia codice",
+    "sendCodeError": "Errore invio codice",
+    "codeSent": "Codice inviato con successo",
+    "codeSentTo": "Codice inviato a",
+    "yourEmail": "la tua email",
+    "yourPhone": "il tuo telefono",
+    "backToMethodSelection": "Torna alla selezione metodo",
+    "accessCodeLabel": "Inserisci codice a 6 cifre",
+    "accessCodePlaceholder": "000000",
+    "accessValidityInfo": "Accesso valido per 1 ora",
+    "resendCode": "Reinvia codice",
+    "unlockBanking": "Sblocca dati bancari",
+    "invalidAccessCode": "Codice non valido",
+    "accessCodeError": "Errore verifica codice",
+    "sendTestEmail": "Invia email di test",
+    "testEmailSent": "Email di test inviata",
+    "testEmailFailed": "Invio email di test fallito",
+    "sendingCode": "Invio codice..."
   },
   "documents": {
     "title": "Documenti",
@@ -669,8 +697,10 @@
       "success": "Dati esportati",
       "error": "Errore esportazione"
     },
-    "savedSuccessfully": "Saved Successfully",
-    "saveFailed": "Save Failed",
+    "savedSuccessfully": "Salvato con successo",
+    "saveFailed": "Salvataggio fallito",
+    "premiumFeatureRequired": "Abbonamento Premium richiesto per questa funzione",
+    "premiumFeature": "Funzione Premium",
     "leaveFacility": {
       "success": "Success",
       "error": "Error",
@@ -694,7 +724,37 @@
   "subscription": {
     "free": "Gratuito",
     "premium": "Premium",
-    "status": "Abbonamento"
+    "status": "Abbonamento",
+    "title": "Piano di abbonamento",
+    "subtitle": "Scegli il piano più adatto alle tue esigenze",
+    "currentPlan": "Piano attuale",
+    "perMonth": "al mese",
+    "upgrading": "Aggiornamento...",
+    "upgrade": "Aggiorna",
+    "upgradeToPremium": "Passa a Premium",
+    "classic": {
+      "title": "Classico",
+      "price": "Gratuito"
+    },
+    "premium": {
+      "title": "Premium",
+      "price": "CHF 29.90"
+    },
+    "features": {
+      "classic": {
+        "basicMatching": "Matching lavoro base",
+        "emailNotifications": "Notifiche e-mail",
+        "profileManagement": "Gestione profilo",
+        "documentStorage": "Archiviazione documenti"
+      },
+      "premium": {
+        "priorityMatching": "Matching lavoro prioritario",
+        "smsNotifications": "Notifiche SMS",
+        "advancedAnalytics": "Analisi avanzate",
+        "dedicatedSupport": "Supporto dedicato",
+        "bankingAccess": "Accesso bancario migliorato"
+      }
+    }
   },
   "operations": {
     "addWorkerRequirement": "Add Worker Requirement",

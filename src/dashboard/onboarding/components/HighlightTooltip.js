@@ -6,7 +6,7 @@ import SidebarHighlighter from './SidebarHighlighter';
 import { tutorialSteps } from '../../tutorial/tutorialSteps';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { useDashboard } from '../../contexts/DashboardContext';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiBookOpen } from 'react-icons/fi';
 import Dialog from '../../../components/Dialog/Dialog';
 
 /**
@@ -799,6 +799,7 @@ const HighlightTooltip = ({
           skipTutorial();
         }}
         title={tooltipContent.title}
+        titleIcon={<FiBookOpen size={20} />}
         blurred_background={false}
         position={tooltipContent.position}
         size="small"
@@ -814,7 +815,7 @@ const HighlightTooltip = ({
               display: 'flex',
               justifyContent: 'flex-end',
               flexWrap: 'nowrap',
-              gap: '0.5rem',
+              gap: '0.75rem',
               width: '100%'
             }}
           >

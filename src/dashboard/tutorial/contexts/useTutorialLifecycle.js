@@ -6,11 +6,7 @@ import { ACTIONS } from './tutorialReducer';
 
 const isPlatformAdmin = (userProfile) => {
     if (!userProfile) return false;
-    if (userProfile.roles && Array.isArray(userProfile.roles)) {
-        const adminRoles = ['admin', 'super_admin', 'ops_manager', 'finance', 'recruiter', 'support'];
-        return userProfile.roles.some(role => adminRoles.includes(role));
-    }
-    return userProfile.role === 'admin';
+    return !!(userProfile.adminData && userProfile.adminData.isActive !== false);
 };
 
 export const useTutorialLifecycle = ({

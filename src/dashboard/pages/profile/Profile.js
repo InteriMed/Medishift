@@ -25,9 +25,11 @@ import PersonalDetails from './professionals/components/PersonalDetails';
 import ProfessionalBackground from './professionals/components/ProfessionalBackground';
 import BillingInformation from './professionals/components/BillingInformation';
 import ProfessionalDocumentUploads from './professionals/components/DocumentUploads';
+import ProfessionalAccount from './professionals/components/Account';
 import ProfessionalSettings from './professionals/components/Settings';
 import FacilityDetails from './facilities/components/FacilityDetails';
 import FacilityDocumentUploads from './facilities/components/DocumentUploads';
+import FacilityAccount from './facilities/components/Account';
 import FacilitySettings from './facilities/components/Settings';
 import { cn } from '../../../utils/cn';
 
@@ -315,6 +317,8 @@ const Profile = () => {
             case 'facilityCoreDetails': return <FacilityDetails activeTab={activeTab} {...commonProps} />;
             case 'facilityLegalBilling': return <FacilityDetails activeTab={activeTab} {...commonProps} />;
             case 'facilityDocuments': return <FacilityDocumentUploads {...commonProps} />;
+            case 'account':
+                return isFacility ? <FacilityAccount {...commonProps} /> : <ProfessionalAccount {...commonProps} />;
             case 'subscription':
             case 'settings':
                 return isFacility ? <FacilitySettings {...commonProps} /> : <ProfessionalSettings {...commonProps} />;
@@ -375,17 +379,20 @@ const Profile = () => {
                 isMobile && "overflow-y-hidden"
             )}>
                 <div className={cn(
-                    "shrink-0 w-full z-20 bg-card/95 backdrop-blur-sm border-b border-border shadow-sm h-16 flex items-center",
+                    "shrink-0 w-full z-20 bg-white border-b border-border shadow-sm h-16 flex items-center",
                     isMobile ? "px-4" : "px-6"
                 )}>
                     <div className="flex items-center justify-between gap-4 w-full">
-                        <div className={cn(
-                            "flex items-center gap-2 px-3 h-9 rounded-lg border transition-colors",
-                            subscriptionStatus === 'premium'
-                                ? "bg-primary/10 border-primary/30 text-primary"
-                                : "bg-muted/30 border-border/50 text-muted-foreground"
-                        )}>
-                            <span className="text-xs font-medium">
+                        <div 
+                            className={cn(
+                                "flex items-center gap-2 px-4 rounded-xl border-2 transition-colors",
+                                subscriptionStatus === 'premium'
+                                    ? "bg-primary/10 border-primary/30 text-primary"
+                                    : "bg-muted/30 border-input text-muted-foreground"
+                            )}
+                            style={{ height: 'var(--boxed-inputfield-height)' }}
+                        >
+                            <span className="text-sm font-medium">
                                 {t('dashboardProfile:subscription.status')}:
                             </span>
                             <span className="text-sm font-semibold">
@@ -401,11 +408,12 @@ const Profile = () => {
                                     onClick={handleAutoFillClick}
                                     disabled={isUploading || isAnalyzing}
                                     className={cn(
-                                        "h-9 px-4 flex items-center justify-center gap-2 rounded-lg border transition-all shrink-0",
-                                        "bg-background border-border text-black hover:text-black hover:bg-muted/50",
+                                        "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
+                                        "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
                                         (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
                                         (isTutorialActive && stepData?.highlightUploadButton) && "tutorial-highlight"
                                     )}
+                                    style={{ height: 'var(--boxed-inputfield-height)' }}
                                     data-tutorial="profile-upload-button"
                                 >
                                     {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
@@ -429,8 +437,8 @@ const Profile = () => {
                         </div>
 
                         {formData && (
-                            <div className="flex items-center gap-3 px-3 h-9 bg-muted/30 rounded-lg border border-border/50">
-                                <span className="text-xs font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                            <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                                <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
                                 <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
                                     <div
                                         className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
@@ -586,8 +594,8 @@ const Profile = () => {
                 </Dialog>
 
                 <div className={cn(
-                    "flex-1 flex overflow-hidden min-h-0 relative",
-                    isMobile ? "p-0" : "p-4 gap-4"
+                    "flex-1 flex min-h-0 relative",
+                    isMobile ? "p-0 overflow-hidden" : "p-6 gap-6 overflow-visible"
                 )}>
                     <div className={cn(
                         "dashboard-sidebar-container",
@@ -625,16 +633,12 @@ const Profile = () => {
                     </div>
 
                     <div className={cn(
-                        "dashboard-main-content custom-scrollbar",
+                        "dashboard-main-content custom-scrollbar overflow-y-auto",
                         isMobile && !showSidebar ? "translate-x-0 dashboard-main-content-mobile" : isMobile ? "translate-x-full dashboard-main-content-mobile" : "dashboard-main-content-desktop"
                     )} style={{ scrollbarGutter: 'stable' }}>
                         {renderLoadingOrError() || (
-                            <div className="flex-1">
-                                <div className="w-full">
-                                    <div className="animate-in slide-in-from-bottom-2 duration-500">
-                                        {currentTabComponent()}
-                                    </div>
-                                </div>
+                            <div className="animate-in slide-in-from-bottom-2 duration-500 dashboard-main-inner h-full">
+                                {currentTabComponent()}
                             </div>
                         )}
                     </div>

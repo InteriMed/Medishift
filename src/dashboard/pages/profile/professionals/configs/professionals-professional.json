@@ -19,6 +19,10 @@
       "labelKey": "tabs.documentUploads"
     },
     {
+      "id": "account",
+      "labelKey": "tabs.account"
+    },
+    {
       "id": "settings",
       "labelKey": "tabs.settings"
     }
@@ -221,7 +225,7 @@
       {
         "name": "employmentEligibility.workPermit.permitNumber",
         "type": "text",
-        "required": false,
+        "required": true,
         "labelKey": "billingInformation.permitNumber",
         "dependsOn": "employmentEligibility.workPermit.type",
         "dependsOnValue": [
@@ -237,7 +241,7 @@
         "name": "employmentEligibility.workPermit.issuingCanton",
         "type": "dropdown",
         "optionsKey": "cantons",
-        "required": false,
+        "required": true,
         "labelKey": "billingInformation.issuingCanton",
         "dependsOn": "employmentEligibility.workPermit.type",
         "dependsOnValue": [
@@ -260,7 +264,7 @@
       {
         "name": "payrollData.numberOfChildren",
         "type": "number",
-        "required": false,
+        "required": true,
         "labelKey": "billingInformation.numberOfChildren",
         "group": "payrollData",
         "min": 0,
@@ -268,7 +272,7 @@
       },
       {
         "name": "payrollData.withholdingTaxInfo.isSubject",
-        "type": "checkbox",
+        "type": "switch",
         "required": false,
         "labelKey": "billingInformation.withholdingTaxSubject",
         "group": "payrollData"
@@ -277,7 +281,7 @@
         "name": "payrollData.withholdingTaxInfo.taxCanton",
         "type": "dropdown",
         "optionsKey": "cantons",
-        "required": false,
+        "required": true,
         "labelKey": "billingInformation.taxCanton",
         "dependsOn": "payrollData.withholdingTaxInfo.isSubject",
         "dependsOnValue": [
@@ -289,7 +293,7 @@
         "name": "payrollData.religion",
         "type": "dropdown",
         "optionsKey": "religions",
-        "required": false,
+        "required": true,
         "labelKey": "billingInformation.religion",
         "group": "payrollData"
       },
@@ -619,7 +623,7 @@
       {
         "name": "expiryDate",
         "type": "date",
-        "required": false,
+        "required": true,
         "labelKey": "professionalBackground.expiryDate",
         "dependsOn": "validForLife",
         "dependsOnValueExclude": [

@@ -402,6 +402,19 @@ exports.inviteAdminEmployee = onCall({ cors: true, region: 'europe-west6', datab
     throw new HttpsError('unauthenticated', 'You must be signed in to invite employees');
   }
 
+  const callerAdminDoc = await db.collection('admins').doc(request.auth.uid).get();
+  if (!callerAdminDoc.exists || callerAdminDoc.data().isActive === false) {
+    logger.error("inviteAdminEmployee: Caller is not an admin");
+    throw new HttpsError('permission-denied', 'You must be an admin to invite employees');
+  }
+
+  const callerRoles = callerAdminDoc.data().roles || [];
+  const canInvite = callerRoles.includes('super_admin') || callerRoles.includes('ops_manager');
+  if (!canInvite) {
+    logger.error("inviteAdminEmployee: Caller lacks permission to invite", { callerRoles });
+    throw new HttpsError('permission-denied', 'You do not have permission to invite admin employees');
+  }
+
   const { inviteEmail, inviteRole, invitedByName, customMessage } = request.data;
   logger.info("inviteAdminEmployee: Data received", { inviteEmail, inviteRole, invitedByName });
 
@@ -410,14 +423,17 @@ exports.inviteAdminEmployee = onCall({ cors: true, region: 'europe-west6', datab
     throw new HttpsError('invalid-argument', 'Email and Role are required');
   }
 
+  const validRoles = ['super_admin', 'ops_manager', 'finance', 'recruiter', 'support', 'external_payroll'];
+  if (!validRoles.includes(inviteRole)) {
+    throw new HttpsError('invalid-argument', `Invalid role. Must be one of: ${validRoles.join(', ')}`);
+  }
+
   try {
-    // Generate a random invitation code
-    const inviteCode = crypto.randomBytes(4).toString('hex').toUpperCase(); // 8 chars
+    const inviteCode = crypto.randomBytes(4).toString('hex').toUpperCase();
     const inviteToken = crypto.randomBytes(32).toString('hex');
 
     logger.info("inviteAdminEmployee: Generated tokens", { inviteCodeHidden: "***", inviteTokenLen: inviteToken.length });
 
-    // Save invitation to Firestore
     const inviteRef = db.collection('adminInvitations').doc(inviteToken);
     await inviteRef.set({
       email: inviteEmail,
@@ -427,7 +443,7 @@ exports.inviteAdminEmployee = onCall({ cors: true, region: 'europe-west6', datab
       invitedByName: invitedByName || 'An Admin',
       status: 'pending',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)) // 7 days
+      expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
     });
 
     logger.info("inviteAdminEmployee: Invitation saved to Firestore");
@@ -515,9 +531,151 @@ exports.inviteAdminEmployee = onCall({ cors: true, region: 'europe-west6', datab
     return { success: true, message: 'Invitation sent successfully' };
   } catch (error) {
     logger.error('Error inviting admin employee:', error);
-    // Explicitly re-throw HttpsErrors, otherwise wrap in internal
     if (error instanceof HttpsError) throw error;
     throw new HttpsError('internal', error.message || 'Failed to send invitation');
+  }
+});
+
+exports.acceptAdminInvitation = onCall({ cors: true, region: 'europe-west6', database: 'medishift' }, async (request) => {
+  logger.info("acceptAdminInvitation called", { structuredData: true });
+
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'You must be signed in to accept an invitation');
+  }
+
+  const { invitationToken, inviteCode } = request.data;
+
+  if (!invitationToken) {
+    throw new HttpsError('invalid-argument', 'Invitation token is required');
+  }
+
+  try {
+    const inviteRef = db.collection('adminInvitations').doc(invitationToken);
+    const inviteSnap = await inviteRef.get();
+
+    if (!inviteSnap.exists) {
+      throw new HttpsError('not-found', 'Invitation not found');
+    }
+
+    const inviteData = inviteSnap.data();
+    const now = new Date();
+    const expiresAt = inviteData.expiresAt?.toDate();
+
+    if (expiresAt && expiresAt < now) {
+      throw new HttpsError('deadline-exceeded', 'This invitation has expired');
+    }
+
+    if (inviteData.status !== 'pending') {
+      throw new HttpsError('failed-precondition', 'This invitation has already been used');
+    }
+
+    if (inviteCode && inviteData.code !== inviteCode) {
+      throw new HttpsError('invalid-argument', 'Invalid invitation code');
+    }
+
+    const userId = request.auth.uid;
+    const userEmail = request.auth.token.email;
+
+    if (inviteData.email && inviteData.email.toLowerCase() !== userEmail?.toLowerCase()) {
+      throw new HttpsError('permission-denied', 'This invitation was sent to a different email address');
+    }
+
+    const existingAdminDoc = await db.collection('admins').doc(userId).get();
+
+    const batch = db.batch();
+
+    if (existingAdminDoc.exists) {
+      const existingData = existingAdminDoc.data();
+      const existingRoles = existingData.roles || [];
+      const newRole = inviteData.role;
+      
+      if (!existingRoles.includes(newRole)) {
+        batch.update(db.collection('admins').doc(userId), {
+          roles: admin.firestore.FieldValue.arrayUnion(newRole),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    } else {
+      const userDoc = await db.collection('users').doc(userId).get();
+      const userData = userDoc.exists ? userDoc.data() : {};
+
+      batch.set(db.collection('admins').doc(userId), {
+        uid: userId,
+        email: userEmail,
+        displayName: userData.displayName || userData.firstName ? `${userData.firstName} ${userData.lastName}`.trim() : userEmail,
+        roles: [inviteData.role],
+        isActive: true,
+        invitedBy: inviteData.invitedBy,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    batch.update(inviteRef, {
+      status: 'accepted',
+      acceptedBy: userId,
+      acceptedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    await batch.commit();
+
+    logger.info('Admin invitation accepted', {
+      invitationToken,
+      userId,
+      role: inviteData.role
+    });
+
+    return {
+      success: true,
+      message: 'Successfully joined as admin',
+      role: inviteData.role
+    };
+  } catch (error) {
+    logger.error('Error accepting admin invitation:', error);
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError('internal', 'Failed to accept invitation');
+  }
+});
+
+exports.getAdminInvitationDetails = onCall({ cors: true, region: 'europe-west6', database: 'medishift' }, async (request) => {
+  const { invitationToken } = request.data;
+
+  if (!invitationToken) {
+    throw new HttpsError('invalid-argument', 'Invitation token is required');
+  }
+
+  try {
+    const inviteRef = db.collection('adminInvitations').doc(invitationToken);
+    const inviteSnap = await inviteRef.get();
+
+    if (!inviteSnap.exists) {
+      throw new HttpsError('not-found', 'Invitation not found');
+    }
+
+    const inviteData = inviteSnap.data();
+    const now = new Date();
+    const expiresAt = inviteData.expiresAt?.toDate();
+
+    if (expiresAt && expiresAt < now) {
+      throw new HttpsError('deadline-exceeded', 'This invitation has expired');
+    }
+
+    if (inviteData.status !== 'pending') {
+      throw new HttpsError('failed-precondition', 'This invitation has already been used');
+    }
+
+    return {
+      success: true,
+      invitation: {
+        role: inviteData.role,
+        invitedByName: inviteData.invitedByName,
+        expiresAt: expiresAt?.toISOString()
+      }
+    };
+  } catch (error) {
+    logger.error('Error getting admin invitation details:', error);
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError('internal', 'Failed to get invitation details');
   }
 });
 
