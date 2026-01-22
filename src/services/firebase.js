@@ -215,23 +215,6 @@ export const registerUser = async (email, password, displayName) => {
     }
     console.log('✅ User document created successfully in Firestore');
 
-    // Create a separate profile document based on role
-    const profileData = {
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    };
-
-    const profileDocRef = doc(db, 'professionalProfiles', user.uid);
-    await setDoc(profileDocRef, profileData);
-
-    // Verify the profile document was created
-    const verifyProfileDoc = await getDoc(profileDocRef);
-    if (!verifyProfileDoc.exists()) {
-      console.warn('⚠️ Profile document creation may have failed');
-    } else {
-      console.log('✅ Profile document created successfully in Firestore');
-    }
-
     return user;
   } catch (error) {
     console.error('❌ Error registering user:', error);

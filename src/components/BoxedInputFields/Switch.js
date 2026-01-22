@@ -12,8 +12,18 @@ const Switch = ({
   marginBottom = '20px', 
   marginLeft = '0' 
 }) => {
+  const handleWrapperClick = (e) => {
+    if (e.target.type !== 'checkbox' && onChange) {
+      onChange(!checked);
+    }
+  };
+
   return (
-    <div className="switch-wrapper" style={{ marginTop, marginRight, marginBottom, marginLeft }}>
+    <div 
+      className="switch-wrapper" 
+      style={{ marginTop, marginRight, marginBottom, marginLeft }}
+      onClick={handleWrapperClick}
+    >
     <span className="switch-label" style={{ color: labelColor }}>{label}</span>
     <label className="switch">
       <input 

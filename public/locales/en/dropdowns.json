@@ -188,5 +188,52 @@
     "10": "October",
     "11": "November",
     "12": "December"
+  },
+  "medicalProfessions": {
+    "activation": "Activation",
+    "biomedical_analysis": "Biomedical Analysis",
+    "biomedical_lab_diagnosis": "Biomedical Laboratory Diagnosis",
+    "dietetics": "Dietetics",
+    "druggist": "Druggist",
+    "occupational_therapy": "Occupational Therapy",
+    "dental_hygiene": "Dental Hygiene",
+    "speech_therapy": "Speech Therapy",
+    "medical_massage": "Medical Massage",
+    "naturopath_homeopathy": "Naturopath - Homeopathy",
+    "naturopath_ayurveda": "Naturopath - Ayurvedic Medicine",
+    "naturopath_tening": "Naturopath - Traditional European Natural Medicine",
+    "naturopath_tcm": "Naturopath - Traditional Chinese Medicine",
+    "obstetrics": "Obstetrics",
+    "optics": "Optics",
+    "optometry": "Optometry",
+    "orthoptics": "Orthoptics",
+    "osteopathy": "Osteopathy",
+    "physiotherapy": "Physiotherapy",
+    "podiatry": "Podiatry",
+    "rescue_services": "Rescue Services",
+    "nursing": "Nursing Care",
+    "radiology_tech": "Medical Radiology Technology",
+    "surgical_tech": "Surgical Technology",
+    "chiropractor": "Chiropractor",
+    "physician": "Physician",
+    "dentist": "Dentist",
+    "veterinarian": "Veterinarian",
+    "pharmacy_assistant": "Pharmacy Assistant",
+    "dental_assistant": "Dental Assistant",
+    "pharmacist": "Pharmacist"
+  },
+  "jobRoles": {
+    "pharmacist": "Pharmacist",
+    "pharmacy_technician": "Pharmacy Technician",
+    "doctor": "Doctor",
+    "nurse": "Nurse"
+  },
+  "skills": {
+    "languages": "Languages",
+    "driving_license": "Driving License"
+  },
+  "jobPreferences": {
+    "full_time": "Full Time",
+    "part_time": "Part Time"
   }
-} 
+}

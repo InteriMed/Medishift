@@ -24,13 +24,17 @@
     "cta": {
       "hire": "Looking for an Interim",
       "find": "Looking for a Job",
-      "signup": "Sign Up"
+      "signup": "Sign Up",
+      "recruit": "Recruit",
+      "work": "Work"
     },
     "features": {
       "planning": "Easy Planning",
       "contracts": "Secure Access",
       "qualifiedStaff": "Qualified Staff"
-    }
+    },
+    "tagLine": "Tag Line",
+    "description": "Description"
   },
   "problem": {
     "title": "It's free",
@@ -140,4 +144,4 @@
       "professional": "For healthcare professionals"
     }
   }
-} 
+}

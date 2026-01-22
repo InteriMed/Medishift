@@ -181,7 +181,7 @@
       },
       "workExperience": {
         "required": false,
-        "minItems": 1,
+        "minItems": 0,
         "labelKey": "professionalBackground.workExperience",
         "itemSchemaRef": "workExperienceItem",
         "descriptionKey": "professionalBackground.workExperienceDescription"
@@ -468,7 +468,8 @@
         "labelKey": "settings.contractNotifications",
         "group": "notifications"
       }
-    ]
+    ],
+    "subscription": []
   },
   "itemSchemas": {
     "educationItem": [
@@ -630,12 +631,6 @@
         "type": "checkbox",
         "required": false,
         "labelKey": "professionalBackground.noExpiration"
-      },
-      {
-        "name": "isVerified",
-        "type": "checkbox",
-        "required": false,
-        "labelKey": "professionalBackground.isVerified"
       }
     ]
   },

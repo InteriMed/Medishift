@@ -42,19 +42,57 @@ export const convertPermitTypeToProfileFormat = (permitType) => {
 };
 
 export const validateGLNChecksum = (gln) => {
-  if (!/^\d{13}$/.test(gln)) return false;
+  // User requested to remove checksum and only keep 13-digit validation
+  return /^\d{13}$/.test(gln);
+};
 
-  let sum = 0;
-  for (let i = 0; i < 12; i++) {
-    let digit = parseInt(gln[i]);
-    if ((12 - i) % 2 === 0) {
-      digit *= 2;
-      if (digit > 9) digit -= 9;
-    }
-    sum += digit;
+export const normalizeGLNData = (source, type) => {
+  if (!source) return null;
+
+  if (type === 'medReg') {
+    // source is an entry from medReg search
+    const profession = source.professions?.[0]?.profession;
+    return {
+      name: source.name || '',
+      firstName: source.firstName || '',
+      gln: source.gln,
+      professions: source.professions || [],
+      primaryProfession: profession?.textEn || profession?.textFr || profession?.textDe || '',
+      nationality: source.nationality?.textEn || '',
+      gender: source.gender?.textEn || '',
+      registry: 'medReg'
+    };
   }
-  const checkDigit = (10 - (sum % 10)) % 10;
-  return checkDigit === parseInt(gln[12]);
+
+  if (type === 'gesReg') {
+    // source is an entry from gesReg (usually inside Data or as a flat object)
+    return {
+      name: source.PersonLastName || '',
+      firstName: source.PersonFirstName || '',
+      gln: source.PersonGlnNumber,
+      primaryProfession: source.Diplomas?.[0]?.ProfessionName || source.ProfessionName || '',
+      professions: source.Diplomas?.map(d => ({ profession: { textEn: d.ProfessionName } })) || [],
+      registry: 'gesReg'
+    };
+  }
+
+  if (type === 'betReg') {
+    // source is company details from BetReg
+    return {
+      name: source.name || '',
+      additionalName: source.additionalName || '',
+      gln: source.glnCompany || source.uid,
+      uid: source.uid,
+      streetWithNumber: `${source.street || ''} ${source.streetNumber || ''}`.trim(),
+      zip: source.zip,
+      city: source.city,
+      canton: source.canton,
+      responsiblePersons: source.responsiblePersons || [],
+      registry: 'betReg'
+    };
+  }
+
+  return source;
 };
 
 export const validateSwissUID = (uid) => {

@@ -54,17 +54,24 @@ const validateSessionToken = (token) => {
 
 /**
  * Check if user has professional access
- * @param {Object} userData - User document from Firestore
+ * STRICT: Only returns true if user has professional role AND professional profile exists
+ * @param {Object} userData - User document from Firestore (must include hasProfessionalProfile)
  * @returns {boolean} True if user has professional access
  */
 const hasProfessionalAccess = (userData) => {
   if (!userData) return false;
+
+  // STRICT: Must have professional profile document
+  if (userData.hasProfessionalProfile !== true) return false;
 
   // Check singular role (primary indicator)
   if (userData.role === 'professional') return true;
 
   // Check multi-role array for explicit professional role
   if (userData.roles && userData.roles.includes('professional')) return true;
+
+  // BYPASS: Allow access if user bypassed GLN verification (team access)
+  if (userData.bypassedGLN === true && userData.GLN_certified === false) return true;
 
   // IMPORTANT: Do NOT grant professional access just because user is a facility admin/employee
   // Facility users should only see Team Workspace, not Personal Workspace
@@ -93,7 +100,7 @@ const hasTeamAccess = (userData, facilityId) => {
  * @param {Object} userData - User document from Firestore
  * @returns {boolean} True if user has admin access
  */
-const hasAdminAccess = (userData) => {
+export const hasAdminAccess = (userData) => {
   if (!userData) return false;
   
   // Check roles array for admin roles
@@ -129,14 +136,17 @@ export const createWorkspaceSession = async (userId, workspaceType, facilityId =
       userData = userDoc.data();
     }
 
-    // Validate permissions based on workspace type
+    // STRICT: Verify profile document existence before allowing workspace access
     if (workspaceType === WORKSPACE_TYPES.PERSONAL) {
-      // During onboarding, users may not have role set yet - check onboarding progress
-      const isInOnboarding = userData.onboardingProgress &&
-        (!userData.onboardingProgress.professional?.completed && !userData.onboardingProgress.facility?.completed);
+      // Must have professional profile document
+      const hasProfessionalProfile = userData.hasProfessionalProfile === true;
+      if (!hasProfessionalProfile) {
+        console.warn(`[SessionAuth] User ${userId} cannot access Personal workspace - no professional profile document exists`);
+        return null;
+      }
 
-      if (!hasProfessionalAccess(userData) && !isInOnboarding) {
-        console.warn(`[SessionAuth] User ${userId} lacks professional access and is not in onboarding`);
+      if (!hasProfessionalAccess(userData)) {
+        console.warn(`[SessionAuth] User ${userId} lacks professional access`);
         return null;
       }
     } else if (workspaceType === WORKSPACE_TYPES.TEAM) {
@@ -150,12 +160,14 @@ export const createWorkspaceSession = async (userId, workspaceType, facilityId =
         return null;
       }
 
-      // Additional check: verify user is in facility's admin or employees array
+      // STRICT: Verify facility profile document exists
       const facilityDoc = await getDoc(doc(db, 'facilityProfiles', facilityId));
       if (!facilityDoc.exists()) {
-        console.warn(`[SessionAuth] Facility not found: ${facilityId}`);
+        console.warn(`[SessionAuth] Facility profile document not found: ${facilityId}`);
         return null;
       }
+
+      // Additional check: verify user is in facility's admin or employees array
 
       const facilityData = facilityDoc.data();
       const adminsList = facilityData.admins || facilityData.admin || [];
@@ -280,7 +292,9 @@ export const clearAllWorkspaceSessions = () => {
 
 /**
  * Get available workspaces for a user
- * @param {Object} userData - User document from Firestore
+ * STRICT: Only returns workspaces if corresponding profile documents exist
+ * Order: Facility -> Professional -> Admin
+ * @param {Object} userData - User document from Firestore (must include hasFacilityProfile, hasProfessionalProfile)
  * @returns {Array} Array of available workspace objects
  */
 export const getAvailableWorkspaces = (userData) => {
@@ -288,20 +302,42 @@ export const getAvailableWorkspaces = (userData) => {
 
   if (!userData) return workspaces;
 
-  // 1. Check for facility workspace for main facility accounts (Primary context for businesses)
-  if (userData.role === 'facility' || userData.role === 'company') {
-    workspaces.push({
-      id: userData.uid,
-      name: userData.companyName || userData.displayName || 'Facility Workspace',
-      type: WORKSPACE_TYPES.TEAM,
-      facilityId: userData.uid, // Fallback
-      role: 'admin',
-      description: 'Manage your facility profile and operations'
-    });
+  const hasFacilityProfile = userData.hasFacilityProfile === true;
+  const hasProfessionalProfile = userData.hasProfessionalProfile === true;
+  const isAdmin = hasAdminAccess(userData);
+
+  // 1. Check for facility workspace - ONLY if facility profile document exists
+  if (hasFacilityProfile) {
+    if (userData.role === 'facility' || userData.role === 'company' || userData.uid) {
+      workspaces.push({
+        id: userData.uid,
+        name: userData.companyName || userData.displayName || 'Facility Workspace',
+        type: WORKSPACE_TYPES.TEAM,
+        facilityId: userData.uid,
+        role: 'admin',
+        description: 'Manage your facility profile and operations'
+      });
+    }
+
+    // Check for facility memberships (other facilities user is part of)
+    if (userData.facilityMemberships && userData.facilityMemberships.length > 0) {
+      userData.facilityMemberships.forEach(membership => {
+        if (!workspaces.find(w => w.id === membership.facilityProfileId)) {
+          workspaces.push({
+            id: membership.facilityProfileId,
+            name: `${membership.facilityName} - Team Workspace`,
+            type: WORKSPACE_TYPES.TEAM,
+            facilityId: membership.facilityProfileId,
+            role: membership.role,
+            description: 'Manage team schedules, time-off requests, and internal operations'
+          });
+        }
+      });
+    }
   }
 
-  // 2. Check for professional access
-  if (hasProfessionalAccess(userData)) {
+  // 2. Check for professional access - ONLY if professional profile document exists
+  if (hasProfessionalProfile && hasProfessionalAccess(userData)) {
     workspaces.push({
       id: 'personal',
       name: 'Personal Workspace',
@@ -310,25 +346,8 @@ export const getAvailableWorkspaces = (userData) => {
     });
   }
 
-  // 3. Check for facility access (Memberships)
-  if (userData.facilityMemberships && userData.facilityMemberships.length > 0) {
-    userData.facilityMemberships.forEach(membership => {
-      // Avoid duplicating the own facility if listed in memberships
-      if (!workspaces.find(w => w.id === membership.facilityProfileId)) {
-        workspaces.push({
-          id: membership.facilityProfileId,
-          name: `${membership.facilityName} - Team Workspace`,
-          type: WORKSPACE_TYPES.TEAM,
-          facilityId: membership.facilityProfileId,
-          role: membership.role,
-          description: 'Manage team schedules, time-off requests, and internal operations'
-        });
-      }
-    });
-  }
-
-  // 4. Check for admin access
-  if (hasAdminAccess(userData)) {
+  // 3. Check for admin access (admin doesn't require profile document)
+  if (isAdmin) {
     workspaces.push({
       id: 'admin',
       name: 'Admin Workspace',

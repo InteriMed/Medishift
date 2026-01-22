@@ -138,4 +138,38 @@ export const generateFacilityRoleInvitation = async (facilityId, roleId, workerT
       error: error.message
     };
   }
+};
+
+// Get User Profile function
+export const getUserProfile = async () => {
+  try {
+    const callGetUserProfile = httpsCallable(functions, 'getUserProfile');
+    const result = await callGetUserProfile({});
+    return result.data;
+  } catch (error) {
+    console.error('Get User Profile Error:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// GesReg API function
+export const gesRegAPI = async (gln) => {
+  try {
+    const callGesRegAPI = httpsCallable(functions, 'gesRegAPI');
+
+    const result = await callGesRegAPI({
+      gln
+    });
+
+    return result.data;
+  } catch (error) {
+    console.error('GesReg API Error:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
 }; 

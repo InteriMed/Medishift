@@ -23,16 +23,24 @@ import {
   AlertCircle,
   Bell,
   Search,
-  FlaskConical
+  FlaskConical,
+  Briefcase
 } from 'lucide-react';
 import { cn } from '../../../utils/cn';
-import { normalizePathname } from '../../utils/pathUtils';
+import { normalizePathname, buildDashboardUrl } from '../../utils/pathUtils';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 import { hasPermission, PERMISSIONS } from '../../admin/utils/rbac';
 import LockedMenuItem from './LockedMenuItem';
+
+const hasProfessionalAccess = (userData) => {
+  if (!userData) return false;
+  if (userData.role === 'professional') return true;
+  if (userData.roles && userData.roles.includes('professional')) return true;
+  return false;
+};
 
 // Define regular sidebar items structure
 const REGULAR_SIDEBAR_ITEMS = [
@@ -102,6 +110,12 @@ const getAdminSidebarItems = (t) => [
     permission: PERMISSIONS.MANAGE_SHIFTS
   },
   {
+    title: t('admin:sidebar.linkedinJobScraper', 'LinkedIn Job Scraper'),
+    icon: Briefcase,
+    path: '/dashboard/admin/operations/job-scraper',
+    permission: PERMISSIONS.MANAGE_SYSTEM
+  },
+  {
     title: t('admin:sidebar.revenueCommissions', 'Revenue & Commissions'),
     icon: DollarSign,
     path: '/dashboard/admin/finance/revenue',
@@ -161,7 +175,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
   const { t } = useTranslation(['dashboard', 'admin']);
   const location = useLocation();
   const normalizedPathname = React.useMemo(() => normalizePathname(location.pathname), [location.pathname]);
-  const { isSidebarItemAccessible, forceUpdateElementPosition, isTutorialActive, activeTutorial, stepData } = useTutorial();
+  const { isSidebarItemAccessible, forceUpdateElementPosition, isTutorialActive, activeTutorial, stepData, setShowAccessLevelModal, setAllowAccessLevelModalClose, accessMode } = useTutorial();
   const { selectedWorkspace, completedTutorials = [], profileComplete, tutorialPassed } = useDashboard();
   const { userProfile } = useAuth();
 
@@ -288,24 +302,44 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
         {(isAdminWorkspace ? getAdminSidebarItems(t).filter(item => !item.permission || hasPermission(userRoles, item.permission)) : REGULAR_SIDEBAR_ITEMS.filter(item => {
           const isPersonalWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.PERSONAL;
           const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
+          const isAdminWorkspaceCheck = selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN;
+          
+          if (isAdminWorkspaceCheck) {
+            return false;
+          }
           
           if (item.facilityOnly) {
             return isTeamWorkspace;
           }
           
-          const professionalItems = ['messages', 'contracts', 'calendar', 'marketplace'];
+          const sharedItems = ['messages', 'contracts', 'calendar'];
+          const professionalOnlyItems = ['marketplace'];
           const itemKey = item.path.split('/').pop();
+          const hasProfessionalRole = userProfile?.role === 'professional' || hasProfessionalAccess(userProfile);
           
-          if (professionalItems.includes(itemKey)) {
-            return isPersonalWorkspace;
-          }
-          
+          // Profile is always visible
           if (itemKey === 'profile') {
             return true;
           }
           
-          return isPersonalWorkspace;
+          // Shared items (messages, contracts, calendar) are ALWAYS visible regardless of workspace or role
+          if (sharedItems.includes(itemKey)) {
+            return true;
+          }
+          
+          // Marketplace is only for personal workspace (full access)
+          if (professionalOnlyItems.includes(itemKey)) {
+            return isPersonalWorkspace || (!selectedWorkspace && hasProfessionalRole);
+          }
+          
+          // Other items follow workspace/role rules
+          return isPersonalWorkspace || (!selectedWorkspace && hasProfessionalRole);
         })).map((item) => {
+          const itemPath = item.path.startsWith('/dashboard') ? item.path.replace('/dashboard', '') : item.path;
+          const workspaceAwarePath = selectedWorkspace?.id 
+            ? buildDashboardUrl(itemPath, selectedWorkspace.id)
+            : item.path;
+          
           const isActive = item.exact
             ? normalizedPathname === item.path
             : normalizedPathname.startsWith(item.path);
@@ -317,8 +351,11 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
             ? (!item.permission || hasPermission(userRoles, item.permission))
             : isSidebarItemAccessible(item.path);
 
-          // Render locked item with unified component
-          if (!isAccessible) {
+          // Check if this is marketplace locked for team access (should be clickable)
+          const isMarketplaceTeamLocked = itemKey === 'marketplace' && !isAccessible;
+
+          // Render locked item with unified component (except marketplace for team access)
+          if (!isAccessible && !isMarketplaceTeamLocked) {
             return (
               <LockedMenuItem
                 key={item.path}
@@ -332,13 +369,97 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
             );
           }
 
+          // Render marketplace locked for team access as clickable item
+          if (isMarketplaceTeamLocked) {
+            return (
+              <button
+                key={item.path}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('[Sidebar] Marketplace locked for team access, showing AccessLevelChoicePopup');
+                  console.log('[Sidebar] setAllowAccessLevelModalClose:', typeof setAllowAccessLevelModalClose);
+                  console.log('[Sidebar] setShowAccessLevelModal:', typeof setShowAccessLevelModal);
+                  if (typeof setAllowAccessLevelModalClose === 'function') {
+                    setAllowAccessLevelModalClose(true);
+                    console.log('[Sidebar] Called setAllowAccessLevelModalClose(true)');
+                  }
+                  if (typeof setShowAccessLevelModal === 'function') {
+                    setShowAccessLevelModal(true);
+                    console.log('[Sidebar] Called setShowAccessLevelModal(true)');
+                  } else {
+                    console.error('[Sidebar] setShowAccessLevelModal is not a function!');
+                  }
+                }}
+                data-tutorial={`${itemKey}-link`}
+                className={cn(
+                  "group relative flex items-center justify-between w-full p-2 text-left rounded-lg transition-all duration-200 outline-none min-w-0",
+                  "text-muted-foreground/50 cursor-pointer select-none",
+                  "border border-border/30 bg-muted/10",
+                  "hover:bg-muted/20 hover:border-muted/40",
+                  collapsed && "justify-center px-1.5"
+                )}
+              >
+                <div className={cn(
+                  "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
+                  "bg-muted/30"
+                )} />
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className={cn(
+                    "p-1.5 rounded-md transition-colors shrink-0",
+                    "bg-muted/20 text-muted-foreground/50"
+                  )}>
+                    <item.icon className="w-5 h-5 shrink-0" />
+                  </div>
+                  {!collapsed && (
+                    <span className="text-sm font-medium truncate flex-1">
+                      {t(item.title, item.title.split('.').pop())}
+                    </span>
+                  )}
+                </div>
+                {!collapsed && (
+                  <svg
+                    className="w-4 h-4 text-muted-foreground/40 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                )}
+              </button>
+            );
+          }
+
           // Render unlocked item as NavLink
           return (
             <NavLink
               key={item.path}
-              to={item.path}
+              to={workspaceAwarePath}
               onClick={(e) => {
-                // Check accessibility first (same pattern as profile tabs)
+                const isCurrentlyOnProfile = location.pathname.includes('/profile');
+                const isClickingOtherTab = !item.path.includes('/profile');
+                const isInTeamMode = accessMode === 'team';
+                
+                if (isCurrentlyOnProfile && isClickingOtherTab && isInTeamMode) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('[Sidebar] On profile with team mode - showing AccessLevelChoicePopup for:', item.path);
+                  console.log('[Sidebar] State:', { isTutorialActive, accessMode, isCurrentlyOnProfile, isClickingOtherTab });
+                  if (typeof setAllowAccessLevelModalClose === 'function') {
+                    setAllowAccessLevelModalClose(true);
+                  }
+                  if (typeof setShowAccessLevelModal === 'function') {
+                    setShowAccessLevelModal(true);
+                  }
+                  return false;
+                }
+                
                 const currentIsAccessible = isSidebarItemAccessible(item.path);
                 if (!currentIsAccessible) {
                   e.preventDefault();
@@ -347,7 +468,6 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                   return false;
                 }
 
-                // Backup check via attributes
                 const linkElement = e.currentTarget;
                 const isDisabled = linkElement.getAttribute('data-tutorial-disabled') === 'true';
                 if (isDisabled) {
@@ -360,7 +480,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
               }}
               data-tutorial={`${item.path.split('/').pop()}-link`}
               className={({ isActive: linkActive }) => {
-                const isTutorialTarget = isTutorialActive && activeTutorial === 'profileTabs' && item.path.includes('/profile');
+                const isTutorialTarget = isTutorialActive && (activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs') && item.path.includes('/profile');
                 const active = isActive || linkActive || isTutorialTarget;
 
                 return cn(
@@ -368,14 +488,13 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                   active
                     ? "bg-primary/5 text-primary shadow-sm"
                     : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                  isTutorialTarget && "tutorial-pulse",
-                  shouldHighlight && "global-highlight",
+                  (isTutorialTarget || shouldHighlight) && "tutorial-highlight",
                   collapsed && "justify-center px-1.5"
                 );
               }}
             >
               {({ isActive: linkActive }) => {
-                const isTutorialTarget = isTutorialActive && activeTutorial === 'profileTabs' && item.path.includes('/profile');
+                const isTutorialTarget = isTutorialActive && (activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs') && item.path.includes('/profile');
                 const active = isActive || linkActive || isTutorialTarget;
 
                 return (

@@ -1,5 +1,5 @@
 import React, { useState, useRef, forwardRef } from 'react';
-import { FiUploadCloud } from 'react-icons/fi';
+import { FiUploadCloud, FiEye, FiEdit2, FiTrash2, FiFile } from 'react-icons/fi';
 import './styles/UploadFile.css';
 
 const UploadFile = forwardRef(({
@@ -7,7 +7,7 @@ const UploadFile = forwardRef(({
   onUploadComplete,
   accept,
   acceptedFileTypes,
-  maxFileSize = 5, // Default to 5MB
+  maxFileSize = 5,
   error,
   onErrorReset,
   isLoading = false,
@@ -15,23 +15,41 @@ const UploadFile = forwardRef(({
   label = "Choose File",
   documentName = "document",
   className = "",
-  disabled = false
+  disabled = false,
+  value = null // Accepted prop for controlled file
 }, ref) => {
   const [dragActive, setDragActive] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [fileObj, setFileObj] = useState(null);
   const [localError, setLocalError] = useState('');
+  const [internalProgress, setInternalProgress] = useState(0);
+  const [isUploadingInternal, setIsUploadingInternal] = useState(false);
   const internalInputRef = useRef(null);
+  const uploadIntervalRef = useRef(null);
 
-  // Use the forwarded ref if provided, otherwise use the internal one
+  // Sync state with value prop if provided
+  React.useEffect(() => {
+    if (value) {
+      setFileName(value.name);
+      setFileObj(value);
+    } else {
+      setFileName('');
+      setFileObj(null);
+    }
+  }, [value]);
+
   const inputRef = ref || internalInputRef;
 
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Reset error on drag interaction
     if (error && onErrorReset) {
       onErrorReset();
+    }
+    
+    if (localError) {
+      setLocalError('');
     }
 
     if (e.type === "dragenter" || e.type === "dragover") {
@@ -44,10 +62,9 @@ const UploadFile = forwardRef(({
   const validateFile = (file) => {
     if (!file) return false;
 
-    const fileSize = file.size / (1024 * 1024); // Convert to MB
+    const fileSize = file.size / (1024 * 1024);
     const acceptTypes = accept || acceptedFileTypes || '.pdf,.jpg,.png,.jpeg';
 
-    // Handle different ways accept types might be provided
     const validExtensions = acceptTypes.split(',').map(type =>
       type.trim().toLowerCase().replace('*', '')
     );
@@ -71,24 +88,24 @@ const UploadFile = forwardRef(({
     const validationResult = validateFile(file);
 
     if (validationResult === true) {
-      setFileName(file.name); // Set filename only for valid files
+      if (onErrorReset) {
+        onErrorReset();
+      }
+
+      setFileName(file.name);
+      setFileObj(file);
       setLocalError('');
 
       if (onChange) {
-        // For modern implementation - directly pass the file to parent
         onChange([file]);
       } else if (onUploadComplete) {
-        // Legacy implementation
-        setTimeout(() => {
-          onUploadComplete(file);
-        }, 1500);
+        onUploadComplete(file);
       }
     } else {
-      // Clear filename for invalid files so upload button remains visible
       setFileName('');
+      setFileObj(null);
       setLocalError(validationResult);
 
-      // Reset the file input so the same file can be selected again
       if (inputRef.current) {
         inputRef.current.value = '';
       }
@@ -99,14 +116,36 @@ const UploadFile = forwardRef(({
     }
   };
 
+  React.useEffect(() => {
+    if (isLoading) {
+      setIsUploadingInternal(true);
+    } else {
+      setIsUploadingInternal(false);
+      setInternalProgress(0);
+    }
+  }, [isLoading]);
+
+  React.useEffect(() => {
+    if (progress > 0) {
+      setInternalProgress(progress);
+    }
+  }, [progress]);
+
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (isLoading || disabled) return;
 
     setDragActive(false);
+    
+    if (error && onErrorReset) {
+      onErrorReset();
+    }
+    
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
+    } else {
+      setLocalError('No file was dropped. Please try again.');
     }
   };
 
@@ -114,7 +153,6 @@ const UploadFile = forwardRef(({
     e.preventDefault();
     if (isLoading || disabled) return;
 
-    // Reset error on file selection
     if (error && onErrorReset) {
       onErrorReset();
     }
@@ -124,8 +162,44 @@ const UploadFile = forwardRef(({
     }
   };
 
+  const handleView = (e) => {
+    e.stopPropagation();
+    if (fileObj) {
+      const url = URL.createObjectURL(fileObj);
+      window.open(url, '_blank');
+    }
+  };
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    if (inputRef.current) {
+      inputRef.current.click();
+    }
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+
+    // Clear upload simulation if in progress
+    if (uploadIntervalRef.current) {
+      clearInterval(uploadIntervalRef.current);
+    }
+
+    setFileName('');
+    setFileObj(null);
+    setIsUploadingInternal(false);
+    setInternalProgress(0);
+
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+    if (onChange) {
+      onChange([]);
+    }
+  };
+
   const hasError = error || localError || className.includes('error') || className.includes('border-destructive') || className.includes('errorUpload');
-  
+
   return (
     <div className={`upload-container ${className} ${hasError ? 'upload-error' : ''}`}>
       <form
@@ -134,6 +208,15 @@ const UploadFile = forwardRef(({
         onDragLeave={!isLoading && !disabled ? handleDrag : null}
         onDragOver={!isLoading && !disabled ? handleDrag : null}
         onDrop={!isLoading && !disabled ? handleDrop : null}
+        onClick={(e) => {
+          // Only trigger click if not clicking on actions and no file is selected (or intent is to switch)
+          // If file is selected, user should use Edit button, but clicking container is also fine UX typically.
+          // But requested UI suggests specific buttons. Let's keep container click for empty state.
+          if (!fileName && !isLoading && !disabled) {
+            inputRef.current.click();
+          }
+        }}
+        style={{ cursor: !fileName && !isLoading && !disabled ? 'pointer' : 'default' }}
       >
         <input
           ref={inputRef}
@@ -146,7 +229,48 @@ const UploadFile = forwardRef(({
 
         <div className="upload-content">
           {fileName ? (
-            <p className="file-name">{fileName}</p>
+            <div className="flex items-center justify-between w-full px-4" style={{ gap: '12px' }}>
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
+                  <FiFile className="w-5 h-5" />
+                </div>
+                <span className="file-name text-sm font-medium text-slate-700 truncate text-left max-w-[200px]">
+                  {fileName}
+                </span>
+              </div>
+              <div className="flex items-center gap-4 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleView}
+                  style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
+                  title="View"
+                >
+                  <FiEye style={{ width: '16px', height: '16px', color: 'inherit' }} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleEdit}
+                  style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
+                  title="Replace"
+                >
+                  <FiEdit2 style={{ width: '16px', height: '16px', color: 'inherit' }} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
+                  title="Remove"
+                >
+                  <FiTrash2 style={{ width: '16px', height: '16px', color: 'inherit' }} />
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
               <button
@@ -165,7 +289,7 @@ const UploadFile = forwardRef(({
                 }}
                 onClick={(e) => {
                   e.preventDefault();
-                  e.stopPropagation(); // Stop propagation to prevent form/drag events
+                  e.stopPropagation();
                   if (!isLoading && !disabled) {
                     inputRef.current.click();
                   }
@@ -175,31 +299,32 @@ const UploadFile = forwardRef(({
                 <FiUploadCloud className="w-4 h-4" />
                 Drag & Drop or Select File
               </button>
-              <span
-                className={`upload-link ${isLoading || disabled ? 'disabled' : ''} ${!documentName ? 'hidden' : ''}`} // Hide if documentName empty
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (!isLoading && !disabled) {
-                    inputRef.current.click();
-                  }
-                }}
-                style={{ cursor: isLoading || disabled ? 'not-allowed' : 'pointer', color: 'var(--color-logo-2)' }}
-              >
-                {documentName}
-              </span>
             </div>
           )}
 
 
-          {isLoading && (
+          {(isUploadingInternal || isLoading) && internalProgress > 0 && (
             <div className="upload-progress">
               <div className="progress-bar">
-                <div className="progress-value" style={{ width: `${progress}%` }}></div>
+                <div className="progress-value" style={{ width: `${internalProgress}%` }}></div>
               </div>
             </div>
           )}
         </div>
       </form>
+      {localError && (
+        <div className="upload-error-message" style={{ 
+          marginTop: '8px', 
+          padding: '8px 12px', 
+          backgroundColor: 'var(--boxed-inputfield-error-color, #ef4444)', 
+          color: 'white', 
+          borderRadius: '6px', 
+          fontSize: '14px',
+          textAlign: 'center'
+        }}>
+          {localError}
+        </div>
+      )}
     </div>
   );
 });

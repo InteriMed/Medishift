@@ -5,11 +5,12 @@ import { useNotification } from '../../contexts/NotificationContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { doc, getDoc, updateDoc, serverTimestamp, collection } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import { tutorialSteps } from '../onboarding/tutorialSteps';
+import { tutorialSteps } from '../tutorial/tutorialSteps';
 import { useDashboard } from './DashboardContext';
 import { useSidebar } from './SidebarContext';
 import { debounce } from '../../utils/debounce';
 import i18n from '../../i18n';
+import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
 
 const TutorialContext = createContext(null);
 
@@ -22,7 +23,8 @@ export const TutorialProvider = ({ children }) => {
     tutorialPassed,
     setTutorialComplete,
     user,
-    isLoading: isDashboardLoading
+    isLoading: isDashboardLoading,
+    selectedWorkspace
   } = useDashboard();
   const { isMainSidebarCollapsed, setIsMainSidebarCollapsed } = useSidebar();
   const { showWarning, showError } = useNotification();
@@ -34,6 +36,8 @@ export const TutorialProvider = ({ children }) => {
   const [completedTutorials, setCompletedTutorials] = useState({});
   const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
   const [showTutorialSelectionModal, setShowTutorialSelectionModal] = useState(false);
+  const [showAccessLevelModal, setShowAccessLevelModal] = useState(false);
+  const [allowAccessLevelModalClose, setAllowAccessLevelModalClose] = useState(false);
 
   // Refs for preventing infinite loops
   const syncTimestampRef = useRef({});
@@ -46,8 +50,80 @@ export const TutorialProvider = ({ children }) => {
   const [isWaitingForSave, setIsWaitingForSave] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
+  // Access mode: 'full' (complete all profile tabs) or 'team' (quick team access)
+  const [accessMode, setAccessModeState] = useState(null);
+
   // Dual onboarding type: 'professional' or 'facility'
+  // Automatically determined based on selectedWorkspace
   const [onboardingType, setOnboardingType] = useState('professional');
+
+  // MAX ACCESSED TAB FOR PROFILE TUTORIAL - Load from localStorage
+  const [maxAccessedProfileTab, setMaxAccessedProfileTab] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tutorial_maxAccessedProfileTab');
+      return saved || 'personalDetails';
+    } catch (error) {
+      console.error('[TutorialContext] Error loading maxAccessedProfileTab from localStorage:', error);
+      return 'personalDetails';
+    }
+  });
+
+  // Save maxAccessedProfileTab to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('tutorial_maxAccessedProfileTab', maxAccessedProfileTab);
+      console.log('[TutorialContext] Saved maxAccessedProfileTab to localStorage:', maxAccessedProfileTab);
+    } catch (error) {
+      console.error('[TutorialContext] Error saving maxAccessedProfileTab to localStorage:', error);
+    }
+  }, [maxAccessedProfileTab]);
+
+  // Debug: Log when accessMode changes
+  useEffect(() => {
+    console.log("[TutorialContext] accessMode changed to:", accessMode);
+  }, [accessMode]);
+
+  // Auto-detect onboardingType based on selectedWorkspace
+  useEffect(() => {
+    if (selectedWorkspace) {
+      const newType = selectedWorkspace.type === WORKSPACE_TYPES.TEAM ? 'facility' : 'professional';
+      if (newType !== onboardingType) {
+        console.log(`[TutorialContext] Auto-detecting onboardingType: ${newType} (workspace: ${selectedWorkspace.type})`);
+        setOnboardingType(newType);
+      }
+    }
+  }, [selectedWorkspace, onboardingType]);
+
+  // Load accessMode from profile document when tutorial starts or profile changes
+  useEffect(() => {
+    const loadAccessMode = async () => {
+      if (!currentUser) {
+        return;
+      }
+
+      try {
+        const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+        const profileRef = doc(db, profileCollection, currentUser.uid);
+        const profileDoc = await getDoc(profileRef);
+
+        if (profileDoc.exists()) {
+          const profileData = profileDoc.data();
+          const savedAccessMode = profileData.tutorialAccessMode;
+          console.log("[TutorialContext] Loading accessMode - saved:", savedAccessMode, "current:", accessMode);
+          if (savedAccessMode && savedAccessMode !== accessMode) {
+            console.log("[TutorialContext] Loaded accessMode from profile:", savedAccessMode);
+            setAccessModeState(savedAccessMode);
+          } else if (!savedAccessMode && !accessMode) {
+            console.log("[TutorialContext] No tutorialAccessMode found - leaving as null until user chooses");
+          }
+        }
+      } catch (error) {
+        console.error("[TutorialContext] Error loading accessMode:", error);
+      }
+    };
+
+    loadAccessMode();
+  }, [currentUser, onboardingType, accessMode]);
 
   // Track sidebar width for overlay positioning
   const sidebarWidth = isMainSidebarCollapsed ? 70 : 256;
@@ -65,6 +141,17 @@ export const TutorialProvider = ({ children }) => {
 
   // Ref to track the last restored state to prevent duplicate restorations
   const lastRestoredStateRef = useRef({ tutorial: null, step: null });
+
+  // Ref for external validation (e.g., from Profile component)
+  const validationRef = useRef({});
+
+  // Function to register a validation for a specific feature or tab
+  const registerValidation = useCallback((key, validateFn) => {
+    validationRef.current[key] = validateFn;
+    return () => {
+      delete validationRef.current[key];
+    };
+  }, []);
 
   // Helper function to check if user is in dashboard - Memoized to prevent infinite loops
   const isInDashboard = useMemo(() => {
@@ -129,7 +216,10 @@ export const TutorialProvider = ({ children }) => {
     if (!currentUser) return;
 
     try {
-      const userDocRef = doc(db, 'users', currentUser.uid);
+      // Use profile collection instead of users
+      const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+      const profileDocRef = doc(db, profileCollection, currentUser.uid);
+
       const steps = tutorialSteps[tutorialName] || [];
       const currentStepId = steps[stepIndex]?.id;
 
@@ -146,8 +236,8 @@ export const TutorialProvider = ({ children }) => {
         updatedAt: serverTimestamp()
       };
 
-      await updateDoc(userDocRef, updates);
-      console.log(`[TutorialContext] Saved granular progress for ${tutorialName}:${currentStepId}`);
+      await updateDoc(profileDocRef, updates);
+      console.log(`[TutorialContext] Saved granular progress for ${tutorialName}:${currentStepId} in ${profileCollection}`);
     } catch (error) {
       console.error('Error saving tutorial progress:', error);
     }
@@ -180,8 +270,9 @@ export const TutorialProvider = ({ children }) => {
       // Also clear from Firestore
       if (currentUser) {
         try {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          await updateDoc(userDocRef, {
+          const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+          const profileDocRef = doc(db, profileCollection, currentUser.uid);
+          await updateDoc(profileDocRef, {
             [`completedTutorials.${feature}`]: null
           });
         } catch (error) {
@@ -194,12 +285,13 @@ export const TutorialProvider = ({ children }) => {
     let startStep = 0;
     if (currentUser) {
       try {
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
+        const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+        const profileDocRef = doc(db, profileCollection, currentUser.uid);
+        const profileDoc = await getDoc(profileDocRef);
 
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          const typeProgress = userData.tutorialProgress?.[onboardingType] || {};
+        if (profileDoc.exists()) {
+          const profileData = profileDoc.data();
+          const typeProgress = profileData.tutorialProgress?.[onboardingType] || {};
 
           if (typeProgress.activeTutorial === feature) {
             const savedStepIndex = typeProgress.currentStepIndex || 0;
@@ -217,6 +309,17 @@ export const TutorialProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Error loading tutorial progress:', error);
+      }
+    }
+
+    // Reset maxAccessedProfileTab when starting profile tutorials
+    if (feature === 'profileTabs' || feature === 'facilityProfileTabs') {
+      console.log('[TutorialContext] Resetting maxAccessedProfileTab for profile tutorial restart');
+      setMaxAccessedProfileTab('personalDetails');
+      try {
+        localStorage.setItem('tutorial_maxAccessedProfileTab', 'personalDetails');
+      } catch (error) {
+        console.error('[TutorialContext] Error resetting maxAccessedProfileTab in localStorage:', error);
       }
     }
 
@@ -290,13 +393,30 @@ export const TutorialProvider = ({ children }) => {
             });
           }
 
-          // Check if onboarding is completed
+          // Check if onboarding is completed - BE ROBUST
           const onboardingProgress = userData.onboardingProgress || {};
-          const professionalProgress = onboardingProgress.professional || {};
-          const professionalCompleted = professionalProgress.completed === true;
-          const legacyCompleted = userData.onboardingCompleted || onboardingProgress.completed === true;
-          const onboardingCompleted = professionalCompleted || legacyCompleted;
-          const isVerifiedProfile = !!userData.GLN_certified;
+          const professionalCompleted = onboardingProgress.professional?.completed === true;
+          const facilityCompleted = onboardingProgress.facility?.completed === true;
+          const legacyCompleted = userData.onboardingCompleted === true || onboardingProgress.completed === true;
+          const onboardingStatusDone = userData.onboardingStatus === 'completed' || userData.onboardingStatus === 'done';
+          const bypassedGLN = userData.bypassedGLN === true && userData.GLN_certified === false;
+
+          const onboardingCompleted = professionalCompleted || facilityCompleted || legacyCompleted || onboardingStatusDone;
+          const isVerifiedProfile = !!userData.GLN_certified || !!userData.isVerified || bypassedGLN;
+
+          console.log("[TutorialContext] Workspace status check details:", {
+            uid: userData.uid,
+            role: userData.role,
+            onboardingCompleted,
+            professionalCompleted,
+            facilityCompleted,
+            legacyCompleted,
+            onboardingStatusDone,
+            isVerifiedProfile,
+            hasProfessionalProfile: userData.hasProfessionalProfile,
+            hasFacilityProfile: userData.hasFacilityProfile,
+            isAdmin: userData.role === 'admin' || (userData.roles && userData.roles.includes('admin'))
+          });
 
           /**
            * Workspace Existence Check (HIGHEST PRIORITY)
@@ -306,17 +426,20 @@ export const TutorialProvider = ({ children }) => {
           const hasProfessionalProfile = userData.hasProfessionalProfile;
           const hasFacilityProfile = userData.hasFacilityProfile;
 
-          // Wait for flags to be boolean (true/false) before deciding if workspace exists
-          if (typeof hasProfessionalProfile !== 'boolean' || typeof hasFacilityProfile !== 'boolean') {
-            console.log("[TutorialContext] Waiting for profile flags to be ready...", { hasProf: hasProfessionalProfile, hasFac: hasFacilityProfile });
+          const hasEstablishedWorkspace = hasProfessionalProfile === true || hasFacilityProfile === true || isAdmin || onboardingCompleted;
+
+          const isProfilePage = location.pathname.includes('/dashboard/profile');
+
+          // Wait for flags only if we don't have enough info to determine if workspace exists
+          if (!hasEstablishedWorkspace && (typeof hasProfessionalProfile !== 'boolean' || typeof hasFacilityProfile !== 'boolean')) {
+            console.log("[TutorialContext] Waiting for profile flags to be ready...", { hasProf: hasProfessionalProfile, hasFac: hasFacilityProfile, onboardingCompleted });
             return;
           }
 
-          const hasEstablishedWorkspace = hasProfessionalProfile === true || hasFacilityProfile === true || isAdmin;
-
           if (!hasEstablishedWorkspace) {
             console.log("[TutorialContext] User has no established workspace. Redirecting to Onboarding Page.");
-            if (isInDashboard) {
+            // EXEMPT profile page - user might be completing it to establish workspace
+            if (isInDashboard && !isProfilePage) {
               const lang = i18n.language || 'fr';
               navigate(`/${lang}/onboarding`);
             }
@@ -331,9 +454,10 @@ export const TutorialProvider = ({ children }) => {
           }
 
           // PRIORITY CHECK 2: Workspace exists but Incomplete/Unverified
-          if (!onboardingCompleted && !isVerifiedProfile) {
-            console.log("[TutorialContext] User not verified/completed. Redirecting to Onboarding Page.");
-            if (isInDashboard) {
+          if (!onboardingCompleted && !isVerifiedProfile && !isAdmin) {
+            console.log("[TutorialContext] User not verified/completed and not an admin. Redirecting to Onboarding Page.");
+            // EXEMPT profile page - user might be there to complete verification
+            if (isInDashboard && !isProfilePage) {
               const lang = i18n.language || 'fr';
               navigate(`/${lang}/onboarding`);
             }
@@ -378,8 +502,9 @@ export const TutorialProvider = ({ children }) => {
 
               // Clean up the stale activeTutorial field
               if (savedTutorial) {
-                const userDocRef = doc(db, 'users', currentUser.uid);
-                updateDoc(userDocRef, {
+                const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+                const profileRef = doc(db, profileCollection, currentUser.uid);
+                updateDoc(profileRef, {
                   [`tutorialProgress.${onboardingType}.activeTutorial`]: null
                 }).catch(err => console.error("Error clearing stale activeTutorial:", err));
               }
@@ -422,8 +547,10 @@ export const TutorialProvider = ({ children }) => {
 
               if (!completedInType.dashboard?.completed) {
                 startTutorial('dashboard');
-              } else if (!completedInType.profileTabs?.completed) {
-                startTutorial('profileTabs');
+              } else if (!completedInType.profileTabs?.completed && !completedInType.facilityProfileTabs?.completed) {
+                const userRole = user?.role;
+                const tutorialName = (userRole === 'facility' || userRole === 'company') ? 'facilityProfileTabs' : 'profileTabs';
+                startTutorial(tutorialName);
               } else {
                 // If core ones are done but the account isn't marked as complete, do it now or start the next one in sequence
                 const nextFeature = ['messages', 'contracts', 'calendar', 'marketplace', 'settings'].find(f => !completedInType[f]?.completed);
@@ -431,8 +558,9 @@ export const TutorialProvider = ({ children }) => {
                   startTutorial(nextFeature);
                 } else {
                   // Mark everything as complete
-                  const userDocRef = doc(db, 'users', currentUser.uid);
-                  await updateDoc(userDocRef, {
+                  const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+                  const profileDocRef = doc(db, profileCollection, currentUser.uid);
+                  await updateDoc(profileDocRef, {
                     [`tutorialProgress.${onboardingType}.completed`]: true,
                     updatedAt: serverTimestamp()
                   });
@@ -525,11 +653,26 @@ export const TutorialProvider = ({ children }) => {
     if (isTutorialActive || showFirstTimeModal) {
       console.log("[TutorialContext] Tutorial is active, stopping it");
 
-      // MANDATORY LIMITATION: User can only stop tutorial once Profile is finished
-      const isProfileTutorialComplete = completedTutorials?.profileTabs === true;
+      // MANDATORY LIMITATION: User can only stop tutorial if:
+      // - Profile is finished OR
+      // - Access mode is 'team' (quick access) OR
+      // - Access mode is 'full' (show popup to let them choose)
+      const isProfileTutorialComplete = completedTutorials?.profileTabs === true || completedTutorials?.facilityProfileTabs === true;
+      
       if (!isProfileTutorialComplete) {
-        showError?.("Please complete your profile configuration before stopping the tutorial.");
-        return;
+        if (accessMode === 'team') {
+          console.log("[TutorialContext] Team access mode - allowing tutorial stop");
+          // Allow stopping tutorial with team access
+        } else if (accessMode === 'full') {
+          console.log("[TutorialContext] Full access mode - showing access popup");
+          setAllowAccessLevelModalClose(true);
+          setShowAccessLevelModal(true);
+          return;
+        } else {
+          // No access mode set - must complete profile first
+          showError?.("Please complete your profile configuration before stopping the tutorial.");
+          return;
+        }
       }
 
       safelyUpdateTutorialState([
@@ -546,20 +689,22 @@ export const TutorialProvider = ({ children }) => {
 
     // Check if user is already verified/onboarded for this type
     try {
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      const userDoc = await getDoc(userDocRef);
+      const profileCollection = type === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+      const profileDocRef = doc(db, profileCollection, currentUser.uid);
+      const profileDoc = await getDoc(profileDocRef);
 
       let isTypeCompleted = false;
-      if (userDoc.exists()) {
-        const data = userDoc.data();
+      if (profileDoc.exists()) {
+        const data = profileDoc.data();
         // Check the specific onboarding type progress
         const onboardingProgress = data.onboardingProgress || {};
         const typeProgress = onboardingProgress[type];
-        isTypeCompleted = typeProgress?.completed === true;
+        isTypeCompleted = typeProgress?.completed === true || data.profileCompleted === true;
 
-        // For professional, also check legacy fields
+        // For professional, also check legacy fields if they were migrated
         if (type === 'professional') {
-          isTypeCompleted = isTypeCompleted || !!data.GLN_certified || data.onboardingCompleted || (onboardingProgress.completed === true);
+          const bypassedGLN = data.bypassedGLN === true && data.GLN_certified === false;
+          isTypeCompleted = isTypeCompleted || !!data.GLN_certified || data.onboardingCompleted || (onboardingProgress.completed === true) || bypassedGLN;
         }
       }
 
@@ -598,6 +743,32 @@ export const TutorialProvider = ({ children }) => {
   useEffect(() => {
     if (isTutorialActive && tutorialSteps[activeTutorial]) {
       const steps = tutorialSteps[activeTutorial];
+      
+      // AUTO-SYNC: Detect correct step based on current URL for profile tutorials
+      if ((activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs') && location.pathname.includes('/dashboard/profile')) {
+        let currentTab = location.pathname.split('/').pop();
+        
+        // If URL ends with 'profile', default to personalDetails
+        if (currentTab === 'profile') {
+          currentTab = 'personalDetails';
+        }
+        
+        const tabToStepMap = {
+          'personalDetails': 0,
+          'professionalBackground': 1,
+          'billingInformation': 2,
+          'documentUploads': 4
+        };
+        
+        const expectedStep = tabToStepMap[currentTab];
+        if (expectedStep !== undefined && expectedStep !== currentStep && !showAccessLevelModal) {
+          console.log('[TutorialContext] URL-based step sync: current URL tab =', currentTab, ', setting step to', expectedStep);
+          setCurrentStep(expectedStep);
+          saveTutorialProgress(activeTutorial, expectedStep);
+          return;
+        }
+      }
+      
       if (steps && steps[currentStep]) {
         let currentStepData = { ...steps[currentStep] };
 
@@ -644,9 +815,9 @@ export const TutorialProvider = ({ children }) => {
             }
           }
 
-          // Dynamic Override: If user is in profileTabs tutorial but NOT on profile page,
+          // Dynamic Override: If user is in profileTabs/facilityProfileTabs tutorial but NOT on profile page,
           // highlight the sidebar item to guide them back.
-          if (activeTutorial === 'profileTabs' && !isOnCorrectPage) {
+          if ((activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs') && !isOnCorrectPage) {
             console.log("[TutorialContext] User away from profile, redirecting highlight to sidebar");
             currentStepData = {
               ...currentStepData,
@@ -656,24 +827,11 @@ export const TutorialProvider = ({ children }) => {
               requiredTab: null,
               tooltipPosition: { top: '150px', left: 'calc(250px + 20px)' }
             };
-            setStepData(currentStepData);
-            return;
-          }
-
-          // If not on correct page and not a navigation step, don't set stepData
-          if (!isOnCorrectPage) {
-            console.log("[TutorialContext] Step requires different page, not setting stepData:", {
-              requiredPath: normalizedRequiredPath,
-              currentPath: normalizedCurrentPath,
-              stepIndex: currentStep
-            });
-            setStepData(null);
-            return;
           }
         } else {
-          // Dynamic Override: If user is in profileTabs tutorial but NOT on profile page,
+          // Dynamic Override: If user is in profileTabs/facilityProfileTabs tutorial but NOT on profile page,
           // highlight the sidebar item to guide them back.
-          if (activeTutorial === 'profileTabs' && !location.pathname.includes('/dashboard/profile')) {
+          if ((activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs') && !location.pathname.includes('/dashboard/profile')) {
             console.log("[TutorialContext] User away from profile, redirecting highlight to sidebar");
             currentStepData = {
               ...currentStepData,
@@ -693,7 +851,7 @@ export const TutorialProvider = ({ children }) => {
     } else {
       setStepData(null);
     }
-  }, [currentStep, activeTutorial, isTutorialActive, location.pathname]);
+  }, [currentStep, activeTutorial, isTutorialActive, location.pathname, showAccessLevelModal]);
 
   // Get element position for highlighting
   useEffect(() => {
@@ -770,32 +928,63 @@ export const TutorialProvider = ({ children }) => {
     // Store updateElementPosition in ref so it can be called externally
     updateElementPositionRef.current = updateElementPosition;
 
-    // Initial position update
-    updateElementPosition();
+    // Initial position update - use multiple frames to ensure DOM is ready
+    // and a retry mechanism if the element is not found immediately
+    let retryCount = 0;
+    const maxRetries = 20; // 2 seconds at 100ms intervals
 
-    // Set up ResizeObserver for the target element
+    const initialPositioning = () => {
+      updateElementPosition();
+
+      // If we still don't have a position but we have a step that expects one,
+      // retry up to maxRetries
+      const targetSelector = stepData.highlightSidebarItem
+        ? `[data-tutorial="${stepData.highlightSidebarItem}-link"]`
+        : stepData.highlightTab
+          ? `[data-tab="${stepData.highlightTab}"]`
+          : stepData.targetSelector;
+
+      if (targetSelector && !document.querySelector(targetSelector) && retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(() => {
+          requestAnimationFrame(initialPositioning);
+        }, 100);
+      } else if (targetSelector && document.querySelector(targetSelector)) {
+        // Element finally found, set up observer if not already done
+        setupObserver(document.querySelector(targetSelector));
+      }
+    };
+
+    let resizeObserver = null;
+    const setupObserver = (element) => {
+      if (element && window.ResizeObserver && !resizeObserver) {
+        resizeObserver = new ResizeObserver(() => {
+          requestAnimationFrame(updateElementPosition);
+        });
+        resizeObserver.observe(element);
+      }
+    };
+
+    // Start initial positioning
+    requestAnimationFrame(initialPositioning);
+
+    // Initial check for ResizeObserver
     const targetSelector = stepData.highlightSidebarItem
       ? `[data-tutorial="${stepData.highlightSidebarItem}-link"]`
       : stepData.highlightTab
         ? `[data-tab="${stepData.highlightTab}"]`
         : stepData.targetSelector;
 
-    let resizeObserver = null;
     const targetElement = targetSelector ? document.querySelector(targetSelector) : null;
-
-    if (targetElement && window.ResizeObserver) {
-      resizeObserver = new ResizeObserver(() => {
-        // Use requestAnimationFrame for smooth updates
-        requestAnimationFrame(updateElementPosition);
-      });
-      resizeObserver.observe(targetElement);
+    if (targetElement) {
+      setupObserver(targetElement);
     }
 
     // Debounced window resize handler
     const debouncedResize = debounce(updateElementPosition, 150);
     window.addEventListener('resize', debouncedResize);
 
-    // Sidebar transition handler (listen for transitionend instead of setTimeout)
+    // Sidebar transition handler
     const sidebar = document.querySelector('aside[class*="fixed left-0"]');
     const handleSidebarTransition = (e) => {
       if (e.propertyName === 'width' || e.propertyName === 'transform') {
@@ -818,6 +1007,10 @@ export const TutorialProvider = ({ children }) => {
       }
     };
   }, [stepData, sidebarWidth, location.pathname]);
+
+  // REMOVED: Access mode choice tooltip (conflicting with AccessLevelChoicePopup)
+  // The AccessLevelChoicePopup is now shown ONLY when:
+  // 1. User clicks locked tabs (profile sub-tabs or marketplace) with team access
 
   // Function to force immediate position update (called by sidebar toggle button)
   const forceUpdateElementPosition = useCallback(() => {
@@ -843,7 +1036,6 @@ export const TutorialProvider = ({ children }) => {
     lastRestoredStateRef.current = { tutorial: null, step: null };
 
     // CRITICAL: Set the ref BEFORE any state changes to prevent race conditions
-    // This ref persists across renders, so checkTutorialStatus will see it immediately
     completingTutorialRef.current = previousTutorial;
     console.log("[TutorialContext] Set completingTutorialRef to:", previousTutorial);
 
@@ -854,11 +1046,14 @@ export const TutorialProvider = ({ children }) => {
       ], async () => {
         if (currentUser) {
           try {
-            const userDocRef = doc(db, 'users', currentUser.uid);
+            // Use profile collection instead of users
+            const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+            const profileDocRef = doc(db, profileCollection, currentUser.uid);
+
             const progressPath = `tutorialProgress.${onboardingType}.tutorials.${previousTutorial}`;
 
             // Update completedTutorials for this onboarding type
-            await updateDoc(userDocRef, {
+            await updateDoc(profileDocRef, {
               [`${progressPath}.completed`]: true,
               [`tutorialProgress.${onboardingType}.activeTutorial`]: null,
               updatedAt: serverTimestamp()
@@ -871,26 +1066,67 @@ export const TutorialProvider = ({ children }) => {
             }));
 
             // Chain next tutorial if applicable
-            const mandatoryOnboardingTutorials = ['dashboard', 'profileTabs', 'messages', 'contracts', 'calendar', 'marketplace', 'settings'];
+            const mandatoryOnboardingTutorials = ['dashboard', 'profileTabs', 'facilityProfileTabs', 'messages', 'contracts', 'calendar', 'marketplace', 'settings']
+              .filter(tutorial => {
+                // Filter out the profile tutorial that doesn't match the user's onboardingType
+                if (onboardingType === 'professional' && tutorial === 'facilityProfileTabs') return false;
+                if (onboardingType === 'facility' && tutorial === 'profileTabs') return false;
+                return true;
+              });
+
             const currentIndex = mandatoryOnboardingTutorials.indexOf(previousTutorial);
 
+            // SPECIAL: If finishing profile tabs, mark tutorial as passed officially and set access mode to full
+            if (previousTutorial === 'profileTabs' || previousTutorial === 'facilityProfileTabs') {
+              console.log("[TutorialContext] Profile tutorial finished, marking as tutorialPassed and setting access mode to full");
+              await setTutorialComplete(true);
+              
+              // ALWAYS upgrade to full access after profile completion (regardless of current mode)
+              console.log("[TutorialContext] Setting access mode to 'full' after profile completion");
+              setAccessModeState('full');
+              await updateDoc(profileDocRef, {
+                tutorialAccessMode: 'full',
+                profileCompleted: true,
+                profileCompletedAt: serverTimestamp()
+              });
+            }
+
             if (currentIndex !== -1 && currentIndex < mandatoryOnboardingTutorials.length - 1) {
-              const nextFeature = mandatoryOnboardingTutorials[currentIndex + 1];
-              console.log(`[TutorialContext] Chaining next tutorial: ${nextFeature}`);
-              setTimeout(() => {
-                if (startTutorialRef.current) {
-                  startTutorialRef.current(nextFeature);
+              let nextFeature = mandatoryOnboardingTutorials[currentIndex + 1];
+              
+              // After profile completion, access mode is now 'full', so don't skip marketplace
+              // Only skip marketplace if user completed profile with team mode AND didn't upgrade
+              const shouldSkipMarketplace = (previousTutorial !== 'profileTabs' && previousTutorial !== 'facilityProfileTabs') && 
+                                           accessMode === 'team' && 
+                                           nextFeature === 'marketplace';
+              
+              if (shouldSkipMarketplace) {
+                console.log(`[TutorialContext] Skipping marketplace tutorial (team access mode)`);
+                const nextIndex = mandatoryOnboardingTutorials.indexOf('marketplace') + 1;
+                if (nextIndex < mandatoryOnboardingTutorials.length) {
+                  nextFeature = mandatoryOnboardingTutorials[nextIndex];
+                } else {
+                  nextFeature = null;
                 }
-              }, 500);
+              }
+              
+              if (nextFeature) {
+                console.log(`[TutorialContext] Chaining next tutorial: ${nextFeature}`);
+                setTimeout(() => {
+                  if (startTutorialRef.current) {
+                    startTutorialRef.current(nextFeature);
+                  }
+                }, 500);
+              }
             } else {
               // Check if all tutorials are done to mark account tutorial as completed
-              const userDoc = await getDoc(userDocRef);
-              if (userDoc.exists()) {
-                const typeData = userDoc.data().tutorialProgress?.[onboardingType] || {};
+              const profileDoc = await getDoc(profileDocRef);
+              if (profileDoc.exists()) {
+                const typeData = profileDoc.data().tutorialProgress?.[onboardingType] || {};
                 const tutorials = typeData.tutorials || {};
                 const allDone = mandatoryOnboardingTutorials.every(f => tutorials[f]?.completed);
                 if (allDone) {
-                  await updateDoc(userDocRef, {
+                  await updateDoc(profileDocRef, {
                     [`tutorialProgress.${onboardingType}.completed`]: true
                   });
                 }
@@ -907,7 +1143,7 @@ export const TutorialProvider = ({ children }) => {
         console.log("[TutorialContext] Cleared completingTutorialRef");
       }, 1000);
     }
-  }, [activeTutorial, isBusy, safelyUpdateTutorialState, currentUser]);
+  }, [activeTutorial, isBusy, safelyUpdateTutorialState, currentUser, onboardingType, setTutorialComplete, accessMode]);
 
   // Load tutorial progress from Firestore
   // DISABLED: This effect was causing step regression by triggering on every currentStep change
@@ -956,6 +1192,7 @@ export const TutorialProvider = ({ children }) => {
 
     if (currentStep < totalSteps - 1) {
       const newStep = currentStep + 1;
+      
       safelyUpdateTutorialState([
         [setCurrentStep, newStep]
       ], async () => {
@@ -966,7 +1203,7 @@ export const TutorialProvider = ({ children }) => {
       completeTutorial();
     }
   }, [
-    isBusy, currentStep, activeTutorial, safelyUpdateTutorialState, completeTutorial, saveTutorialProgress
+    isBusy, currentStep, activeTutorial, safelyUpdateTutorialState, completeTutorial, saveTutorialProgress, setAllowAccessLevelModalClose, setShowAccessLevelModal
   ]);
 
   // Navigate to the feature if "Show me" button is clicked or if step has navigationPath
@@ -1003,13 +1240,33 @@ export const TutorialProvider = ({ children }) => {
     }
 
     if (targetPath) {
+      // Logic to block profile navigation if current tab is not valid
+      // This specifically prevents tutorial from skipping mandatory fields
+      if (location.pathname.includes('/profile') && targetPath.includes('/profile')) {
+        // More robust tab name extraction (removes query params and hashes)
+        const getTabName = (path) => path.split('?')[0].split('#')[0].split('/').filter(Boolean).pop();
+
+        const currentTab = getTabName(location.pathname);
+        const targetTabName = getTabName(targetPath);
+
+        // If navigating to a DIFFERENT tab within profile
+        if (currentTab !== targetTabName && currentTab !== 'profile') {
+          const validate = validationRef.current['profile'];
+          if (validate && !validate(currentTab)) {
+            console.warn(`[TutorialContext] Navigation blocked: Tab ${currentTab} is incomplete.`);
+            showWarning?.(i18n.t('validation:completePreviousSteps') || 'Please complete the required fields before continuing.');
+            return;
+          }
+        }
+      }
+
       console.log(`[TutorialContext] Navigating to: ${targetPath}`);
       navigate(targetPath);
 
       // Do NOT automatically advance to next step - user must click Next button
       console.log(`[TutorialContext] Navigation complete, waiting for user to click Next`);
     }
-  }, [activeTutorial, completeTutorial, currentStep, navigate, nextStep, stepData]);
+  }, [activeTutorial, completeTutorial, currentStep, navigate, location.pathname, showWarning]);
 
   // Skip the first-time modal (when user clicks "Skip")
   const skipFirstTimeModal = useCallback(() => {
@@ -1027,12 +1284,7 @@ export const TutorialProvider = ({ children }) => {
       // Update user's tutorial status in Firestore
       if (currentUser) {
         try {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          await updateDoc(userDocRef, {
-            tutorialPassed: true
-          });
-
-          // Set cookie to remember tutorial was passed
+          // Set cookie and update profile database to remember tutorial was passed
           await setTutorialComplete(true);
         } catch (error) {
           console.error('Error updating tutorial status:', error);
@@ -1040,6 +1292,17 @@ export const TutorialProvider = ({ children }) => {
       }
     });
   }, [isBusy, currentUser, safelyUpdateTutorialState, setTutorialComplete]);
+
+  // RESET PROFILE TAB ACCESS PROGRESS
+  const resetProfileTabAccess = useCallback(() => {
+    console.log("[TutorialContext] Resetting profile tab access to personalDetails");
+    setMaxAccessedProfileTab('personalDetails');
+    try {
+      localStorage.setItem('tutorial_maxAccessedProfileTab', 'personalDetails');
+    } catch (error) {
+      console.error('[TutorialContext] Error resetting maxAccessedProfileTab in localStorage:', error);
+    }
+  }, []);
 
   // Skip the entire tutorial
   const skipTutorial = useCallback(() => {
@@ -1051,12 +1314,32 @@ export const TutorialProvider = ({ children }) => {
       return;
     }
 
-    // MANDATORY LIMITATION: User can only skip/quit tutorial once Profile is finished
-    const isProfileTutorialComplete = completedTutorials?.profileTabs === true;
+    // REMOVED: Access mode choice tooltip handling (step deleted)
+
+    // MANDATORY LIMITATION: User can only skip/quit tutorial if:
+    // - Profile is finished OR
+    // - Access mode is 'team' (quick access) OR
+    // - Access mode is 'full' (show popup to let them choose)
+    const isProfileTutorialComplete = completedTutorials?.profileTabs === true || completedTutorials?.facilityProfileTabs === true;
+    
     if (!isProfileTutorialComplete) {
-      showError?.("Please complete your profile configuration before skipping the tutorial.");
-      return;
+      if (accessMode === 'team') {
+        console.log("[TutorialContext] Team access mode - allowing tutorial skip");
+        // Allow skipping tutorial with team access
+      } else if (accessMode === 'full') {
+        console.log("[TutorialContext] Full access mode - showing access popup");
+        setAllowAccessLevelModalClose(true);
+        setShowAccessLevelModal(true);
+        return;
+      } else {
+        // No access mode set - must complete profile first
+        showError?.("Please complete your profile configuration before skipping the tutorial.");
+        return;
+      }
     }
+
+    // Reset profile tab access
+    resetProfileTabAccess();
 
     safelyUpdateTutorialState([
       [setIsTutorialActive, false],
@@ -1065,12 +1348,14 @@ export const TutorialProvider = ({ children }) => {
       // Update user's tutorial status in Firestore
       if (currentUser) {
         try {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          // Set cookie to remember tutorial was passed
+          const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+          const profileDocRef = doc(db, profileCollection, currentUser.uid);
+
+          // Set cookie and update doc to remember tutorial was passed
           await setTutorialComplete(true);
 
           // CRITICAL: Clear any active tutorial progress and mark as completed for this account type
-          await updateDoc(userDocRef, {
+          await updateDoc(profileDocRef, {
             [`tutorialProgress.${onboardingType}.completed`]: true,
             [`tutorialProgress.${onboardingType}.activeTutorial`]: null,
             tutorialPassed: true,
@@ -1081,7 +1366,7 @@ export const TutorialProvider = ({ children }) => {
         }
       }
     });
-  }, [isBusy, currentUser, safelyUpdateTutorialState, setTutorialComplete, completedTutorials, onboardingType, showWarning]);
+  }, [isBusy, currentUser, safelyUpdateTutorialState, setTutorialComplete, completedTutorials, onboardingType, showWarning, activeTutorial, currentStep, accessMode, resetProfileTabAccess, showError]);
 
   // Move to the previous step
   const prevStep = useCallback(() => {
@@ -1112,46 +1397,117 @@ export const TutorialProvider = ({ children }) => {
     setIsWaitingForSave(waiting);
   }, []);
 
+  // Set access mode (team or full) and persist to Firestore
+  const setAccessMode = useCallback(async (mode) => {
+    if (!currentUser) return;
+
+    console.log("[TutorialContext] Setting access mode:", mode);
+    setAccessModeState(mode);
+    setShowAccessLevelModal(false);
+    setAllowAccessLevelModalClose(false);
+
+    try {
+      // Determine the profile collection based on onboarding type
+      const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+      const profileRef = doc(db, profileCollection, currentUser.uid);
+
+      await updateDoc(profileRef, {
+        tutorialAccessMode: mode,
+        updatedAt: serverTimestamp()
+      });
+
+      console.log("[TutorialContext] Access mode saved to Firestore:", mode);
+
+      if (mode === 'team') {
+        // Team mode: Mark profile as complete and skip to dashboard tutorials
+        console.log("[TutorialContext] Team mode selected - completing profile tutorial");
+
+        // Update profile completion status
+        await updateDoc(profileRef, {
+          profileCompleted: true,
+          profileCompletedAt: serverTimestamp()
+        });
+
+        // Mark the profile tabs tutorial as completed in Firestore BEFORE calling completeTutorial
+        // This prevents checkTutorialStatus from restoring it
+        const tutorialName = onboardingType === 'facility' ? 'facilityProfileTabs' : 'profileTabs';
+        const progressPath = `tutorialProgress.${onboardingType}.tutorials.${tutorialName}`;
+
+        await updateDoc(profileRef, {
+          [`${progressPath}.completed`]: true,
+          [`tutorialProgress.${onboardingType}.activeTutorial`]: null,
+          [`completedTutorials.${tutorialName}`]: true,
+          updatedAt: serverTimestamp()
+        });
+
+        // Update local state immediately to prevent restoration
+        setCompletedTutorials(prev => ({
+          ...prev,
+          [tutorialName]: true
+        }));
+
+        // Complete the profile tabs tutorial (this will automatically chain to messages tutorial)
+        // No need to manually start messages as completeTutorial handles chaining
+        await completeTutorial();
+      } else {
+        // Full mode: User selected to continue with full access
+        console.log("[TutorialContext] Full mode selected - user will manually navigate to next tab");
+        // Don't automatically advance to step 2
+        // User will click on the tab themselves
+      }
+    } catch (error) {
+      console.error("[TutorialContext] Error saving access mode:", error);
+      showError?.('Failed to save access preference. Please try again.');
+    }
+  }, [currentUser, onboardingType, completeTutorial, nextStep, showError, activeTutorial, currentStep, safelyUpdateTutorialState, saveTutorialProgress]);
+
   // Callback for when a tab/section is completed during tutorial
   const onTabCompleted = useCallback((tabId, isComplete) => {
     // Allow completion regardless of waiting state to support "Save & Continue" without clicking tooltip
-    if (!isTutorialActive || activeTutorial !== 'profileTabs') {
+    // Support both professional (profileTabs) and facility (facilityProfileTabs) tutorials
+    const isProfileTutorial = activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs';
+    if (!isTutorialActive || !isProfileTutorial) {
       return;
     }
 
     if (isComplete) {
-      console.log("[TutorialContext] Tab completed:", tabId, "- continuing tutorial");
+      console.log("[TutorialContext] Tab completed:", tabId, "- continuing tutorial (type:", activeTutorial, ")");
 
-      // Determine the specific next step index based on the completed tab
-      const tabStepMap = {
-        'personalDetails': 1,        // After Personal -> Go to Step 1 (Professional Background)
-        'professionalBackground': 2, // After Professional -> Go to Step 2 (Billing)
-        'billingInformation': 3,     // After Billing -> Go to Step 3 (Documents)
-        'documentUploads': 4         // After Docs -> Go to Step 4 (Completion)
-      };
+      const professionalTabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads'];
+      const tabIndex = professionalTabOrder.indexOf(tabId);
+      const currentMaxIndex = professionalTabOrder.indexOf(maxAccessedProfileTab);
+      
+      // RULE: When a tab is completed, unlock the next tab
+      if (tabIndex >= currentMaxIndex && tabIndex < professionalTabOrder.length - 1) {
+        const nextTab = professionalTabOrder[tabIndex + 1];
+        
+        console.log("[TutorialContext] Tab completed - updating maxAccessedProfileTab from", maxAccessedProfileTab, "to", nextTab);
+        setMaxAccessedProfileTab(nextTab);
+      }
 
-      const targetStep = tabStepMap[tabId];
-
-      // Clear waiting state immediately (no delay)
+      // Clear waiting state immediately
       setIsWaitingForSave(false);
 
-      if (targetStep !== undefined) {
-        const totalSteps = tutorialSteps[activeTutorial]?.length || 0;
-        // Check if within bounds
-        if (targetStep < totalSteps) {
-          safelyUpdateTutorialState([
-            [setCurrentStep, targetStep]
-          ], async () => {
-            await saveTutorialProgress(activeTutorial, targetStep);
-          });
+      // Show AccessLevelChoicePopup when completing Personal Details for first time (only once)
+      if (activeTutorial === 'profileTabs' && tabId === 'personalDetails') {
+        const popupShownKey = `accessLevelPopup_${currentUser?.uid}_personalToProf`;
+        const wasShown = localStorage.getItem(popupShownKey);
+        
+        if (!wasShown) {
+          console.log("[TutorialContext] Personal Details completed - showing AccessLevelChoicePopup (first time)");
+          localStorage.setItem(popupShownKey, 'true');
+          setAllowAccessLevelModalClose(false);
+          setShowAccessLevelModal(true);
+          return;
         } else {
-          completeTutorial();
+          console.log("[TutorialContext] Personal Details completed - popup already shown before, skipping");
         }
-      } else {
-        nextStep();
       }
+
+      // URL-based sync will handle step advancement automatically
+      console.log("[TutorialContext] Tab completed, URL-based sync will update step");
     }
-  }, [isTutorialActive, activeTutorial, nextStep, safelyUpdateTutorialState, completeTutorial, saveTutorialProgress]);
+  }, [isTutorialActive, activeTutorial, setAllowAccessLevelModalClose, setShowAccessLevelModal, maxAccessedProfileTab]);
 
   // Pause the tutorial (e.g., when a document upload popup is opened)
   const pauseTutorial = useCallback(() => {
@@ -1182,15 +1538,16 @@ export const TutorialProvider = ({ children }) => {
     safelyUpdateTutorialState([
       [setIsPaused, false]
     ], async () => {
-      // Check if onboarding was completed, if so start tutorial, otherwise show modal
+      // Check if onboarding was completed
       if (currentUser) {
         try {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          const userDoc = await getDoc(userDocRef);
+          const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+          const profileDocRef = doc(db, profileCollection, currentUser.uid);
+          const profileDoc = await getDoc(profileDocRef);
 
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const onboardingCompleted = userData.onboardingCompleted || (userData.onboardingProgress && userData.onboardingProgress.completed);
+          if (profileDoc.exists()) {
+            const profileData = profileDoc.data();
+            const onboardingCompleted = profileData.profileCompleted || (profileData.onboardingProgress && profileData.onboardingProgress.completed);
 
             if (onboardingCompleted) {
               // Resume tutorial
@@ -1216,8 +1573,13 @@ export const TutorialProvider = ({ children }) => {
 
   // Check if a sidebar item should be accesssible during onboarding
   const isSidebarItemAccessible = useCallback((itemPath) => {
-    // If tutorial has been explicitly passed (e.g. Skipped), allow full access
+    // If tutorial has been explicitly passed (e.g. Skipped), allow full access UNLESS team mode restricts it
     if (tutorialPassed) {
+      const itemName = itemPath.split('/').pop();
+      // Marketplace is locked for team access even if tutorial is passed
+      if (itemName === 'marketplace' && accessMode === 'team') {
+        return false;
+      }
       return true;
     }
 
@@ -1226,11 +1588,15 @@ export const TutorialProvider = ({ children }) => {
       return itemPath.includes('overview') || itemPath.includes('profile');
     }
 
-    // Check if profile tutorial is complete
-    const isProfileTutorialComplete = completedTutorials?.profileTabs === true;
+    // Check if profile tutorial is complete (either professional or facility)
+    const isProfileTutorialComplete = completedTutorials?.profileTabs === true || completedTutorials?.facilityProfileTabs === true;
 
-    // If profile tutorial is complete, full access is restored
+    // If profile tutorial is complete, full access is restored (except marketplace for team access)
     if (isProfileTutorialComplete) {
+      const itemName = itemPath.split('/').pop();
+      if (itemName === 'marketplace' && accessMode === 'team') {
+        return false;
+      }
       return true;
     }
 
@@ -1247,19 +1613,30 @@ export const TutorialProvider = ({ children }) => {
       return true;
     }
 
-    // 3. Other items follow tutorial advancement
+    // 3. Shared items (messages, contracts, calendar) are ALWAYS accessible regardless of tutorial progress
+    const sharedItems = ['messages', 'contracts', 'calendar'];
+    if (sharedItems.includes(itemName)) {
+      return true;
+    }
+
+    // 4. Other items follow tutorial advancement
     const tutorialOrder = ['overview', 'profile', 'messages', 'contracts', 'calendar', 'marketplace', 'payroll', 'organization', 'settings'];
     const itemIndex = tutorialOrder.indexOf(itemName);
 
     if (itemIndex !== -1) {
+      // Marketplace is locked for team access
+      if (itemName === 'marketplace' && accessMode === 'team') {
+        return false;
+      }
+
       // If the current tutorial is this item, it's accessible
-      if (activeTutorial === itemName || (itemName === 'profile' && activeTutorial === 'profileTabs')) {
+      if (activeTutorial === itemName || (itemName === 'profile' && (activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs'))) {
         return true;
       }
 
       // If previous item in order is completed, this one is accessible
       const prevItem = tutorialOrder[itemIndex - 1];
-      const prevTutorialKey = prevItem === 'profile' ? 'profileTabs' : prevItem;
+      const prevTutorialKey = prevItem === 'profile' ? (user?.role === 'facility' || user?.role === 'company' ? 'facilityProfileTabs' : 'profileTabs') : prevItem;
       if (completedTutorials[prevTutorialKey]) {
         return true;
       }
@@ -1268,7 +1645,7 @@ export const TutorialProvider = ({ children }) => {
     // Locked until progress reaches it
     return false;
 
-  }, [activeTutorial, completedTutorials, tutorialPassed, showFirstTimeModal]);
+  }, [activeTutorial, completedTutorials, tutorialPassed, showFirstTimeModal, accessMode]);
 
   // Route guard: Enforce strict navigation during mandatory onboarding
   useEffect(() => {
@@ -1303,12 +1680,12 @@ export const TutorialProvider = ({ children }) => {
 
     // Case A: Profile Creation Tutorial
     // User must stay within the profile section
-    if (activeTutorial === 'profileTabs') {
+    if (activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs') {
       // SYNC: Check if current URL matches any step's navigationPath and switch to it
       // This allows users to click tabs without getting stuck on previous steps
       // Use a ref to prevent infinite sync loops
       try {
-        const steps = tutorialSteps['profileTabs'];
+        const steps = tutorialSteps[activeTutorial];
         if (steps) {
           const currentPath = location.pathname;
           const matchingStepIndex = steps.findIndex(step =>
@@ -1342,40 +1719,72 @@ export const TutorialProvider = ({ children }) => {
       }
 
       if (!path.includes('/dashboard/profile')) {
-        console.log("[TutorialContext] Redirecting strict onboarding: Must be in profile");
+        console.log("[TutorialContext] User trying to leave profile during tutorial");
+        
+        // If team access, allow navigation and show access popup
+        if (accessMode === 'team') {
+          console.log("[TutorialContext] Team access mode - showing Access Level popup");
+          setAllowAccessLevelModalClose(true);
+          setShowAccessLevelModal(true);
+          return;
+        }
+        
+        // If full access and past first step, show Access Level popup
+        if (accessMode === 'full' && currentStep >= 1) {
+          console.log("[TutorialContext] Full access selected, showing Access Level popup");
+          setAllowAccessLevelModalClose(true);
+          setShowAccessLevelModal(true);
+          return;
+        }
+        
+        // No access mode set - redirect back to profile
         showWarning("Please complete your profile configuration to continue.");
-        navigate('/dashboard/profile');
+        const profileUrl = selectedWorkspace?.id
+          ? `/dashboard/profile?workspace=${selectedWorkspace.id}`
+          : '/dashboard/profile';
+        navigate(profileUrl);
       }
       return;
     }
 
     // Case B: Dashboard Intro Tutorial
     if (activeTutorial === 'dashboard') {
+      const isOverview = path === '/dashboard' || path === '/dashboard/' || path.includes('/dashboard/overview');
+      const isProfile = path.includes('/dashboard/profile');
+      const isSharedFeature = path.includes('/dashboard/messages') || path.includes('/dashboard/calendar') || path.includes('/dashboard/contracts');
+
+      // Allow profile and shared features (messages, calendar, contracts) during dashboard tutorial
+      if (isProfile || isSharedFeature) {
+        console.log("[TutorialContext] Profile or shared feature access allowed during dashboard tutorial");
+        // If user navigates to profile, complete the dashboard tutorial since that's the goal
+        if (isProfile && currentStep >= 3) {
+          console.log("[TutorialContext] User reached profile, completing dashboard tutorial");
+          completeTutorial();
+        }
+        return;
+      }
+
       // Steps before "Navigate to Profile" (Step 3) -> Must stay on Overview
       if (currentStep < 3) {
-        const isOverview = path === '/dashboard' || path === '/dashboard/' || path.includes('/dashboard/overview');
         if (!isOverview) {
           console.log("[TutorialContext] Redirecting strict onboarding: Must be in dashboard overview");
           showWarning("Please follow the onboarding guide.");
-          navigate('/dashboard');
+          // Preserve workspace param to prevent DashboardContext re-initialization
+          const dashboardUrl = selectedWorkspace?.id
+            ? `/dashboard?workspace=${selectedWorkspace.id}`
+            : '/dashboard';
+          navigate(dashboardUrl);
         }
       } else {
-        // Step 3 (Navigate to Profile) -> allow Overview OR Profile
-        // They need to click Profile, so we must allow Profile path.
-        const isOverview = path === '/dashboard' || path === '/dashboard/' || path.includes('/dashboard/overview');
-        const isProfile = path.includes('/dashboard/profile');
-
-        if (isProfile) {
-          console.log("[TutorialContext] User reached profile, completing dashboard tutorial");
-          // Complete the dashboard tutorial as the goal (navigating to profile) is achieved
-          completeTutorial();
-          return;
-        }
-
-        if (!isOverview && !isProfile) {
+        // Step 3+ but not on profile, overview, or shared features - redirect to dashboard
+        if (!isOverview && !isProfile && !isSharedFeature) {
           console.log("[TutorialContext] Redirecting strict onboarding: Invalid path during profile transition");
           showWarning("Please click on Profile to proceed.");
-          navigate('/dashboard');
+          // Preserve workspace param to prevent DashboardContext re-initialization
+          const dashboardUrl = selectedWorkspace?.id
+            ? `/dashboard?workspace=${selectedWorkspace.id}`
+            : '/dashboard';
+          navigate(dashboardUrl);
         }
       }
       return;
@@ -1390,6 +1799,8 @@ export const TutorialProvider = ({ children }) => {
     isTutorialActive,
     showFirstTimeModal,
     showTutorialSelectionModal,
+    showAccessLevelModal,
+    allowAccessLevelModalClose,
     completedTutorials,
     stepData,
     elementPosition,
@@ -1399,6 +1810,7 @@ export const TutorialProvider = ({ children }) => {
     isReady,
     sidebarWidth, // Expose sidebar width for overlay components
     onboardingType, // 'professional' or 'facility'
+    maxAccessedProfileTab,
 
     // Tutorial steps data
     tutorialSteps,
@@ -1419,11 +1831,21 @@ export const TutorialProvider = ({ children }) => {
     resumeTutorial,
     setShowFirstTimeModal,
     setShowTutorialSelectionModal, // Control tutorial selection modal
+    setShowAccessLevelModal, // Control access level modal
+    setAllowAccessLevelModalClose, // Control whether access level modal can be closed
     setOnboardingType, // Allow changing onboarding type
     setWaitingForSave,
     onTabCompleted,
     isSidebarItemAccessible,
-    forceUpdateElementPosition // Allow manual position refresh
+    forceUpdateElementPosition, // Allow manual position refresh
+    registerValidation,
+    validationRef,
+    showWarning,
+    showError,
+    accessMode,
+    setAccessMode,
+    setMaxAccessedProfileTab,
+    resetProfileTabAccess
   };
 
   return (

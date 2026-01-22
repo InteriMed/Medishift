@@ -1,52 +1,73 @@
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { firebaseApp } from '../services/firebase';
 import Papa from 'papaparse';
+
+const functions = getFunctions(firebaseApp, 'europe-west6');
 
 export const isAdmin = (userProfile) => {
   if (!userProfile) return false;
   
-  // Check roles array for admin roles
   if (userProfile.roles && Array.isArray(userProfile.roles)) {
     const adminRoles = ['admin', 'super_admin', 'ops_manager', 'finance', 'recruiter', 'support'];
     return userProfile.roles.some(role => adminRoles.includes(role));
   }
   
-  // Fallback to singular role field for backward compatibility
   return userProfile.role === 'admin';
 };
 
-export const impersonateUser = async (targetUserId, adminUserId) => {
+export const impersonateUser = async (targetUserId) => {
   try {
-    const targetUserDoc = await getDoc(doc(db, 'users', targetUserId));
-    if (!targetUserDoc.exists()) {
-      throw new Error('User not found');
+    const startImpersonation = httpsCallable(functions, 'startImpersonation');
+    const result = await startImpersonation({ targetUserId });
+    
+    if (result.data.success) {
+      return result.data;
+    } else {
+      throw new Error(result.data.message || 'Failed to start impersonation');
     }
-    
-    const targetUserData = targetUserDoc.data();
-    
-    await updateDoc(doc(db, 'users', adminUserId), {
-      impersonatingUserId: targetUserId,
-      impersonatingUserData: targetUserData,
-      impersonationStartedAt: serverTimestamp()
-    });
-    
-    return targetUserData;
   } catch (error) {
     console.error('Impersonation error:', error);
     throw error;
   }
 };
 
-export const stopImpersonation = async (adminUserId) => {
+export const stopImpersonation = async (sessionId) => {
   try {
-    await updateDoc(doc(db, 'users', adminUserId), {
-      impersonatingUserId: null,
-      impersonatingUserData: null,
-      impersonationStartedAt: null
-    });
+    const stopImpersonationFn = httpsCallable(functions, 'stopImpersonation');
+    const result = await stopImpersonationFn({ sessionId });
+    
+    if (result.data.success) {
+      return result.data;
+    } else {
+      throw new Error(result.data.message || 'Failed to stop impersonation');
+    }
   } catch (error) {
     console.error('Stop impersonation error:', error);
     throw error;
+  }
+};
+
+export const getImpersonationSession = async (sessionId) => {
+  try {
+    const getSession = httpsCallable(functions, 'getImpersonationSession');
+    const result = await getSession({ sessionId });
+    return result.data;
+  } catch (error) {
+    console.error('Get session error:', error);
+    throw error;
+  }
+};
+
+export const validateImpersonationSession = async (sessionId) => {
+  try {
+    const validateSession = httpsCallable(functions, 'validateImpersonationSession');
+    const result = await validateSession({ sessionId });
+    return result.data;
+  } catch (error) {
+    console.error('Validate session error:', error);
+    return { isValid: false, reason: error.message };
   }
 };
 

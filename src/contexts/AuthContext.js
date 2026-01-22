@@ -38,6 +38,11 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isProfessionalProfileComplete, setIsProfessionalProfileComplete] = useState(false);
   const [isTutorialPassed, setIsTutorialPassed] = useState(false);
+  
+  const [impersonationSession, setImpersonationSession] = useState(null);
+  const [impersonatedUser, setImpersonatedUser] = useState(null);
+  const [originalUserProfile, setOriginalUserProfile] = useState(null);
+  
   // Comment these out if not using them
   // const navigate = useNavigate();
   // const location = useLocation();
@@ -162,27 +167,6 @@ export const AuthProvider = ({ children }) => {
             console.log(`[AuthContext] Creating user document for ${user.uid}`);
             await setDoc(userDocRef, userData);
             console.log(`[AuthContext] ✅ User document created for ${user.uid}`);
-
-            // Also create profile document
-            try {
-              const profileRef = doc(db, 'professionalProfiles', user.uid);
-              const profileData = {
-                email: userData.email,
-                firstName: firstName,
-                lastName: lastName,
-                legalFirstName: firstName,
-                legalLastName: lastName,
-                contactPhone: '',
-                contactPhonePrefix: '+41',
-                profileVisibility: 'public',
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
-              };
-              await setDoc(profileRef, profileData);
-              console.log(`[AuthContext] ✅ Profile document created for ${user.uid}`);
-            } catch (profileError) {
-              console.warn(`[AuthContext] ⚠️ Could not create profile document:`, profileError);
-            }
           };
 
           // Get additional user data from Firestore with timeout
@@ -203,6 +187,12 @@ export const AuthProvider = ({ children }) => {
               
               let userDoc;
               try {
+                // Catch any rejections from quickReadPromise that occur after timeout
+                quickReadPromise.catch(err => {
+                  if (err.message !== 'Quick read timeout') {
+                    console.debug('[AuthContext] Background quick read error (after timeout):', err.message);
+                  }
+                });
                 userDoc = await Promise.race([quickReadPromise, quickTimeout]);
               } catch (quickError) {
                 // If quick read fails, try creating document directly
@@ -244,7 +234,20 @@ export const AuthProvider = ({ children }) => {
           };
 
           if (timeoutPromise) {
-            await Promise.race([fetchData(), timeoutPromise]);
+            const fetchDataPromise = fetchData();
+            // Catch any rejections from fetchData that occur after timeout
+            fetchDataPromise.catch(err => {
+              // Silently handle - timeout already handled the error
+              if (err.message !== 'Request timed out' && err.message !== 'Quick read timeout') {
+                console.debug('[AuthContext] Background fetch error (after timeout):', err.message);
+              }
+            });
+            try {
+              await Promise.race([fetchDataPromise, timeoutPromise]);
+            } catch (raceError) {
+              // Re-throw to be caught by outer catch block
+              throw raceError;
+            }
           } else {
             await fetchData();
           }
@@ -260,10 +263,19 @@ export const AuthProvider = ({ children }) => {
             // Try a quick retry with shorter timeout
             try {
               console.log("[AuthContext] Attempting quick retry...");
-              const quickRetry = await Promise.race([
-                getDoc(doc(db, 'users', user.uid)),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Quick retry timed out')), 3000))
-              ]);
+              const quickRetryPromise = getDoc(doc(db, 'users', user.uid));
+              const quickRetryTimeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Quick retry timed out')), 3000)
+              );
+              
+              // Catch any rejections from quickRetryPromise that occur after timeout
+              quickRetryPromise.catch(err => {
+                if (err.message !== 'Quick retry timed out') {
+                  console.debug('[AuthContext] Background quick retry error (after timeout):', err.message);
+                }
+              });
+              
+              const quickRetry = await Promise.race([quickRetryPromise, quickRetryTimeout]);
               
               if (quickRetry.exists()) {
                 const userData = quickRetry.data();
@@ -272,7 +284,10 @@ export const AuthProvider = ({ children }) => {
                 console.log("[AuthContext] Quick retry succeeded");
               }
             } catch (retryError) {
-              console.warn("[AuthContext] Quick retry also failed:", retryError.message);
+              // Silently handle timeout errors - they're expected
+              if (retryError.message !== 'Quick retry timed out') {
+                console.warn("[AuthContext] Quick retry also failed:", retryError.message);
+              }
             }
           } else if (err.code === 'unavailable' || (err.message && err.message.includes('offline'))) {
             console.warn("⚠️ User profile fetch skipped - client is offline");
@@ -518,20 +533,166 @@ export const AuthProvider = ({ children }) => {
 
   const deleteUser = async (user) => {
     if (user) {
-      await user.delete(); // This deletes the user from Firebase Auth
-      // Optionally, you can also delete user data from Firestore or other services here
+      await user.delete();
     } else {
       throw new Error('No user is currently authenticated.');
     }
   };
 
+  const startImpersonation = useCallback(async (targetUserId) => {
+    try {
+      const { impersonateUser } = await import('../../utils/adminUtils');
+      const result = await impersonateUser(targetUserId);
+      
+      if (result.success) {
+        setOriginalUserProfile(userProfile);
+        setImpersonationSession({
+          sessionId: result.sessionId,
+          expiresAt: new Date(result.expiresAt),
+          remainingMinutes: result.expiresInMinutes
+        });
+        setImpersonatedUser(result.targetUser);
+        
+        const targetUserProfile = {
+          ...result.targetUser,
+          id: result.targetUser.uid,
+          uid: result.targetUser.uid
+        };
+        setUserProfile(targetUserProfile);
+        
+        Cookies.set('medishift_impersonation_session', result.sessionId, {
+          expires: new Date(result.expiresAt)
+        });
+        
+        return result;
+      } else {
+        throw new Error(result.message || 'Failed to start impersonation');
+      }
+    } catch (error) {
+      console.error('[AuthContext] Impersonation error:', error);
+      setError(error.message);
+      throw error;
+    }
+  }, [userProfile]);
+
+  const stopImpersonation = useCallback(async () => {
+    try {
+      if (!impersonationSession) {
+        return;
+      }
+
+      const { stopImpersonation: stopImpersonationFn } = await import('../../utils/adminUtils');
+      await stopImpersonationFn(impersonationSession.sessionId);
+      
+      if (originalUserProfile) {
+        setUserProfile(originalUserProfile);
+      }
+      
+      setImpersonationSession(null);
+      setImpersonatedUser(null);
+      setOriginalUserProfile(null);
+      
+      Cookies.remove('medishift_impersonation_session');
+      
+      return { success: true };
+    } catch (error) {
+      console.error('[AuthContext] Stop impersonation error:', error);
+      setError(error.message);
+      throw error;
+    }
+  }, [impersonationSession, originalUserProfile]);
+
+  const validateImpersonationSession = useCallback(async () => {
+    try {
+      const sessionId = Cookies.get('medishift_impersonation_session');
+      if (!sessionId) {
+        if (impersonationSession) {
+          setImpersonationSession(null);
+          setImpersonatedUser(null);
+          if (originalUserProfile) {
+            setUserProfile(originalUserProfile);
+          }
+          setOriginalUserProfile(null);
+        }
+        return false;
+      }
+
+      const { validateImpersonationSession: validateSession } = await import('../../utils/adminUtils');
+      const result = await validateSession(sessionId);
+      
+      if (!result.isValid) {
+        setImpersonationSession(null);
+        setImpersonatedUser(null);
+        if (originalUserProfile) {
+          setUserProfile(originalUserProfile);
+        }
+        setOriginalUserProfile(null);
+        Cookies.remove('medishift_impersonation_session');
+        return false;
+      }
+
+      if (result.session) {
+        setImpersonationSession({
+          sessionId: result.session.sessionId,
+          expiresAt: new Date(result.session.expiresAt),
+          remainingMinutes: result.session.remainingMinutes
+        });
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('[AuthContext] Session validation error:', error);
+      return false;
+    }
+  }, [impersonationSession, originalUserProfile]);
+
+  useEffect(() => {
+    if (currentUser && !impersonationSession) {
+      const sessionId = Cookies.get('medishift_impersonation_session');
+      if (sessionId) {
+        validateImpersonationSession();
+      }
+    }
+  }, [currentUser, impersonationSession, validateImpersonationSession]);
+
+  useEffect(() => {
+    if (impersonationSession) {
+      const interval = setInterval(() => {
+        validateImpersonationSession();
+      }, 60000);
+
+      const expiresAt = impersonationSession.expiresAt;
+      if (expiresAt) {
+        const timeout = expiresAt.getTime() - Date.now();
+        if (timeout > 0) {
+          setTimeout(() => {
+            stopImpersonation();
+          }, timeout);
+        }
+      }
+
+      return () => {
+        clearInterval(interval);
+      };
+    }
+  }, [impersonationSession, validateImpersonationSession, stopImpersonation]);
+
+  const effectiveUserProfile = impersonatedUser ? {
+    ...impersonatedUser,
+    id: impersonatedUser.uid,
+    uid: impersonatedUser.uid
+  } : userProfile;
+
+  const isImpersonating = !!impersonationSession && !!impersonatedUser;
+
   // Context value
   const value = {
     currentUser,
-    userProfile,
+    userProfile: effectiveUserProfile,
+    originalUserProfile: isImpersonating ? originalUserProfile : userProfile,
     loading,
     error,
-    isProfileComplete: isProfessionalProfileComplete, // Maintain backward compatibility
+    isProfileComplete: isProfessionalProfileComplete,
     isProfessionalProfileComplete,
     isTutorialPassed,
     register,
@@ -549,7 +710,13 @@ export const AuthProvider = ({ children }) => {
     hasRole,
     isAuthenticated: !!currentUser,
     deleteUser,
-    checkOnboardingStatus
+    checkOnboardingStatus,
+    startImpersonation,
+    stopImpersonation,
+    validateImpersonationSession,
+    impersonationSession,
+    impersonatedUser,
+    isImpersonating
   };
 
   return (

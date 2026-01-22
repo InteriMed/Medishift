@@ -67,10 +67,15 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
     skipTutorial,
     isTutorialActive,
     activeTutorial,
+    currentStep,
     showFirstTimeModal,
     showTutorialSelectionModal,
     setShowTutorialSelectionModal,
-    isReady: isTutorialReady = false
+    setShowAccessLevelModal,
+    setAllowAccessLevelModalClose,
+    accessMode,
+    isReady: isTutorialReady = false,
+    resetProfileTabAccess
   } = useTutorial();
 
   // Local state
@@ -184,9 +189,10 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       return 'organization';
     } else if (path.includes('/settings')) {
       return 'settings';
-    } else if (path.includes('/profile')) {
-      // For profile page, use profile tutorial (not profileTabs which is for onboarding)
-      return 'profile';
+      } else if (path.includes('/profile')) {
+        // For profile page, use the comprehensive profile tabs tutorial
+        const isFacility = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
+        return isFacility ? 'facilityProfileTabs' : 'profileTabs';
     } else {
       // Default to dashboard tutorial for overview/dashboard pages
       return 'dashboard';
@@ -197,9 +203,26 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   const handleTutorialButtonClick = () => {
     console.log("Tutorial button clicked from header");
 
+    // Show Access Level popup if profile tutorial is active with full access mode
+    if ((activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs') && currentStep >= 1) {
+      console.log("[Header] Profile tutorial active, checking access mode");
+      
+      if (accessMode === 'full') {
+        console.log("[Header] Full access mode, showing Access Level popup");
+        setAllowAccessLevelModalClose(true);
+        setShowAccessLevelModal(true);
+        return;
+      }
+      
+      console.log("[Header] Team access mode or no mode set, closing tutorial");
+      if (resetProfileTabAccess) resetProfileTabAccess();
+      skipTutorial();
+      return;
+    }
+
     // Check if we're in onboarding mode (mandatory tutorial flow)
     // Only consider it onboarding if the modal is showing OR if we're in the profileTabs tutorial
-    const isInOnboarding = showFirstTimeModal || activeTutorial === 'profileTabs';
+    const isInOnboarding = showFirstTimeModal || activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs';
 
     // During onboarding, use the existing restartOnboarding behavior
     if (isInOnboarding) {
@@ -211,6 +234,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
     // Toggle behavior: if tutorial is active, stop it
     if (isTutorialActive) {
       console.log(`Stopping active tutorial: ${activeTutorial}`);
+      if (resetProfileTabAccess) resetProfileTabAccess();
       skipTutorial();
     } else {
       // Show the tutorial selection modal
@@ -224,8 +248,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   return (
     <header
       className={cn(
-        "min-h-16 border-b border-transparent w-full",
-        "flex items-center justify-between px-4 sm:px-6 fixed top-0 left-0 right-0 transition-all duration-300",
+        "h-20 border-b border-transparent w-full",
+        "flex items-center px-4 sm:px-6 fixed top-0 left-0 right-0 transition-all duration-300",
         "shadow-sm"
       )}
       style={{
@@ -234,7 +258,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         color: '#ffffff'
       }}
     >
-      {/* Left: Logo, Mobile Menu Button & Page Title */}
+      {/* Left: Logo & Mobile Menu Button */}
       <div className="flex items-center gap-4 flex-shrink-0">
         {/* Logo Section */}
         <div className="flex items-center gap-3 flex-shrink-0">
@@ -272,101 +296,108 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             </button>
           )
         )}
+      </div>
 
+      {/* Center: Page Title & Workspace Selector */}
+      <div className="flex-1 flex items-center justify-center min-w-0 px-4">
         {/* Page Icon & Title */}
         {Icon && (
-          <div key={`${location.pathname}-${i18n.language}`} className="flex items-center gap-2 pr-4 border-r border-white/20 flex-shrink-0">
+          <div key={`${location.pathname}-${i18n.language}`} className="flex items-center gap-2 flex-shrink-0">
             <Icon className="w-5 h-5 text-white" />
             <h1 className="text-base font-medium text-white flex items-center m-0 p-0" style={{ fontFamily: 'var(--font-family-headings, Roboto, sans-serif)' }}>
               {title}
             </h1>
           </div>
         )}
+        
+        {/* Workspace Selector (below title on smaller screens) */}
+        {!isLoading && shouldShowWorkspaceSelector && (
+          <div className="ml-4">
+            <HeaderWorkspaceSelector
+              workspaces={sortedWorkspaces}
+              selectedWorkspace={selectedWorkspace}
+              onSelectWorkspace={switchWorkspace}
+              onOpenChange={setWorkspaceSelectorOpen}
+            >
+              {isProfessional && !hasFacilityMemberships && (
+                <>
+                  {workspaces && workspaces.length > 0 && (
+                    <div className="my-1 h-px bg-border" />
+                  )}
+                  <button
+                    onClick={handleCreateBusiness}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all",
+                      "hover:bg-muted/50 text-primary"
+                    )}
+                  >
+                    <div className={cn(
+                      "p-2 rounded-lg",
+                      "bg-primary/10",
+                      "border border-primary/20"
+                    )}>
+                      <FiBriefcase className={cn("w-4 h-4", "text-primary")} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="text-sm font-medium text-foreground">
+                        {t('dashboard.header.createBusiness', 'Create a business')}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {t('dashboard.header.createBusinessDesc', 'Set up your facility profile')}
+                      </div>
+                    </div>
+                  </button>
+                </>
+              )}
+              {isFacility && (
+                <>
+                  {workspaces && workspaces.length > 0 && (
+                    <div className="my-1 h-px bg-border" />
+                  )}
+                  <button
+                    onClick={() => console.log("Action: Create/Switch to Professional Profile")}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all",
+                      "hover:bg-muted/50 text-primary"
+                    )}
+                  >
+                    <div className={cn(
+                      "p-2 rounded-lg",
+                      "bg-primary/10",
+                      "border border-primary/20"
+                    )}>
+                      <FiUser className={cn("w-4 h-4", "text-primary")} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="text-sm font-medium text-foreground">
+                        {t('dashboard.header.createProfessional', 'Create Professional Profile')}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {t('dashboard.header.createProfessionalDesc', 'Switch to personal account')}
+                      </div>
+                    </div>
+                  </button>
+                </>
+              )}
+            </HeaderWorkspaceSelector>
+          </div>
+        )}
       </div>
 
-      {/* Center: Workspace Selector */}
-      {!isLoading && shouldShowWorkspaceSelector && (
-        <div className="flex items-center justify-center flex-1 min-w-0 px-4">
-          <HeaderWorkspaceSelector
-            workspaces={sortedWorkspaces}
-            selectedWorkspace={selectedWorkspace}
-            onSelectWorkspace={switchWorkspace}
-            onOpenChange={setWorkspaceSelectorOpen}
-          >
-            {isProfessional && !hasFacilityMemberships && (
-              <>
-                {workspaces && workspaces.length > 0 && (
-                  <div className="my-1 h-px bg-border" />
-                )}
-                <button
-                  onClick={handleCreateBusiness}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all",
-                    "hover:bg-muted/50 text-primary"
-                  )}
-                >
-                  <div className={cn(
-                    "p-2 rounded-lg",
-                    "bg-primary/10",
-                    "border border-primary/20"
-                  )}>
-                    <FiBriefcase className={cn("w-4 h-4", "text-primary")} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="text-sm font-medium text-foreground">
-                      {t('dashboard.header.createBusiness', 'Create a business')}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {t('dashboard.header.createBusinessDesc', 'Set up your facility profile')}
-                    </div>
-                  </div>
-                </button>
-              </>
-            )}
-            {isFacility && (
-              <>
-                {workspaces && workspaces.length > 0 && (
-                  <div className="my-1 h-px bg-border" />
-                )}
-                <button
-                  // Action to create professional profile or switch context
-                  onClick={() => console.log("Action: Create/Switch to Professional Profile")}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all",
-                    "hover:bg-muted/50 text-primary"
-                  )}
-                >
-                  <div className={cn(
-                    "p-2 rounded-lg",
-                    "bg-primary/10",
-                    "border border-primary/20"
-                  )}>
-                    <FiUser className={cn("w-4 h-4", "text-primary")} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="text-sm font-medium text-foreground">
-                      {t('dashboard.header.createProfessional', 'Create Professional Profile')}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {t('dashboard.header.createProfessionalDesc', 'Switch to personal account')}
-                    </div>
-                  </div>
-                </button>
-              </>
-            )}
-          </HeaderWorkspaceSelector>
-        </div>
-      )}
-
       {/* Right: Search, Notifications, Profile */}
-      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+      <div data-tutorial="header-right-actions" className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         <div className="relative hidden lg:block">
-          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70 pointer-events-none z-10" />
           <input
             type="text"
             placeholder={t('dashboard.header.search', 'Search...')}
-            className="h-9 w-48 xl:w-64 rounded-lg border border-white/20 bg-white/10 backdrop-blur-sm pl-9 pr-3 text-sm text-white placeholder:text-white/70 outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-            style={{ color: '#ffffff' }}
+            className="w-48 xl:w-64 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-sm pl-9 pr-3 text-sm text-white placeholder:text-white/70 outline-none focus:border-white/40 focus:ring-0 focus:shadow-[0_0_0_4px_rgba(255,255,255,0.1)] transition-all hover:border-white/30 hover:bg-white/[0.15]"
+            style={{ 
+              color: '#ffffff',
+              height: 'var(--boxed-inputfield-height)',
+              fontWeight: '500',
+              fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
+            }}
           />
         </div>
 

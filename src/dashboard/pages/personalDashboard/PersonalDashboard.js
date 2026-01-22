@@ -9,10 +9,10 @@ const styles = {};
 
 const PersonalDashboard = () => {
   const navigate = useNavigate();
-  const { dashboardData, profileComplete, loading, loadingDebugInfo, error, user } = useDashboard();
+  const { dashboardData, profileComplete, isLoading, loadingDebugInfo, error, user } = useDashboard();
 
   console.log("PersonalDashboard render state:", {
-    loading,
+    isLoading,
     profileComplete,
     hasDashboardData: !!dashboardData,
     loadingDebugInfo,
@@ -20,7 +20,7 @@ const PersonalDashboard = () => {
     user
   });
 
-  if (loading) {
+  if (isLoading) {
     console.log("PersonalDashboard is in loading state");
     return (
       <div className={styles.dashboardContainer} data-tutorial="dashboard-container">

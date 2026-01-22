@@ -164,21 +164,103 @@ const AccountCreationTool = () => {
     const facilityProfileData = {
       userId: userId,
       email: email,
-      legalCompanyName: firstName || email.split('@')[0],
+      legalCompanyName: firstName || email.split('@')[0], // For backward compatibility/search
       profileType: 'pharmacy',
-      verification: {
-        status: 'approved',
-        verifiedAt: now,
-        verifiedBy: 'admin',
-        bypassed: true
+
+      // Standard Onboarding Structure
+      facilityDetails: {
+        name: firstName || email.split('@')[0], // Using "Company Name" input as name
+        additionalName: null,
+        operatingAddress: {
+          street: '',
+          city: '',
+          postalCode: '',
+          canton: '',
+          country: 'CH'
+        },
+        glnCompany: 'ADMIN_OVERRIDE',
+        responsiblePersons: []
       },
+
+      responsiblePersonIdentity: {
+        firstName: 'Admin', // Placeholder or could ask for more inputs
+        lastName: 'Created',
+        dateOfBirth: null,
+        nationality: null,
+        gender: null,
+        documentType: null,
+        documentNumber: null,
+        documentExpiry: null,
+        residentialAddress: null
+      },
+
+      identityLegal: {
+        legalCompanyName: firstName || email.split('@')[0],
+        uidNumber: null
+      },
+
+      billingInformation: {
+        legalName: firstName || email.split('@')[0],
+        uidNumber: null,
+        billingAddress: {
+          street: '',
+          city: '',
+          postalCode: '',
+          canton: '',
+          country: 'CH'
+        },
+        invoiceEmail: email,
+        internalRef: '',
+        verificationStatus: 'verified' // Auto-verify for admin created
+      },
+
+      contact: {
+        primaryEmail: email,
+        primaryPhone: '',
+        primaryPhonePrefix: ''
+      },
+
+      verification: {
+        identityStatus: 'verified', // Auto-verify
+        billingStatus: 'verified', // Auto-verify
+        overallVerificationStatus: 'verified',
+        overallStatus: 'verified',
+        verificationDocumentsProvided: [
+          {
+            documentId: `admin_override_${Date.now()}`,
+            type: 'admin_override',
+            fileName: 'Created by Admin Debug Tool',
+            uploadedAt: new Date().toISOString(),
+            status: 'verified',
+            verificationStatus: 'verified'
+          }
+        ]
+      },
+
       admin: [userId],
-      employees: [],
+      employees: [{
+        uid: userId,
+        rights: 'admin'
+      }],
       createdAt: timestamp,
-      updatedAt: timestamp
+      updatedAt: timestamp,
+
+      // Flags
+      GLN_certified: 'ADMIN_OVERRIDE',
+      verificationStatus: 'verified'
     };
 
     await setDoc(doc(db, 'facilityProfiles', userId), facilityProfileData, { merge: true });
+
+    // Also need to update User's membershipt to include facilityName (critical for dashboard access)
+    await setDoc(doc(db, 'users', userId), {
+      facilityMemberships: [{
+        facilityId: userId,
+        facilityName: firstName || email.split('@')[0],
+        facilityProfileId: userId,
+        role: 'admin'
+      }]
+    }, { merge: true });
   };
 
   const handleSearchUser = async () => {
@@ -268,8 +350,8 @@ const AccountCreationTool = () => {
               <button
                 onClick={() => setAccountType('professional')}
                 className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${accountType === 'professional'
-                    ? 'bg-primary text-white border-primary'
-                    : 'bg-white border-border hover:bg-grey-1'
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white border-border hover:bg-grey-1'
                   }`}
               >
                 <User size={20} className="inline mr-2" />
@@ -278,8 +360,8 @@ const AccountCreationTool = () => {
               <button
                 onClick={() => setAccountType('facility')}
                 className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${accountType === 'facility'
-                    ? 'bg-primary text-white border-primary'
-                    : 'bg-white border-border hover:bg-grey-1'
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white border-border hover:bg-grey-1'
                   }`}
               >
                 <Building2 size={20} className="inline mr-2" />

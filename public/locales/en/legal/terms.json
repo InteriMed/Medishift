@@ -93,6 +93,9 @@
           "These GTC are subject to Swiss Law. For any dispute arising from the interpretation or execution hereof, exclusive jurisdiction is established at the competent courts of the Canton of Geneva, subject to appeal to the Federal Supreme Court."
         ]
       }
-    ]
+    ],
+    "tableOfContents": {
+      "title": "Title"
+    }
   }
 }

@@ -200,11 +200,7 @@ const HeaderWorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorksp
             })}
 
             {/* Footer / Children Content (e.g., Create Business Button) */}
-            {children && (
-              <div className="mt-2 pt-2 border-t border-border">
-                {children}
-              </div>
-            )}
+            {children}
           </div>
         </div>
       )}

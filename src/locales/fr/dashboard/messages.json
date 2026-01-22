@@ -8,8 +8,10 @@
   "noConversations": "Aucune conversation",
   "noConversationsHint": "Démarrez des conversations via les interactions du marketplace",
   "noFacilityConversationsHint": "Les conversations liées à l'établissement apparaîtront ici",
-  "selectConversation": "Sélectionner une conversation",
-  "selectConversationPrompt": "Choisissez une conversation dans la liste pour voir les messages",
+  "selectConversation": {
+    "title": "Sélectionner une conversation",
+    "subtitle": "Choisissez une conversation dans la liste pour voir les messages"
+  },
   "facilityMessagesInfo": "Ces messages sont liés aux opérations de l'établissement et à la gestion d'équipe",
   "conversation": {
     "typing": "En train d'écrire...",
@@ -22,11 +24,65 @@
   "errors": {
     "loadingConversations": "Échec du chargement des conversations",
     "loadingMessages": "Échec du chargement des messages",
-    "sendingMessage": "Échec de l'envoi du message"
+    "sendingMessage": "Échec de l'envoi du message",
+    "title": "Title",
+    "description": "Description",
+    "retry": "Retry"
   },
   "actions": {
     "markAsRead": "Marquer comme lu",
     "deleteConversation": "Supprimer la conversation",
     "blockUser": "Bloquer l'utilisateur"
+  },
+  "tutorial": {
+    "doctorName": "Doctor Name",
+    "doctorMessage": "Doctor Message",
+    "hospitalName": "Hospital Name",
+    "hospitalMessage": "Hospital Message"
+  },
+  "searchPlaceholder": "Search Placeholder",
+  "filters": {
+    "all": "All",
+    "unreadOnly": "Unread Only",
+    "date": {
+      "all": "All",
+      "lastWeek": "Last Week",
+      "lastMonth": "Last Month",
+      "last3Months": "Last3 Months",
+      "lastYear": "Last Year"
+    }
+  },
+  "unread": "Unread",
+  "empty": {
+    "noMessagesFound": "No Messages Found",
+    "noConversationsYet": "No Conversations Yet",
+    "adjustFilters": "Adjust Filters",
+    "startConversation": "Start Conversation",
+    "noMessagesInChat": "No Messages In Chat",
+    "startChatting": "Start Chatting",
+    "noConversationsFound": "No Conversations Found"
+  },
+  "status": {
+    "you": "You",
+    "unknownUser": "Unknown User",
+    "sending": "Sending"
+  },
+  "loading": "Loading",
+  "context": {
+    "facilityLabel": "Facility Label",
+    "facility": "Facility",
+    "contract": "Contract",
+    "personal": "Personal"
+  },
+  "placeholders": {
+    "typeMessage": "Type Message",
+    "unknown": "Unknown",
+    "noMessages": "No Messages"
+  },
+  "time": {
+    "now": "Now",
+    "minutes": "Minutes",
+    "hours": "Hours",
+    "days": "Days"
   }
-} 
+}

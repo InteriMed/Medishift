@@ -12,7 +12,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
 import Notification from './components/Notification/Notification';
 import Dialog from './components/Dialog/Dialog';
-import Tutorial from './dashboard/onboarding/Tutorial';
+import Tutorial from './dashboard/tutorial/Tutorial';
+import GhostModeBanner from './components/GhostModeBanner/GhostModeBanner';
 import { useTranslation } from 'react-i18next';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -52,6 +53,8 @@ import {
   TestPage,
   TestPhonePage,
   TestGLNPage,
+  TestPopupPage,
+  GLNTestVerifPage,
   OnboardingPage
 } from './pages';
 
@@ -153,7 +156,12 @@ function AppContent() {
       i18n.changeLanguage(lang);
 
       // Redirect to same path but with language prefix
-      const newPath = path === '/' ? `/${lang}` : `/${lang}${path}`;
+      // IMPORTANT: Preserve search (query params) and hash to prevent losing workspace state
+      const search = location.search;
+      const hash = location.hash;
+      const newPath = path === '/' ? `/${lang}${search}${hash}` : `/${lang}${path}${search}${hash}`;
+
+      console.log(`[App] Redirecting to localized path: ${newPath}`);
       navigate(newPath, { replace: true });
     } else {
       // Language is in URL, just set it in i18n
@@ -202,6 +210,7 @@ function AppContent() {
 
   return (
     <div className={`${isDashboardPage ? '' : 'with-header'} min-h-screen bg-background font-sans antialiased text-foreground`}>
+      <GhostModeBanner />
       {showHeader && <Header />}
       <main className="content">
         <Routes>
@@ -244,14 +253,6 @@ function AppContent() {
                 </ProtectedRoute>
             } />
 
-            {/* Add direct access to dashboard profile */}
-            <Route path="dashboard/profile" element={
-              DASHBOARD_DISABLED ?
-                <Navigate to={`/${i18n.language}/not-found`} replace /> :
-                <ProtectedRoute>
-                  <DashboardRoot />
-                </ProtectedRoute>
-            } />
 
             {/* Loading page */}
             <Route path="loading" element={<LoadingPage />} />
@@ -259,6 +260,8 @@ function AppContent() {
             {/* Test pages */}
             <Route path="test" element={<TestPage />} />
             <Route path="testphone" element={<TestPhonePage />} />
+            <Route path="testpopup" element={<TestPopupPage />} />
+            <Route path="glntestverif" element={<GLNTestVerifPage />} />
             <Route path="dashboard/admin/system/gln-test" element={<TestGLNPage />} />
 
             {/* Not found route */}
@@ -275,14 +278,6 @@ function AppContent() {
               </ProtectedRoute>
           } />
 
-          {/* Add direct access to dashboard profile without language prefix */}
-          <Route path="/dashboard/profile" element={
-            DASHBOARD_DISABLED ?
-              <Navigate to={`/${i18n.language}/not-found`} replace /> :
-              <ProtectedRoute>
-                <DashboardRoot />
-              </ProtectedRoute>
-          } />
 
           {/* Root redirects to language-prefixed path */}
           <Route path="/" element={<Navigate to={`/${DEFAULT_LANGUAGE}`} replace />} />

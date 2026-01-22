@@ -83,7 +83,7 @@ const Header = () => {
       </button>
       <button
         onClick={() => navigate(createPath('signup'))}
-        className={`px-6 py-2.5 rounded-xl text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 hover:-translate-y-0.5 flex items-center justify-center ${mobile ? 'w-full' : ''}`}
+        className={`px-6 py-2.5 rounded-xl text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 flex items-center justify-center ${mobile ? 'w-full' : ''}`}
         style={{ background: 'var(--secondary-color)' }}
       >
         {t('auth.signup.button', 'Sign Up')}

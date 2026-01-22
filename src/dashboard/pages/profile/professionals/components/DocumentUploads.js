@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import classNames from 'classnames';
 
 // --- Import Base Components ---
 import Button from '../../../../../components/BoxedInputFields/Button';
@@ -14,8 +15,8 @@ import useAutoSave from '../../../../hooks/useAutoSave';
 
 const styles = {
     sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-    headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
-    sectionTitle: "text-2xl font-semibold mb-2",
+    headerCard: "bg-card rounded-xl border border-border/60 px-6 py-2 shadow-sm w-full max-w-[1400px] mx-auto h-16 flex items-center",
+    sectionTitle: "text-2xl font-semibold mb-0",
     sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     sectionSubtitle: "text-sm font-medium text-muted-foreground",
     subtitleRow: "flex items-end justify-between gap-4",
@@ -25,7 +26,7 @@ const styles = {
     leftColumn: "flex flex-col gap-6 flex-1",
     rightColumn: "flex flex-col gap-6 flex-1",
     sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
-    cardHeader: "flex items-center gap-4 mb-0",
+    cardHeader: "flex items-center gap-4 mb-4",
     cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
     cardTitle: "flex-1",
     cardTitleH3: "m-0",
@@ -79,6 +80,9 @@ const DocumentUploads = ({
     onSave,
     onCancel,
     getNestedValue,
+    validateCurrentTabData,
+    onTabCompleted,
+    isTutorialActive
 }) => {
     const { t } = useTranslation(['dashboardProfile', 'common', 'validation']);
     const { upload, uploadState } = useFileUpload();
@@ -103,7 +107,10 @@ const DocumentUploads = ({
         onInputChange,
         onSave,
         getNestedValue,
-        extractTabData
+        extractTabData,
+        validateCurrentTabData,
+        onTabCompleted,
+        isTutorialActive
     });
 
     const nationality = getNestedValue(formData, 'identity.nationality');
@@ -450,57 +457,61 @@ const DocumentUploads = ({
             }
 
             const itemUrl = typeof url === 'string' ? url : (url?.url || url);
+            const itemHasError = false;
             return (
                 <div key={itemUrl || index} style={{
+                    padding: '0.5rem',
+                    margin: '2px 0',
                     display: 'flex',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: 0,
-                    margin: 0
+                    borderRadius: '8px',
+                    border: itemHasError ? '1px dotted hsl(var(--destructive))' : '1px dotted hsl(var(--border) / 0.6)',
+                    backgroundColor: itemHasError ? 'hsl(var(--destructive) / 0.03)' : 'transparent'
                 }}>
-                    <div style={{
-                        width: '32px',
-                        height: '32px',
-                        color: 'hsl(var(--foreground))',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginRight: '0.75rem'
-                    }}>
-                        <FiFileText />
+                    <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: '0.75rem' }}>
+                        <div style={{
+                            width: '32px',
+                            height: '32px',
+                            color: 'hsl(var(--foreground))',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                        }}>
+                            <FiFileText />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div className="text-sm font-medium" style={{
+                                color: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
+                                fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
+                            }}>
+                                <strong style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }} title={fileName}>{displayName}</strong>
+                            </div>
+                            <div className="text-xs" style={{
+                                color: itemHasError ? 'hsl(var(--destructive) / 0.7)' : 'hsl(var(--muted-foreground))',
+                                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                marginTop: '0.25rem'
+                            }}>
+                                <FiCheckCircle size={12} /> {t('common.uploaded')}
+                            </div>
+                        </div>
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ margin: 0, fontWeight: 500, fontSize: 'var(--font-size-small)', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={fileName}>{displayName}</p>
-                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <FiCheckCircle size={12} /> {t('common.uploaded')}
-                        </p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
                         {itemUrl && (
-                            <>
-                                <button
-                                    onClick={() => window.open(itemUrl, '_blank')}
-                                    className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
-                                    title={t('common.view', 'View')}
-                                    aria-label={t('common.view', 'View')}
-                                >
-                                    <FiEye className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const link = document.createElement('a');
-                                        link.href = itemUrl;
-                                        link.download = fileName || 'document';
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                    }}
-                                    className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
-                                    title={t('common.download', 'Download')}
-                                    aria-label={t('common.download', 'Download')}
-                                >
-                                    <FiDownload className="w-4 h-4" />
-                                </button>
-                            </>
+                            <button
+                                onClick={() => window.open(itemUrl, '_blank')}
+                                style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
+                                title={t('common.view', 'View')}
+                                aria-label={t('common.view', 'View')}
+                            >
+                                <FiEye style={{ width: '16px', height: '16px', color: 'inherit' }} />
+                            </button>
                         )}
                         <button
                             onClick={() => {
@@ -517,22 +528,26 @@ const DocumentUploads = ({
                                 }
                                 inputRef.current && inputRef.current.click();
                             }}
-                            className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
-                            title={t('documents.replace')}
-                            aria-label={t('documents.replace')}
+                            style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
+                            title={t('common.edit')}
+                            aria-label={t('common.edit')}
                         >
-                            <FiEdit className="w-4 h-4" />
+                            <FiEdit style={{ width: '16px', height: '16px', color: 'inherit' }} />
                         </button>
                         <button
                             onClick={() => {
                                 const urlToRemove = itemUrl;
                                 handleRemoveDocument(fieldConfig, isMultiple ? index : urlToRemove);
                             }}
-                            className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-destructive transition-colors"
-                            title={t('documents.remove')}
-                            aria-label={t('documents.remove')}
+                            style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
+                            title={t('common.delete')}
+                            aria-label={t('common.delete')}
                         >
-                            <FiTrash2 className="w-4 h-4" />
+                            <FiTrash2 style={{ width: '16px', height: '16px', color: 'inherit' }} />
                         </button>
                     </div>
                 </div>
@@ -541,32 +556,46 @@ const DocumentUploads = ({
 
         return (
             <div className={styles.sectionCard}>
-                <div className={styles.sectionContent}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <div className={styles.cardIconWrapper}><FiUploadCloud /></div>
+                <div className={styles.cardHeader}>
+                    <div className={styles.cardIconWrapper}>
+                        <FiFileText />
+                    </div>
+                    <div className={styles.cardTitle}>
                         <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
                             {label} {required && <span className={styles.mandatoryMark}>*</span>}
                         </h3>
                     </div>
+                </div>
+                <div className={styles.sectionContent}>
+                    {currentFiles.length > 0 && (
+                        <div className="document-entries-wrapper" style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: 0,
+                            padding: '0.75rem',
+                            backgroundColor: 'hsl(var(--muted) / 0.3)',
+                            borderRadius: '0.5rem',
+                            marginBottom: '1rem'
+                        }}>
+                            {isMultiple
+                                ? currentFiles.map((fileData, index) => {
+                                    const url = fileData.url || fileData;
+                                    const itemHasError = false;
+                                    return (
+                                        <React.Fragment key={url || index}>
+                                            {renderDocumentItem(fileData, index, currentFiles.length)}
+                                            {index < currentFiles.length - 1 && !itemHasError && (
+                                                <div style={{ height: '1px', backgroundColor: 'hsl(var(--border) / 0.3)', margin: '0.25rem 0' }} />
+                                            )}
+                                        </React.Fragment>
+                                    );
+                                })
+                                : renderDocumentItem(currentFiles[0], 0, 1)
+                            }
+                        </div>
+                    )}
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, paddingBottom: (!isMultiple && currentFiles.length === 1) ? 0 : undefined }}>
-                        {isMultiple
-                            ? currentFiles.map((fileData, index) => {
-                                const url = fileData.url || fileData;
-                                return (
-                                    <React.Fragment key={url || index}>
-                                        {renderDocumentItem(fileData, index, currentFiles.length)}
-                                        {index < currentFiles.length - 1 && (
-                                            <div style={{ height: '1px', backgroundColor: 'hsl(var(--border) / 0.3)', margin: '0.5rem 0' }} />
-                                        )}
-                                    </React.Fragment>
-                                );
-                            })
-                            : currentFiles.length > 0 ? renderDocumentItem(currentFiles[0], 0, 1) : null
-                        }
-                    </div>
-
-                    <div style={{ marginTop: (currentFiles.length === 0) ? 0 : ((!isMultiple && currentFiles.length === 1) ? 0 : '1.5rem') }}>
+                    <div className="document-upload-controls-wrapper">
                         {showEducationDropdown && (isMultiple || currentFiles.length === 0) && (
                             <div style={{ marginBottom: '1rem' }}>
                                 <SimpleDropdown

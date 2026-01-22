@@ -3,17 +3,18 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import classNames from 'classnames';
-import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield } from 'react-icons/fi';
+import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2 } from 'react-icons/fi';
+import { httpsCallable } from 'firebase/functions';
 
 import Switch from '../../../../../components/BoxedInputFields/Switch';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import Button from '../../../../../components/BoxedInputFields/Button';
 import Dialog from '../../../../../components/Dialog/Dialog';
-// Use CSS module instead of regular CSS
-import PhoneVerificationStep from '../../../../onboarding/components/PhoneVerificationStep';
+import BankingAccessModal from '../../components/BankingAccessModal';
+import useAutoSave from '../../../../hooks/useAutoSave';
+import { functions } from '../../../../../services/firebase';
 
-// Import the dropdown options hook
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
 
 // --- FAKE Dropdown Options (Replace with real data loading/i18n) ---
@@ -21,8 +22,8 @@ import { useDropdownOptions } from '../../utils/DropdownListsImports';
 // Tailwind styles
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
-  sectionTitle: "text-2xl font-semibold mb-2",
+  headerCard: "bg-card rounded-xl border border-border/60 px-6 py-2 shadow-sm w-full max-w-[1400px] mx-auto h-16 flex items-center",
+  sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
   subtitleRow: "flex items-end justify-between gap-4",
@@ -49,26 +50,125 @@ const BillingInformation = ({
   config,
   errors,
   isSubmitting,
-  onInputChange, // Use this for all updates
+  onInputChange,
   onSaveAndContinue,
   onSave,
   onCancel,
   getNestedValue,
+  validateCurrentTabData,
+  onTabCompleted,
+  isTutorialActive
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
   const [showHiringInfo, setShowHiringInfo] = useState(false);
-  const location = useLocation();
-  const localStorageKey = 'billingInformation_draft';
-  const previousLocationRef = useRef(location.pathname);
-  const saveTimeoutRef = useRef(null);
-  const hasUnsavedChangesRef = useRef(false);
+  const [showBankingAccessModal, setShowBankingAccessModal] = useState(false);
+  const [hasBankingAccess, setHasBankingAccess] = useState(false);
+  
+  const previousBankingRef = useRef(null);
+  const bankingModifiedRef = useRef(false);
 
-  // Use the dropdown options hook
   const dropdownOptionsFromHook = useDropdownOptions();
+
+  useEffect(() => {
+    if (formData?.banking && !previousBankingRef.current) {
+      previousBankingRef.current = JSON.stringify({
+        iban: formData.banking?.iban || '',
+        bankName: formData.banking?.bankName || '',
+        accountHolderName: formData.banking?.accountHolderName || ''
+      });
+    }
+  }, [formData?.banking]);
+
+  const trackBankingChange = useCallback((fieldName) => {
+    if (fieldName.startsWith('banking.')) {
+      bankingModifiedRef.current = true;
+    }
+  }, []);
+
+  const wrappedOnInputChange = useCallback((name, value) => {
+    trackBankingChange(name);
+    onInputChange(name, value);
+  }, [onInputChange, trackBankingChange]);
+
+  const sendBankingUpdateNotification = useCallback(async () => {
+    if (!bankingModifiedRef.current || !hasBankingAccess) return;
+    
+    const currentBanking = JSON.stringify({
+      iban: formData?.banking?.iban || '',
+      bankName: formData?.banking?.bankName || '',
+      accountHolderName: formData?.banking?.accountHolderName || ''
+    });
+    
+    if (currentBanking === previousBankingRef.current) return;
+    
+    try {
+      const notifyBankingUpdate = httpsCallable(functions, 'notifyBankingUpdate');
+      const ibanLast4 = formData?.banking?.iban ? formData.banking.iban.slice(-4) : '';
+      await notifyBankingUpdate({
+        bankName: formData?.banking?.bankName || '',
+        ibanLast4
+      });
+      console.log('[BillingInfo] Banking update notification sent');
+      previousBankingRef.current = currentBanking;
+      bankingModifiedRef.current = false;
+    } catch (error) {
+      console.error('[BillingInfo] Failed to send banking notification:', error);
+    }
+  }, [formData?.banking, hasBankingAccess]);
+
+  const handleSaveWithNotification = useCallback(async () => {
+    const result = await onSave();
+    if (result) {
+      await sendBankingUpdateNotification();
+    }
+    return result;
+  }, [onSave, sendBankingUpdateNotification]);
+
+  const checkBankingAccess = useCallback(() => {
+    const accessExpiry = localStorage.getItem('bankingAccessGranted');
+    if (!accessExpiry) return false;
+    
+    const expiryTime = parseInt(accessExpiry, 10);
+    if (Date.now() > expiryTime) {
+      localStorage.removeItem('bankingAccessGranted');
+      return false;
+    }
+    return true;
+  }, []);
+
+  useEffect(() => {
+    setHasBankingAccess(checkBankingAccess());
+    
+    const interval = setInterval(() => {
+      const stillHasAccess = checkBankingAccess();
+      if (hasBankingAccess && !stillHasAccess) {
+        setHasBankingAccess(false);
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [checkBankingAccess, hasBankingAccess]);
+
+  const handleBankingAccessSuccess = () => {
+    setHasBankingAccess(true);
+    setShowBankingAccessModal(false);
+  };
+
+  const handleUnlockBanking = () => {
+    setShowBankingAccessModal(true);
+  };
+
+  const getMaskedValue = (value, fieldName) => {
+    if (!value) return '';
+    
+    if (fieldName.includes('iban')) {
+      return '•••• •••• •••• ••••';
+    }
+    return '•'.repeat(Math.min(value.length, 20));
+  };
 
   const fieldsToRender = useMemo(() => config?.fields?.billingInformation || [], [config]);
 
-  // Extract billing information fields from formData
   const extractBillingData = useCallback(() => {
     if (!formData || !fieldsToRender) return null;
     const billingData = {};
@@ -81,7 +181,28 @@ const BillingInformation = ({
     return billingData;
   }, [formData, fieldsToRender, getNestedValue]);
 
-  // 2FA for Editing Logic
+  useAutoSave({
+    formData,
+    config,
+    activeTab: 'billingInformation',
+    onInputChange: wrappedOnInputChange,
+    onSave: handleSaveWithNotification,
+    getNestedValue,
+    extractTabData: extractBillingData,
+    validateCurrentTabData,
+    onTabCompleted,
+    isTutorialActive,
+    disableLocalStorage: true
+  });
+
+  const hasExistingBankingInfo = useMemo(() => {
+    return formData?.banking && (
+      formData.banking.iban || 
+      formData.banking.bankName || 
+      formData.banking.accountHolderName
+    );
+  }, [formData]);
+
   const hasExistingBillingInfo = useMemo(() => {
     return formData && (
       (formData.billingInformation && Object.keys(formData.billingInformation).length > 0) ||
@@ -90,39 +211,11 @@ const BillingInformation = ({
     );
   }, [formData]);
 
-  // If data exists, it matches the requirement "validated after the tutorial" (assuming saved = validated)
-  // Lock editing by default if data exists
-  const [isEditingLocked, setIsEditingLocked] = useState(() => hasExistingBillingInfo);
-  const [show2FADialog, setShow2FADialog] = useState(false);
 
-  // Re-lock if formData changes externally and we haven't unlocked (e.g. initial load)
-  useEffect(() => {
-    if (hasExistingBillingInfo && isEditingLocked === undefined) {
-      setIsEditingLocked(true);
-    }
-  }, [hasExistingBillingInfo, isEditingLocked]);
-
-  const handleUnlockClick = () => {
-    setShow2FADialog(true);
-  };
-
-  const handle2FASuccess = () => {
-    setShow2FADialog(false);
-    setIsEditingLocked(false);
-  };
-
-  // LocalStorage logic removed as requested ("Billing information never save to locals")
-  // Auto-save logic hooks removed.
-
-
-  // Handle cancel with page reload
   const handleCancel = useCallback(() => {
-    // First call the original onCancel handler if provided
     if (onCancel) {
       onCancel();
     }
-
-    // Then reload the page
     window.location.reload();
   }, [onCancel]);
 
@@ -194,7 +287,11 @@ const BillingInformation = ({
       return null;
     }
 
-    const value = getNestedValue(formData, name);
+    const rawValue = getNestedValue(formData, name);
+    const isBankingField = fieldConfig.group === 'banking';
+    const shouldMaskValue = isBankingField && hasExistingBankingInfo && !hasBankingAccess;
+    
+    const value = shouldMaskValue ? getMaskedValue(rawValue, name) : rawValue;
     const error = getNestedValue(errors, name);
     const label = t(labelKey, name);
 
@@ -212,16 +309,8 @@ const BillingInformation = ({
     const commonProps = {
       label: finalLabel,
       error: error,
-      required: isActuallyRequired,
-      wrapperClassName: styles.fieldWrapper
+      required: isActuallyRequired
     };
-
-    // Helper to wrap inputs in a div for grid layout
-    const wrapInput = (component) => (
-      <div key={name} className={classNames(styles.fieldWrapper, { [styles.fullWidth]: !isSingleColumn && type === 'checkbox' && name !== 'withholdingTaxSubject' })}>
-        {component}
-      </div>
-    );
 
     switch (type) {
       case 'date':
@@ -229,8 +318,8 @@ const BillingInformation = ({
           ? new Date(maxYear, 11, 31).toISOString().split('T')[0]
           : new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0];
         const dateValue = value ? (typeof value === 'string' ? value : new Date(value).toISOString().split('T')[0]) : '';
-        return wrapInput(
-          <div>
+        return (
+          <div key={name}>
             {finalLabel && (
               <label className={`boxed-date-label ${error ? 'boxed-date-label--error' : ''}`}>
                 {finalLabel}
@@ -239,7 +328,7 @@ const BillingInformation = ({
             <input
               type="date"
               value={dateValue}
-              onChange={(e) => onInputChange(name, e.target.value || null)}
+              onChange={(e) => wrappedOnInputChange(name, e.target.value || null)}
               max={maxDateValue}
               className={`w-full h-9 px-3 rounded-lg border bg-background text-xs text-left focus:outline-none focus:ring-2 focus:ring-ring transition-all ${error ? 'date-input-error' : ''}`}
               style={{
@@ -258,7 +347,7 @@ const BillingInformation = ({
           console.warn(`No options found for dropdown ${name} with optionsKey ${optionsKey}`);
         }
 
-        return wrapInput(
+        return (
           <SimpleDropdown
             key={name}
             label={commonProps.label}
@@ -266,7 +355,7 @@ const BillingInformation = ({
             value={value}
             onChange={(newValue) => {
               console.log('SimpleDropdown onChange:', { name, newValue });
-              onInputChange(name, newValue);
+              wrappedOnInputChange(name, newValue);
             }}
             placeholder={placeholder || t('common.selectPlaceholder', 'Select...')}
             required={commonProps.required}
@@ -274,28 +363,31 @@ const BillingInformation = ({
           />
         );
       case 'checkbox':
-        return wrapInput(
+        return (
           <Switch
             key={name}
             label={label}
             checked={!!value}
-            onChange={(checked) => onInputChange(name, checked)}
+            onChange={(checked) => wrappedOnInputChange(name, checked)}
             marginBottom={name === 'payrollData.withholdingTaxInfo.isSubject' ? '0' : '20px'}
           />
         );
       case 'text':
       case 'number':
       default:
-        return wrapInput(
+        return (
           <InputField
             key={name}
             {...commonProps}
             name={name}
             type={type === 'number' ? 'number' : 'text'}
             value={value || ''}
-            onChange={(e) => onInputChange(name, e.target.value)}
+            onChange={(e) => wrappedOnInputChange(name, e.target.value)}
             min={type === 'number' ? restConfig.min : undefined}
             max={type === 'number' ? restConfig.max : undefined}
+            disabled={shouldMaskValue}
+            readOnly={shouldMaskValue}
+            className={shouldMaskValue ? 'banking-masked' : ''}
           />
         );
     }
@@ -361,40 +453,7 @@ const BillingInformation = ({
 
   return (
     <div className={styles.sectionContainer} style={{ position: 'relative' }}>
-      {/* Locked Overlay */}
-      {isEditingLocked && hasExistingBillingInfo && (
-        <div className="absolute inset-0 z-50 rounded-xl backdrop-blur-sm bg-background/50 flex flex-col items-center justify-center border border-border/50 transition-all duration-300">
-          <div className="p-8 bg-card border border-border shadow-xl rounded-2xl flex flex-col items-center max-w-md text-center">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-primary">
-              <FiShield size={32} />
-            </div>
-            <h3 className="text-2xl font-bold mb-2">Secure Information</h3>
-            <p className="text-muted-foreground mb-8">
-              To update your billing and sensitive financial information, we need to verify your identity with a security code sent to your phone.
-            </p>
-            <Button onClick={handleUnlockClick} variant="primary" className="w-full">
-              Verify Identity to Edit
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* 2FA Dialog */}
-      <Dialog
-        isOpen={show2FADialog}
-        onClose={() => setShow2FADialog(false)}
-        title={t('auth.steps.phoneVerification', 'Identity Verification')}
-        size="medium"
-      >
-        <PhoneVerificationStep
-          onComplete={handle2FASuccess}
-          onStepChange={() => { }}
-          onValidationChange={() => { }}
-        // You might want to pass user's current phone if known, but PhoneVerificationStep often handles it
-        />
-      </Dialog>
-
-      <div className={classNames(styles.sectionContainer, isEditingLocked && hasExistingBillingInfo ? 'pointer-events-none filter blur-[2px]' : '')}>
+      <div className={styles.sectionContainer}>
         <div className={styles.headerCard}>
           <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('billingInformation.title')}</h2>
           <div className={styles.subtitleRow}>
@@ -430,6 +489,21 @@ const BillingInformation = ({
                     <div className={styles.cardTitle}>
                       <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.bankingInfo')}</h3>
                     </div>
+                    {hasExistingBankingInfo && !hasBankingAccess && (
+                      <button
+                        onClick={handleUnlockBanking}
+                        className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                        title={t('common.edit', 'Edit')}
+                      >
+                        <FiEdit2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    {hasBankingAccess && (
+                      <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                        <FiShield className="w-3 h-3" />
+                        {t('billingInformation.bankingAccessGranted', 'Access granted')}
+                      </div>
+                    )}
                   </div>
                   {groupedFields.banking.map(renderField)}
                 </div>
@@ -509,6 +583,15 @@ const BillingInformation = ({
         >
           <p>{t('billingInformation.hiringInfoMessage')}</p>
         </Dialog>
+
+        <BankingAccessModal
+          isOpen={showBankingAccessModal}
+          onClose={() => setShowBankingAccessModal(false)}
+          onSuccess={handleBankingAccessSuccess}
+          userEmail={getNestedValue(formData, 'contact.primaryEmail')}
+          userPhone={getNestedValue(formData, 'contact.primaryPhone')}
+          userPhonePrefix={getNestedValue(formData, 'contact.primaryPhonePrefix')}
+        />
       </div>
     </div>
   );

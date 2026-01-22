@@ -6,6 +6,7 @@ import { useNotification } from '../../../../contexts/NotificationContext';
 import PropTypes from 'prop-types';
 import { cn } from '../../../../utils/cn';
 import { FiSend, FiUser, FiX } from 'react-icons/fi';
+import formatMessageText from '../utils/formatMessageText';
 
 /**
  * ConversationView - Complete redesign
@@ -401,12 +402,12 @@ const ConversationView = ({
                             ? "bg-primary text-primary-foreground rounded-br-sm"
                             : "bg-muted/50 text-foreground border border-border/50 rounded-bl-sm"
                         )}>
-                          <p className={cn(
-                            "text-sm leading-relaxed whitespace-pre-wrap break-words message-text-animate",
+                          <div className={cn(
+                            "text-sm leading-relaxed break-words message-text-animate",
                             isCurrentUser ? "text-primary-foreground" : "text-foreground"
                           )} style={{ margin: 0, animationDelay: `${index * 0.05 + 0.1}s` }}>
-                            {message.text}
-                          </p>
+                            {formatMessageText(message.text)}
+                          </div>
                         </div>
 
                         {/* Timestamp */}

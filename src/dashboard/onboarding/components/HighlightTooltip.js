@@ -1,12 +1,139 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../../../components/BoxedInputFields/Button';
 import SidebarHighlighter from './SidebarHighlighter';
-import { tutorialSteps } from '../tutorialSteps';
+import { tutorialSteps } from '../../tutorial/tutorialSteps';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { FiX } from 'react-icons/fi';
+import Dialog from '../../../components/Dialog/Dialog';
+
+/**
+ * ReplicatedElement Component
+ * Replicates a DOM element within the tooltip for visual reference
+ */
+const ReplicatedElement = ({ selector, onReady }) => {
+  const [clonedHtml, setClonedHtml] = useState(null);
+  const [bgColor, setBgColor] = useState('transparent');
+
+  useEffect(() => {
+    if (!selector) {
+      if (onReady) onReady(true);
+      setClonedHtml(null);
+      return;
+    }
+
+    // Reset readiness
+    if (onReady) onReady(false);
+
+    // Slight delay to ensure the target is rendered and styles are applied
+    const timer = setTimeout(() => {
+      const element = document.querySelector(selector);
+      if (element) {
+        // Detect background color
+        let currentElement = element;
+        let color = 'transparent';
+
+        while (currentElement && (color === 'transparent' || color === 'rgba(0, 0, 0, 0)' || color === 'initial' || color === '')) {
+          const style = window.getComputedStyle(currentElement);
+          color = style.backgroundColor;
+          currentElement = currentElement.parentElement;
+        }
+
+        // If still transparent, fallback to white or a sensible default
+        if (color === 'transparent' || color === 'rgba(0, 0, 0, 0)') {
+          color = '#ffffff';
+        }
+
+        setBgColor(color);
+
+        const clone = element.cloneNode(true);
+
+        // Cleanup clone: remove interactive attributes and IDs to avoid conflicts
+        clone.removeAttribute('id');
+        clone.removeAttribute('data-tutorial');
+        const interactiveElements = clone.querySelectorAll('button, a, [id], [data-tutorial]');
+        interactiveElements.forEach(el => {
+          el.removeAttribute('id');
+          el.removeAttribute('data-tutorial');
+          if (el.tagName === 'BUTTON' || el.tagName === 'A') {
+            el.setAttribute('tabindex', '-1');
+            el.style.pointerEvents = 'none';
+          }
+        });
+
+        setClonedHtml(clone.outerHTML);
+        if (onReady) onReady(true);
+      } else {
+        if (onReady) onReady(true);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [selector]);
+
+  if (!clonedHtml) return null;
+
+  return (
+    <div
+      className="relative mb-4 mt-2 overflow-hidden rounded-xl border border-slate-100/50 p-8 flex justify-center items-center group shadow-inner"
+      style={{ backgroundColor: bgColor }}
+    >
+      {/* Background glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-30" />
+
+      {/* Container with fading mask */}
+      <div
+        className="pointer-events-none w-full flex justify-center items-center transition-all duration-500"
+        style={{
+          maskImage: 'radial-gradient(circle at center, black 40%, transparent 95%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, black 40%, transparent 95%)',
+        }}
+        dangerouslySetInnerHTML={{ __html: clonedHtml }}
+      />
+
+      {/* Classical Mouse Cursor Animation */}
+      <div className="absolute pointer-events-none z-10 animate-tutorial-mouse" style={{ top: '50%', left: '50%' }}>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="drop-shadow-xl"
+        >
+          <path
+            d="M5.5 3.21V20.8L10.3 15.65H18.5L5.5 3.21Z"
+            fill="white"
+            stroke="black"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes tutorial-mouse-move {
+          0% { transform: translate(60px, 60px) scale(1); opacity: 0; }
+          15% { opacity: 1; }
+          45% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(0, 0) scale(0.85); }
+          55% { transform: translate(0, 0) scale(1); }
+          85% { transform: translate(0, 0) scale(1); opacity: 1; }
+          100% { transform: translate(-10px, -10px) scale(1); opacity: 0; }
+        }
+        .animate-tutorial-mouse {
+          animation: tutorial-mouse-move 3s ease-in-out infinite;
+        }
+      `}} />
+
+      {/* Subtle overlay to reinforce the "screenshot" feel */}
+      <div className="absolute inset-0 ring-1 ring-inset ring-slate-900/10 rounded-xl pointer-events-none" />
+    </div>
+  );
+};
 
 const HighlightTooltip = ({
   tutorialStep,
@@ -16,13 +143,22 @@ const HighlightTooltip = ({
   completeTutorial
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const {
     skipTutorial,
     elementPosition,
     pauseTutorial,
     isWaitingForSave,
     setWaitingForSave,
-    completedTutorials
+    completedTutorials,
+    validationRef,
+    showWarning,
+    setAccessMode,
+    activeTutorial,
+    currentStep,
+    navigateToFeature,
+    resetProfileTabAccess,
+    showAccessLevelModal
   } = useTutorial();
   const { userProfile } = useDashboard();
   const stepIndex = tutorialStep || 0;
@@ -36,12 +172,93 @@ const HighlightTooltip = ({
     }
   });
   const [isProcessingClick, setIsProcessingClick] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
+  const [isReplicationReady, setIsReplicationReady] = useState(false);
 
   const currentStepData =
     tutorialSteps[featureKey] && tutorialSteps[featureKey][stepIndex]
       ? tutorialSteps[featureKey][stepIndex]
       : null;
+
+  // Initialize visibility to true by default - will be controlled by effects
+  // This ensures tooltips show immediately on reload
+  const [isVisible, setIsVisible] = useState(true);
+
+  // Reset replication readiness when step changes
+  useEffect(() => {
+    setIsReplicationReady(false);
+  }, [stepIndex, featureKey]);
+
+  // Track if we've successfully shown the tooltip for this step
+  // This prevents the tooltip from closing during re-renders when currentStepData is temporarily null
+  const hasShownForStepRef = React.useRef(false);
+
+  // Track the intended visibility state - only set to false when we explicitly want to hide
+  // This prevents the Dialog from closing during re-renders
+  const intendedVisibilityRef = React.useRef(true);
+
+  // CRITICAL: Always show tooltip when step data becomes available (unless explicitly waiting for save)
+  // This ensures tooltips show automatically on reload without requiring user interaction
+  useEffect(() => {
+    if (currentStepData) {
+      // IMMEDIATELY mark that we've shown for this step - do this first
+      hasShownForStepRef.current = true;
+      intendedVisibilityRef.current = true;
+
+      // Hide if AccessLevelModal is showing
+      if (showAccessLevelModal) {
+        console.log('[HighlightTooltip] AccessLevelModal showing, hiding tooltip');
+        setIsVisible(false);
+      } else if (!isWaitingForSave) {
+        // Force visibility to true when step data is available and not waiting
+        console.log('[HighlightTooltip] Step data available and not waiting, forcing visibility to true');
+        setIsVisible(true);
+      } else {
+        console.log('[HighlightTooltip] Step data available but waiting for save, keeping visibility false');
+        // Don't set intendedVisibilityRef to false here - we want to show it when waiting clears
+        setIsVisible(false);
+      }
+    } else if (tutorialFeature && tutorialStep !== undefined) {
+      // Only hide if we have valid tutorial props but no step data exists
+      // AND we haven't shown the tooltip for this step yet (prevents closing during re-renders)
+      const stepsExist = tutorialSteps[tutorialFeature] && tutorialSteps[tutorialFeature].length > 0;
+      if (stepsExist && tutorialStep >= 0 && tutorialStep < tutorialSteps[tutorialFeature].length) {
+        // Step should exist but doesn't - might be loading, keep visibility if we've already shown it
+        if (hasShownForStepRef.current) {
+          console.log('[HighlightTooltip] Step data temporarily unavailable but already shown, keeping visibility');
+          // CRITICAL: Keep intended visibility true and don't change isVisible
+          intendedVisibilityRef.current = true;
+          // Don't change isVisible - keep it as is
+        } else {
+          console.log('[HighlightTooltip] Step data temporarily unavailable, waiting for step data');
+        }
+      } else {
+        // Step doesn't exist in the tutorial - safe to hide
+        console.log('[HighlightTooltip] No step data available for valid tutorial props');
+        hasShownForStepRef.current = false;
+        intendedVisibilityRef.current = false;
+        setIsVisible(false);
+      }
+    }
+    // If tutorialFeature or tutorialStep are undefined, don't change visibility (might be loading)
+  }, [currentStepData, isWaitingForSave, showAccessLevelModal, tutorialFeature, tutorialStep]);
+
+  // Additional effect to ensure visibility is set correctly on mount
+  // This handles the case where step data loads after component mount
+  useEffect(() => {
+    // Small delay to ensure all context values are loaded
+    const timer = setTimeout(() => {
+      if (currentStepData && !isWaitingForSave && !showAccessLevelModal && !isVisible) {
+        console.log('[HighlightTooltip] Mount check: Step data available, showing tooltip');
+        setIsVisible(true);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []); // Run once on mount
+
+  const normalizeForComparison = useCallback((path) => {
+    return path.replace(/^\/(en|fr|de|it)\//, '/');
+  }, []);
 
   const isOnCorrectPage = useMemo(() => {
     if (!currentStepData) return true;
@@ -49,38 +266,29 @@ const HighlightTooltip = ({
     const requiredPath = currentStepData.navigationPath || currentStepData.requiredPage;
     if (!requiredPath) return true;
 
-    // Normalize both paths to remove language prefixes for comparison
-    const normalizeForComparison = (path) => {
-      // Remove language prefix (e.g., /en/, /fr/, /de/, /it/)
-      return path.replace(/^\/(en|fr|de|it)\//, '/');
-    };
-
     const currentPath = location.pathname;
     const normalizedCurrentPath = normalizeForComparison(currentPath);
     const normalizedRequiredPath = normalizeForComparison(requiredPath);
 
     if (normalizedRequiredPath === normalizedCurrentPath) {
       return true;
-    }
-
-    if (normalizedCurrentPath.startsWith(normalizedRequiredPath + '/')) {
+    } else if (normalizedCurrentPath.startsWith(normalizedRequiredPath + '/')) {
       return true;
-    }
-
-    if (normalizedRequiredPath === '/dashboard/overview') {
-      if (normalizedCurrentPath === '/dashboard' || normalizedCurrentPath === '/dashboard/' || normalizedCurrentPath.startsWith('/dashboard/overview')) {
+    } else if (normalizedRequiredPath === '/dashboard/overview') {
+      if (normalizedCurrentPath === '/dashboard' ||
+          normalizedCurrentPath === '/dashboard/' ||
+          normalizedCurrentPath.startsWith('/dashboard/overview')) {
         return true;
       }
-    }
-
-    if (normalizedRequiredPath.includes('/dashboard/profile') && normalizedCurrentPath.includes('/dashboard/profile')) {
+    } else if (normalizedRequiredPath.includes('/dashboard/profile') && normalizedCurrentPath.includes('/dashboard/profile')) {
       const requiredTab = currentStepData.requiredTab || currentStepData.highlightTab;
-      if (requiredTab) {
+      if (currentStepData.highlightTab) {
+        return true;
+      } else if (requiredTab) {
         const currentTab = normalizedCurrentPath.split('/').pop();
         if (currentTab === requiredTab || normalizedCurrentPath.endsWith(`/${requiredTab}`)) {
           return true;
-        }
-        if (normalizedCurrentPath === '/dashboard/profile' && requiredTab === 'personalDetails') {
+        } else if (normalizedCurrentPath === '/dashboard/profile' && requiredTab === 'personalDetails') {
           return true;
         }
       } else {
@@ -88,15 +296,8 @@ const HighlightTooltip = ({
       }
     }
 
-    console.log('[HighlightTooltip] Page mismatch:', {
-      currentPath: normalizedCurrentPath,
-      requiredPath: normalizedRequiredPath,
-      stepIndex,
-      featureKey,
-      requiredTab: currentStepData.requiredTab || currentStepData.highlightTab
-    });
     return false;
-  }, [currentStepData, location.pathname, stepIndex, featureKey]);
+  }, [currentStepData, location.pathname, normalizeForComparison]);
 
   // Determine if this step requires a user interaction based on dialog text
   // Only hide Next button if step has a target element to click (sidebar item, tab, etc.)
@@ -124,9 +325,11 @@ const HighlightTooltip = ({
       featureKey,
       currentStepData,
       requiresInteraction,
-      isLastStep
+      isLastStep,
+      isVisible,
+      hasStepData: !!currentStepData
     });
-  }, [stepIndex, featureKey, currentStepData, requiresInteraction, isLastStep]);
+  }, [stepIndex, featureKey, currentStepData, requiresInteraction, isLastStep, isVisible]);
 
   // Get the correct tooltip content based on the current step and feature
   useEffect(() => {
@@ -287,6 +490,98 @@ const HighlightTooltip = ({
 
     setIsProcessingClick(true);
     setTimeout(() => {
+      const requiredPath = currentStepData?.navigationPath || currentStepData?.requiredPage;
+      const shouldNavigate = requiredPath && !isOnCorrectPage;
+
+      // If user is not on the correct page and step has a navigationPath/requiredPage, navigate first
+      if (shouldNavigate) {
+        const targetPath = requiredPath;
+        console.log(`[HighlightTooltip] User not on correct page, navigating to: ${targetPath}`);
+
+        // Logic to block profile navigation if current tab is not valid
+        if (location.pathname.includes('/profile') && targetPath.includes('/profile')) {
+          const getTabName = (path) => path.split('?')[0].split('#')[0].split('/').filter(Boolean).pop();
+          const currentTab = getTabName(location.pathname);
+          const targetTabName = getTabName(targetPath);
+
+          if (currentTab !== targetTabName && currentTab !== 'profile') {
+            const validate = validationRef.current['profile'];
+            if (validate && !validate(currentTab)) {
+              console.warn(`[HighlightTooltip] Navigation blocked: Tab ${currentTab} is incomplete.`);
+              showWarning?.(tutorialSteps.common?.completePreviousSteps || 'Please complete the required fields before continuing.');
+              setIsProcessingClick(false);
+              return;
+            }
+          }
+        }
+
+        // Navigate to the target path
+        navigate(targetPath);
+
+        // After navigation, proceed to next step
+        setTimeout(() => {
+          if (isLastStep) {
+            completeTutorial();
+          } else {
+            nextStep();
+          }
+          setIsProcessingClick(false);
+        }, 100);
+        return;
+      }
+
+      // If actionButton has a path, navigate to it first
+      if (currentStepData?.actionButton?.path) {
+        const targetPath = currentStepData.actionButton.path;
+        console.log(`[HighlightTooltip] Navigating to: ${targetPath}`);
+
+        // Logic to block profile navigation if current tab is not valid
+        if (location.pathname.includes('/profile') && targetPath.includes('/profile')) {
+          const getTabName = (path) => path.split('?')[0].split('#')[0].split('/').filter(Boolean).pop();
+          const currentTab = getTabName(location.pathname);
+          const targetTabName = getTabName(targetPath);
+
+          if (currentTab !== targetTabName && currentTab !== 'profile') {
+            const validate = validationRef.current['profile'];
+            if (validate && !validate(currentTab)) {
+              console.warn(`[HighlightTooltip] Navigation blocked: Tab ${currentTab} is incomplete.`);
+              showWarning?.(tutorialSteps.common?.completePreviousSteps || 'Please complete the required fields before continuing.');
+              setIsProcessingClick(false);
+              return;
+            }
+          }
+        }
+
+        // Navigate to the target path
+        navigate(targetPath);
+
+        // After navigation, proceed to next step
+        setTimeout(() => {
+          if (isLastStep) {
+            completeTutorial();
+          } else {
+            nextStep();
+          }
+          setIsProcessingClick(false);
+        }, 100);
+        return;
+      }
+
+      // Logic to block Next if current tab is not valid
+      // This specifically prevents tutorial from skipping mandatory fields
+      if (location.pathname.includes('/profile')) {
+        const getTabName = (path) => path.split('?')[0].split('#')[0].split('/').filter(Boolean).pop();
+        const currentTab = getTabName(location.pathname);
+        const validate = validationRef.current['profile'];
+
+        if (validate && currentTab !== 'profile' && !validate(currentTab)) {
+          console.warn(`[HighlightTooltip] Navigation blocked: Tab ${currentTab} is incomplete.`);
+          showWarning?.(tutorialSteps.common?.completePreviousSteps || 'Please complete the required fields before continuing.');
+          setIsProcessingClick(false);
+          return;
+        }
+      }
+
       if (isLastStep) {
         completeTutorial();
       } else {
@@ -294,26 +589,42 @@ const HighlightTooltip = ({
       }
       setIsProcessingClick(false);
     }, 10);
-  }, [isLastStep, nextStep, completeTutorial, isProcessingClick]);
+  }, [isLastStep, nextStep, completeTutorial, isProcessingClick, currentStepData, navigate, location.pathname, showWarning, isOnCorrectPage]);
 
   // Track previous step/feature to prevent unnecessary resets
   const prevStepRef = React.useRef({ step: tutorialStep, feature: tutorialFeature });
 
-  // Reset visibility when step changes
+  // Always reset visibility when step changes - tooltips should always display for current step
   useEffect(() => {
     const hasStepChanged = prevStepRef.current.step !== tutorialStep ||
       prevStepRef.current.feature !== tutorialFeature;
 
-    // Only reset to visible if step/feature actually changed AND we are NOT waiting for save
-    if (hasStepChanged && !isWaitingForSave) {
-      console.log('[HighlightTooltip] Step/feature changed, resetting visibility to true');
-      setIsVisible(true);
-      prevStepRef.current = { step: tutorialStep, feature: tutorialFeature };
-    } else if (hasStepChanged) {
-      console.log('[HighlightTooltip] Step/feature changed but waiting for save, not resetting visibility');
+    if (hasStepChanged) {
+      console.log('[HighlightTooltip] Step/feature changed, resetting visibility');
+      // Reset the refs when step changes
+      hasShownForStepRef.current = false;
+      // Always show on step change unless explicitly waiting for save
+      if (!isWaitingForSave) {
+        intendedVisibilityRef.current = true;
+        setIsVisible(true);
+      } else {
+        intendedVisibilityRef.current = false;
+      }
       prevStepRef.current = { step: tutorialStep, feature: tutorialFeature };
     }
   }, [tutorialStep, tutorialFeature, isWaitingForSave]);
+
+  // Critical: Show tooltip when waiting state clears AND step data is available
+  // This handles the reload case where isWaitingForSave might be false but tooltip wasn't shown
+  useEffect(() => {
+    if (currentStepData && !isWaitingForSave) {
+      // Only update if currently not visible (to avoid unnecessary updates)
+      if (!isVisible) {
+        console.log('[HighlightTooltip] Waiting state cleared and step data available, showing tooltip');
+        setIsVisible(true);
+      }
+    }
+  }, [isWaitingForSave, currentStepData, isVisible]);
 
   const handleCustomButtonClick = useCallback((action, e) => {
     if (isProcessingClick) return;
@@ -324,14 +635,29 @@ const HighlightTooltip = ({
 
     setIsProcessingClick(true);
 
-    // Handle "I understood" action - hide tooltip but keep tutorial active for manual form filling
+    // Handle access mode selection actions
+    if (action === 'set_access_team') {
+      console.log('[HighlightTooltip] Team Access selected');
+      setAccessMode?.('team');
+      setIsProcessingClick(false);
+      return;
+    }
+
+    if (action === 'set_access_full') {
+      console.log('[HighlightTooltip] Full Access selected');
+      setAccessMode?.('full');
+      setIsProcessingClick(false);
+      return;
+    }
+
+    // Handle "I understood" action - hide tooltip temporarily but allow it to show again
     if (action === 'pause_and_fill') {
       console.log('[HighlightTooltip] Hiding tooltip for manual form filling');
 
       // Set waiting for save state in context
       setWaitingForSave(true);
 
-      // Hide the tooltip, but keep the highlighter (overlay) active
+      // Hide the tooltip temporarily, but it will show again when step changes or when waiting state clears
       setIsVisible(false);
 
       setIsProcessingClick(false);
@@ -377,211 +703,234 @@ const HighlightTooltip = ({
   }, [isProcessingClick, pauseTutorial, setWaitingForSave]);
 
 
+  // CRITICAL: Use useLayoutEffect to set visibility synchronously before paint
+  // This ensures tooltip shows immediately on reload without delay
+  useLayoutEffect(() => {
+    if (currentStepData && !isWaitingForSave) {
+      // Only set to true if currently false - avoid unnecessary updates
+      if (!isVisible) {
+        console.log('[HighlightTooltip] Layout effect: Step data available, forcing visibility to true immediately');
+        setIsVisible(true);
+      }
+    }
+    // Don't set to false in layout effect - let the regular effect handle that
+    // This prevents the tooltip from closing during re-renders
+  }, [currentStepData, isWaitingForSave, isVisible]);
+
+  // Use ref-based visibility to prevent closing during re-renders
+  // CRITICAL: Once shown, keep it open unless explicitly waiting for save
+  const dialogIsOpen = React.useMemo(() => {
+    // PRIORITY 0: Wait for replication to be ready if there's a replicateSelector
+    if (currentStepData?.replicateSelector && !isReplicationReady) {
+      console.log('[HighlightTooltip] Waiting for replication to be ready');
+      return false;
+    }
+
+    // PRIORITY 1: If we've already shown for this step and not waiting, ALWAYS keep it open
+    // This is the most important check - prevents closing during re-renders
+    if (hasShownForStepRef.current && !isWaitingForSave) {
+      console.log('[HighlightTooltip] Keeping dialog open - already shown for this step', {
+        hasShown: hasShownForStepRef.current,
+        intended: intendedVisibilityRef.current,
+        waiting: isWaitingForSave,
+        hasStepData: !!currentStepData,
+        isReplicationReady
+      });
+      return true;
+    }
+
+    // PRIORITY 2: If we have step data and not waiting, show it
+    if (currentStepData && !isWaitingForSave) {
+      intendedVisibilityRef.current = true;
+      hasShownForStepRef.current = true;
+      return true;
+    }
+
+    // PRIORITY 3: If waiting for save, don't show
+    if (isWaitingForSave) {
+      return false;
+    }
+
+    // PRIORITY 4: If no step data and we haven't shown yet, don't show
+    if (!currentStepData && !hasShownForStepRef.current) {
+      return false;
+    }
+
+    // Default: use intended visibility
+    return intendedVisibilityRef.current;
+  }, [currentStepData, isWaitingForSave, isReplicationReady]);
+  useEffect(() => {
+    console.log('[HighlightTooltip] Dialog visibility state:', {
+      isVisible,
+      hasStepData: !!currentStepData,
+      dialogIsOpen,
+      stepIndex,
+      featureKey,
+      tooltipTitle: tooltipContent.title,
+      tooltipPosition: tooltipContent.position,
+      isWaitingForSave
+    });
+
+    if (dialogIsOpen && currentStepData) {
+      console.log('[HighlightTooltip] ✅ Tooltip should be visible!', {
+        title: tooltipContent.title,
+        position: tooltipContent.position,
+        stepId: currentStepData.id
+      });
+    } else {
+      console.log('[HighlightTooltip] ❌ Tooltip NOT visible:', {
+        isVisible,
+        hasStepData: !!currentStepData,
+        isWaitingForSave,
+        reason: !isVisible ? 'isVisible is false' : !currentStepData ? 'no step data' : isWaitingForSave ? 'waiting for save' : 'unknown'
+      });
+    }
+  }, [isVisible, currentStepData, dialogIsOpen, stepIndex, featureKey, tooltipContent, isWaitingForSave]);
+
   return (
     <>
       {/* Always render the sidebar highlighter to handle highlighting */}
       <SidebarHighlighter />
 
-      {/* Tooltip display - only show if on correct page */}
-      {isVisible && !isWaitingForSave && isOnCorrectPage && (
-        <div
-          style={{
-            ...tooltipContent.position,
-            position: 'fixed',
-            zIndex: 11000,
-            pointerEvents: 'auto',
-            maxWidth: window.innerWidth < 768 ? 'calc(100vw - 20px)' : '420px',
-            width: window.innerWidth < 768 ? 'calc(100vw - 20px)' : 'auto',
-            backgroundColor: 'var(--background-div-color, #ffffff)',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: 'var(--shadow-elevated)',
-            border: '1px solid rgba(15, 23, 42, 0.15)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%)',
-            // Ensure tooltip stays within viewport on mobile
-            maxHeight: window.innerWidth < 768 ? 'calc(100vh - 40px)' : 'auto',
-            overflowY: 'auto',
-            animation: 'slideInFadeIn 0.4s var(--ease-out-back) both',
-            willChange: 'transform, opacity'
-          }}
-          onClick={handleTooltipClick}
-        >
-          <style>{`
-            @keyframes slideInFadeIn {
-              from {
-                opacity: 0;
-                transform: translateY(-10px) scale(0.95);
-              }
-              to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-              }
-            }
-            @media (max-width: 768px) {
-              [data-tooltip-buttons] {
-                gap: 0 !important;
-                overflow: hidden;
-                min-width: 0;
-                width: 100%;
-              }
-              [data-tooltip-buttons] .button {
-                flex: 0 1 auto !important;
-                width: auto !important;
-                min-width: 0 !important;
-                max-width: 48% !important;
-                padding: 6px 8px !important;
-                font-size: 11px !important;
-                white-space: nowrap !important;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                box-sizing: border-box;
-              }
-              [data-tooltip-buttons] .button svg {
-                display: none !important;
-              }
-            }
-          `}</style>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <div
-                style={{
-                  position: 'absolute',
-                  left: '-4px',
-                  top: '0',
-                  bottom: '0',
-                  width: '4px',
-                  background: 'var(--color-logo-2)',
-                  borderRadius: '4px'
-                }}
-              />
-              <h3 style={{
-                paddingLeft: '12px',
-                fontSize: '18px',
-                fontWeight: '700',
-                color: 'var(--color-logo-2)'
-              }}>{tooltipContent.title}</h3>
-            </div>
-            {/* Close button - hidden on profile if profile section is not complete */}
-            {(completedTutorials?.profileTabs || !location.pathname.includes('/profile')) && (
-              <button
-                onClick={skipTutorial}
-                disabled={isProcessingClick}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Close tutorial"
-                style={{
-                  marginLeft: '10px',
-                  flexShrink: 0,
-                  transform: 'scale(1)',
-                  transition: 'all 0.2s var(--ease-smooth)'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; }}
-              >
-                <FiX className="w-5 h-5" />
-              </button>
-            )}
-          </div>
-          <p style={{
-            lineHeight: '1.6',
-            color: 'var(--text-color, #333)',
-            marginBottom: '20px'
-          }}>{tooltipContent.description}</p>
+      <Dialog
+        isOpen={dialogIsOpen}
+        onClose={() => {
+          if (resetProfileTabAccess) resetProfileTabAccess();
+          skipTutorial();
+        }}
+        title={tooltipContent.title}
+        blurred_background={false}
+        position={tooltipContent.position}
+        size="small"
+        closeOnEscape={true}
+        closeOnBackdropClick={false}
+        messageType="info"
+        showCloseButton={activeTutorial === 'profileTabs' && currentStep >= 2 ? true : (completedTutorials?.profileTabs || !location.pathname.includes('/profile'))}
+        actions={
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
               pointerEvents: 'auto',
-              zIndex: 3600
+              display: 'flex',
+              justifyContent: 'flex-end',
+              flexWrap: 'nowrap',
+              gap: '0.5rem',
+              width: '100%'
             }}
           >
-            <div
-              data-tooltip-buttons
-              style={{
-                display: 'flex',
-                marginTop: '24px',
-                justifyContent: 'flex-end',
-                flexWrap: 'nowrap',
-                gap: '0'
-              }}
-            >
-              {currentStepData?.customButtons ? (
-                <>
-                  {currentStepData.customButtons.map((button, index) => (
-                    <Button
-                      key={index}
-                      variant={button.variant || 'primary'}
-                      onClick={(e) => handleCustomButtonClick(button.action, e)}
-                      disabled={isProcessingClick}
-                      style={{
-                        flexShrink: 0,
-                        width: 'auto',
-                        minWidth: 'fit-content',
-                        maxWidth: 'none',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {button.text}
-                    </Button>
-                  ))}
-                </>
-              ) : (
-                <>
-                  {(tutorialStep || 0) > 0 && (
-                    <Button
-                      variant="secondary"
-                      onClick={handlePrevClick}
-                      disabled={isProcessingClick}
-                      style={{
-                        flexShrink: 0,
-                        width: 'auto',
-                        minWidth: 'fit-content',
-                        maxWidth: 'none',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      Previous
-                    </Button>
-                  )}
+            {(tutorialStep || 0) > 0 && (
+              <Button
+                variant="secondary"
+                onClick={handlePrevClick}
+                disabled={isProcessingClick}
+                style={{
+                  flexShrink: 0,
+                  width: 'auto',
+                  minWidth: 'fit-content',
+                  maxWidth: 'none',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Previous
+              </Button>
+            )}
+            {(() => {
+              const requiredPath = currentStepData?.navigationPath || currentStepData?.requiredPage;
+              const shouldShowShowMeButton = requiredPath && !isOnCorrectPage;
 
-                  {/* Show actionButton if it exists (e.g., "Continue to Calendar") */}
-                  {currentStepData.actionButton ? (
-                    <Button
-                      variant="primary"
-                      onClick={handleNextClick}
-                      disabled={isProcessingClick}
-                      style={{
-                        flexShrink: 0,
-                        width: 'auto',
-                        minWidth: 'fit-content',
-                        maxWidth: 'none',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {currentStepData.actionButton.text || 'Continue'}
-                    </Button>
-                  ) : !requiresInteraction && (
-                    <Button
-                      variant="primary"
-                      onClick={handleNextClick}
-                      disabled={isProcessingClick}
-                      style={{
-                        flexShrink: 0,
-                        width: 'auto',
-                        minWidth: 'fit-content',
-                        maxWidth: 'none',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {isLastStep ? 'Finish' : 'Next'}
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
+              if (shouldShowShowMeButton) {
+                return (
+                  <Button
+                    variant="primary"
+                    onClick={handleNextClick}
+                    disabled={isProcessingClick}
+                    style={{
+                      flexShrink: 0,
+                      width: 'auto',
+                      minWidth: 'fit-content',
+                      maxWidth: 'none',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Show me
+                  </Button>
+                );
+              }
+
+              if (currentStepData?.customButtons) {
+                return (
+                  <>
+                    {currentStepData.customButtons.map((button, index) => (
+                      <Button
+                        key={index}
+                        variant={button.variant || 'primary'}
+                        onClick={(e) => handleCustomButtonClick(button.action, e)}
+                        disabled={isProcessingClick}
+                        style={{
+                          flexShrink: 0,
+                          width: 'auto',
+                          minWidth: 'fit-content',
+                          maxWidth: 'none',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {button.text}
+                      </Button>
+                    ))}
+                  </>
+                );
+              }
+
+              if (currentStepData?.actionButton) {
+                return (
+                  <Button
+                    variant="primary"
+                    onClick={handleNextClick}
+                    disabled={isProcessingClick}
+                    style={{
+                      flexShrink: 0,
+                      width: 'auto',
+                      minWidth: 'fit-content',
+                      maxWidth: 'none',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {currentStepData.actionButton.text || 'Continue'}
+                  </Button>
+                );
+              }
+
+              if (!requiresInteraction) {
+                return (
+                  <Button
+                    variant="primary"
+                    onClick={handleNextClick}
+                    disabled={isProcessingClick}
+                    style={{
+                      flexShrink: 0,
+                      width: 'auto',
+                      minWidth: 'fit-content',
+                      maxWidth: 'none',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {isLastStep ? 'Finish' : 'Next'}
+                  </Button>
+                );
+              }
+
+              return null;
+            })()}
           </div>
-        </div>
-      )}
+        }
+      >
+        <ReplicatedElement selector={currentStepData?.replicateSelector} onReady={setIsReplicationReady} />
+        <p style={{
+          lineHeight: '1.6',
+          color: 'var(--text-color, #333)',
+          margin: 0
+        }}>{tooltipContent.description}</p>
+      </Dialog>
     </>
   );
 };

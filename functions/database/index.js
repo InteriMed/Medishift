@@ -3,11 +3,8 @@ const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/
 const admin = require('firebase-admin');
 
 // Firebase Admin is already initialized in the main index.js
-const { getFirestore } = require('firebase-admin/firestore');
-
-// Reference to Firestore database
-// Use default database
-const db = getFirestore();
+// Import centralized database instance configured for medishift
+const db = require('./db');
 
 /**
  * Creates a user profile document when a new user is created
@@ -81,6 +78,7 @@ const { onCall: onCallV2, HttpsError } = require('firebase-functions/v2/https');
 exports.getUserProfile = onCallV2(
   {
     cors: true,
+    database: 'medishift',
     maxInstances: 10
   },
   async (request) => {
@@ -147,6 +145,7 @@ exports.getUserProfile = onCallV2(
 exports.updateUserProfile = onCallV2(
   {
     cors: true,
+    database: 'medishift',
     maxInstances: 10
   },
   async (request) => {
@@ -284,11 +283,33 @@ exports.updateUserProfile = onCallV2(
         });
 
         if (!profileDoc.exists) {
-          // Create profile document if it doesn't exist
+          const onboardingProgress = currentUserData.onboardingProgress || {};
+          const isAdmin = currentUserData.role === 'admin' || 
+                        (currentUserData.roles && Array.isArray(currentUserData.roles) && 
+                         currentUserData.roles.some(r => ['admin', 'super_admin', 'ops_manager'].includes(r)));
+          
+          let onboardingCompleted = false;
+          if (currentRole === 'facility') {
+            const facilityProgress = onboardingProgress.facility || {};
+            onboardingCompleted = facilityProgress.completed === true;
+          } else {
+            const professionalProgress = onboardingProgress.professional || {};
+            onboardingCompleted = professionalProgress.completed === true || 
+                                 currentUserData.onboardingCompleted === true || 
+                                 currentUserData.GLN_certified === true ||
+                                 (currentUserData.bypassedGLN === true && currentUserData.GLN_certified === false);
+          }
+
+          if (!onboardingCompleted && !isAdmin) {
+            throw new HttpsError(
+              'failed-precondition',
+              'Profile can only be created after completing onboarding. Please complete the onboarding process first.'
+            );
+          }
+
           profileFieldsToUpdate.userId = userId;
           profileFieldsToUpdate.createdAt = admin.firestore.FieldValue.serverTimestamp();
 
-          // Initialize tutorial data
           profileFieldsToUpdate.tutorial = {
             global: false,
             profile: 1,
@@ -422,7 +443,7 @@ exports.updateUserProfile = onCallV2(
 // Handle contract creation and notifications
 const onContractCreate = onDocumentCreated({
   document: 'contracts/{contractId}',
-  database: '(default)',
+  database: 'medishift',
   region: 'europe-west6'
 }, async (event) => {
   const contract = event.data.data();
@@ -457,7 +478,7 @@ const onContractCreate = onDocumentCreated({
 // Handle position status updates - CRITICAL: Auto-create conversation when status changes to 'interview'
 const onPositionUpdate = onDocumentUpdated({
   document: 'positions/{positionId}',
-  database: '(default)',
+  database: 'medishift',
   region: 'europe-west6'
 }, async (event) => {
   const before = event.data.before.data();
@@ -600,7 +621,7 @@ const onPositionUpdate = onDocumentUpdated({
 // Handle contract status updates
 const onContractUpdate = onDocumentUpdated({
   document: 'contracts/{contractId}',
-  database: '(default)',
+  database: 'medishift',
   region: 'europe-west6'
 }, async (event) => {
   const before = event.data.before.data();

@@ -266,45 +266,29 @@ const Contracts = () => {
 
     return (
         <div className={cn(
-            "h-full flex flex-col overflow-hidden animate-in fade-in duration-500",
+            "h-full flex flex-col overflow-hidden animate-in fade-in duration-500 contracts-page",
             isMobile && "overflow-y-hidden"
         )} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-            <style>{`
-                .contracts-header-dropdown .boxed-inputfield-wrapper {
-                    margin: 0;
-                }
-                .contracts-header-dropdown .boxed-dropdown-container {
-                    height: 36px;
-                    min-height: 36px;
-                    padding: 0 12px;
-                    font-size: 12px;
-                }
-                .contracts-header-dropdown .boxed-dropdown-selected {
-                    font-size: 12px;
-                    font-weight: 500;
-                    line-height: 36px;
-                    height: 36px;
-                }
-                .contracts-header-dropdown .boxed-dropdown-arrow {
-                    width: 10px;
-                    height: 6px;
-                }
-            `}</style>
             <div className={cn(
-                "shrink-0 w-full z-20 bg-card/95 backdrop-blur-sm border-b border-border shadow-sm h-16 flex items-center",
-                isMobile ? "px-4" : "px-6"
+                "shrink-0 w-full z-20 bg-gradient-to-r from-card/95 via-card/80 to-transparent backdrop-blur-sm border-b border-border/60 shadow-sm min-h-[84px] py-5 flex items-center",
+                isMobile ? "px-4" : "px-6 sm:px-8"
             )}>
                 {isMobile ? (
                     <div className="flex items-center gap-2">
                         <div className="flex-1 relative">
-                            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
                             <input
                                 type="text"
                                 placeholder={t('contracts:searchPlaceholder')}
                                 value={filters.searchTerm || ''}
                                 onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                                className="w-full h-9 pl-9 pr-20 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-                                style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
+                                className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                                style={{ 
+                                  color: 'var(--boxed-inputfield-color-text)', 
+                                  fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                  height: 'var(--boxed-inputfield-height)',
+                                  fontWeight: '500'
+                                }}
                             />
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                 {filters.searchTerm && (
@@ -331,14 +315,19 @@ const Contracts = () => {
                     <div className="flex items-center gap-3">
                         <div className="flex-1 flex items-center gap-3">
                             <div className="flex-1 relative">
-                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
                                 <input
                                     type="text"
                                     placeholder={t('contracts:searchPlaceholder')}
                                     value={filters.searchTerm || ''}
                                     onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                                    className="w-full h-9 pl-9 pr-8 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-                                    style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
+                                    className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                                    style={{ 
+                                      color: 'var(--boxed-inputfield-color-text)', 
+                                      fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                      height: 'var(--boxed-inputfield-height)',
+                                      fontWeight: '500'
+                                    }}
                                 />
                                 {filters.searchTerm && (
                                     <button
@@ -350,7 +339,7 @@ const Contracts = () => {
                                 )}
                             </div>
 
-                            <div className="shrink-0 min-w-[120px] contracts-header-dropdown" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                            <div className="shrink-0 min-w-[120px] " style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
                                 <SimpleDropdown
                                     label={null}
                                     options={statusOptions}
@@ -360,7 +349,7 @@ const Contracts = () => {
                                 />
                             </div>
 
-                            <div className="shrink-0 min-w-[120px] contracts-header-dropdown" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                            <div className="shrink-0 min-w-[120px] " style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
                                 <SimpleDropdown
                                     label={null}
                                     options={dateRangeOptions}
@@ -389,17 +378,17 @@ const Contracts = () => {
                 isMobile ? "p-0" : "p-4 gap-4"
             )}>
                 <div className={cn(
-                    "flex flex-col transition-all duration-300 shrink-0",
+                    "dashboard-sidebar-container",
                     isMobile
                         ? cn(
-                            "absolute inset-0 z-10 bg-background overflow-y-auto",
+                            "dashboard-sidebar-container-mobile",
                             showSidebar ? "translate-x-0" : "-translate-x-full"
                         )
-                        : "w-full md:w-[320px] lg:w-[360px] pr-0 overflow-hidden"
+                        : "dashboard-sidebar-container-desktop pr-0"
                 )}>
                     <div className={cn(
-                        "flex-1 flex flex-col bg-card/60 backdrop-blur-sm border border-border shadow-sm overflow-hidden",
-                        isMobile ? "rounded-none border-0" : "rounded-xl"
+                        "dashboard-sidebar-inner",
+                        isMobile && "dashboard-sidebar-inner-mobile"
                     )}>
                         {!hasAnyContracts && (!isTutorialActive || activeTutorial !== 'contracts') ? (
                             <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
@@ -442,13 +431,13 @@ const Contracts = () => {
                 </div>
 
                 <div className={cn(
-                    "flex-1 flex flex-col bg-transparent relative min-w-0 min-h-0 transition-transform duration-300",
-                    isMobile && selectedContract ? "translate-x-0 overflow-hidden absolute inset-0 z-20" : "overflow-hidden"
+                    "dashboard-main-content",
+                    isMobile && selectedContract ? "translate-x-0 overflow-hidden dashboard-main-content-mobile" : "overflow-hidden dashboard-main-content-desktop"
                 )}>
                     {selectedContract ? (
                         <div className={cn(
-                            "h-full w-full bg-card/60 backdrop-blur-sm border border-border shadow-sm overflow-hidden flex flex-col",
-                            isMobile ? "rounded-none border-0" : "rounded-xl"
+                            "dashboard-main-inner flex flex-col",
+                            isMobile && "dashboard-main-inner-mobile"
                         )}>
                             {isPdfView ? (
                                 <div className="h-full p-4 bg-gray-100 overflow-y-auto">
@@ -469,13 +458,13 @@ const Contracts = () => {
                             )}
                         </div>
                     ) : (
-                        <div className="w-full flex flex-col items-center justify-center p-8 text-center z-0 min-h-[400px]">
-                            <div className="max-w-md w-full bg-card p-8 rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm animate-in fade-in zoom-in-95 duration-500 mx-auto">
-                                <div className="w-16 h-16 mx-auto rounded-full bg-muted/50 flex items-center justify-center mb-6 ring-4 ring-background">
+                        <div className="dashboard-empty-state">
+                            <div className="dashboard-empty-state-card">
+                                <div className="dashboard-empty-state-icon">
                                     <FiFileText className="text-muted-foreground w-8 h-8" />
                                 </div>
-                                <h2 className="text-xl font-bold text-foreground mb-2">{t('contracts:selectContract')}</h2>
-                                <p className="text-muted-foreground mb-6">
+                                <h2 className="dashboard-empty-state-title">{t('contracts:selectContract')}</h2>
+                                <p className="dashboard-empty-state-description">
                                     {t('contracts:selectContractDesc')}
                                 </p>
                             </div>

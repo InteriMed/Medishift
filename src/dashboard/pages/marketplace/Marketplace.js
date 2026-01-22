@@ -153,21 +153,30 @@ const Marketplace = () => {
   ].reduce((a, b) => a + (b || 0), 0);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500 min-h-0">
+    <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500 min-h-0 marketplace-page">
       {/* 1. Page Top Bar - 2 Column Layout */}
-      <div className={`shrink-0 w-full z-20 bg-card/95 backdrop-blur-sm px-6 border-b border-border shadow-sm flex flex-col transition-all ${isFiltersExpanded ? 'py-4' : 'py-3'}`}>
+      <div className={cn(
+        "shrink-0 w-full z-20 bg-gradient-to-r from-card/95 via-card/80 to-transparent backdrop-blur-sm px-6 sm:px-8 border-b border-border/60 shadow-sm flex flex-col transition-all",
+        isFiltersExpanded ? 'py-6 min-h-[100px]' : 'py-5 min-h-[84px]'
+      )}>
         <div className="grid grid-cols-2 items-start gap-3 w-full">
           {/* Left Column: Search + Dates */}
           <div className="flex flex-col gap-3">
             {/* Search Input */}
             <div className="relative w-full min-w-[200px]">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={t('marketplace:searchPlaceholder', 'Search positions...')}
-                className="w-full h-9 pl-9 pr-8 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                style={{
+                  height: 'var(--boxed-inputfield-height)',
+                  fontWeight: '500',
+                  fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                  color: 'var(--boxed-inputfield-color-text)'
+                }}
               />
             </div>
 
@@ -334,13 +343,13 @@ const Marketplace = () => {
         ) : (
           <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0" style={{ scrollbarGutter: 'stable' }}>
             {listings.length === 0 ? (
-              <div className="w-full flex flex-col items-center justify-center p-8 text-center z-0 min-h-[400px]">
-                <div className="max-w-md w-full bg-card p-8 rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm animate-in fade-in zoom-in-95 duration-500 mx-auto">
-                  <div className="w-16 h-16 mx-auto rounded-full bg-muted/50 flex items-center justify-center mb-6 ring-4 ring-background">
+              <div className="dashboard-empty-state">
+                <div className="dashboard-empty-state-card">
+                  <div className="dashboard-empty-state-icon">
                     <FiInbox className="text-muted-foreground w-8 h-8" />
                   </div>
-                  <h2 className="text-xl font-bold text-foreground mb-2">{t('marketplace:noResults.title', 'No positions found')}</h2>
-                  <p className="text-muted-foreground mb-6">
+                  <h2 className="dashboard-empty-state-title">{t('marketplace:noResults.title', 'No positions found')}</h2>
+                  <p className="dashboard-empty-state-description">
                     {t('marketplace:noResults.empty', 'Start looking for positions in the marketplace')}
                   </p>
                 </div>

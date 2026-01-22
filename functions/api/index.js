@@ -5,7 +5,7 @@ const notificationsFunctions = require('./notifications');
 const bagAdminFunctions = require('./BAG_Admin');
 
 // HTTP endpoint for contract operations (for integration with external systems)
-const contractAPI = onCall(async (request) => {
+const contractAPI = onCall({ database: 'medishift', cors: true }, async (request) => {
   // Ensure user is authenticated
   if (!request.auth) {
     throw new HttpsError(
@@ -390,7 +390,7 @@ const contractAPI = onCall(async (request) => {
 
 // MESSAGE API FUNCTIONS
 
-const messagesAPI = onCall(async (request) => {
+const messagesAPI = onCall({ database: 'medishift', cors: true }, async (request) => {
   // SECURITY CHECK: Verify user is authenticated
   if (!request.auth) {
     throw new HttpsError(
@@ -660,7 +660,7 @@ const messagesAPI = onCall(async (request) => {
 
 // MARKETPLACE API FUNCTIONS
 
-const marketplaceAPI = onCall(async (request) => {
+const marketplaceAPI = onCall({ database: 'medishift', cors: true }, async (request) => {
   // SECURITY CHECK: Verify user is authenticated
   if (!request.auth) {
     throw new HttpsError(

@@ -347,17 +347,11 @@ const useProfileData = () => {
         updatedAt: now,
       };
 
-      // Reset completion flags based on which profile is being reset
+      // completion flags will be set directly in resetProfileData
       if (userRole === 'professional') {
-        userUpdates.isProfessionalProfileComplete = false;
-        userUpdates.tutorialPassed = false;
-
         // Also reset name fields to auth defaults if resetting professional
         userUpdates.firstName = currentUser.displayName?.split(' ')[0] || userData.firstName || '';
         userUpdates.lastName = currentUser.displayName?.split(' ').slice(1).join(' ') || userData.lastName || '';
-      } else if (userRole === 'facility' || userRole === 'company') {
-        // Reset facility-specific flags in user doc if any exist
-        userUpdates.isFacilityProfileComplete = false;
       }
 
       await updateDoc(userDocRef, userUpdates);
@@ -367,6 +361,8 @@ const useProfileData = () => {
         userId: currentUser.uid,
         createdAt: profileDoc.exists() ? profileDoc.data().createdAt : now,
         updatedAt: now,
+        isProfessionalProfileComplete: false,
+        tutorialPassed: false,
         ...(userRole === 'professional' ? {
           education: [],
           licensesCertifications: [],

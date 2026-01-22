@@ -5,6 +5,7 @@ import { db } from '../../../services/firebase';
 import { getUnverifiedUsersCount, getActiveShiftsCount, getMonthlyRevenue } from '../../../utils/adminUtils';
 import { TrendingUp, Users, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import PageHeader from '../../components/PageHeader/PageHeader';
 
 const AdminDashboard = () => {
   const { t } = useTranslation(['admin']);
@@ -97,15 +98,14 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          {t('admin:dashboard.title', 'Admin Dashboard')}
-        </h1>
-        <p className="text-muted-foreground">
-          {t('admin:dashboard.subtitle', 'Overview of platform metrics and pending actions')}
-        </p>
-      </div>
+    <div className="h-full flex flex-col overflow-hidden">
+      <PageHeader
+        title={t('admin:dashboard.title', 'Admin Dashboard')}
+        subtitle={t('admin:dashboard.subtitle', 'Overview of platform metrics and pending actions')}
+        variant="default"
+      />
+      
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card, index) => {
@@ -174,7 +174,19 @@ const AdminDashboard = () => {
               {t('admin:dashboard.manageShiftsDesc', 'View and manage all platform shifts')}
             </p>
           </a>
+          <a
+            href="/dashboard/admin/email"
+            className="p-4 bg-primary/5 hover:bg-primary/10 rounded-lg border border-primary/20 transition-colors"
+          >
+            <h3 className="font-medium mb-1">
+              {t('admin:dashboard.emailCenter', 'Email Center')}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {t('admin:dashboard.emailCenterDesc', 'Send emails, respond to support, invite team members')}
+            </p>
+          </a>
         </div>
+      </div>
       </div>
     </div>
   );

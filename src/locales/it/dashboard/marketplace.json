@@ -1,103 +1,147 @@
 {
-    "title": "Marketplace Sanitario",
-    "subtitle": "Trova le posizioni sanitarie o i professionisti perfetti",
-    "loading": "Caricamento posizioni...",
-    "searchPlaceholder": "Cerca posizioni...",
-    "positionsFound": "posizioni trovate",
-    "stats": {
-        "positions": "Posizioni Aperte"
+  "title": "Marketplace Sanitario",
+  "subtitle": "Trova le posizioni sanitarie o i professionisti perfetti",
+  "loading": "Caricamento posizioni...",
+  "searchPlaceholder": "Cerca posizioni...",
+  "positionsFound": "posizioni trovate",
+  "stats": {
+    "positions": "Posizioni Aperte"
+  },
+  "noResults": {
+    "title": "Nessuna posizione trovata",
+    "withFilters": "Prova a modificare i filtri per vedere più risultati",
+    "empty": "Nessuna posizione disponibile al momento"
+  },
+  "listings": {
+    "loading": "Caricamento annunci...",
+    "empty": "Nessun annuncio disponibile al momento.",
+    "noResults": "Nessun annuncio corrisponde ai tuoi filtri attuali."
+  },
+  "filters": {
+    "canton": "Cantone",
+    "city": "Città",
+    "area": "Area",
+    "experience": "Livello di Esperienza",
+    "software": "Software",
+    "workAmount": "Quantità di Lavoro"
+  },
+  "filter": {
+    "placeholders": {
+      "canton": "Seleziona cantone...",
+      "city": "Seleziona città...",
+      "area": "Seleziona area...",
+      "experience": "Seleziona livello di esperienza...",
+      "software": "Seleziona software...",
+      "workAmount": "Seleziona quantità di lavoro...",
+      "fromDate": "Da data...",
+      "toDate": "A data..."
     },
-    "noResults": {
-        "title": "Nessuna posizione trovata",
-        "withFilters": "Prova a modificare i filtri per vedere più risultati",
-        "empty": "Nessuna posizione disponibile al momento"
+    "clear": "Cancella Tutto",
+    "apply": "Applica Filtri",
+    "show": "Mostra Filtri",
+    "hide": "Nascondi Filtri",
+    "noFiltersApplied": "Nessun filtro applicato"
+  },
+  "detailedCard": {
+    "loading": "Caricamento dettagli...",
+    "badges": {
+      "verifiedCompany": "Azienda Verificata",
+      "verifiedProfessional": "Professionista Verificato"
     },
-    "listings": {
-        "loading": "Caricamento annunci...",
-        "empty": "Nessun annuncio disponibile al momento.",
-        "noResults": "Nessun annuncio corrisponde ai tuoi filtri attuali."
+    "actions": {
+      "apply": "Candidati Ora",
+      "hire": "Contatta",
+      "save": "Salva Lavoro",
+      "favorite": "Aggiungi ai Preferiti"
     },
-    "filters": {
-        "canton": "Cantone",
-        "city": "Città",
-        "area": "Area",
-        "experience": "Livello di Esperienza",
-        "software": "Software",
-        "workAmount": "Quantità di Lavoro"
+    "sections": {
+      "jobOverview": "Panoramica Lavoro",
+      "personalInfo": "Informazioni Personali",
+      "languages": "Lingue",
+      "qualifications": "Qualifiche",
+      "experience": "Esperienza",
+      "description": "Descrizione Lavoro",
+      "about": "Informazioni su {{companyName}}",
+      "availability": "Disponibilità",
+      "skills": "Competenze & Esperienza",
+      "education": "Istruzione",
+      "bio": "Chi sono"
     },
-    "filter": {
-        "placeholders": {
-            "canton": "Seleziona cantone...",
-            "city": "Seleziona città...",
-            "area": "Seleziona area...",
-            "experience": "Seleziona livello di esperienza...",
-            "software": "Seleziona software...",
-            "workAmount": "Seleziona quantità di lavoro...",
-            "fromDate": "Da data...",
-            "toDate": "A data..."
-        },
-        "clear": "Cancella Tutto",
-        "apply": "Applica Filtri",
-        "show": "Mostra Filtri",
-        "hide": "Nascondi Filtri",
-        "noFiltersApplied": "Nessun filtro applicato"
+    "fields": {
+      "salaryLabel": "Stipendio",
+      "statusLabel": "Stato",
+      "locationLabel": "Sede",
+      "postedOnLabel": "Pubblicato il",
+      "contractTypeLabel": "Tipo di Contratto",
+      "nameLabel": "Nome",
+      "experienceLabel": "Esperienza",
+      "professionLabel": "Professione",
+      "websiteLabel": "Sito Web",
+      "industryLabel": "Settore",
+      "companySizeLabel": "Dimensione Azienda",
+      "dateRangeLabel": "Periodo Disponibile",
+      "workAmountLabel": "Quantità di Lavoro",
+      "jobTypesLabel": "Tipi di Lavoro",
+      "notesLabel": "Note",
+      "present": "Attuale",
+      "age": "{{age}} anni"
     },
-    "detailedCard": {
-        "loading": "Caricamento dettagli...",
-        "badges": {
-            "verifiedCompany": "Azienda Verificata",
-            "verifiedProfessional": "Professionista Verificato"
-        },
-        "actions": {
-            "apply": "Candidati Ora",
-            "hire": "Contatta",
-            "save": "Salva Lavoro",
-            "favorite": "Aggiungi ai Preferiti"
-        },
-        "sections": {
-            "jobOverview": "Panoramica Lavoro",
-            "personalInfo": "Informazioni Personali",
-            "languages": "Lingue",
-            "qualifications": "Qualifiche",
-            "experience": "Esperienza",
-            "description": "Descrizione Lavoro",
-            "about": "Informazioni su {{companyName}}",
-            "availability": "Disponibilità",
-            "skills": "Competenze & Esperienza",
-            "education": "Istruzione",
-            "bio": "Chi sono"
-        },
-        "fields": {
-            "salaryLabel": "Stipendio",
-            "statusLabel": "Stato",
-            "locationLabel": "Sede",
-            "postedOnLabel": "Pubblicato il",
-            "contractTypeLabel": "Tipo di Contratto",
-            "nameLabel": "Nome",
-            "experienceLabel": "Esperienza",
-            "professionLabel": "Professione",
-            "websiteLabel": "Sito Web",
-            "industryLabel": "Settore",
-            "companySizeLabel": "Dimensione Azienda",
-            "dateRangeLabel": "Periodo Disponibile",
-            "workAmountLabel": "Quantità di Lavoro",
-            "jobTypesLabel": "Tipi di Lavoro",
-            "notesLabel": "Note",
-            "present": "Attuale",
-            "age": "{{age}} anni"
-        }
-    },
-    "view": {
-        "grid": "Vista Griglia",
-        "list": "Vista Lista"
-    },
-    "common": {
-        "notAvailable": "Non disponibile",
-        "notAvailableShort": "N/D",
-        "noExperience": "Nessun dato di esperienza",
-        "years": "{{count}} anno",
-        "years_plural": "{{count}} anni",
-        "months": "{{count}} mese",
-        "months_plural": "{{count}} mesi"
-    }
+    "pharmacist": "Pharmacist",
+    "verified": "Verified",
+    "pending": "Pending",
+    "open": "Open",
+    "locationNotSpecified": "Location Not Specified",
+    "type": "Type",
+    "fullTime": "Full Time",
+    "salary": "Salary",
+    "negotiable": "Negotiable",
+    "startDate": "Start Date",
+    "immediate": "Immediate",
+    "workingHours": "Working Hours",
+    "profession": "Profession",
+    "hourlyRate": "Hourly Rate",
+    "availability": "Availability",
+    "flexible": "Flexible",
+    "jobDescription": "Job Description",
+    "about": "About",
+    "requirements": "Requirements",
+    "specialties": "Specialties",
+    "agreement": "Agreement",
+    "applyForPosition": "Apply For Position",
+    "contactPharmacist": "Contact Pharmacist"
+  },
+  "view": {
+    "grid": "Vista Griglia",
+    "list": "Vista Lista"
+  },
+  "common": {
+    "notAvailable": "Non disponibile",
+    "notAvailableShort": "N/D",
+    "noExperience": "Nessun dato di esperienza",
+    "years": "{{count}} anno",
+    "years_plural": "{{count}} anni",
+    "months": "{{count}} mese",
+    "months_plural": "{{count}} mesi"
+  },
+  "listingCard": {
+    "salaryNegotiable": "Salary Negotiable",
+    "availablePharmacist": "Available Pharmacist",
+    "generalPractice": "General Practice"
+  },
+  "experienceLevels": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "experienced": "Experienced"
+  },
+  "placeholders": {
+    "from": "From",
+    "to": "To"
+  },
+  "overlay": {
+    "title": "Title",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "clearAll": "Clear All",
+    "applyFilters": "Apply Filters"
+  }
 }

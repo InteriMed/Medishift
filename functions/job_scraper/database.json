@@ -1,0 +1,11 @@
+{
+    "jobs.ch": {
+        "url": "https://www.jobs.ch/en/vacancies/?location=geneva&term="
+    },
+    "indeed": {
+        "url": "https://ch.indeed.com/Stellen?q=m%C3%A9decin&l=Gen%C3%A8ve,+GE&radius=100"
+    },
+    "linkedin": {
+        "url": "https://www.linkedin.com/jobs"
+    }
+}

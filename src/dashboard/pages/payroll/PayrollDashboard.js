@@ -7,8 +7,8 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { FiDollarSign, FiClock, FiCheckCircle, FiAlertCircle, FiRefreshCw, FiFileText, FiSend } from 'react-icons/fi';
 import { cn } from '../../../utils/cn';
+import PageHeader from '../../components/PageHeader/PageHeader';
 
-// Status badge colors
 const statusConfig = {
     pending: { color: 'bg-transparent text-yellow-700 border-yellow-700', icon: FiClock, label: 'Pending' },
     sent: { color: 'bg-transparent text-blue-700 border-blue-700', icon: FiSend, label: 'Sent to PayrollPlus' },
@@ -356,17 +356,10 @@ const PayrollDashboard = () => {
 
     return (
         <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-            {/* Header */}
-            <div className="shrink-0 p-6 border-b border-border bg-card/50">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-foreground">
-                            {t('payroll:title', 'Payroll Management')}
-                        </h1>
-                        <p className="text-muted-foreground mt-1">
-                            {t('payroll:subtitle', 'Track and manage staff payment requests')}
-                        </p>
-                    </div>
+            <PageHeader
+                title={t('payroll:title', 'Payroll Management')}
+                subtitle={t('payroll:subtitle', 'Track and manage staff payment requests')}
+                actions={
                     <button
                         onClick={fetchPayrollRequests}
                         disabled={isLoading}
@@ -379,8 +372,9 @@ const PayrollDashboard = () => {
                         <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                         {t('common:refresh', 'Refresh')}
                     </button>
-                </div>
-            </div>
+                }
+                variant="default"
+            />
 
             {/* Stats Cards */}
             <div className="shrink-0 p-6">

@@ -1,220 +1,229 @@
 {
-    "dashboard": {
-        "sidebar": {
-            "overview": "Panoramica",
-            "profile": "Profilo",
-            "contracts": "Contratti",
-            "messages": "Messaggi",
-            "calendar": "Calendario",
-            "marketplace": "Marketplace",
-            "payroll": "Buste Paga",
-            "organization": "Organizzazione",
-            "settings": "Impostazioni",
-            "incompleteProfile": "Il tuo profilo è incompleto",
-            "completeProfileFirst": "Completa prima il tuo profilo"
-        },
-        "header": {
-            "search": "Cerca...",
-            "worker": "Lavoratore",
-            "overview": {
-                "title": "Panoramica",
-                "subtitle": "Benvenuto nella tua dashboard"
-            },
-            "calendar": {
-                "title": "Calendario",
-                "subtitle": "Gestisci i tuoi appuntamenti e programmi"
-            },
-            "messages": {
-                "title": "Messaggi",
-                "subtitle": "Comunica con strutture e professionisti"
-            },
-            "contracts": {
-                "title": "Contratti",
-                "subtitle": "Visualizza e gestisci i tuoi contratti"
-            },
-            "profile": {
-                "title": "Profilo",
-                "subtitle": "Gestisci le tue informazioni personali"
-            },
-            "marketplace": {
-                "title": "Marketplace",
-                "subtitle": "Trova posizioni o professionisti"
-            },
-            "payroll": {
-                "title": "Buste Paga",
-                "subtitle": "Gestisci pagamenti e richieste del personale"
-            },
-            "organization": {
-                "title": "Organizzazione",
-                "subtitle": "Gestisci la tua catena o gruppo di farmacie"
-            },
-            "settings": {
-                "title": "Impostazioni",
-                "subtitle": "Configura le preferenze del tuo account"
-            }
-        },
-        "loading": "Caricamento dati dashboard...",
-        "error": "Errore nel caricamento dei dati della dashboard",
-        "completeProfile": {
-            "completeProfileTitle": "Completa il tuo Profilo",
-            "completeProfileDescription": "Benvenuto su MediShift! Per accedere a tutte le funzionalità della piattaforma, completa prima il tuo profilo.",
-            "completeProfileButton": "Ho capito, crea il mio profilo"
-        },
-        "overview": {
-            "title": "Benvenuto su MediShift!",
-            "welcome": "Ciao",
-            "welcomeTitle": "Benvenuto su MediShift!",
-            "totalContracts": "Contratti Totali",
-            "activeHours": "Ore Attive",
-            "earnings": "Guadagni",
-            "upcomingJobs": "Lavori in Arrivo",
-            "recentActivity": "Attività Recente",
-            "noRecentActivity": "Nessuna attività recente da mostrare"
-        },
-        "onboarding": {
-            "welcome": {
-                "title": "Benvenuto su MediShift!",
-                "description": "Iniziamo con un rapido processo di onboarding per configurare il tuo account.",
-                "continue": "Continua"
-            },
-            "roleSelection": {
-                "title": "Che tipo di account ti serve?",
-                "description": "Seleziona l'opzione che ti descrive meglio",
-                "professional": "Professionista",
-                "professionalDescription": "Sono un professionista sanitario in cerca di opportunità lavorative",
-                "facility": "Azienda",
-                "facilityDescription": "Rappresento un'azienda o una struttura in cerca di professionisti"
-            },
-            "companySearch": {
-                "title": "Hai un'azienda?",
-                "description": "Se lavori per un'azienda, cercala e selezionala qui sotto",
-                "noCompany": "Non ho un'azienda",
-                "yesCompany": "Sì, ho un'azienda",
-                "searchLabel": "Cerca la tua azienda",
-                "searchPlaceholder": "Digita il nome dell'azienda...",
-                "searching": "Ricerca in corso...",
-                "noResults": "Nessuna azienda trovata. Puoi continuare senza selezionarne una."
-            },
-            "confirmation": {
-                "title": "Conferma la Tua Selezione",
-                "accountType": "Tipo di Account",
-                "company": "Azienda",
-                "noCompany": "Nessuna azienda",
-                "confirm": "Conferma"
-            },
-            "profileGuide": {
-                "title": "Ottimo! Ora completiamo il tuo profilo",
-                "description": "Ti guideremo passo dopo passo nel completamento del tuo profilo. Ogni sezione verrà evidenziata man mano che procedi.",
-                "startProfile": "Inizia a Completare il Profilo"
-            },
-            "errors": {
-                "roleRequired": "Seleziona un ruolo",
-                "companyAnswerRequired": "Rispondi alla domanda",
-                "companyRequired": "Seleziona un'azienda",
-                "searchFailed": "Ricerca aziende fallita",
-                "updateFailed": "Impossibile completare l'onboarding"
-            },
-            "employedByCompany": "Sei attualmente impiegato da un'azienda?",
-            "employedByCompanyDesc": "Attiva se lavori per un'organizzazione",
-            "joinTeam": "Unisciti a un team",
-            "joinTeamDesc": "Attiva per trovare e unirti al tuo posto di lavoro",
-            "legalConsiderations": {
-                "title": "Importanti Considerazioni Legali",
-                "intro": "Per i dipendenti che lavorano al 100% (di solito 40-42 ore/settimana), è quasi impossibile accettare turni extra in un'altra farmacia legalmente.",
-                "hoursCap": {
-                    "title": "1. Limite Massimo Ore Settimanali",
-                    "content": "La Legge sul Lavoro Svizzera fissa un massimo rigoroso di 50 ore settimanali (45 ore in alcuni contesti retail). Un dipendente al 100% lavora tipicamente 42 ore, lasciando solo 8 ore massimo. Un turno del sabato completo (9 ore) violerebbe la legge. Entrambi i datori di lavoro sono responsabili se sanno dell'altro lavoro."
-                },
-                "dutyOfLoyalty": {
-                    "title": "2. Dovere di Lealtà",
-                    "content": "Secondo il Codice delle Obbligazioni (Art. 321a), devi ottenere il permesso scritto dal tuo datore di lavoro principale per lavorare per un concorrente. La maggior parte dei titolari di farmacia non concederà questo permesso poiché si aspettano che il personale riposi ed sia fresco per lunedì."
-                },
-                "dailyRest": {
-                    "title": "3. Regola del Riposo Giornaliero",
-                    "content": "La legge richiede 11 ore consecutive di riposo tra i turni (può essere ridotto a 8 ore una volta alla settimana). Esempio: finire alle 18:30 e iniziare un turno serale fino alle 23:00, poi tornare alle 08:00 il giorno dopo dà solo 9 ore di riposo (illegale)."
-                },
-                "holidays": {
-                    "title": "4. Lavorare Durante le Ferie",
-                    "content": "Le ferie sono legalmente designate per il recupero (Erholungszweck). Lavorare per soldi durante le ferie pagate può comportare il rifiuto del datore di lavoro di pagare lo stipendio delle ferie o anche il licenziamento per violazione del contratto."
-                },
-                "confirm": "Comprendo e riconosco queste considerazioni legali"
-            },
-            "generalWorkingLaws": {
-                "title": "Importanti Considerazioni Legali",
-                "warning": "Si prega di essere consapevoli delle leggi e dei regolamenti generali sul lavoro che si applicano a tutti i lavoratori. La Legge sul Lavoro Svizzera fissa un massimo rigoroso di 50 ore settimanali (45 ore in alcuni contesti retail). La legge richiede 11 ore consecutive di riposo tra i turni (può essere ridotto a 8 ore una volta alla settimana). Le ferie e i periodi di riposo sono legalmente designate per il recupero (Erholungszweck). Si prega di assicurarsi di rispettare tutti i requisiti applicabili della legge sul lavoro riguardanti gli orari di lavoro massimi, i periodi di riposo e altre regolamentazioni.",
-                "confirm": "Comprendo e riconosco queste considerazioni legali"
-            },
-            "separateWorkerGLM": {
-                "title": "Lavoratore Separato con GLM",
-                "description": "Hai un GLM (manager) ma nessun GLN. La tua impostazione GLM verrà salvata nel tuo profilo.",
-                "saveButton": "Salva Impostazione GLM",
-                "saving": "Salvataggio...",
-                "complete": "Impostazione GLM Salvata!",
-                "completeMessage": "La tua impostazione GLM è stata salvata nel tuo profilo. Puoi gestire questa impostazione nelle impostazioni del profilo.",
-                "hasGLMNoGLN": "Ho un GLM e Lavoratore senza GLN",
-                "hasGLMNoGLNDesc": "Attiva se hai un manager (GLM) ma non hai il tuo GLN"
-            },
-            "exitOnboarding": "Esci dall'Onboarding",
-            "step1": {
-                "title": "Considerazioni Legali",
-                "facilityLegalNotice": "Avviso Legale Struttura/Catena",
-                "facilityLegalText1": "Come rappresentante di una struttura, sei responsabile di garantire che tutti i dati forniti siano accurati e che tu abbia l'autorità di agire per conto dell'organizzazione.",
-                "facilityLegalText2": "Le leggi sul lavoro svizzere riguardanti le ore di lavoro massime (LTr) e i periodi di riposo devono essere rigorosamente rispettate durante la pianificazione dei turni. I datori di lavoro condividono la responsabilità per le violazioni del diritto del lavoro se sono a conoscenza di un impiego secondario di un lavoratore.",
-                "facilityLegalText3": "Proseguendo, accetti i nostri Termini di Servizio e gli accordi di elaborazione dei dati specificamente adattati per le strutture sanitarie in Svizzera.",
-                "professionalLegalNotice": "Avviso Legale Professionista/Lavoratore",
-                "professionalLegalText1": "La Legge sul Lavoro Svizzera stabilisce un massimo rigoroso di 50 ore settimanali. Se lavori al 100% (42h), accettare turni extra può essere illegale senza autorizzazione preventiva.",
-                "professionalLegalText2": "Il Dovere di Lealtà (Art. 321a CO) ti richiede di ottenere il permesso scritto dal tuo datore di lavoro principale per lavorare per un concorrente.",
-                "professionalLegalText3": "Devi alternare i periodi di riposo: sono richieste 11 ore consecutive di riposo tra i turni. Lavorare durante le ferie pagate (vacanze) è legalmente limitato a scopi di recupero.",
-                "professionalLegalText4": "Proseguendo, riconosci di essere l'unico responsabile della gestione delle tue ore di lavoro presso diversi datori di lavoro.",
-                "agreementStatus": "Stato dell'Accordo",
-                "areYouEmployed": "Sei Impiegato",
-                "areYouEmployedDescription": "Questo può essere modificato in seguito.",
-                "termsAcceptance": "Accettazione dei Termini",
-                "termsAcceptanceDescription": "Conferma di accettare questi termini legali.",
-                "note": "Nota: La tua selezione qui determina il quadro giuridico che si applicherà al tuo account e alla gestione dei turni."
-            },
-            "step2": {
-                "title": "Scegli il Tuo Percorso",
-                "description": "Definisci il tuo ruolo per personalizzare la tua esperienza MediShift.",
-                "professional": "Professionista",
-                "professionalDescription": "Trova turni medici in strutture di alta qualità vicino a te.",
-                "facility": "Struttura",
-                "facilityDescription": "Recluta talenti sanitari qualificati e gestisci facilmente i tuoi turni.",
-                "organization": "Organizzazione",
-                "organizationDescription": "Gestione centralizzata per più cliniche e catene sanitarie."
-            },
-            "step3": {
-                "chain": {
-                    "title": "Configurazione Organizzazione",
-                    "description": "L'accesso esecutivo richiede una verifica manuale da parte del nostro team di sicurezza.",
-                    "phonePrefix": "Prefisso Telefonico",
-                    "phoneNumber": "Numero di Telefono",
-                    "phoneNumberPlaceholder": "079 000 00 00",
-                    "messageToSupport": "Messaggio al Supporto",
-                    "messagePlaceholder": "Descrivi la tua organizzazione (numero di cliniche, sedi)..."
-                }
-            },
-            "step4": {
-                "title": "Verifica Identità",
-                "description": "Aiutaci a mantenere un ambiente medico sicuro e affidabile.",
-                "hasGLN": "Ho un numero GLN"
-            },
-            "buttons": {
-                "back": "Indietro",
-                "sendCode": "Invia Codice",
-                "validate": "Valida",
-                "contactAndFinish": "Contatta e Termina",
-                "verifying": "Verifica in corso...",
-                "completeAccount": "Completa Account",
-                "nextStep": "Passo Successivo"
-            }
-        }
+  "dashboard": {
+    "sidebar": {
+      "overview": "Panoramica",
+      "profile": "Profilo",
+      "contracts": "Contratti",
+      "messages": "Messaggi",
+      "calendar": "Calendario",
+      "marketplace": "Marketplace",
+      "payroll": "Buste Paga",
+      "organization": "Organizzazione",
+      "settings": "Impostazioni",
+      "incompleteProfile": "Il tuo profilo è incompleto",
+      "completeProfileFirst": "Completa prima il tuo profilo"
     },
-    "userMenu": {
-        "profile": "Il Mio Profilo",
-        "settings": "Impostazioni",
-        "language": "Lingua",
-        "logout": "Esci",
-        "user": "Utente"
+    "header": {
+      "search": "Cerca...",
+      "worker": "Lavoratore",
+      "overview": {
+        "title": "Panoramica",
+        "subtitle": "Benvenuto nella tua dashboard"
+      },
+      "calendar": {
+        "title": "Calendario",
+        "subtitle": "Gestisci i tuoi appuntamenti e programmi"
+      },
+      "messages": {
+        "title": "Messaggi",
+        "subtitle": "Comunica con strutture e professionisti"
+      },
+      "contracts": {
+        "title": "Contratti",
+        "subtitle": "Visualizza e gestisci i tuoi contratti"
+      },
+      "profile": {
+        "title": "Profilo",
+        "subtitle": "Gestisci le tue informazioni personali"
+      },
+      "marketplace": {
+        "title": "Marketplace",
+        "subtitle": "Trova posizioni o professionisti"
+      },
+      "payroll": {
+        "title": "Buste Paga",
+        "subtitle": "Gestisci pagamenti e richieste del personale"
+      },
+      "organization": {
+        "title": "Organizzazione",
+        "subtitle": "Gestisci la tua catena o gruppo di farmacie"
+      },
+      "settings": {
+        "title": "Impostazioni",
+        "subtitle": "Configura le preferenze del tuo account"
+      }
+    },
+    "loading": "Caricamento dati dashboard...",
+    "error": "Errore nel caricamento dei dati della dashboard",
+    "completeProfile": {
+      "completeProfileTitle": "Completa il tuo Profilo",
+      "completeProfileDescription": "Benvenuto su MediShift! Per accedere a tutte le funzionalità della piattaforma, completa prima il tuo profilo.",
+      "completeProfileButton": "Ho capito, crea il mio profilo"
+    },
+    "overview": {
+      "title": "Benvenuto su MediShift!",
+      "welcome": "Ciao",
+      "welcomeTitle": "Benvenuto su MediShift!",
+      "totalContracts": "Contratti Totali",
+      "activeHours": "Ore Attive",
+      "earnings": "Guadagni",
+      "upcomingJobs": "Lavori in Arrivo",
+      "recentActivity": "Attività Recente",
+      "noRecentActivity": "Nessuna attività recente da mostrare"
+    },
+    "onboarding": {
+      "welcome": {
+        "title": "Benvenuto su MediShift!",
+        "description": "Iniziamo con un rapido processo di onboarding per configurare il tuo account.",
+        "continue": "Continua"
+      },
+      "roleSelection": {
+        "title": "Che tipo di account ti serve?",
+        "description": "Seleziona l'opzione che ti descrive meglio",
+        "professional": "Professionista",
+        "professionalDescription": "Sono un professionista sanitario in cerca di opportunità lavorative",
+        "facility": "Azienda",
+        "facilityDescription": "Rappresento un'azienda o una struttura in cerca di professionisti"
+      },
+      "companySearch": {
+        "title": "Hai un'azienda?",
+        "description": "Se lavori per un'azienda, cercala e selezionala qui sotto",
+        "noCompany": "Non ho un'azienda",
+        "yesCompany": "Sì, ho un'azienda",
+        "searchLabel": "Cerca la tua azienda",
+        "searchPlaceholder": "Digita il nome dell'azienda...",
+        "searching": "Ricerca in corso...",
+        "noResults": "Nessuna azienda trovata. Puoi continuare senza selezionarne una."
+      },
+      "confirmation": {
+        "title": "Conferma la Tua Selezione",
+        "accountType": "Tipo di Account",
+        "company": "Azienda",
+        "noCompany": "Nessuna azienda",
+        "confirm": "Conferma"
+      },
+      "profileGuide": {
+        "title": "Ottimo! Ora completiamo il tuo profilo",
+        "description": "Ti guideremo passo dopo passo nel completamento del tuo profilo. Ogni sezione verrà evidenziata man mano che procedi.",
+        "startProfile": "Inizia a Completare il Profilo"
+      },
+      "errors": {
+        "roleRequired": "Seleziona un ruolo",
+        "companyAnswerRequired": "Rispondi alla domanda",
+        "companyRequired": "Seleziona un'azienda",
+        "searchFailed": "Ricerca aziende fallita",
+        "updateFailed": "Impossibile completare l'onboarding"
+      },
+      "employedByCompany": "Sei attualmente impiegato da un'azienda?",
+      "employedByCompanyDesc": "Attiva se lavori per un'organizzazione",
+      "joinTeam": "Unisciti a un team",
+      "joinTeamDesc": "Attiva per trovare e unirti al tuo posto di lavoro",
+      "legalConsiderations": {
+        "title": "Importanti Considerazioni Legali",
+        "intro": "Per i dipendenti che lavorano al 100% (di solito 40-42 ore/settimana), è quasi impossibile accettare turni extra in un'altra farmacia legalmente.",
+        "hoursCap": {
+          "title": "1. Limite Massimo Ore Settimanali",
+          "content": "La Legge sul Lavoro Svizzera fissa un massimo rigoroso di 50 ore settimanali (45 ore in alcuni contesti retail). Un dipendente al 100% lavora tipicamente 42 ore, lasciando solo 8 ore massimo. Un turno del sabato completo (9 ore) violerebbe la legge. Entrambi i datori di lavoro sono responsabili se sanno dell'altro lavoro."
+        },
+        "dutyOfLoyalty": {
+          "title": "2. Dovere di Lealtà",
+          "content": "Secondo il Codice delle Obbligazioni (Art. 321a), devi ottenere il permesso scritto dal tuo datore di lavoro principale per lavorare per un concorrente. La maggior parte dei titolari di farmacia non concederà questo permesso poiché si aspettano che il personale riposi ed sia fresco per lunedì."
+        },
+        "dailyRest": {
+          "title": "3. Regola del Riposo Giornaliero",
+          "content": "La legge richiede 11 ore consecutive di riposo tra i turni (può essere ridotto a 8 ore una volta alla settimana). Esempio: finire alle 18:30 e iniziare un turno serale fino alle 23:00, poi tornare alle 08:00 il giorno dopo dà solo 9 ore di riposo (illegale)."
+        },
+        "holidays": {
+          "title": "4. Lavorare Durante le Ferie",
+          "content": "Le ferie sono legalmente designate per il recupero (Erholungszweck). Lavorare per soldi durante le ferie pagate può comportare il rifiuto del datore di lavoro di pagare lo stipendio delle ferie o anche il licenziamento per violazione del contratto."
+        },
+        "confirm": "Comprendo e riconosco queste considerazioni legali"
+      },
+      "generalWorkingLaws": {
+        "title": "Importanti Considerazioni Legali",
+        "warning": "Si prega di essere consapevoli delle leggi e dei regolamenti generali sul lavoro che si applicano a tutti i lavoratori. La Legge sul Lavoro Svizzera fissa un massimo rigoroso di 50 ore settimanali (45 ore in alcuni contesti retail). La legge richiede 11 ore consecutive di riposo tra i turni (può essere ridotto a 8 ore una volta alla settimana). Le ferie e i periodi di riposo sono legalmente designate per il recupero (Erholungszweck). Si prega di assicurarsi di rispettare tutti i requisiti applicabili della legge sul lavoro riguardanti gli orari di lavoro massimi, i periodi di riposo e altre regolamentazioni.",
+        "confirm": "Comprendo e riconosco queste considerazioni legali"
+      },
+      "separateWorkerGLM": {
+        "title": "Lavoratore Separato con GLM",
+        "description": "Hai un GLM (manager) ma nessun GLN. La tua impostazione GLM verrà salvata nel tuo profilo.",
+        "saveButton": "Salva Impostazione GLM",
+        "saving": "Salvataggio...",
+        "complete": "Impostazione GLM Salvata!",
+        "completeMessage": "La tua impostazione GLM è stata salvata nel tuo profilo. Puoi gestire questa impostazione nelle impostazioni del profilo.",
+        "hasGLMNoGLN": "Ho un GLM e Lavoratore senza GLN",
+        "hasGLMNoGLNDesc": "Attiva se hai un manager (GLM) ma non hai il tuo GLN"
+      },
+      "exitOnboarding": "Esci dall'Onboarding",
+      "step1": {
+        "title": "Considerazioni Legali",
+        "facilityLegalNotice": "Avviso Legale Struttura/Catena",
+        "facilityLegalText1": "Come rappresentante di una struttura, sei responsabile di garantire che tutti i dati forniti siano accurati e che tu abbia l'autorità di agire per conto dell'organizzazione.",
+        "facilityLegalText2": "Le leggi sul lavoro svizzere riguardanti le ore di lavoro massime (LTr) e i periodi di riposo devono essere rigorosamente rispettate durante la pianificazione dei turni. I datori di lavoro condividono la responsabilità per le violazioni del diritto del lavoro se sono a conoscenza di un impiego secondario di un lavoratore.",
+        "facilityLegalText3": "Proseguendo, accetti i nostri Termini di Servizio e gli accordi di elaborazione dei dati specificamente adattati per le strutture sanitarie in Svizzera.",
+        "professionalLegalNotice": "Avviso Legale Professionista/Lavoratore",
+        "professionalLegalText1": "La Legge sul Lavoro Svizzera stabilisce un massimo rigoroso di 50 ore settimanali. Se lavori al 100% (42h), accettare turni extra può essere illegale senza autorizzazione preventiva.",
+        "professionalLegalText2": "Il Dovere di Lealtà (Art. 321a CO) ti richiede di ottenere il permesso scritto dal tuo datore di lavoro principale per lavorare per un concorrente.",
+        "professionalLegalText3": "Devi alternare i periodi di riposo: sono richieste 11 ore consecutive di riposo tra i turni. Lavorare durante le ferie pagate (vacanze) è legalmente limitato a scopi di recupero.",
+        "professionalLegalText4": "Proseguendo, riconosci di essere l'unico responsabile della gestione delle tue ore di lavoro presso diversi datori di lavoro.",
+        "agreementStatus": "Stato dell'Accordo",
+        "areYouEmployed": "Sei Impiegato",
+        "areYouEmployedDescription": "Questo può essere modificato in seguito.",
+        "termsAcceptance": "Accettazione dei Termini",
+        "termsAcceptanceDescription": "Conferma di accettare questi termini legali.",
+        "note": "Nota: La tua selezione qui determina il quadro giuridico che si applicherà al tuo account e alla gestione dei turni."
+      },
+      "step2": {
+        "title": "Scegli il Tuo Percorso",
+        "description": "Definisci il tuo ruolo per personalizzare la tua esperienza MediShift.",
+        "professional": "Professionista",
+        "professionalDescription": "Trova turni medici in strutture di alta qualità vicino a te.",
+        "facility": "Struttura",
+        "facilityDescription": "Recluta talenti sanitari qualificati e gestisci facilmente i tuoi turni.",
+        "organization": "Organizzazione",
+        "organizationDescription": "Gestione centralizzata per più cliniche e catene sanitarie."
+      },
+      "step3": {
+        "chain": {
+          "title": "Configurazione Organizzazione",
+          "description": "L'accesso esecutivo richiede una verifica manuale da parte del nostro team di sicurezza.",
+          "phonePrefix": "Prefisso Telefonico",
+          "phoneNumber": "Numero di Telefono",
+          "phoneNumberPlaceholder": "079 000 00 00",
+          "messageToSupport": "Messaggio al Supporto",
+          "messagePlaceholder": "Descrivi la tua organizzazione (numero di cliniche, sedi)..."
+        }
+      },
+      "step4": {
+        "title": "Verifica Identità",
+        "description": "Aiutaci a mantenere un ambiente medico sicuro e affidabile.",
+        "hasGLN": "Ho un numero GLN"
+      },
+      "buttons": {
+        "back": "Indietro",
+        "sendCode": "Invia Codice",
+        "validate": "Valida",
+        "contactAndFinish": "Contatta e Termina",
+        "verifying": "Verifica in corso...",
+        "completeAccount": "Completa Account",
+        "nextStep": "Passo Successivo"
+      },
+      "company_gln": {
+        "text1": "Text1",
+        "text2": "Text2"
+      },
+      "professional_gln": {
+        "text1": "Text1",
+        "text2": "Text2",
+        "text3": "Text3"
+      }
     }
+  },
+  "userMenu": {
+    "profile": "Il Mio Profilo",
+    "settings": "Impostazioni",
+    "language": "Lingua",
+    "logout": "Esci",
+    "user": "Utente"
+  }
 }

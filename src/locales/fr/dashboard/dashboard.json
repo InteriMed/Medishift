@@ -1,95 +1,122 @@
 {
-    "dashboard": {
+  "dashboard": {
     "sidebar": {
-            "overview": "Aperçu",
-            "profile": "Profil",
-            "contracts": "Contrats",
-            "messages": "Messages",
-            "calendar": "Calendrier",
-            "marketplace": "Marché",
-            "settings": "Paramètres",
-            "incompleteProfile": "Votre profil est incomplet",
-            "completeProfileFirst": "Veuillez d'abord compléter votre profil"
-        },
-        "loading": "Chargement des données du tableau de bord...",
-        "error": "Erreur lors du chargement des données du tableau de bord",
-        "completeProfile": {
-            "completeProfileTitle": "Complétez Votre Profil",
-            "completeProfileDescription": "Bienvenue sur InteriMed ! Pour accéder à toutes les fonctionnalités de la plateforme, veuillez d'abord compléter votre profil.",
-            "completeProfileButton": "Je comprends, créer mon profil"
-        },
-        "overview": {
-            "title": "Bienvenue sur InteriMed !",
-            "welcome": "Bonjour",
-            "welcomeTitle": "Bienvenue sur InteriMed !",
-            "totalContracts": "Total des Contrats",
-            "activeHours": "Heures Actives",
-            "earnings": "Revenus",
-            "upcomingJobs": "Emplois à Venir",
-            "recentActivity": "Activité Récente",
-            "noRecentActivity": "Aucune activité récente à afficher"
-        },
-        "onboarding": {
-            "step1": {
-                "title": "Considérations Légales",
-                "facilityLegalNotice": "Avis Légal Établissement/Chaîne",
-                "facilityLegalText1": "En tant que représentant d'un établissement, vous êtes responsable de garantir que toutes les données fournies sont exactes et que vous avez l'autorité d'agir au nom de l'organisation.",
-                "facilityLegalText2": "Les lois suisses sur le travail concernant les heures de travail maximales (LTr) et les périodes de repos doivent être strictement respectées lors de la planification des quarts de travail. Les employeurs partagent la responsabilité des violations du droit du travail s'ils sont au courant d'un emploi secondaire d'un travailleur.",
-                "facilityLegalText3": "En continuant, vous acceptez nos Conditions Générales et accords de traitement des données spécifiquement adaptés aux établissements de santé en Suisse.",
-                "professionalLegalNotice": "Avis Légal Professionnel/Travailleur",
-                "professionalLegalText1": "La Loi sur le Travail Suisse fixe un maximum strict de 50 heures par semaine. Si vous travaillez à 100% (42h), prendre des quarts supplémentaires peut être illégal sans autorisation préalable.",
-                "professionalLegalText2": "Le Devoir de Loyauté (Art. 321a CO) vous oblige à obtenir une permission écrite de votre employeur principal pour travailler pour un concurrent.",
-                "professionalLegalText3": "Vous devez alterner les périodes de repos : 11 heures consécutives de repos sont requises entre les quarts de travail. Travailler pendant les congés payés (vacances) est légalement restreint à des fins de récupération.",
-                "professionalLegalText4": "En continuant, vous reconnaissez que vous êtes seul responsable de la gestion de vos heures de travail auprès de différents employeurs.",
-                "agreementStatus": "Statut de l'Accord",
-                "areYouEmployed": "Êtes-vous Employé",
-                "areYouEmployedDescription": "Cela peut être modifié plus tard.",
-                "termsAcceptance": "Acceptation des Conditions",
-                "termsAcceptanceDescription": "Confirmez que vous acceptez ces conditions légales.",
-                "note": "Note : Votre sélection ici détermine le cadre juridique qui s'appliquera à votre compte et à la gestion des quarts de travail."
-            },
-            "step2": {
-                "title": "Choisissez Votre Parcours",
-                "description": "Définissez votre rôle pour personnaliser votre expérience MediShift.",
-                "professional": "Professionnel",
-                "professionalDescription": "Trouvez des quarts médicaux dans des établissements de qualité près de chez vous.",
-                "facility": "Établissement",
-                "facilityDescription": "Recrutez des talents de santé qualifiés et gérez facilement vos quarts de travail.",
-                "organization": "Organisation",
-                "organizationDescription": "Gestion centralisée pour plusieurs cliniques et chaînes de soins de santé."
-            },
-            "step3": {
-                "chain": {
-                    "title": "Configuration de l'Organisation",
-                    "description": "L'accès exécutif nécessite une vérification manuelle par notre équipe de sécurité.",
-                    "phonePrefix": "Préfixe Téléphonique",
-                    "phoneNumber": "Numéro de Téléphone",
-                    "phoneNumberPlaceholder": "079 000 00 00",
-                    "messageToSupport": "Message au Support",
-                    "messagePlaceholder": "Veuillez décrire votre organisation (nombre de cliniques, emplacements)..."
-                }
-            },
-            "step4": {
-                "title": "Vérification d'Identité",
-                "description": "Aidez-nous à maintenir un environnement médical sécurisé et fiable.",
-                "hasGLN": "J'ai un numéro GLN"
-            },
-            "buttons": {
-                "back": "Retour",
-                "sendCode": "Envoyer le Code",
-                "validate": "Valider",
-                "contactAndFinish": "Contacter et Terminer",
-                "verifying": "Vérification...",
-                "completeAccount": "Compléter le Compte",
-                "nextStep": "Étape Suivante"
-            }
-        }
+      "overview": "Aperçu",
+      "profile": "Profil",
+      "contracts": "Contrats",
+      "messages": "Messages",
+      "calendar": "Calendrier",
+      "marketplace": "Marché",
+      "settings": "Paramètres",
+      "incompleteProfile": "Votre profil est incomplet",
+      "completeProfileFirst": "Veuillez d'abord compléter votre profil",
+      "organization": "Organization"
     },
-    "userMenu": {
-        "profile": "Mon Profil",
-        "settings": "Paramètres",
-        "language": "Langue",
-        "logout": "Se Déconnecter",
-        "user": "Utilisateur"
+    "header": {
+      "profile": {
+        "title": "Profil"
+      },
+      "search": "Rechercher...",
+      "createBusiness": "Créer une entreprise",
+      "createBusinessDesc": "Configurez votre profil d'établissement",
+      "createProfessional": "Créer un profil professionnel",
+      "createProfessionalDesc": "Passer à un compte personnel",
+      "resetProfile": "Réinitialiser le profil",
+      "resetProfileTitle": "Réinitialiser le profil",
+      "resetProfileMessage": "Êtes-vous sûr de vouloir réinitialiser votre profil ? Cela supprimera toutes vos données et remettra votre compte à l'état initial d'intégration. Cette action ne peut pas être annulée.",
+      "resetConfirm": "Réinitialiser le profil",
+      "profileResetSuccess": "Profil réinitialisé avec succès",
+      "profileResetError": "Échec de la réinitialisation du profil"
+    },
+    "loading": "Chargement des données du tableau de bord...",
+    "error": "Erreur lors du chargement des données du tableau de bord",
+    "completeProfile": {
+      "completeProfileTitle": "Complétez Votre Profil",
+      "completeProfileDescription": "Bienvenue sur InteriMed ! Pour accéder à toutes les fonctionnalités de la plateforme, veuillez d'abord compléter votre profil.",
+      "completeProfileButton": "Je comprends, créer mon profil"
+    },
+    "overview": {
+      "title": "Bienvenue sur InteriMed !",
+      "welcome": "Bonjour",
+      "welcomeTitle": "Bienvenue sur InteriMed !",
+      "totalContracts": "Total des Contrats",
+      "activeHours": "Heures Actives",
+      "earnings": "Revenus",
+      "upcomingJobs": "Emplois à Venir",
+      "recentActivity": "Activité Récente",
+      "noRecentActivity": "Aucune activité récente à afficher"
+    },
+    "onboarding": {
+      "step1": {
+        "title": "Considérations Légales",
+        "facilityLegalNotice": "Avis Légal Établissement/Chaîne",
+        "facilityLegalText1": "En tant que représentant d'un établissement, vous êtes responsable de garantir que toutes les données fournies sont exactes et que vous avez l'autorité d'agir au nom de l'organisation.",
+        "facilityLegalText2": "Les lois suisses sur le travail concernant les heures de travail maximales (LTr) et les périodes de repos doivent être strictement respectées lors de la planification des quarts de travail. Les employeurs partagent la responsabilité des violations du droit du travail s'ils sont au courant d'un emploi secondaire d'un travailleur.",
+        "facilityLegalText3": "En continuant, vous acceptez nos Conditions Générales et accords de traitement des données spécifiquement adaptés aux établissements de santé en Suisse.",
+        "professionalLegalNotice": "Avis Légal Professionnel/Travailleur",
+        "professionalLegalText1": "La Loi sur le Travail Suisse fixe un maximum strict de 50 heures par semaine. Si vous travaillez à 100% (42h), prendre des quarts supplémentaires peut être illégal sans autorisation préalable.",
+        "professionalLegalText2": "Le Devoir de Loyauté (Art. 321a CO) vous oblige à obtenir une permission écrite de votre employeur principal pour travailler pour un concurrent.",
+        "professionalLegalText3": "Vous devez alterner les périodes de repos : 11 heures consécutives de repos sont requises entre les quarts de travail. Travailler pendant les congés payés (vacances) est légalement restreint à des fins de récupération.",
+        "professionalLegalText4": "En continuant, vous reconnaissez que vous êtes seul responsable de la gestion de vos heures de travail auprès de différents employeurs.",
+        "agreementStatus": "Statut de l'Accord",
+        "areYouEmployed": "Êtes-vous Employé",
+        "areYouEmployedDescription": "Cela peut être modifié plus tard.",
+        "termsAcceptance": "Acceptation des Conditions",
+        "termsAcceptanceDescription": "Confirmez que vous acceptez ces conditions légales.",
+        "note": "Note : Votre sélection ici détermine le cadre juridique qui s'appliquera à votre compte et à la gestion des quarts de travail."
+      },
+      "step2": {
+        "title": "Choisissez Votre Parcours",
+        "description": "Définissez votre rôle pour personnaliser votre expérience MediShift.",
+        "professional": "Professionnel",
+        "professionalDescription": "Trouvez des quarts médicaux dans des établissements de qualité près de chez vous.",
+        "facility": "Établissement",
+        "facilityDescription": "Recrutez des talents de santé qualifiés et gérez facilement vos quarts de travail.",
+        "organization": "Organisation",
+        "organizationDescription": "Gestion centralisée pour plusieurs cliniques et chaînes de soins de santé."
+      },
+      "step3": {
+        "chain": {
+          "title": "Configuration de l'Organisation",
+          "description": "L'accès exécutif nécessite une vérification manuelle par notre équipe de sécurité.",
+          "phonePrefix": "Préfixe Téléphonique",
+          "phoneNumber": "Numéro de Téléphone",
+          "phoneNumberPlaceholder": "079 000 00 00",
+          "messageToSupport": "Message au Support",
+          "messagePlaceholder": "Veuillez décrire votre organisation (nombre de cliniques, emplacements)..."
+        }
+      },
+      "step4": {
+        "title": "Vérification d'Identité",
+        "description": "Aidez-nous à maintenir un environnement médical sécurisé et fiable.",
+        "hasGLN": "J'ai un numéro GLN"
+      },
+      "buttons": {
+        "back": "Retour",
+        "sendCode": "Envoyer le Code",
+        "validate": "Valider",
+        "contactAndFinish": "Contacter et Terminer",
+        "verifying": "Vérification...",
+        "completeAccount": "Compléter le Compte",
+        "nextStep": "Étape Suivante"
+      },
+      "company_gln": {
+        "text1": "Text1",
+        "text2": "Text2"
+      },
+      "professional_gln": {
+        "text1": "Text1",
+        "text2": "Text2",
+        "text3": "Text3",
+        "text_new": "Numéro professionnel requis pour les professionnels de santé certifiés en Suisse (pharmaciens, dentistes, médecins, etc.). Activez si vous avez votre propre numéro GLN."
+      }
     }
+  },
+  "userMenu": {
+    "profile": "Mon Profil",
+    "settings": "Paramètres",
+    "language": "Langue",
+    "logout": "Se Déconnecter",
+    "user": "Utilisateur"
+  }
 }

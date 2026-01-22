@@ -80,7 +80,6 @@
     "title": "Catégorie"
   },
   "clearFilter": "Effacer le Filtre",
-  
   "backToBlog": "Retour au Blog",
   "postNotFound": "Article non trouvé",
   "postNotFoundDescription": "L'article que vous recherchez n'existe pas ou a été déplacé.",
@@ -89,5 +88,6 @@
   "shareThisPost": "Partager cet article",
   "aboutAuthor": "À propos de l'auteur",
   "relatedPosts": "Articles connexes",
-  "loading": "Chargement..."
+  "loading": "Chargement...",
+  "ctaDescription": "Cta Description"
 }

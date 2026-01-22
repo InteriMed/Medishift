@@ -1,10 +1,11 @@
 // FILE: /src/pages/dashboard/profile/professionals/components/BillingInformation.js
 // VERSION: Config-Driven
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { get } from 'lodash';
 import classNames from 'classnames';
+import { FiEye, FiShield } from 'react-icons/fi';
 
 // --- Import Base Components (Adjust Paths) ---
 import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxField';
@@ -13,6 +14,7 @@ import DropdownField from '../../../../../components/BoxedInputFields/Dropdown-F
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import Button from '../../../../../components/BoxedInputFields/Button';
+import BankingAccessModal from '../../components/BankingAccessModal';
 import styles from '../../Profile.module.css'; // Use CSS module instead of regular CSS
 import useAutoSave from '../../../../hooks/useAutoSave';
 
@@ -28,15 +30,63 @@ const BillingInformation = ({
   config,
   errors,
   isSubmitting,
-  onInputChange, // Use this for all updates
+  onInputChange,
   onSaveAndContinue,
   onSave,
   onCancel,
   getNestedValue,
+  validateCurrentTabData,
+  onTabCompleted,
+  isTutorialActive
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
+  const [showBankingAccessModal, setShowBankingAccessModal] = useState(false);
+  const [hasBankingAccess, setHasBankingAccess] = useState(false);
 
   const fieldsToRender = useMemo(() => config?.fields?.billingInformation || [], [config]);
+
+  const checkBankingAccess = useCallback(() => {
+    const accessExpiry = localStorage.getItem('bankingAccessGranted');
+    if (!accessExpiry) return false;
+    
+    const expiryTime = parseInt(accessExpiry, 10);
+    if (Date.now() > expiryTime) {
+      localStorage.removeItem('bankingAccessGranted');
+      return false;
+    }
+    return true;
+  }, []);
+
+  useEffect(() => {
+    setHasBankingAccess(checkBankingAccess());
+    
+    const interval = setInterval(() => {
+      const stillHasAccess = checkBankingAccess();
+      if (hasBankingAccess && !stillHasAccess) {
+        setHasBankingAccess(false);
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [checkBankingAccess, hasBankingAccess]);
+
+  const handleBankingAccessSuccess = () => {
+    setHasBankingAccess(true);
+    setShowBankingAccessModal(false);
+  };
+
+  const handleUnlockBanking = () => {
+    setShowBankingAccessModal(true);
+  };
+
+  const getMaskedValue = (value, fieldName) => {
+    if (!value) return '';
+    
+    if (fieldName.includes('iban')) {
+      return '•••• •••• •••• ••••';
+    }
+    return '•'.repeat(Math.min(value.length, 20));
+  };
 
   useAutoSave({
     formData,
@@ -44,7 +94,11 @@ const BillingInformation = ({
     activeTab: 'facilityLegalBilling',
     onInputChange,
     onSave,
-    getNestedValue
+    getNestedValue,
+    validateCurrentTabData,
+    onTabCompleted,
+    isTutorialActive,
+    disableLocalStorage: true
   });
 
   const getDropdownOptions = useCallback((optionsKey) => {
@@ -104,7 +158,11 @@ const BillingInformation = ({
           return null;
       }
 
-      const value = getNestedValue(formData, name);
+      const rawValue = getNestedValue(formData, name);
+      const isBankingField = fieldConfig.group === 'banking';
+      const shouldMaskValue = isBankingField && !hasBankingAccess;
+      
+      const value = shouldMaskValue ? getMaskedValue(rawValue, name) : rawValue;
       const error = getNestedValue(errors, name);
       const label = t(labelKey, name);
 
@@ -151,7 +209,7 @@ const BillingInformation = ({
           case 'text':
           case 'number':
           default:
-              return <InputField {...commonProps} name={name} type={type === 'number' ? 'number' : 'text'} value={value || ''} onChange={(e) => onInputChange(name, e.target.value)} min={type === 'number' ? restConfig.min : undefined} max={type === 'number' ? restConfig.max : undefined} />;
+              return <InputField {...commonProps} name={name} type={type === 'number' ? 'number' : 'text'} value={value || ''} onChange={(e) => onInputChange(name, e.target.value)} min={type === 'number' ? restConfig.min : undefined} max={type === 'number' ? restConfig.max : undefined} disabled={shouldMaskValue} readOnly={shouldMaskValue} className={shouldMaskValue ? 'banking-masked' : ''} />;
       }
   };
 
@@ -186,7 +244,25 @@ const BillingInformation = ({
       )}
       {groupedFields.banking && (
           <>
-            <h3 className={styles.subsectionTitle}>{t('billingInformation.bankingInfo')}</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={styles.subsectionTitle}>{t('billingInformation.bankingInfo')}</h3>
+              {!hasBankingAccess && (
+                <Button
+                  variant="outline"
+                  onClick={handleUnlockBanking}
+                  className="flex items-center gap-2"
+                >
+                  <FiEye className="w-4 h-4" />
+                  {t('billingInformation.viewBankingData', 'View Data')}
+                </Button>
+              )}
+              {hasBankingAccess && (
+                <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                  <FiShield className="w-4 h-4" />
+                  {t('billingInformation.bankingAccessGranted', 'Access granted')}
+                </div>
+              )}
+            </div>
             {groupedFields.banking.map(renderField)}
             <div className={styles.horizontalLine}></div>
           </>
@@ -212,6 +288,13 @@ const BillingInformation = ({
       )}
       {/* Add rendering for other groups like 'family', 'spouse' if defined */}
 
+      <BankingAccessModal
+        isOpen={showBankingAccessModal}
+        onClose={() => setShowBankingAccessModal(false)}
+        onSuccess={handleBankingAccessSuccess}
+        userEmail={getNestedValue(formData, 'billingContact.email') || getNestedValue(formData, 'mainEmail')}
+        userPhone={getNestedValue(formData, 'billingContact.phone') || getNestedValue(formData, 'legalRepresentative.phone')}
+      />
     </div>
   );
 };

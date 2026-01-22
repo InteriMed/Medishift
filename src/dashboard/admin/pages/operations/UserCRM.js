@@ -5,8 +5,8 @@ import { db } from '../../../../services/firebase';
 import { Search, User, Building2, Eye, X, Filter, Check, Edit2, Save, Calendar, Users, FileText, Plus, ArrowLeft, ShieldCheck, Stethoscope, Trash2, LogOut } from 'lucide-react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { hasPermission, PERMISSIONS } from '../../utils/rbac';
-import { impersonateUser } from '../../../../utils/adminUtils';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../../../components/BoxedInputFields/Button';
 import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
@@ -15,7 +15,8 @@ import '../../../../styles/variables.css';
 
 const UserCRM = () => {
   const { t } = useTranslation(['admin']);
-  const { userProfile } = useAuth();
+  const { userProfile, startImpersonation } = useAuth();
+  const navigate = useNavigate();
 
   // Filter State (Inputs)
   const [filters, setFilters] = useState({
@@ -340,18 +341,37 @@ const UserCRM = () => {
 
   const handleImpersonate = async (userId) => {
     if (!canImpersonate) return;
+    
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) {
+      alert('User not found');
+      return;
+    }
+
+    const confirmMessage = `You are about to enter Ghost Mode and view the platform as ${targetUser.firstName || ''} ${targetUser.lastName || ''} (${targetUser.email || userId}).\n\nAll actions will be logged and attributed to you as the admin.\n\nDo you want to continue?`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
     try {
-      const impersonatedUser = users.find(u => u.id === userId);
-      await impersonateUser(userId, userProfile.uid);
-      logAdminAction({
+      await startImpersonation(userId);
+      
+      await logAdminAction({
         eventType: ADMIN_AUDIT_EVENTS.USER_IMPERSONATED,
-        action: `Impersonated user: ${userId}`,
-        resource: { type: 'user', id: userId, name: 'Impersonated' },
-        details: { impersonatedUserId: userId }
+        action: `Started impersonation session for user ${targetUser.email || userId}`,
+        resource: { type: 'user', id: userId, name: targetUser.displayName || targetUser.email },
+        details: { 
+          impersonatedUserId: userId,
+          impersonatedUserEmail: targetUser.email,
+          sessionStarted: new Date().toISOString()
+        }
       });
+
+      navigate('/dashboard');
     } catch (error) {
-      console.error('Error impersonating user:', error);
-      alert('Error impersonating user: ' + error.message);
+      console.error('Error starting impersonation:', error);
+      alert('Error starting impersonation: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -415,15 +435,64 @@ const UserCRM = () => {
       const facilityData = {
         role: 'facility',
         profileType: 'pharmacy',
-        facilityName: newFacilityName,
-        facilityProfileId: newFacilityId,
-        glnNumber: 'ADMIN_OVERRIDE',
-        identityLegal: { legalCompanyName: newFacilityName },
-        billingInformation: { legalName: newFacilityName, verificationStatus: 'verified' },
-        contactPoints: {
-          generalEmail: selectedUser.email || '',
-          generalPhone: selectedUser.phoneNumber || ''
+        facilityDetails: {
+          name: newFacilityName,
+          additionalName: null,
+          operatingAddress: {
+            street: selectedUser.address?.street || '',
+            city: selectedUser.address?.city || '',
+            postalCode: selectedUser.address?.zipCode || '',
+            canton: selectedUser.address?.canton || '',
+            country: 'CH'
+          },
+          glnCompany: 'ADMIN_OVERRIDE',
+          responsiblePersons: []
         },
+
+        responsiblePersonIdentity: {
+          firstName: selectedUser.firstName || '',
+          lastName: selectedUser.lastName || '',
+          dateOfBirth: selectedUser.birthDate || null,
+          nationality: null,
+          gender: null,
+          documentType: null,
+          documentNumber: null,
+          documentExpiry: null,
+          residentialAddress: selectedUser.address ? {
+            street: selectedUser.address.street || '',
+            city: selectedUser.address.city || '',
+            postalCode: selectedUser.address.zipCode || '',
+            canton: selectedUser.address.canton || '',
+            country: 'CH'
+          } : null
+        },
+
+        identityLegal: {
+          legalCompanyName: newFacilityName,
+          uidNumber: null
+        },
+
+        billingInformation: {
+          legalName: newFacilityName,
+          uidNumber: null,
+          billingAddress: {
+            street: selectedUser.address?.street || '',
+            city: selectedUser.address?.city || '',
+            postalCode: selectedUser.address?.zipCode || '',
+            canton: selectedUser.address?.canton || '',
+            country: selectedUser.address?.country || 'CH'
+          },
+          invoiceEmail: selectedUser.email || '',
+          internalRef: '',
+          verificationStatus: 'verified'
+        },
+
+        contact: {
+          primaryEmail: selectedUser.email || '',
+          primaryPhone: selectedUser.phoneNumber || '',
+          primaryPhonePrefix: '' // Could parse if needed but empty is safe
+        },
+
         verification: {
           identityStatus: 'verified',
           billingStatus: 'verified',
@@ -432,19 +501,27 @@ const UserCRM = () => {
           verificationDocumentsProvided: [{
             documentId: `admin_override_${Date.now()}`,
             type: 'admin_override',
-            fileName: 'Created by Admin',
+            fileName: 'Created by Admin CRM',
             uploadedAt: new Date().toISOString(),
             status: 'verified',
             verificationStatus: 'verified'
           }]
         },
+
         admins: [userId],
         employees: [{
           uid: userId,
           rights: 'admin'
         }],
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+
+        // Legacy/Flat fields for backward compat or easy search
+        facilityName: newFacilityName,
+        facilityProfileId: newFacilityId,
+        glnNumber: 'ADMIN_OVERRIDE',
+        GLN_certified: 'ADMIN_OVERRIDE',
+        verificationStatus: 'verified'
       };
       await setDoc(doc(db, 'facilityProfiles', newFacilityId), facilityData);
       await updateDoc(doc(db, 'users', userId), {

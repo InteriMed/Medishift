@@ -93,6 +93,9 @@
           "Les présentes CGU sont soumises au Droit Suisse. Pour tout litige découlant de l'interprétation ou de l'exécution des présentes, le for exclusif est établi aux tribunaux compétents du canton de Genève, sous réserve d'un recours au Tribunal Fédéral."
         ]
       }
-    ]
+    ],
+    "tableOfContents": {
+      "title": "Title"
+    }
   }
 }

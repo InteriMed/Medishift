@@ -1,32 +1,88 @@
 {
-    "tabs": {
-        "personal": "Persönliche Nachrichten",
-        "personalDesc": "Nachrichten zu Ihrem beruflichen Profil",
-        "facility": "Einrichtungs-Nachrichten",
-        "facilityDesc": "Nachrichten zum Einrichtungsbetrieb"
-    },
-    "noConversations": "Keine Konversationen",
-    "noConversationsHint": "Starten Sie Konversationen über Marktplatz-Interaktionen",
-    "noFacilityConversationsHint": "Einrichtungsbezogene Konversationen werden hier angezeigt",
-    "selectConversation": "Konversation auswählen",
-    "selectConversationPrompt": "Wählen Sie eine Konversation aus der Liste, um Nachrichten anzuzeigen",
-    "facilityMessagesInfo": "Diese Nachrichten beziehen sich auf den Einrichtungsbetrieb und die Teamverwaltung",
-    "conversation": {
-        "typing": "Schreibt...",
-        "online": "Online",
-        "offline": "Offline",
-        "lastSeen": "Zuletzt gesehen",
-        "sendMessage": "Nachricht senden",
-        "messagePlaceholder": "Ihre Nachricht eingeben..."
-    },
-    "errors": {
-        "loadingConversations": "Konversationen konnten nicht geladen werden",
-        "loadingMessages": "Nachrichten konnten nicht geladen werden",
-        "sendingMessage": "Nachricht konnte nicht gesendet werden"
-    },
-    "actions": {
-        "markAsRead": "Als gelesen markieren",
-        "deleteConversation": "Konversation löschen",
-        "blockUser": "Benutzer blockieren"
+  "tabs": {
+    "personal": "Persönliche Nachrichten",
+    "personalDesc": "Nachrichten zu Ihrem beruflichen Profil",
+    "facility": "Einrichtungs-Nachrichten",
+    "facilityDesc": "Nachrichten zum Einrichtungsbetrieb"
+  },
+  "noConversations": "Keine Konversationen",
+  "noConversationsHint": "Starten Sie Konversationen über Marktplatz-Interaktionen",
+  "noFacilityConversationsHint": "Einrichtungsbezogene Konversationen werden hier angezeigt",
+  "selectConversation": {
+    "title": "Konversation auswählen",
+    "subtitle": "Wählen Sie eine Konversation aus der Liste, um Nachrichten anzuzeigen"
+  },
+  "facilityMessagesInfo": "Diese Nachrichten beziehen sich auf den Einrichtungsbetrieb und die Teamverwaltung",
+  "conversation": {
+    "typing": "Schreibt...",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Zuletzt gesehen",
+    "sendMessage": "Nachricht senden",
+    "messagePlaceholder": "Ihre Nachricht eingeben..."
+  },
+  "errors": {
+    "loadingConversations": "Konversationen konnten nicht geladen werden",
+    "loadingMessages": "Nachrichten konnten nicht geladen werden",
+    "sendingMessage": "Nachricht konnte nicht gesendet werden",
+    "title": "Title",
+    "description": "Description",
+    "retry": "Retry"
+  },
+  "actions": {
+    "markAsRead": "Als gelesen markieren",
+    "deleteConversation": "Konversation löschen",
+    "blockUser": "Benutzer blockieren"
+  },
+  "tutorial": {
+    "doctorName": "Doctor Name",
+    "doctorMessage": "Doctor Message",
+    "hospitalName": "Hospital Name",
+    "hospitalMessage": "Hospital Message"
+  },
+  "searchPlaceholder": "Search Placeholder",
+  "filters": {
+    "all": "All",
+    "unreadOnly": "Unread Only",
+    "date": {
+      "all": "All",
+      "lastWeek": "Last Week",
+      "lastMonth": "Last Month",
+      "last3Months": "Last3 Months",
+      "lastYear": "Last Year"
     }
+  },
+  "unread": "Unread",
+  "empty": {
+    "noMessagesFound": "No Messages Found",
+    "noConversationsYet": "No Conversations Yet",
+    "adjustFilters": "Adjust Filters",
+    "startConversation": "Start Conversation",
+    "noMessagesInChat": "No Messages In Chat",
+    "startChatting": "Start Chatting",
+    "noConversationsFound": "No Conversations Found"
+  },
+  "status": {
+    "you": "You",
+    "unknownUser": "Unknown User",
+    "sending": "Sending"
+  },
+  "loading": "Loading",
+  "context": {
+    "facilityLabel": "Facility Label",
+    "facility": "Facility",
+    "contract": "Contract",
+    "personal": "Personal"
+  },
+  "placeholders": {
+    "typeMessage": "Type Message",
+    "unknown": "Unknown",
+    "noMessages": "No Messages"
+  },
+  "time": {
+    "now": "Now",
+    "minutes": "Minutes",
+    "hours": "Hours",
+    "days": "Days"
+  }
 }

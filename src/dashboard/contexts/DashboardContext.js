@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNetwork } from '../../contexts/NetworkContext';
 import { db } from '../../services/firebase';
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot, updateDoc } from 'firebase/firestore';
 import Cookies from 'js-cookie';
@@ -14,6 +15,8 @@ import {
   WORKSPACE_TYPES
 } from '../../utils/sessionAuth';
 import { buildDashboardUrl, getDefaultRouteForWorkspace } from '../utils/pathUtils';
+import Dialog from '../../components/Dialog/Dialog';
+import Button from '../../components/BoxedInputFields/Button';
 
 const DashboardContext = createContext(null);
 
@@ -24,6 +27,8 @@ const COOKIE_EXPIRY_DAYS = 7; // Set cookies to expire after 7 days
 
 export const DashboardProvider = ({ children }) => {
   const { currentUser } = useAuth();
+  const networkContext = useNetwork();
+  const isOnline = networkContext?.isOnline ?? navigator.onLine;
   const navigate = useNavigate();
   const location = useLocation();
   const [dashboardData] = useState(null);
@@ -40,6 +45,10 @@ export const DashboardProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
 
   const [nextIncompleteProfileSection, setNextIncompleteProfileSection] = useState(null);
+
+  const [showFacilityNotFoundDialog, setShowFacilityNotFoundDialog] = useState(false);
+  const [facilityNotFoundWorkspace, setFacilityNotFoundWorkspace] = useState(null);
+  const [isLeavingFacility, setIsLeavingFacility] = useState(false);
 
   // Debug logging - Fixed to prevent infinite loops
   // Debug logging
@@ -82,8 +91,11 @@ export const DashboardProvider = ({ children }) => {
     if (!currentUser) return false;
 
     try {
+      // Use profile collection instead of users
+      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? 'facilityProfiles' : 'professionalProfiles';
+
       // Update in database
-      await updateDoc(doc(db, 'users', currentUser.uid), {
+      await updateDoc(doc(db, collectionName, currentUser.uid), {
         tutorialPassed: isComplete,
         updatedAt: serverTimestamp()
       });
@@ -106,8 +118,11 @@ export const DashboardProvider = ({ children }) => {
     if (!currentUser) return false;
 
     try {
+      // Use profile collection instead of users
+      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? 'facilityProfiles' : 'professionalProfiles';
+
       // Update in database
-      await updateDoc(doc(db, 'users', currentUser.uid), {
+      await updateDoc(doc(db, collectionName, currentUser.uid), {
         isProfessionalProfileComplete: isComplete,
         updatedAt: serverTimestamp()
       });
@@ -183,38 +198,39 @@ export const DashboardProvider = ({ children }) => {
     if (!currentUser) return;
 
     try {
-
-
       const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+
+      // Determine profile collection
+      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? 'facilityProfiles' : 'professionalProfiles';
+      const profileDoc = await getDoc(doc(db, collectionName, currentUser.uid));
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        const profileData = profileDoc.exists() ? profileDoc.data() : {};
 
-        // Check profile completion status
-        const isProfessionalProfileComplete = userData.hasOwnProperty('isProfessionalProfileComplete')
-          ? userData.isProfessionalProfileComplete
-          : checkProfileCompleteness(userData);
+        // Combine data, prioritizing profileData for tutorial and profile completion
+        const combinedData = { ...userData, ...profileData, uid: currentUser.uid };
 
-        // Check tutorial completion status
-        const isTutorialPassed = userData.hasOwnProperty('tutorialPassed')
-          ? userData.tutorialPassed
+        const isProfileComplete = combinedData.hasOwnProperty('isProfessionalProfileComplete')
+          ? combinedData.isProfessionalProfileComplete
+          : checkProfileCompleteness(combinedData);
+
+        const isTutorialPassed = combinedData.hasOwnProperty('tutorialPassed')
+          ? combinedData.tutorialPassed
           : false;
 
-        setUser(userData);
-        setUserProfile(userData);
-        setProfileComplete(isProfessionalProfileComplete);
+        const userWithId = { ...combinedData, uid: currentUser.uid };
+        setUser(userWithId);
+        setUserProfile(userWithId);
+        setProfileComplete(isProfileComplete);
         setTutorialPassed(isTutorialPassed);
 
-        // Update cookies
-        setCookieValues(currentUser.uid, isProfessionalProfileComplete, isTutorialPassed);
+        setCookieValues(currentUser.uid, isProfileComplete, isTutorialPassed);
 
-
-
-        return userData;
+        return userWithId;
       }
     } catch (error) {
       console.error('Error refreshing user data:', error);
-
     }
 
     return null;
@@ -223,8 +239,6 @@ export const DashboardProvider = ({ children }) => {
   // Fetch user data and workspaces when currentUser changes
   useEffect(() => {
     const fetchUserData = async () => {
-      // console.log("[DashboardContext] Fetching user data...");
-
       if (!currentUser) {
         if (user) {
           setUser(null);
@@ -239,8 +253,6 @@ export const DashboardProvider = ({ children }) => {
         return;
       }
 
-      // Optimization: if we already have the user data for this UID AND valid profile flags, don't refetch
-      // We must allow it to run if flags are undefined (e.g. from onSnapshot initialization)
       if (user && user.uid === currentUser.uid && typeof user.hasProfessionalProfile !== 'undefined') {
         setIsLoading(false);
         return;
@@ -248,17 +260,9 @@ export const DashboardProvider = ({ children }) => {
 
       let fetchedUser = null;
 
-
       try {
         setIsLoading(true);
 
-        // First check if values exist in cookies to avoid database fetch
-
-        // console.log("[DashboardContext] Cookie values:", cookieValues);
-
-        // console.log(`Attempting to fetch user document for ID: ${currentUser.uid}`);
-        // Replace API call with direct Firestore access
-        // Add timeout to prevent infinite loading
         const TIMEOUT_MS = 15000;
         const fetchUserDoc = getDoc(doc(db, 'users', currentUser.uid));
         const timeoutPromise = new Promise((_, reject) =>
@@ -268,10 +272,6 @@ export const DashboardProvider = ({ children }) => {
         const userDoc = await Promise.race([fetchUserDoc, timeoutPromise]);
 
         if (!userDoc.exists()) {
-          console.log("[DashboardContext] User document does not exist, creating new user document");
-
-
-          // Create a basic user document using data from Auth
           const basicUserData = {
             uid: currentUser.uid,
             email: currentUser.email,
@@ -281,195 +281,136 @@ export const DashboardProvider = ({ children }) => {
             lastName: currentUser.displayName ? currentUser.displayName.split(' ').slice(1).join(' ') : '',
             phoneNumber: currentUser.phoneNumber || '',
             photoURL: currentUser.photoURL || '',
-            role: 'professional', // Default role
-            isProfessionalProfileComplete: false, // Add the new fields
+            role: 'professional',
+            isProfessionalProfileComplete: false,
             tutorialPassed: false,
             createdAt: new Date(),
             updatedAt: new Date()
           };
 
-          // Create the missing document
           await setDoc(doc(db, 'users', currentUser.uid), basicUserData);
-
-
-          // Set user state with basic data
           fetchedUser = basicUserData;
           setUser(basicUserData);
           setUserProfile(basicUserData);
           setProfileComplete(false);
           setTutorialPassed(false);
-
-          // Update cookies
           setCookieValues(currentUser.uid, false, false);
-
-
         } else {
           const userData = userDoc.data();
+          const profDocRef = doc(db, 'professionalProfiles', currentUser.uid);
+          const facDocRef = doc(db, 'facilityProfiles', currentUser.uid);
 
+          const [profDoc, facDoc] = await Promise.all([
+            getDoc(profDocRef),
+            getDoc(facDocRef)
+          ]);
 
-          // console.log("[DashboardContext] User data fetched:", userData);
+          const profDocData = profDoc.exists() ? profDoc.data() : {};
+          const facDocData = facDoc.exists() ? facDoc.data() : {};
+          const profileData = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? facDocData : profDocData;
 
-          // Check profile completion status - use existing field or compute if not available
-          const isProfessionalProfileComplete = userData.hasOwnProperty('isProfessionalProfileComplete')
-            ? userData.isProfessionalProfileComplete
-            : checkProfileCompleteness(userData);
+          const isProfileComplete = profileData.hasOwnProperty('isProfessionalProfileComplete')
+            ? profileData.isProfessionalProfileComplete
+            : checkProfileCompleteness(profileData);
 
-          // Check tutorial completion status
-          const isTutorialPassed = userData.hasOwnProperty('tutorialPassed')
-            ? userData.tutorialPassed
+          const isTutorialPassed = profileData.hasOwnProperty('tutorialPassed')
+            ? profileData.tutorialPassed
             : false;
 
-          // console.log("[DashboardContext] Profile completed status:", isProfessionalProfileComplete);
-          // console.log("[DashboardContext] Tutorial passed status:", isTutorialPassed);
-
-          // If the database doesn't have these fields yet, update them
-          if (!userData.hasOwnProperty('isProfessionalProfileComplete') || !userData.hasOwnProperty('tutorialPassed')) {
-            await updateDoc(doc(db, 'users', currentUser.uid), {
-              isProfessionalProfileComplete: isProfessionalProfileComplete,
-              tutorialPassed: isTutorialPassed,
-              updatedAt: serverTimestamp()
-            });
-            console.log("[DashboardContext] Updated user document with isProfessionalProfileComplete and tutorialPassed fields");
-          }
-
-          // Ensure role field exists (critical for sessionAuth)
           if (!userData.role) {
-            console.warn("[DashboardContext] User missing 'role' field, backfilling default 'professional'");
             await updateDoc(doc(db, 'users', currentUser.uid), {
               role: 'professional',
               updatedAt: serverTimestamp()
             });
-            // Update local object to reflect change immediately
             userData.role = 'professional';
           }
 
-          // Ensure uid is included in the user object
-          const userWithId = { ...userData, uid: currentUser.uid };
+          const userWithId = {
+            ...userData,
+            ...profileData,
+            uid: currentUser.uid,
+            hasProfessionalProfile: profDoc.exists(),
+            hasFacilityProfile: facDoc.exists()
+          };
+
           fetchedUser = userWithId;
           setUser(userWithId);
           setUserProfile(userWithId);
-          setProfileComplete(isProfessionalProfileComplete);
+          setProfileComplete(isProfileComplete);
           setTutorialPassed(isTutorialPassed);
-
-          // Update cookies
-          setCookieValues(currentUser.uid, isProfessionalProfileComplete, isTutorialPassed);
-
-
+          setCookieValues(currentUser.uid, isProfileComplete, isTutorialPassed);
         }
-
-        // We could also get workspaces from Firestore
-        // For now, keep the example data
-        // Workspaces are initialized in useEffect based on user roles
-        // This prevents race conditions and ensures correct session handling
       } catch (error) {
-        // Don't show full error UI for offline/network issues, just log warning
         if (error.message === 'Request timed out') {
-          console.warn('[DashboardContext] User data fetch timed out - using minimal state/cookie values');
-        } else if (error.code === 'unavailable' || (error.message && error.message.includes('offline'))) {
-          console.warn('[DashboardContext] User data fetch skipped - client is offline');
+          console.warn('[DashboardContext] User data fetch timed out');
         } else {
-          console.error('Error fetching user data from Firestore:', error);
-          // Only set error if we really have no user data to show
-          if (!user) {
-            setError(`Error fetching user data: ${error.message}`);
-          }
+          console.error('Error fetching user data:', error);
+          if (!user) setError(`Error fetching user data: ${error.message}`);
         }
-
       }
 
-      // This handles cases where users collection might be out of sync or ambiguous
-      try {
-        const profDocRef = doc(db, 'professionalProfiles', currentUser.uid);
-        const facDocRef = doc(db, 'facilityProfiles', currentUser.uid);
+      const hasProfessionalProfile = fetchedUser?.hasProfessionalProfile;
+      const hasFacilityProfile = fetchedUser?.hasFacilityProfile;
 
-        const [profDoc, facDoc] = await Promise.all([
-          getDoc(profDocRef),
-          getDoc(facDocRef)
-        ]);
-
-        const hasProfessionalProfile = profDoc.exists();
-        const hasFacilityProfile = facDoc.exists();
-
-        // Augment user data with profile existence flags
-        if (fetchedUser) {
-          setUser(prev => ({
-            ...prev,
-            hasProfessionalProfile,
-            hasFacilityProfile
-          }));
-          fetchedUser.hasProfessionalProfile = hasProfessionalProfile;
-          fetchedUser.hasFacilityProfile = hasFacilityProfile;
-        }
-
-        // CRITICAL: Check role mismatch against fetched data
-        if (hasFacilityProfile && (fetchedUser && (fetchedUser.role !== 'facility' && fetchedUser.role !== 'company'))) {
-          console.log("[DashboardContext] Detected Facility Profile but mismatched role. Correcting to 'facility'.");
-          if (fetchedUser) {
-            setUser(prev => ({ ...prev, role: 'facility', hasProfessionalProfile, hasFacilityProfile }));
-          }
-        } else if (hasProfessionalProfile && (fetchedUser && fetchedUser.role !== 'professional') && !hasFacilityProfile) {
-          console.log("[DashboardContext] Detected Professional Profile but mismatched role. Correcting to 'professional'.");
-          if (fetchedUser) {
-            setUser(prev => ({ ...prev, role: 'professional', hasProfessionalProfile, hasFacilityProfile }));
-          }
-        }
-      } catch (profileCheckError) {
-        console.error("[DashboardContext] Error checking profile existence:", profileCheckError);
+      if (hasFacilityProfile && (fetchedUser && (fetchedUser.role !== 'facility' && fetchedUser.role !== 'company'))) {
+        if (fetchedUser) setUser(prev => ({ ...prev, role: 'facility' }));
+      } else if (hasProfessionalProfile && (fetchedUser && fetchedUser.role !== 'professional') && !hasFacilityProfile) {
+        if (fetchedUser) setUser(prev => ({ ...prev, role: 'professional' }));
       }
-
       setIsLoading(false);
     };
 
     fetchUserData();
 
-    // Set up real-time listener for user document changes
+    let unsubscribeProfile = null;
+    let unsubscribeUser = null;
+
     if (currentUser) {
       const userDocRef = doc(db, 'users', currentUser.uid);
-      const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
+      unsubscribeUser = onSnapshot(userDocRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
           const userData = docSnapshot.data();
-
-          // Check if user has completed their profile
-          const isProfessionalProfileComplete = userData.hasOwnProperty('isProfessionalProfileComplete')
-            ? userData.isProfessionalProfileComplete
-            : checkProfileCompleteness(userData);
-
-          // Check if user has passed the tutorial
-          const isTutorialPassed = userData.hasOwnProperty('tutorialPassed')
-            ? userData.tutorialPassed
-            : false;
-
-          // Only update if status has changed
-          if (isProfessionalProfileComplete !== profileComplete || isTutorialPassed !== tutorialPassed) {
-            // console.log("Profile status changed - Profile Complete:", isProfessionalProfileComplete, "Tutorial Passed:", isTutorialPassed);
-            setProfileComplete(isProfessionalProfileComplete);
-            setTutorialPassed(isTutorialPassed);
-
-            // Update cookies
-            setCookieValues(currentUser.uid, isProfessionalProfileComplete, isTutorialPassed);
-          }
-
-          // Update user data in state, ensuring uid is included
           const userWithId = { ...userData, uid: docSnapshot.id };
-
-          // CRITICAL: Preserve runtime flags (profile existence) that are not in Firestore
-          // This prevents the snapshot listener from clobbering the flags set by fetchUserData
           setUser(prev => ({
             ...userWithId,
             hasProfessionalProfile: prev?.hasProfessionalProfile,
             hasFacilityProfile: prev?.hasFacilityProfile
           }));
-
           setUserProfile(userWithId);
         }
-      }, (error) => {
-        console.error("Error in user document listener:", error);
       });
 
-      // Clean up listener on unmount
-      return () => unsubscribe();
+      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? 'facilityProfiles' : 'professionalProfiles';
+      const profileDocRef = doc(db, collectionName, currentUser.uid);
+
+      unsubscribeProfile = onSnapshot(profileDocRef, (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const profileData = docSnapshot.data();
+          const isProfileComplete = profileData.hasOwnProperty('isProfessionalProfileComplete')
+            ? profileData.isProfessionalProfileComplete
+            : checkProfileCompleteness(profileData);
+          const isTutorialPassed = profileData.hasOwnProperty('tutorialPassed')
+            ? profileData.tutorialPassed
+            : false;
+
+          if (isProfileComplete !== profileComplete || isTutorialPassed !== tutorialPassed) {
+            setProfileComplete(isProfileComplete);
+            setTutorialPassed(isTutorialPassed);
+            setCookieValues(currentUser.uid, isProfileComplete, isTutorialPassed);
+          }
+
+          setUser(prev => ({ ...prev, ...profileData }));
+        }
+      }, (error) => {
+        console.debug("Profile document listener error (likely missing doc yet):", error.message);
+      });
+
+      return () => {
+        if (unsubscribeUser) unsubscribeUser();
+        if (unsubscribeProfile) unsubscribeProfile();
+      };
     }
-  }, [currentUser, profileComplete, tutorialPassed]);
+  }, [currentUser, profileComplete, tutorialPassed, selectedWorkspace]);
 
   useEffect(() => {
     if (user) {
@@ -501,7 +442,6 @@ export const DashboardProvider = ({ children }) => {
     // To be completed during development
   };
 
-  // Function to switch between workspaces
   const switchWorkspace = useCallback(async (workspace) => {
     if (!workspace || !workspace.id) {
       console.warn('Invalid workspace provided to switchWorkspace');
@@ -511,7 +451,33 @@ export const DashboardProvider = ({ children }) => {
     console.log('[DashboardContext] Switching to workspace:', workspace);
 
     try {
-      // Clear any existing workspace sessions
+      // STRICT: Verify profile document exists before allowing workspace access
+      if (workspace.type === WORKSPACE_TYPES.PERSONAL) {
+        if (user.hasProfessionalProfile !== true) {
+          console.warn(`[DashboardContext] Cannot switch to Personal workspace - no professional profile exists`);
+          const lang = window.location.pathname.split('/')[1] || 'fr';
+          navigate(`/${lang}/onboarding?type=professional`, { replace: true });
+          return;
+        }
+      } else if (workspace.type === WORKSPACE_TYPES.TEAM && isOnline) {
+        const facilityDoc = await getDoc(doc(db, 'facilityProfiles', workspace.facilityId));
+        if (!facilityDoc.exists()) {
+          console.warn(`[DashboardContext] Facility profile not found: ${workspace.facilityId}`);
+          setFacilityNotFoundWorkspace(workspace);
+          setShowFacilityNotFoundDialog(true);
+          return;
+        }
+
+        // Also verify user has facility profile if this is their own facility
+        if (workspace.facilityId === user.uid && user.hasFacilityProfile !== true) {
+          console.warn(`[DashboardContext] Cannot switch to Facility workspace - no facility profile exists`);
+          const lang = window.location.pathname.split('/')[1] || 'fr';
+          navigate(`/${lang}/onboarding?type=facility`, { replace: true });
+          return;
+        }
+      }
+
+      clearWorkspaceSession(WORKSPACE_TYPES.PERSONAL);
       if (selectedWorkspace) {
         if (selectedWorkspace.type === WORKSPACE_TYPES.PERSONAL) {
           clearWorkspaceSession(WORKSPACE_TYPES.PERSONAL);
@@ -522,7 +488,6 @@ export const DashboardProvider = ({ children }) => {
         }
       }
 
-      // Create new session for the selected workspace
       let sessionToken = null;
       if (workspace.type === WORKSPACE_TYPES.PERSONAL) {
         sessionToken = await createWorkspaceSession(user.uid, WORKSPACE_TYPES.PERSONAL, null, user);
@@ -532,33 +497,120 @@ export const DashboardProvider = ({ children }) => {
         sessionToken = await createWorkspaceSession(user.uid, WORKSPACE_TYPES.ADMIN, null, user);
       }
 
-      if (!sessionToken) {
-        console.error('[DashboardContext] Failed to create workspace session - Token is null');
-        // Don't leave the UI in a broken state, revert to personal if possible or just stop loading
-        setIsLoading(false);
+      if (!sessionToken && workspace.type === WORKSPACE_TYPES.TEAM && isOnline) {
+        console.warn('[DashboardContext] Failed to create workspace session - Facility may not exist');
+        setFacilityNotFoundWorkspace(workspace);
+        setShowFacilityNotFoundDialog(true);
         return;
       }
 
-      // Update local state
-      setSelectedWorkspace(workspace);
+      if (!sessionToken) {
+        console.warn('[DashboardContext] Failed to create workspace session - Token is null. Setting workspace anyway to prevent UI breakage.');
+      }
 
-      // Store workspace selection in cookie for persistence
+      setSelectedWorkspace(workspace);
       setWorkspaceCookie(workspace);
 
-      // Navigate to correct default route based on workspace type with workspace in URL
-      const defaultRoute = getDefaultRouteForWorkspace(workspace.type);
-      const routeWithWorkspace = buildDashboardUrl(defaultRoute.replace('/dashboard', ''), workspace.id);
-      navigate(routeWithWorkspace, { replace: true });
+      // Simply update the URL with the new workspace ID while preserving the current path
+      // This fulfills the user request to remove redirecting logic to default routes
+      const currentPath = location.pathname;
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set('workspace', workspace.id);
 
-      // Auto-reload to ensure clean state separation between workspaces
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      const targetUrl = `${currentPath}?${searchParams.toString()}${location.hash}`;
+      console.log('[DashboardContext] switchWorkspace: Updating URL workspace parameter:', targetUrl);
+
+      navigate(targetUrl, { replace: true });
+
+      // Only reload if we were previously in a different workspace type to clean up state
+      // but without changing the user's current route
+      const typeChanged = selectedWorkspace && selectedWorkspace.type !== workspace.type;
+      if (typeChanged) {
+        console.log('[DashboardContext] Workspace type changed, performing safe reload');
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+      }
 
     } catch (error) {
       console.error('[DashboardContext] Error switching workspace:', error);
+      if (workspace.type === WORKSPACE_TYPES.TEAM && isOnline) {
+        setFacilityNotFoundWorkspace(workspace);
+        setShowFacilityNotFoundDialog(true);
+      }
     }
-  }, [selectedWorkspace, user]);
+  }, [selectedWorkspace, user, isOnline, navigate]);
+
+  const handleLeaveFacility = useCallback(async () => {
+    if (!facilityNotFoundWorkspace || !currentUser?.uid) return;
+
+    setIsLeavingFacility(true);
+    try {
+      const facilityId = facilityNotFoundWorkspace.facilityId;
+      const userId = currentUser.uid;
+
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const updatedMemberships = (userData.facilityMemberships || []).filter(
+          m => m.facilityId !== facilityId && m.facilityProfileId !== facilityId
+        );
+        await updateDoc(userRef, {
+          facilityMemberships: updatedMemberships,
+          updatedAt: serverTimestamp()
+        });
+      }
+
+      const facilityRef = doc(db, 'facilityProfiles', facilityId);
+      const facilitySnap = await getDoc(facilityRef);
+      if (facilitySnap.exists()) {
+        const facilityData = facilitySnap.data();
+        const updatedEmployees = (facilityData.employees || []).filter(e => e.uid !== userId);
+        const updatedAdmins = (facilityData.admins || []).filter(a => a !== userId);
+        await updateDoc(facilityRef, {
+          employees: updatedEmployees,
+          admins: updatedAdmins,
+          updatedAt: serverTimestamp()
+        });
+      }
+
+      setShowFacilityNotFoundDialog(false);
+      setFacilityNotFoundWorkspace(null);
+
+      const updatedUserData = await refreshUserData();
+
+      if (updatedUserData) {
+        const updatedWorkspaces = getAvailableWorkspaces(updatedUserData);
+        setWorkspaces(updatedWorkspaces);
+
+        if (updatedWorkspaces.length > 0) {
+          const primaryWorkspace = updatedWorkspaces.find(w => {
+            if (updatedUserData.role === 'facility' || updatedUserData.role === 'company') {
+              return w.type === WORKSPACE_TYPES.TEAM;
+            } else if (updatedUserData.role === 'professional') {
+              return w.type === WORKSPACE_TYPES.PERSONAL;
+            }
+            return false;
+          }) || updatedWorkspaces[0];
+
+          if (primaryWorkspace) {
+            switchWorkspace(primaryWorkspace);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error leaving facility:', error);
+    } finally {
+      setIsLeavingFacility(false);
+    }
+  }, [facilityNotFoundWorkspace, currentUser, refreshUserData, switchWorkspace]);
+
+  const handleContactAdmin = useCallback(() => {
+    setShowFacilityNotFoundDialog(false);
+    setFacilityNotFoundWorkspace(null);
+    window.location.href = '/en/contact';
+  }, []);
 
   // Initialize workspaces and selected workspace
   // Use a ref to track the last processed user to prevent infinite loops
@@ -568,10 +620,59 @@ export const DashboardProvider = ({ children }) => {
   const lastProcessedUserRef = useRef(null);
 
   useEffect(() => {
+    console.log('[DashboardContext] === WORKSPACE INIT START ===', {
+      path: location.pathname,
+      search: location.search,
+      user: user?.uid,
+      selectedWorkspace: selectedWorkspace?.id
+    });
+
     // Skip if no user
     if (!user) {
+      console.log('[DashboardContext] No user, returning early');
       lastProcessedUserRef.current = null;
       return;
+    }
+
+    // AGGRESSIVE BYPASS: If on profile path with workspace param, just set workspace and return
+    // This prevents ANY redirect logic from running during profile navigation
+    if (location.pathname.includes('/dashboard/profile')) {
+      const urlParams = new URLSearchParams(location.search);
+      const workspaceId = urlParams.get('workspace');
+      console.log('[DashboardContext] On profile path, workspaceId from URL:', workspaceId);
+      if (workspaceId) {
+        const availableWs = getAvailableWorkspaces(user);
+        const wsFromUrl = availableWs.find(w => w.id === workspaceId);
+        if (wsFromUrl) {
+          console.log('[DashboardContext] BYPASS: On profile path with valid workspace:', wsFromUrl.name);
+
+          let stateChanged = false;
+          if (!selectedWorkspace || selectedWorkspace.id !== wsFromUrl.id) {
+            setSelectedWorkspace(wsFromUrl);
+            setWorkspaceCookie(wsFromUrl);
+            stateChanged = true;
+          }
+
+          // Only update workspaces if they changed
+          const newHash = JSON.stringify(availableWs);
+          const oldHash = JSON.stringify(workspaces);
+          if (newHash !== oldHash) {
+            setWorkspaces(availableWs);
+            stateChanged = true;
+          }
+
+          if (stateChanged) {
+            console.log('[DashboardContext] BYPASS: State updated, returning');
+          } else {
+            console.log('[DashboardContext] BYPASS: State already correct, returning');
+          }
+          return;
+        } else {
+          console.log('[DashboardContext] Workspace from URL not found in available workspaces:', availableWs.map(w => w.id));
+        }
+      } else {
+        console.log('[DashboardContext] On profile but no workspace param in URL');
+      }
     }
 
     // Create a hash/string of relevant fields that should trigger workspace re-initialization
@@ -585,16 +686,18 @@ export const DashboardProvider = ({ children }) => {
 
     // If critical user data hasn't changed, skip initialization
     if (lastProcessedUserRef.current === currentUserHash) {
+      console.log('[DashboardContext] User hash unchanged, skipping init');
       return;
     }
 
     // Update the ref
     lastProcessedUserRef.current = currentUserHash;
 
-    // console.log('[DashboardContext] Initializing workspaces for user:', user.uid);
+    console.log('[DashboardContext] Initializing workspaces for user:', user.uid);
 
     // Get available workspaces based on user roles
     const availableWorkspaces = getAvailableWorkspaces(user);
+    console.log('[DashboardContext] Available workspaces:', availableWorkspaces.map(w => w.id));
 
     // Only update workspaces state if it actually changed to prevent downstream re-renders
     setWorkspaces(prev => {
@@ -603,38 +706,57 @@ export const DashboardProvider = ({ children }) => {
       return prevHash === newHash ? prev : availableWorkspaces;
     });
 
-    // console.log('[DashboardContext] Available workspaces:', availableWorkspaces);
-
     // Try to restore workspace from URL first, then cookie
     const urlParams = new URLSearchParams(location.search);
     const workspaceIdFromUrl = urlParams.get('workspace');
     let workspaceFromUrl = null;
     if (workspaceIdFromUrl) {
       workspaceFromUrl = availableWorkspaces.find(w => w.id === workspaceIdFromUrl);
+      console.log('[DashboardContext] Workspace from URL:', workspaceIdFromUrl, 'found:', !!workspaceFromUrl);
+      // EARLY RETURN: If URL already has a valid workspace, just set it and don't navigate
+      // This prevents race conditions with TutorialContext navigates
+      if (workspaceFromUrl && !selectedWorkspace) {
+        console.log('[DashboardContext] Workspace found in URL, setting without navigation:', workspaceFromUrl.id);
+        setSelectedWorkspace(workspaceFromUrl);
+        setWorkspaceCookie(workspaceFromUrl);
+        return;
+      }
     }
 
     // Try to restore workspace from cookie if not in URL
     const savedWorkspace = workspaceFromUrl || getWorkspaceCookie();
+    console.log('[DashboardContext] savedWorkspace:', savedWorkspace?.id, 'selectedWorkspace:', selectedWorkspace?.id);
 
     // Check if we already have a selected workspace that is valid
     if (selectedWorkspace) {
       // If the current selected workspace is still in the available list, we're good
       const stillAvailable = availableWorkspaces.find(w => w.id === selectedWorkspace.id);
+      console.log('[DashboardContext] selectedWorkspace exists, stillAvailable:', !!stillAvailable);
       if (stillAvailable) {
-        // Always ensure workspace is in URL
-        const searchParams = new URLSearchParams(location.search);
-        const currentWorkspaceInUrl = searchParams.get('workspace');
-        if (!currentWorkspaceInUrl || currentWorkspaceInUrl !== selectedWorkspace.id) {
-          searchParams.set('workspace', selectedWorkspace.id);
-          const newUrl = `${location.pathname}?${searchParams.toString()}`;
-          navigate(newUrl, { replace: true });
+        // Only enforce workspace in URL if we are on a dashboard page
+        if (location.pathname.includes('/dashboard')) {
+          const searchParams = new URLSearchParams(location.search);
+          const currentWorkspaceInUrl = searchParams.get('workspace');
+          if (!currentWorkspaceInUrl || currentWorkspaceInUrl !== selectedWorkspace.id) {
+            searchParams.set('workspace', selectedWorkspace.id);
+            const newUrl = `${location.pathname}?${searchParams.toString()}`;
+            console.log('[DashboardContext] Adding workspace to URL:', newUrl);
+            navigate(newUrl, { replace: true });
+          }
         }
         return;
       }
     }
 
+    // Only attempt to switch/restore workspace if we are on a dashboard page
+    // This prevents redirection loops on public pages or test pages
+    if (!location.pathname.includes('/dashboard') && !location.pathname.includes('/onboarding')) {
+      console.log('[DashboardContext] Not on dashboard/onboarding, skipping');
+      return;
+    }
+
     if (savedWorkspace && availableWorkspaces.find(w => w.id === savedWorkspace.id)) {
-      // console.log('[DashboardContext] Restoring workspace from cookie:', savedWorkspace);
+      console.log('[DashboardContext] Restoring workspace from cookie:', savedWorkspace.id);
 
       // Validate existing session
       let hasValidSession = false;
@@ -645,22 +767,26 @@ export const DashboardProvider = ({ children }) => {
       } else if (savedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
         hasValidSession = validateWorkspaceSession(WORKSPACE_TYPES.ADMIN) !== null;
       }
+      console.log('[DashboardContext] hasValidSession:', hasValidSession);
 
       if (hasValidSession) {
         setSelectedWorkspace(savedWorkspace);
-        // Update URL with workspace - ensure it's always present
+
+        const currentPath = location.pathname;
         const searchParams = new URLSearchParams(location.search);
         searchParams.set('workspace', savedWorkspace.id);
-        const defaultRoute = getDefaultRouteForWorkspace(savedWorkspace.type);
-        const routeWithWorkspace = buildDashboardUrl(defaultRoute.replace('/dashboard', ''), savedWorkspace.id);
-        navigate(routeWithWorkspace, { replace: true });
+
+        const targetUrl = `${currentPath}?${searchParams.toString()}${location.hash}`;
+        console.log('[DashboardContext] Restoring workspace: Updating URL parameter:', targetUrl);
+
+        navigate(targetUrl, { replace: true });
       } else {
-        // console.log('[DashboardContext] No valid session, creating new one');
+        console.log('[DashboardContext] No valid session, calling switchWorkspace');
         switchWorkspace(savedWorkspace);
       }
     } else if (availableWorkspaces.length > 0) {
       // Auto-select workspace based on user's primary role to avoid blinking
-      // console.log('[DashboardContext] Auto-selecting workspace based on primary role');
+      console.log('[DashboardContext] No saved workspace, auto-selecting based on role');
 
       // Prioritize based on user's primary role field
       const primaryWorkspace = availableWorkspaces.find(w => {
@@ -674,23 +800,47 @@ export const DashboardProvider = ({ children }) => {
 
       // Fall back to first workspace if no match found
       const workspaceToSelect = primaryWorkspace || availableWorkspaces[0];
-      console.log('[DashboardContext] Selected workspace:', workspaceToSelect);
+      console.log('[DashboardContext] Selected workspace:', workspaceToSelect?.id);
       switchWorkspace(workspaceToSelect);
     } else {
-      console.log('[DashboardContext] No workspaces available for user');
+      console.log('[DashboardContext] No workspaces available for user - no profiles exist, redirecting to onboarding');
       setSelectedWorkspace(null);
       clearWorkspaceCookie();
+
+      // STRICT: If no workspaces available, user must complete onboarding
+      // Check onboarding status to determine which type
+      const onboardingProgress = user.onboardingProgress || {};
+      const professionalCompleted = onboardingProgress.professional?.completed === true;
+      const facilityCompleted = onboardingProgress.facility?.completed === true;
+      const onboardingCompleted = professionalCompleted || facilityCompleted || user.onboardingCompleted === true;
+
+      if (!onboardingCompleted && location.pathname.includes('/dashboard')) {
+        const lang = window.location.pathname.split('/')[1] || 'fr';
+        const onboardingType = user.role === 'facility' || user.role === 'company' ? 'facility' : 'professional';
+        console.log('[DashboardContext] Redirecting to onboarding:', onboardingType);
+        navigate(`/${lang}/onboarding?type=${onboardingType}`, { replace: true });
+        return;
+      }
+
       // Remove workspace from URL if no workspaces available
       const searchParams = new URLSearchParams(location.search);
       searchParams.delete('workspace');
       const newUrl = searchParams.toString() ? `${location.pathname}?${searchParams.toString()}` : location.pathname;
       navigate(newUrl, { replace: true });
     }
+    console.log('[DashboardContext] === WORKSPACE INIT END ===');
   }, [user, switchWorkspace, selectedWorkspace, location, navigate]);
 
   // Validate workspace session periodically
   useEffect(() => {
     if (!selectedWorkspace) return;
+
+    // Skip session validation on profile paths - profile is accessible without strict session
+    // This prevents an infinite loop where validation clears workspace, triggering re-init
+    if (location.pathname.includes('/dashboard/profile')) {
+      console.log('[DashboardContext] Skipping session validation on profile path');
+      return;
+    }
 
     const validateSession = () => {
       let isValid = false;
@@ -715,7 +865,7 @@ export const DashboardProvider = ({ children }) => {
     const interval = setInterval(validateSession, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [selectedWorkspace]);
+  }, [selectedWorkspace, location.pathname]);
 
   const fetchUserProfile = async (userId, userRole) => {
     try {
@@ -795,6 +945,38 @@ export const DashboardProvider = ({ children }) => {
       {typeof children === 'function'
         ? children({ profileComplete, tutorialPassed, isLoading })
         : children}
+      <Dialog
+        isOpen={showFacilityNotFoundDialog}
+        onClose={() => {
+          setShowFacilityNotFoundDialog(false);
+          setFacilityNotFoundWorkspace(null);
+        }}
+        title="Facility Not Found"
+        messageType="error"
+        size="medium"
+        actions={
+          <>
+            <Button
+              onClick={handleContactAdmin}
+              variant="secondary"
+            >
+              Contact Admin
+            </Button>
+            <Button
+              onClick={handleLeaveFacility}
+              variant="danger" // Using danger for the "Leave" action as it's destructive/error corrective
+              disabled={isLeavingFacility}
+            >
+              {isLeavingFacility ? 'Leaving...' : 'Leave Facility'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-gray-700">
+          The facility you're trying to access no longer exists or you no longer have access to it.
+        </p>
+      </Dialog>
+
     </DashboardContext.Provider>
   );
 };

@@ -55,11 +55,11 @@ const SidebarHighlight = ({ highlightSidebarItem }) => {
     
     const element = document.querySelector(`a[data-tutorial="${targetItem}-link"]`);
     if (element) {
-      element.classList.add('global-highlight');
+      element.classList.add('tutorial-highlight');
     }
     return () => {
       if (element) {
-        element.classList.remove('global-highlight');
+        element.classList.remove('tutorial-highlight');
       }
     };
   }, [targetItem]);

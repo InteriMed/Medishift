@@ -5,11 +5,21 @@ import { extractStreetName, extractHouseNumber, convertPermitTypeToProfileFormat
 const functions = getFunctions(app, 'europe-west6');
 
 export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnValue, currentUser, manualProfession) => {
+  console.log('[saveWorkerProfile] Full extracted data:', JSON.stringify(extracted, null, 2));
+  
   const identity = extracted.personalDetails?.identity || {};
   const address = extracted.personalDetails?.address || {};
   const contact = extracted.personalDetails?.contact || {};
   const additionalInfo = extracted.additionalInfo || {};
   const professionalBackground = extracted.professionalBackground || {};
+  
+  console.log('[saveWorkerProfile] Parsed sections:', {
+    hasIdentity: Object.keys(identity).length > 0,
+    hasAddress: Object.keys(address).length > 0,
+    hasContact: Object.keys(contact).length > 0,
+    hasAdditionalInfo: Object.keys(additionalInfo).length > 0,
+    hasProfessionalBackground: Object.keys(professionalBackground).length > 0
+  });
 
   const extractedLegalFirstName = identity.legalFirstName || identity.firstName || identity.givenName || '';
   const extractedLegalLastName = identity.legalLastName || identity.lastName || identity.surname || '';
@@ -28,6 +38,7 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
 
   const profileData = {
     role: 'professional',
+    profileType: 'professional',
     identity: {
       legalFirstName: bag.firstName || extractedLegalFirstName,
       legalLastName: bag.name || extractedLegalLastName,
@@ -36,7 +47,8 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
       dateOfBirth: identity.dateOfBirth || null,
       placeOfBirth: identity.placeOfBirth || null,
       gender: identity.gender || null,
-      nationality: identity.nationality || null
+      nationality: identity.nationality || identity.citizenCountry || null,
+      personalIdentificationNumber: additionalInfo.personalIdentificationNumber || null
     },
     contact: {
       residentialAddress: {
@@ -79,6 +91,9 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
     verification: {
       identityStatus: 'verified',
       overallVerificationStatus: 'verified',
+      glnVerified: glnValue ? true : false,
+      glnNumber: glnValue || null,
+      verifiedAt: new Date().toISOString(),
       verificationDocuments: [
         {
           documentId: `identity_${Date.now()}`,
@@ -94,14 +109,26 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
           status: 'verified',
           verificationStatus: 'verified',
           extractedData: {
-            identity: identity,
-            address: address,
-            additionalInfo: additionalInfo
+            personalDetails: {
+              identity: identity,
+              address: address,
+              contact: contact
+            },
+            additionalInfo: additionalInfo,
+            professionalBackground: professionalBackground
+          },
+          documentInfo: {
+            documentNumber: additionalInfo.documentNumber || null,
+            dateOfIssue: additionalInfo.dateOfIssue || null,
+            dateOfExpiry: additionalInfo.dateOfExpiry || null,
+            issuingAuthority: additionalInfo.issuingAuthority || null,
+            documentCategory: additionalInfo.documentCategory || null,
+            mrz: additionalInfo.mrz || null
           }
         }
       ]
     },
-    GLN_certified: glnValue,
+    GLN_certified: true,
     verificationStatus: 'verified'
   };
 
@@ -130,7 +157,43 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
     });
   }
 
-  console.log('[GLNVerification] Saving professional profile with corrected mappings:', profileData);
+  console.log('[GLNVerification] Saving professional profile with ALL extracted data:', {
+    identity: profileData.identity,
+    contact: profileData.contact,
+    employmentEligibility: profileData.employmentEligibility,
+    professionalDetails: profileData.professionalDetails,
+    residencyPermit: profileData.residencyPermit,
+    verification: {
+      ...profileData.verification,
+      verificationDocuments: profileData.verification.verificationDocuments.map(doc => ({
+        ...doc,
+        extractedData: 'See full log below'
+      }))
+    }
+  });
+  console.log('[GLNVerification] Full verification documents data:', 
+    JSON.stringify(profileData.verification.verificationDocuments, null, 2));
+  
+  try {
+    const { doc, updateDoc, deleteField } = await import('firebase/firestore');
+    const { db } = await import('../../../services/firebase');
+
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+      GLN_certified: true,
+      onboardingCompleted: true,
+      'onboardingProgress.professional': {
+        completed: true,
+        completedAt: new Date(),
+        step: 4
+      }
+    });
+
+    console.log('[GLNVerification] Set onboarding flags before profile creation');
+  } catch (error) {
+    console.warn('[GLNVerification] Failed to update user document flags:', error);
+    throw error;
+  }
+
   const updateUserProfile = httpsCallable(functions, 'updateUserProfile');
   await updateUserProfile(profileData);
 
@@ -144,15 +207,19 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
 
     console.log('[GLNVerification] Cleaned up temporaryUploads (kept onboardingDocuments for Profile reference)');
   } catch (error) {
-    console.warn('[GLNVerification] Failed to clean up temporary uploads:', error);
+    console.warn('[GLNVerification] Failed to cleanup temporaryUploads:', error);
   }
 };
 
 export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, glnValue, currentUser) => {
+  console.log('[saveFacilityProfile] GLN Data (bag):', JSON.stringify(bag, null, 2));
+  console.log('[saveFacilityProfile] Billing Info:', JSON.stringify(billingInfo, null, 2));
+  
   const idPersonalDetails = billingInfo.responsiblePersonAnalysis?.personalDetails || {};
   const idIdentity = idPersonalDetails.identity || {};
   const idAdditionalInfo = billingInfo.responsiblePersonAnalysis?.additionalInfo || {};
   const idAddress = idPersonalDetails.address || {};
+  const idContact = idPersonalDetails.contact || {};
 
   const billingExtracted = billingInfo.billingAnalysis || {};
   const invoiceDetails = billingExtracted.invoiceDetails || billingExtracted.businessDetails || billingExtracted.facilityDetails || {};
@@ -161,18 +228,30 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
   const responsiblePersonIdentity = {
     firstName: idIdentity.firstName || idIdentity.legalFirstName || '',
     lastName: idIdentity.lastName || idIdentity.legalLastName || '',
+    legalFirstName: idIdentity.legalFirstName || idIdentity.firstName || '',
+    legalLastName: idIdentity.legalLastName || idIdentity.lastName || '',
     dateOfBirth: idIdentity.dateOfBirth || null,
-    nationality: idIdentity.nationality || null,
+    placeOfBirth: idIdentity.placeOfBirth || null,
+    nationality: idIdentity.nationality || idIdentity.citizenCountry || null,
     gender: idIdentity.gender || null,
     documentType: idAdditionalInfo.documentType || null,
     documentNumber: idAdditionalInfo.documentNumber || null,
     documentExpiry: idAdditionalInfo.dateOfExpiry || null,
+    documentIssue: idAdditionalInfo.dateOfIssue || null,
+    issuingAuthority: idAdditionalInfo.issuingAuthority || null,
+    personalIdentificationNumber: idAdditionalInfo.personalIdentificationNumber || null,
     residentialAddress: idAddress.street || idAddress.city ? {
-      street: idAddress.street || '',
+      street: extractStreetName(idAddress.street) || '',
+      number: extractHouseNumber(idAddress.street) || '',
       city: idAddress.city || '',
       postalCode: idAddress.postalCode || '',
       canton: idAddress.canton || '',
       country: idAddress.country || 'CH'
+    } : null,
+    contact: idContact.primaryEmail || idContact.primaryPhone ? {
+      email: idContact.primaryEmail || null,
+      phone: formatPhoneNumber(idContact.primaryPhone, idContact.primaryPhonePrefix).cleanNumber || null,
+      phonePrefix: formatPhoneNumber(idContact.primaryPhone, idContact.primaryPhonePrefix).cleanPrefix || null
     } : null
   };
 
@@ -190,14 +269,18 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
       name: facilityName,
       additionalName: bag.additionalName || null,
       operatingAddress: {
-        street: bag.streetWithNumber || invoiceAddress.street || '',
+        street: extractStreetName(bag.streetWithNumber || invoiceAddress.street) || '',
+        number: extractHouseNumber(bag.streetWithNumber || invoiceAddress.street) || '',
         city: bag.city || invoiceAddress.city || '',
         postalCode: bag.zip || invoiceAddress.postalCode || '',
         canton: invoiceAddress.canton || bag.canton || '',
         country: 'CH'
       },
       glnCompany: glnValue,
-      responsiblePersons: bag.responsiblePersons || []
+      responsiblePersons: bag.responsiblePersons || [],
+      facilityType: bag.type || bag.facilityType || null,
+      organizationType: bag.organizationType || null,
+      registeredSince: bag.registeredSince || null
     },
     responsiblePersonIdentity: responsiblePersonIdentity,
     identityLegal: {
@@ -208,13 +291,16 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
       legalName: legalCompanyName,
       uidNumber: invoiceDetails.uid || invoiceDetails.vatNumber || billingInfo.uidNumber,
       billingAddress: {
-        street: invoiceAddress.street || '',
+        street: extractStreetName(invoiceAddress.street) || '',
+        number: extractHouseNumber(invoiceAddress.street) || '',
         city: invoiceAddress.city || '',
         postalCode: invoiceAddress.postalCode || '',
         canton: invoiceAddress.canton || '',
         country: invoiceAddress.country || 'CH'
       },
       invoiceEmail: invoiceDetails.email || invoiceDetails.invoiceEmail || billingInfo.invoiceEmail || '',
+      invoiceNumber: invoiceDetails.invoiceNumber || null,
+      invoiceDate: invoiceDetails.invoiceDate || null,
       internalRef: billingInfo.internalRef || '',
       verificationStatus: 'verified'
     },
@@ -227,6 +313,9 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
       identityStatus: 'verified',
       billingStatus: 'verified',
       overallVerificationStatus: 'verified',
+      glnVerified: glnValue ? true : false,
+      glnNumber: glnValue || null,
+      verifiedAt: new Date().toISOString(),
       verificationDocuments: [
         {
           documentId: `responsible_id_${Date.now()}`,
@@ -242,9 +331,20 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
           status: 'verified',
           verificationStatus: 'verified',
           extractedData: {
-            additionalInfo: idAdditionalInfo,
-            identity: idIdentity,
-            address: idAddress
+            personalDetails: {
+              identity: idIdentity,
+              address: idAddress,
+              contact: idContact
+            },
+            additionalInfo: idAdditionalInfo
+          },
+          documentInfo: {
+            documentNumber: idAdditionalInfo.documentNumber || null,
+            dateOfIssue: idAdditionalInfo.dateOfIssue || null,
+            dateOfExpiry: idAdditionalInfo.dateOfExpiry || null,
+            issuingAuthority: idAdditionalInfo.issuingAuthority || null,
+            documentCategory: idAdditionalInfo.documentCategory || null,
+            mrz: idAdditionalInfo.mrz || null
           }
         },
         {
@@ -262,8 +362,16 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
           verificationStatus: 'verified',
           extractedData: {
             invoiceDetails: invoiceDetails,
+            businessDetails: billingExtracted.businessDetails || {},
+            facilityDetails: billingExtracted.facilityDetails || {},
             billingAddress: invoiceAddress,
             personalDetails: billingExtracted.personalDetails
+          },
+          documentInfo: {
+            invoiceNumber: invoiceDetails.invoiceNumber || null,
+            invoiceDate: invoiceDetails.invoiceDate || null,
+            uid: invoiceDetails.uid || null,
+            vatNumber: invoiceDetails.vatNumber || null
           }
         }
       ]
@@ -272,7 +380,43 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
     verificationStatus: 'verified'
   };
 
-  console.log('[GLNVerification] Saving facility profile:', facilityData);
+  console.log('[GLNVerification] Saving facility profile with ALL extracted data:', {
+    facilityDetails: facilityData.facilityDetails,
+    responsiblePersonIdentity: facilityData.responsiblePersonIdentity,
+    identityLegal: facilityData.identityLegal,
+    billingInformation: facilityData.billingInformation,
+    contact: facilityData.contact,
+    verification: {
+      ...facilityData.verification,
+      verificationDocuments: facilityData.verification.verificationDocuments.map(doc => ({
+        ...doc,
+        extractedData: 'See full log below'
+      }))
+    }
+  });
+  console.log('[GLNVerification] Full facility verification documents data:', 
+    JSON.stringify(facilityData.verification.verificationDocuments, null, 2));
+  
+  try {
+    const { doc, updateDoc, deleteField } = await import('firebase/firestore');
+    const { db } = await import('../../../services/firebase');
+
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+      GLN_certified: true,
+      onboardingCompleted: true,
+      'onboardingProgress.facility': {
+        completed: true,
+        completedAt: new Date(),
+        step: 5
+      }
+    });
+
+    console.log('[GLNVerification] Set onboarding flags before profile creation');
+  } catch (error) {
+    console.warn('[GLNVerification] Failed to update user document flags:', error);
+    throw error;
+  }
+
   const updateUserProfile = httpsCallable(functions, 'updateUserProfile');
   await updateUserProfile(facilityData);
 
@@ -286,7 +430,7 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
 
     console.log('[GLNVerification] Cleaned up temporaryUploads (kept onboardingDocuments for Profile reference)');
   } catch (error) {
-    console.warn('[GLNVerification] Failed to clean up temporary uploads:', error);
+    console.warn('[GLNVerification] Failed to cleanup temporaryUploads:', error);
   }
 };
 

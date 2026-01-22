@@ -10,6 +10,41 @@
     <link rel="apple-touch-icon" href="/favicon.ico" />
     <link rel="manifest" href="/manifest.json" />
     <title>MediShift</title>
+    <script>
+      (function() {
+        const isTimeoutError = function(error) {
+          if (!error) return false;
+          const msg = error.message || String(error);
+          return (
+            error.isTimeout === true ||
+            error.name === 'TimeoutError' ||
+            msg.includes('Timeout') ||
+            msg.includes('timeout') ||
+            /Timeout\s*\([a-z]\)/i.test(msg)
+          );
+        };
+
+        window.addEventListener('error', function(event) {
+          if (isTimeoutError(event.error) || (event.message && event.message.includes('Timeout'))) {
+            console.debug('[Early] Suppressed timeout error');
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function(event) {
+          if (isTimeoutError(event.reason)) {
+            console.debug('[Early] Suppressed timeout rejection');
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
+          }
+        }, true);
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -12,7 +12,8 @@ import { useDropdownOptions } from '../../pages/profile/utils/DropdownListsImpor
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { FiBriefcase, FiSearch, FiCheck, FiArrowRight, FiHome, FiAlertTriangle, FiX, FiLink, FiHelpCircle, FiLoader } from 'react-icons/fi';
-import GLNVerificationStep from './GLNVerificationStep';
+import ProfessionalGLNVerification from './ProfessionalGLNVerification';
+import FacilityGLNVerification from './FacilityGLNVerification';
 import PhoneVerificationStep from './PhoneVerificationStep';
 
 // Styles
@@ -85,7 +86,6 @@ const FirstTimeModal = () => {
   const [chainPhonePrefix, setChainPhonePrefix] = useState('');
   const [chainPhoneNumber, setChainPhoneNumber] = useState('');
 
-  const [hasGLN, setHasGLN] = useState(true);
   const [documentsReady, setDocumentsReady] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -131,7 +131,7 @@ const FirstTimeModal = () => {
       console.log('[FirstTimeModal] ⏸️ Skipping sync (isTransitioning=true)');
     }
   }, [step, isTransitioning]);
-  
+
   // Log when content wrapper is mounted/unmounted
   useEffect(() => {
     console.log('[FirstTimeModal] Content wrapper effect - displayStep:', displayStep, 'shouldRenderContent:', shouldRenderContent, 'opacity:', contentOpacity);
@@ -147,7 +147,7 @@ const FirstTimeModal = () => {
         opacity: computedStyle.opacity,
         visibility: computedStyle.visibility
       });
-      
+
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
@@ -161,7 +161,7 @@ const FirstTimeModal = () => {
         });
       });
       observer.observe(element, { attributes: true, attributeFilter: ['style'] });
-      
+
       return () => {
         console.log('[FirstTimeModal] 🎭 Content wrapper UNMOUNTING');
         observer.disconnect();
@@ -421,7 +421,7 @@ const FirstTimeModal = () => {
   console.warn('shouldRenderContent:', shouldRenderContent);
   console.warn('pathname:', location.pathname);
   console.warn('=====================================');
-  
+
   if (!isInDashboard || !showFirstTimeModal) {
     console.warn('[FirstTimeModal] ❌ NOT RENDERING');
     console.warn('  - isInDashboard:', isInDashboard);
@@ -429,7 +429,7 @@ const FirstTimeModal = () => {
     console.warn('  - pathname:', location.pathname);
     return null;
   }
-  
+
   console.warn('[FirstTimeModal] ✅ WILL RENDER MODAL');
 
   if (isLoadingProgress) {
@@ -471,22 +471,22 @@ const FirstTimeModal = () => {
       }
 
       console.log('[FirstTimeModal] 📝 Step 3: Advancing from step', step, 'to step', newStep);
-      
+
       // Check if layout will change - if so, hide content and set resizing BEFORE step change
       const willBeTwoColumn = newStep === 3 && isEmployed && !accessTeam;
       const wasTwoColumn = step === 3 && isEmployed && !accessTeam;
       const layoutWillChange = willBeTwoColumn !== wasTwoColumn;
-      
+
       if (layoutWillChange) {
         console.warn('[FirstTimeModal] 🔄 Layout will change, hiding content and setting resize state');
         setIsResizing(true);
         setContentOpacity(0);
       }
-      
+
       // Completely hide content before changing step
       setShouldRenderContent(false);
       console.log('[FirstTimeModal] 👻 Step 4: Set shouldRenderContent=false (unmounting content)');
-      
+
       // Wait multiple frames to ensure content is fully unmounted and browser has painted
       await new Promise(resolve => requestAnimationFrame(resolve));
       console.log('[FirstTimeModal] ⏳ Step 5: First RAF complete');
@@ -494,18 +494,18 @@ const FirstTimeModal = () => {
       console.log('[FirstTimeModal] ⏳ Step 6: Second RAF complete');
       await new Promise(resolve => setTimeout(resolve, 50));
       console.log('[FirstTimeModal] ⏳ Step 7: 50ms timeout complete');
-      
+
       // Update step state (but don't display yet) - this will trigger layout change
       setStep(newStep);
       console.log('[FirstTimeModal] 📝 Step 8: Set step=', newStep, '(displayStep still:', displayStep, ')');
-      
+
       // If layout changed, wait for resize animation BEFORE mounting new content
       if (layoutWillChange) {
         console.warn('[FirstTimeModal] ⏳ Step 9: Waiting for resize animation (350ms)');
         await new Promise(resolve => setTimeout(resolve, 350));
         console.warn('[FirstTimeModal] ✅ Step 10: Resize animation complete');
       }
-      
+
       await saveOnboardingProgress({
         step: newStep,
         role,
@@ -519,20 +519,20 @@ const FirstTimeModal = () => {
         phoneVerified,
         phoneData
       });
-      
+
       // Wait for React to process state update
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       // Now update displayStep and re-enable rendering
       // But keep opacity at 0 and transitioning true
       setDisplayStep(newStep);
       setShouldRenderContent(true);
-      
+
       // Wait for React to mount new content and browser to paint
       await new Promise(resolve => requestAnimationFrame(resolve));
       await new Promise(resolve => requestAnimationFrame(resolve));
       await new Promise(resolve => setTimeout(resolve, 50));
-      
+
       // Verify element exists and is hidden before showing
       if (contentWrapperRef.current) {
         const element = contentWrapperRef.current;
@@ -540,10 +540,10 @@ const FirstTimeModal = () => {
         element.style.opacity = '0';
         element.style.visibility = 'hidden';
       }
-      
+
       // Wait one more frame to ensure styles are applied
       await new Promise(resolve => requestAnimationFrame(resolve));
-      
+
       // Clear resizing state BEFORE fade-in to hide overlay
       if (layoutWillChange) {
         setIsResizing(false);
@@ -551,7 +551,7 @@ const FirstTimeModal = () => {
         // Small delay to ensure overlay fades out
         await new Promise(resolve => setTimeout(resolve, 50));
       }
-      
+
       // Now fade in the new content
       if (contentWrapperRef.current) {
         contentWrapperRef.current.style.display = 'block';
@@ -577,7 +577,7 @@ const FirstTimeModal = () => {
       // Wait for fade-out to complete (200ms transition + buffer)
       await new Promise(resolve => setTimeout(resolve, 250));
       console.log('[FirstTimeModal] ⏳ Step 2: Fade-out complete (250ms waited)');
-      
+
       let newStep = step - 1;
 
       // SKIP LOGIC: Step 4 -> Step 2 if Step 3 (Phone) was skipped
@@ -589,7 +589,7 @@ const FirstTimeModal = () => {
       const willBeTwoColumn = newStep === 3 && isEmployed && !accessTeam;
       const wasTwoColumn = step === 3 && isEmployed && !accessTeam;
       const layoutWillChange = willBeTwoColumn !== wasTwoColumn;
-      
+
       if (layoutWillChange) {
         console.warn('[FirstTimeModal] 🔄 Layout will change, hiding content and setting resize state');
         setIsResizing(true);
@@ -599,7 +599,7 @@ const FirstTimeModal = () => {
       // Completely hide content before changing step
       setShouldRenderContent(false);
       console.log('[FirstTimeModal] 👻 Step 3: Set shouldRenderContent=false (unmounting content)');
-      
+
       // Wait multiple frames to ensure content is fully unmounted and browser has painted
       await new Promise(resolve => requestAnimationFrame(resolve));
       console.log('[FirstTimeModal] ⏳ Step 4: First RAF complete');
@@ -611,7 +611,7 @@ const FirstTimeModal = () => {
       // Update step state (but don't display yet) - this will trigger layout change
       setStep(newStep);
       console.log('[FirstTimeModal] 📝 Step 7: Set step=', newStep, '(displayStep still:', displayStep, ')');
-      
+
       // If layout changed, wait for resize animation BEFORE mounting new content
       if (layoutWillChange) {
         console.warn('[FirstTimeModal] ⏳ Step 8: Waiting for resize animation (350ms)');
@@ -632,17 +632,17 @@ const FirstTimeModal = () => {
         phoneVerified,
         phoneData
       });
-      
+
       // Wait for React to process state update
       await new Promise(resolve => setTimeout(resolve, 100));
       console.log('[FirstTimeModal] ⏳ Step 8: 100ms timeout complete (React should have processed step change)');
-      
+
       // Now update displayStep and re-enable rendering
       // But keep opacity at 0 and transitioning true
       setDisplayStep(newStep);
       setShouldRenderContent(true);
       console.log('[FirstTimeModal] 🎨 Step 9: Set displayStep=', newStep, 'shouldRenderContent=true (mounting new content)');
-      
+
       // Wait for React to mount new content and browser to paint
       await new Promise(resolve => requestAnimationFrame(resolve));
       console.log('[FirstTimeModal] ⏳ Step 10: First RAF after mount complete');
@@ -650,7 +650,7 @@ const FirstTimeModal = () => {
       console.log('[FirstTimeModal] ⏳ Step 11: Second RAF after mount complete');
       await new Promise(resolve => setTimeout(resolve, 50));
       console.log('[FirstTimeModal] ⏳ Step 12: 50ms timeout after mount complete');
-      
+
       // Verify element exists and is hidden before showing
       if (contentWrapperRef.current) {
         const element = contentWrapperRef.current;
@@ -669,11 +669,11 @@ const FirstTimeModal = () => {
       } else {
         console.warn('[FirstTimeModal] ⚠️ Step 15: contentWrapperRef.current is null!');
       }
-      
+
       // Wait one more frame to ensure styles are applied
       await new Promise(resolve => requestAnimationFrame(resolve));
       console.log('[FirstTimeModal] ⏳ Step 17: Final RAF before fade-in');
-      
+
       // Clear resizing state BEFORE fade-in to hide overlay
       if (layoutWillChange) {
         setIsResizing(false);
@@ -681,7 +681,7 @@ const FirstTimeModal = () => {
         // Small delay to ensure overlay fades out
         await new Promise(resolve => setTimeout(resolve, 50));
       }
-      
+
       // Now fade in the new content
       if (contentWrapperRef.current) {
         contentWrapperRef.current.style.display = 'block';
@@ -727,22 +727,22 @@ const FirstTimeModal = () => {
         console.log(`[FirstTimeModal] ${onboardingType} onboarding marked as completed`);
       }
 
-      console.log(`Onboarding Data (${onboardingType}):`, { role, isEmployed, accessTeam, selectedCompany });
+      console.log(`[FirstTimeModal] Onboarding Data (${onboardingType}):`, { role, isEmployed, accessTeam, selectedCompany });
 
       // Close the modal first
       setShowFirstTimeModal(false);
-      console.log('[FirstTimeModal] Modal closed, starting tutorial...');
+      console.log('[FirstTimeModal] Modal closed, preparing to start tutorial...');
 
       // Then start the tutorial after a short delay to ensure modal is closed
       actionTimeoutRef.current = setTimeout(() => {
         if (mountedRef.current) {
-          console.log('[FirstTimeModal] Starting tutorial');
+          console.log('[FirstTimeModal] Starting dashboard tutorial');
           startTutorial('dashboard');
           setIsProcessing(false);
         }
       }, 500);
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      console.error('[FirstTimeModal] Error completing onboarding:', error);
       setIsProcessing(false);
     }
   };
@@ -902,11 +902,11 @@ const FirstTimeModal = () => {
     // Wait for fade-out to complete
     await new Promise(resolve => setTimeout(resolve, 250));
     console.log('[FirstTimeModal] ⏳ Step 2: Fade-out complete (250ms waited)');
-    
+
     // Completely hide content before changing step
     setShouldRenderContent(false);
     console.log('[FirstTimeModal] 👻 Step 3: Set shouldRenderContent=false (unmounting content)');
-    
+
     // Wait multiple frames to ensure content is fully unmounted and browser has painted
     await new Promise(resolve => requestAnimationFrame(resolve));
     console.log('[FirstTimeModal] ⏳ Step 4: First RAF complete');
@@ -914,20 +914,20 @@ const FirstTimeModal = () => {
     console.log('[FirstTimeModal] ⏳ Step 5: Second RAF complete');
     await new Promise(resolve => setTimeout(resolve, 50));
     console.log('[FirstTimeModal] ⏳ Step 6: 50ms timeout complete');
-    
+
     setStep(4);
     console.log('[FirstTimeModal] 📝 Step 7: Set step=4 (displayStep still:', displayStep, ')');
-    
+
     // Wait for React to process state update
     await new Promise(resolve => setTimeout(resolve, 100));
     console.log('[FirstTimeModal] ⏳ Step 8: 100ms timeout complete (React should have processed step change)');
-    
+
     // Update displayStep and re-enable rendering
     // But keep opacity at 0 and transitioning true
     setDisplayStep(4);
     setShouldRenderContent(true);
     console.log('[FirstTimeModal] 🎨 Step 9: Set displayStep=4, shouldRenderContent=true (mounting new content)');
-    
+
     // Wait for React to mount new content and browser to paint
     await new Promise(resolve => requestAnimationFrame(resolve));
     console.log('[FirstTimeModal] ⏳ Step 10: First RAF after mount complete');
@@ -935,7 +935,7 @@ const FirstTimeModal = () => {
     console.log('[FirstTimeModal] ⏳ Step 11: Second RAF after mount complete');
     await new Promise(resolve => setTimeout(resolve, 50));
     console.log('[FirstTimeModal] ⏳ Step 12: 50ms timeout after mount complete');
-    
+
     // Verify element exists and is hidden before showing
     if (contentWrapperRef.current) {
       const element = contentWrapperRef.current;
@@ -954,11 +954,11 @@ const FirstTimeModal = () => {
     } else {
       console.warn('[FirstTimeModal] ⚠️ Step 13: contentWrapperRef.current is null!');
     }
-    
+
     // Wait one more frame to ensure styles are applied
     await new Promise(resolve => requestAnimationFrame(resolve));
     console.log('[FirstTimeModal] ⏳ Step 15: Final RAF before fade-in');
-    
+
     // Now fade in the new content
     if (contentWrapperRef.current) {
       contentWrapperRef.current.style.display = 'block';
@@ -1078,19 +1078,6 @@ ${chainMessage}
     );
   };
 
-  const handleHasGLNChange = async (newValue) => {
-    setHasGLN(newValue);
-    await saveOnboardingProgress({
-      step,
-      role,
-      isEmployed,
-      accessTeam,
-      selectedCompany,
-      legalConsiderationsConfirmed,
-      generalWorkingLawsConfirmed,
-      hasGLN: newValue
-    });
-  };
 
   const renderStep4 = () => (
     <div className="space-y-6">
@@ -1104,59 +1091,15 @@ ${chainMessage}
       </div>
 
       <div className="space-y-6 max-w-lg mx-auto">
-        {/* Main GLN Toggle - Always Visible */}
-        <div className={styles.switchGroup}>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className={styles.switchLabel}>{t('dashboard.onboarding.step4.hasGLN', 'I have a GLN')}</span>
-              <div className="group relative flex items-center">
-                <FiHelpCircle className="w-4 h-4 text-muted-foreground cursor-help" style={{ color: 'var(--text-light-color)' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-logo-2)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-light-color)'; }}
-                />
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-popover text-popover-foreground text-xs rounded-lg shadow-xl border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                  {role === 'worker'
-                    ? "Professional number required for certified medical professionals in Switzerland (pharmacists, dentists, doctors etc...). For other professions (nurse, assistants, etc.), this number is not mandatory."
-                    : "Global Location Number. Unique identification number for your facility/pharmacy in the Swiss healthcare system."}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-popover"></div>
-                </div>
-              </div>
-            </div>
-            <span className="text-sm text-muted-foreground">{t('dashboard.onboarding.step4.hasGLNDesc', 'Enable if you have your own GLN number')}</span>
-          </div>
-          <ToggleSwitch
-            checked={hasGLN === true}
-            onChange={(val) => handleHasGLNChange(val)}
-          />
-        </div>
-
-        {/* ID Verification Form - Always show for workers and companies */}
+        {/* Verification Flow - Workers/Company Admin */}
         {(role === 'worker' || role === 'company') && (
           <div className="animate-in fade-in slide-in-from-top-4">
-            <GLNVerificationStep
+            <ProfessionalGLNVerification
               ref={glnVerificationRef}
-              role={role}
-              hasGLN={hasGLN === true}
-              onComplete={() => {
-
-                handleComplete();
-              }}
-              onBack={handleBack}
-              showHeader={false}
-              hideMainButton={true}
-              hideGLNInfo={false}
-              onVerifyClick={(handler) => {
-                // Store the verification handler from child component
-                verifyHandlerRef.current = handler;
-              }}
-              onReadyChange={(isReady) => {
-                // Update state when document readiness changes
-                setDocumentsReady(isReady);
-              }}
-              onProcessingChange={(processing) => {
-                // Track verification processing state
-                setIsVerifying(processing);
-              }}
+              onComplete={() => role === 'company' ? handleNext() : handleComplete()}
+              onReadyChange={(isReady) => setDocumentsReady(isReady)}
+              onProcessingChange={(processing) => setIsVerifying(processing)}
+              allowBypass={accessTeam === true}
             />
           </div>
         )}
@@ -1164,8 +1107,34 @@ ${chainMessage}
     </div>
   );
 
+
+  const renderStep5 = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold">
+          {t('dashboard.onboarding.step5.title', 'Facility Information')}
+        </h2>
+        <p className="text-muted-foreground text-sm mt-2">
+          {t('dashboard.onboarding.step5.description', 'Please provide the official GLN (Global Location Number) for your facility to verify your organization.')}
+        </p>
+      </div>
+
+      <div className="space-y-6 max-w-lg mx-auto">
+        <div className="animate-in fade-in slide-in-from-top-4">
+          <FacilityGLNVerification
+            ref={glnVerificationRef}
+            mode="facilityInfo"
+            onComplete={() => handleComplete()}
+            onReadyChange={(isReady) => setDocumentsReady(isReady)}
+            onProcessingChange={(processing) => setIsVerifying(processing)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   const getNextButtonText = () => {
-    const maxStep = role === 'chain' ? 3 : 4;
+    const maxStep = role === 'chain' ? 3 : (role === 'company' ? 5 : 4);
     if (step === maxStep) return "Complete & Start Tutorial";
     if (step === 1) return "Continue";
     return "Next";
@@ -1182,21 +1151,24 @@ ${chainMessage}
       if (role === 'chain') return true;
       return documentsReady;
     }
+    if (step === 5) {
+      return documentsReady;
+    }
     return true;
   };
 
   const isTwoColumnLayout = step === 3 && isEmployed && !accessTeam;
-  
+
   // Detect layout change and handle resize - but don't override step transitions
   useEffect(() => {
     const prevLayout = prevTwoColumnLayoutRef.current;
     const currentLayout = isTwoColumnLayout;
-    
+
     if (prevLayout !== currentLayout && !isTransitioning) {
       console.warn('[FirstTimeModal] 🔄 Layout change detected (not during step transition):', { prevLayout, currentLayout });
       setIsResizing(true);
       setContentOpacity(0);
-      
+
       // Wait for resize animation to complete (300ms transition + buffer)
       const resizeTimeout = setTimeout(() => {
         console.warn('[FirstTimeModal] ✅ Resize complete, starting fade-in');
@@ -1206,15 +1178,15 @@ ${chainMessage}
           setContentOpacity(1);
         }, 50);
       }, 350);
-      
+
       prevTwoColumnLayoutRef.current = currentLayout;
-      
+
       return () => clearTimeout(resizeTimeout);
     } else {
       prevTwoColumnLayoutRef.current = currentLayout;
     }
   }, [isTwoColumnLayout, isTransitioning]);
-  
+
   // Also check for layout change when step changes and handle it in the transition
   useEffect(() => {
     if (!isTransitioning && isTwoColumnLayout !== prevTwoColumnLayoutRef.current) {
@@ -1261,7 +1233,7 @@ ${chainMessage}
         <div className={styles.modalContent} style={{ position: 'relative', overflow: 'hidden' }}>
           {/* Overlay to hide content during modal resize - Solution G */}
           {isResizing && (
-            <div 
+            <div
               className="resize-overlay"
               style={{
                 position: 'absolute',
@@ -1279,12 +1251,12 @@ ${chainMessage}
             />
           )}
           {shouldRenderContent && (
-            <div 
+            <div
               ref={contentWrapperRef}
-              key={displayStep} 
+              key={displayStep}
               className={`step-content-wrapper ${(isTransitioning || isResizing) && contentOpacity === 0 ? 'step-content-wrapper--hidden' : ''}`}
-              style={{ 
-                opacity: contentOpacity, 
+              style={{
+                opacity: contentOpacity,
                 transition: contentOpacity === 0 ? 'none' : 'opacity 0.2s ease-in-out',
                 display: ((isTransitioning || isResizing) && contentOpacity === 0) ? 'none' : 'block',
                 visibility: (contentOpacity === 0 || isResizing) ? 'hidden' : 'visible',
@@ -1297,6 +1269,7 @@ ${chainMessage}
               {displayStep === 2 && renderStep2()}
               {displayStep === 3 && renderStep3()}
               {displayStep === 4 && renderStep4()}
+              {displayStep === 5 && renderStep5()}
             </div>
           )}
         </div>
@@ -1313,7 +1286,7 @@ ${chainMessage}
             </button>
           )}
 
-          {step !== 3 && (step !== 3 || role !== 'chain') && step !== 4 && (
+          {step !== 3 && (step !== 3 || role !== 'chain') && step !== 4 && step !== 5 && (
             <button
               onClick={handleNext}
               disabled={!canProceed() || isProcessing}
@@ -1324,12 +1297,13 @@ ${chainMessage}
             </button>
           )}
 
-          {/* Step 4: Verify Account Button */}
-          {step === 4 && (role === 'worker' || role === 'company') && (
+
+          {/* Step 4 & 5: Verify Account Button */}
+          {(step === 4 || step === 5) && (role === 'worker' || role === 'company') && (
             <button
               onClick={() => {
-                if (verifyHandlerRef.current) {
-                  verifyHandlerRef.current();
+                if (glnVerificationRef.current?.handleVerify) {
+                  glnVerificationRef.current.handleVerify();
                 }
               }}
               disabled={!canProceed() || isProcessing || isVerifying}

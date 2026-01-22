@@ -11,7 +11,7 @@ const admin = require('firebase-admin');
  */
 exports.syncAdminRoles = onDocumentUpdated({
     document: 'facilityProfiles/{facilityId}',
-    database: '(default)',
+    database: 'medishift',
     region: 'europe-west6'
 }, async (event) => {
     const facilityId = event.params.facilityId;
@@ -238,7 +238,7 @@ exports.syncAdminRoles = onDocumentUpdated({
  */
 exports.cleanupRolesOnFacilityDelete = onDocumentDeleted({
     document: 'facilityProfiles/{facilityId}',
-    database: '(default)',
+    database: 'medishift',
     region: 'europe-west6'
 }, async (event) => {
     const facilityId = event.params.facilityId;

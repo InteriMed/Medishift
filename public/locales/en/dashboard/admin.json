@@ -72,7 +72,8 @@
     "applied": "Applied",
     "forceAssign": "Force Assign",
     "editPay": "Edit Pay",
-    "margin": "Rate"
+    "margin": "Rate",
+    "searchCriteria": "Search Criteria"
   },
   "database": {
     "title": "Database Editor",
@@ -87,7 +88,8 @@
     "save": "Save",
     "saving": "Saving...",
     "warning": "Warning: Direct database editing can cause data inconsistencies. Use with caution.",
-    "selectDocument": "Search and select a document to edit"
+    "selectDocument": "Search and select a document to edit",
+    "noResults": "No Results"
   },
   "debug": {
     "accountCreation": "Account Creation Tool",
@@ -158,7 +160,8 @@
     "auditLogs": "Audit Logs",
     "notifications": "Notifications",
     "adminManagement": "Admin Management",
-    "payrollExport": "Payroll Export"
+    "payrollExport": "Payroll Export",
+    "glnTest": "Gln Test"
   },
   "payroll": {
     "title": "Payroll Export Tool",
@@ -210,6 +213,118 @@
       "unexportedUsersDesc": "Exports all user profiles with billing information that have not been exported yet (marks them as exported after download)",
       "allUsers": "All Users:",
       "allUsersDesc": "Exports all user profiles with billing information regardless of export status (does not mark them as exported)"
+    }
+  },
+  "finance": {
+    "ar": {
+      "title": "Title",
+      "unpaidCommissions": "Unpaid Commissions",
+      "unpaidCommissionsDesc": "Unpaid Commissions Desc",
+      "totalOutstanding": "Total Outstanding",
+      "totalOutstandingDesc": "Total Outstanding Desc",
+      "outstandingInvoices": "Outstanding Invoices",
+      "export": "Export",
+      "invoiceId": "Invoice Id",
+      "facility": "Facility",
+      "amount": "Amount",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "actions": "Actions",
+      "sendReminder": "Send Reminder",
+      "noInvoices": "No Invoices"
+    },
+    "filterByDate": "Filter By Date",
+    "enableDateFilter": "Enable Date Filter",
+    "from": "From",
+    "to": "To",
+    "balanceSheet": {
+      "title": "Title",
+      "revenues": "Revenues",
+      "commissions": "Commissions",
+      "totalRevenues": "Total Revenues",
+      "directCosts": "Direct Costs",
+      "referralBonuses": "Referral Bonuses",
+      "totalDirectCosts": "Total Direct Costs",
+      "grossProfit": "Gross Profit",
+      "grossProfitDesc": "Gross Profit Desc",
+      "fixedCosts": "Fixed Costs",
+      "costName": "Cost Name",
+      "type": "Type",
+      "date": "Date",
+      "amount": "Amount",
+      "noFixedCosts": "No Fixed Costs",
+      "totalFixedCosts": "Total Fixed Costs",
+      "netProfit": "Net Profit"
+    },
+    "period": "Period",
+    "revenue": {
+      "title": "Title",
+      "totalCommissions": "Total Commissions",
+      "saasMRR": "Saas M R R",
+      "churnRate": "Churn Rate",
+      "marginByProfession": "Margin By Profession",
+      "noData": "No Data"
+    },
+    "spendings": {
+      "title": "Title",
+      "totalReferrals": "Total Referrals",
+      "vouchers": "Vouchers",
+      "marketingSpend": "Marketing Spend",
+      "cac": "Cac",
+      "cacDesc": "Cac Desc",
+      "referralPayouts": "Referral Payouts",
+      "referrer": "Referrer",
+      "referred": "Referred",
+      "amount": "Amount",
+      "status": "Status",
+      "claimedAt": "Claimed At",
+      "noReferrals": "No Referrals"
+    }
+  },
+  "management": {
+    "enterEmail": "Enter Email",
+    "inviteSent": "Invite Sent",
+    "title": "Title",
+    "inviteEmployee": "Invite Employee",
+    "email": "Email",
+    "inviting": "Inviting",
+    "sendInvite": "Send Invite",
+    "employees": "Employees",
+    "search": "Search",
+    "noEmployees": "No Employees"
+  },
+  "system": {
+    "audit": {
+      "allActions": "All Actions",
+      "userApproved": "User Approved",
+      "userRejected": "User Rejected",
+      "shiftAssigned": "Shift Assigned",
+      "payRateChanged": "Pay Rate Changed",
+      "commissionChanged": "Commission Changed",
+      "title": "Title",
+      "searchCriteria": "Search Criteria",
+      "search": "Search",
+      "timestamp": "Timestamp",
+      "action": "Action",
+      "user": "User",
+      "target": "Target",
+      "details": "Details",
+      "noLogs": "No Logs"
+    },
+    "notifications": {
+      "title": "Title",
+      "create": "Create",
+      "recent": "Recent",
+      "sendNow": "Send Now",
+      "noNotifications": "No Notifications",
+      "createNotification": "Create Notification",
+      "message": "Message",
+      "targetSegment": "Target Segment",
+      "allUsers": "All Users",
+      "professionals": "Professionals",
+      "facilities": "Facilities",
+      "geneva": "Geneva",
+      "cancel": "Cancel"
     }
   }
 }

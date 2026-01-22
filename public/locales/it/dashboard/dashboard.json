@@ -1,206 +1,270 @@
 {
-    "dashboard": {
-        "sidebar": {
-            "overview": "Panoramica",
-            "profile": "Profilo",
-            "contracts": "Contratti",
-            "messages": "Messaggi",
-            "calendar": "Calendario",
-            "marketplace": "Marketplace",
-            "payroll": "Buste Paga",
-            "organization": "Organizzazione",
-            "settings": "Impostazioni",
-            "incompleteProfile": "Il tuo profilo è incompleto",
-            "completeProfileFirst": "Completa prima il tuo profilo"
-        },
-        "header": {
-            "search": "Cerca...",
-            "worker": "Lavoratore",
-            "overview": {
-                "title": "Panoramica",
-                "subtitle": "Benvenuto nella tua dashboard"
-            },
-            "calendar": {
-                "title": "Calendario",
-                "subtitle": "Gestisci i tuoi appuntamenti e programmi"
-            },
-            "messages": {
-                "title": "Messaggi",
-                "subtitle": "Comunica con strutture e professionisti"
-            },
-            "contracts": {
-                "title": "Contratti",
-                "subtitle": "Visualizza e gestisci i tuoi contratti"
-            },
-            "profile": {
-                "title": "Profilo",
-                "subtitle": "Gestisci le tue informazioni personali"
-            },
-            "marketplace": {
-                "title": "Marketplace",
-                "subtitle": "Trova posizioni o professionisti"
-            },
-            "payroll": {
-                "title": "Buste Paga",
-                "subtitle": "Gestisci pagamenti e richieste del personale"
-            },
-            "organization": {
-                "title": "Organizzazione",
-                "subtitle": "Gestisci la tua catena o gruppo di farmacie"
-            },
-            "settings": {
-                "title": "Impostazioni",
-                "subtitle": "Configura le preferenze del tuo account"
-            }
-        },
-        "loading": "Caricamento dati dashboard...",
-        "error": "Errore nel caricamento dei dati della dashboard",
-        "completeProfile": {
-            "completeProfileTitle": "Completa il tuo Profilo",
-            "completeProfileDescription": "Benvenuto su MediShift! Per accedere a tutte le funzionalità della piattaforma, completa prima il tuo profilo.",
-            "completeProfileButton": "Ho capito, crea il mio profilo"
-        },
-        "overview": {
-            "title": "Benvenuto su MediShift!",
-            "welcome": "Ciao",
-            "welcomeTitle": "Benvenuto su MediShift!",
-            "totalContracts": "Contratti Totali",
-            "activeHours": "Ore Attive",
-            "earnings": "Guadagni",
-            "upcomingJobs": "Lavori in Arrivo",
-            "recentActivity": "Attività Recente",
-            "noRecentActivity": "Nessuna attività recente da mostrare"
-        },
-        "onboarding": {
-            "verify_account": "Verifica il Tuo Account",
-            "verify_intro": "Fornisci i tuoi dettagli qui sotto. Utilizziamo una verifica AI sicura per certificare il tuo account.",
-            "step1": {
-                "title": "Considerazioni Legali",
-                "facilityLegalNotice": "Avviso Legale per le Strutture",
-                "facilityLegalText1": "Come struttura sanitaria che utilizza InteriMed, è necessario garantire la conformità alle leggi sul lavoro svizzere quando si assume personale temporaneo.",
-                "facilityLegalText2": "Siete responsabili di verificare che i lavoratori temporanei rispettino gli orari di lavoro massimi, i periodi di riposo e altri requisiti legali.",
-                "facilityLegalText3": "Assicuratevi che tutto il personale temporaneo possieda le qualifiche e i permessi di lavoro necessari.",
-                "professionalLegalNotice": "Avviso Legale per i Professionisti",
-                "professionalLegalText1": "Per i dipendenti che lavorano al 100% (di solito 40-42 ore/settimana), è quasi impossibile accettare turni extra in un'altra farmacia legalmente.",
-                "professionalLegalText2": "La Legge sul Lavoro Svizzera fissa un massimo rigoroso di 50 ore settimanali (45 ore in alcuni contesti retail). Un dipendente al 100% lavora tipicamente 42 ore, lasciando solo 8 ore massimo.",
-                "professionalLegalText3": "Secondo il Codice delle Obbligazioni (Art. 321a), devi ottenere il permesso scritto dal tuo datore di lavoro principale per lavorare per un concorrente.",
-                "professionalLegalText4": "La legge richiede 11 ore consecutive di riposo tra i turni (può essere ridotto a 8 ore una volta alla settimana).",
-                "agreementStatus": "Stato dell'Accordo",
-                "areYouEmployed": "Sei attualmente impiegato da una struttura?",
-                "areYouEmployedDescription": "Attiva se lavori per un'organizzazione",
-                "termsAcceptance": "Termini e Considerazioni Legali",
-                "termsAcceptanceDescription": "Comprendo e riconosco le considerazioni legali e i termini di servizio",
-                "note": "Proseguendo, riconosci di aver letto e compreso le considerazioni legali applicabili al tuo ruolo."
-            },
-            "step2": {
-                "title": "Seleziona il Tuo Ruolo",
-                "description": "Scegli l'opzione che descrive meglio la tua situazione",
-                "professional": "Professionista",
-                "professionalDescription": "Sono un professionista sanitario in cerca di opportunità lavorative",
-                "facility": "Struttura",
-                "facilityDescription": "Rappresento un'azienda o una struttura in cerca di professionisti",
-                "organization": "Organizzazione",
-                "organizationDescription": "Rappresento una catena di farmacie o un'organizzazione"
-            },
-            "step3": {
-                "chain": {
-                    "title": "Informazioni di Contatto",
-                    "description": "Fornisci i tuoi dati di contatto in modo che possiamo aiutarti a configurare il tuo account organizzazione",
-                    "phonePrefix": "Prefisso Telefonico",
-                    "phoneNumber": "Numero di Telefono",
-                    "phoneNumberPlaceholder": "Inserisci il tuo numero di telefono",
-                    "messageToSupport": "Messaggio al Supporto",
-                    "messagePlaceholder": "Descrivi la tua organizzazione e le tue esigenze..."
-                }
-            },
-            "step4": {
-                "title": "Verifica GLN",
-                "description": "Hai un GLN (Global Location Number)?",
-                "hasGLN": "Ho un numero GLN"
-            },
-            "professional_gln": {
-                "title": "Informazioni GLN",
-                "text1": "Numero professionale richiesto per i professionisti medici certificati in Svizzera (farmacisti, dentisti, medici, ecc.).",
-                "text2": "Per le altre professioni (infermieri, assistenti, ecc.), questo numero non è obbligatorio.",
-                "text3": "Abilita se possiedi un tuo numero GLN."
-            },
-            "company_gln": {
-                "title": "Informazioni GLN",
-                "text1": "Il GLN (Global Location Number) è un identificatore unico per la tua struttura o azienda.",
-                "text2": "Fornire il tuo GLN ci aiuta a verificare automaticamente i dettagli della tua attività e accelera il processo di verifica.",
-                "text3": "Questo campo è facoltativo, ma consigliato per una verifica più rapida dell'account."
-            },
-            "input": {
-                "professional_gln": "GLN Professionale",
-                "company_gln": "GLN Aziendale",
-                "professional_gln_optional": "GLN Professionale (Facoltativo)",
-                "company_gln_optional": "GLN Aziendale (Facoltativo)"
-            },
-            "docs": {
-                "title": "Documenti di Verifica",
-                "facility_id": {
-                    "label": "1. Documento d'Identità della Persona Responsabile",
-                    "desc": "Carica la carta d'identità di una persona responsabile elencata nel registro."
-                },
-                "facility_bill": {
-                    "label": "2. Fattura / Documento Fiscale",
-                    "desc": "Carica una fattura recente o un documento fiscale per la verifica della struttura."
-                },
-                "select_id_type": "Seleziona Tipo ID",
-                "internal_ref": "Riferimento Interno / Numero Ordine (Facoltativo)",
-                "professional_id": "Documento d'Identità",
-                "select_doc_type": "Seleziona tipo documento",
-                "upload_id": "Carica Documento d'Identità",
-                "upload_bill": "Carica Fattura"
-            },
-            "errors": {
-                "service_high_demand": "Alta Richiesta di Servizio",
-                "wait_message": "Attendi {{seconds}} secondi prima di riprovare",
-                "can_try_again": "Puoi riprovare ora.",
-                "verification_failed": "Verifica Fallita",
-                "review_inputs": "Controlla i tuoi inserimenti. Se ritieni che si tratti di un errore, contatta il nostro supporto urgente qui sotto.",
-                "contact_support": "Contatta Supporto Urgente",
-                "report_issue": "Segnala Problema via Email",
-                "describe_issue": "Descrivi il problema che stai riscontrando..."
-            },
-            "success": {
-                "verified_title": "Account Verificato con Successo!",
-                "professional_redirect": "Il tuo profilo professionale è ora attivo. Reindirizzamento per completare la configurazione del profilo...",
-                "facility_redirect": "Il tuo profilo struttura è ora attivo. Reindirizzamento per completare la configurazione del profilo..."
-            },
-            "phone": {
-                "title": "Verifica Mobile",
-                "subtitle": "Inserisci il tuo numero di telefono per ricevere un codice identità sicuro.",
-                "secured_code": "Codice Sicuro",
-                "sent_text": "Abbiamo inviato un codice di verifica a {{prefix}} {{number}}.",
-                "verified_title": "Telefono Verificato",
-                "verified_text": "Il tuo numero di telefono {{prefix}} {{number}} è stato verificato con successo.",
-                "verification_complete": "Verifica Completata",
-                "verify_continue": "Verifica e continua",
-                "verifying": "Verifica in corso...",
-                "resend": "Invia di nuovo codice",
-                "resend_wait": "Reinvia in {{seconds}}s",
-                "change_number": "Cambia numero",
-                "verification_code_label": "Codice di Verifica",
-                "sending": "Invio..."
-            },
-            "buttons": {
-                "back": "Indietro",
-                "nextStep": "Prossimo Passo",
-                "sendCode": "Invia Codice",
-                "validate": "Valida",
-                "contactAndFinish": "Contatta e Termina",
-                "verifying": "Verifica in corso...",
-                "completeAccount": "Completa Account",
-                "verify_account": "Verifica Account"
-            }
-        }
+  "dashboard": {
+    "sidebar": {
+      "overview": "Panoramica",
+      "profile": "Profilo",
+      "contracts": "Contratti",
+      "messages": "Messaggi",
+      "calendar": "Calendario",
+      "marketplace": "Marketplace",
+      "payroll": "Buste Paga",
+      "organization": "Organizzazione",
+      "settings": "Impostazioni",
+      "incompleteProfile": "Il tuo profilo è incompleto",
+      "completeProfileFirst": "Completa prima il tuo profilo"
     },
-    "userMenu": {
-        "profile": "Il Mio Profilo",
-        "settings": "Impostazioni",
-        "language": "Lingua",
-        "logout": "Esci",
-        "user": "Utente"
+    "header": {
+      "search": "Cerca...",
+      "worker": "Lavoratore",
+      "overview": {
+        "title": "Panoramica",
+        "subtitle": "Benvenuto nella tua dashboard"
+      },
+      "calendar": {
+        "title": "Calendario",
+        "subtitle": "Gestisci i tuoi appuntamenti e programmi"
+      },
+      "messages": {
+        "title": "Messaggi",
+        "subtitle": "Comunica con strutture e professionisti"
+      },
+      "contracts": {
+        "title": "Contratti",
+        "subtitle": "Visualizza e gestisci i tuoi contratti"
+      },
+      "profile": {
+        "title": "Profilo",
+        "subtitle": "Gestisci le tue informazioni personali"
+      },
+      "marketplace": {
+        "title": "Marketplace",
+        "subtitle": "Trova posizioni o professionisti"
+      },
+      "payroll": {
+        "title": "Buste Paga",
+        "subtitle": "Gestisci pagamenti e richieste del personale"
+      },
+      "organization": {
+        "title": "Organizzazione",
+        "subtitle": "Gestisci la tua catena o gruppo di farmacie"
+      },
+      "settings": {
+        "title": "Impostazioni",
+        "subtitle": "Configura le preferenze del tuo account"
+      },
+      "profileResetSuccess": "Profile Reset Success",
+      "profileResetError": "Profile Reset Error",
+      "createBusiness": "Create Business",
+      "createBusinessDesc": "Create Business Desc",
+      "createProfessional": "Create Professional",
+      "createProfessionalDesc": "Create Professional Desc",
+      "resetProfile": "Reset Profile",
+      "resetProfileTitle": "Reset Profile Title",
+      "resetProfileMessage": "Reset Profile Message",
+      "resetConfirm": "Reset Confirm"
+    },
+    "loading": "Caricamento dati dashboard...",
+    "error": "Errore nel caricamento dei dati della dashboard",
+    "completeProfile": {
+      "completeProfileTitle": "Completa il tuo Profilo",
+      "completeProfileDescription": "Benvenuto su MediShift! Per accedere a tutte le funzionalità della piattaforma, completa prima il tuo profilo.",
+      "completeProfileButton": "Ho capito, crea il mio profilo"
+    },
+    "overview": {
+      "title": "Benvenuto su MediShift!",
+      "welcome": "Ciao",
+      "welcomeTitle": "Benvenuto su MediShift!",
+      "totalContracts": "Contratti Totali",
+      "activeHours": "Ore Attive",
+      "earnings": "Guadagni",
+      "upcomingJobs": "Lavori in Arrivo",
+      "recentActivity": "Attività Recente",
+      "noRecentActivity": "Nessuna attività recente da mostrare"
+    },
+    "onboarding": {
+      "verify_account": "Verifica il Tuo Account",
+      "verify_intro": "Fornisci i tuoi dettagli qui sotto. Utilizziamo una verifica AI sicura per certificare il tuo account.",
+      "step1": {
+        "title": "Considerazioni Legali",
+        "facilityLegalNotice": "Avviso Legale per le Strutture",
+        "facilityLegalText1": "Come struttura sanitaria che utilizza InteriMed, è necessario garantire la conformità alle leggi sul lavoro svizzere quando si assume personale temporaneo.",
+        "facilityLegalText2": "Siete responsabili di verificare che i lavoratori temporanei rispettino gli orari di lavoro massimi, i periodi di riposo e altri requisiti legali.",
+        "facilityLegalText3": "Assicuratevi che tutto il personale temporaneo possieda le qualifiche e i permessi di lavoro necessari.",
+        "professionalLegalNotice": "Avviso Legale per i Professionisti",
+        "professionalLegalText1": "Per i dipendenti che lavorano al 100% (di solito 40-42 ore/settimana), è quasi impossibile accettare turni extra in un'altra farmacia legalmente.",
+        "professionalLegalText2": "La Legge sul Lavoro Svizzera fissa un massimo rigoroso di 50 ore settimanali (45 ore in alcuni contesti retail). Un dipendente al 100% lavora tipicamente 42 ore, lasciando solo 8 ore massimo.",
+        "professionalLegalText3": "Secondo il Codice delle Obbligazioni (Art. 321a), devi ottenere il permesso scritto dal tuo datore di lavoro principale per lavorare per un concorrente.",
+        "professionalLegalText4": "La legge richiede 11 ore consecutive di riposo tra i turni (può essere ridotto a 8 ore una volta alla settimana).",
+        "agreementStatus": "Stato dell'Accordo",
+        "areYouEmployed": "Sei attualmente impiegato da una struttura?",
+        "areYouEmployedDescription": "Attiva se lavori per un'organizzazione",
+        "termsAcceptance": "Termini e Considerazioni Legali",
+        "termsAcceptanceDescription": "Comprendo e riconosco le considerazioni legali e i termini di servizio",
+        "note": "Proseguendo, riconosci di aver letto e compreso le considerazioni legali applicabili al tuo ruolo."
+      },
+      "step2": {
+        "title": "Seleziona il Tuo Ruolo",
+        "description": "Scegli l'opzione che descrive meglio la tua situazione",
+        "professional": "Professionista",
+        "professionalDescription": "Sono un professionista sanitario in cerca di opportunità lavorative",
+        "facility": "Struttura",
+        "facilityDescription": "Rappresento un'azienda o una struttura in cerca di professionisti",
+        "organization": "Organizzazione",
+        "organizationDescription": "Rappresento una catena di farmacie o un'organizzazione"
+      },
+      "step3": {
+        "chain": {
+          "title": "Informazioni di Contatto",
+          "description": "Fornisci i tuoi dati di contatto in modo che possiamo aiutarti a configurare il tuo account organizzazione",
+          "phonePrefix": "Prefisso Telefonico",
+          "phoneNumber": "Numero di Telefono",
+          "phoneNumberPlaceholder": "Inserisci il tuo numero di telefono",
+          "messageToSupport": "Messaggio al Supporto",
+          "messagePlaceholder": "Descrivi la tua organizzazione e le tue esigenze..."
+        }
+      },
+      "step4": {
+        "title": "Verifica GLN",
+        "description": "Hai un GLN (Global Location Number)?",
+        "hasGLN": "Ho un numero GLN",
+        "hasGLNDesc": "Has G L N Desc"
+      },
+      "professional_gln": {
+        "title": "Informazioni GLN",
+        "text1": "Numero professionale richiesto per i professionisti medici certificati in Svizzera (farmacisti, dentisti, medici, ecc.).",
+        "text2": "Per le altre professioni (infermieri, assistenti, ecc.), questo numero non è obbligatorio.",
+        "text3": "Abilita se possiedi un tuo numero GLN."
+      },
+      "company_gln": {
+        "title": "Informazioni GLN",
+        "text1": "Il GLN (Global Location Number) è un identificatore unico per la tua struttura o azienda.",
+        "text2": "Fornire il tuo GLN ci aiuta a verificare automaticamente i dettagli della tua attività e accelera il processo di verifica.",
+        "text3": "Questo campo è facoltativo, ma consigliato per una verifica più rapida dell'account."
+      },
+      "input": {
+        "professional_gln": "GLN Professionale",
+        "company_gln": "GLN Aziendale",
+        "professional_gln_optional": "GLN Professionale (Facoltativo)",
+        "company_gln_optional": "GLN Aziendale (Facoltativo)"
+      },
+      "docs": {
+        "title": "Documenti di Verifica",
+        "facility_id": {
+          "label": "1. Documento d'Identità della Persona Responsabile",
+          "desc": "Carica la carta d'identità di una persona responsabile elencata nel registro."
+        },
+        "facility_bill": {
+          "label": "2. Fattura / Documento Fiscale",
+          "desc": "Carica una fattura recente o un documento fiscale per la verifica della struttura."
+        },
+        "select_id_type": "Seleziona Tipo ID",
+        "internal_ref": "Riferimento Interno / Numero Ordine (Facoltativo)",
+        "professional_id": "Documento d'Identità",
+        "select_doc_type": "Seleziona tipo documento",
+        "upload_id": "Carica Documento d'Identità",
+        "upload_bill": "Carica Fattura"
+      },
+      "errors": {
+        "service_high_demand": "Alta Richiesta di Servizio",
+        "wait_message": "Attendi {{seconds}} secondi prima di riprovare",
+        "can_try_again": "Puoi riprovare ora.",
+        "verification_failed": "Verifica Fallita",
+        "review_inputs": "Controlla i tuoi inserimenti. Se ritieni che si tratti di un errore, contatta il nostro supporto urgente qui sotto.",
+        "contact_support": "Contatta Supporto Urgente",
+        "report_issue": "Segnala Problema via Email",
+        "describe_issue": "Descrivi il problema che stai riscontrando...",
+        "missing_gln": "Missing_gln",
+        "gln_length": "Gln_length",
+        "missing_profession": "Missing_profession",
+        "missing_document": "Missing_document",
+        "missing_document_type": "Missing_document_type"
+      },
+      "success": {
+        "verified_title": "Account Verificato con Successo!",
+        "professional_redirect": "Il tuo profilo professionale è ora attivo. Reindirizzamento per completare la configurazione del profilo...",
+        "facility_redirect": "Il tuo profilo struttura è ora attivo. Reindirizzamento per completare la configurazione del profilo..."
+      },
+      "phone": {
+        "title": "Verifica Mobile",
+        "subtitle": "Inserisci il tuo numero di telefono per ricevere un codice identità sicuro.",
+        "secured_code": "Codice Sicuro",
+        "sent_text": "Abbiamo inviato un codice di verifica a {{prefix}} {{number}}.",
+        "verified_title": "Telefono Verificato",
+        "verified_text": "Il tuo numero di telefono {{prefix}} {{number}} è stato verificato con successo.",
+        "verification_complete": "Verifica Completata",
+        "verify_continue": "Verifica e continua",
+        "verifying": "Verifica in corso...",
+        "resend": "Invia di nuovo codice",
+        "resend_wait": "Reinvia in {{seconds}}s",
+        "change_number": "Cambia numero",
+        "verification_code_label": "Codice di Verifica",
+        "sending": "Invio..."
+      },
+      "buttons": {
+        "back": "Indietro",
+        "nextStep": "Prossimo Passo",
+        "sendCode": "Invia Codice",
+        "validate": "Valida",
+        "contactAndFinish": "Contatta e Termina",
+        "verifying": "Verifica in corso...",
+        "completeAccount": "Completa Account",
+        "verify_account": "Verifica Account"
+      },
+      "separateWorkerGLM": {
+        "title": "Title",
+        "description": "Description",
+        "complete": "Complete",
+        "completeMessage": "Complete Message",
+        "saving": "Saving",
+        "saveButton": "Save Button"
+      },
+      "profession": {
+        "title": "Title",
+        "select": "Select",
+        "locked_notice": "Locked_notice"
+      },
+      "step5": {
+        "title": "Title",
+        "description": "Description"
+      }
+    },
+    "navigation": {
+      "overview": "Overview",
+      "messages": "Messages",
+      "contracts": "Contracts",
+      "calendar": "Calendar",
+      "profile": "Profile",
+      "marketplace": "Marketplace",
+      "payroll": "Payroll",
+      "organization": "Organization",
+      "settings": "Settings"
+    },
+    "tutorial": {
+      "selectionTitle": "Selection Title",
+      "selectionSubtitle": "Selection Subtitle",
+      "currentPage": "Current Page",
+      "currentPageOnly": "Current Page Only",
+      "currentPageOnlyTitle": "Current Page Only Title",
+      "currentPageOnlyDesc": "Current Page Only Desc",
+      "allPages": "All Pages",
+      "allPagesTitle": "All Pages Title",
+      "allPagesDesc": "All Pages Desc"
     }
+  },
+  "userMenu": {
+    "profile": "Il Mio Profilo",
+    "settings": "Impostazioni",
+    "language": "Lingua",
+    "logout": "Esci",
+    "user": "Utente"
+  },
+  "common": {
+    "cancel": "Cancel"
+  },
+  "personalDetails": {
+    "phonePrefix": "Phone Prefix",
+    "selectPhonePrefix": "Select Phone Prefix",
+    "phoneNumber": "Phone Number",
+    "phonePlaceholder": "Phone Placeholder"
+  }
 }

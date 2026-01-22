@@ -18,7 +18,7 @@
   },
   "filters": {
     "canton": "Canton",
-    "city": "Ville", 
+    "city": "Ville",
     "area": "Zone",
     "experience": "Niveau d'expérience",
     "software": "Logiciel",
@@ -84,7 +84,30 @@
       "notesLabel": "Notes",
       "present": "Présent",
       "age": "{{age}} ans"
-    }
+    },
+    "pharmacist": "Pharmacist",
+    "verified": "Verified",
+    "pending": "Pending",
+    "open": "Open",
+    "locationNotSpecified": "Location Not Specified",
+    "type": "Type",
+    "fullTime": "Full Time",
+    "salary": "Salary",
+    "negotiable": "Negotiable",
+    "startDate": "Start Date",
+    "immediate": "Immediate",
+    "workingHours": "Working Hours",
+    "profession": "Profession",
+    "hourlyRate": "Hourly Rate",
+    "availability": "Availability",
+    "flexible": "Flexible",
+    "jobDescription": "Job Description",
+    "about": "About",
+    "requirements": "Requirements",
+    "specialties": "Specialties",
+    "agreement": "Agreement",
+    "applyForPosition": "Apply For Position",
+    "contactPharmacist": "Contact Pharmacist"
   },
   "common": {
     "notAvailable": "Non disponible",
@@ -94,5 +117,26 @@
     "years_plural": "{{count}} ans",
     "months": "{{count}} mois",
     "months_plural": "{{count}} mois"
+  },
+  "listingCard": {
+    "salaryNegotiable": "Salary Negotiable",
+    "availablePharmacist": "Available Pharmacist",
+    "generalPractice": "General Practice"
+  },
+  "experienceLevels": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "experienced": "Experienced"
+  },
+  "placeholders": {
+    "from": "From",
+    "to": "To"
+  },
+  "overlay": {
+    "title": "Title",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "clearAll": "Clear All",
+    "applyFilters": "Apply Filters"
   }
-} 
+}

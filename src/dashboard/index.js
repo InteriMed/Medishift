@@ -37,6 +37,9 @@ const AuditLogs = lazy(() => import('./admin/pages/system/AuditLogs'));
 const NotificationsCenter = lazy(() => import('./admin/pages/system/NotificationsCenter'));
 const PayrollExport = lazy(() => import('./admin/pages/payroll/PayrollExport'));
 const EmployeeManagement = lazy(() => import('./admin/pages/management/EmployeeManagement'));
+const LinkedInJobScraper = lazy(() => import('./admin/pages/operations/LinkedInJobScraper'));
+const GLNTestPage = lazy(() => import('./pages/glnTest/GLNTestPage'));
+const EmailCenter = lazy(() => import('./pages/admin/EmailCenter'));
 
 const Dashboard = () => {
   const location = useLocation();
@@ -78,15 +81,15 @@ const Dashboard = () => {
 
                 <Route
                   path="calendar/*"
-                  element={isPersonalWorkspace ? <Calendar userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
+                  element={(isPersonalWorkspace || isTeamWorkspace || !selectedWorkspace) ? <Calendar userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
                 />
                 <Route
                   path="messages/*"
-                  element={isPersonalWorkspace ? <Messages userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
+                  element={(isPersonalWorkspace || isTeamWorkspace || !selectedWorkspace) ? <Messages userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
                 />
                 <Route
                   path="contracts/*"
-                  element={isPersonalWorkspace ? <Contracts userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
+                  element={(isPersonalWorkspace || isTeamWorkspace || !selectedWorkspace) ? <Contracts userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
                 />
                 <Route
                   path="marketplace/*"
@@ -128,6 +131,9 @@ const Dashboard = () => {
                   <Route path="system/notifications" element={<NotificationsCenter />} />
                   <Route path="payroll/export" element={<PayrollExport />} />
                   <Route path="management/employees" element={<EmployeeManagement />} />
+                  <Route path="operations/job-scraper" element={<LinkedInJobScraper />} />
+                  <Route path="system/gln-test" element={<GLNTestPage />} />
+                  <Route path="email" element={<EmailCenter />} />
                 </Route>
 
                 <Route path="*" element={<div>Path not found: {location.pathname}</div>} />

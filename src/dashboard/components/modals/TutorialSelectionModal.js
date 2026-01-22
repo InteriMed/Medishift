@@ -30,12 +30,12 @@ const TutorialSelectionModal = ({
             'messages': t('dashboard.navigation.messages', 'Messages'),
             'contracts': t('dashboard.navigation.contracts', 'Contracts'),
             'calendar': t('dashboard.navigation.calendar', 'Calendar'),
-            'profile': t('dashboard.navigation.profile', 'Profile'),
             'marketplace': t('dashboard.navigation.marketplace', 'Marketplace'),
             'payroll': t('dashboard.navigation.payroll', 'Payroll'),
             'organization': t('dashboard.navigation.organization', 'Organization'),
             'settings': t('dashboard.navigation.settings', 'Settings'),
-            'profileTabs': t('dashboard.navigation.profile', 'Profile')
+            'profileTabs': t('dashboard.navigation.profile', 'Profile'),
+            'facilityProfileTabs': t('dashboard.navigation.profile', 'Profile')
         };
 
         return nameMap[pageName] || pageName.charAt(0).toUpperCase() + pageName.slice(1);

@@ -1,4 +1,8 @@
 {
+  "email": "Email",
+  "phone": "Phone",
+  "sending": "Sending...",
+  "verifying": "Verifying...",
   "no": "No",
   "yes": "Yes",
   "yesDiscard": "Yes, Discard",
@@ -7,7 +11,14 @@
       "button": "Log In"
     },
     "signup": {
-      "button": "Sign Up"
+      "button": "Sign Up",
+      "forms": {
+        "experience": {
+          "lessThan1": "Less Than1",
+          "1to3": "1to3",
+          "moreThan5": "More Than5"
+        }
+      }
     }
   },
   "common": {
@@ -24,6 +35,10 @@
     "remove": "Remove",
     "update": "Update",
     "submit": "Submit",
+    "email": "Email",
+    "phone": "Phone",
+    "sending": "Sending...",
+    "verifying": "Verifying...",
     "warning": "Warning",
     "info": "Information",
     "yes": "Yes",
@@ -131,7 +146,12 @@
       "title": "Subscribe to Our Newsletter",
       "placeholder": "Your email address",
       "subscribe": "Subscribe",
-      "consent": "By subscribing, you agree to receive our newsletter and marketing communications."
+      "consent": "By subscribing, you agree to receive our newsletter and marketing communications.",
+      "invalidEmail": "Invalid Email",
+      "rateLimitExceeded": "Rate Limit Exceeded",
+      "success": "Success",
+      "error": "Error",
+      "submitting": "Submitting"
     }
   },
   "validation": {
@@ -145,7 +165,8 @@
     },
     "phone": "Please enter a valid phone number",
     "postalCode": "Please enter a valid 4-digit postal code",
-    "ahvFormat": "Please enter a valid AHV number (756.XXXX.XXXX.XX)"
+    "ahvFormat": "Please enter a valid AHV number (756.XXXX.XXXX.XX)",
+    "minLength": "Min Length"
   },
   "jobRoles": {
     "pharmacist": "Pharmacist",
@@ -241,7 +262,8 @@
         "blog": "Blog",
         "faq": "FAQ",
         "login": "Login",
-        "signup": "Sign Up"
+        "signup": "Sign Up",
+        "forPharmacies": "For Pharmacies"
       },
       "resources": {
         "title": "Resources"
@@ -256,7 +278,9 @@
         "title": "This Page",
         "sitemap": "Sitemap"
       }
-    }
+    },
+    "login": "Login",
+    "signup": "Signup"
   },
   "buttons": {
     "getStarted": "Get Started",
@@ -273,7 +297,8 @@
       "title": "Whoa, You're Fast!",
       "description": "The page you are looking for doesn't exist or has not been deployed yet, but leave us your contact, in the newsletter or register already. We'll be in touch soon!",
       "message": "Please check back soon as we complete the final touches on our healthcare platform.",
-      "return_home": "Return to Homepage"
+      "return_home": "Return to Homepage",
+      "go_back": "Go_back"
     }
   },
   "professionals": {
@@ -413,7 +438,157 @@
         "confirmAll": "This and All Future Events",
         "cancel": "Cancel",
         "cancelSingleEvent": "Cancel"
+      },
+      "errorLoadingEvents": "Error Loading Events",
+      "eventCreated": "Event Created",
+      "errorCreatingEvent": "Error Creating Event",
+      "eventUpdated": "Event Updated",
+      "errorUpdatingEvent": "Error Updating Event",
+      "eventDeleted": "Event Deleted",
+      "errorDeletingEvent": "Error Deleting Event"
+    },
+    "marketplace": {
+      "loginRequired": "Login Required",
+      "applicationSent": "Application Sent",
+      "messageSent": "Message Sent",
+      "actionFailed": "Action Failed",
+      "shareFailed": "Share Failed",
+      "copiedToClipboard": "Copied To Clipboard",
+      "clipboardFailed": "Clipboard Failed",
+      "jobDescription": "Job Description",
+      "noDescriptionProvided": "No Description Provided",
+      "requirements": "Requirements",
+      "noRequirementsListed": "No Requirements Listed",
+      "experience": "Experience",
+      "noExperienceProvided": "No Experience Provided",
+      "availability": "Availability",
+      "availabilityNotSpecified": "Availability Not Specified",
+      "applyNow": "Apply Now",
+      "contactPharmacist": "Contact Pharmacist",
+      "share": "Share",
+      "filter": {
+        "noFiltersApplied": "No Filters Applied",
+        "title": "Title",
+        "canton": "Canton",
+        "city": "City",
+        "clear": "Clear",
+        "apply": "Apply",
+        "activeFilterCount": "Active Filter Count"
+      }
+    },
+    "recent_activity": "Recent_activity",
+    "no_recent_activity": "No_recent_activity",
+    "view_all": "View_all",
+    "from_last_period": "From_last_period",
+    "errors": {
+      "failedToLoadWorkspaces": "Failed To Load Workspaces",
+      "failedToCreateWorkspace": "Failed To Create Workspace",
+      "failedToUpdateWorkspace": "Failed To Update Workspace",
+      "failedToDeleteWorkspace": "Failed To Delete Workspace"
+    },
+    "workspace": {
+      "created": "Created",
+      "updated": "Updated",
+      "deleted": "Deleted"
+    },
+    "contracts": {
+      "editContract": "Edit Contract",
+      "newContract": "New Contract",
+      "title": "Title",
+      "description": "Description",
+      "status": "Status",
+      "statusDraft": "Status Draft",
+      "statusSent": "Status Sent",
+      "statusSigned": "Status Signed",
+      "statusActive": "Status Active",
+      "statusCompleted": "Status Completed",
+      "statusCancelled": "Status Cancelled",
+      "parties": "Parties",
+      "addParty": "Add Party",
+      "party": "Party",
+      "partyName": "Party Name",
+      "partyRole": "Party Role",
+      "partyEmail": "Party Email",
+      "partyPhone": "Party Phone",
+      "terms": "Terms",
+      "addTerm": "Add Term",
+      "term": "Term",
+      "termTitle": "Term Title",
+      "termContent": "Term Content",
+      "cancel": "Cancel",
+      "updating": "Updating",
+      "creating": "Creating",
+      "updateContract": "Update Contract",
+      "createContract": "Create Contract",
+      "errorLoadingContracts": "Error Loading Contracts",
+      "statusUpdated": "Status Updated",
+      "errorUpdatingStatus": "Error Updating Status"
+    },
+    "onboarding": {
+      "errors": {
+        "service_high_demand": "Service_high_demand",
+        "wait_message": "Wait_message",
+        "can_try_again": "Can_try_again",
+        "verification_failed": "Verification_failed",
+        "review_inputs": "Review_inputs",
+        "contact_support": "Contact_support",
+        "describe_issue": "Describe_issue",
+        "report_issue": "Report_issue"
+      },
+      "input": {
+        "professional_gln": "Professional_gln",
+        "company_gln": "Company_gln",
+        "professional_gln_optional": "Professional_gln_optional",
+        "company_gln_optional": "Company_gln_optional"
+      },
+      "professional_gln": {
+        "title": "Title",
+        "text1": "Text1",
+        "text2": "Text2",
+        "text3": "Text3"
+      },
+      "company_gln": {
+        "title": "Title",
+        "text1": "Text1",
+        "text2": "Text2",
+        "text3": "Text3"
+      },
+      "success": {
+        "verified_title": "Verified_title",
+        "professional_redirect": "Professional_redirect",
+        "facility_redirect": "Facility_redirect"
       }
     }
-  }
+  },
+  "noChangesToCancel": "No Changes To Cancel",
+  "changesDiscarded": "Changes Discarded",
+  "cancel": "Cancel",
+  "loading": "Loading",
+  "legal": {
+    "privacy": {
+      "title": "Title"
+    },
+    "terms": {
+      "title": "Title"
+    }
+  },
+  "processing": "Processing",
+  "deleteConfirmation": {
+    "title": "Title",
+    "message": "Message",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "contractWarning": "Contract Warning",
+    "deleteThisOnly": "Delete This Only",
+    "deleteAllFuture": "Delete All Future",
+    "removeWorker": "Remove Worker",
+    "removeWorkerMessage": "Remove Worker Message",
+    "remove": "Remove"
+  },
+  "close": "Close",
+  "creating": "Creating",
+  "create": "Create",
+  "refresh": "Refresh",
+  "settings": "Settings",
+  "back": "Back"
 }

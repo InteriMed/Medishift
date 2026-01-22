@@ -103,24 +103,21 @@ export const useCalendarState = (initialDate = new Date()) => {
     }
   }, [currentDate]);
 
-  // Day click handler - switches to the view selected in the header (week or day)
   const handleDayClick = useCallback((date) => {
     const direction = date > currentDate ? 1 : -1;
     setSlideDirection(direction > 0 ? 'left' : 'right');
-    setCurrentDate(date);
-
-    // Reset scroll to center when selecting a specific date
     setWeekScrollOffset(0);
     setDayScrollOffset(0);
 
-    // Switch to the view selected in the header
-    // If 'day' is selected in header, switch to day view
-    // If 'week' is selected in header, switch to week view
-    // If no view is selected (sidebar), default to week view
-    if (view === 'day') {
+    const isSameDate = currentDate.toDateString() === date.toDateString();
+
+    if (view === 'day' && isSameDate) {
+      setView('week');
+    } else if (view === 'week') {
+      setCurrentDate(date);
       setView('day');
     } else {
-      setView('week');
+      setCurrentDate(date);
     }
   }, [currentDate, view, setView]);
 

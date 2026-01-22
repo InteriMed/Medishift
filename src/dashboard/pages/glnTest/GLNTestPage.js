@@ -1,16 +1,63 @@
 import React, { useState } from 'react';
-import { healthRegistryAPI, companySearchAPI, companyDetailsAPI } from '../../../services/cloudFunctions';
+import { healthRegistryAPI, companySearchAPI, companyDetailsAPI, gesRegAPI } from '../../../services/cloudFunctions';
 import Button from '../../../components/BoxedInputFields/Button';
 import PersonnalizedInputField from '../../../components/BoxedInputFields/Personnalized-InputField';
 import './GLNTestPage.css';
 
 const GLNTestPage = () => {
-  const [gln, setGln] = useState('7601001419827');
+  const [gln, setGln] = useState('7601001676183');
+  const [registry, setRegistry] = useState('all'); // all, medReg, facilities, gesReg
   const [loading, setLoading] = useState(false);
   const [professionalResult, setProfessionalResult] = useState(null);
   const [companyResult, setCompanyResult] = useState(null);
   const [companyDetails, setCompanyDetails] = useState(null);
+  const [gesRegResult, setGesRegResult] = useState(null);
   const [error, setError] = useState(null);
+
+  const extractMedRegData = (entry) => {
+    if (!entry) return null;
+    const profession = entry.professions?.[0]?.profession;
+    return {
+      name: `${entry.firstName || ''} ${entry.name || ''}`,
+      gln: entry.gln,
+      professionEn: profession?.textEn,
+      professionFr: profession?.textFr,
+      professionDe: profession?.textDe,
+      nationality: entry.nationality?.textEn,
+      gender: entry.gender?.textEn
+    };
+  };
+
+  const extractFacilityData = (entry, details) => {
+    if (!entry && !details) return null;
+    const source = details || entry;
+    // Basic mapping based on companyDetailsAPI or companySearchAPI structure
+    return {
+      name: source.name,
+      additionalName: source.additionalName,
+      type: source.companyType?.textEn || source.companyType?.textFr,
+      uid: source.uid,
+      address: `${source.street || ''} ${source.streetNumber || ''}, ${source.zip || ''} ${source.city || ''}`,
+      canton: source.canton,
+      responsiblePersons: source.responsiblePersons?.map(p => p.name || `${p.firstName} ${p.lastName}`).join(', ')
+    };
+  };
+
+  const extractGesRegData = (result) => {
+    if (!result?.data) return null;
+    // Assuming structure based on generic search response
+    const entries = result.data.Data || result.data.entries || (Array.isArray(result.data) ? result.data : [result.data]);
+    if (!entries || entries.length === 0) return null;
+    const entry = entries[0];
+
+    return {
+      name: `${entry.PersonFirstName || ''} ${entry.PersonLastName || ''}`,
+      gln: entry.PersonGlnNumber,
+      professions: entry.Diplomas?.map(d => d.ProfessionName).join(', ') || entry.ProfessionName,
+      status: entry.CodeSearchLicenceStatus,
+      canton: entry.CodeLicenceCanton
+    };
+  };
 
   const handleExtract = async () => {
     if (!gln || gln.trim().length === 0) {
@@ -21,36 +68,73 @@ const GLNTestPage = () => {
     const glnString = gln.trim();
     setLoading(true);
     setError(null);
-    setProfessionalResult(null);
-    setCompanyResult(null);
-    setCompanyDetails(null);
 
-    try {
-      const professionalResponse = await healthRegistryAPI(glnString);
-      setProfessionalResult(professionalResponse);
-
-      if (professionalResponse.success && professionalResponse.data?.entries?.length > 0) {
-        console.log('Professional GLN Data extracted:', JSON.stringify(professionalResponse.data, null, 2));
-      }
-
-      const companyResponse = await companySearchAPI(glnString);
-      setCompanyResult(companyResponse);
-
-      if (companyResponse.success && companyResponse.data?.entries?.length > 0) {
-        const companyId = companyResponse.data.entries[0].id;
-        const detailsResponse = await companyDetailsAPI(companyId);
-        setCompanyDetails(detailsResponse);
-        
-        if (detailsResponse.success) {
-          console.log('Company Details extracted:', JSON.stringify(detailsResponse.data, null, 2));
-        }
-      }
-    } catch (err) {
-      setError(err.message || 'An error occurred during GLN extraction');
-      console.error('GLN Extraction Error:', err);
-    } finally {
-      setLoading(false);
+    // reset based on selection
+    if (registry === 'all' || registry === 'medReg') setProfessionalResult(null);
+    if (registry === 'all' || registry === 'facilities') {
+      setCompanyResult(null);
+      setCompanyDetails(null);
     }
+    if (registry === 'all' || registry === 'gesReg') setGesRegResult(null);
+
+    const promises = [];
+
+    // 1. Health Registry (MedReg)
+    if (registry === 'all' || registry === 'medReg') {
+      promises.push(
+        healthRegistryAPI(glnString)
+          .then(res => {
+            setProfessionalResult(res);
+            return { type: 'medReg', success: true };
+          })
+          .catch(err => {
+            console.error('MedReg Error:', err);
+            setProfessionalResult({ success: false, error: err.message });
+          })
+      );
+    }
+
+    // 2. Company Search
+    if (registry === 'all' || registry === 'facilities') {
+      promises.push(
+        companySearchAPI(glnString)
+          .then(async res => {
+            setCompanyResult(res);
+            if (res.success && res.data?.entries?.length > 0) {
+              const companyId = res.data.entries[0].id;
+              try {
+                const detailsRes = await companyDetailsAPI(companyId);
+                setCompanyDetails(detailsRes);
+              } catch (detailErr) {
+                setCompanyDetails({ success: false, error: detailErr.message });
+              }
+            }
+            return { type: 'company', success: true };
+          })
+          .catch(err => {
+            console.error('Company Search Error:', err);
+            setCompanyResult({ success: false, error: err.message });
+          })
+      );
+    }
+
+    // 3. GesReg
+    if (registry === 'all' || registry === 'gesReg') {
+      promises.push(
+        gesRegAPI(glnString)
+          .then(res => {
+            setGesRegResult(res);
+            return { type: 'gesReg', success: true };
+          })
+          .catch(err => {
+            console.error('GesReg Error:', err);
+            setGesRegResult({ success: false, error: err.message });
+          })
+      );
+    }
+
+    await Promise.allSettled(promises);
+    setLoading(false);
   };
 
   return (
@@ -58,24 +142,43 @@ const GLNTestPage = () => {
       <div className="gln-test-container">
         <h1 className="gln-test-title">GLN Extraction Test</h1>
         <p className="gln-test-description">
-          Enter a GLN number to extract data from the Swiss Health Registry
+          Search specific registries: MedReg (Professionals), Facilities (Companies), or GesReg (Health Professions).
         </p>
 
         <div className="gln-test-input-section">
-          <PersonnalizedInputField
-            label="GLN Number"
-            value={gln}
-            onChange={(e) => setGln(e.target.value)}
-            placeholder="Enter 13-digit GLN number"
-            disabled={loading}
-          />
+          <div style={{ display: 'flex', gap: '1rem', width: '100%', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}>
+              <PersonnalizedInputField
+                label="GLN Number"
+                value={gln}
+                onChange={(e) => setGln(e.target.value)}
+                placeholder="Enter 13-digit GLN number"
+                disabled={loading}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label className="text-sm font-medium mb-1 block">Target Registry</label>
+              <select
+                value={registry}
+                onChange={(e) => setRegistry(e.target.value)}
+                className="w-full p-2 border rounded-md h-[42px] bg-background text-foreground"
+                disabled={loading}
+              >
+                <option value="all">Check All Registries</option>
+                <option value="medReg">MedReg (Medical Professionals)</option>
+                <option value="facilities">Facilities (Company Registry)</option>
+                <option value="gesReg">GesReg (Health Professions)</option>
+              </select>
+            </div>
+          </div>
+
           <Button
             onClick={handleExtract}
             variant="primary"
             disabled={loading}
-            className="gln-test-button"
+            className="gln-test-button mt-4"
           >
-            {loading ? 'Extracting...' : 'Extract GLN Data'}
+            {loading ? 'Extracting...' : 'Extract Data'}
           </Button>
         </div>
 
@@ -86,35 +189,52 @@ const GLNTestPage = () => {
         )}
 
         <div className="gln-test-results">
+          {/* MedReg Results */}
           {professionalResult && (
             <div className="gln-test-result-section">
-              <h2 className="gln-test-result-title">Professional GLN Result (healthRegistryAPI)</h2>
+              <h2 className="gln-test-result-title">1. MedReg Result</h2>
+              {professionalResult.success && professionalResult.data?.entries?.[0] && (
+                <div className="bg-blue-50 p-4 border rounded mb-4 text-sm">
+                  <strong>Extracted Profile Data:</strong>
+                  <pre>{JSON.stringify(extractMedRegData(professionalResult.data.entries[0]), null, 2)}</pre>
+                </div>
+              )}
+              <div className="gln-test-json-container">
+                <pre className="gln-test-json">{JSON.stringify(professionalResult, null, 2)}</pre>
+              </div>
+            </div>
+          )}
+
+          {/* Facilities Results */}
+          {(companyResult || companyDetails) && (
+            <div className="gln-test-result-section">
+              <h2 className="gln-test-result-title">2. Facilities Result</h2>
+              {(companyResult?.data?.entries?.[0] || companyDetails?.data) && (
+                <div className="bg-blue-50 p-4 border rounded mb-4 text-sm">
+                  <strong>Extracted Facility Data:</strong>
+                  <pre>{JSON.stringify(extractFacilityData(companyResult?.data?.entries?.[0], companyDetails?.data), null, 2)}</pre>
+                </div>
+              )}
               <div className="gln-test-json-container">
                 <pre className="gln-test-json">
-                  {JSON.stringify(professionalResult, null, 2)}
+                  {JSON.stringify({ search: companyResult, details: companyDetails }, null, 2)}
                 </pre>
               </div>
             </div>
           )}
 
-          {companyResult && (
+          {/* GesReg Results */}
+          {gesRegResult && (
             <div className="gln-test-result-section">
-              <h2 className="gln-test-result-title">Company GLN Result (companySearchAPI)</h2>
+              <h2 className="gln-test-result-title">3. GesReg Result</h2>
+              {gesRegResult.success && (
+                <div className="bg-blue-50 p-4 border rounded mb-4 text-sm">
+                  <strong>Extracted GesReg Data:</strong>
+                  <pre>{JSON.stringify(extractGesRegData(gesRegResult), null, 2)}</pre>
+                </div>
+              )}
               <div className="gln-test-json-container">
-                <pre className="gln-test-json">
-                  {JSON.stringify(companyResult, null, 2)}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          {companyDetails && (
-            <div className="gln-test-result-section">
-              <h2 className="gln-test-result-title">Company Details (companyDetailsAPI)</h2>
-              <div className="gln-test-json-container">
-                <pre className="gln-test-json">
-                  {JSON.stringify(companyDetails, null, 2)}
-                </pre>
+                <pre className="gln-test-json">{JSON.stringify(gesRegResult, null, 2)}</pre>
               </div>
             </div>
           )}

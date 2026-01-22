@@ -162,5 +162,52 @@
     "10": "October",
     "11": "November",
     "12": "December"
+  },
+  "medicalProfessions": {
+    "activation": "Activation",
+    "biomedical_analysis": "Analyses biomédicales",
+    "biomedical_lab_diagnosis": "Diagnostic de laboratoire biomédical",
+    "dietetics": "Diététique",
+    "druggist": "Droguiste",
+    "occupational_therapy": "Ergothérapie",
+    "dental_hygiene": "Hygiène dentaire",
+    "speech_therapy": "Logopédie",
+    "medical_massage": "Massage médical",
+    "naturopath_homeopathy": "Naturopathe homéopathie",
+    "naturopath_ayurveda": "Naturopathe médecine ayurvédique",
+    "naturopath_tening": "Naturopathe médecine naturelle trad. européenne",
+    "naturopath_tcm": "Naturopathe médecine trad. chinoise",
+    "obstetrics": "Obstétrique",
+    "optics": "Optique",
+    "optometry": "Optométrie",
+    "orthoptics": "Orthoptique",
+    "osteopathy": "Ostéopathie",
+    "physiotherapy": "Physiothérapie",
+    "podiatry": "Podologie",
+    "rescue_services": "Sauvetage",
+    "nursing": "Soins infirmiers",
+    "radiology_tech": "Technique en radiologie médicale",
+    "surgical_tech": "Technique opératoire",
+    "chiropractor": "Chiropraticien",
+    "physician": "Médecin",
+    "dentist": "Médecin-Dentiste",
+    "veterinarian": "Vétérinaire",
+    "pharmacy_assistant": "Assistant en pharmacie",
+    "dental_assistant": "Assistant dentaire",
+    "pharmacist": "Pharmacien"
+  },
+  "jobRoles": {
+    "pharmacist": "Pharmacien",
+    "pharmacy_technician": "Préparateur en pharmacie",
+    "doctor": "Médecin",
+    "nurse": "Infirmier/ère"
+  },
+  "skills": {
+    "languages": "Langues",
+    "driving_license": "Permis de conduire"
+  },
+  "jobPreferences": {
+    "full_time": "Temps plein",
+    "part_time": "Temps partiel"
   }
-} 
+}

@@ -79,5 +79,15 @@
     "thisAndFutureDesc": "Les modifications affecteront cette instance et toutes les instances futures de l'événement récurrent",
     "allInstances": "Toutes les occurrences",
     "allInstancesDesc": "Les modifications affecteront toutes les instances de cette série d'événements récurrents"
-  }
+  },
+  "newAppointment": "New Appointment",
+  "categoryFilters": "Category Filters",
+  "resetAll": "Reset All",
+  "filterCategories": "Filter Categories",
+  "reset": "Reset",
+  "untitledEvent": "Untitled Event",
+  "checkBackLater": "Check Back Later",
+  "noTitle": "No Title",
+  "color": "Color",
+  "deleteEventAction": "Delete Event Action"
 }

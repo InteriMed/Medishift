@@ -6,8 +6,8 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
 
-const { getFirestore } = require('firebase-admin/firestore');
-const db = getFirestore();
+// Import centralized database instance configured for medishift
+const db = require('../database/db');
 
 /**
  * EVENT PERMISSION HELPERS
@@ -348,7 +348,7 @@ async function acceptEmployeeRequestAndCreatePostings(requestId, requestType, ac
   }
 }
 
-exports.acceptEmployeeRequest = onCall(async (request) => {
+exports.acceptEmployeeRequest = onCall({ database: 'medishift', cors: true }, async (request) => {
   const data = request.data;
   const context = { auth: request.auth };
 
@@ -482,7 +482,7 @@ async function canViewEvent(eventDoc, userId) {
 /**
  * Save a calendar event (availability)
  */
-exports.saveCalendarEvent = onCall(async (request) => {
+exports.saveCalendarEvent = onCall({ database: 'medishift', cors: true }, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -768,7 +768,7 @@ exports.saveCalendarEvent = onCall(async (request) => {
 /**
  * Update a calendar event
  */
-exports.updateCalendarEvent = onCall(async (request) => {
+exports.updateCalendarEvent = onCall({ database: 'medishift', cors: true }, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -930,7 +930,7 @@ exports.updateCalendarEvent = onCall(async (request) => {
 /**
  * Delete a calendar event
  */
-exports.deleteCalendarEvent = onCall(async (request) => {
+exports.deleteCalendarEvent = onCall({ database: 'medishift', cors: true }, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -1098,7 +1098,7 @@ exports.deleteCalendarEvent = onCall(async (request) => {
 /**
  * Save recurring calendar events
  */
-exports.saveRecurringEvents = onCall(async (request) => {
+exports.saveRecurringEvents = onCall({ database: 'medishift', cors: true }, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -1606,7 +1606,7 @@ function generateRecurringDates(startDate, repeatValue, endRepeatValue, endRepea
 }
 
 // Legacy calendar sync endpoint (keep for backward compatibility)
-exports.calendarSync = onCall(async (request) => {
+exports.calendarSync = onCall({ database: 'medishift', cors: true }, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -1972,7 +1972,7 @@ exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true
  * Check for conflicts and create event (comprehensive validation)
  * @deprecated - Use checkAndCreateEventHTTP instead for better CORS support
  */
-exports.checkAndCreateEvent = onCall(async (request) => {
+exports.checkAndCreateEvent = onCall({ database: 'medishift', cors: true }, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };

@@ -1,11 +1,11 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
-const { getFirestore } = require('firebase-admin/firestore');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-const db = getFirestore();
+// Import centralized database instance configured for medishift
+const db = require('../database/db');
 
 const INVITATION_EXPIRY_DAYS = 30;
 
@@ -14,7 +14,7 @@ function generateDeterministicToken(facilityId, roleId, workerId) {
   return crypto.createHash('sha256').update(input).digest('hex').substring(0, 32);
 }
 
-exports.generateFacilityRoleInvitation = onCall(async (request) => {
+exports.generateFacilityRoleInvitation = onCall({ cors: true, database: 'medishift' }, async (request) => {
   try {
     if (!db) {
       throw new Error('Firestore database not initialized');
@@ -155,7 +155,7 @@ exports.generateFacilityRoleInvitation = onCall(async (request) => {
   }
 });
 
-exports.getInvitationDetails = onCall(async (request) => {
+exports.getInvitationDetails = onCall({ cors: true, database: 'medishift' }, async (request) => {
   const data = request.data;
 
   try {
@@ -215,7 +215,7 @@ exports.getInvitationDetails = onCall(async (request) => {
   }
 });
 
-exports.acceptFacilityInvitation = onCall(async (request) => {
+exports.acceptFacilityInvitation = onCall({ cors: true, database: 'medishift' }, async (request) => {
   const data = request.data;
   const context = { auth: request.auth };
 
@@ -394,14 +394,19 @@ exports.acceptFacilityInvitation = onCall(async (request) => {
  * Invites a new admin employee by email
  * Sends an email with an invitation link/code
  */
-exports.inviteAdminEmployee = onCall({ cors: true }, async (request) => {
+exports.inviteAdminEmployee = onCall({ cors: true, region: 'europe-west6', database: 'medishift' }, async (request) => {
+  logger.info("inviteAdminEmployee called", { structuredData: true });
+
   if (!request.auth) {
+    logger.error("inviteAdminEmployee: Unauthenticated call");
     throw new HttpsError('unauthenticated', 'You must be signed in to invite employees');
   }
 
   const { inviteEmail, inviteRole, invitedByName, customMessage } = request.data;
+  logger.info("inviteAdminEmployee: Data received", { inviteEmail, inviteRole, invitedByName });
 
   if (!inviteEmail || !inviteRole) {
+    logger.error("inviteAdminEmployee: Missing arguments", { inviteEmail, inviteRole });
     throw new HttpsError('invalid-argument', 'Email and Role are required');
   }
 
@@ -409,6 +414,8 @@ exports.inviteAdminEmployee = onCall({ cors: true }, async (request) => {
     // Generate a random invitation code
     const inviteCode = crypto.randomBytes(4).toString('hex').toUpperCase(); // 8 chars
     const inviteToken = crypto.randomBytes(32).toString('hex');
+
+    logger.info("inviteAdminEmployee: Generated tokens", { inviteCodeHidden: "***", inviteTokenLen: inviteToken.length });
 
     // Save invitation to Firestore
     const inviteRef = db.collection('adminInvitations').doc(inviteToken);
@@ -423,11 +430,19 @@ exports.inviteAdminEmployee = onCall({ cors: true }, async (request) => {
       expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)) // 7 days
     });
 
+    logger.info("inviteAdminEmployee: Invitation saved to Firestore");
+
     // Send email (Using nodemailer)
     const emailService = process.env.EMAIL_SERVICE || 'Generic';
+    logger.info("inviteAdminEmployee: Email service config", { emailService });
+
     let transporter;
 
     if (emailService === 'SendGrid') {
+      if (!process.env.SENDGRID_API_KEY) {
+        logger.error("inviteAdminEmployee: Missing SendGrid API Key");
+        throw new Error("Server configuration error: Missing SendGrid API Key");
+      }
       transporter = nodemailer.createTransport({
         host: 'smtp.sendgrid.net',
         port: 587,
@@ -438,12 +453,26 @@ exports.inviteAdminEmployee = onCall({ cors: true }, async (request) => {
       });
     } else {
       // Generic fallback for local/dev
+      logger.info("inviteAdminEmployee: Using generic/fallback email transport");
+      const smtpHost = process.env.SMTP_HOST || 'smtp.mailtrap.io';
+      const smtpPort = parseInt(process.env.SMTP_PORT || '2525', 10);
+      const smtpUser = process.env.SMTP_USER;
+      const smtpPassword = process.env.SMTP_PASSWORD;
+
+      if (!smtpUser || !smtpPassword) {
+        logger.error("inviteAdminEmployee: Missing SMTP credentials", {
+          hasUser: !!smtpUser,
+          hasPassword: !!smtpPassword
+        });
+        throw new HttpsError('failed-precondition', 'Email service is not properly configured. Please contact system administrator.');
+      }
+
       transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
-        port: process.env.SMTP_PORT || 2525,
+        host: smtpHost,
+        port: smtpPort,
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD
+          user: smtpUser,
+          pass: smtpPassword
         }
       });
     }
@@ -479,11 +508,15 @@ exports.inviteAdminEmployee = onCall({ cors: true }, async (request) => {
         `
     };
 
+    logger.info("inviteAdminEmployee: Attempting to send email");
     await transporter.sendMail(mailOptions);
+    logger.info("inviteAdminEmployee: Email sent successfully");
 
     return { success: true, message: 'Invitation sent successfully' };
   } catch (error) {
     logger.error('Error inviting admin employee:', error);
+    // Explicitly re-throw HttpsErrors, otherwise wrap in internal
+    if (error instanceof HttpsError) throw error;
     throw new HttpsError('internal', error.message || 'Failed to send invitation');
   }
 });

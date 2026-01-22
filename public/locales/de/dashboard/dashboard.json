@@ -1,206 +1,270 @@
 {
-    "dashboard": {
-        "sidebar": {
-            "overview": "Übersicht",
-            "profile": "Profil",
-            "contracts": "Verträge",
-            "messages": "Nachrichten",
-            "calendar": "Kalender",
-            "marketplace": "Marktplatz",
-            "payroll": "Lohnabrechnung",
-            "organization": "Organisation",
-            "settings": "Einstellungen",
-            "incompleteProfile": "Ihr Profil ist unvollständig",
-            "completeProfileFirst": "Bitte vervollständigen Sie zuerst Ihr Profil"
-        },
-        "header": {
-            "search": "Suchen...",
-            "worker": "Mitarbeiter",
-            "overview": {
-                "title": "Übersicht",
-                "subtitle": "Willkommen in Ihrem Dashboard"
-            },
-            "calendar": {
-                "title": "Kalender",
-                "subtitle": "Verwalten Sie Ihren Zeitplan und Termine"
-            },
-            "messages": {
-                "title": "Nachrichten",
-                "subtitle": "Kommunizieren Sie mit Einrichtungen und Fachkräften"
-            },
-            "contracts": {
-                "title": "Verträge",
-                "subtitle": "Sehen und verwalten Sie Ihre Verträge"
-            },
-            "profile": {
-                "title": "Profil",
-                "subtitle": "Verwalten Sie Ihre persönlichen Informationen"
-            },
-            "marketplace": {
-                "title": "Marktplatz",
-                "subtitle": "Finden Sie Stellen oder Fachkräfte"
-            },
-            "payroll": {
-                "title": "Lohnabrechnung",
-                "subtitle": "Verwalten Sie Mitarbeiterzahlungen und Anfragen"
-            },
-            "organization": {
-                "title": "Organisation",
-                "subtitle": "Verwalten Sie Ihre Apothekenkette oder Gruppe"
-            },
-            "settings": {
-                "title": "Einstellungen",
-                "subtitle": "Konfigurieren Sie Ihre Kontoeinstellungen"
-            }
-        },
-        "loading": "Dashboard-Daten werden geladen...",
-        "error": "Fehler beim Laden der Dashboard-Daten",
-        "completeProfile": {
-            "completeProfileTitle": "Vervollständigen Sie Ihr Profil",
-            "completeProfileDescription": "Willkommen bei MediShift! Um alle Funktionen der Plattform nutzen zu können, vervollständigen Sie bitte zuerst Ihr Profil.",
-            "completeProfileButton": "Verstanden, Profil erstellen"
-        },
-        "overview": {
-            "title": "Willkommen bei MediShift!",
-            "welcome": "Hallo",
-            "welcomeTitle": "Willkommen bei MediShift!",
-            "totalContracts": "Gesamte Verträge",
-            "activeHours": "Aktive Stunden",
-            "earnings": "Einkommen",
-            "upcomingJobs": "Anstehende Jobs",
-            "recentActivity": "Letzte Aktivitäten",
-            "noRecentActivity": "Keine aktuellen Aktivitäten anzuzeigen"
-        },
-        "onboarding": {
-            "verify_account": "Verifizieren Sie Ihr Konto",
-            "verify_intro": "Bitte geben Sie unten Ihre Daten ein. Wir verwenden eine sichere KI-Verifizierung, um Ihr Konto zu zertifizieren.",
-            "step1": {
-                "title": "Rechtliche Überlegungen",
-                "facilityLegalNotice": "Rechtlicher Hinweis für Einrichtungen",
-                "facilityLegalText1": "Als Gesundheitseinrichtung, die InteriMed nutzt, müssen Sie die Einhaltung der Schweizer Arbeitsgesetze sicherstellen, wenn Sie temporäres Personal beschäftigen.",
-                "facilityLegalText2": "Sie sind dafür verantwortlich zu überprüfen, dass temporäre Mitarbeiter die maximalen Arbeitszeiten, Ruhezeiten und andere gesetzliche Anforderungen einhalten.",
-                "facilityLegalText3": "Bitte stellen Sie sicher, dass alle temporären Mitarbeiter die erforderlichen Qualifikationen und Arbeitserlaubnisse besitzen.",
-                "professionalLegalNotice": "Rechtlicher Hinweis für Fachkräfte",
-                "professionalLegalText1": "Für Mitarbeiter, die zu 100% arbeiten (normalerweise 40-42 Stunden/Woche), ist es nahezu unmöglich, legal zusätzliche Schichten in einer anderen Apotheke zu übernehmen.",
-                "professionalLegalText2": "Das Schweizer Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche (45 Stunden in einigen Einzelhandelsbereichen). Ein 100%-Mitarbeiter arbeitet typischerweise 42 Stunden, was nur 8 Stunden Maximum übrig lässt.",
-                "professionalLegalText3": "Gemäss Obligationenrecht (Art. 321a) müssen Sie eine schriftliche Genehmigung Ihres Hauptarbeitgebers einholen, um für einen Konkurrenten zu arbeiten.",
-                "professionalLegalText4": "Das Gesetz verlangt 11 aufeinanderfolgende Stunden Ruhe zwischen Schichten (kann einmal pro Woche auf 8 Stunden reduziert werden).",
-                "agreementStatus": "Status der Vereinbarung",
-                "areYouEmployed": "Sind Sie derzeit bei einer Einrichtung angestellt?",
-                "areYouEmployedDescription": "Aktivieren, wenn Sie für eine Organisation arbeiten",
-                "termsAcceptance": "Bedingungen und Rechtliche Überlegungen",
-                "termsAcceptanceDescription": "Ich verstehe und anerkenne die rechtlichen Überlegungen und Nutzungsbedingungen",
-                "note": "Durch Fortfahren bestätigen Sie, dass Sie die für Ihre Rolle geltenden rechtlichen Überlegungen gelesen und verstanden haben."
-            },
-            "step2": {
-                "title": "Wählen Sie Ihre Rolle",
-                "description": "Wählen Sie die Option, die Ihre Situation am besten beschreibt",
-                "professional": "Fachkraft",
-                "professionalDescription": "Ich bin eine Gesundheitsfachkraft auf der Suche nach Arbeitsmöglichkeiten",
-                "facility": "Einrichtung",
-                "facilityDescription": "Ich vertrete ein Unternehmen oder eine Einrichtung, die Fachkräfte sucht",
-                "organization": "Organisation",
-                "organizationDescription": "Ich vertrete eine Apothekenkette oder Organisation"
-            },
-            "step3": {
-                "chain": {
-                    "title": "Kontaktinformationen",
-                    "description": "Bitte geben Sie Ihre Kontaktdaten an, damit wir Ihnen bei der Einrichtung Ihres Organisationskontos helfen können",
-                    "phonePrefix": "Telefonvorwahl",
-                    "phoneNumber": "Telefonnummer",
-                    "phoneNumberPlaceholder": "Geben Sie Ihre Telefonnummer ein",
-                    "messageToSupport": "Nachricht an den Support",
-                    "messagePlaceholder": "Bitte beschreiben Sie Ihre Organisation und Ihre Bedürfnisse..."
-                }
-            },
-            "step4": {
-                "title": "GLN-Verifizierung",
-                "description": "Haben Sie eine GLN (Global Location Number)?",
-                "hasGLN": "Ich habe eine GLN-Nummer"
-            },
-            "professional_gln": {
-                "title": "GLN-Informationen",
-                "text1": "Berufsnummer erforderlich für zertifizierte Mediziner in der Schweiz (Apotheker, Zahnärzte, Ärzte usw.).",
-                "text2": "Für andere Berufe (Krankenschwestern, Assistenten usw.) ist diese Nummer nicht obligatorisch.",
-                "text3": "Aktivieren Sie dies, wenn Sie eine eigene GLN-Nummer haben."
-            },
-            "company_gln": {
-                "title": "GLN-Informationen",
-                "text1": "Die GLN (Global Location Number) ist eine eindeutige Kennung für Ihre Einrichtung oder Ihr Unternehmen.",
-                "text2": "Die Angabe Ihrer GLN hilft uns, Ihre Geschäftsdaten automatisch zu überprüfen und den Verifizierungsprozess zu beschleunigen.",
-                "text3": "Dieses Feld ist optional, wird aber für eine schnellere Kontoverifizierung empfohlen."
-            },
-            "input": {
-                "professional_gln": "Professionelle GLN",
-                "company_gln": "Firmen-GLN",
-                "professional_gln_optional": "Professionelle GLN (Optional)",
-                "company_gln_optional": "Firmen-GLN (Optional)"
-            },
-            "docs": {
-                "title": "Verifizierungsdokumente",
-                "facility_id": {
-                    "label": "1. Identitätsdokument der Verantwortlichen Person",
-                    "desc": "Laden Sie den Personalausweis einer im Register aufgeführten verantwortlichen Person hoch."
-                },
-                "facility_bill": {
-                    "label": "2. Rechnung / Steuerdokument",
-                    "desc": "Laden Sie eine aktuelle Rechnung oder ein Steuerdokument zur Verifizierung der Einrichtung hoch."
-                },
-                "select_id_type": "Ausweisart wählen",
-                "internal_ref": "Interne Referenz / Bestellnummer (Optional)",
-                "professional_id": "Identitätsdokument",
-                "select_doc_type": "Dokumenttyp auswählen",
-                "upload_id": "Identitätsdokument hochladen",
-                "upload_bill": "Rechnung hochladen"
-            },
-            "errors": {
-                "service_high_demand": "Hohe Service-Nachfrage",
-                "wait_message": "Bitte warten Sie {{seconds}} Sekunden, bevor Sie es erneut versuchen",
-                "can_try_again": "Sie können es jetzt erneut versuchen.",
-                "verification_failed": "Verifizierung fehlgeschlagen",
-                "review_inputs": "Bitte überprüfen Sie Ihre Eingaben. Wenn Sie glauben, dass dies ein Fehler ist, kontaktieren Sie unseren dringenden Support unten.",
-                "contact_support": "Dringenden Support kontaktieren",
-                "report_issue": "Problem per E-Mail melden",
-                "describe_issue": "Beschreiben Sie das Problem, mit dem Sie konfrontiert sind..."
-            },
-            "success": {
-                "verified_title": "Konto erfolgreich verifiziert!",
-                "professional_redirect": "Ihr berufliches Profil ist jetzt aktiv. Weiterleitung zur Vervollständigung Ihres Profils...",
-                "facility_redirect": "Ihr Einrichtungsprofil ist jetzt aktiv. Weiterleitung zur Vervollständigung Ihres Profils..."
-            },
-            "phone": {
-                "title": "Mobile Verifizierung",
-                "subtitle": "Geben Sie Ihre Telefonnummer ein, um einen sicheren Identitätscode zu erhalten.",
-                "secured_code": "Gesicherter Code",
-                "sent_text": "Wir haben einen Verifizierungscode an {{prefix}} {{number}} gesendet.",
-                "verified_title": "Telefon verifiziert",
-                "verified_text": "Ihre Telefonnummer {{prefix}} {{number}} wurde erfolgreich verifiziert.",
-                "verification_complete": "Verifizierung abgeschlossen",
-                "verify_continue": "Verifizieren und fortfahren",
-                "verifying": "Wird überprüft...",
-                "resend": "Code erneut senden",
-                "resend_wait": "Erneut senden in {{seconds}}s",
-                "change_number": "Nummer ändern",
-                "verification_code_label": "Verifizierungscode",
-                "sending": "Senden..."
-            },
-            "buttons": {
-                "back": "Zurück",
-                "nextStep": "Nächster Schritt",
-                "sendCode": "Code Senden",
-                "validate": "Validieren",
-                "contactAndFinish": "Kontaktieren & Beenden",
-                "verifying": "Wird überprüft...",
-                "completeAccount": "Konto Vervollständigen",
-                "verify_account": "Konto verifizieren"
-            }
-        }
+  "dashboard": {
+    "sidebar": {
+      "overview": "Übersicht",
+      "profile": "Profil",
+      "contracts": "Verträge",
+      "messages": "Nachrichten",
+      "calendar": "Kalender",
+      "marketplace": "Marktplatz",
+      "payroll": "Lohnabrechnung",
+      "organization": "Organisation",
+      "settings": "Einstellungen",
+      "incompleteProfile": "Ihr Profil ist unvollständig",
+      "completeProfileFirst": "Bitte vervollständigen Sie zuerst Ihr Profil"
     },
-    "userMenu": {
-        "profile": "Mein Profil",
-        "settings": "Einstellungen",
-        "language": "Sprache",
-        "logout": "Abmelden",
-        "user": "Benutzer"
+    "header": {
+      "search": "Suchen...",
+      "worker": "Mitarbeiter",
+      "overview": {
+        "title": "Übersicht",
+        "subtitle": "Willkommen in Ihrem Dashboard"
+      },
+      "calendar": {
+        "title": "Kalender",
+        "subtitle": "Verwalten Sie Ihren Zeitplan und Termine"
+      },
+      "messages": {
+        "title": "Nachrichten",
+        "subtitle": "Kommunizieren Sie mit Einrichtungen und Fachkräften"
+      },
+      "contracts": {
+        "title": "Verträge",
+        "subtitle": "Sehen und verwalten Sie Ihre Verträge"
+      },
+      "profile": {
+        "title": "Profil",
+        "subtitle": "Verwalten Sie Ihre persönlichen Informationen"
+      },
+      "marketplace": {
+        "title": "Marktplatz",
+        "subtitle": "Finden Sie Stellen oder Fachkräfte"
+      },
+      "payroll": {
+        "title": "Lohnabrechnung",
+        "subtitle": "Verwalten Sie Mitarbeiterzahlungen und Anfragen"
+      },
+      "organization": {
+        "title": "Organisation",
+        "subtitle": "Verwalten Sie Ihre Apothekenkette oder Gruppe"
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "subtitle": "Konfigurieren Sie Ihre Kontoeinstellungen"
+      },
+      "profileResetSuccess": "Profile Reset Success",
+      "profileResetError": "Profile Reset Error",
+      "createBusiness": "Create Business",
+      "createBusinessDesc": "Create Business Desc",
+      "createProfessional": "Create Professional",
+      "createProfessionalDesc": "Create Professional Desc",
+      "resetProfile": "Reset Profile",
+      "resetProfileTitle": "Reset Profile Title",
+      "resetProfileMessage": "Reset Profile Message",
+      "resetConfirm": "Reset Confirm"
+    },
+    "loading": "Dashboard-Daten werden geladen...",
+    "error": "Fehler beim Laden der Dashboard-Daten",
+    "completeProfile": {
+      "completeProfileTitle": "Vervollständigen Sie Ihr Profil",
+      "completeProfileDescription": "Willkommen bei MediShift! Um alle Funktionen der Plattform nutzen zu können, vervollständigen Sie bitte zuerst Ihr Profil.",
+      "completeProfileButton": "Verstanden, Profil erstellen"
+    },
+    "overview": {
+      "title": "Willkommen bei MediShift!",
+      "welcome": "Hallo",
+      "welcomeTitle": "Willkommen bei MediShift!",
+      "totalContracts": "Gesamte Verträge",
+      "activeHours": "Aktive Stunden",
+      "earnings": "Einkommen",
+      "upcomingJobs": "Anstehende Jobs",
+      "recentActivity": "Letzte Aktivitäten",
+      "noRecentActivity": "Keine aktuellen Aktivitäten anzuzeigen"
+    },
+    "onboarding": {
+      "verify_account": "Verifizieren Sie Ihr Konto",
+      "verify_intro": "Bitte geben Sie unten Ihre Daten ein. Wir verwenden eine sichere KI-Verifizierung, um Ihr Konto zu zertifizieren.",
+      "step1": {
+        "title": "Rechtliche Überlegungen",
+        "facilityLegalNotice": "Rechtlicher Hinweis für Einrichtungen",
+        "facilityLegalText1": "Als Gesundheitseinrichtung, die InteriMed nutzt, müssen Sie die Einhaltung der Schweizer Arbeitsgesetze sicherstellen, wenn Sie temporäres Personal beschäftigen.",
+        "facilityLegalText2": "Sie sind dafür verantwortlich zu überprüfen, dass temporäre Mitarbeiter die maximalen Arbeitszeiten, Ruhezeiten und andere gesetzliche Anforderungen einhalten.",
+        "facilityLegalText3": "Bitte stellen Sie sicher, dass alle temporären Mitarbeiter die erforderlichen Qualifikationen und Arbeitserlaubnisse besitzen.",
+        "professionalLegalNotice": "Rechtlicher Hinweis für Fachkräfte",
+        "professionalLegalText1": "Für Mitarbeiter, die zu 100% arbeiten (normalerweise 40-42 Stunden/Woche), ist es nahezu unmöglich, legal zusätzliche Schichten in einer anderen Apotheke zu übernehmen.",
+        "professionalLegalText2": "Das Schweizer Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche (45 Stunden in einigen Einzelhandelsbereichen). Ein 100%-Mitarbeiter arbeitet typischerweise 42 Stunden, was nur 8 Stunden Maximum übrig lässt.",
+        "professionalLegalText3": "Gemäss Obligationenrecht (Art. 321a) müssen Sie eine schriftliche Genehmigung Ihres Hauptarbeitgebers einholen, um für einen Konkurrenten zu arbeiten.",
+        "professionalLegalText4": "Das Gesetz verlangt 11 aufeinanderfolgende Stunden Ruhe zwischen Schichten (kann einmal pro Woche auf 8 Stunden reduziert werden).",
+        "agreementStatus": "Status der Vereinbarung",
+        "areYouEmployed": "Sind Sie derzeit bei einer Einrichtung angestellt?",
+        "areYouEmployedDescription": "Aktivieren, wenn Sie für eine Organisation arbeiten",
+        "termsAcceptance": "Bedingungen und Rechtliche Überlegungen",
+        "termsAcceptanceDescription": "Ich verstehe und anerkenne die rechtlichen Überlegungen und Nutzungsbedingungen",
+        "note": "Durch Fortfahren bestätigen Sie, dass Sie die für Ihre Rolle geltenden rechtlichen Überlegungen gelesen und verstanden haben."
+      },
+      "step2": {
+        "title": "Wählen Sie Ihre Rolle",
+        "description": "Wählen Sie die Option, die Ihre Situation am besten beschreibt",
+        "professional": "Fachkraft",
+        "professionalDescription": "Ich bin eine Gesundheitsfachkraft auf der Suche nach Arbeitsmöglichkeiten",
+        "facility": "Einrichtung",
+        "facilityDescription": "Ich vertrete ein Unternehmen oder eine Einrichtung, die Fachkräfte sucht",
+        "organization": "Organisation",
+        "organizationDescription": "Ich vertrete eine Apothekenkette oder Organisation"
+      },
+      "step3": {
+        "chain": {
+          "title": "Kontaktinformationen",
+          "description": "Bitte geben Sie Ihre Kontaktdaten an, damit wir Ihnen bei der Einrichtung Ihres Organisationskontos helfen können",
+          "phonePrefix": "Telefonvorwahl",
+          "phoneNumber": "Telefonnummer",
+          "phoneNumberPlaceholder": "Geben Sie Ihre Telefonnummer ein",
+          "messageToSupport": "Nachricht an den Support",
+          "messagePlaceholder": "Bitte beschreiben Sie Ihre Organisation und Ihre Bedürfnisse..."
+        }
+      },
+      "step4": {
+        "title": "GLN-Verifizierung",
+        "description": "Haben Sie eine GLN (Global Location Number)?",
+        "hasGLN": "Ich habe eine GLN-Nummer",
+        "hasGLNDesc": "Has G L N Desc"
+      },
+      "professional_gln": {
+        "title": "GLN-Informationen",
+        "text1": "Berufsnummer erforderlich für zertifizierte Mediziner in der Schweiz (Apotheker, Zahnärzte, Ärzte usw.).",
+        "text2": "Für andere Berufe (Krankenschwestern, Assistenten usw.) ist diese Nummer nicht obligatorisch.",
+        "text3": "Aktivieren Sie dies, wenn Sie eine eigene GLN-Nummer haben."
+      },
+      "company_gln": {
+        "title": "GLN-Informationen",
+        "text1": "Die GLN (Global Location Number) ist eine eindeutige Kennung für Ihre Einrichtung oder Ihr Unternehmen.",
+        "text2": "Die Angabe Ihrer GLN hilft uns, Ihre Geschäftsdaten automatisch zu überprüfen und den Verifizierungsprozess zu beschleunigen.",
+        "text3": "Dieses Feld ist optional, wird aber für eine schnellere Kontoverifizierung empfohlen."
+      },
+      "input": {
+        "professional_gln": "Professionelle GLN",
+        "company_gln": "Firmen-GLN",
+        "professional_gln_optional": "Professionelle GLN (Optional)",
+        "company_gln_optional": "Firmen-GLN (Optional)"
+      },
+      "docs": {
+        "title": "Verifizierungsdokumente",
+        "facility_id": {
+          "label": "1. Identitätsdokument der Verantwortlichen Person",
+          "desc": "Laden Sie den Personalausweis einer im Register aufgeführten verantwortlichen Person hoch."
+        },
+        "facility_bill": {
+          "label": "2. Rechnung / Steuerdokument",
+          "desc": "Laden Sie eine aktuelle Rechnung oder ein Steuerdokument zur Verifizierung der Einrichtung hoch."
+        },
+        "select_id_type": "Ausweisart wählen",
+        "internal_ref": "Interne Referenz / Bestellnummer (Optional)",
+        "professional_id": "Identitätsdokument",
+        "select_doc_type": "Dokumenttyp auswählen",
+        "upload_id": "Identitätsdokument hochladen",
+        "upload_bill": "Rechnung hochladen"
+      },
+      "errors": {
+        "service_high_demand": "Hohe Service-Nachfrage",
+        "wait_message": "Bitte warten Sie {{seconds}} Sekunden, bevor Sie es erneut versuchen",
+        "can_try_again": "Sie können es jetzt erneut versuchen.",
+        "verification_failed": "Verifizierung fehlgeschlagen",
+        "review_inputs": "Bitte überprüfen Sie Ihre Eingaben. Wenn Sie glauben, dass dies ein Fehler ist, kontaktieren Sie unseren dringenden Support unten.",
+        "contact_support": "Dringenden Support kontaktieren",
+        "report_issue": "Problem per E-Mail melden",
+        "describe_issue": "Beschreiben Sie das Problem, mit dem Sie konfrontiert sind...",
+        "missing_gln": "Missing_gln",
+        "gln_length": "Gln_length",
+        "missing_profession": "Missing_profession",
+        "missing_document": "Missing_document",
+        "missing_document_type": "Missing_document_type"
+      },
+      "success": {
+        "verified_title": "Konto erfolgreich verifiziert!",
+        "professional_redirect": "Ihr berufliches Profil ist jetzt aktiv. Weiterleitung zur Vervollständigung Ihres Profils...",
+        "facility_redirect": "Ihr Einrichtungsprofil ist jetzt aktiv. Weiterleitung zur Vervollständigung Ihres Profils..."
+      },
+      "phone": {
+        "title": "Mobile Verifizierung",
+        "subtitle": "Geben Sie Ihre Telefonnummer ein, um einen sicheren Identitätscode zu erhalten.",
+        "secured_code": "Gesicherter Code",
+        "sent_text": "Wir haben einen Verifizierungscode an {{prefix}} {{number}} gesendet.",
+        "verified_title": "Telefon verifiziert",
+        "verified_text": "Ihre Telefonnummer {{prefix}} {{number}} wurde erfolgreich verifiziert.",
+        "verification_complete": "Verifizierung abgeschlossen",
+        "verify_continue": "Verifizieren und fortfahren",
+        "verifying": "Wird überprüft...",
+        "resend": "Code erneut senden",
+        "resend_wait": "Erneut senden in {{seconds}}s",
+        "change_number": "Nummer ändern",
+        "verification_code_label": "Verifizierungscode",
+        "sending": "Senden..."
+      },
+      "buttons": {
+        "back": "Zurück",
+        "nextStep": "Nächster Schritt",
+        "sendCode": "Code Senden",
+        "validate": "Validieren",
+        "contactAndFinish": "Kontaktieren & Beenden",
+        "verifying": "Wird überprüft...",
+        "completeAccount": "Konto Vervollständigen",
+        "verify_account": "Konto verifizieren"
+      },
+      "separateWorkerGLM": {
+        "title": "Title",
+        "description": "Description",
+        "complete": "Complete",
+        "completeMessage": "Complete Message",
+        "saving": "Saving",
+        "saveButton": "Save Button"
+      },
+      "profession": {
+        "title": "Title",
+        "select": "Select",
+        "locked_notice": "Locked_notice"
+      },
+      "step5": {
+        "title": "Title",
+        "description": "Description"
+      }
+    },
+    "navigation": {
+      "overview": "Overview",
+      "messages": "Messages",
+      "contracts": "Contracts",
+      "calendar": "Calendar",
+      "profile": "Profile",
+      "marketplace": "Marketplace",
+      "payroll": "Payroll",
+      "organization": "Organization",
+      "settings": "Settings"
+    },
+    "tutorial": {
+      "selectionTitle": "Selection Title",
+      "selectionSubtitle": "Selection Subtitle",
+      "currentPage": "Current Page",
+      "currentPageOnly": "Current Page Only",
+      "currentPageOnlyTitle": "Current Page Only Title",
+      "currentPageOnlyDesc": "Current Page Only Desc",
+      "allPages": "All Pages",
+      "allPagesTitle": "All Pages Title",
+      "allPagesDesc": "All Pages Desc"
     }
+  },
+  "userMenu": {
+    "profile": "Mein Profil",
+    "settings": "Einstellungen",
+    "language": "Sprache",
+    "logout": "Abmelden",
+    "user": "Benutzer"
+  },
+  "common": {
+    "cancel": "Cancel"
+  },
+  "personalDetails": {
+    "phonePrefix": "Phone Prefix",
+    "selectPhonePrefix": "Select Phone Prefix",
+    "phoneNumber": "Phone Number",
+    "phonePlaceholder": "Phone Placeholder"
+  }
 }

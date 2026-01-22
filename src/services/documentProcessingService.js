@@ -272,13 +272,57 @@ export const processDocumentWithAI = async (documentUrl, documentType = 'cv', st
  * 
  * @param {Object} existingData - Current form data
  * @param {Object} extractedData - Data extracted from document
+ * @param {Object} dropdownOptions - Available dropdown options for validation
  * @returns {Object} Merged data
  */
-export const mergeExtractedData = (existingData, extractedData) => {
+export const mergeExtractedData = (existingData, extractedData, dropdownOptions = null) => {
     const merged = { ...existingData };
 
-    const setNestedValue = (obj, path, value) => {
+    /**
+     * Helper to check if a value is valid for a dropdown
+     * @param {string} value - Value to check
+     * @param {string} optionsKey - Key in dropdownOptions (e.g., 'countriesOptions')
+     * @returns {boolean} True if valid or if no options available
+     */
+    const isValidForDropdown = (value, optionsKey) => {
+        if (!dropdownOptions || !dropdownOptions[optionsKey] || !Array.isArray(dropdownOptions[optionsKey])) {
+            return true; // No options to check against
+        }
+
+        if (!value) return true;
+
+        // Check if value exists as a key (value property) in the options
+        const exists = dropdownOptions[optionsKey].some(opt =>
+            opt.value === value ||
+            (typeof value === 'string' && opt.value?.toLowerCase() === value.toLowerCase())
+        );
+
+        if (!exists && process.env.NODE_ENV !== 'production') {
+            console.warn(`[DocumentProcessing] Extracted value "${value}" is not valid for ${optionsKey}`);
+        }
+
+        return exists;
+    };
+
+    const setNestedValue = (obj, path, value, optionsKey = null) => {
         if (value === null || value === undefined) return;
+
+        // If it's a dropdown field, validate it first
+        if (optionsKey && !isValidForDropdown(value, optionsKey)) {
+            // If invalid, try to find a matching value from labels if it's a string
+            if (typeof value === 'string' && dropdownOptions?.[optionsKey]) {
+                const matchByLabel = dropdownOptions[optionsKey].find(opt =>
+                    opt.label?.toLowerCase() === value.toLowerCase()
+                );
+                if (matchByLabel) {
+                    value = matchByLabel.value;
+                } else {
+                    return; // Skip invalid value
+                }
+            } else {
+                return; // Skip invalid value
+            }
+        }
 
         const keys = path.split('.');
         let current = obj;
@@ -306,6 +350,7 @@ export const mergeExtractedData = (existingData, extractedData) => {
                 // Map basic identity fields to the specific naming used in the profile config
                 if (key === 'firstName') setNestedValue(merged, 'identity.legalFirstName', value);
                 else if (key === 'lastName') setNestedValue(merged, 'identity.legalLastName', value);
+                else if (key === 'nationality') setNestedValue(merged, `identity.${key}`, value, 'countriesOptions');
                 else setNestedValue(merged, `identity.${key}`, value);
             });
         }
@@ -313,15 +358,21 @@ export const mergeExtractedData = (existingData, extractedData) => {
         if (address) {
             Object.entries(address).forEach(([key, value]) => {
                 // Map address fields to residentialAddress group used in professional profiles
-                setNestedValue(merged, `contact.residentialAddress.${key}`, value);
+                let optionsKey = null;
+                if (key === 'country') optionsKey = 'countriesOptions';
+                else if (key === 'canton') optionsKey = 'cantonsOptions';
+
+                setNestedValue(merged, `contact.residentialAddress.${key}`, value, optionsKey);
                 // Also map to top-level address for consistency if needed by other components
-                setNestedValue(merged, `address.${key}`, value);
+                setNestedValue(merged, `address.${key}`, value, optionsKey);
             });
         }
 
         if (contact) {
             Object.entries(contact).forEach(([key, value]) => {
-                setNestedValue(merged, `contact.${key}`, value);
+                let optionsKey = null;
+                if (key === 'primaryPhonePrefix') optionsKey = 'phonePrefixOptions';
+                setNestedValue(merged, `contact.${key}`, value, optionsKey);
             });
         }
     }

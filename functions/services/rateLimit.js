@@ -281,38 +281,38 @@ const rateLimitMiddleware = (action) => {
 exports.cleanupRateLimits = onSchedule({
     schedule: 'every 24 hours'
 }, async (event) => {
-        try {
-            const now = new Date();
-            const snapshot = await admin.firestore()
-                .collection('rate_limits')
-                .where('expiresAt', '<', now)
-                .limit(500)
-                .get();
+    try {
+        const now = new Date();
+        const snapshot = await admin.firestore()
+            .collection('rate_limits')
+            .where('expiresAt', '<', now)
+            .limit(500)
+            .get();
 
-            const batch = admin.firestore().batch();
-            let deletedCount = 0;
+        const batch = admin.firestore().batch();
+        let deletedCount = 0;
 
-            snapshot.forEach(doc => {
-                batch.delete(doc.ref);
-                deletedCount++;
-            });
+        snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+            deletedCount++;
+        });
 
-            if (deletedCount > 0) {
-                await batch.commit();
-                console.log(`Cleaned up ${deletedCount} expired rate limit records`);
-            }
-
-            return { success: true, deletedCount };
-        } catch (error) {
-            console.error('Error cleaning up rate limits:', error);
-            throw error;
+        if (deletedCount > 0) {
+            await batch.commit();
+            console.log(`Cleaned up ${deletedCount} expired rate limit records`);
         }
-    });
+
+        return { success: true, deletedCount };
+    } catch (error) {
+        console.error('Error cleaning up rate limits:', error);
+        throw error;
+    }
+});
 
 /**
  * Get rate limit status for current user
  */
-exports.getRateLimitStatus = onCall(async (request) => {
+exports.getRateLimitStatus = onCall({ database: 'medishift', cors: true }, async (request) => {
     if (!request.auth) {
         throw new HttpsError('unauthenticated', 'Must be authenticated');
     }

@@ -12,4 +12,6 @@ export { default as NotFoundPage } from './NotFound';
 export { default as TestPage } from './TestPage';
 export { default as TestPhonePage } from './TestPhonePage';
 export { default as TestGLNPage } from './TestGLNPage';
+export { default as TestPopupPage } from './TestPopupPage';
+export { default as GLNTestVerifPage } from './GLNTestVerifPage';
 export { default as OnboardingPage } from './Onboarding/OnboardingPage';

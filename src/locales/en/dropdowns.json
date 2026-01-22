@@ -188,5 +188,50 @@
     "10": "October",
     "11": "November",
     "12": "December"
+  },
+  "medicalProfessions": {
+    "biomedical_analysis": "Biomedical Analysis",
+    "biomedical_lab_diagnosis": "Biomedical Laboratory Diagnosis",
+    "dietetics": "Dietetics",
+    "druggist": "Druggist",
+    "occupational_therapy": "Occupational Therapy",
+    "dental_hygiene": "Dental Hygiene",
+    "speech_therapy": "Speech Therapy",
+    "medical_massage": "Medical Massage",
+    "naturopath_homeopathy": "Homeopathic Naturopath",
+    "naturopath_ayurveda": "Ayurvedic Medicine Naturopath",
+    "naturopath_tening": "Traditional European Natural Medicine Naturopath",
+    "naturopath_tcm": "Traditional Chinese Medicine Naturopath",
+    "obstetrics": "Obstetrics",
+    "optics": "Optics",
+    "optometry": "Optometry",
+    "orthoptics": "Orthoptics",
+    "osteopathy": "Osteopathy",
+    "physiotherapy": "Physiotherapy",
+    "podiatry": "Podiatry",
+    "rescue_services": "Rescue/Emergency Services",
+    "nursing": "Nursing Care",
+    "radiology_tech": "Medical Radiology Technology",
+    "surgical_tech": "Surgical Technology",
+    "dental_assistant": "Dental Assistant",
+    "pharmacy_assistant": "Pharmacy Assistant",
+    "nurse": "Nurse",
+    "physician": "Physician",
+    "pharmacist": "Pharmacist",
+    "dentist": "Dentist"
+  },
+  "jobRoles": {
+    "pharmacist": "Pharmacist",
+    "pharmacy_technician": "Pharmacy Technician",
+    "doctor": "Doctor",
+    "nurse": "Nurse"
+  },
+  "skills": {
+    "languages": "Languages",
+    "driving_license": "Driving License"
+  },
+  "jobPreferences": {
+    "full_time": "Full Time",
+    "part_time": "Part Time"
   }
-} 
+}

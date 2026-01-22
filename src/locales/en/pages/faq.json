@@ -146,5 +146,7 @@
     "title": "Couldn't find what you were looking for?",
     "description": "Our support team is ready to help you with any additional questions.",
     "buttonText": "Contact Support"
-  }
-} 
+  },
+  "title": "Title",
+  "noResults": "No Results"
+}

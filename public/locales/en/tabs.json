@@ -1,0 +1,12 @@
+{
+  "accountBasics": "Account",
+  "personalDetails": "Personal",
+  "professionalBackground": "Professional",
+  "billingInformation": "Billing",
+  "jobPreferences": "Preferences",
+  "documentUploads": "Documents",
+  "settings": "Settings",
+  "deleteAccount": "Delete Account",
+  "accountManagement": "Account Management"
+}
+

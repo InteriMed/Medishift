@@ -3,17 +3,7 @@ import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp, deleteFiel
 import { db } from '../../services/firebase';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
 
-const TUTORIAL_STORAGE_KEY = 'tutorial_state';
-
-const getTutorialStorageKey = (userId, workspaceId) => {
-    if (!userId) return TUTORIAL_STORAGE_KEY;
-    const workspace = workspaceId ? `_${workspaceId}` : '';
-    return `${TUTORIAL_STORAGE_KEY}_${userId}${workspace}`;
-};
-
 export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
-    // --- Local Storage Operations ---
-
     const saveLocalState = useCallback((state) => {
     }, [currentUser, selectedWorkspace]);
 

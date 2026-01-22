@@ -10,8 +10,8 @@ import Switch from '../../../../../components/BoxedInputFields/Switch';
 
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border p-6 pb-4 shadow-md w-full max-w-[1400px] mx-auto",
-  sectionTitle: "text-2xl font-semibold mb-2",
+  headerCard: "bg-card rounded-xl border border-border px-6 py-2 shadow-md w-full max-w-[1400px] mx-auto h-16 flex items-center",
+  sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
   subtitleRow: "flex items-end justify-between gap-4",

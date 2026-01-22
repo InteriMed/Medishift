@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiFilter, FiX } from 'react-icons/fi';
+import { FiFilter, FiX, FiCalendar } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 const CalendarHeader = ({
   currentDate,
@@ -20,6 +20,7 @@ const CalendarHeader = ({
   calendarMode,
   setCalendarMode,
   isTeamWorkspace = false,
+  handleCreateEventClick,
 }) => {
   const { t } = useTranslation();
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -133,6 +134,17 @@ const CalendarHeader = ({
       {/* Right: Filters & Actions - Only show in calendar mode */}
       {calendarMode === 'calendar' && (
         <div className="flex items-center gap-2 flex-1 justify-end">
+        
+        {/* New Appointment Button */}
+        <button
+          className="new-appointment-button flex items-center gap-2 px-4 h-9 text-sm font-medium rounded-lg transition-all bg-primary text-primary-foreground hover:bg-primary/90"
+          onClick={handleCreateEventClick}
+          title={t('calendar:newAppointment')}
+        >
+          <FiCalendar className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">{t('calendar:newAppointment')}</span>
+        </button>
+
         {/* Category Filter */}
         <div className="relative" ref={categoryDropdownRef}>
           <button
@@ -249,7 +261,8 @@ CalendarHeader.propTypes = {
   toggleSidebar: PropTypes.func,
   calendarMode: PropTypes.oneOf(['calendar', 'team']),
   setCalendarMode: PropTypes.func,
-  isTeamWorkspace: PropTypes.bool
+  isTeamWorkspace: PropTypes.bool,
+  handleCreateEventClick: PropTypes.func
 };
 
 export default CalendarHeader; 

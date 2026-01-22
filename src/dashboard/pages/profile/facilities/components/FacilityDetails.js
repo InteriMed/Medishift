@@ -17,7 +17,7 @@ import useAutoSave from '../../../../hooks/useAutoSave';
 // Tailwind styles (copied from PersonalDetails.js to ensure consistency)
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-xl border border-border/60 px-6 py-2 shadow-sm w-full max-w-[1400px] mx-auto h-16 flex items-center",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
@@ -50,13 +50,14 @@ const FacilityDetails = ({
   onSave,
   onCancel,
   getNestedValue,
+  validateCurrentTabData,
+  onTabCompleted,
+  isTutorialActive
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'validation', 'common']);
 
-  // Get dropdown options using the hook
   const dropdownOptionsFromHook = useDropdownOptions();
 
-  // Memoize the fields to render for the currently active facility sub-tab
   const fieldsToRender = useMemo(() => {
     if (!config || !activeTab || !config.fields || !config.fields[activeTab]) {
       return [];
@@ -70,7 +71,10 @@ const FacilityDetails = ({
     activeTab,
     onInputChange,
     onSave,
-    getNestedValue
+    getNestedValue,
+    validateCurrentTabData,
+    onTabCompleted,
+    isTutorialActive
   });
 
   // Get options from translations if available

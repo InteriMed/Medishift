@@ -115,11 +115,19 @@ export function DashboardLayout({ children }) {
             )}
 
             {/* Main Content Area */}
-            <div className={cn(
-                "flex-1 flex flex-col h-full transition-all duration-300 ease-in-out",
-                !isAdminRoute && !isOverlayMode && !isMobileMode && "md:border-l md:border-border",
-                !isAdminRoute && !isOverlayMode && !isMobileMode && (isSidebarCollapsed ? "md:ml-[70px]" : "md:ml-64")
-            )}>
+            <div 
+                className={cn(
+                    "flex-1 flex flex-col h-full",
+                    !isAdminRoute && !isMobileMode && "md:border-l md:border-border",
+                    !isAdminRoute && !isMobileMode && (isSidebarCollapsed ? "md:ml-[70px]" : "md:ml-64"),
+                    !isAdminRoute && isMobileMode && "ml-0 w-full"
+                )}
+                style={{
+                    transition: !isAdminRoute && !isMobileMode 
+                        ? 'margin-left 300ms cubic-bezier(0.4, 0, 0.2, 1)' 
+                        : 'none'
+                }}
+            >
                 <Header
                     collapsed={isSidebarCollapsed}
                     onMobileMenuToggle={toggleMobileMenu}
@@ -128,7 +136,7 @@ export function DashboardLayout({ children }) {
                     onBackButtonClick={onBackButtonClick}
                 />
 
-                <main className="flex-1 overflow-hidden h-full mt-16" style={{ position: 'relative', backgroundColor: 'var(--dashboard-bg, #f8f9fa)' }} data-dashboard="true">
+                <main className="flex-1 overflow-hidden h-full mt-20" style={{ position: 'relative', backgroundColor: 'var(--dashboard-bg, #f8f9fa)' }} data-dashboard="true">
                     <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ position: 'relative', zIndex: 1 }}>
                         {children}
                     </div>

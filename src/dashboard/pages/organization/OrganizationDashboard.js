@@ -26,9 +26,15 @@ import {
     FiHome,
     FiShield,
     FiRefreshCw,
-    FiCheck
+    FiCheck,
+    FiGrid,
+    FiBriefcase
 } from 'react-icons/fi';
 import { cn } from '../../../utils/cn';
+
+import PageHeader from '../../components/PageHeader/PageHeader';
+import ChainHeadquarters from './tabs/ChainHeadquarters';
+import OrganigramView from './tabs/OrganigramView';
 
 const OrganizationDashboard = () => {
     const { t } = useTranslation(['organization', 'common']);
@@ -41,6 +47,9 @@ const OrganizationDashboard = () => {
     const [isCreating, setIsCreating] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newOrgName, setNewOrgName] = useState('');
+
+    // Tab State
+    const [activeTab, setActiveTab] = useState('overview');
 
     // Fetch organization data
     const fetchOrganization = useCallback(async () => {
@@ -313,36 +322,60 @@ const OrganizationDashboard = () => {
 
     return (
         <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-            {/* Header */}
-            <div className="shrink-0 p-6 border-b border-border bg-card/50">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-foreground">
-                            {organization?.name || t('organization:title', 'Organization')}
-                        </h1>
-                        <p className="text-muted-foreground mt-1">
-                            {organization
-                                ? t('organization:subtitle', 'Manage your pharmacy chain')
-                                : t('organization:noOrg', 'Create or join an organization')
-                            }
-                        </p>
-                    </div>
-                    {organization && (
+            <PageHeader
+                title={organization?.name || t('organization:title', 'Organization')}
+                subtitle={organization
+                    ? t('organization:subtitle', 'Manage your pharmacy chain')
+                    : t('organization:noOrg', 'Create or join an organization')
+                }
+                actions={organization && (
+                    <button
+                        onClick={fetchOrganization}
+                        disabled={isLoading}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-2 rounded-lg border border-border",
+                            "hover:bg-muted transition-colors",
+                            isLoading && "opacity-50 cursor-not-allowed"
+                        )}
+                    >
+                        <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                        {t('common:refresh', 'Refresh')}
+                    </button>
+                )}
+                variant="default"
+            />
+
+            {/* Tabs */}
+            {organization && (
+                <div className="shrink-0 px-6 sm:px-8 py-4 border-b border-border bg-card/30">
+                    <div className="flex gap-4">
                         <button
-                            onClick={fetchOrganization}
-                            disabled={isLoading}
+                            onClick={() => setActiveTab('overview')}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg border border-border",
-                                "hover:bg-muted transition-colors",
-                                isLoading && "opacity-50 cursor-not-allowed"
+                                "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+                                activeTab === 'overview'
+                                    ? "border-primary text-primary"
+                                    : "border-transparent text-muted-foreground hover:text-foreground"
                             )}
                         >
-                            <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                            {t('common:refresh', 'Refresh')}
+                            <FiGrid className="w-4 h-4" />
+                            {t('organization:tabs.overview', 'Overview')}
                         </button>
-                    )}
+                        <button
+                            onClick={() => setActiveTab('headquarters')}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+                                activeTab === 'headquarters'
+                                    ? "border-primary text-primary"
+                                    : "border-transparent text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            <FiBriefcase className="w-4 h-4" />
+                            {t('organization:tabs.headquarters', 'Headquarters')}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Content */}
             <div className="flex-1 overflow-auto p-6">
@@ -353,132 +386,112 @@ const OrganizationDashboard = () => {
                 ) : !organization ? (
                     <EmptyState />
                 ) : (
-                    <div className="space-y-6">
-                        {/* Organization Info Card */}
-                        <div className="bg-card border border-border rounded-xl p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold text-foreground">
-                                    {t('organization:sections.info', 'Organization Info')}
-                                </h3>
-                                {isOrgAdmin && (
-                                    <button className="text-sm text-primary hover:text-primary/80 flex items-center gap-1">
-                                        <FiSettings className="w-4 h-4" />
-                                        {t('common:settings', 'Settings')}
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="p-4 bg-muted/30 rounded-lg">
-                                    <p className="text-sm text-muted-foreground">{t('organization:labels.type', 'Type')}</p>
-                                    <p className="font-medium capitalize">{organization.type || t('organization:labels.group')}</p>
-                                </div>
-                                <div className="p-4 bg-muted/30 rounded-lg">
-                                    <p className="text-sm text-muted-foreground">{t('organization:labels.facilities', 'Facilities')}</p>
-                                    <p className="font-medium">{memberFacilities.length}</p>
-                                </div>
-                                <div className="p-4 bg-muted/30 rounded-lg">
-                                    <p className="text-sm text-muted-foreground">{t('organization:labels.admins', 'Admins')}</p>
-                                    <p className="font-medium">{organization.admins?.length || 0}</p>
-                                </div>
-                            </div>
-
-                            {/* Settings */}
-                            <div className="mt-4 pt-4 border-t border-border">
-                                <div className="flex flex-wrap gap-3">
-                                    {organization.settings?.sharedStaffPool && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-transparent text-green-700 border border-green-700">
-                                            <FiCheck className="w-3 h-3" />
-                                            {t('organization:settings.sharedStaff', 'Shared Staff Pool')}
-                                        </span>
-                                    )}
-                                    {organization.settings?.crossFacilityScheduling && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-transparent text-blue-700 border border-blue-700">
-                                            <FiCheck className="w-3 h-3" />
-                                            {t('organization:settings.crossScheduling', 'Cross-Facility Scheduling')}
-                                        </span>
-                                    )}
-                                    {organization.settings?.consolidatedBilling && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-transparent text-purple-700 border border-purple-700">
-                                            <FiCheck className="w-3 h-3" />
-                                            {t('organization:settings.consolidatedBilling', 'Consolidated Billing')}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Member Facilities */}
-                        <div className="bg-card border border-border rounded-xl p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold text-foreground">
-                                    {t('organization:sections.facilities', 'Member Facilities')}
-                                    {memberFacilities.length > 0 && (
-                                        <span className="ml-2 text-sm font-normal text-muted-foreground">
-                                            ({memberFacilities.length})
-                                        </span>
-                                    )}
-                                </h3>
-                                {isOrgAdmin && (
-                                    <button
-                                        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors"
-                                    >
-                                        <FiLink className="w-4 h-4" />
-                                        {t('organization:actions.addFacility', 'Add Facility')}
-                                    </button>
-                                )}
-                            </div>
-
-                            {memberFacilities.length === 0 ? (
-                                <div className="text-center py-8 text-muted-foreground">
-                                    {t('organization:facilities.empty', 'No facilities in this organization yet.')}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {memberFacilities.map((facility) => (
-                                        <FacilityCard
-                                            key={facility.id}
-                                            facility={facility}
-                                            canRemove={isOrgAdmin && memberFacilities.length > 1}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Feature Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Internal Interim */}
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                                        <FiUsers className="w-5 h-5" />
+                    <>
+                        {/* OVERVIEW TAB */}
+                        {activeTab === 'overview' && (
+                            <div className="space-y-6">
+                                {/* Organization Info Card */}
+                                <div className="bg-card border border-border rounded-xl p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-foreground">
+                                            {t('organization:sections.info', 'Organization Info')}
+                                        </h3>
+                                        {isOrgAdmin && (
+                                            <button className="text-sm text-primary hover:text-primary/80 flex items-center gap-1">
+                                                <FiSettings className="w-4 h-4" />
+                                                {t('common:settings', 'Settings')}
+                                            </button>
+                                        )}
                                     </div>
-                                    <h4 className="font-semibold text-blue-900">
-                                        {t('organization:features.internalInterim.title', 'Internal Interim')}
-                                    </h4>
-                                </div>
-                                <p className="text-sm text-blue-700">
-                                    {t('organization:features.internalInterim.description', 'Share staff between facilities. When understaffed, borrow workers from other locations in your organization first.')}
-                                </p>
-                            </div>
 
-                            {/* Cross-Facility Reports */}
-                            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 rounded-lg bg-purple-100 text-purple-600">
-                                        <FiHome className="w-5 h-5" />
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="p-4 bg-muted/30 rounded-lg">
+                                            <p className="text-sm text-muted-foreground">{t('organization:labels.type', 'Type')}</p>
+                                            <p className="font-medium capitalize">{organization.type || t('organization:labels.group')}</p>
+                                        </div>
+                                        <div className="p-4 bg-muted/30 rounded-lg">
+                                            <p className="text-sm text-muted-foreground">{t('organization:labels.facilities', 'Facilities')}</p>
+                                            <p className="font-medium">{memberFacilities.length}</p>
+                                        </div>
+                                        <div className="p-4 bg-muted/30 rounded-lg">
+                                            <p className="text-sm text-muted-foreground">{t('organization:labels.admins', 'Admins')}</p>
+                                            <p className="font-medium">{organization.admins?.length || 0}</p>
+                                        </div>
                                     </div>
-                                    <h4 className="font-semibold text-purple-900">
-                                        {t('organization:features.crossReports.title', 'Cross-Facility Reports')}
-                                    </h4>
+
+                                    {/* Settings */}
+                                    <div className="mt-4 pt-4 border-t border-border">
+                                        <div className="flex flex-wrap gap-3">
+                                            {organization.settings?.sharedStaffPool && (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-transparent text-green-700 border border-green-700">
+                                                    <FiCheck className="w-3 h-3" />
+                                                    {t('organization:settings.sharedStaff', 'Shared Staff Pool')}
+                                                </span>
+                                            )}
+                                            {organization.settings?.crossFacilityScheduling && (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-transparent text-blue-700 border border-blue-700">
+                                                    <FiCheck className="w-3 h-3" />
+                                                    {t('organization:settings.crossScheduling', 'Cross-Facility Scheduling')}
+                                                </span>
+                                            )}
+                                            {organization.settings?.consolidatedBilling && (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-transparent text-purple-700 border border-purple-700">
+                                                    <FiCheck className="w-3 h-3" />
+                                                    {t('organization:settings.consolidatedBilling', 'Consolidated Billing')}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                                <p className="text-sm text-purple-700">
-                                    {t('organization:features.crossReports.description', 'Track hours borrowed between locations. View consolidated reports for the entire organization.')}
-                                </p>
+
+                                {/* Organigram View */}
+                                <OrganigramView organization={organization} memberFacilities={memberFacilities} />
+
+                                {/* Member Facilities List */}
+                                <div className="bg-card border border-border rounded-xl p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-foreground">
+                                            {t('organization:sections.facilities', 'Member Facilities')}
+                                            {memberFacilities.length > 0 && (
+                                                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                                                    ({memberFacilities.length})
+                                                </span>
+                                            )}
+                                        </h3>
+                                        {isOrgAdmin && (
+                                            <button
+                                                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors"
+                                            >
+                                                <FiLink className="w-4 h-4" />
+                                                {t('organization:actions.addFacility', 'Add Facility')}
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {memberFacilities.length === 0 ? (
+                                        <div className="text-center py-8 text-muted-foreground">
+                                            {t('organization:facilities.empty', 'No facilities in this organization yet.')}
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {memberFacilities.map((facility) => (
+                                                <FacilityCard
+                                                    key={facility.id}
+                                                    facility={facility}
+                                                    canRemove={isOrgAdmin && memberFacilities.length > 1}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        )}
+
+                        {/* HEADQUARTERS TAB */}
+                        {activeTab === 'headquarters' && (
+                            <ChainHeadquarters />
+                        )}
+                    </>
                 )}
             </div>
 

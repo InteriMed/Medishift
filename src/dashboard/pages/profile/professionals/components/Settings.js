@@ -1,16 +1,13 @@
 // FILE: /src/pages/dashboard/profile/professionals/components/Settings.js
 // VERSION: Config-Driven - Updated for Firebase Database Organization
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import classNames from 'classnames';
-import { FiSettings, FiBell, FiShield, FiGlobe, FiClock, FiUserX } from 'react-icons/fi';
+import { FiSettings, FiBell, FiShield, FiGlobe, FiClock, FiUserX, FiZap, FiStar, FiCreditCard, FiCheck } from 'react-icons/fi';
 
-// Account Deletion Component (Swiss nFADP/GDPR compliant)
 import AccountDeletion from '../../components/AccountDeletion';
 
-// --- Import Base Components (Adjust Paths) ---
 import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
@@ -18,34 +15,40 @@ import TextareaField from '../../../../../components/BoxedInputFields/TextareaFi
 import Button from '../../../../../components/BoxedInputFields/Button';
 import Switch from '../../../../../components/BoxedInputFields/Switch';
 
-// Import the dropdown options hook
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
 import useAutoSave from '../../../../hooks/useAutoSave';
 
-
-// Tailwind styles
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
-  sectionTitle: "text-2xl font-semibold mb-2",
+  headerCard: "bg-card rounded-xl border border-border/60 px-6 py-2 shadow-sm w-full max-w-[1400px] mx-auto h-16 flex items-center",
+  sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
   subtitleRow: "flex items-end justify-between gap-4",
   mandatoryFieldLegend: "text-xs text-muted-foreground",
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
-  leftColumn: "flex flex-col gap-6 flex-1",
-  rightColumn: "flex flex-col gap-6 flex-1",
-  sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
-  cardHeader: "flex items-center gap-4 mb-0",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
-  cardTitle: "flex-1",
-  cardTitleH3: "m-0",
+  sectionsWrapper: "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 w-full max-w-[1400px] mx-auto",
+  sectionCard: "bg-card rounded-xl border border-border/60 p-5 shadow-sm w-full",
+  cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
+  cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary flex-shrink-0",
+  cardTitle: "flex-1 min-w-0",
+  cardTitleH3: "m-0 text-sm font-semibold truncate",
   cardTitleH3Style: { color: 'hsl(var(--card-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "grid grid-cols-1 gap-6",
+  grid: "flex flex-col gap-4",
   fieldWrapper: "space-y-2",
-  fullWidth: "md:col-span-2",
-  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto"
+  fullWidth: "col-span-full",
+  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto",
+  subscriptionWrapper: "grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-[1400px] mx-auto",
+  subscriptionCard: "bg-card rounded-xl border-2 p-5 shadow-sm w-full transition-all duration-200",
+  subscriptionCardActive: "border-green-500 bg-green-500/5",
+  subscriptionCardPremium: "border-amber-500 bg-amber-500/5",
+  subscriptionCardInactive: "border-border/60 hover:border-border",
+  subscriptionHeader: "flex items-center gap-3 mb-4",
+  subscriptionPrice: "text-2xl font-bold mb-1",
+  subscriptionPeriod: "text-xs text-muted-foreground",
+  subscriptionFeatures: "space-y-2 mb-4",
+  subscriptionFeatureItem: "flex items-start gap-2 text-sm",
+  subscriptionBadge: "px-2 py-0.5 rounded-full text-xs font-semibold"
 };
 
 const Settings = ({
@@ -58,13 +61,56 @@ const Settings = ({
   onSave,
   onCancel,
   getNestedValue,
+  validateCurrentTabData,
+  onTabCompleted,
+  isTutorialActive
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
-  // Use the dropdown options hook
   const dropdownOptionsFromHook = useDropdownOptions();
 
+  const currentSubscription = useMemo(() => {
+    const subscription = formData?.platformSubscriptionPlan ||
+      formData?.subscriptionTier ||
+      formData?.subscription?.tier ||
+      'classic';
+    
+    return subscription === 'premium' ? 'premium' : 'classic';
+  }, [formData]);
+
+  const isPremium = currentSubscription === 'premium';
+
   const fieldsToRender = useMemo(() => config?.fields?.settings || [], [config]);
+
+  const handleUpgradeToPremium = useCallback(async () => {
+    setIsUpgrading(true);
+    try {
+      onInputChange('platformSubscriptionPlan', 'premium');
+      if (onSave) {
+        await onSave();
+      }
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
+    } finally {
+      setIsUpgrading(false);
+    }
+  }, [onInputChange, onSave]);
+
+  const classicFeatures = [
+    t('subscription.features.classic.basicMatching'),
+    t('subscription.features.classic.emailNotifications'),
+    t('subscription.features.classic.profileManagement'),
+    t('subscription.features.classic.documentStorage')
+  ];
+
+  const premiumFeatures = [
+    t('subscription.features.premium.priorityMatching'),
+    t('subscription.features.premium.smsNotifications'),
+    t('subscription.features.premium.advancedAnalytics'),
+    t('subscription.features.premium.dedicatedSupport'),
+    t('subscription.features.premium.bankingAccess')
+  ];
 
   useAutoSave({
     formData,
@@ -72,7 +118,10 @@ const Settings = ({
     activeTab: 'settings',
     onInputChange,
     onSave,
-    getNestedValue
+    getNestedValue,
+    validateCurrentTabData,
+    onTabCompleted,
+    isTutorialActive
   });
 
   // Handle cancel with page reload
@@ -163,15 +212,8 @@ const Settings = ({
     const commonProps = {
       label: finalLabel,
       error: error,
-      required: isActuallyRequired,
-      wrapperClassName: styles.fieldWrapper
+      required: isActuallyRequired
     };
-
-    const wrapInput = (component) => (
-      <div key={name} className={classNames(styles.fieldWrapper, { [styles.fullWidth]: type === 'textarea' })}>
-        {component}
-      </div>
-    );
 
     switch (type) {
       case 'date':
@@ -179,8 +221,8 @@ const Settings = ({
           ? new Date(maxYear, 11, 31).toISOString().split('T')[0]
           : undefined;
         const dateValue = value ? (typeof value === 'string' ? value : new Date(value).toISOString().split('T')[0]) : '';
-        return wrapInput(
-          <div>
+        return (
+          <div key={name}>
             {finalLabel && (
               <label className={`boxed-date-label ${error ? 'boxed-date-label--error' : ''}`}>
                 {finalLabel}
@@ -208,7 +250,7 @@ const Settings = ({
           console.warn(`No options found for dropdown ${name} with optionsKey ${optionsKey}`);
         }
 
-        return wrapInput(
+        return (
           <SimpleDropdown
             key={name}
             label={commonProps.label}
@@ -226,18 +268,41 @@ const Settings = ({
       case 'checkbox':
         // Use Switch for notification group AND marketplace group (requested by user)
         if (fieldConfig.group === 'notifications' || fieldConfig.group === 'marketplace') {
-          return wrapInput(
-            <Switch
-              key={name}
-              label={label}
-              checked={!!value}
-              onChange={(newValue) => onInputChange(name, newValue)}
-              marginBottom="0"
-            />
+          const isSmsNotification = name === 'notificationPreferences.sms';
+          const isBankingAccess = name === 'banking.access';
+          const requiresPremium = isSmsNotification || isBankingAccess;
+          const isDisabled = requiresPremium && !isPremium;
+          
+          return (
+            <div key={name} className="relative">
+              <Switch
+                label={label}
+                checked={!!value}
+                onChange={(newValue) => onInputChange(name, newValue)}
+                marginBottom="0"
+                disabled={isDisabled}
+              />
+              {requiresPremium && !isPremium && (
+                <div className="mt-2 p-3 rounded-lg border-2 flex items-center gap-2" style={{ borderColor: '#D4AF37', backgroundColor: 'rgba(212, 175, 55, 0.05)' }}>
+                  <FiZap className="w-4 h-4 flex-shrink-0" style={{ color: '#D4AF37' }} />
+                  <span className="text-sm font-medium" style={{ color: '#D4AF37' }}>
+                    {t('settings.premiumFeatureRequired')}
+                  </span>
+                </div>
+              )}
+              {requiresPremium && isPremium && (
+                <div className="mt-2 p-2 rounded-lg border flex items-center gap-2" style={{ borderColor: '#D4AF37', backgroundColor: 'rgba(212, 175, 55, 0.05)' }}>
+                  <FiStar className="w-3 h-3 flex-shrink-0" style={{ color: '#D4AF37' }} />
+                  <span className="text-xs font-medium" style={{ color: '#D4AF37' }}>
+                    {t('settings.premiumFeature')}
+                  </span>
+                </div>
+              )}
+            </div>
           );
         }
         // Pass label without mandatory mark styling for checkbox itself
-        return wrapInput(
+        return (
           <CheckboxField
             key={name}
             {...commonProps}
@@ -247,7 +312,7 @@ const Settings = ({
           />
         );
       case 'textarea':
-        return wrapInput(
+        return (
           <TextareaField
             key={name}
             {...commonProps}
@@ -260,7 +325,7 @@ const Settings = ({
       case 'text':
       case 'number':
       default:
-        return wrapInput(
+        return (
           <InputField
             key={name}
             {...commonProps}
@@ -305,6 +370,7 @@ const Settings = ({
 
   return (
     <div className={styles.sectionContainer}>
+      {/* HEADER */}
       <div className={styles.headerCard}>
         <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('settings.title')}</h2>
         <div className={styles.subtitleRow}>
@@ -313,120 +379,189 @@ const Settings = ({
         </div>
       </div>
 
-      {/* Two Column Flexbox Layout */}
-      <div className={styles.sectionsWrapper}>
-        {/* Left Column */}
-        <div className={styles.leftColumn}>
-          {/* Platform Settings */}
-          {platformSettingsWithoutNotes.length > 0 && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiSettings /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.platformSettingsTitle')}</h3>
-                  </div>
-                </div>
-                {platformSettingsWithoutNotes.map(renderField)}
-              </div>
+      {/* SUBSCRIPTION SECTION */}
+      <div className={styles.subscriptionWrapper}>
+        {/* CLASSIC PLAN */}
+        <div className={`${styles.subscriptionCard} ${!isPremium ? styles.subscriptionCardActive : styles.subscriptionCardInactive}`}>
+          <div className={styles.subscriptionHeader}>
+            <div className={`${styles.cardIconWrapper} ${!isPremium ? 'bg-green-500/10 text-green-600' : ''}`}>
+              <FiCreditCard className="w-5 h-5" />
             </div>
-          )}
-
-          {/* Privacy Settings */}
-          {groupedFields.privacy && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiShield /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.privacySettingsTitle')}</h3>
-                  </div>
-                </div>
-                {groupedFields.privacy.map(renderField)}
-              </div>
+            <div className="flex-1">
+              <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('subscription.classic.title')}</h3>
             </div>
-          )}
-
-          {/* Marketplace Settings */}
-          {groupedFields.marketplace && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiGlobe /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.marketplaceSettingsTitle')}</h3>
-                  </div>
-                </div>
-                {groupedFields.marketplace.map(renderField)}
+            {!isPremium && (
+              <span className={`${styles.subscriptionBadge} bg-green-500/10 text-green-600`}>
+                {t('subscription.currentPlan')}
+              </span>
+            )}
+          </div>
+          <div className="mb-3">
+            <div className={styles.subscriptionPrice}>{t('subscription.classic.price')}</div>
+            <div className={styles.subscriptionPeriod}>{t('subscription.perMonth')}</div>
+          </div>
+          <div className={styles.subscriptionFeatures}>
+            {classicFeatures.map((feature, index) => (
+              <div key={index} className={styles.subscriptionFeatureItem}>
+                <FiCheck className={`w-4 h-4 flex-shrink-0 mt-0.5 ${!isPremium ? 'text-green-600' : 'text-muted-foreground'}`} />
+                <span>{feature}</span>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
 
-        {/* Right Column */}
-        <div className={styles.rightColumn}>
-          {/* Availability Settings */}
-          {groupedFields.availability && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiClock /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilitySettingsTitle')}</h3>
-                  </div>
-                </div>
-                {groupedFields.availability.map(renderField)}
-              </div>
+        {/* PREMIUM PLAN */}
+        <div 
+          className={`${styles.subscriptionCard} ${isPremium ? styles.subscriptionCardPremium : styles.subscriptionCardInactive}`}
+          style={isPremium ? { borderColor: '#D4AF37' } : {}}
+        >
+          <div className={styles.subscriptionHeader}>
+            <div className={`${styles.cardIconWrapper}`} style={isPremium ? { backgroundColor: 'rgba(212, 175, 55, 0.1)', color: '#D4AF37' } : {}}>
+              <FiStar className="w-5 h-5" />
             </div>
-          )}
-
-          {/* Notification Preferences */}
-          {groupedFields.notifications && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiBell /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.notificationPreferencesTitle')}</h3>
-                  </div>
-                </div>
-                {groupedFields.notifications.map(renderField)}
-              </div>
+            <div className="flex-1">
+              <h3 className={styles.cardTitleH3} style={isPremium ? { ...styles.cardTitleH3Style, color: '#D4AF37' } : styles.cardTitleH3Style}>
+                {t('subscription.premium.title')}
+              </h3>
             </div>
-          )}
-
-          {/* Notes Section */}
-          {notesField && (
-            <div className={styles.sectionCard}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiClock /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilityNotes')}</h3>
-                  </div>
-                </div>
-                {renderField(notesField)}
+            {isPremium && (
+              <span className={styles.subscriptionBadge} style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)', color: '#D4AF37' }}>
+                {t('subscription.currentPlan')}
+              </span>
+            )}
+          </div>
+          <div className="mb-3">
+            <div className={styles.subscriptionPrice}>{t('subscription.premium.price')}</div>
+            <div className={styles.subscriptionPeriod}>{t('subscription.perMonth')}</div>
+          </div>
+          <div className={styles.subscriptionFeatures}>
+            {premiumFeatures.map((feature, index) => (
+              <div key={index} className={styles.subscriptionFeatureItem}>
+                <FiZap className="w-4 h-4 flex-shrink-0 mt-0.5" style={isPremium ? { color: '#D4AF37' } : { color: 'var(--muted-foreground)' }} />
+                <span>{feature}</span>
               </div>
-            </div>
+            ))}
+          </div>
+          {!isPremium && (
+            <Button
+              type="button"
+              onClick={handleUpgradeToPremium}
+              disabled={isUpgrading}
+              className="w-full mt-2"
+              style={{ backgroundColor: '#D4AF37', borderColor: '#D4AF37', color: 'white' }}
+            >
+              <FiZap className="w-4 h-4 mr-2" />
+              {isUpgrading ? t('subscription.upgrading') : t('subscription.upgradeToPremium')}
+            </Button>
           )}
         </div>
       </div>
 
-      {/* Account Management Section */}
+      {/* SETTINGS GRID - 3 columns on xl, 2 on lg, 1 on mobile */}
+      <div className={styles.sectionsWrapper}>
+        {/* Platform Settings */}
+        {platformSettingsWithoutNotes.length > 0 && (
+          <div className={styles.sectionCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiSettings className="w-4 h-4" /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.platformSettingsTitle')}</h3>
+              </div>
+            </div>
+            <div className={styles.grid}>
+              {platformSettingsWithoutNotes.map(renderField)}
+            </div>
+          </div>
+        )}
+
+        {/* Privacy Settings */}
+        {groupedFields.privacy && (
+          <div className={styles.sectionCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiShield className="w-4 h-4" /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.privacySettingsTitle')}</h3>
+              </div>
+            </div>
+            <div className={styles.grid}>
+              {groupedFields.privacy.map(renderField)}
+            </div>
+          </div>
+        )}
+
+        {/* Marketplace Settings */}
+        {groupedFields.marketplace && (
+          <div className={styles.sectionCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiGlobe className="w-4 h-4" /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.marketplaceSettingsTitle')}</h3>
+              </div>
+            </div>
+            <div className={styles.grid}>
+              {groupedFields.marketplace.map(renderField)}
+            </div>
+          </div>
+        )}
+
+        {/* Availability Settings */}
+        {groupedFields.availability && (
+          <div className={styles.sectionCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilitySettingsTitle')}</h3>
+              </div>
+            </div>
+            <div className={styles.grid}>
+              {groupedFields.availability.map(renderField)}
+            </div>
+          </div>
+        )}
+
+        {/* Notification Preferences */}
+        {groupedFields.notifications && (
+          <div className={styles.sectionCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiBell className="w-4 h-4" /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.notificationPreferencesTitle')}</h3>
+              </div>
+            </div>
+            <div className={styles.grid}>
+              {groupedFields.notifications.map(renderField)}
+            </div>
+          </div>
+        )}
+
+        {/* Notes Section */}
+        {notesField && (
+          <div className={styles.sectionCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilityNotes')}</h3>
+              </div>
+            </div>
+            <div className={styles.grid}>
+              {renderField(notesField)}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ACCOUNT MANAGEMENT SECTION */}
       <div className="w-full max-w-[1400px] mx-auto">
         <div className={styles.sectionCard}>
           <div className={styles.cardHeader}>
-            <div className={styles.cardIconWrapper}><FiUserX /></div>
+            <div className={styles.cardIconWrapper}><FiUserX className="w-4 h-4" /></div>
             <div className={styles.cardTitle}>
               <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.accountDeletion.title', 'Account Management')}</h3>
             </div>
           </div>
-          <div className="mt-4">
-            <AccountDeletion />
-          </div>
+          <AccountDeletion />
         </div>
       </div>
-
     </div>
   );
 };

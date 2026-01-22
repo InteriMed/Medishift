@@ -57,8 +57,6 @@ const SimpleDropdown = ({
 
   // Get the display value
   const selectedOption = options.find(opt => String(opt.value) === String(value));
-  // Show error message in placeholder if error exists and no value is selected
-  const displayText = selectedOption ? selectedOption.label : (error && typeof error === 'string' ? error : placeholder);
 
   // Filter options based on search query
   const filteredOptions = searchable
@@ -115,29 +113,30 @@ const SimpleDropdown = ({
     labelContent = Array.isArray(children) ? children[0] : children;
   }
 
+  // Use label if provided, otherwise use placeholder as floating label
+  const floatingLabel = label || placeholder;
+  const hasValue = !!selectedOption;
+
   return (
     <div
       className="boxed-inputfield-wrapper"
       style={{ marginBottom, marginTop, marginLeft, marginRight }}
       ref={dropdownRef}
     >
-      {label && (
-        <label className={`boxed-date-label ${error ? 'boxed-date-label--error' : ''}`}>
-          {labelContent}
-          {required && !hasRequiredIndicator(labelContent) && <span className="boxed-inputfield-required">*</span>}
-        </label>
-      )}
+      <div className={`boxed-dropdown-container ${error ? 'boxed-dropdown-container--error' : ''} ${isOpen ? 'boxed-dropdown-container--focused' : ''} ${isOptionHovered ? 'boxed-dropdown-container--option-hovered' : ''} ${hasValue ? 'has-value' : ''} ${!label ? 'no-label' : ''}`}>
+        {/* Floating label */}
+        {label && (
+          <label className={`boxed-inputfield-label ${(isOpen || hasValue) ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}>
+            {labelContent || placeholder}
+            {required && !hasRequiredIndicator(floatingLabel) && <span className="boxed-inputfield-required">*</span>}
+          </label>
+        )}
 
-      <div className={`boxed-dropdown-container ${error ? 'boxed-dropdown-container--error' : ''} ${isOpen ? 'boxed-dropdown-container--focused' : ''} ${isOptionHovered ? 'boxed-dropdown-container--option-hovered' : ''}`}>
         <div
-          className={`boxed-dropdown-selected ${error ? 'boxed-dropdown-selected--error' : ''}`}
+          className={`boxed-dropdown-selected ${error ? 'boxed-dropdown-selected--error' : ''} ${!selectedOption ? 'boxed-dropdown-placeholder' : ''}`}
           onClick={() => setIsOpen(!isOpen)}
         >
-          {selectedOption ? (
-            displayText
-          ) : (
-            <span className="boxed-dropdown-placeholder">{displayText}</span>
-          )}
+          {selectedOption ? selectedOption.label : placeholder}
         </div>
 
         <div

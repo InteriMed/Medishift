@@ -1,13 +1,16 @@
 :root {
-  --boxed-inputfield-height: 44px;
-  --boxed-inputfield-font-size: 14px;
+  --boxed-inputfield-height: 45px;
+  --boxed-inputfield-padding-x: 10px;
+  --boxed-inputfield-padding-y: 0;
+  --boxed-inputfield-padding: 18px;
+  --boxed-inputfield-font-size: var(--font-size-small);
   --boxed-inputfield-color-text: #1e293b;
   --boxed-inputfield-background: #ffffff;
   --boxed-inputfield-error-color: #ef4444;
   --boxed-inputfield-hover-background: #f8fafc;
   --boxed-inputfield-placeholder-color: #94a3b8;
   --boxed-inputfield-border-color: #e2e8f0;
-  --boxed-inputfield-label-color: #64748b;
+  --boxed-inputfield-label-color: #94a3b8;
   --boxed-inputfield-color-active: #4f46e5;
   --boxed-inputfield-focus-border-color: #4f46e5;
   --boxed-inputfield-label-focus-color: #4f46e5;
@@ -39,14 +42,26 @@
   border-radius: var(--boxed-inputfield-radius) !important;
   border: 2px solid var(--boxed-inputfield-border-color) !important;
   color: var(--boxed-inputfield-color-text);
-  padding: 0 16px;
+  padding: 0 var(--boxed-inputfield-padding);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: var(--boxed-inputfield-font-size);
+  font-size: var(--font-size-small) !important;
   font-family: inherit;
   box-sizing: border-box;
   outline: none !important;
   background-color: transparent;
   font-weight: 500;
+}
+
+.boxed-inputfield-input[type="number"]::-webkit-inner-spin-button,
+.boxed-inputfield-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.boxed-inputfield-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .boxed-inputfield-input:hover {
@@ -83,21 +98,21 @@
   top: 50%;
   left: 12px;
   transform: translateY(-50%);
-  font-size: var(--boxed-inputfield-font-size);
-  color: var(--boxed-inputfield-label-color);
+  font-size: var(--font-size-small);
+  color: var(--boxed-inputfield-label-color) !important;
   pointer-events: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   margin: 0;
   background-color: transparent;
   z-index: 10;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .boxed-inputfield-label--focused {
   top: 0;
-  font-size: 12px;
+  font-size: var(--font-size-small);
   background-color: #ffffff;
-  color: var(--boxed-inputfield-label-focus-color);
+  color: var(--boxed-inputfield-color-text) !important;
   font-weight: 600;
 }
 
@@ -144,7 +159,7 @@
 }
 
 .boxed-inputfield-option {
-  padding: 10px 16px;
+  padding: 10px var(--boxed-inputfield-padding);
   cursor: pointer;
   background-color: transparent;
   transition: all 0.2s ease;
@@ -270,34 +285,34 @@
 /* Update clear button styles */
 .boxed-inputfield-clear {
   position: absolute;
-  right: 12px;
+  right: calc(var(--boxed-inputfield-padding-x) + 50px);
   top: 50%;
   transform: translateY(-50%);
   width: 20px;
   height: 20px;
   border-radius: 50%;
   border: none;
-  background-color: #f1f5f9;
+  background-color: transparent;
   color: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
   opacity: 0;
   z-index: 20;
   font-size: 10px;
   font-weight: 900;
 }
 
-.boxed-inputfield-clear:hover {
-  background-color: #e2e8f0;
-  color: #64748b;
-  transform: translateY(-50%);
+/* When no calendar icon (non-date inputs), position closer */
+.boxed-inputfield-container:not(:has(input[type="date"])) .boxed-inputfield-clear {
+  right: var(--boxed-inputfield-padding-x);
 }
 
 .boxed-inputfield-clear:hover {
-  background-color: var(--grey-3);
+  background-color: transparent;
+  color: var(--color-logo-1);
   transform: translateY(-50%);
 }
 
@@ -349,7 +364,7 @@
 .boxed-inputfield-error .boxed-inputfield-input {
   border: 2px solid var(--boxed-inputfield-error-color) !important;
   color: var(--boxed-inputfield-error-color) !important;
-  font-size: var(--boxed-inputfield-font-size) !important;
+  font-size: var(--font-size-small) !important;
   font-weight: 500;
 }
 
@@ -380,7 +395,7 @@
 .boxed-inputfield-container--error .boxed-inputfield-input {
   color: var(--boxed-inputfield-error-color);
   border: 2px solid var(--boxed-inputfield-error-color) !important;
-  font-size: var(--boxed-inputfield-font-size) !important;
+  font-size: var(--font-size-small) !important;
   font-weight: 500;
 }
 
@@ -391,7 +406,7 @@
 
 .boxed-inputfield-container input[type="date"]::-webkit-datetime-edit {
   padding-left: 0px;
-  font-size: var(--boxed-inputfield-font-size);
+  font-size: var(--font-size-small) !important;
   font-weight: 500;
   color: var(--boxed-inputfield-color-text);
 }
@@ -420,8 +435,15 @@
   cursor: pointer;
   opacity: 0.6;
   transition: opacity 0.2s ease;
-  margin-left: 8px;
+  margin-left: var(--boxed-inputfield-padding-x);
+  margin-right: 0;
+  position: absolute;
+  right: calc(var(--boxed-inputfield-padding) + 20px);
+  top: 50%;
+  transform: translateY(-50%);
   filter: brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(1000%) hue-rotate(200deg) brightness(95%) contrast(85%);
+  width: 20px;
+  height: 20px;
 }
 
 .boxed-inputfield-input[type="date"]:hover::-webkit-calendar-picker-indicator {
@@ -451,7 +473,7 @@
 /* Paragraph input styles */
 .boxed-paragraph-container {
   position: relative;
-  padding: 12px 16px;
+  padding: 12px var(--boxed-inputfield-padding);
   background-color: #ffffff;
   border: 2px solid var(--boxed-inputfield-border-color);
   border-radius: 16px;
@@ -547,12 +569,15 @@
 .boxed-inputfield-password-toggle {
   position: absolute;
   right: 10px;
-  top: 57%;
+  top: 50%;
   transform: translateY(-50%);
   z-index: 10;
   border: none;
   background-color: transparent;
   color: var(--color-logo-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .boxed-inputfield-password-toggle--error {
@@ -606,7 +631,7 @@
 }
 
 .boxed-inputfield-container--error .boxed-inputfield-input {
-  font-size: var(--boxed-inputfield-font-size) !important;
+  font-size: var(--font-size-small) !important;
 }
 
 
@@ -630,7 +655,7 @@
   height: var(--boxed-inputfield-height);
   border: none;
   outline: none;
-  padding: 16px;
+  padding: var(--boxed-inputfield-padding);
   font-size: var(--font-size-small);
   color: var(--text-color);
   background: transparent;
@@ -651,7 +676,7 @@
 
 .boxed-inputfield-clear {
   position: absolute;
-  right: 16px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   border: none;
@@ -660,6 +685,8 @@
   cursor: pointer;
   color: var(--grey-3);
   padding: 0;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -780,7 +807,7 @@
 
 .boxed-date-select {
   flex: 1;
-  padding: 7.5px 16px;
+  padding: 7.5px var(--boxed-inputfield-padding);
   border: 1px solid hsl(var(--border) / 0.6);
   border-radius: 10px;
   font-size: var(--font-size-small);
@@ -817,9 +844,14 @@
   border: 1px solid hsl(var(--border) / 0.6);
   border-radius: 8px;
   transition: all 0.2s ease;
-  padding: 0.5rem;
+  padding: var(--boxed-inputfield-padding-y) var(--boxed-inputfield-padding-x);
   height: var(--boxed-inputfield-height);
+  min-height: var(--boxed-inputfield-height);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 .boxed-multi-dropdown-container:hover {
@@ -846,6 +878,8 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   min-height: 24px;
+  flex: 1;
+  min-width: 0;
 }
 
 .boxed-multi-dropdown-tags {
@@ -862,6 +896,7 @@
   padding: 0.25rem 0.5rem;
   font-size: var(--font-size-small);
   color: var(--color-logo-1);
+  flex-shrink: 0;
 }
 
 .boxed-multi-dropdown-tag-remove {
@@ -935,15 +970,17 @@
 /* Dropdown styles */
 .boxed-dropdown-container {
   position: relative;
-  padding: 0 16px;
+  padding: var(--boxed-inputfield-padding-y) var(--boxed-inputfield-padding-x);
   background-color: #ffffff;
   border: 2px solid var(--boxed-inputfield-border-color);
   border-radius: var(--boxed-inputfield-radius);
   display: flex;
   align-items: center;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   height: var(--boxed-inputfield-height);
+  min-height: var(--boxed-inputfield-height);
   box-sizing: border-box;
 }
 
@@ -1006,11 +1043,13 @@
   margin-right: 8px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .boxed-dropdown-selected {
   border: none !important;
-  padding: 0 !important;
+  padding: var(--boxed-inputfield-padding-x);
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -1021,6 +1060,14 @@
   height: 100%;
   display: flex;
   align-items: center;
+  font-weight: 500;
+  color: var(--boxed-inputfield-color-text);
+  min-width: 0;
+}
+
+/* When dropdown has floating label and no value, make selected text transparent */
+.boxed-dropdown-container:has(.boxed-inputfield-label) .boxed-dropdown-selected:empty {
+  color: transparent;
 }
 
 .boxed-dropdown-placeholder {
@@ -1039,10 +1086,12 @@
 }
 
 .boxed-dropdown-arrow {
-  margin-left: 8px;
   display: flex;
   align-items: center;
+  justify-content: center;
   color: var(--grey-3);
+  height: 100%;
+  flex-shrink: 0;
 }
 
 .boxed-dropdown-container--focused .boxed-dropdown-arrow {
@@ -1091,7 +1140,7 @@
 }
 
 .boxed-dropdown-no-options {
-  padding: 10px 16px;
+  padding: 10px var(--boxed-inputfield-padding);
   color: var(--grey-3);
   text-align: center;
 }
@@ -1203,7 +1252,7 @@
 /* Improve dropdown selected text alignment */
 .boxed-dropdown-selected {
   border: none !important;
-  padding: 0 !important;
+  padding: var(--boxed-inputfield-padding-x);
   font-size: var(--font-size-small);
   flex: 1;
   white-space: nowrap;
@@ -1224,7 +1273,7 @@
 /* Fix date selects to match other input heights */
 .boxed-date-select {
   flex: 1;
-  padding: 0 16px;
+  padding: 0 var(--boxed-inputfield-padding);
   border: 2px solid var(--boxed-inputfield-border-color);
   border-radius: var(--boxed-inputfield-radius);
   font-size: var(--boxed-inputfield-font-size);
@@ -1282,4 +1331,67 @@
 /* Ensure phone prefix dropdown has consistent height */
 .boxed-dropdown-container.phone-prefix {
   height: var(--boxed-inputfield-height);
+}
+
+/* Textarea styles matching input field design */
+.boxed-inputfield-textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: var(--boxed-inputfield-font-size);
+  font-family: var(--font-family-text, 'Roboto', sans-serif);
+  background: transparent;
+  padding: 0;
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+  color: var(--boxed-inputfield-color-text);
+  font-weight: 500;
+  box-sizing: border-box;
+  margin-top: 0;
+}
+
+.boxed-inputfield-textarea::placeholder {
+  color: transparent;
+}
+
+.boxed-inputfield-textarea:focus::placeholder {
+  color: var(--boxed-inputfield-placeholder-color);
+}
+
+.boxed-inputfield-textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.has-value .boxed-inputfield-textarea,
+.boxed-inputfield-container--focused .boxed-inputfield-textarea {
+  padding-top: 8px;
+}
+
+.boxed-inputfield-container--textarea {
+  height: auto;
+  min-height: 140px;
+  align-items: flex-start;
+  padding: var(--boxed-inputfield-padding);
+  border: 2px solid var(--boxed-inputfield-border-color) !important;
+}
+
+.boxed-inputfield-container--textarea:hover {
+  border-color: #cbd5e1 !important;
+  background-color: var(--boxed-inputfield-hover-background);
+}
+
+.boxed-inputfield-container--textarea.boxed-inputfield-container--focused {
+  border-color: var(--boxed-inputfield-focus-border-color) !important;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+  background-color: #ffffff;
+}
+
+.boxed-inputfield-container--textarea .boxed-inputfield-label {
+  top: 16px;
+}
+
+.boxed-inputfield-container--textarea .boxed-inputfield-label--focused {
+  top: 0;
 }

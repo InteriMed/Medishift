@@ -9,14 +9,23 @@ const useAutoSave = ({
   onInputChange,
   onSave,
   getNestedValue,
-  extractTabData
+  extractTabData,
+  validateCurrentTabData,
+  onTabCompleted,
+  isTutorialActive,
+  disableLocalStorage = false
 }) => {
   const location = useLocation();
   const localStorageKey = `profile_${activeTab}_draft`;
   const previousLocationRef = useRef(location.pathname);
   const saveTimeoutRef = useRef(null);
+  const validationTimeoutRef = useRef(null);
   const hasUnsavedChangesRef = useRef(false);
   const hasLoadedFromStorageRef = useRef(false);
+  const lastValidationStateRef = useRef(false);
+  const lastActiveTabRef = useRef(activeTab);
+  const tabChangeTimestampRef = useRef(Date.now());
+  const initialValidationDoneRef = useRef(false);
 
   const extractData = useCallback(() => {
     if (extractTabData) {
@@ -38,6 +47,8 @@ const useAutoSave = ({
   }, [formData, config, activeTab, getNestedValue, extractTabData]);
 
   const saveToLocalStorage = useCallback(() => {
+    if (disableLocalStorage) return;
+    
     const tabData = extractData();
     if (tabData && Object.keys(tabData).length > 0) {
       try {
@@ -47,10 +58,39 @@ const useAutoSave = ({
         console.error('Error saving to localStorage:', error);
       }
     }
-  }, [extractData, localStorageKey]);
+  }, [extractData, localStorageKey, disableLocalStorage]);
+
+  const performValidation = useCallback(() => {
+    if (!validateCurrentTabData || !onTabCompleted) return;
+    
+    if (isTutorialActive) {
+      const timeSinceTabChange = Date.now() - tabChangeTimestampRef.current;
+      if (timeSinceTabChange < 2000) {
+        console.log('[useAutoSave] Skipping auto-validation - recently changed tabs during tutorial');
+        return;
+      }
+    }
+    
+    const isValid = validateCurrentTabData(null, null, true);
+    
+    console.log('[useAutoSave] Validation result for', activeTab, ':', isValid);
+    
+    if (isValid !== lastValidationStateRef.current) {
+      lastValidationStateRef.current = isValid;
+      console.log('[useAutoSave] Validation state changed to:', isValid);
+      
+      if (isValid && isTutorialActive && activeTab) {
+        console.log('[useAutoSave] Tab validation passed, notifying tutorial:', activeTab);
+        onTabCompleted(activeTab, true);
+      }
+    } else if (isValid && isTutorialActive && activeTab) {
+      console.log('[useAutoSave] Tab is valid but state unchanged, notifying tutorial anyway:', activeTab);
+      onTabCompleted(activeTab, true);
+    }
+  }, [validateCurrentTabData, onTabCompleted, isTutorialActive, activeTab]);
 
   useEffect(() => {
-    if (!formData || hasLoadedFromStorageRef.current) return;
+    if (!formData || hasLoadedFromStorageRef.current || disableLocalStorage) return;
     
     try {
       const savedData = localStorage.getItem(localStorageKey);
@@ -67,23 +107,50 @@ const useAutoSave = ({
     } catch (error) {
       console.error('Error loading from localStorage:', error);
     }
-  }, [formData, getNestedValue, onInputChange, localStorageKey]);
+  }, [formData, getNestedValue, onInputChange, localStorageKey, disableLocalStorage]);
+
+  useEffect(() => {
+    if (activeTab !== lastActiveTabRef.current) {
+      console.log('[useAutoSave] Tab changed from', lastActiveTabRef.current, 'to', activeTab);
+      lastActiveTabRef.current = activeTab;
+      tabChangeTimestampRef.current = Date.now();
+      lastValidationStateRef.current = false;
+      initialValidationDoneRef.current = false;
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (formData) {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+      
       saveTimeoutRef.current = setTimeout(() => {
         saveToLocalStorage();
-      }, 500);
+      }, 300);
+      
+      const validationDelay = initialValidationDoneRef.current ? 500 : 100;
+      
+      validationTimeoutRef.current = setTimeout(() => {
+        performValidation();
+        if (!initialValidationDoneRef.current) {
+          initialValidationDoneRef.current = true;
+          console.log('[useAutoSave] Initial validation completed on mount/tab load');
+        }
+      }, validationDelay);
     }
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
     };
-  }, [formData, saveToLocalStorage]);
+  }, [formData, saveToLocalStorage, performValidation]);
 
   useEffect(() => {
     const currentPath = location.pathname;
@@ -95,7 +162,9 @@ const useAutoSave = ({
         try {
           await onSave();
           hasUnsavedChangesRef.current = false;
-          localStorage.removeItem(localStorageKey);
+          if (!disableLocalStorage) {
+            localStorage.removeItem(localStorageKey);
+          }
         } catch (error) {
           console.error('Error auto-saving to backend:', error);
         }
@@ -104,7 +173,7 @@ const useAutoSave = ({
     }
 
     previousLocationRef.current = currentPath;
-  }, [location.pathname, activeTab, onSave, localStorageKey]);
+  }, [location.pathname, activeTab, onSave, localStorageKey, disableLocalStorage]);
 
   useEffect(() => {
     const handlePageHide = async (e) => {
@@ -112,7 +181,9 @@ const useAutoSave = ({
         try {
           await onSave();
           hasUnsavedChangesRef.current = false;
-          localStorage.removeItem(localStorageKey);
+          if (!disableLocalStorage) {
+            localStorage.removeItem(localStorageKey);
+          }
         } catch (error) {
           console.error('Error auto-saving on page hide:', error);
         }
@@ -124,7 +195,9 @@ const useAutoSave = ({
         try {
           await onSave();
           hasUnsavedChangesRef.current = false;
-          localStorage.removeItem(localStorageKey);
+          if (!disableLocalStorage) {
+            localStorage.removeItem(localStorageKey);
+          }
         } catch (error) {
           console.error('Error auto-saving on visibility change:', error);
         }
@@ -138,7 +211,7 @@ const useAutoSave = ({
       window.removeEventListener('pagehide', handlePageHide);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [onSave, localStorageKey]);
+  }, [onSave, localStorageKey, disableLocalStorage]);
 };
 
 export default useAutoSave;

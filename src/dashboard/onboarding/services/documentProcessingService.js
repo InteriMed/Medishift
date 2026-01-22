@@ -57,16 +57,25 @@ export const processAndSaveProfessional = async (
   }
 
   if (isGLNProvided && glnData) {
-    const bagName = (glnData.name || '').toLowerCase();
-    const bagFirstName = (glnData.firstName || '').toLowerCase();
-    const extractedLastName = (extracted.legalLastName || extracted.lastName || extracted.surname || '').toLowerCase();
-    const extractedFirstName = (extracted.legalFirstName || extracted.firstName || extracted.givenName || '').toLowerCase();
+    const normalize = (str) => (str || '').toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-    const nameMatch = bagName.includes(extractedLastName) || extractedLastName.includes(bagName);
-    const firstNameMatch = bagFirstName.includes(extractedFirstName) || extractedFirstName.includes(bagFirstName);
+    const bagName = normalize(glnData.name);
+    const bagFirstName = normalize(glnData.firstName);
+    const extractedLastName = normalize(extracted.legalLastName || extracted.lastName || extracted.surname);
+    const extractedFirstName = normalize(extracted.legalFirstName || extracted.firstName || extracted.givenName);
+
+    console.log(`[GLNVerification] Matching Names: Registry(${bagFirstName} ${bagName}) vs Extracted(${extractedFirstName} ${extractedLastName})`);
+
+    const nameMatch = bagName.includes(extractedLastName) || extractedLastName.includes(bagName) ||
+      bagName.split(' ').some(part => extractedLastName.includes(part)) ||
+      extractedLastName.split(' ').some(part => bagName.includes(part));
+
+    const firstNameMatch = bagFirstName.includes(extractedFirstName) || extractedFirstName.includes(bagFirstName) ||
+      bagFirstName.split(' ').some(part => extractedFirstName.includes(part)) ||
+      extractedFirstName.split(' ').some(part => bagFirstName.includes(part));
 
     if (!nameMatch || !firstNameMatch) {
-      throw new Error('Document name does not match GLN record. Please check you are using the correct GLN or Document.');
+      throw new Error(`The name on your document (${extractedFirstName} ${extractedLastName}) does not match the names registered with this GLN (${bagFirstName} ${bagName}). Please ensure you are using the correct GLN.`);
     }
   }
 
@@ -128,16 +137,21 @@ export const processAndSaveFacility = async (
   }
 
   if (isGLNProvided && glnData) {
+    const normalize = (str) => (str || '').toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const extractedIdentity = idResult.data.personalDetails?.identity || {};
     const responsiblePersons = glnData.responsiblePersons || [];
 
-    const extractedLastName = (extractedIdentity.lastName || extractedIdentity.surname || '').toLowerCase();
-    const extractedFirstName = (extractedIdentity.firstName || extractedIdentity.givenName || '').toLowerCase();
+    const extractedLastName = normalize(extractedIdentity.lastName || extractedIdentity.surname);
+    const extractedFirstName = normalize(extractedIdentity.firstName || extractedIdentity.givenName);
+
+    console.log(`[GLNVerification] Matching Facility Person: Extracted(${extractedFirstName} ${extractedLastName}) vs Registry Responsible Persons`);
 
     let personMatch = false;
     for (const person of responsiblePersons) {
-      const pName = (typeof person === 'string' ? person : person.name || '').toLowerCase();
-      if (pName.includes(extractedLastName) && pName.includes(extractedFirstName)) {
+      const pName = normalize(typeof person === 'string' ? person : (person.name || `${person.firstName || ''} ${person.lastName || ''}`));
+      if ((pName.includes(extractedLastName) && pName.includes(extractedFirstName)) ||
+        (extractedLastName.length > 2 && pName.includes(extractedLastName)) ||
+        (extractedFirstName.length > 2 && pName.includes(extractedFirstName))) {
         personMatch = true;
         break;
       }
@@ -145,7 +159,7 @@ export const processAndSaveFacility = async (
 
     if (!personMatch) {
       if (responsiblePersons.length > 0) {
-        throw new Error('The person on the ID is not listed as a Responsible Person for this GLN facility.');
+        throw new Error('The person on the ID is not listed as a Responsible Person for this GLN facility in the registry.');
       }
     }
   }

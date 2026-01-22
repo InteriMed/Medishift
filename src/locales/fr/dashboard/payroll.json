@@ -1,57 +1,78 @@
 {
-    "title": "Gestion de la paie",
-    "subtitle": "Suivez et gérez les demandes de paiement du personnel",
-    "status": {
-        "pending": "En attente",
-        "sent": "Envoyé à PayrollPlus",
-        "confirmed": "Confirmé",
-        "paid": "Payé",
-        "failed": "Échoué"
+  "title": "Gestion de la paie",
+  "subtitle": "Suivez et gérez les demandes de paiement du personnel",
+  "status": {
+    "pending": "En attente",
+    "sent": "Envoyé à PayrollPlus",
+    "confirmed": "Confirmé",
+    "paid": "Payé",
+    "failed": "Échoué"
+  },
+  "stats": {
+    "total": "Total des demandes",
+    "pending": "En attente",
+    "sent": "Envoyé à PayrollPlus",
+    "confirmed": "Confirmé",
+    "paid": "Payé",
+    "totalAmount": "Montant total",
+    "allTime": "Total historique"
+  },
+  "filter": {
+    "all": "Tous",
+    "pending": "En attente",
+    "sent": "Envoyé",
+    "confirmed": "Confirmé",
+    "paid": "Payé"
+  },
+  "table": {
+    "worker": "Employé",
+    "shift": "Poste",
+    "hours": "Heures",
+    "amount": "Montant",
+    "status": "Statut",
+    "created": "Créé"
+  },
+  "details": {
+    "title": "Détails de la demande de paie",
+    "worker": "Employé",
+    "shift": "Détails du poste",
+    "financials": "Finances",
+    "payrollplus": "Statut PayrollPlus",
+    "suffixes": {
+      "pilotFee": "Pilot Fee",
+      "hours": "Hours",
+      "perHour": "Per Hour"
     },
-    "stats": {
-        "total": "Total des demandes",
-        "pending": "En attente",
-        "sent": "Envoyé à PayrollPlus",
-        "confirmed": "Confirmé",
-        "paid": "Payé",
-        "totalAmount": "Montant total",
-        "allTime": "Total historique"
-    },
-    "filter": {
-        "all": "Tous",
-        "pending": "En attente",
-        "sent": "Envoyé",
-        "confirmed": "Confirmé",
-        "paid": "Payé"
-    },
-    "table": {
-        "worker": "Employé",
-        "shift": "Poste",
-        "hours": "Heures",
-        "amount": "Montant",
-        "status": "Statut",
-        "created": "Créé"
-    },
-    "details": {
-        "title": "Détails de la demande de paie",
-        "worker": "Employé",
-        "shift": "Détails du poste",
-        "financials": "Finances",
-        "payrollplus": "Statut PayrollPlus"
-    },
-    "empty": {
-        "title": "Pas encore de demandes de paie",
-        "description": "Lorsque vous confirmez des postes avec des employés, les demandes de paie apparaîtront ici."
-    },
-    "pilot": {
-        "title": "Programme pilote actif",
-        "description": "Vous bénéficiez actuellement de 0% de frais de plateforme jusqu'au 28 février 2025 !"
-    },
-    "errors": {
-        "fetchFailed": "Échec du chargement des demandes de paie",
-        "createFailed": "Échec de la création de la demande de paie"
-    },
-    "success": {
-        "created": "Demande de paie créée avec succès"
+    "labels": {
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "role": "Role",
+      "hourlyRate": "Hourly Rate",
+      "workerGrossPay": "Worker Gross Pay",
+      "commission": "Commission",
+      "totalCost": "Total Cost",
+      "emailSent": "Email Sent",
+      "error": "Error"
     }
+  },
+  "empty": {
+    "title": "Pas encore de demandes de paie",
+    "description": "Lorsque vous confirmez des postes avec des employés, les demandes de paie apparaîtront ici."
+  },
+  "pilot": {
+    "title": "Programme pilote actif",
+    "description": "Vous bénéficiez actuellement de 0% de frais de plateforme jusqu'au 28 février 2025 !"
+  },
+  "errors": {
+    "fetchFailed": "Échec du chargement des demandes de paie",
+    "createFailed": "Échec de la création de la demande de paie"
+  },
+  "success": {
+    "created": "Demande de paie créée avec succès"
+  },
+  "placeholders": {
+    "unknown": "Unknown",
+    "pharmacist": "Pharmacist"
+  }
 }

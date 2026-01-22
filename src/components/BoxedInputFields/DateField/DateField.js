@@ -1,6 +1,40 @@
 import React, { useState } from 'react';
 import '../styles/boxedInputFields.css';
-import './DateField.css';
+
+const hasRequiredIndicator = (label) => {
+    if (!label) return false;
+    if (typeof label === 'string') {
+        return label.includes('*');
+    }
+    if (React.isValidElement(label)) {
+        const checkElement = (element) => {
+            if (!element) return false;
+            if (typeof element === 'string') {
+                return element.includes('*');
+            }
+            if (React.isValidElement(element)) {
+                const props = element.props || {};
+                const className = props.className || '';
+                if (className.includes('boxed-inputfield-required') ||
+                    className.includes('mandatoryMark') ||
+                    className.includes('date-field-required') ||
+                    className.includes('required')) {
+                    return true;
+                }
+                const children = props.children;
+                if (children) {
+                    if (Array.isArray(children)) {
+                        return children.some(child => checkElement(child));
+                    }
+                    return checkElement(children);
+                }
+            }
+            return false;
+        };
+        return checkElement(label);
+    }
+    return false;
+};
 
 const DateField = ({ 
   label, 
@@ -10,9 +44,12 @@ const DateField = ({
   marginLeft,
   marginRight,
   disabled = false,
+  readOnly = false,
   required = false,
   error = null,
   onErrorReset,
+  clearFilter,
+  showClearButton = true,
   min,
   max
 }) => {
@@ -58,22 +95,32 @@ const DateField = ({
     setIsFocused(false);
   };
 
+  const handleClear = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange(null);
+    setIsFocused(false);
+    if (clearFilter) {
+      clearFilter();
+    }
+  };
+
   const hasValue = value && !isNaN(new Date(value).getTime());
 
   return (
     <div 
-      className={`boxed-inputfield-wrapper ${hasValue ? 'has-value' : ''}`} 
-      style={{ marginBottom, marginLeft, marginRight }}
+      className="boxed-inputfield-wrapper"
+      style={{ marginBottom: marginBottom || 0, marginLeft, marginRight }}
     >
       <div 
-        className={`boxed-inputfield-container ${error ? 'boxed-inputfield-container--error' : ''} ${disabled ? 'boxed-inputfield-container--disabled' : ''} ${hasValue ? 'has-value' : ''}`}
+        className={`boxed-inputfield-container ${error ? 'boxed-inputfield-container--error' : ''} ${hasValue ? 'has-value' : ''} ${disabled || readOnly ? 'boxed-inputfield-container--disabled' : ''}`}
       >
         {label && (
           <label 
             className={`boxed-inputfield-label ${(isFocused || hasValue) ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}
           >
             {label}
-            {required && <span className="boxed-inputfield-required">*</span>}
+            {required && !hasRequiredIndicator(label) && <span className="boxed-inputfield-required">*</span>}
           </label>
         )}
         
@@ -82,24 +129,32 @@ const DateField = ({
           className={`boxed-inputfield-input 
             ${isFocused ? 'boxed-inputfield-input--focused' : ''} 
             ${hasValue ? 'boxed-inputfield-input--has-value' : ''} 
-            ${error ? 'boxed-inputfield-input--error' : ''}`}
+            ${error ? 'boxed-inputfield-input--error' : ''}
+            ${disabled || readOnly ? 'boxed-inputfield-input--disabled' : ''}`}
           value={formatDateForInput(value)}
           onChange={handleDateChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
           disabled={disabled}
+          readOnly={readOnly}
           min={min}
           max={max}
           required={required}
           style={{ outline: 'none' }}
         />
+
+        {hasValue && showClearButton && !disabled && !readOnly && (
+          <button
+            className="boxed-inputfield-clear"
+            onClick={handleClear}
+            type="button"
+            aria-label="Clear input"
+            tabIndex={-1}
+          >
+            x
+          </button>
+        )}
       </div>
-      
-      {error && (
-        <div className="boxed-inputfield-error-message show-error">
-          {error}
-        </div>
-      )}
     </div>
   );
 };

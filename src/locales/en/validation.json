@@ -19,5 +19,8 @@
   "invalidPostalCodeSwiss": "Please enter a valid Swiss postal code (4 digits)",
   "profileSaved": "Profile saved successfully",
   "minItemsRequired": "At least {{count}} items required",
-  "minLength": "Minimum {{count}} characters required"
-} 
+  "minLength": "Minimum {{count}} characters required",
+  "errorSavingProfile": "Error Saving Profile",
+  "completePreviousSteps": "Please complete previous steps first",
+  "incomplete": "Incomplete"
+}

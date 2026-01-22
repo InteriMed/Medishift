@@ -1,66 +1,162 @@
 {
-    "title": "Organisation",
-    "subtitle": "Verwalten Sie Ihre Apothekenkette",
-    "noOrg": "Organisation erstellen oder beitreten",
-    "sections": {
-        "info": "Organisationsinfo",
-        "facilities": "Mitgliedseinrichtungen",
-        "admins": "Administratoren",
-        "settings": "Einstellungen"
+  "title": "Organisation",
+  "subtitle": "Verwalten Sie Ihre Apothekenkette",
+  "noOrg": "Organisation erstellen oder beitreten",
+  "sections": {
+    "info": "Organisationsinfo",
+    "facilities": "Mitgliedseinrichtungen",
+    "admins": "Administratoren",
+    "settings": "Einstellungen"
+  },
+  "labels": {
+    "type": "Typ",
+    "facilities": "Einrichtungen",
+    "admins": "Admins",
+    "chainAdminsSynced": "Ketten-Admins synchronisiert",
+    "unnamedFacility": "Unnamed Facility",
+    "group": "Group"
+  },
+  "settings": {
+    "sharedStaff": "Gemeinsamer Personal-Pool",
+    "crossScheduling": "Einrichtungsübergreifende Planung",
+    "consolidatedBilling": "Konsolidierte Abrechnung"
+  },
+  "actions": {
+    "create": "Organisation erstellen",
+    "addFacility": "Einrichtung hinzufügen",
+    "removeFacility": "Einrichtung entfernen",
+    "remove": "Aus Organisation entfernen"
+  },
+  "create": {
+    "title": "Organisation erstellen",
+    "subtitle": "Erstellen Sie eine neue Apothekenkette oder Gruppe",
+    "nameLabel": "Organisationsname",
+    "namePlaceholder": "z.B. Amavita Genf Gruppe",
+    "phoneVerificationRequired": "Phone Verification Required",
+    "phoneVerification": {
+      "title": "Title",
+      "description": "Description",
+      "mobileRequired": "Mobile Required"
     },
-    "labels": {
-        "type": "Typ",
-        "facilities": "Einrichtungen",
-        "admins": "Admins",
-        "chainAdminsSynced": "Ketten-Admins synchronisiert"
+    "phoneVerified": "Phone Verified",
+    "phoneVerifiedDescription": "Phone Verified Description"
+  },
+  "empty": {
+    "title": "Noch keine Organisation",
+    "description": "Erstellen Sie eine Organisation, um mehrere Apothekenstandorte zu verwalten, Personal zu teilen und die Abrechnung zu konsolidieren."
+  },
+  "facilities": {
+    "empty": "Noch keine Einrichtungen in dieser Organisation."
+  },
+  "features": {
+    "internalInterim": {
+      "title": "Interner Interim",
+      "description": "Personal zwischen Einrichtungen teilen. Bei Unterbesetzung zunächst Mitarbeiter von anderen Standorten Ihrer Organisation ausleihen."
     },
-    "settings": {
-        "sharedStaff": "Gemeinsamer Personal-Pool",
-        "crossScheduling": "Einrichtungsübergreifende Planung",
-        "consolidatedBilling": "Konsolidierte Abrechnung"
-    },
-    "actions": {
-        "create": "Organisation erstellen",
-        "addFacility": "Einrichtung hinzufügen",
-        "removeFacility": "Einrichtung entfernen",
-        "remove": "Aus Organisation entfernen"
-    },
-    "create": {
-        "title": "Organisation erstellen",
-        "subtitle": "Erstellen Sie eine neue Apothekenkette oder Gruppe",
-        "nameLabel": "Organisationsname",
-        "namePlaceholder": "z.B. Amavita Genf Gruppe"
-    },
-    "empty": {
-        "title": "Noch keine Organisation",
-        "description": "Erstellen Sie eine Organisation, um mehrere Apothekenstandorte zu verwalten, Personal zu teilen und die Abrechnung zu konsolidieren."
-    },
-    "facilities": {
-        "empty": "Noch keine Einrichtungen in dieser Organisation."
-    },
-    "features": {
-        "internalInterim": {
-            "title": "Interner Interim",
-            "description": "Personal zwischen Einrichtungen teilen. Bei Unterbesetzung zunächst Mitarbeiter von anderen Standorten Ihrer Organisation ausleihen."
-        },
-        "crossReports": {
-            "title": "Einrichtungsübergreifende Berichte",
-            "description": "Verfolgen Sie ausgeliehene Stunden zwischen Standorten. Sehen Sie konsolidierte Berichte für die gesamte Organisation."
-        }
-    },
-    "confirm": {
-        "removeFacility": "Diese Einrichtung aus der Organisation entfernen?"
-    },
-    "errors": {
-        "fetchFailed": "Organisation konnte nicht geladen werden",
-        "createFailed": "Organisation konnte nicht erstellt werden",
-        "addFacilityFailed": "Einrichtung konnte nicht hinzugefügt werden",
-        "removeFacilityFailed": "Einrichtung konnte nicht entfernt werden",
-        "nameRequired": "Organisationsname ist erforderlich"
-    },
-    "success": {
-        "created": "Organisation erfolgreich erstellt!",
-        "facilityAdded": "Einrichtung erfolgreich hinzugefügt!",
-        "facilityRemoved": "Einrichtung erfolgreich entfernt!"
+    "crossReports": {
+      "title": "Einrichtungsübergreifende Berichte",
+      "description": "Verfolgen Sie ausgeliehene Stunden zwischen Standorten. Sehen Sie konsolidierte Berichte für die gesamte Organisation."
     }
+  },
+  "confirm": {
+    "removeFacility": "Diese Einrichtung aus der Organisation entfernen?"
+  },
+  "errors": {
+    "fetchFailed": "Organisation konnte nicht geladen werden",
+    "createFailed": "Organisation konnte nicht erstellt werden",
+    "addFacilityFailed": "Einrichtung konnte nicht hinzugefügt werden",
+    "removeFacilityFailed": "Einrichtung konnte nicht entfernt werden",
+    "nameRequired": "Organisationsname ist erforderlich"
+  },
+  "success": {
+    "created": "Organisation erfolgreich erstellt!",
+    "facilityAdded": "Einrichtung erfolgreich hinzugefügt!",
+    "facilityRemoved": "Einrichtung erfolgreich entfernt!"
+  },
+  "dashboard": {
+    "onboarding": {
+      "phoneVerification": {
+        "phoneRequired": "Phone Required",
+        "sendFailed": "Send Failed",
+        "operationNotAllowed": "Operation Not Allowed",
+        "invalidPhone": "Invalid Phone",
+        "tooManyRequests": "Too Many Requests",
+        "codeRequired": "Code Required",
+        "invalidCode": "Invalid Code",
+        "codeExpired": "Code Expired",
+        "verifyFailed": "Verify Failed",
+        "sending": "Sending",
+        "sendCode": "Send Code",
+        "enterCode": "Enter Code",
+        "codeSent": "Code Sent",
+        "codeLabel": "Code Label",
+        "verifying": "Verifying",
+        "verify": "Verify"
+      }
+    }
+  },
+  "employee": {
+    "viewPublicProfile": "View Public Profile",
+    "homeBranch": "Home Branch",
+    "remove": "Remove"
+  },
+  "hr": {
+    "requestApproved": "Request Approved",
+    "errorApproving": "Error Approving",
+    "requestRejected": "Request Rejected",
+    "errorRejecting": "Error Rejecting",
+    "title": "Title",
+    "subtitle": "Subtitle",
+    "createJob": "Create Job",
+    "sickLeave": "Sick Leave",
+    "pendingRequests": "Pending Requests",
+    "vacancies": "Vacancies",
+    "totalPending": "Total Pending",
+    "requiresAction": "Requires Action",
+    "overview": "Overview",
+    "recentSickLeave": "Recent Sick Leave",
+    "noSickLeave": "No Sick Leave",
+    "approve": "Approve",
+    "reject": "Reject",
+    "recentVacancies": "Recent Vacancies",
+    "noVacancies": "No Vacancies",
+    "allSickLeave": "All Sick Leave",
+    "allVacancies": "All Vacancies",
+    "jobCreated": "Job Created",
+    "errorCreating": "Error Creating",
+    "jobTitle": "Job Title",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "vacancyType": "Vacancy Type",
+    "temporary": "Temporary",
+    "permanent": "Permanent",
+    "replacement": "Replacement",
+    "urgency": "Urgency",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "notes": "Notes"
+  },
+  "organigram": {
+    "fireSuccess": "Fire Success",
+    "fireError": "Fire Error",
+    "admins": "Admins",
+    "unassigned": "Unassigned",
+    "title": "Title",
+    "description": "Description",
+    "empty": "Empty",
+    "member": "Member",
+    "members": "Members",
+    "adminBadge": "Admin Badge",
+    "year": "Year",
+    "years": "Years",
+    "experience": "Experience",
+    "fireDialogTitle": "Fire Dialog Title",
+    "fireConfirm": "Fire Confirm",
+    "fireMessage": "Fire Message",
+    "fromFacility": "From Facility",
+    "fireWarning": "Fire Warning",
+    "firePrompt": "Fire Prompt",
+    "toConfirm": "To Confirm"
+  }
 }

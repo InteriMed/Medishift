@@ -62,6 +62,7 @@ If a field is not found, set it to null. Always include the confidence score (0-
 const verifyPharmacyDocument = onCall(
     {
         region: config.region,
+        database: 'medishift',
         enforceAppCheck: false // Enable in production
     },
     async (request) => {

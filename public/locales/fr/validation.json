@@ -19,5 +19,8 @@
   "invalidPostalCodeSwiss": "Veuillez saisir un code postal suisse valide (4 chiffres)",
   "profileSaved": "Profil sauvegardé avec succès",
   "minItemsRequired": "Au moins {{count}} éléments requis",
-  "minLength": "{{count}} caractères minimum requis"
-} 
+  "minLength": "{{count}} caractères minimum requis",
+  "errorSavingProfile": "Error Saving Profile",
+  "completePreviousSteps": "Complete Previous Steps",
+  "incomplete": "Incomplete"
+}

@@ -1,91 +1,92 @@
 {
-    "meta": {
-        "title": "MediShift Blog - Ressourcen für Personalvermittlung und Management im Gesundheitswesen",
-        "description": "Expertenrat zu Gesundheitseinrichtungsmanagement, Rekrutierungslösungen, HR im Gesundheitswesen und Branchentrends für Schweizer Gesundheitsfachkräfte.",
-        "keywords": "Schweizer Gesundheits-Blog, Gesundheitsmanagement Ressourcen, Gesundheits-Rekrutierungslösungen, HR Gesundheitswesen, Branchentrends Gesundheitswesen"
+  "meta": {
+    "title": "MediShift Blog - Ressourcen für Personalvermittlung und Management im Gesundheitswesen",
+    "description": "Expertenrat zu Gesundheitseinrichtungsmanagement, Rekrutierungslösungen, HR im Gesundheitswesen und Branchentrends für Schweizer Gesundheitsfachkräfte.",
+    "keywords": "Schweizer Gesundheits-Blog, Gesundheitsmanagement Ressourcen, Gesundheits-Rekrutierungslösungen, HR Gesundheitswesen, Branchentrends Gesundheitswesen"
+  },
+  "title": "Blog",
+  "introduction": "Expertenrat und Ressourcen für Gesundheitsfachkräfte und Einrichtungsmanager in der Schweiz",
+  "categories": {
+    "title": "Nach Kategorie durchsuchen",
+    "all": "Alle Artikel"
+  },
+  "featured": {
+    "title": "Empfohlener Artikel"
+  },
+  "recent": {
+    "title": "Aktuelle Artikel",
+    "viewAll": "Alle Artikel anzeigen"
+  },
+  "readMore": "Mehr lesen",
+  "noPostsFound": "Keine Artikel entsprechen Ihren Suchkriterien. Bitte versuchen Sie andere Suchbegriffe.",
+  "pagination": {
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "sidebar": {
+    "search": "Suchen",
+    "categories": "Kategorien",
+    "recentPosts": "Aktuelle Beiträge",
+    "cta": {
+      "title": "Brauchen Sie Rekrutierungslösungen?",
+      "description": "Finden Sie qualifizierte Fachkräfte oder flexible Arbeitsmöglichkeiten.",
+      "forPharmacies": "Für Gesundheitseinrichtungen",
+      "forProfessionals": "Für Gesundheitsfachkräfte"
+    }
+  },
+  "searchPlaceholder": "Blog-Artikel durchsuchen...",
+  "mockPosts": [
+    {
+      "title": "Schweizer Gesundheitsvorschriften für temporäre Personalbeschaffung verstehen",
+      "excerpt": "Die Navigation durch die komplexe Landschaft der Schweizer Vorschriften für Gesundheitspersonal kann eine Herausforderung sein. Dieser Leitfaden erklärt die wichtigsten Aspekte der relevanten Gesetze.",
+      "author": "William Abhamon",
+      "category": "Compliance-Ecke"
     },
-    "title": "Blog",
-    "introduction": "Expertenrat und Ressourcen für Gesundheitsfachkräfte und Einrichtungsmanager in der Schweiz",
-    "categories": {
-        "title": "Nach Kategorie durchsuchen",
-        "all": "Alle Artikel"
+    {
+      "title": "5 Tipps für Gesundheitsfachkräfte, die flexible Arbeit suchen",
+      "excerpt": "Möchten Sie als Gesundheitsfachkraft eine bessere Work-Life-Balance erreichen? Entdecken Sie wichtige Strategien für die Suche und Sicherung flexibler Arbeitsvereinbarungen.",
+      "author": "Jean-Michel Abhamon",
+      "category": "Berufliche Entwicklung"
     },
-    "featured": {
-        "title": "Empfohlener Artikel"
+    {
+      "title": "Wie man temporäres Gesundheitspersonal effektiv führt",
+      "excerpt": "Die effektive Integration von temporären Fachkräften kann eine Herausforderung sein. Lernen Sie Best Practices für Gesundheitseinrichtungsmanager, um reibungslose Übergänge und Qualitätsversorgung zu gewährleisten.",
+      "author": "Angela Piazzi",
+      "category": "Einrichtungsmanagement"
     },
-    "recent": {
-        "title": "Aktuelle Artikel",
-        "viewAll": "Alle Artikel anzeigen"
+    {
+      "title": "MediShift-Plattform: Entwicklungs-Updates",
+      "excerpt": "Wir freuen uns, unsere Fortschritte bei der MediShift-Plattform zu teilen, die entwickelt wurde, um die Personalbeschaffung im Gesundheitswesen effizient und benutzerfreundlich zu gestalten.",
+      "author": "MediShift Team",
+      "category": "Plattform-Updates"
     },
-    "readMore": "Mehr lesen",
-    "noPostsFound": "Keine Artikel entsprechen Ihren Suchkriterien. Bitte versuchen Sie andere Suchbegriffe.",
-    "pagination": {
-        "previous": "Zurück",
-        "next": "Weiter"
-    },
-    "sidebar": {
-        "search": "Suchen",
-        "categories": "Kategorien",
-        "recentPosts": "Aktuelle Beiträge",
-        "cta": {
-            "title": "Brauchen Sie Rekrutierungslösungen?",
-            "description": "Finden Sie qualifizierte Fachkräfte oder flexible Arbeitsmöglichkeiten.",
-            "forPharmacies": "Für Gesundheitseinrichtungen",
-            "forProfessionals": "Für Gesundheitsfachkräfte"
-        }
-    },
-    "searchPlaceholder": "Blog-Artikel durchsuchen...",
-    "mockPosts": [
-        {
-            "title": "Schweizer Gesundheitsvorschriften für temporäre Personalbeschaffung verstehen",
-            "excerpt": "Die Navigation durch die komplexe Landschaft der Schweizer Vorschriften für Gesundheitspersonal kann eine Herausforderung sein. Dieser Leitfaden erklärt die wichtigsten Aspekte der relevanten Gesetze.",
-            "author": "William Abhamon",
-            "category": "Compliance-Ecke"
-        },
-        {
-            "title": "5 Tipps für Gesundheitsfachkräfte, die flexible Arbeit suchen",
-            "excerpt": "Möchten Sie als Gesundheitsfachkraft eine bessere Work-Life-Balance erreichen? Entdecken Sie wichtige Strategien für die Suche und Sicherung flexibler Arbeitsvereinbarungen.",
-            "author": "Jean-Michel Abhamon",
-            "category": "Berufliche Entwicklung"
-        },
-        {
-            "title": "Wie man temporäres Gesundheitspersonal effektiv führt",
-            "excerpt": "Die effektive Integration von temporären Fachkräften kann eine Herausforderung sein. Lernen Sie Best Practices für Gesundheitseinrichtungsmanager, um reibungslose Übergänge und Qualitätsversorgung zu gewährleisten.",
-            "author": "Angela Piazzi",
-            "category": "Einrichtungsmanagement"
-        },
-        {
-            "title": "MediShift-Plattform: Entwicklungs-Updates",
-            "excerpt": "Wir freuen uns, unsere Fortschritte bei der MediShift-Plattform zu teilen, die entwickelt wurde, um die Personalbeschaffung im Gesundheitswesen effizient und benutzerfreundlich zu gestalten.",
-            "author": "MediShift Team",
-            "category": "Plattform-Updates"
-        },
-        {
-            "title": "Der Aufstieg flexibler Arbeit im Schweizer Gesundheitswesen",
-            "excerpt": "Erkunden Sie den wachsenden Trend flexibler Arbeitsvereinbarungen im Schweizer Gesundheitswesen und wie er den Sektor umgestaltet. Was treibt diesen Wandel an?",
-            "author": "Sebastien Van Delden",
-            "category": "Branchentrends"
-        }
-    ],
-    "post": {
-        "relatedArticles": "Verwandte Artikel",
-        "ctaTitle": "Verbessern Sie noch heute Ihre Gesundheitsrekrutierung",
-        "ctaDescription": "MediShift verbindet Gesundheitseinrichtungen mit qualifizierten Fachkräften für temporäre Arbeitseinsätze."
-    },
-    "category": {
-        "backToBlog": "Zurück zum Blog",
-        "noPosts": "Momentan keine Artikel in dieser Kategorie. Schauen Sie bald wieder vorbei!",
-        "ctaTitle": "Suchen Sie nach Gesundheits-Rekrutierungslösungen?",
-        "ctaDescription": "MediShift bietet eine spezialisierte Plattform, um Gesundheitseinrichtungen mit qualifizierten Fachkräften zu verbinden.",
-        "title": "Kategorie"
-    },
-    "clearFilter": "Filter löschen",
+    {
+      "title": "Der Aufstieg flexibler Arbeit im Schweizer Gesundheitswesen",
+      "excerpt": "Erkunden Sie den wachsenden Trend flexibler Arbeitsvereinbarungen im Schweizer Gesundheitswesen und wie er den Sektor umgestaltet. Was treibt diesen Wandel an?",
+      "author": "Sebastien Van Delden",
+      "category": "Branchentrends"
+    }
+  ],
+  "post": {
+    "relatedArticles": "Verwandte Artikel",
+    "ctaTitle": "Verbessern Sie noch heute Ihre Gesundheitsrekrutierung",
+    "ctaDescription": "MediShift verbindet Gesundheitseinrichtungen mit qualifizierten Fachkräften für temporäre Arbeitseinsätze."
+  },
+  "category": {
     "backToBlog": "Zurück zum Blog",
-    "postNotFound": "Beitrag nicht gefunden",
-    "postNotFoundDescription": "Der gesuchte Artikel existiert nicht oder wurde verschoben.",
-    "tableOfContents": "Inhaltsverzeichnis",
-    "tags": "Tags",
-    "shareThisPost": "Diesen Beitrag teilen",
-    "aboutAuthor": "Über den Autor",
-    "relatedPosts": "Verwandte Beiträge"
+    "noPosts": "Momentan keine Artikel in dieser Kategorie. Schauen Sie bald wieder vorbei!",
+    "ctaTitle": "Suchen Sie nach Gesundheits-Rekrutierungslösungen?",
+    "ctaDescription": "MediShift bietet eine spezialisierte Plattform, um Gesundheitseinrichtungen mit qualifizierten Fachkräften zu verbinden.",
+    "title": "Kategorie"
+  },
+  "clearFilter": "Filter löschen",
+  "backToBlog": "Zurück zum Blog",
+  "postNotFound": "Beitrag nicht gefunden",
+  "postNotFoundDescription": "Der gesuchte Artikel existiert nicht oder wurde verschoben.",
+  "tableOfContents": "Inhaltsverzeichnis",
+  "tags": "Tags",
+  "shareThisPost": "Diesen Beitrag teilen",
+  "aboutAuthor": "Über den Autor",
+  "relatedPosts": "Verwandte Beiträge",
+  "ctaDescription": "Cta Description"
 }

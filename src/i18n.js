@@ -17,6 +17,7 @@ const nsMapping = {
   privacy: 'legal/privacy',
   terms: 'legal/terms',
   common: 'common', // redundant but clear
+  admin: 'dashboard/admin',
   dashboard: 'dashboard/dashboard',
   calendar: 'dashboard/calendar',
   dashboardPersonal: 'dashboard/personalDashboard',
@@ -55,7 +56,7 @@ i18n
 
     ns: ['home', 'about', 'pages/faq', 'facilities', 'professionals',
       'blogArticles', 'contact', 'privacy', 'terms', 'sitemap', 'support', 'common', 'auth',
-      'dashboard', 'dashboardPersonal', 'dashboardProfile', 'calendar', 'dropdowns', 'messages',
+      'dashboard', 'dashboardPersonal', 'dashboardProfile', 'admin', 'calendar', 'dropdowns', 'messages',
       'marketplace', 'validation', 'organization', 'payroll', 'contracts'],
 
     defaultNS: 'common',

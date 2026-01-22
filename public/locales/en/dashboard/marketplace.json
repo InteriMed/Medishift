@@ -18,7 +18,7 @@
   },
   "filters": {
     "canton": "Canton",
-    "city": "City", 
+    "city": "City",
     "area": "Area",
     "experience": "Experience Level",
     "software": "Software",
@@ -68,7 +68,7 @@
     },
     "fields": {
       "salaryLabel": "Salary",
-      "statusLabel": "Status", 
+      "statusLabel": "Status",
       "locationLabel": "Location",
       "postedOnLabel": "Posted On",
       "contractTypeLabel": "Contract Type",
@@ -84,7 +84,30 @@
       "notesLabel": "Notes",
       "present": "Present",
       "age": "{{age}} years old"
-    }
+    },
+    "pharmacist": "Pharmacist",
+    "verified": "Verified",
+    "pending": "Pending",
+    "open": "Open",
+    "locationNotSpecified": "Location Not Specified",
+    "type": "Type",
+    "fullTime": "Full Time",
+    "salary": "Salary",
+    "negotiable": "Negotiable",
+    "startDate": "Start Date",
+    "immediate": "Immediate",
+    "workingHours": "Working Hours",
+    "profession": "Profession",
+    "hourlyRate": "Hourly Rate",
+    "availability": "Availability",
+    "flexible": "Flexible",
+    "jobDescription": "Job Description",
+    "about": "About",
+    "requirements": "Requirements",
+    "specialties": "Specialties",
+    "agreement": "Agreement",
+    "applyForPosition": "Apply For Position",
+    "contactPharmacist": "Contact Pharmacist"
   },
   "common": {
     "notAvailable": "Not available",
@@ -94,5 +117,31 @@
     "years_plural": "{{count}} years",
     "months": "{{count}} month",
     "months_plural": "{{count}} months"
+  },
+  "listingCard": {
+    "salaryNegotiable": "Salary Negotiable",
+    "availablePharmacist": "Available Pharmacist",
+    "generalPractice": "General Practice"
+  },
+  "experienceLevels": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "experienced": "Experienced"
+  },
+  "placeholders": {
+    "from": "From",
+    "to": "To"
+  },
+  "overlay": {
+    "title": "Title",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "clearAll": "Clear All",
+    "applyFilters": "Apply Filters"
+  },
+  "searchPlaceholder": "Search Placeholder",
+  "view": {
+    "grid": "Grid",
+    "list": "List"
   }
 }

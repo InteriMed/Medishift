@@ -2,7 +2,7 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 
-const healthRegistryAPI = onCall(async (request) => {
+const healthRegistryAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -65,7 +65,7 @@ const healthRegistryAPI = onCall(async (request) => {
   }
 });
 
-const companySearchAPI = onCall(async (request) => {
+const companySearchAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -119,7 +119,7 @@ const companySearchAPI = onCall(async (request) => {
   }
 });
 
-const companyDetailsAPI = onCall(async (request) => {
+const companyDetailsAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -163,7 +163,7 @@ const companyDetailsAPI = onCall(async (request) => {
   }
 });
 
-const verifyProfileAPI = onCall(async (request) => {
+const verifyProfileAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -194,7 +194,7 @@ const verifyProfileAPI = onCall(async (request) => {
   }
 });
 
-const uidAPI = onCall(async (request) => {
+const uidAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -442,11 +442,98 @@ const uidAPI = onCall(async (request) => {
   }
 });
 
+const gesRegAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError(
+      'unauthenticated',
+      'You must be logged in to use this API'
+    );
+  }
+
+  const { gln } = request.data;
+
+  if (!gln) {
+    throw new HttpsError(
+      'invalid-argument',
+      'GLN is required'
+    );
+  }
+
+  try {
+    // GesReg request details
+    // URL: https://www.gesreg.admin.ch/Search/Read?PersonGlnNumber=[GLN]
+    // Method: POST
+    // Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+
+    const params = new URLSearchParams();
+    params.append('PersonGlnNumber', gln);
+    // Add other empty filters if needed to match the browser request exactly, 
+    // though usually just the relevant one is enough.
+    // Based on user request data:
+    // Filter=PersonLastName%3D%26PersonFirstName%3D%26CodeDiplomaProfession%3D%26CodeDiplomaDiplomaType%3D%26DiplomaSrkRegisterId%3D%26PersonGlnNumber%3D7601001676183%26CodeLicenceCanton%3D%26CodeSearchLicenceStatus%3D%26AddressStreet%3D%26AddressZip%3D%26AddressPlace%3D
+    // We can try sending just the GLN first, or reconstruct the full filter string if strictness is required.
+    // The user provided "Request URL" has the GLN in the query string as well: ?PersonGlnNumber=...
+
+    // Constructing the URL with query param as shown in "Request URL"
+    const url = `https://www.gesreg.admin.ch/Search/Read?PersonGlnNumber=${gln}`;
+
+    // Body content based on "content-type: application/x-www-form-urlencoded; charset=UTF-8"
+    // and "cookie: Filter=..." which suggests the server might rely on cookies or body. 
+    // The user showed "Request Method: POST" and "content-length: 354" for the request, 
+    // but the payload wasn't fully shown in the snippet, assuming it's the filter parameters.
+    // Let's try to mimic the form data.
+
+    // Recreating the filter string from the cookie/payload hint
+    // PersonLastName=&PersonFirstName=&CodeDiplomaProfession=&CodeDiplomaDiplomaType=&DiplomaSrkRegisterId=&PersonGlnNumber=7601001676183&CodeLicenceCanton=&CodeSearchLicenceStatus=&AddressStreet=&AddressZip=&AddressPlace=
+
+    const formData = new URLSearchParams();
+    formData.append('PersonLastName', '');
+    formData.append('PersonFirstName', '');
+    formData.append('CodeDiplomaProfession', '');
+    formData.append('CodeDiplomaDiplomaType', '');
+    formData.append('DiplomaSrkRegisterId', '');
+    formData.append('PersonGlnNumber', gln);
+    formData.append('CodeLicenceCanton', '');
+    formData.append('CodeSearchLicenceStatus', '');
+    formData.append('AddressStreet', '');
+    formData.append('AddressZip', '');
+    formData.append('AddressPlace', '');
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+      },
+      body: formData.toString()
+    });
+
+    if (!response.ok) {
+      throw new Error(`GesReg API returned status ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return {
+      success: true,
+      data: result
+    };
+  } catch (error) {
+    logger.error('Error in GesReg API:', error);
+    throw new HttpsError(
+      'internal',
+      error.message || 'Failed to query GesReg'
+    );
+  }
+});
+
 module.exports = {
   healthRegistryAPI,
   companySearchAPI,
   companyDetailsAPI,
   verifyProfileAPI,
-  uidAPI
+  uidAPI,
+  gesRegAPI
 };
 

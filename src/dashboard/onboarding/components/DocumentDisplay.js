@@ -30,64 +30,66 @@ const DocumentDisplay = ({ file, onReplace, onRemove, hasError = false, inputRef
   };
 
   return (
-    <div className={`border rounded-lg p-4 bg-card shadow-sm ${hasError ? 'border-destructive' : 'border-border/60'}`}>
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(var(--color-logo-2-rgb), 0.1)', color: 'var(--color-logo-2)' }}>
-            <FiFileText className="w-5 h-5" />
+    <div className={`border-[1.5rem] p-6 bg-white shadow-xl transition-all duration-300 ${hasError ? 'border-destructive/20 ring-1 ring-destructive/20' : 'border-slate-50 border-b-4 border-b-slate-100'}`} style={{ borderRadius: '2rem' }}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4 flex-1 min-w-0">
+          <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-slate-900 text-white shadow-lg">
+            <FiFileText className="w-6 h-6" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-medium truncate">{file.name}</p>
+              <p className="text-base font-black text-slate-900 truncate">{file.name}</p>
               {file._restored && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-transparent text-green-700 border border-green-700">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-green-50 text-green-700 border border-green-200">
                   ✓ Restored
                 </span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">
               {(file.size / 1024).toFixed(1)} KB
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <button
             onClick={handleView}
-            className="flex items-center justify-center w-8 h-8 text-muted-foreground transition-colors"
-            style={{ '--hover-color': 'var(--color-logo-2)' }}
-            onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-logo-2)'}
-            onMouseOut={(e) => e.currentTarget.style.color = ''}
+            style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
             title="View Document"
             aria-label="View Document"
           >
-            <FiEye className="w-4 h-4" />
+            <FiEye style={{ width: '16px', height: '16px', color: 'inherit' }} />
           </button>
           <button
             onClick={handleDownload}
-            className="flex items-center justify-center w-8 h-8 text-muted-foreground transition-colors"
-            style={{ '--hover-color': 'var(--color-logo-2)' }}
-            onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-logo-2)'}
-            onMouseOut={(e) => e.currentTarget.style.color = ''}
+            style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
             title="Download Document"
             aria-label="Download Document"
           >
-            <FiDownload className="w-4 h-4" />
+            <FiDownload style={{ width: '16px', height: '16px', color: 'inherit' }} />
           </button>
           <button
             onClick={handleReplace}
-            className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
+            style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
             title="Replace Document"
             aria-label="Replace Document"
           >
-            <FiEdit className="w-4 h-4" />
+            <FiEdit style={{ width: '16px', height: '16px', color: 'inherit' }} />
           </button>
           <button
             onClick={onRemove}
-            className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-destructive transition-colors"
+            style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
             title="Remove Document"
             aria-label="Remove Document"
           >
-            <FiTrash2 className="w-4 h-4" />
+            <FiTrash2 style={{ width: '16px', height: '16px', color: 'inherit' }} />
           </button>
         </div>
       </div>

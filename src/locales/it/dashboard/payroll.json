@@ -1,57 +1,78 @@
 {
-    "title": "Gestione Paghe",
-    "subtitle": "Monitora e gestisci le richieste di pagamento del personale",
-    "status": {
-        "pending": "In Sospeso",
-        "sent": "Inviato a PayrollPlus",
-        "confirmed": "Confermato",
-        "paid": "Pagato",
-        "failed": "Fallito"
+  "title": "Gestione Paghe",
+  "subtitle": "Monitora e gestisci le richieste di pagamento del personale",
+  "status": {
+    "pending": "In Sospeso",
+    "sent": "Inviato a PayrollPlus",
+    "confirmed": "Confermato",
+    "paid": "Pagato",
+    "failed": "Fallito"
+  },
+  "stats": {
+    "total": "Richieste Totali",
+    "pending": "In Sospeso",
+    "sent": "Inviato a PayrollPlus",
+    "confirmed": "Confermato",
+    "paid": "Pagato",
+    "totalAmount": "Importo Totale",
+    "allTime": "Totale storico"
+  },
+  "filter": {
+    "all": "Tutti",
+    "pending": "In Sospeso",
+    "sent": "Inviato",
+    "confirmed": "Confermato",
+    "paid": "Pagato"
+  },
+  "table": {
+    "worker": "Lavoratore",
+    "shift": "Turno",
+    "hours": "Ore",
+    "amount": "Importo",
+    "status": "Stato",
+    "created": "Creato"
+  },
+  "details": {
+    "title": "Dettagli Richiesta Paghe",
+    "worker": "Lavoratore",
+    "shift": "Dettagli Turno",
+    "financials": "Finanziari",
+    "payrollplus": "Stato PayrollPlus",
+    "suffixes": {
+      "pilotFee": "Pilot Fee",
+      "hours": "Hours",
+      "perHour": "Per Hour"
     },
-    "stats": {
-        "total": "Richieste Totali",
-        "pending": "In Sospeso",
-        "sent": "Inviato a PayrollPlus",
-        "confirmed": "Confermato",
-        "paid": "Pagato",
-        "totalAmount": "Importo Totale",
-        "allTime": "Totale storico"
-    },
-    "filter": {
-        "all": "Tutti",
-        "pending": "In Sospeso",
-        "sent": "Inviato",
-        "confirmed": "Confermato",
-        "paid": "Pagato"
-    },
-    "table": {
-        "worker": "Lavoratore",
-        "shift": "Turno",
-        "hours": "Ore",
-        "amount": "Importo",
-        "status": "Stato",
-        "created": "Creato"
-    },
-    "details": {
-        "title": "Dettagli Richiesta Paghe",
-        "worker": "Lavoratore",
-        "shift": "Dettagli Turno",
-        "financials": "Finanziari",
-        "payrollplus": "Stato PayrollPlus"
-    },
-    "empty": {
-        "title": "Nessuna richiesta paghe ancora",
-        "description": "Quando confermi i turni con i lavoratori, le richieste di pagamento appariranno qui."
-    },
-    "pilot": {
-        "title": "Programma Pilota Attivo",
-        "description": "Stai attualmente usufruendo dello 0% di commissioni piattaforma fino al 28 febbraio 2025!"
-    },
-    "errors": {
-        "fetchFailed": "Impossibile caricare le richieste paghe",
-        "createFailed": "Impossibile creare la richiesta paghe"
-    },
-    "success": {
-        "created": "Richiesta paghe creata con successo"
+    "labels": {
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "role": "Role",
+      "hourlyRate": "Hourly Rate",
+      "workerGrossPay": "Worker Gross Pay",
+      "commission": "Commission",
+      "totalCost": "Total Cost",
+      "emailSent": "Email Sent",
+      "error": "Error"
     }
+  },
+  "empty": {
+    "title": "Nessuna richiesta paghe ancora",
+    "description": "Quando confermi i turni con i lavoratori, le richieste di pagamento appariranno qui."
+  },
+  "pilot": {
+    "title": "Programma Pilota Attivo",
+    "description": "Stai attualmente usufruendo dello 0% di commissioni piattaforma fino al 28 febbraio 2025!"
+  },
+  "errors": {
+    "fetchFailed": "Impossibile caricare le richieste paghe",
+    "createFailed": "Impossibile creare la richiesta paghe"
+  },
+  "success": {
+    "created": "Richiesta paghe creata con successo"
+  },
+  "placeholders": {
+    "unknown": "Unknown",
+    "pharmacist": "Pharmacist"
+  }
 }

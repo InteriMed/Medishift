@@ -107,10 +107,11 @@ const InputFieldParagraph = ({
 
   // Determine container class names
   const containerClassNames = [
-    'boxed-paragraph-container',
-    isFocused ? 'boxed-paragraph-container--focused' : '',
-    error ? 'boxed-paragraph-container--error' : '',
-    disabled ? 'boxed-paragraph-container--disabled' : '',
+    'boxed-inputfield-container',
+    'boxed-inputfield-container--textarea',
+    isFocused ? 'boxed-inputfield-container--focused' : '',
+    error ? 'boxed-inputfield-container--error' : '',
+    disabled ? 'boxed-inputfield-container--disabled' : '',
     inputValue ? 'has-value' : ''
   ].filter(Boolean).join(' ');
 
@@ -122,7 +123,7 @@ const InputFieldParagraph = ({
       <div className={containerClassNames}>
         {label && (
           <label
-            className={`boxed-paragraph-label ${(isFocused || inputValue) ? 'boxed-paragraph-label--active' : ''}`}
+            className={`boxed-inputfield-label ${(isFocused || inputValue) ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}
           >
             {label}
             {required && !hasRequiredIndicator(label) && <span className="boxed-inputfield-required">*</span>}
@@ -130,12 +131,12 @@ const InputFieldParagraph = ({
         )}
 
         <textarea
-          className="boxed-paragraph-input"
+          className="boxed-inputfield-textarea"
           value={inputValue}
           onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          placeholder={placeholder}
+          placeholder={label ? (isFocused ? placeholder : '') : placeholder}
           disabled={disabled}
           rows={rows}
           maxLength={maxLength}

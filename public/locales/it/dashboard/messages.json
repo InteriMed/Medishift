@@ -1,32 +1,97 @@
 {
-    "tabs": {
-        "personal": "Messaggi Personali",
-        "personalDesc": "Messaggi relativi al tuo profilo professionale",
-        "facility": "Messaggi Struttura",
-        "facilityDesc": "Messaggi relativi alle operazioni della struttura"
-    },
-    "noConversations": "Nessuna Conversazione",
-    "noConversationsHint": "Inizia conversazioni tramite interazioni nel marketplace",
-    "noFacilityConversationsHint": "Le conversazioni relative alla struttura appariranno qui",
-    "selectConversation": "Seleziona una Conversazione",
-    "selectConversationPrompt": "Scegli una conversazione dalla lista per visualizzare i messaggi",
-    "facilityMessagesInfo": "Questi messaggi sono relativi alle operazioni della struttura e alla gestione del team",
-    "conversation": {
-        "typing": "Sta scrivendo...",
-        "online": "Online",
-        "offline": "Offline",
-        "lastSeen": "Ultimo accesso",
-        "sendMessage": "Invia messaggio",
-        "messagePlaceholder": "Scrivi il tuo messaggio..."
-    },
-    "errors": {
-        "loadingConversations": "Impossibile caricare le conversazioni",
-        "loadingMessages": "Impossibile caricare i messaggi",
-        "sendingMessage": "Impossibile inviare il messaggio"
-    },
-    "actions": {
-        "markAsRead": "Segna come letto",
-        "deleteConversation": "Elimina conversazione",
-        "blockUser": "Blocca utente"
+  "tabs": {
+    "personal": "Messaggi Personali",
+    "personalDesc": "Messaggi relativi al tuo profilo professionale",
+    "facility": "Messaggi Struttura",
+    "facilityDesc": "Messaggi relativi alle operazioni della struttura"
+  },
+  "noConversations": "Nessuna Conversazione",
+  "noConversationsHint": "Inizia conversazioni tramite interazioni nel marketplace",
+  "noFacilityConversationsHint": "Le conversazioni relative alla struttura appariranno qui",
+  "selectConversation": {
+    "title": "Seleziona una Conversazione",
+    "subtitle": "Scegli una conversazione dalla lista per visualizzare i messaggi"
+  },
+  "facilityMessagesInfo": "Questi messaggi sono relativi alle operazioni della struttura e alla gestione del team",
+  "conversation": {
+    "typing": "Sta scrivendo...",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Ultimo accesso",
+    "sendMessage": "Invia messaggio",
+    "messagePlaceholder": "Scrivi il tuo messaggio..."
+  },
+  "errors": {
+    "loadingConversations": "Impossibile caricare le conversazioni",
+    "loadingMessages": "Impossibile caricare i messaggi",
+    "sendingMessage": "Impossibile inviare il messaggio",
+    "title": "Title",
+    "description": "Description",
+    "retry": "Retry"
+  },
+  "actions": {
+    "markAsRead": "Segna come letto",
+    "deleteConversation": "Elimina conversazione",
+    "blockUser": "Blocca utente"
+  },
+  "tutorial": {
+    "doctorName": "Doctor Name",
+    "doctorMessage": "Doctor Message",
+    "hospitalName": "Hospital Name",
+    "hospitalMessage": "Hospital Message",
+    "doctorMessage1": "Doctor Message1",
+    "doctorMessage2": "Doctor Message2",
+    "doctorMessage3": "Doctor Message3",
+    "hospitalMessage1": "Hospital Message1",
+    "hospitalMessage2": "Hospital Message2",
+    "hospitalMessage3": "Hospital Message3"
+  },
+  "searchPlaceholder": "Search Placeholder",
+  "filters": {
+    "all": "All",
+    "unreadOnly": "Unread Only",
+    "date": {
+      "all": "All",
+      "lastWeek": "Last Week",
+      "lastMonth": "Last Month",
+      "last3Months": "Last3 Months",
+      "lastYear": "Last Year"
     }
+  },
+  "unread": "Unread",
+  "empty": {
+    "noMessagesFound": "No Messages Found",
+    "noConversationsYet": "No Conversations Yet",
+    "adjustFilters": "Adjust Filters",
+    "startConversation": "Start Conversation",
+    "noMessagesInChat": "No Messages In Chat",
+    "startChatting": "Start Chatting",
+    "noConversationsFound": "No Conversations Found"
+  },
+  "status": {
+    "you": "You",
+    "unknownUser": "Unknown User",
+    "sending": "Sending"
+  },
+  "loading": "Loading",
+  "context": {
+    "facilityLabel": "Facility Label",
+    "facility": "Facility",
+    "contract": "Contract",
+    "personal": "Personal"
+  },
+  "placeholders": {
+    "typeMessage": "Type Message",
+    "unknown": "Unknown",
+    "noMessages": "No Messages"
+  },
+  "time": {
+    "now": "Now",
+    "minutes": "Minutes",
+    "hours": "Hours",
+    "days": "Days"
+  },
+  "conversationCreated": "Conversation Created",
+  "errorCreatingConversation": "Error Creating Conversation",
+  "noFacilityAccess": "No Facility Access"
 }

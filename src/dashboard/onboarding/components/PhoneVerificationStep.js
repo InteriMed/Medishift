@@ -18,6 +18,7 @@ import { formatPhoneNumber } from '../utils/glnVerificationUtils';
 
 const PHONE_VERIFICATION_STORAGE_KEY = 'interimed_phone_verification';
 const RECAPTCHA_VERIFICATION_STORAGE_KEY = 'interimed_recaptcha_verified';
+const RECAPTCHA_RESPONSE_STORAGE_KEY = 'interimed_recaptcha_response';
 
 const PhoneVerificationStep = forwardRef(({
     onComplete,
@@ -30,6 +31,58 @@ const PhoneVerificationStep = forwardRef(({
     const { showError, showSuccess } = useNotification();
     const { phonePrefixOptions } = useDropdownOptions();
     const { currentUser } = useAuth();
+
+    useEffect(() => {
+        const handleUnhandledRejection = (event) => {
+            const reason = event.reason;
+            if (reason && (
+                reason.message?.includes('Timeout') ||
+                reason.message === 'Timeout' ||
+                reason.name === 'TimeoutError' ||
+                reason.isTimeout === true ||
+                (typeof reason === 'string' && reason.includes('Timeout')) ||
+                (reason?.stack && (
+                    reason.stack.includes('recaptcha') ||
+                    reason.stack.includes('grecaptcha') ||
+                    reason.stack.includes('Timeout') ||
+                    reason.stack.includes('recaptcha__en.js')
+                ))
+            )) {
+                console.debug('[PhoneVerificationStep] Caught reCAPTCHA timeout error (non-critical):', reason.message || reason);
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                return false;
+            }
+        };
+
+        const handleError = (event) => {
+            if (event.error && (
+                event.error.message?.includes('Timeout') ||
+                event.error.message === 'Timeout' ||
+                event.error.name === 'TimeoutError' ||
+                event.error.isTimeout === true ||
+                (event.error?.stack && (
+                    event.error.stack.includes('recaptcha') ||
+                    event.error.stack.includes('Timeout') ||
+                    event.error.stack.includes('recaptcha__en.js')
+                ))
+            )) {
+                console.debug('[PhoneVerificationStep] Caught reCAPTCHA timeout error in error handler (non-critical):', event.error.message || event.error);
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                return false;
+            }
+        };
+
+        window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
+        window.addEventListener('error', handleError, true);
+        return () => {
+            window.removeEventListener('unhandledrejection', handleUnhandledRejection, true);
+            window.removeEventListener('error', handleError, true);
+        };
+    }, []);
 
     const defaultPhonePrefixes = [
         { value: '+41', label: 'Switzerland (+41)' },
@@ -102,8 +155,6 @@ const PhoneVerificationStep = forwardRef(({
     const isValidPhone = cleanPhone.length >= 7;
 
     useEffect(() => {
-        // For invisible reCAPTCHA, we only check phone validity
-        // reCAPTCHA will verify automatically when user clicks "Send Code"
         const isValid = isValidPhone;
         console.log('📱 Phone validation update:', {
             phoneNumber,
@@ -222,26 +273,49 @@ const PhoneVerificationStep = forwardRef(({
         checkPhoneVerificationStatus();
     }, [currentUser, onComplete, onStepChange]);
 
-    // Setup invisible reCAPTCHA when component loads (step 1)
     useEffect(() => {
-        if (internalStep === 1) {
+        if (internalStep === 1 && !captchaSetupDoneRef.current) {
             const initializeRecaptcha = async () => {
-                let attempts = 0;
-                const checkReady = setInterval(() => {
-                    attempts++;
-                    const button = document.getElementById('send-code-button');
+                if (captchaSetupDoneRef.current) {
+                    console.log('⏭️ reCAPTCHA already initialized, skipping...');
+                    return;
+                }
 
-                    if (button) {
-                        clearInterval(checkReady);
-                        console.log('🛡️ Send Code button found, initializing invisible reCAPTCHA...');
-                        setupRecaptcha();
-                    } else if (attempts > 50) {
-                        clearInterval(checkReady);
-                        console.warn('🛡️ Send Code button not found after 5s');
+                const savedResponse = localStorage.getItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
+                if (savedResponse) {
+                    try {
+                        const responseData = JSON.parse(savedResponse);
+                        const savedAt = new Date(responseData.savedAt);
+                        const hoursSinceSaved = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
+
+                        if (hoursSinceSaved < 2 && responseData.response) {
+                            console.log('✅ Restored reCAPTCHA response from localStorage');
+                            setRecaptchaVerified(true);
+                        } else {
+                            localStorage.removeItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
+                        }
+                    } catch (e) {
+                        localStorage.removeItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
                     }
-                }, 100);
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+                if (!captchaSetupDoneRef.current) {
+                    console.log('🛡️ Initializing invisible reCAPTCHA...');
+                    try {
+                        await setupRecaptcha();
+                    } catch (error) {
+                        if (error?.message?.includes('Timeout') || error?.name === 'TimeoutError' || error?.isTimeout) {
+                            console.debug('⚠️ reCAPTCHA initialization timeout (non-critical, will retry later)');
+                        } else {
+                            console.warn('⚠️ reCAPTCHA initialization error:', error.message || error);
+                        }
+                    }
+                }
             };
             initializeRecaptcha();
+        } else if (internalStep !== 1) {
+            captchaSetupDoneRef.current = false;
         }
     }, [internalStep]);
 
@@ -270,6 +344,12 @@ const PhoneVerificationStep = forwardRef(({
                 } catch (e) { }
                 window.recaptchaWidgetId = undefined;
             }
+            captchaSetupDoneRef.current = false;
+
+            const container = document.getElementById('recaptcha-container-invisible');
+            if (container && container.parentNode) {
+                container.parentNode.removeChild(container);
+            }
         };
     }, [recaptchaVerifier]);
 
@@ -288,45 +368,78 @@ const PhoneVerificationStep = forwardRef(({
     };
 
     const isInitializingRef = useRef(false);
+    const captchaSetupDoneRef = useRef(false);
 
     const setupRecaptcha = async () => {
-        if (isInitializingRef.current) return null;
+        if (isInitializingRef.current) {
+            console.log('⏳ reCAPTCHA setup already in progress, skipping...');
+            return recaptchaVerifier;
+        }
 
-        const element = document.getElementById('recaptcha-container');
-
-        if (recaptchaVerifier && element && element.children.length > 0) {
+        if (captchaSetupDoneRef.current && recaptchaVerifier) {
             try {
-                if (window.recaptchaWidgetId !== undefined && window.grecaptcha) {
+                const widgetId = recaptchaVerifier._widgetId !== undefined ? recaptchaVerifier._widgetId : window.recaptchaWidgetId;
+                if (widgetId !== undefined && widgetId !== null && window.grecaptcha) {
+                    console.log('✅ Reusing existing reCAPTCHA verifier');
                     return recaptchaVerifier;
                 }
             } catch (e) {
-                try { recaptchaVerifier.clear(); } catch (clearErr) { }
+                console.warn('⚠️ Existing verifier check failed, will recreate...', e);
+                captchaSetupDoneRef.current = false;
+            }
+        }
+
+        if (recaptchaVerifier) {
+            try {
+                try {
+                    recaptchaVerifier.clear();
+                } catch (clearErr) {
+                    console.warn('Error clearing verifier:', clearErr);
+                }
+                setRecaptchaVerifier(null);
+            } catch (e) {
+                console.warn('⚠️ Existing verifier invalid, clearing...', e);
+                try {
+                    recaptchaVerifier.clear();
+                } catch (clearErr) {
+                    console.warn('Error clearing verifier:', clearErr);
+                }
                 setRecaptchaVerifier(null);
             }
         }
 
         isInitializingRef.current = true;
         try {
-            const button = document.getElementById('send-code-button');
-            if (!button) {
-                console.warn('❌ Send Code button not found in DOM');
-                return null;
-            }
-
             if (!auth || !auth.config) {
                 throw new Error('Firebase Auth is not properly initialized');
             }
 
-            console.log('🔧 Initializing invisible reCAPTCHA with auth domain:', auth.config.authDomain);
-            console.log('🔧 Attaching to button:', button.id);
+            let container = document.getElementById('recaptcha-container-invisible');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'recaptcha-container-invisible';
+                container.style.display = 'none';
+                container.style.visibility = 'hidden';
+                container.style.position = 'absolute';
+                container.style.left = '-9999px';
+                document.body.appendChild(container);
+            }
 
-            const verifier = new RecaptchaVerifier(auth, 'send-code-button', {
+            console.log('🔧 Initializing invisible reCAPTCHA with auth domain:', auth.config.authDomain);
+
+            const verifier = new RecaptchaVerifier(auth, 'recaptcha-container-invisible', {
                 'size': 'invisible',
                 'callback': (response) => {
-                    console.log('🛡️ Invisible reCAPTCHA verified successfully, response:', response ? 'present' : 'missing');
+                    console.log('🛡️ reCAPTCHA verified successfully, response:', response ? 'present' : 'missing');
                     setRecaptchaVerified(true);
 
-                    // Save reCAPTCHA verification to localStorage (valid for 24 hours)
+                    // Save reCAPTCHA response to localStorage (valid for 2 hours)
+                    localStorage.setItem(RECAPTCHA_RESPONSE_STORAGE_KEY, JSON.stringify({
+                        response: response,
+                        savedAt: new Date().toISOString()
+                    }));
+
+                    // Also save verification status (valid for 24 hours)
                     localStorage.setItem(RECAPTCHA_VERIFICATION_STORAGE_KEY, JSON.stringify({
                         verified: true,
                         verifiedAt: new Date().toISOString()
@@ -340,38 +453,102 @@ const PhoneVerificationStep = forwardRef(({
                     setRecaptchaVerifier(null);
                     setRecaptchaVerified(false);
                     window.recaptchaWidgetId = undefined;
+                    captchaSetupDoneRef.current = false;
                     pendingPhoneNumberRef.current = null;
+                    localStorage.removeItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
                 },
                 'error-callback': (error) => {
-                    console.error('🛡️ ReCAPTCHA error callback:', error);
+                    if (error?.message?.includes('Timeout') || error?.name === 'TimeoutError') {
+                        console.warn('🛡️ ReCAPTCHA timeout (non-critical):', error);
+                    } else {
+                        console.error('🛡️ ReCAPTCHA error callback:', error);
+                    }
                     if (verifier) {
                         try { verifier.clear(); } catch (e) { }
                     }
                     setRecaptchaVerifier(null);
                     setRecaptchaVerified(false);
                     window.recaptchaWidgetId = undefined;
+                    captchaSetupDoneRef.current = false;
                     pendingPhoneNumberRef.current = null;
+                    localStorage.removeItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
                 }
             });
 
             try {
-                const widgetId = await verifier.render();
+                let widgetId;
+                try {
+                    widgetId = await Promise.race([
+                        verifier.render().catch((renderError) => {
+                            if (renderError?.message?.includes('Timeout') || renderError?.name === 'TimeoutError' || renderError?.message === 'Timeout') {
+                                console.warn('⚠️ reCAPTCHA render timeout caught (non-critical)');
+                                return null;
+                            }
+                            throw renderError;
+                        }),
+                        new Promise((_, reject) => {
+                            setTimeout(() => {
+                                const timeoutError = new Error('reCAPTCHA render timeout');
+                                timeoutError.name = 'TimeoutError';
+                                timeoutError.isTimeout = true;
+                                reject(timeoutError);
+                            }, 10000);
+                        })
+                    ]).catch(async (error) => {
+                        if (error.message === 'reCAPTCHA render timeout' || error.message?.includes('Timeout') || error.name === 'TimeoutError') {
+                            console.warn('⚠️ reCAPTCHA render timeout, this is usually non-critical');
+                            try {
+                                if (verifier) {
+                                    verifier.clear();
+                                }
+                            } catch (clearErr) {
+                                console.warn('Error clearing verifier after timeout:', clearErr);
+                            }
+                            return null;
+                        }
+                        throw error;
+                    });
+                } catch (renderErr) {
+                    if (renderErr?.message?.includes('Timeout') || renderErr?.name === 'TimeoutError' || renderErr?.message === 'Timeout') {
+                        console.warn('⚠️ reCAPTCHA render error (timeout, non-critical):', renderErr.message);
+                        widgetId = null;
+                    } else {
+                        throw renderErr;
+                    }
+                }
+
+                if (widgetId === null) {
+                    console.warn('⚠️ reCAPTCHA widget ID is null after timeout, will return null');
+                    isInitializingRef.current = false;
+                    captchaSetupDoneRef.current = false;
+                    return null;
+                }
+
                 window.recaptchaWidgetId = widgetId;
                 verifier._widgetId = widgetId;
-                console.log('🛡️ ReCAPTCHA rendered successfully, widget ID:', widgetId, '(type:', typeof widgetId, ')');
+                console.log('🛡️ Invisible reCAPTCHA rendered successfully, widget ID:', widgetId);
 
                 if (widgetId === undefined && widgetId !== 0 && widgetId !== null) {
                     throw new Error('reCAPTCHA widget ID is invalid');
                 }
 
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 300));
 
                 if (!window.grecaptcha) {
                     throw new Error('reCAPTCHA library not fully loaded');
                 }
 
-                console.log('✅ reCAPTCHA fully ready, widget ID stored:', window.recaptchaWidgetId);
+                console.log('✅ Invisible reCAPTCHA fully ready, widget ID stored:', window.recaptchaWidgetId);
             } catch (renderError) {
+                if (renderError?.message?.includes('Timeout') ||
+                    renderError?.name === 'TimeoutError' ||
+                    renderError?.message === 'reCAPTCHA initialization timeout' ||
+                    renderError?.isTimeout) {
+                    console.warn('⚠️ reCAPTCHA render timeout (non-critical, will return null):', renderError.message);
+                    isInitializingRef.current = false;
+                    captchaSetupDoneRef.current = false;
+                    return null;
+                }
                 console.error('❌ ReCAPTCHA render error:', renderError);
                 console.error('Render error details:', {
                     code: renderError.code,
@@ -382,8 +559,19 @@ const PhoneVerificationStep = forwardRef(({
             }
 
             setRecaptchaVerifier(verifier);
+            captchaSetupDoneRef.current = true;
             return verifier;
         } catch (error) {
+            if (error?.message?.includes('Timeout') ||
+                error?.name === 'TimeoutError' ||
+                error?.isTimeout ||
+                (error?.stack && error?.stack.includes('recaptcha') && error?.stack.includes('timeout'))) {
+                console.warn('⚠️ reCAPTCHA setup timeout (non-critical):', error.message);
+                isInitializingRef.current = false;
+                captchaSetupDoneRef.current = false;
+                return null;
+            }
+
             console.error('❌ Error setting up reCAPTCHA:', error);
             console.error('Error details:', {
                 code: error.code,
@@ -399,6 +587,16 @@ const PhoneVerificationStep = forwardRef(({
                 setRecaptchaVerifier(null);
             }
             window.recaptchaWidgetId = undefined;
+            captchaSetupDoneRef.current = false;
+
+            const container = document.getElementById('recaptcha-container-invisible');
+            if (container && container.parentNode) {
+                try {
+                    container.parentNode.removeChild(container);
+                } catch (e) {
+                    console.warn('Error removing invisible container:', e);
+                }
+            }
 
             if (error.code === 'auth/internal-error' || error.code === 'auth/internal-error-encountered') {
                 const domain = window.location.hostname;
@@ -492,7 +690,36 @@ const PhoneVerificationStep = forwardRef(({
             const phoneProvider = new PhoneAuthProvider(auth);
 
             try {
-                const vid = await phoneProvider.verifyPhoneNumber(fullNumber, verifier);
+                const vid = await Promise.race([
+                    phoneProvider.verifyPhoneNumber(fullNumber, verifier).catch((error) => {
+                        if (error?.message?.includes('Timeout') || error?.name === 'TimeoutError') {
+                            console.warn('⚠️ Phone verification timeout from Firebase (non-critical)');
+                            const timeoutError = new Error('Verification request timed out. Please try again.');
+                            timeoutError.name = 'TimeoutError';
+                            timeoutError.isTimeout = true;
+                            throw timeoutError;
+                        }
+                        throw error;
+                    }),
+                    new Promise((_, reject) => {
+                        setTimeout(() => {
+                            const timeoutError = new Error('Phone verification timeout');
+                            timeoutError.name = 'TimeoutError';
+                            timeoutError.isTimeout = true;
+                            reject(timeoutError);
+                        }, 30000);
+                    })
+                ]).catch((error) => {
+                    if (error.message?.includes('Timeout') || error.name === 'TimeoutError' || error.message === 'Phone verification timeout') {
+                        console.warn('⚠️ Phone verification timeout (non-critical)');
+                        const timeoutError = new Error('Verification request timed out. Please try again.');
+                        timeoutError.name = 'TimeoutError';
+                        timeoutError.isTimeout = true;
+                        throw timeoutError;
+                    }
+                    throw error;
+                });
+
                 console.log('✅ Phone verification ID received:', vid);
 
                 setPhoneVerificationId(vid);
@@ -501,7 +728,11 @@ const PhoneVerificationStep = forwardRef(({
                 startCountdown();
                 showSuccess(t('auth.success.codeSent', 'Verification code sent to your phone.'));
             } catch (verifyError) {
-                console.error('❌ Phone verification failed:', verifyError);
+                if (verifyError?.message?.includes('timeout') || verifyError?.message?.includes('Timeout')) {
+                    console.warn('⚠️ Caught timeout error in verifyPhoneNumber');
+                } else {
+                    console.error('❌ Phone verification failed:', verifyError);
+                }
                 throw verifyError;
             }
         } catch (error) {
@@ -511,7 +742,9 @@ const PhoneVerificationStep = forwardRef(({
     };
 
     const handleSendCode = async () => {
-        if (!isValidPhone) return;
+        if (!isValidPhone) {
+            return Promise.resolve();
+        }
         setIsLoading(true);
 
         const { cleanNumber, cleanPrefix, fullNumber } = formatPhoneNumber(phoneNumber, phonePrefix);
@@ -537,18 +770,19 @@ const PhoneVerificationStep = forwardRef(({
         console.log('🔍 Current origin:', window.location.origin);
 
         try {
-            // Check if we already have a verified reCAPTCHA instance
             let verifier = recaptchaVerifier;
 
-            if (!verifier || !window.recaptchaWidgetId === undefined) {
-                console.log('🔧 No existing verifier, setting up reCAPTCHA...');
+            if (!verifier || window.recaptchaWidgetId === undefined || !captchaSetupDoneRef.current) {
+                console.log('🔧 No existing verifier, setting up invisible reCAPTCHA...');
                 verifier = await setupRecaptcha();
                 if (!verifier) {
                     throw new Error('reCAPTCHA could not be initialized');
                 }
+                await new Promise(resolve => setTimeout(resolve, 300));
             } else {
                 console.log('✅ Reusing existing reCAPTCHA verifier, widget ID:', window.recaptchaWidgetId);
             }
+
 
             if (!window.grecaptcha) {
                 throw new Error('reCAPTCHA library not loaded');
@@ -568,7 +802,45 @@ const PhoneVerificationStep = forwardRef(({
             });
 
             const phoneProvider = new PhoneAuthProvider(auth);
-            const vid = await phoneProvider.verifyPhoneNumber(fullNumber, verifier);
+
+            let vid;
+            try {
+                vid = await Promise.race([
+                    phoneProvider.verifyPhoneNumber(fullNumber, verifier).catch((error) => {
+                        if (error?.message?.includes('Timeout') || error?.name === 'TimeoutError') {
+                            console.warn('⚠️ Phone verification timeout from Firebase (non-critical)');
+                            const timeoutError = new Error('Verification request timed out. Please try again.');
+                            timeoutError.name = 'TimeoutError';
+                            timeoutError.isTimeout = true;
+                            throw timeoutError;
+                        }
+                        throw error;
+                    }),
+                    new Promise((_, reject) => {
+                        setTimeout(() => {
+                            const timeoutError = new Error('Phone verification timeout');
+                            timeoutError.name = 'TimeoutError';
+                            timeoutError.isTimeout = true;
+                            reject(timeoutError);
+                        }, 30000);
+                    })
+                ]).catch((error) => {
+                    if (error.message?.includes('Timeout') || error.name === 'TimeoutError' || error.message === 'Phone verification timeout') {
+                        console.warn('⚠️ Phone verification timeout (non-critical)');
+                        const timeoutError = new Error('Verification request timed out. Please try again.');
+                        timeoutError.name = 'TimeoutError';
+                        timeoutError.isTimeout = true;
+                        throw timeoutError;
+                    }
+                    throw error;
+                });
+            } catch (timeoutError) {
+                if (timeoutError?.message?.includes('timeout') || timeoutError?.message?.includes('Timeout')) {
+                    console.warn('⚠️ Caught timeout error, converting to user-friendly message');
+                    throw new Error('Verification request timed out. Please try again.');
+                }
+                throw timeoutError;
+            }
 
             console.log('✅ Phone verification ID received:', vid);
             setPhoneVerificationId(vid);
@@ -634,10 +906,6 @@ const PhoneVerificationStep = forwardRef(({
 
             if (recaptchaVerifier) {
                 try {
-                    const container = document.getElementById('recaptcha-container');
-                    if (container && container.children.length > 0) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    }
                     recaptchaVerifier.clear();
                 } catch (e) {
                     console.warn('Error clearing reCAPTCHA on error:', e);
@@ -654,6 +922,7 @@ const PhoneVerificationStep = forwardRef(({
                 }
                 window.recaptchaWidgetId = undefined;
             }
+            captchaSetupDoneRef.current = false;
         } finally {
             setIsLoading(false);
         }
@@ -662,7 +931,7 @@ const PhoneVerificationStep = forwardRef(({
     const handleVerifyCode = async () => {
         if (!verificationCode || verificationCode.length < 6) {
             showError(t('auth.errors.invalidCode', 'Please enter a valid 6-digit code.'));
-            return;
+            return Promise.resolve();
         }
         setIsLoading(true);
         try {
@@ -732,6 +1001,7 @@ const PhoneVerificationStep = forwardRef(({
                             />
                         </div>
                     </div>
+
                 </div>
             ) : internalStep === 2 ? (
                 <div className="max-w-md mx-auto">
@@ -757,21 +1027,6 @@ const PhoneVerificationStep = forwardRef(({
                         </div>
 
                         <div className="flex flex-col items-center gap-4">
-                            <Button
-                                onClick={handleVerifyCode}
-                                disabled={!verificationCode || verificationCode.length !== 6 || isLoading}
-                                className="w-full"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <FiLoader className="animate-spin mr-2" />
-                                        Verifying...
-                                    </>
-                                ) : (
-                                    'Verify and continue'
-                                )}
-                            </Button>
-
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={handleSendCode}

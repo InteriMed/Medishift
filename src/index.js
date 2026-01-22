@@ -2,8 +2,74 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import './i18n'; // Import i18n configuration
+import './i18n';
 import reportWebVitals from './reportWebVitals';
+
+
+const isRecaptchaTimeout = (error) => {
+  if (!error) return false;
+  const message = error.message || (typeof error === 'string' ? error : String(error));
+  const stack = error.stack || (error instanceof Error ? error.stack : '');
+
+  return (
+    error.isTimeout === true ||
+    error.name === 'TimeoutError' ||
+    message.includes('Timeout') ||
+    message === 'Timeout' ||
+    message.includes('timeout') ||
+    /Timeout\s*\([a-z]\)/i.test(message) ||
+    (stack && (stack.includes('recaptcha') || stack.includes('grecaptcha')))
+  );
+};
+
+const handleUnhandledRejection = (event) => {
+  if (isRecaptchaTimeout(event.reason)) {
+    console.debug('[Global] Suppressed timeout unhandled rejection:', event.reason);
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  }
+};
+
+const handleError = (event) => {
+  if (event.error && isRecaptchaTimeout(event.error)) {
+    console.debug('[Global] Suppressed timeout error:', event.error);
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  }
+  if (event.message && (event.message.includes('Timeout') || /Timeout\s*\([a-z]\)/i.test(event.message))) {
+    console.debug('[Global] Suppressed timeout message:', event.message);
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  }
+};
+
+const timeoutSuppressionPriority = () => {
+  window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
+  window.addEventListener('error', handleError, true);
+  
+  setTimeout(() => {
+    window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
+    window.addEventListener('error', handleError, true);
+  }, 0);
+};
+
+timeoutSuppressionPriority();
+
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  const firstArg = args[0];
+  if (firstArg) {
+    const argStr = String(firstArg);
+    if (argStr.includes('Timeout') || /Timeout\s*\([a-z]\)/i.test(argStr)) {
+      console.debug('[Global] Suppressed console.error for Timeout:', ...args);
+      return;
+    }
+  }
+  originalConsoleError.apply(console, args);
+};
 
 console.log('Loading Firebase services...');
 try {
@@ -16,7 +82,7 @@ try {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-    <App />
+  <App />
 );
 
 // If you want to start measuring performance in your app, pass a function

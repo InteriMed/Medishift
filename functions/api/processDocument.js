@@ -108,7 +108,8 @@ exports.processDocument = onCall(
     cors: true, // Enable CORS for all origins
     maxInstances: 10,
     timeoutSeconds: 600, // 10 minutes for processing during onboarding
-    memory: '1GiB' // Increase memory for AI processing
+    memory: '1GiB', // Increase memory for AI processing
+    database: 'medishift'
   },
   async (request) => {
     const logPrefix = `[ProcessDocument-${request.auth ? request.auth.uid : 'anon'}-${Date.now()}]`;

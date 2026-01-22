@@ -8,17 +8,17 @@ const admin = require('firebase-admin');
 /**
  * Log client-side error to Firestore and Firebase Error Reporting
  */
-exports.logClientError = onCall(async (request) => {
+exports.logClientError = onCall({ database: 'medishift', cors: true }, async (request) => {
   try {
     // Extract error information
     const { error, errorInfo, metadata } = request.data;
-    
+
     // Get timestamp
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
-    
+
     // Get user info from auth context if available
     const userId = request.auth ? request.auth.uid : 'anonymous';
-    
+
     // Store error in Firestore
     await admin.firestore().collection('client_errors').add({
       error: {
@@ -31,7 +31,7 @@ exports.logClientError = onCall(async (request) => {
       userId,
       timestamp
     });
-    
+
     // Log to Firebase Logging
     logger.error('Client Error', {
       error,
@@ -39,7 +39,7 @@ exports.logClientError = onCall(async (request) => {
       metadata,
       userId
     });
-    
+
     return { success: true };
   } catch (err) {
     logger.error('Error in logClientError function', err);
@@ -52,41 +52,41 @@ exports.logClientError = onCall(async (request) => {
  * Runs once a day
  */
 exports.analyzeErrorTrends = onSchedule({
-    schedule: '0 0 * * *'
+  schedule: '0 0 * * *'
 }, async (event) => {
   try {
     // Get errors from the last 24 hours
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     const errorsSnapshot = await admin.firestore()
       .collection('client_errors')
       .where('timestamp', '>=', yesterday)
       .get();
-    
+
     if (errorsSnapshot.empty) {
       logger.info('No errors in the last 24 hours');
       return null;
     }
-    
+
     // Group errors by name and count occurrences
     const errorCounts = {};
     errorsSnapshot.forEach(doc => {
       const error = doc.data().error;
       const errorKey = `${error.name}: ${error.message}`;
-      
+
       if (!errorCounts[errorKey]) {
         errorCounts[errorKey] = 1;
       } else {
         errorCounts[errorKey]++;
       }
     });
-    
+
     // Find high-frequency errors (more than 5 occurrences)
     const highFrequencyErrors = Object.entries(errorCounts)
       .filter(([_, count]) => count >= 5)
       .map(([error, count]) => ({ error, count }));
-    
+
     if (highFrequencyErrors.length > 0) {
       // Store analysis results
       await admin.firestore().collection('error_analyses').add({
@@ -94,12 +94,12 @@ exports.analyzeErrorTrends = onSchedule({
         totalErrors: errorsSnapshot.size,
         highFrequencyErrors
       });
-      
+
       // You could send notifications here via email, Slack, etc.
       // For example:
       // await sendSlackAlert('High frequency errors detected: ' + JSON.stringify(highFrequencyErrors));
     }
-    
+
     return null;
   } catch (error) {
     logger.error('Error analyzing error trends', error);

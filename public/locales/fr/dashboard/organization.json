@@ -1,71 +1,167 @@
 {
-    "title": "Organisation",
-    "subtitle": "Gérez votre chaîne de pharmacies",
-    "noOrg": "Créer ou rejoindre une organisation",
-    "tabs": {
-        "chain": "Chaîne",
-        "openingHours": "Heures d'ouverture",
-        "facilityRoles": "Rôles de l'établissement"
+  "title": "Organisation",
+  "subtitle": "Gérez votre chaîne de pharmacies",
+  "noOrg": "Créer ou rejoindre une organisation",
+  "tabs": {
+    "chain": "Chaîne",
+    "openingHours": "Heures d'ouverture",
+    "facilityRoles": "Rôles de l'établissement"
+  },
+  "sections": {
+    "info": "Info Organisation",
+    "facilities": "Établissements membres",
+    "admins": "Administrateurs",
+    "settings": "Paramètres"
+  },
+  "labels": {
+    "type": "Type",
+    "facilities": "Établissements",
+    "admins": "Admins",
+    "chainAdminsSynced": "Admins chaîne synchronisés",
+    "unnamedFacility": "Unnamed Facility",
+    "group": "Group"
+  },
+  "settings": {
+    "sharedStaff": "Pool de personnel partagé",
+    "crossScheduling": "Planification inter-établissements",
+    "consolidatedBilling": "Facturation consolidée"
+  },
+  "actions": {
+    "create": "Créer une organisation",
+    "addFacility": "Ajouter un établissement",
+    "removeFacility": "Retirer un établissement",
+    "remove": "Retirer de l'organisation"
+  },
+  "create": {
+    "title": "Créer une organisation",
+    "subtitle": "Créez une nouvelle chaîne ou groupe de pharmacies",
+    "nameLabel": "Nom de l'organisation",
+    "namePlaceholder": "ex. Groupe Amavita Genève",
+    "phoneVerificationRequired": "Phone Verification Required",
+    "phoneVerification": {
+      "title": "Title",
+      "description": "Description",
+      "mobileRequired": "Mobile Required"
     },
-    "sections": {
-        "info": "Info Organisation",
-        "facilities": "Établissements membres",
-        "admins": "Administrateurs",
-        "settings": "Paramètres"
+    "phoneVerified": "Phone Verified",
+    "phoneVerifiedDescription": "Phone Verified Description"
+  },
+  "empty": {
+    "title": "Pas encore d'organisation",
+    "description": "Créez une organisation pour gérer plusieurs emplacements de pharmacies, partager le personnel et consolider la facturation."
+  },
+  "facilities": {
+    "empty": "Aucun établissement dans cette organisation pour l'instant."
+  },
+  "features": {
+    "internalInterim": {
+      "title": "Intérim interne",
+      "description": "Partagez le personnel entre les établissements. En cas de sous-effectif, empruntez d'abord des collaborateurs d'autres sites de votre organisation."
     },
-    "labels": {
-        "type": "Type",
-        "facilities": "Établissements",
-        "admins": "Admins",
-        "chainAdminsSynced": "Admins chaîne synchronisés"
-    },
-    "settings": {
-        "sharedStaff": "Pool de personnel partagé",
-        "crossScheduling": "Planification inter-établissements",
-        "consolidatedBilling": "Facturation consolidée"
-    },
-    "actions": {
-        "create": "Créer une organisation",
-        "addFacility": "Ajouter un établissement",
-        "removeFacility": "Retirer un établissement",
-        "remove": "Retirer de l'organisation"
-    },
-    "create": {
-        "title": "Créer une organisation",
-        "subtitle": "Créez une nouvelle chaîne ou groupe de pharmacies",
-        "nameLabel": "Nom de l'organisation",
-        "namePlaceholder": "ex. Groupe Amavita Genève"
-    },
-    "empty": {
-        "title": "Pas encore d'organisation",
-        "description": "Créez une organisation pour gérer plusieurs emplacements de pharmacies, partager le personnel et consolider la facturation."
-    },
-    "facilities": {
-        "empty": "Aucun établissement dans cette organisation pour l'instant."
-    },
-    "features": {
-        "internalInterim": {
-            "title": "Intérim interne",
-            "description": "Partagez le personnel entre les établissements. En cas de sous-effectif, empruntez d'abord des collaborateurs d'autres sites de votre organisation."
-        },
-        "crossReports": {
-            "title": "Rapports inter-établissements",
-            "description": "Suivez les heures empruntées entre les sites. Consultez des rapports consolidés pour l'ensemble de l'organisation."
-        }
-    },
-    "confirm": {
-        "removeFacility": "Retirer cet établissement de l'organisation ?"
-    },
-    "errors": {
-        "fetchFailed": "Échec du chargement de l'organisation",
-        "createFailed": "Échec de la création de l'organisation",
-        "addFacilityFailed": "Échec de l'ajout de l'établissement",
-        "removeFacilityFailed": "Échec du retrait de l'établissement",
-        "nameRequired": "Le nom de l'organisation est requis"
-    },
-    "success": {
-        "created": "Organisation créée avec succès !",
-        "facilityAdded": "Établissement ajouté avec succès !",
-        "facilityRemoved": "Établissement retiré avec succès !"
+    "crossReports": {
+      "title": "Rapports inter-établissements",
+      "description": "Suivez les heures empruntées entre les sites. Consultez des rapports consolidés pour l'ensemble de l'organisation."
     }
+  },
+  "confirm": {
+    "removeFacility": "Retirer cet établissement de l'organisation ?"
+  },
+  "errors": {
+    "fetchFailed": "Échec du chargement de l'organisation",
+    "createFailed": "Échec de la création de l'organisation",
+    "addFacilityFailed": "Échec de l'ajout de l'établissement",
+    "removeFacilityFailed": "Échec du retrait de l'établissement",
+    "nameRequired": "Le nom de l'organisation est requis"
+  },
+  "success": {
+    "created": "Organisation créée avec succès !",
+    "facilityAdded": "Établissement ajouté avec succès !",
+    "facilityRemoved": "Établissement retiré avec succès !"
+  },
+  "dashboard": {
+    "onboarding": {
+      "phoneVerification": {
+        "phoneRequired": "Phone Required",
+        "sendFailed": "Send Failed",
+        "operationNotAllowed": "Operation Not Allowed",
+        "invalidPhone": "Invalid Phone",
+        "tooManyRequests": "Too Many Requests",
+        "codeRequired": "Code Required",
+        "invalidCode": "Invalid Code",
+        "codeExpired": "Code Expired",
+        "verifyFailed": "Verify Failed",
+        "sending": "Sending",
+        "sendCode": "Send Code",
+        "enterCode": "Enter Code",
+        "codeSent": "Code Sent",
+        "codeLabel": "Code Label",
+        "verifying": "Verifying",
+        "verify": "Verify"
+      }
+    }
+  },
+  "employee": {
+    "viewPublicProfile": "View Public Profile",
+    "homeBranch": "Home Branch",
+    "remove": "Remove"
+  },
+  "hr": {
+    "requestApproved": "Request Approved",
+    "errorApproving": "Error Approving",
+    "requestRejected": "Request Rejected",
+    "errorRejecting": "Error Rejecting",
+    "title": "Title",
+    "subtitle": "Subtitle",
+    "createJob": "Create Job",
+    "sickLeave": "Sick Leave",
+    "pendingRequests": "Pending Requests",
+    "vacancies": "Vacancies",
+    "totalPending": "Total Pending",
+    "requiresAction": "Requires Action",
+    "overview": "Overview",
+    "recentSickLeave": "Recent Sick Leave",
+    "noSickLeave": "No Sick Leave",
+    "approve": "Approve",
+    "reject": "Reject",
+    "recentVacancies": "Recent Vacancies",
+    "noVacancies": "No Vacancies",
+    "allSickLeave": "All Sick Leave",
+    "allVacancies": "All Vacancies",
+    "jobCreated": "Job Created",
+    "errorCreating": "Error Creating",
+    "jobTitle": "Job Title",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "vacancyType": "Vacancy Type",
+    "temporary": "Temporary",
+    "permanent": "Permanent",
+    "replacement": "Replacement",
+    "urgency": "Urgency",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "notes": "Notes"
+  },
+  "organigram": {
+    "fireSuccess": "Fire Success",
+    "fireError": "Fire Error",
+    "admins": "Admins",
+    "unassigned": "Unassigned",
+    "title": "Title",
+    "description": "Description",
+    "empty": "Empty",
+    "member": "Member",
+    "members": "Members",
+    "adminBadge": "Admin Badge",
+    "year": "Year",
+    "years": "Years",
+    "experience": "Experience",
+    "fireDialogTitle": "Fire Dialog Title",
+    "fireConfirm": "Fire Confirm",
+    "fireMessage": "Fire Message",
+    "fromFacility": "From Facility",
+    "fireWarning": "Fire Warning",
+    "firePrompt": "Fire Prompt",
+    "toConfirm": "To Confirm"
+  }
 }

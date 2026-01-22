@@ -1,13 +1,123 @@
 {
+  "email": "Email",
+  "phone": "Phone",
+  "sending": "Sending...",
+  "verifying": "Verifying...",
   "no": "No",
   "yes": "Yes",
   "yesDiscard": "Yes, Discard",
   "auth": {
     "login": {
-      "button": "Log In"
+      "button": "Log In",
+      "title": "Title",
+      "subtitle": "Subtitle",
+      "email": "Email",
+      "password": "Password",
+      "resetPassword": "Reset Password",
+      "resetPasswordLink": "Reset Password Link",
+      "rememberMe": "Remember Me",
+      "forgotPassword": "Forgot Password",
+      "loggingIn": "Logging In",
+      "noAccount": "No Account",
+      "signupLink": "Signup Link",
+      "passwordReset": {
+        "title": "Title",
+        "sendEmail": "Send Email",
+        "backToLogin": "Back To Login"
+      }
     },
     "signup": {
-      "button": "Sign Up"
+      "button": "Sign Up",
+      "forms": {
+        "experience": {
+          "lessThan1": "Less Than1",
+          "1to3": "1to3",
+          "moreThan5": "More Than5"
+        }
+      },
+      "unsavedChangesWarning": "Unsaved Changes Warning",
+      "title": "Title",
+      "subtitle": "Subtitle",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "First Name Placeholder",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Last Name Placeholder",
+      "email": "Email",
+      "emailPlaceholder": "Email Placeholder",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "termsAgreement": "Terms Agreement",
+      "termsAndConditions": "Terms And Conditions",
+      "creating": "Creating",
+      "continue": "Continue",
+      "signUpWithGoogle": "Sign Up With Google",
+      "alreadyHaveAccount": "Already Have Account",
+      "verifyEmail": "Verify Email",
+      "emailVerificationDesc": "Email Verification Desc",
+      "verifying": "Verifying",
+      "didntReceiveCode": "Didnt Receive Code",
+      "resend": "Resend",
+      "verifyPhone": "Verify Phone",
+      "phoneVerificationDesc": "Phone Verification Desc",
+      "sending": "Sending",
+      "sendCode": "Send Code",
+      "enterPhoneCode": "Enter Phone Code",
+      "codeSent": "Code Sent",
+      "createAccount": "Create Account",
+      "accountCreated": "Account Created",
+      "welcomeMessage": "Welcome Message",
+      "continueToApp": "Continue To App"
+    },
+    "errors": {
+      "emailRequired": "Email Required",
+      "userNotFound": "User Not Found",
+      "invalidEmail": "Invalid Email",
+      "tooManyRequests": "Too Many Requests",
+      "resetFailed": "Reset Failed",
+      "passwordRequired": "Password Required",
+      "accountDisabled": "Account Disabled",
+      "wrongPassword": "Wrong Password",
+      "tooManyAttempts": "Too Many Attempts",
+      "loginFailed": "Login Failed",
+      "networkError": "Network Error",
+      "googleLoginFailed": "Google Login Failed",
+      "passwordsDoNotMatch": "Passwords Do Not Match",
+      "emailVerificationFailed": "Email Verification Failed",
+      "emailInUse": "Email In Use",
+      "signupFailed": "Signup Failed",
+      "invalidEmailCode": "Invalid Email Code",
+      "verificationFailed": "Verification Failed",
+      "invalidPhoneCode": "Invalid Phone Code",
+      "nameRequired": "Name Required",
+      "emailInvalid": "Email Invalid",
+      "passwordRequirements": "Password Requirements",
+      "confirmPasswordRequired": "Confirm Password Required",
+      "termsRequired": "Terms Required",
+      "multipleErrors": "Multiple Errors",
+      "googleSignupFailed": "Google Signup Failed"
+    },
+    "resetEmailSent": "Reset Email Sent",
+    "forgotPassword": {
+      "title": "Title",
+      "subtitle": "Subtitle",
+      "email": "Email",
+      "sending": "Sending",
+      "button": "Button"
+    },
+    "backToLogin": "Back To Login",
+    "rememberPassword": "Remember Password",
+    "loginLink": "Login Link",
+    "passwordReset": {
+      "emailSent": "Email Sent"
+    },
+    "loginWithGoogle": "Login With Google",
+    "emailVerificationCode": "Email Verification Code",
+    "phoneNumber": "Phone Number",
+    "phoneVerificationCode": "Phone Verification Code",
+    "verificationSent": {
+      "title": "Title",
+      "message": "Message",
+      "backToHome": "Back To Home"
     }
   },
   "common": {
@@ -24,6 +134,10 @@
     "remove": "Remove",
     "update": "Update",
     "submit": "Submit",
+    "email": "Email",
+    "phone": "Phone",
+    "sending": "Sending...",
+    "verifying": "Verifying...",
     "warning": "Warning",
     "info": "Information",
     "yes": "Yes",
@@ -85,7 +199,13 @@
     "forProfessionals": "For Healthcare Professionals",
     "aboutUs": "About Us",
     "blog": "Blog",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "saving": "Saving",
+    "saveAndContinue": "Save And Continue",
+    "processing": "Processing",
+    "selectTab": "Select Tab",
+    "mandatoryFields": "Mandatory Fields",
+    "uploaded": "Uploaded"
   },
   "tabs": {
     "personalDetails": "Personal Details",
@@ -131,7 +251,12 @@
       "title": "Subscribe to Our Newsletter",
       "placeholder": "Your email address",
       "subscribe": "Subscribe",
-      "consent": "By subscribing, you agree to receive our newsletter and marketing communications."
+      "consent": "By subscribing, you agree to receive our newsletter and marketing communications.",
+      "invalidEmail": "Invalid Email",
+      "rateLimitExceeded": "Rate Limit Exceeded",
+      "success": "Success",
+      "error": "Error",
+      "submitting": "Submitting"
     }
   },
   "validation": {
@@ -212,7 +337,22 @@
     "permanent": "Permanent (Unbefristet)",
     "fixedTerm": "Fixed-Term (Befristet)",
     "temporary": "Temporary/Locum (Temporär)",
-    "freelance": "Freelance/Project-Based"
+    "freelance": "Freelance/Project-Based",
+    "title": "Title",
+    "subtitle": "Subtitle",
+    "availability": "Availability",
+    "availabilityStatus": "Availability Status",
+    "workParametersTitle": "Work Parameters Title",
+    "desiredWorkPercentage": "Desired Work Percentage",
+    "preferredWorkRadius": "Preferred Work Radius",
+    "km": "Km",
+    "compensationTitle": "Compensation Title",
+    "targetHourlyRate": "Target Hourly Rate",
+    "currentWorkPercentageOptional": "Current Work Percentage Optional",
+    "preferredShiftsAndContracts": "Preferred Shifts And Contracts",
+    "selectStatus": "Select Status",
+    "workPreferences": "Work Preferences",
+    "workRadius": "Work Radius"
   },
   "countries": {
     "switzerland": "Switzerland",
@@ -241,7 +381,8 @@
         "blog": "Blog",
         "faq": "FAQ",
         "login": "Login",
-        "signup": "Sign Up"
+        "signup": "Sign Up",
+        "forPharmacies": "For Pharmacies"
       },
       "resources": {
         "title": "Resources"
@@ -256,7 +397,9 @@
         "title": "This Page",
         "sitemap": "Sitemap"
       }
-    }
+    },
+    "login": "Login",
+    "signup": "Signup"
   },
   "buttons": {
     "getStarted": "Get Started",
@@ -413,7 +556,468 @@
         "confirmAll": "This and All Future Events",
         "cancel": "Cancel",
         "cancelSingleEvent": "Cancel"
+      },
+      "errorLoadingEvents": "Error Loading Events",
+      "eventCreated": "Event Created",
+      "errorCreatingEvent": "Error Creating Event",
+      "eventUpdated": "Event Updated",
+      "errorUpdatingEvent": "Error Updating Event",
+      "eventDeleted": "Event Deleted",
+      "errorDeletingEvent": "Error Deleting Event"
+    },
+    "marketplace": {
+      "loginRequired": "Login Required",
+      "applicationSent": "Application Sent",
+      "messageSent": "Message Sent",
+      "actionFailed": "Action Failed",
+      "shareFailed": "Share Failed",
+      "copiedToClipboard": "Copied To Clipboard",
+      "clipboardFailed": "Clipboard Failed",
+      "jobDescription": "Job Description",
+      "noDescriptionProvided": "No Description Provided",
+      "requirements": "Requirements",
+      "noRequirementsListed": "No Requirements Listed",
+      "experience": "Experience",
+      "noExperienceProvided": "No Experience Provided",
+      "availability": "Availability",
+      "availabilityNotSpecified": "Availability Not Specified",
+      "applyNow": "Apply Now",
+      "contactPharmacist": "Contact Pharmacist",
+      "share": "Share",
+      "filter": {
+        "noFiltersApplied": "No Filters Applied",
+        "title": "Title",
+        "canton": "Canton",
+        "city": "City",
+        "clear": "Clear",
+        "apply": "Apply"
       }
+    },
+    "recent_activity": "Recent_activity",
+    "no_recent_activity": "No_recent_activity",
+    "view_all": "View_all",
+    "from_last_period": "From_last_period",
+    "errors": {
+      "failedToLoadWorkspaces": "Failed To Load Workspaces",
+      "failedToCreateWorkspace": "Failed To Create Workspace",
+      "failedToUpdateWorkspace": "Failed To Update Workspace",
+      "failedToDeleteWorkspace": "Failed To Delete Workspace"
+    },
+    "workspace": {
+      "created": "Created",
+      "updated": "Updated",
+      "deleted": "Deleted"
+    },
+    "contracts": {
+      "editContract": "Edit Contract",
+      "newContract": "New Contract",
+      "title": "Title",
+      "description": "Description",
+      "status": "Status",
+      "statusDraft": "Status Draft",
+      "statusSent": "Status Sent",
+      "statusSigned": "Status Signed",
+      "statusActive": "Status Active",
+      "statusCompleted": "Status Completed",
+      "statusCancelled": "Status Cancelled",
+      "parties": "Parties",
+      "addParty": "Add Party",
+      "party": "Party",
+      "partyName": "Party Name",
+      "partyRole": "Party Role",
+      "partyEmail": "Party Email",
+      "partyPhone": "Party Phone",
+      "terms": "Terms",
+      "addTerm": "Add Term",
+      "term": "Term",
+      "termTitle": "Term Title",
+      "termContent": "Term Content",
+      "cancel": "Cancel",
+      "updating": "Updating",
+      "creating": "Creating",
+      "updateContract": "Update Contract",
+      "createContract": "Create Contract"
+    },
+    "onboarding": {
+      "step1": {
+        "title": "Title",
+        "facilityLegalNotice": "Facility Legal Notice",
+        "facilityLegalText1": "Facility Legal Text1",
+        "facilityLegalText2": "Facility Legal Text2",
+        "facilityLegalText3": "Facility Legal Text3",
+        "professionalLegalNotice": "Professional Legal Notice",
+        "professionalLegalText1": "Professional Legal Text1",
+        "professionalLegalText2": "Professional Legal Text2",
+        "professionalLegalText3": "Professional Legal Text3",
+        "professionalLegalText4": "Professional Legal Text4",
+        "areYouEmployed": "Are You Employed",
+        "areYouEmployedDescription": "Are You Employed Description",
+        "termsAcceptance": "Terms Acceptance",
+        "termsAcceptanceDescription": "Terms Acceptance Description",
+        "note": "Note"
+      },
+      "step2": {
+        "title": "Title",
+        "description": "Description",
+        "professional": "Professional",
+        "professionalDescription": "Professional Description",
+        "facility": "Facility",
+        "facilityDescription": "Facility Description",
+        "organization": "Organization",
+        "organizationDescription": "Organization Description"
+      },
+      "step3": {
+        "chain": {
+          "title": "Title",
+          "description": "Description",
+          "phonePrefix": "Phone Prefix",
+          "phoneNumber": "Phone Number",
+          "phoneNumberPlaceholder": "Phone Number Placeholder",
+          "messageToSupport": "Message To Support",
+          "messagePlaceholder": "Message Placeholder"
+        }
+      },
+      "step4": {
+        "title": "Title",
+        "hasGLN": "Has G L N"
+      },
+      "company_gln": {
+        "text1": "Text1",
+        "text2": "Text2"
+      },
+      "professional_gln": {
+        "text1": "Text1",
+        "text2": "Text2",
+        "text3": "Text3"
+      },
+      "buttons": {
+        "back": "Back",
+        "nextStep": "Next Step",
+        "sendCode": "Send Code",
+        "validate": "Validate",
+        "contactAndFinish": "Contact And Finish",
+        "verifying": "Verifying",
+        "completeAccount": "Complete Account"
+      }
+    }
+  },
+  "accountBasics": {
+    "errors": {
+      "currentPasswordRequired": "Current Password Required",
+      "newPasswordRequired": "New Password Required",
+      "newPasswordTooShort": "New Password Too Short",
+      "passwordsDoNotMatch": "Passwords Do Not Match",
+      "wrongPassword": "Wrong Password",
+      "passwordUpdateFailed": "Password Update Failed",
+      "deleteFailed": "Delete Failed",
+      "fileTooLarge": "File Too Large",
+      "invalidFileType": "Invalid File Type",
+      "uploadFailed": "Upload Failed"
+    },
+    "passwordUpdated": "Password Updated",
+    "deleted": "Deleted",
+    "changePicture": "Change Picture",
+    "addPicture": "Add Picture",
+    "uploading": "Uploading",
+    "title": "Title",
+    "subtitle": "Subtitle",
+    "loginInfo": "Login Info",
+    "email": "Email",
+    "emailVerified": "Email Verified",
+    "emailNotVerified": "Email Not Verified",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "updatePassword": "Update Password",
+    "googleAuthMessage": "Google Auth Message",
+    "notificationPreferences": "Notification Preferences",
+    "emailNotifications": "Email Notifications",
+    "smsNotifications": "Sms Notifications",
+    "pushNotifications": "Push Notifications",
+    "privacySettings": "Privacy Settings",
+    "profileVisibility": "Profile Visibility",
+    "public": "Public",
+    "private": "Private",
+    "twoFactorAuthentication": "Two Factor Authentication",
+    "enable2FA": "Enable2 F A",
+    "2faIsEnabledMessage": "2fa Is Enabled Message",
+    "2faIsDisabledMessage": "2fa Is Disabled Message",
+    "deleteAccount": "Delete Account",
+    "deleteAccountButton": "Delete Account Button",
+    "deleteAccountDialogTitle": "Delete Account Dialog Title",
+    "confirmDelete": "Confirm Delete",
+    "deleteWarningPermanent": "Delete Warning Permanent",
+    "deleteConfirmationDetails": "Delete Confirmation Details",
+    "deleteEffect1": "Delete Effect1",
+    "deleteEffect2": "Delete Effect2",
+    "reauthenticateTitle": "Reauthenticate Title",
+    "confirmDeleteAccount": "Confirm Delete Account",
+    "reauthenticateMessageGoogleDelete": "Reauthenticate Message Google Delete",
+    "reauthenticateMessagePasswordDelete": "Reauthenticate Message Password Delete",
+    "password": "Password",
+    "deleteAccountDescription": "Delete Account Description"
+  },
+  "errors": {
+    "tooManyRequests": "Too Many Requests",
+    "notLoggedIn": "Not Logged In",
+    "popupClosed": "Popup Closed",
+    "title": "Title",
+    "description": "Description",
+    "retry": "Retry",
+    "loadingConfig": "Loading Config",
+    "loadingProfile": "Loading Profile",
+    "accessDenied": "Access Denied"
+  },
+  "userRole": "User Role",
+  "settings": {
+    "savedSuccessfully": "Saved Successfully",
+    "saveFailed": "Save Failed",
+    "title": "Title",
+    "generalTab": "General Tab",
+    "advancedTab": "Advanced Tab",
+    "dangerZone": "Danger Zone",
+    "accountDeletion": {
+      "confirmMismatch": "Confirm Mismatch",
+      "success": "Success",
+      "error": "Error",
+      "loadingPreview": "Loading Preview",
+      "previewTitle": "Preview Title",
+      "immediatelyDeleted": "Immediately Deleted",
+      "retainedForLegalReasons": "Retained For Legal Reasons",
+      "retentionPeriod": "Retention Period",
+      "swissLawNotice": "Swiss Law Notice",
+      "noLegalRecords": "No Legal Records",
+      "title": "Title",
+      "description": "Description",
+      "deleteButton": "Delete Button",
+      "confirmTitle": "Confirm Title",
+      "confirmMessage": "Confirm Message",
+      "confirmPlaceholder": "Confirm Placeholder",
+      "reauthTitle": "Reauth Title",
+      "processing": "Processing",
+      "reauthMessageGoogle": "Reauth Message Google",
+      "reauthMessage": "Reauth Message"
+    },
+    "subtitle": "Subtitle",
+    "operationalSettingsTitle": "Operational Settings Title",
+    "contractSettingsTitle": "Contract Settings Title",
+    "platformSettingsTitle": "Platform Settings Title",
+    "privacySettingsTitle": "Privacy Settings Title",
+    "marketplaceSettingsTitle": "Marketplace Settings Title",
+    "availabilitySettingsTitle": "Availability Settings Title",
+    "notificationPreferencesTitle": "Notification Preferences Title",
+    "availabilityNotes": "Availability Notes"
+  },
+  "userMenu": {
+    "user": "User",
+    "profile": "Profile",
+    "settings": "Settings",
+    "language": "Language",
+    "logout": "Logout"
+  },
+  "operations": {
+    "addWorkerRequirement": "Add Worker Requirement",
+    "selectWorkerType": "Select Worker Type",
+    "workerTypeOther": "Worker Type Other",
+    "workerTypeOtherPlaceholder": "Worker Type Other Placeholder",
+    "facilityRolesTitle": "Facility Roles Title",
+    "facilityRolesDescription": "Facility Roles Description",
+    "workerRequirement": "Worker Requirement",
+    "workerType": "Worker Type",
+    "openingHoursTitle": "Opening Hours Title",
+    "subtitle": "Subtitle",
+    "closed": "Closed",
+    "openingTime": "Opening Time",
+    "closingTime": "Closing Time",
+    "title": "Title",
+    "workerRequirementsTitle": "Worker Requirements Title",
+    "workerRequirementsDescription": "Worker Requirements Description",
+    "noWorkerRequirements": "No Worker Requirements",
+    "quantity": "Quantity",
+    "everyday": "Everyday",
+    "selectDays": "Select Days"
+  },
+  "deleteConfirmation": "Delete Confirmation",
+  "downloadPdfFailed": "Download Pdf Failed",
+  "notSpecified": "Not Specified",
+  "invalidDate": "Invalid Date",
+  "untitledContract": "Untitled Contract",
+  "created": "Created",
+  "standardView": "Standard View",
+  "pdfView": "Pdf View",
+  "downloadPdf": "Download Pdf",
+  "editContract": "Edit Contract",
+  "deleteContract": "Delete Contract",
+  "closeDetails": "Close Details",
+  "contractOverview": "Contract Overview",
+  "labels": {
+    "position": "Position",
+    "type": "Type",
+    "workPercentage": "Work Percentage",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "salary": "Salary",
+    "vacation": "Vacation",
+    "probation": "Probation",
+    "noticePeriod": "Notice Period",
+    "workingHours": "Working Hours",
+    "benefits": "Benefits"
+  },
+  "compensationAndBenefits": "Compensation And Benefits",
+  "termsAndConditions": "Terms And Conditions",
+  "involvedParties": "Involved Parties",
+  "employer": "Employer",
+  "professional": "Professional",
+  "noContractsFound": "No Contracts Found",
+  "noChangesToCancel": "No Changes To Cancel",
+  "changesDiscarded": "Changes Discarded",
+  "personalDetails": {
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "title": "Title"
+  },
+  "professionalBackground": {
+    "experience": "Experience",
+    "subtitle": "Subtitle",
+    "title": "Title"
+  },
+  "cancel": "Cancel",
+  "billingInformation": {
+    "title": "Title",
+    "subtitle": "Subtitle",
+    "residencyPermitTitle": "Residency Permit Title",
+    "bankingInfo": "Banking Info",
+    "insurance": "Insurance",
+    "billingAddress": "Billing Address",
+    "hiringRequiredLegend": "Hiring Required Legend",
+    "employmentEligibilityTitle": "Employment Eligibility Title",
+    "payrollDataTitle": "Payroll Data Title",
+    "hiringInfoTitle": "Hiring Info Title",
+    "hiringInfoMessage": "Hiring Info Message"
+  },
+  "documents": {
+    "replace": "Replace",
+    "remove": "Remove",
+    "title": "Title",
+    "subtitle": "Subtitle"
+  },
+  "loading": "Loading",
+  "postNotFound": "Post Not Found",
+  "postNotFoundDescription": "Post Not Found Description",
+  "backToBlog": "Back To Blog",
+  "tableOfContents": "Table Of Contents",
+  "tags": "Tags",
+  "shareThisPost": "Share This Post",
+  "aboutAuthor": "About Author",
+  "relatedPosts": "Related Posts",
+  "meta": {
+    "title": "Title",
+    "description": "Description",
+    "keywords": "Keywords"
+  },
+  "title": "Title",
+  "featured": {
+    "title": "Title"
+  },
+  "readMore": "Read More",
+  "noPostsFound": "No Posts Found",
+  "sidebar": {
+    "search": "Search",
+    "categories": "Categories",
+    "recentPosts": "Recent Posts"
+  },
+  "searchPlaceholder": "Search Placeholder",
+  "ctaDescription": "Cta Description",
+  "contact": {
+    "form": {
+      "errors": {
+        "nameRequired": "Name Required",
+        "emailRequired": "Email Required",
+        "emailInvalid": "Email Invalid",
+        "messageRequired": "Message Required",
+        "subjectRequired": "Subject Required"
+      },
+      "title": "Title",
+      "success": {
+        "title": "Title",
+        "message": "Message"
+      },
+      "inquiryType": {
+        "label": "Label",
+        "options": {
+          "general": "General",
+          "professional": "Professional",
+          "facility": "Facility",
+          "partnership": "Partnership",
+          "media": "Media"
+        }
+      },
+      "name": "Name",
+      "namePlaceholder": "Name Placeholder",
+      "company": "Company",
+      "companyPlaceholder": "Company Placeholder",
+      "email": "Email",
+      "emailPlaceholder": "Email Placeholder",
+      "phone": "Phone",
+      "phonePlaceholder": "Phone Placeholder",
+      "subject": "Subject",
+      "subjectPlaceholder": "Subject Placeholder",
+      "message": "Message",
+      "messagePlaceholder": "Message Placeholder",
+      "submitting": "Submitting",
+      "submit": "Submit"
+    }
+  },
+  "map": {
+    "title": "Title"
+  },
+  "social": {
+    "title": "Title"
+  },
+  "faq": {
+    "description": "Description",
+    "button": "Button"
+  },
+  "subtitle": "Subtitle",
+  "allCategories": "All Categories",
+  "searchResults": "Search Results",
+  "noResults": "No Results",
+  "contactCta": {
+    "title": "Title",
+    "description": "Description",
+    "button": "Button"
+  },
+  "terms": {
+    "title": "Title",
+    "meta": {
+      "title": "Title",
+      "description": "Description",
+      "keywords": "Keywords"
+    },
+    "lastUpdated": "Last Updated",
+    "legalDisclaimer": "Legal Disclaimer"
+  },
+  "privacy": {
+    "title": "Title",
+    "description": "Description"
+  },
+  "cookies": {
+    "title": "Title"
+  },
+  "legal": {
+    "privacy": {
+      "title": "Title"
+    },
+    "terms": {
+      "title": "Title"
+    }
+  },
+  "support": {
+    "contact": {
+      "title": "Title",
+      "subtitle": "Subtitle"
     }
   }
 }

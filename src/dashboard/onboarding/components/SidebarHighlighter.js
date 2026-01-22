@@ -677,12 +677,9 @@ const SidebarHighlighter = () => {
       )}
       {shouldShowOverlay && (
         <div
+          className="tutorial-highlight"
           style={{
             ...highlightBox,
-            backgroundColor: 'rgba(37, 99, 235, 0.05)',
-            border: '1px solid rgba(37, 99, 235, 0.4)',
-            boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.2), 0 0 0 4px rgba(37, 99, 235, 0.1), 0 0 15px rgba(37, 99, 235, 0.3)',
-            animation: 'pulse-tab-highlight 2s ease-in-out infinite',
             pointerEvents: requiresInteraction ? 'auto' : 'none',
             zIndex: requiresInteraction ? 10000 : 2500
           }}

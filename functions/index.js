@@ -2,13 +2,16 @@ const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https")
 const { logger } = require("firebase-functions");
 const { setGlobalOptions } = require("firebase-functions/v2");
 
-// FORCE ZURICH GLOBALLY
-setGlobalOptions({ region: "europe-west6" });
+// FORCE ZURICH AND MEDISHIFT DATABASE GLOBALLY
+setGlobalOptions({
+  region: "europe-west6",
+  database: "medishift"
+});
 
 // Initialize Firebase Admin
 const admin = require('firebase-admin');
 admin.initializeApp({
-  databaseId: '(default)',
+  databaseId: 'medishift',
   storageBucket: 'interimed-620fd.firebasestorage.app'
 });
 
@@ -29,6 +32,9 @@ const documentProcessing = require('./api/processDocument');
 
 // Import invitation functions
 const invitationFunctions = require('./api/invitations');
+
+// Import banking functions
+const bankingFunctions = require('./banking/index');
 
 // Simplified functions - create basic endpoints
 
@@ -64,6 +70,7 @@ exports.healthRegistryAPI = bagAdminFunctions.healthRegistryAPI;
 exports.companySearchAPI = bagAdminFunctions.companySearchAPI;
 exports.companyDetailsAPI = bagAdminFunctions.companyDetailsAPI;
 exports.verifyProfileAPI = bagAdminFunctions.verifyProfileAPI;
+exports.gesRegAPI = bagAdminFunctions.gesRegAPI;
 
 // DOCUMENT PROCESSING - Export from api/processDocument.js
 exports.processDocument = documentProcessing.processDocument;
@@ -108,6 +115,11 @@ module.exports.getAuditLogs = auditLogService.getAuditLogs;
 const rateLimitService = require('./services/rateLimit');
 module.exports.cleanupRateLimits = rateLimitService.cleanupRateLimits;
 module.exports.getRateLimitStatus = rateLimitService.getRateLimitStatus;
+
+// BANKING ACCESS - Export from banking/index.js
+module.exports.verifyBankingAccessCode = bankingFunctions.verifyBankingAccessCode;
+module.exports.setBankingAccessCode = bankingFunctions.setBankingAccessCode;
+module.exports.requestBankingAccessCode = bankingFunctions.requestBankingAccessCode;
 
 // =========================================================================
 //  🇨🇭 SWISS COMPLIANCE - Phase 1 Implementation
@@ -158,6 +170,13 @@ module.exports.accountDataExport = accountManagement.dataExport;                
 const userManagement = require('./api/userManagement');
 module.exports.disableUser = userManagement.disableUser;
 
+// IMPERSONATION - Export from api/impersonation.js
+const impersonationFunctions = require('./api/impersonation');
+module.exports.startImpersonation = impersonationFunctions.startImpersonation;
+module.exports.stopImpersonation = impersonationFunctions.stopImpersonation;
+module.exports.getImpersonationSession = impersonationFunctions.getImpersonationSession;
+module.exports.validateImpersonationSession = impersonationFunctions.validateImpersonationSession;
+
 // =========================================================================
 //  📧 FACILITY INVITATIONS - Role Invitation System
 // =========================================================================
@@ -167,4 +186,39 @@ module.exports.generateFacilityRoleInvitation = invitationFunctions.generateFaci
 module.exports.getInvitationDetails = invitationFunctions.getInvitationDetails;
 module.exports.acceptFacilityInvitation = invitationFunctions.acceptFacilityInvitation;
 module.exports.inviteAdminEmployee = invitationFunctions.inviteAdminEmployee;
+
+// LINKEDIN JOB SCRAPER - Export from api/linkedinJobScraper.js
+const linkedinJobScraper = require('./api/linkedinJobScraper');
+module.exports.scrapeLinkedInJobs = linkedinJobScraper.scrapeLinkedInJobs;
+module.exports.getLinkedInJobs = linkedinJobScraper.getLinkedInJobs;
+
+// =========================================================================
+//  📧 EMAIL SERVICE - Admin Email Center
+// =========================================================================
+
+// EMAIL SERVICE - Export from api/emailService.js
+const emailService = require('./api/emailService');
+module.exports.sendAdminEmail = emailService.sendAdminEmail;
+module.exports.sendSupportResponse = emailService.sendSupportResponse;
+module.exports.sendTeamInvitation = emailService.sendTeamInvitation;
+
+// =========================================================================
+//  🔔 NOTIFICATION SERVICE - Global Email & SMS Notifications
+// =========================================================================
+
+// NOTIFICATION SERVICE - Export from api/notificationService.js
+const notificationService = require('./api/notificationService');
+module.exports.sendNotification = notificationService.sendNotification;
+module.exports.sendBulkNotification = notificationService.sendBulkNotification;
+module.exports.notifyShiftAssignment = notificationService.notifyShiftAssignment;
+module.exports.notifyBankingUpdate = notificationService.notifyBankingUpdate;
+
+// JOB SCRAPER SCHEDULER - Export from services/jobScraperScheduler.js
+const jobScraperScheduler = require('./services/jobScraperScheduler');
+module.exports.createScraperSchedule = jobScraperScheduler.createScraperSchedule;
+module.exports.updateScraperSchedule = jobScraperScheduler.updateScraperSchedule;
+module.exports.deleteScraperSchedule = jobScraperScheduler.deleteScraperSchedule;
+module.exports.getScraperSchedules = jobScraperScheduler.getScraperSchedules;
+module.exports.getScraperStatus = jobScraperScheduler.getScraperStatus;
+module.exports.runScheduledScraper = jobScraperScheduler.runScheduledScraper;
 

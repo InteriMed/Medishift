@@ -13,6 +13,7 @@ import '../../../../../styles/modals.css';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import TextareaField from '../../../../../components/BoxedInputFields/TextareaField';
+import DateField from '../../../../../components/BoxedInputFields/DateField/DateField';
 import Button from '../../../../../components/BoxedInputFields/Button';
 
 // --- 
@@ -22,7 +23,7 @@ const DEFAULT_BIO = "";
 // Tailwind styles
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-xl border border-border/60 px-6 py-2 shadow-sm w-full max-w-[1400px] mx-auto h-16 flex items-center",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium text-muted-foreground",
@@ -51,12 +52,14 @@ const PersonalDetails = ({
   errors,
   isSubmitting,
   onInputChange,
-  onSaveAndContinue,
   onSave,
   onCancel,
   getNestedValue,
   onTriggerUpload,
   onStepGuideVisibilityChange,
+  validateCurrentTabData,
+  onTabCompleted,
+  isTutorialActive
 }) => {
   const { t } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
   const { currentUser } = useAuth();
@@ -74,7 +77,10 @@ const PersonalDetails = ({
     activeTab: 'personalDetails',
     onInputChange,
     onSave,
-    getNestedValue
+    getNestedValue,
+    validateCurrentTabData,
+    onTabCompleted,
+    isTutorialActive
   });
 
   useEffect(() => {
@@ -290,7 +296,6 @@ const PersonalDetails = ({
       label: label,
       error: error,
       required: required,
-      wrapperClassName: styles.fieldWrapper,
       disabled: disabled || readOnly,
       readOnly: readOnly
     };
@@ -299,58 +304,65 @@ const PersonalDetails = ({
       const maxDate = name === 'identity.dateOfBirth'
         ? new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]
         : undefined;
-      const dateValue = value ? (typeof value === 'string' ? value : new Date(value).toISOString().split('T')[0]) : '';
+      const dateValue = value ? (typeof value === 'string' ? new Date(value) : value instanceof Date ? value : new Date(value)) : null;
       return (
-        <div key={fieldKey} className={styles.fieldWrapper}>
-          {label && (
-            <label className={`boxed-date-label ${error ? 'boxed-date-label--error' : ''}`}>
-              {label}
-              {required && <span className="boxed-inputfield-required">*</span>}
-            </label>
-          )}
-          <input
-            type="date"
-            value={dateValue}
-            onChange={(e) => onInputChange(name, e.target.value || null)}
-            max={maxDate}
-            className={`w-full h-9 px-3 rounded-lg border bg-background text-xs text-left focus:outline-none focus:ring-2 focus:ring-ring transition-all ${error ? 'date-input-error' : ''}`}
-            style={{
-              fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-              borderColor: error ? 'var(--boxed-inputfield-error-color)' : 'hsl(var(--border) / 0.6)',
-              color: error ? 'var(--boxed-inputfield-error-color)' : 'inherit'
-            }}
-          />
-        </div>
+        <DateField
+          key={fieldKey}
+          label={label}
+          value={dateValue}
+          onChange={(date) => {
+            const syntheticEvent = {
+              target: {
+                name: name,
+                value: date ? date.toISOString().split('T')[0] : null
+              }
+            };
+            onInputChange(name, syntheticEvent.target.value);
+          }}
+          max={maxDate}
+          required={required}
+          error={error}
+          onErrorReset={() => { }}
+          disabled={disabled || readOnly}
+          readOnly={readOnly}
+          marginBottom={0}
+        />
       );
     }
 
     if (type === 'dropdown') {
+      const dropdownOptions = getDropdownOptions(optionsKey);
+      const normalizedValue = value !== null && value !== undefined && value !== '' ? value : null;
+
       return (
-        <div key={fieldKey} className={styles.fieldWrapper}>
-          <SimpleDropdown
-            label={commonProps.label}
-            options={getDropdownOptions(optionsKey)}
-            value={value}
-            onChange={(newValue) => onInputChange(name, newValue)}
-            placeholder={placeholder ? t(placeholder) : t('common.selectPlaceholder')}
-            required={commonProps.required}
-            error={commonProps.error}
-          />
-        </div>
+        <SimpleDropdown
+          key={fieldKey}
+          label={commonProps.label}
+          options={dropdownOptions}
+          value={normalizedValue}
+          onChange={(newValue) => {
+            const normalizedNewValue = newValue !== null && newValue !== undefined && newValue !== '' ? newValue : null;
+            if (process.env.NODE_ENV !== 'production' && name === 'identity.nationality') {
+              console.log('[PersonalDetails] Nationality onChange:', { newValue, normalizedNewValue, name });
+            }
+            onInputChange(name, normalizedNewValue);
+          }}
+          required={commonProps.required}
+          error={commonProps.error}
+        />
       );
     }
 
     return (
-      <div key={fieldKey} className={styles.fieldWrapper}>
-        <InputField
-          {...commonProps}
-          name={name}
-          type={type === 'email' ? 'email' : (type === 'tel' ? 'tel' : 'text')}
-          value={value || ''}
-          onChange={(e) => onInputChange(name, e.target.value)}
-          placeholder={placeholder ? t(placeholder) : ''}
-        />
-      </div>
+      <InputField
+        key={fieldKey}
+        {...commonProps}
+        name={name}
+        type={type === 'email' ? 'email' : (type === 'tel' ? 'tel' : 'text')}
+        value={value || ''}
+        onChange={(e) => onInputChange(name, e.target.value)}
+        placeholder={placeholder ? t(placeholder) : ''}
+      />
     );
   };
 
@@ -404,82 +416,12 @@ const PersonalDetails = ({
 
         {/* Title Card */}
         <div className={styles.headerCard}>
-          <div className="flex items-center gap-6 mb-4">
-            <div
-              className="relative group cursor-pointer md:cursor-default"
-              onClick={(e) => {
-                if (window.innerWidth < 768) {
-                  handleEditPicture(e);
-                }
-              }}
-            >
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-border group-hover:border-primary transition-colors md:cursor-default">
-                {profilePicture ? (
-                  <img
-                    src={profilePicture}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center text-2xl font-bold text-muted-foreground" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {displayProfile?.firstName?.[0] || displayProfile?.identity?.legalFirstName?.[0] || 'U'}{displayProfile?.lastName?.[0] || displayProfile?.identity?.legalLastName?.[0] || ''}
-                  </div>
-                )}
-              </div>
-              <div className="absolute inset-0 bg-black/50 rounded-full hidden md:flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                {profilePicture ? (
-                  <>
-                    <button
-                      onClick={handleViewPicture}
-                      className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-                      title={t('common.view', 'View')}
-                    >
-                      <FiEye className="w-4 h-4 text-white" />
-                    </button>
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={handleEditPicture}
-                        className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-                        title={t('common.edit', 'Edit')}
-                      >
-                        <FiEdit2 className="w-4 h-4 text-white" />
-                      </button>
-                      <button
-                        onClick={handleDeletePicture}
-                        className="p-2 rounded-full bg-white/20 hover:bg-red-500/50 transition-colors"
-                        title={t('common.delete', 'Delete')}
-                      >
-                        <FiTrash2 className="w-4 h-4 text-white" />
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <button
-                    onClick={handleEditPicture}
-                    className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-                    title={t('common.edit', 'Edit')}
-                  >
-                    <FiEdit2 className="w-4 h-4 text-white" />
-                  </button>
-                )}
-              </div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleProfilePictureChange}
-                accept="image/*"
-                className="hidden"
-              />
-            </div>
-            <div className="flex-1">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-4 flex-1">
               <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('personalDetails.title')}</h2>
-              <div className={styles.subtitleRow}>
-                <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('personalDetails.subtitle', 'Please ensure your personal details are accurate and up to date.')}</p>
-                <div className={styles.mandatoryFieldLegend}><span className={styles.mandatoryMark}>*</span> {t('common.mandatoryFields')}</div>
-              </div>
-              {pictureError && <p className="text-red-500 text-sm mt-1">{pictureError}</p>}
-              {isUploadingPicture && <p className="text-primary text-sm mt-1">{t('accountBasics.uploading')}</p>}
+              <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)', margin: 0 }}>{t('personalDetails.subtitle', 'Please ensure your personal details are accurate and up to date.')}</p>
             </div>
+            <div className={styles.mandatoryFieldLegend}><span className={styles.mandatoryMark}>*</span> {t('common.mandatoryFields')}</div>
           </div>
         </div>
 
@@ -556,7 +498,6 @@ const PersonalDetails = ({
                     error={getNestedValue(errors, 'bio')}
                     maxLength={1000}
                     rows={8}
-                    wrapperClassName={styles.fieldWrapper}
                   />
                 </div>
               </div>
@@ -634,7 +575,6 @@ PersonalDetails.propTypes = {
   errors: PropTypes.object.isRequired,
   isSubmitting: PropTypes.bool.isRequired,
   onInputChange: PropTypes.func.isRequired,
-  onSaveAndContinue: PropTypes.func.isRequired,
   onSave: PropTypes.func,
   onCancel: PropTypes.func.isRequired,
   getNestedValue: PropTypes.func.isRequired,

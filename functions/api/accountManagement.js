@@ -60,6 +60,7 @@ async function verifyAuthToken(req) {
  */
 const deletionPreview = onRequest({
     region: 'europe-west6',
+    database: 'medishift',
     cors: true  // Still keep this as a backup
 }, async (req, res) => {
     // Manually handle CORS
@@ -109,6 +110,7 @@ const deletionPreview = onRequest({
  */
 const deleteAccount = onRequest({
     region: 'europe-west6',
+    database: 'medishift',
     cors: true,
     timeoutSeconds: 120 // Account deletion may take time
 }, async (req, res) => {
@@ -213,6 +215,7 @@ const deleteAccount = onRequest({
  */
 const checkBonusEligibility = onRequest({
     region: 'europe-west6',
+    database: 'medishift',
     cors: true
 }, async (req, res) => {
     // Manually handle CORS
@@ -267,6 +270,7 @@ const checkBonusEligibility = onRequest({
  */
 const dataExport = onRequest({
     region: 'europe-west6',
+    database: 'medishift',
     cors: true,
     timeoutSeconds: 120
 }, async (req, res) => {

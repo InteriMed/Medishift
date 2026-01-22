@@ -12,8 +12,10 @@ import {
     Bell,
     Search,
     FlaskConical,
+    Briefcase,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Mail
 } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -106,6 +108,12 @@ const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
             badgeColor: 'orange'
         },
         {
+            title: t('admin:sidebar.linkedinJobScraper', 'LinkedIn Job Scraper'),
+            icon: Briefcase,
+            path: '/dashboard/admin/operations/job-scraper',
+            permission: PERMISSIONS.MANAGE_SYSTEM
+        },
+        {
             title: t('admin:sidebar.revenueCommissions', 'Revenue & Commissions'),
             icon: DollarSign,
             path: '/dashboard/admin/finance/revenue',
@@ -118,16 +126,16 @@ const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
             permission: PERMISSIONS.VIEW_FINANCE
         },
         {
-            title: t('admin:sidebar.balanceSheet', 'Balance Sheet'),
-            icon: DollarSign,
-            path: '/dashboard/admin/finance/balance-sheet',
-            permission: PERMISSIONS.VIEW_BALANCE_SHEET
-        },
-        {
             title: t('admin:sidebar.invoices', 'Invoices (SaaS)'),
             icon: FileText,
             path: '/dashboard/admin/finance/ar',
             permission: PERMISSIONS.VIEW_FINANCE
+        },
+        {
+            title: t('admin:sidebar.balanceSheet', 'Balance Sheet'),
+            icon: DollarSign,
+            path: '/dashboard/admin/finance/balance-sheet',
+            permission: PERMISSIONS.VIEW_BALANCE_SHEET
         },
         {
             title: t('admin:sidebar.auditLogs', 'Audit Logs'),
@@ -139,6 +147,12 @@ const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
             title: t('admin:sidebar.notifications', 'Notifications'),
             icon: Bell,
             path: '/dashboard/admin/system/notifications',
+            permission: PERMISSIONS.SEND_NOTIFICATIONS
+        },
+        {
+            title: t('admin:sidebar.emailCenter', 'Email Center'),
+            icon: Mail,
+            path: '/dashboard/admin/email',
             permission: PERMISSIONS.SEND_NOTIFICATIONS
         },
         {

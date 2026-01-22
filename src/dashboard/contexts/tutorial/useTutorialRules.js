@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { isTabCompleted } from '../../pages/profile/Profile';
-import { tutorialSteps } from '../../onboarding/tutorialSteps';
+import { tutorialSteps } from '../../tutorial/tutorialSteps';
 
 export const useTutorialRules = ({
     isTutorialActive,

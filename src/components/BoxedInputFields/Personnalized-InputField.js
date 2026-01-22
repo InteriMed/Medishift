@@ -54,7 +54,8 @@ function PersonnalizedInputField({
     name,
     required,
     disabled = false,
-    readOnly = false
+    readOnly = false,
+    placeholder
 }) {
     const [isFocused, setIsFocused] = useState(false);
     const { showError } = useNotification();
@@ -132,6 +133,7 @@ function PersonnalizedInputField({
                     style={{ outline: 'none' }}
                     disabled={disabled}
                     readOnly={readOnly}
+                    placeholder={label ? (isFocused ? placeholder : '') : placeholder}
                 />
 
                 {value && showClearButton && !disabled && !readOnly && (

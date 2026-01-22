@@ -1,165 +1,255 @@
 {
-    "dashboard": {
-        "sidebar": {
-            "overview": "Aperçu",
-            "profile": "Profil",
-            "contracts": "Contrats",
-            "messages": "Messages",
-            "calendar": "Calendrier",
-            "marketplace": "Marché",
-            "settings": "Paramètres",
-            "incompleteProfile": "Votre profil est incomplet",
-            "completeProfileFirst": "Veuillez d'abord compléter votre profil"
-        },
-        "loading": "Chargement des données du tableau de bord...",
-        "error": "Erreur lors du chargement des données du tableau de bord",
-        "completeProfile": {
-            "completeProfileTitle": "Complétez Votre Profil",
-            "completeProfileDescription": "Bienvenue sur InteriMed ! Pour accéder à toutes les fonctionnalités de la plateforme, veuillez d'abord compléter votre profil.",
-            "completeProfileButton": "Je comprends, créer mon profil"
-        },
-        "overview": {
-            "title": "Bienvenue sur InteriMed !",
-            "welcome": "Bonjour",
-            "welcomeTitle": "Bienvenue sur InteriMed !",
-            "totalContracts": "Total des Contrats",
-            "activeHours": "Heures Actives",
-            "earnings": "Revenus",
-            "upcomingJobs": "Emplois à Venir",
-            "recentActivity": "Activité Récente",
-            "noRecentActivity": "Aucune activité récente à afficher"
-        },
-        "onboarding": {
-            "verify_account": "Vérifiez Votre Compte",
-            "verify_intro": "Veuillez fournir vos coordonnées ci-dessous. Nous utilisons une vérification IA sécurisée pour certifier votre compte.",
-            "step1": {
-                "title": "Considérations Légales",
-                "facilityLegalNotice": "Avis Légal pour les Établissements",
-                "facilityLegalText1": "En tant qu'établissement de santé utilisant InteriMed, vous devez assurer la conformité avec les lois suisses du travail lors de l'engagement de personnel temporaire.",
-                "facilityLegalText2": "Vous êtes responsable de vérifier que les travailleurs temporaires respectent les heures de travail maximales, les périodes de repos et autres exigences légales.",
-                "facilityLegalText3": "Veuillez vous assurer que tout le personnel temporaire possède les qualifications et permis de travail nécessaires.",
-                "professionalLegalNotice": "Avis Légal pour les Professionnels",
-                "professionalLegalText1": "Pour les employés travaillant à 100% (généralement 40-42 heures/semaine), il est presque impossible de prendre légalement des quarts supplémentaires dans une autre pharmacie.",
-                "professionalLegalText2": "La loi suisse du travail fixe un maximum strict de 50 heures par semaine (45 heures dans certains contextes de vente au détail). Un employé à 100% travaille généralement 42 heures, ne laissant que 8 heures maximum.",
-                "professionalLegalText3": "Selon le Code des Obligations (Art. 321a), vous devez obtenir l'approbation écrite de votre employeur principal pour travailler pour un concurrent.",
-                "professionalLegalText4": "La loi exige 11 heures consécutives de repos entre les quarts (peut être réduit à 8 heures une fois par semaine).",
-                "agreementStatus": "Statut de l'Accord",
-                "areYouEmployed": "Êtes-vous actuellement employé par un établissement ?",
-                "areYouEmployedDescription": "Activer si vous travaillez pour une organisation",
-                "termsAcceptance": "Conditions et Considérations Légales",
-                "termsAcceptanceDescription": "Je comprends et reconnais les considérations légales et les conditions d'utilisation",
-                "note": "En continuant, vous reconnaissez avoir lu et compris les considérations légales applicables à votre rôle."
-            },
-            "step2": {
-                "title": "Sélectionnez Votre Rôle",
-                "description": "Choisissez l'option qui décrit le mieux votre situation",
-                "professional": "Professionnel",
-                "professionalDescription": "Je suis un professionnel de la santé à la recherche d'opportunités de travail",
-                "facility": "Établissement",
-                "facilityDescription": "Je représente une entreprise ou un établissement à la recherche de professionnels",
-                "organization": "Organisation",
-                "organizationDescription": "Je représente une chaîne de pharmacies ou une organisation"
-            },
-            "step3": {
-                "chain": {
-                    "title": "Informations de Contact",
-                    "description": "Veuillez fournir vos coordonnées afin que nous puissions vous aider à configurer votre compte d'organisation",
-                    "phonePrefix": "Préfixe Téléphonique",
-                    "phoneNumber": "Numéro de Téléphone",
-                    "phoneNumberPlaceholder": "Entrez votre numéro de téléphone",
-                    "messageToSupport": "Message au Support",
-                    "messagePlaceholder": "Veuillez décrire votre organisation et vos besoins..."
-                }
-            },
-            "step4": {
-                "title": "Vérification GLN",
-                "description": "Avez-vous un GLN (Global Location Number) ?",
-                "hasGLN": "J'ai un numéro GLN",
-                "verificationStatus": "Statut de Vérification"
-            },
-            "professional_gln": {
-                "title": "Informations GLN",
-                "text1": "Numéro professionnel requis pour les professionnels de la santé certifiés en Suisse (pharmaciens, dentistes, médecins, etc.).",
-                "text2": "Pour les autres professions (infirmiers, assistants, etc.), ce numéro n'est pas obligatoire.",
-                "text3": "Activez si vous avez votre propre numéro GLN."
-            },
-            "company_gln": {
-                "title": "Informations GLN",
-                "text1": "Le GLN (Global Location Number) est un identifiant unique pour votre établissement ou entreprise.",
-                "text2": "Fournir votre GLN nous aide à vérifier automatiquement les détails de votre entreprise et accélère le processus de vérification.",
-                "text3": "Ce champ est optionnel, mais recommandé pour une vérification de compte plus rapide."
-            },
-            "input": {
-                "professional_gln": "GLN Professionnel",
-                "company_gln": "GLN de l'Entreprise",
-                "professional_gln_optional": "GLN Professionnel (Optionnel)",
-                "company_gln_optional": "GLN de l'Entreprise (Optionnel)"
-            },
-            "docs": {
-                "title": "Documents de Vérification",
-                "facility_id": {
-                    "label": "1. Document d'Identité de la Personne Responsable",
-                    "desc": "Téléchargez la carte d'identité d'une personne responsable listée dans le registre."
-                },
-                "facility_bill": {
-                    "label": "2. Facture / Document Fiscal",
-                    "desc": "Téléchargez une facture récente ou un document fiscal pour la vérification de l'établissement."
-                },
-                "select_id_type": "Sélectionner le Type d'ID",
-                "internal_ref": "Référence Interne / Numéro de Commande (Optionnel)",
-                "professional_id": "Document d'Identité",
-                "select_doc_type": "Sélectionner le type de document",
-                "upload_id": "Télécharger le Document d'Identité",
-                "upload_bill": "Télécharger la Facture"
-            },
-            "errors": {
-                "service_high_demand": "Forte Demande de Service",
-                "wait_message": "Veuillez patienter {{seconds}} secondes avant de réessayer",
-                "can_try_again": "Vous pouvez maintenant réessayer.",
-                "verification_failed": "Échec de la Vérification",
-                "review_inputs": "Veuillez vérifier vos saisies. Si vous pensez qu'il s'agit d'une erreur, contactez notre support urgent ci-dessous.",
-                "contact_support": "Contacter le Support Urgent",
-                "report_issue": "Signaler le Problème par Email",
-                "describe_issue": "Décrivez le problème que vous rencontrez..."
-            },
-            "success": {
-                "verified_title": "Compte Vérifié avec Succès !",
-                "professional_redirect": "Votre profil professionnel est maintenant actif. Redirection pour compléter la configuration de votre profil...",
-                "facility_redirect": "Votre profil d'établissement est maintenant actif. Redirection pour compléter la configuration de votre profil..."
-            },
-            "phone": {
-                "title": "Vérification Mobile",
-                "subtitle": "Entrez votre numéro de téléphone pour recevoir un code d'identité sécurisé.",
-                "secured_code": "Code Sécurisé",
-                "sent_text": "Nous avons envoyé un code de vérification au {{prefix}} {{number}}.",
-                "verified_title": "Téléphone Vérifié",
-                "verified_text": "Votre numéro de téléphone {{prefix}} {{number}} a été vérifié avec succès.",
-                "verification_complete": "Vérification Terminée",
-                "verify_continue": "Vérifier et continuer",
-                "verifying": "Vérification...",
-                "resend": "Renvoyer le code",
-                "resend_wait": "Renvoyer dans {{seconds}}s",
-                "change_number": "Changer de numéro",
-                "verification_code_label": "Code de Vérification",
-                "sending": "Envoi..."
-            },
-            "buttons": {
-                "back": "Retour",
-                "nextStep": "Étape Suivante",
-                "sendCode": "Envoyer le Code",
-                "validate": "Valider",
-                "contactAndFinish": "Contacter et Terminer",
-                "verifying": "Vérification...",
-                "completeAccount": "Compléter le Compte",
-                "verify_account": "Vérifier le Compte"
-            }
-        }
+  "dashboard": {
+    "sidebar": {
+      "overview": "Aperçu",
+      "profile": "Profil",
+      "contracts": "Contrats",
+      "messages": "Messages",
+      "calendar": "Calendrier",
+      "marketplace": "Marché",
+      "settings": "Paramètres",
+      "incompleteProfile": "Votre profil est incomplet",
+      "completeProfileFirst": "Veuillez d'abord compléter votre profil",
+      "organization": "Organization"
     },
-    "userMenu": {
-        "profile": "Mon Profil",
-        "settings": "Paramètres",
-        "language": "Langue",
-        "logout": "Se Déconnecter",
-        "user": "Utilisateur"
+    "loading": "Chargement des données du tableau de bord...",
+    "error": "Erreur lors du chargement des données du tableau de bord",
+    "completeProfile": {
+      "completeProfileTitle": "Complétez Votre Profil",
+      "completeProfileDescription": "Bienvenue sur InteriMed ! Pour accéder à toutes les fonctionnalités de la plateforme, veuillez d'abord compléter votre profil.",
+      "completeProfileButton": "Je comprends, créer mon profil"
+    },
+    "overview": {
+      "title": "Bienvenue sur InteriMed !",
+      "welcome": "Bonjour",
+      "welcomeTitle": "Bienvenue sur InteriMed !",
+      "totalContracts": "Total des Contrats",
+      "activeHours": "Heures Actives",
+      "earnings": "Revenus",
+      "upcomingJobs": "Emplois à Venir",
+      "recentActivity": "Activité Récente",
+      "noRecentActivity": "Aucune activité récente à afficher"
+    },
+    "onboarding": {
+      "verify_account": "Vérifiez Votre Compte",
+      "verify_intro": "Veuillez fournir vos coordonnées ci-dessous. Nous utilisons une vérification IA sécurisée pour certifier votre compte.",
+      "step1": {
+        "title": "Considérations Légales",
+        "facilityLegalNotice": "Avis Légal pour les Établissements",
+        "facilityLegalText1": "En tant qu'établissement de santé utilisant InteriMed, vous devez assurer la conformité avec les lois suisses du travail lors de l'engagement de personnel temporaire.",
+        "facilityLegalText2": "Vous êtes responsable de vérifier que les travailleurs temporaires respectent les heures de travail maximales, les périodes de repos et autres exigences légales.",
+        "facilityLegalText3": "Veuillez vous assurer que tout le personnel temporaire possède les qualifications et permis de travail nécessaires.",
+        "professionalLegalNotice": "Avis Légal pour les Professionnels",
+        "professionalLegalText1": "Pour les employés travaillant à 100% (généralement 40-42 heures/semaine), il est presque impossible de prendre légalement des quarts supplémentaires dans une autre pharmacie.",
+        "professionalLegalText2": "La loi suisse du travail fixe un maximum strict de 50 heures par semaine (45 heures dans certains contextes de vente au détail). Un employé à 100% travaille généralement 42 heures, ne laissant que 8 heures maximum.",
+        "professionalLegalText3": "Selon le Code des Obligations (Art. 321a), vous devez obtenir l'approbation écrite de votre employeur principal pour travailler pour un concurrent.",
+        "professionalLegalText4": "La loi exige 11 heures consécutives de repos entre les quarts (peut être réduit à 8 heures une fois par semaine).",
+        "agreementStatus": "Statut de l'Accord",
+        "areYouEmployed": "Êtes-vous actuellement employé par un établissement ?",
+        "areYouEmployedDescription": "Activer si vous travaillez pour une organisation",
+        "termsAcceptance": "Conditions et Considérations Légales",
+        "termsAcceptanceDescription": "Je comprends et reconnais les considérations légales et les conditions d'utilisation",
+        "termsAcceptanceText": "Je comprends et reconnais les considérations légales et",
+        "termsOfService": "conditions d'utilisation",
+        "note": "En continuant, vous reconnaissez avoir lu et compris les considérations légales applicables à votre rôle.",
+        "restrictedServices": {
+          "title": "Créer un Profil pour les Services Internes de l'Établissement Uniquement",
+          "description": "Ce compte ne peut être utilisé que pour accéder aux services internes de l'établissement. La vérification du compte doit être complétée pour accéder à tous les services.",
+          "modal": {
+            "title": "Services Restreints - Accès Interne à l'Établissement Uniquement",
+            "intro": "En créant votre profil avec un accès interne à l'établissement uniquement, vous n'aurez __NOT__ accès aux services suivants :",
+            "interimServices": "Services Intérimaires - Vous ne pouvez pas prendre de remplacements ou d'assignations temporaires",
+            "jobPostulations": "Candidatures d'Emploi - Vous ne pouvez pas postuler pour des postes ou des emplois",
+            "marketplaceAccess": "Accès au Marché - Vous ne pouvez pas accéder au marché pour trouver des opportunités",
+            "willHaveAccess": "À quoi vous AUREZ accès :",
+            "facilityInternal": "Services internes de l'établissement (calendrier, gestion d'équipe, communications internes)",
+            "teamCollaboration": "Fonctionnalités de collaboration d'équipe",
+            "internalScheduling": "Planification interne et demandes de congés",
+            "note": "Note : Pour obtenir un accès complet à tous les services, vous devez compléter la vérification du compte via le processus d'intégration complet.",
+            "cancel": "Annuler",
+            "createProfile": "Créer le Profil Maintenant"
+          }
+        }
+      },
+      "step2": {
+        "title": "Sélectionnez Votre Rôle",
+        "description": "Choisissez l'option qui décrit le mieux votre situation",
+        "professional": "Professionnel",
+        "professionalDescription": "Je suis un professionnel de la santé à la recherche d'opportunités de travail",
+        "facility": "Établissement",
+        "facilityDescription": "Je représente une entreprise ou un établissement à la recherche de professionnels",
+        "organization": "Organisation",
+        "organizationDescription": "Je représente une chaîne de pharmacies ou une organisation"
+      },
+      "step3": {
+        "chain": {
+          "title": "Informations de Contact",
+          "description": "Veuillez fournir vos coordonnées afin que nous puissions vous aider à configurer votre compte d'organisation",
+          "phonePrefix": "Préfixe Téléphonique",
+          "phoneNumber": "Numéro de Téléphone",
+          "phoneNumberPlaceholder": "Entrez votre numéro de téléphone",
+          "messageToSupport": "Message au Support",
+          "messagePlaceholder": "Veuillez décrire votre organisation et vos besoins..."
+        }
+      },
+      "step4": {
+        "title": "Vérification GLN",
+        "description": "Avez-vous un GLN (Global Location Number) ?",
+        "hasGLN": "J'ai un numéro GLN",
+        "verificationStatus": "Statut de Vérification",
+        "hasGLNDesc": "Has G L N Desc",
+        "company_description": "Veuillez vérifier votre identité en tant que personne responsable de cet établissement."
+      },
+      "professional_gln": {
+        "title": "Informations GLN",
+        "text1": "Numéro professionnel requis pour les professionnels de la santé certifiés en Suisse (pharmaciens, dentistes, médecins, etc.).",
+        "text2": "Pour les autres professions (infirmiers, assistants, etc.), ce numéro n'est pas obligatoire.",
+        "text3": "Activez si vous avez votre propre numéro GLN.",
+        "text_new": "Numéro professionnel requis pour les professionnels de la santé certifiés en Suisse (pharmaciens, dentistes, médecins, etc.). Activez si vous avez votre propre numéro GLN."
+      },
+      "company_gln": {
+        "title": "Informations GLN",
+        "text1": "Le GLN (Global Location Number) est un identifiant unique pour votre établissement ou entreprise.",
+        "text2": "Fournir votre GLN nous aide à vérifier automatiquement les détails de votre entreprise et accélère le processus de vérification.",
+        "text3": "Ce champ est optionnel, mais recommandé pour une vérification de compte plus rapide."
+      },
+      "input": {
+        "professional_gln": "GLN Professionnel",
+        "company_gln": "GLN de l'Entreprise",
+        "professional_gln_optional": "GLN Professionnel (Optionnel)",
+        "company_gln_optional": "GLN de l'Entreprise (Optionnel)"
+      },
+      "docs": {
+        "title": "Documents de Vérification",
+        "facility_id": {
+          "label": "1. Document d'Identité de la Personne Responsable",
+          "desc": "Téléchargez la carte d'identité d'une personne responsable listée dans le registre."
+        },
+        "facility_bill": {
+          "label": "2. Facture / Document Fiscal",
+          "desc": "Téléchargez une facture récente ou un document fiscal pour la vérification de l'établissement."
+        },
+        "select_id_type": "Sélectionner le Type d'ID",
+        "internal_ref": "Référence Interne / Numéro de Commande (Optionnel)",
+        "professional_id": "Document d'Identité",
+        "select_doc_type": "Sélectionner le type de document",
+        "upload_id": "Télécharger le Document d'Identité",
+        "upload_bill": "Télécharger la Facture"
+      },
+      "errors": {
+        "service_high_demand": "Forte Demande de Service",
+        "wait_message": "Veuillez patienter {{seconds}} secondes avant de réessayer",
+        "can_try_again": "Vous pouvez maintenant réessayer.",
+        "verification_failed": "Échec de la Vérification",
+        "review_inputs": "Veuillez vérifier vos saisies. Si vous pensez qu'il s'agit d'une erreur, contactez notre support urgent ci-dessous.",
+        "contact_support": "Contacter le Support Urgent",
+        "report_issue": "Signaler le Problème par Email",
+        "describe_issue": "Décrivez le problème que vous rencontrez...",
+        "missing_gln": "Missing_gln",
+        "gln_length": "Gln_length",
+        "missing_profession": "Missing_profession",
+        "missing_document": "Missing_document",
+        "missing_document_type": "Missing_document_type"
+      },
+      "success": {
+        "verified_title": "Compte Vérifié avec Succès !",
+        "professional_redirect": "Votre profil professionnel est maintenant actif. Redirection pour compléter la configuration de votre profil...",
+        "facility_redirect": "Votre profil d'établissement est maintenant actif. Redirection pour compléter la configuration de votre profil..."
+      },
+      "phone": {
+        "title": "Vérification Mobile",
+        "subtitle": "Entrez votre numéro de téléphone pour recevoir un code d'identité sécurisé.",
+        "secured_code": "Code Sécurisé",
+        "sent_text": "Nous avons envoyé un code de vérification au {{prefix}} {{number}}.",
+        "verified_title": "Téléphone Vérifié",
+        "verified_text": "Votre numéro de téléphone {{prefix}} {{number}} a été vérifié avec succès.",
+        "verification_complete": "Vérification Terminée",
+        "verify_continue": "Vérifier et continuer",
+        "verifying": "Vérification...",
+        "resend": "Renvoyer le code",
+        "resend_wait": "Renvoyer dans {{seconds}}s",
+        "change_number": "Changer de numéro",
+        "verification_code_label": "Code de Vérification",
+        "sending": "Envoi..."
+      },
+      "buttons": {
+        "back": "Retour",
+        "nextStep": "Étape Suivante",
+        "sendCode": "Envoyer le Code",
+        "validate": "Valider",
+        "contactAndFinish": "Contacter et Terminer",
+        "verifying": "Vérification...",
+        "completeAccount": "Compléter le Compte",
+        "verify_account": "Vérifier le Compte"
+      },
+      "separateWorkerGLM": {
+        "title": "Title",
+        "description": "Description",
+        "complete": "Complete",
+        "completeMessage": "Complete Message",
+        "saving": "Saving",
+        "saveButton": "Save Button"
+      },
+      "profession": {
+        "title": "Title",
+        "select": "Select",
+        "locked_notice": "Locked_notice"
+      },
+      "step5": {
+        "title": "Informations sur l'Établissement",
+        "description": "Veuillez fournir le GLN (Global Location Number) officiel de votre établissement pour vérifier votre organisation."
+      }
+    },
+    "header": {
+      "profileResetSuccess": "Profile Reset Success",
+      "profileResetError": "Profile Reset Error",
+      "createBusiness": "Create Business",
+      "createBusinessDesc": "Create Business Desc",
+      "createProfessional": "Create Professional",
+      "createProfessionalDesc": "Create Professional Desc",
+      "search": "Search",
+      "resetProfile": "Reset Profile",
+      "resetProfileTitle": "Reset Profile Title",
+      "resetProfileMessage": "Reset Profile Message",
+      "resetConfirm": "Reset Confirm"
+    },
+    "navigation": {
+      "overview": "Overview",
+      "messages": "Messages",
+      "contracts": "Contracts",
+      "calendar": "Calendar",
+      "profile": "Profile",
+      "marketplace": "Marketplace",
+      "payroll": "Payroll",
+      "organization": "Organization",
+      "settings": "Settings"
+    },
+    "tutorial": {
+      "selectionTitle": "Selection Title",
+      "selectionSubtitle": "Selection Subtitle",
+      "currentPage": "Current Page",
+      "currentPageOnly": "Current Page Only",
+      "currentPageOnlyTitle": "Current Page Only Title",
+      "currentPageOnlyDesc": "Current Page Only Desc",
+      "allPages": "All Pages",
+      "allPagesTitle": "All Pages Title",
+      "allPagesDesc": "All Pages Desc"
     }
+  },
+  "userMenu": {
+    "profile": "Mon Profil",
+    "settings": "Paramètres",
+    "language": "Langue",
+    "logout": "Se Déconnecter",
+    "user": "Utilisateur"
+  },
+  "common": {
+    "cancel": "Cancel"
+  },
+  "personalDetails": {
+    "phonePrefix": "Phone Prefix",
+    "selectPhonePrefix": "Select Phone Prefix",
+    "phoneNumber": "Phone Number",
+    "phonePlaceholder": "Phone Placeholder"
+  }
 }

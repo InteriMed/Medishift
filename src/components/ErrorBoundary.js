@@ -7,12 +7,24 @@ class ErrorBoundary extends Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
+    if (error?.message?.includes('Timeout') || 
+        error?.name === 'TimeoutError' ||
+        error?.message === 'Timeout' ||
+        (error?.stack && error?.stack.includes('recaptcha'))) {
+      return null;
+    }
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    // You can also log the error to an error reporting service
+    if (error?.message?.includes('Timeout') || 
+        error?.name === 'TimeoutError' ||
+        error?.message === 'Timeout' ||
+        (error?.stack && error?.stack.includes('recaptcha'))) {
+      console.debug('[ErrorBoundary] Ignoring timeout error (non-critical):', error.message || error);
+      return;
+    }
+    
     console.error('Error caught by ErrorBoundary:', error, errorInfo);
     this.setState({
       error: error,

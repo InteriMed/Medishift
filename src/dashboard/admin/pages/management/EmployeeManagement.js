@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { db } from '../../../../services/firebase';
+import { db, firebaseApp } from '../../../../services/firebase';
 import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { UserPlus, Shield, Mail, Search, CheckCircle, XCircle, User } from 'lucide-react';
@@ -86,7 +86,7 @@ const EmployeeManagement = () => {
   const handleInvite = async () => {
     setInviting(true);
     try {
-      const functions = getFunctions(undefined, 'europe-west6');
+      const functions = getFunctions(firebaseApp, 'europe-west6');
       const inviteAdminEmployee = httpsCallable(functions, 'inviteAdminEmployee');
 
       const result = await inviteAdminEmployee({

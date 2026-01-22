@@ -72,7 +72,7 @@ const ContractFilters = ({ filters, onFilterChange }) => {
       
       <div className="filter-group">
         <SimpleDropdown 
-          label="Status"
+          label=""
           options={statusOptions}
           value={filters.status || 'all'}
           onChange={handleStatusChange}
@@ -82,7 +82,7 @@ const ContractFilters = ({ filters, onFilterChange }) => {
       
       <div className="filter-group">
         <SimpleDropdown 
-          label="Date Range"
+          label=""
           options={dateRangeOptions}
           value={filters.dateRange || ''}
           onChange={handleDateRangeChange}

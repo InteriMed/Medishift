@@ -5,7 +5,7 @@ const admin = require('firebase-admin');
 /**
  * Disables a user in Firebase Auth and updates their Firestore record with ban info.
  */
-exports.disableUser = onCall({ cors: true }, async (request) => {
+exports.disableUser = onCall({ cors: true, database: 'medishift' }, async (request) => {
     if (!request.auth) {
         throw new HttpsError('unauthenticated', 'You must be signed in to disable users');
     }

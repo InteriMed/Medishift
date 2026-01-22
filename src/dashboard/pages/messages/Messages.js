@@ -15,6 +15,7 @@ import messagesService from '../../../services/messagesService';
 import { cn } from '../../../utils/cn';
 import { FiMessageSquare, FiSearch, FiX, FiSliders } from 'react-icons/fi';
 import { useTutorial } from '../../contexts/TutorialContext';
+import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 
 const MESSAGE_CONTEXTS = {
   PERSONAL: 'personal',
@@ -328,24 +329,30 @@ const Messages = () => {
 
   return (
     <div className={cn(
-      "h-full flex flex-col overflow-hidden animate-in fade-in duration-500",
+      "h-full flex flex-col overflow-hidden animate-in fade-in duration-500 messages-page",
       isMobile && "overflow-y-hidden"
-    )}>
+    )} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
       {/* Page Top Bar - Search and Filters Only (Title in main header) */}
       <div className={cn(
-        "shrink-0 w-full z-20 bg-card/95 backdrop-blur-sm border-b border-border shadow-sm h-16",
-        isMobile ? "px-4" : "px-6"
+        "shrink-0 w-full z-20 bg-gradient-to-r from-card/95 via-card/80 to-transparent backdrop-blur-sm border-b border-border/60 shadow-sm min-h-[84px] py-5",
+        isMobile ? "px-4" : "px-6 sm:px-8"
       )}>
         {isMobile ? (
           <div className="flex items-center gap-2 h-full">
             <div className="flex-1 relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
                 <input
                   type="text"
                   placeholder={t('messages:searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full h-9 pl-9 pr-20 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                  className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                  style={{
+                    height: 'var(--boxed-inputfield-height)',
+                    fontWeight: '500',
+                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                    color: 'var(--boxed-inputfield-color-text)'
+                  }}
                 />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 {searchTerm && (
@@ -374,13 +381,19 @@ const Messages = () => {
             <div className="flex-1 flex items-center gap-3">
               {/* Search Input */}
               <div className="flex-1 relative">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
               <input
                 type="text"
                 placeholder={t('messages:searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-9 pl-9 pr-8 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                style={{
+                  height: 'var(--boxed-inputfield-height)',
+                  fontWeight: '500',
+                  fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                  color: 'var(--boxed-inputfield-color-text)'
+                }}
               />
                 {searchTerm && (
                   <button
@@ -393,27 +406,35 @@ const Messages = () => {
               </div>
 
               {/* Filter: Message Type */}
-              <select
-                value={unreadOnly ? 'unread' : 'all'}
-                onChange={(e) => setUnreadOnly(e.target.value === 'unread')}
-                className="h-9 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring transition-all shrink-0 min-w-[120px]"
-              >
-                <option value="all">{t('messages:filters.all')}</option>
-                <option value="unread">{t('messages:filters.unreadOnly')}</option>
-              </select>
+              <div className="shrink-0 min-w-[120px]" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                <SimpleDropdown
+                  label={null}
+                  options={[
+                    { value: 'all', label: t('messages:filters.all') },
+                    { value: 'unread', label: t('messages:filters.unreadOnly') }
+                  ]}
+                  value={unreadOnly ? 'unread' : 'all'}
+                  onChange={(value) => setUnreadOnly(value === 'unread')}
+                  placeholder={t('messages:filters.all')}
+                />
+              </div>
 
               {/* Filter: Date Range */}
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="h-9 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring transition-all shrink-0 min-w-[120px]"
-              >
-                <option value="">{t('messages:filters.date.all')}</option>
-                <option value="last-week">{t('messages:filters.date.lastWeek')}</option>
-                <option value="last-month">{t('messages:filters.date.lastMonth')}</option>
-                <option value="last-3-months">{t('messages:filters.date.last3Months')}</option>
-                <option value="last-year">{t('messages:filters.date.lastYear')}</option>
-              </select>
+              <div className="shrink-0 min-w-[120px]" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                <SimpleDropdown
+                  label={null}
+                  options={[
+                    { value: '', label: t('messages:filters.date.all') },
+                    { value: 'last-week', label: t('messages:filters.date.lastWeek') },
+                    { value: 'last-month', label: t('messages:filters.date.lastMonth') },
+                    { value: 'last-3-months', label: t('messages:filters.date.last3Months') },
+                    { value: 'last-year', label: t('messages:filters.date.lastYear') }
+                  ]}
+                  value={dateRange}
+                  onChange={(value) => setDateRange(value)}
+                  placeholder={t('messages:filters.date.all')}
+                />
+              </div>
             </div>
 
             {/* Right: Unread Count */}
@@ -434,18 +455,18 @@ const Messages = () => {
       )}>
         {/* Left: Conversations List Sidebar (No search/filters, just list) */}
         <div className={cn(
-          "flex flex-col transition-all duration-300 shrink-0",
+          "dashboard-sidebar-container",
           isMobile
             ? cn(
-              "absolute inset-0 z-10 bg-background overflow-y-auto",
+              "dashboard-sidebar-container-mobile",
               showSidebar ? "translate-x-0" : "-translate-x-full"
             )
-            : "w-full md:w-[320px] lg:w-[360px] pr-0 overflow-hidden"
+            : "dashboard-sidebar-container-desktop pr-0"
         )}>
           {/* Sidebar Container - Just the conversation list */}
           <div className={cn(
-            "flex-1 flex flex-col bg-card/60 backdrop-blur-sm border border-border shadow-sm overflow-hidden",
-            isMobile ? "rounded-none border-0" : "rounded-xl"
+            "dashboard-sidebar-inner",
+            isMobile && "dashboard-sidebar-inner-mobile"
           )}>
             {/* Conversations List */}
             {filteredConversations.length === 0 ? (
@@ -476,13 +497,13 @@ const Messages = () => {
 
         {/* Right: Content Area (Conversation View) - FIXED HEIGHT with internal scroll */}
         <div className={cn(
-          "flex-1 flex flex-col bg-transparent relative min-w-0 min-h-0 transition-transform duration-300",
-          isMobile && selectedConversation ? "translate-x-0 overflow-y-auto absolute inset-0 z-20" : "overflow-y-auto"
+          "dashboard-main-content",
+          isMobile && selectedConversation ? "translate-x-0 dashboard-main-content-mobile" : "dashboard-main-content-desktop"
         )}>
           {selectedConversation ? (
             <div className={cn(
-              "h-full w-full bg-card/60 backdrop-blur-sm border border-border shadow-sm overflow-hidden",
-              isMobile ? "rounded-none border-0" : "rounded-xl"
+              "dashboard-main-inner",
+              isMobile && "dashboard-main-inner-mobile"
             )}>
               <ConversationView
                 conversation={selectedConversation}

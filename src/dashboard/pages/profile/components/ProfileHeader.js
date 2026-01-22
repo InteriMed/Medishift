@@ -13,9 +13,13 @@ import {
   FiCircle,
   FiChevronLeft,
   FiChevronRight,
-  FiZap
+  FiZap,
+  FiLock
 } from 'react-icons/fi';
 import { useTutorial } from '../../../contexts/TutorialContext';
+import { useAuth } from '../../../../contexts/AuthContext';
+import RestartTutorialPopup from './RestartTutorialPopup';
+import AccessLevelChoicePopup from './AccessLevelChoicePopup';
 
 const ProfileHeader = ({
   profile,
@@ -31,18 +35,83 @@ const ProfileHeader = ({
   onAutofill
 }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [showRestartPopup, setShowRestartPopup] = useState(false);
+  const [showAccessLevelPopup, setShowAccessLevelPopup] = useState(false);
+  const [pendingTabId, setPendingTabId] = useState(null);
   const isMobile = useMobileView();
   const { t } = useTranslation(['dashboardProfile', 'tabs']);
-  const { isTutorialActive, stepData } = useTutorial();
+  const { isTutorialActive, stepData, accessMode, restartOnboarding, setAccessMode, maxAccessedProfileTab, setShowAccessLevelModal, setAllowAccessLevelModalClose } = useTutorial();
+  const { currentUser } = useAuth();
+  
+  const glnVerified = currentUser?.GLN_certified === true || currentUser?.GLN_certified === 'ADMIN_OVERRIDE' || profile?.GLN_certified === true || profile?.GLN_certified === 'ADMIN_OVERRIDE';
 
   const isAutofillHighlighted = isTutorialActive && stepData?.highlightUploadButton;
 
   const tabs = config?.tabs || [];
 
+  // Tabs that are locked for Team Access mode
+  const lockedTabsForTeam = ['professionalBackground', 'billingInformation', 'documentUploads'];
+
   const handleTabClick = (tabId) => {
+    const popupShownKey = `accessLevelPopup_${currentUser?.uid}_personalToProf`;
+    const wasShown = localStorage.getItem(popupShownKey);
+    
+    // During tutorial, trigger local AccessLevelChoicePopup when clicking Professional Background for first time (only once)
+    if (isTutorialActive && tabId === 'professionalBackground' && maxAccessedProfileTab === 'personalDetails') {
+      if (!wasShown) {
+        console.log('[ProfileHeader] Tutorial active - showing local AccessLevelChoicePopup and blocking tab switch');
+        setPendingTabId(tabId);
+        setShowAccessLevelPopup(true);
+        return;
+      } else {
+        console.log('[ProfileHeader] Popup already shown before, allowing tab access');
+      }
+    }
+
+    // Check if tab is locked for team access mode (after tutorial) - only if accessMode is explicitly 'team' and tutorial is NOT active
+    if (accessMode === 'team' && !isTutorialActive && lockedTabsForTeam.includes(tabId)) {
+      console.log('[ProfileHeader] Tab locked for Team Access, showing AccessLevelChoicePopup:', tabId);
+      setPendingTabId(tabId);
+      setShowAccessLevelPopup(true);
+      return;
+    }
+
     if (isTabAccessible(profile, tabId, config)) {
       onTabChange(tabId);
     }
+  };
+
+  const handleContinueOnboarding = () => {
+    console.log('[ProfileHeader] Continue Profile clicked - current tab:', activeTab, 'pending tab:', pendingTabId);
+    
+    const popupShownKey = `accessLevelPopup_${currentUser?.uid}_personalToProf`;
+    localStorage.setItem(popupShownKey, 'true');
+    
+    if (activeTab !== 'personalDetails' && !pendingTabId) {
+      console.log('[ProfileHeader] Not on personalDetails, navigating there first');
+      if (isTabAccessible(profile, 'personalDetails', config)) {
+        onTabChange('personalDetails');
+      }
+    } else if (pendingTabId && isTabAccessible(profile, pendingTabId, config)) {
+      console.log('[ProfileHeader] Moving to pending tab:', pendingTabId);
+      onTabChange(pendingTabId);
+    }
+    
+    setPendingTabId(null);
+    setShowAccessLevelPopup(false);
+  };
+
+  const handleSelectTeamAccess = async () => {
+    if (setAccessMode) {
+      await setAccessMode('team');
+    }
+    setShowAccessLevelPopup(false);
+    setPendingTabId(null);
+  };
+
+  const handleRestartTutorial = () => {
+    console.log('[ProfileHeader] Restarting tutorial for full access');
+    restartOnboarding?.();
   };
 
   const getIconForTab = (tabId) => {
@@ -54,7 +123,12 @@ const ProfileHeader = ({
       case 'billingInformation':
         return <FiCreditCard className="w-5 h-5 shrink-0" />;
       case 'documentUploads':
+      case 'facilityDocuments':
         return <FiFileText className="w-5 h-5 shrink-0" />;
+      case 'facilityCoreDetails':
+        return <FiUser className="w-5 h-5 shrink-0" />;
+      case 'facilityLegalBilling':
+        return <FiCreditCard className="w-5 h-5 shrink-0" />;
       case 'settings':
         return <FiSettings className="w-5 h-5 shrink-0" />;
       default:
@@ -64,9 +138,9 @@ const ProfileHeader = ({
 
   return (
     <div className={cn(
-        "w-full h-fit bg-card rounded-xl border border-border/60 transition-all duration-300 ease-in-out overflow-x-hidden",
-        collapsed ? "p-2" : "p-4"
-      )}>
+      "w-full h-fit bg-card rounded-xl border border-border/60 transition-all duration-300 ease-in-out overflow-x-hidden",
+      collapsed ? "p-2" : "p-4"
+    )}>
       {onToggle && !isMobile && (
         <div className={cn(
           "border-b border-border mb-3",
@@ -78,14 +152,14 @@ const ProfileHeader = ({
               "w-full h-10 rounded-md hover:bg-muted/50 text-muted-foreground/70 transition-colors flex items-center gap-2",
               collapsed ? "justify-center px-2" : "justify-start px-2"
             )}
-            title={collapsed ? "Expand" : "Collapse"}
+            title={collapsed ? t('common:expand') : t('common:collapse')}
           >
             {collapsed ? (
               <FiChevronRight size={18} />
             ) : (
               <>
                 <FiChevronLeft size={18} />
-                <span className="text-sm font-medium">Collapse</span>
+                <span className="text-sm font-medium">{t('common:collapse')}</span>
               </>
             )}
           </button>
@@ -98,6 +172,58 @@ const ProfileHeader = ({
           const isCompleted = isTabCompleted(profile, tab.id, config);
           const isAccessible = isTabAccessible(profile, tab.id, config);
           const isHighlighted = highlightTabId === tab.id && !isCompleted;
+          const isLockedForTeam = accessMode === 'team' && lockedTabsForTeam.includes(tab.id);
+
+          // For Team Access locked tabs, render as clickable but with lock icon
+          if (isLockedForTeam) {
+            return (
+              <button
+                key={tab.id}
+                data-tab={tab.id}
+                data-tutorial-locked="true"
+                onClick={() => handleTabClick(tab.id)}
+                className={cn(
+                  "group relative flex gap-3 rounded-lg border min-w-0 transition-all duration-200 outline-none",
+                  collapsed ? "p-2 justify-center" : "p-3",
+                  "text-muted-foreground/50 cursor-pointer select-none",
+                  "border-border/30 bg-muted/10",
+                  "hover:bg-muted/20 hover:border-muted/40"
+                )}
+              >
+                <div className={cn(
+                  "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
+                  "bg-muted/30"
+                )} />
+                <div className={cn(
+                  "w-full flex items-center justify-between min-w-0",
+                  collapsed ? "justify-center pl-0" : "pl-2"
+                )}>
+                  <div className={cn(
+                    "flex items-center min-w-0",
+                    collapsed ? "justify-center" : "gap-3"
+                  )}>
+                    <div className={cn(
+                      "shrink-0",
+                      "bg-muted/10 text-muted-foreground/50"
+                    )}>
+                      {getIconForTab(tab.id)}
+                    </div>
+                    {!collapsed && (
+                      <span className={cn(
+                        "text-sm font-medium truncate",
+                        "text-muted-foreground/50"
+                      )}>
+                        {t(tab.labelKey, tab.id)}
+                      </span>
+                    )}
+                  </div>
+                  {!collapsed && (
+                    <FiLock className="w-4 h-4 text-muted-foreground/40" />
+                  )}
+                </div>
+              </button>
+            );
+          }
 
           if (!isAccessible) {
             return (
@@ -155,7 +281,7 @@ const ProfileHeader = ({
                 </div>
                 {collapsed && (
                   <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-border">
-                    {t(tab.labelKey, tab.id)} (Locked)
+                    {t(tab.labelKey, tab.id)} ({t('common:locked')})
                   </div>
                 )}
               </div>
@@ -171,7 +297,7 @@ const ProfileHeader = ({
                 "group relative flex gap-3 rounded-lg hover:bg-muted/50 transition-all cursor-pointer border min-w-0",
                 collapsed ? "p-2 justify-center" : "p-3",
                 isActive && "bg-primary/5 border-primary/10",
-                isHighlighted && "tab-highlight",
+                isHighlighted && "tutorial-highlight",
                 !isActive && !isHighlighted && "border-transparent"
               )}
             >
@@ -242,7 +368,7 @@ const ProfileHeader = ({
                   className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-muted transition-colors flex items-center gap-2 border-b border-border"
                 >
                   <FiZap className="w-3.5 h-3.5 text-amber-500" />
-                  Fill Current Tab
+                  {t('dashboardProfile:common.fillCurrentTab')}
                 </button>
                 <button
                   onClick={() => {
@@ -252,7 +378,7 @@ const ProfileHeader = ({
                   className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-muted transition-colors flex items-center gap-2 text-amber-600"
                 >
                   <FiZap className="w-3.5 h-3.5" />
-                  Fill All (Complete)
+                  {t('dashboardProfile:common.fillAll')}
                 </button>
               </div>
             )}
@@ -264,16 +390,35 @@ const ProfileHeader = ({
                 "bg-amber-500/10 hover:bg-amber-500/20 text-black border border-amber-500/20",
                 collapsed ? "justify-center px-2" : "px-3",
                 showMenu && "bg-amber-500/20 ring-2 ring-amber-500/30",
-                isAutofillHighlighted && "tab-highlight"
+                isAutofillHighlighted && "tutorial-highlight"
               )}
-              title="Beta: Autofill Options"
+              title={t('dashboardProfile:common.autofillOptions')}
             >
               <FiZap className="w-5 h-5 shrink-0" />
-              {!collapsed && <span className="text-sm font-bold uppercase tracking-wider text-black">(Beta) Fill</span>}
+              {!collapsed && <span className="text-sm font-bold uppercase tracking-wider text-black">{t('dashboardProfile:common.betaFill')}</span>}
             </button>
           </div>
         )}
       </nav>
+
+      {/* Restart Tutorial Popup for Team Access users */}
+      <RestartTutorialPopup
+        isOpen={showRestartPopup}
+        onClose={() => setShowRestartPopup(false)}
+        onRestartTutorial={handleRestartTutorial}
+      />
+
+      {/* Access Level Choice Popup before accessing tab 2 */}
+      <AccessLevelChoicePopup
+        isOpen={showAccessLevelPopup}
+        onClose={() => {
+          setShowAccessLevelPopup(false);
+          setPendingTabId(null);
+        }}
+        onContinueOnboarding={handleContinueOnboarding}
+        onSelectTeamAccess={handleSelectTeamAccess}
+        glnVerified={glnVerified}
+      />
     </div>
   );
 };

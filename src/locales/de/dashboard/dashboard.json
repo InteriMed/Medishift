@@ -1,220 +1,229 @@
 {
-    "dashboard": {
-        "sidebar": {
-            "overview": "Übersicht",
-            "profile": "Profil",
-            "contracts": "Verträge",
-            "messages": "Nachrichten",
-            "calendar": "Kalender",
-            "marketplace": "Marktplatz",
-            "payroll": "Lohnabrechnung",
-            "organization": "Organisation",
-            "settings": "Einstellungen",
-            "incompleteProfile": "Ihr Profil ist unvollständig",
-            "completeProfileFirst": "Bitte vervollständigen Sie zuerst Ihr Profil"
-        },
-        "header": {
-            "search": "Suchen...",
-            "worker": "Mitarbeiter",
-            "overview": {
-                "title": "Übersicht",
-                "subtitle": "Willkommen in Ihrem Dashboard"
-            },
-            "calendar": {
-                "title": "Kalender",
-                "subtitle": "Verwalten Sie Ihren Zeitplan und Termine"
-            },
-            "messages": {
-                "title": "Nachrichten",
-                "subtitle": "Kommunizieren Sie mit Einrichtungen und Fachkräften"
-            },
-            "contracts": {
-                "title": "Verträge",
-                "subtitle": "Sehen und verwalten Sie Ihre Verträge"
-            },
-            "profile": {
-                "title": "Profil",
-                "subtitle": "Verwalten Sie Ihre persönlichen Informationen"
-            },
-            "marketplace": {
-                "title": "Marktplatz",
-                "subtitle": "Finden Sie Stellen oder Fachkräfte"
-            },
-            "payroll": {
-                "title": "Lohnabrechnung",
-                "subtitle": "Verwalten Sie Mitarbeiterzahlungen und Anfragen"
-            },
-            "organization": {
-                "title": "Organisation",
-                "subtitle": "Verwalten Sie Ihre Apothekenkette oder Gruppe"
-            },
-            "settings": {
-                "title": "Einstellungen",
-                "subtitle": "Konfigurieren Sie Ihre Kontoeinstellungen"
-            }
-        },
-        "loading": "Dashboard-Daten werden geladen...",
-        "error": "Fehler beim Laden der Dashboard-Daten",
-        "completeProfile": {
-            "completeProfileTitle": "Vervollständigen Sie Ihr Profil",
-            "completeProfileDescription": "Willkommen bei MediShift! Um alle Funktionen der Plattform nutzen zu können, vervollständigen Sie bitte zuerst Ihr Profil.",
-            "completeProfileButton": "Verstanden, Profil erstellen"
-        },
-        "overview": {
-            "title": "Willkommen bei MediShift!",
-            "welcome": "Hallo",
-            "welcomeTitle": "Willkommen bei MediShift!",
-            "totalContracts": "Gesamte Verträge",
-            "activeHours": "Aktive Stunden",
-            "earnings": "Einkommen",
-            "upcomingJobs": "Anstehende Jobs",
-            "recentActivity": "Letzte Aktivitäten",
-            "noRecentActivity": "Keine aktuellen Aktivitäten anzuzeigen"
-        },
-        "onboarding": {
-            "welcome": {
-                "title": "Willkommen bei MediShift!",
-                "description": "Lassen Sie uns mit einem kurzen Onboarding-Prozess beginnen, um Ihr Konto einzurichten.",
-                "continue": "Weiter"
-            },
-            "roleSelection": {
-                "title": "Welche Art von Konto benötigen Sie?",
-                "description": "Wählen Sie die Option, die Sie am besten beschreibt",
-                "professional": "Fachkraft",
-                "professionalDescription": "Ich bin eine Gesundheitsfachkraft auf der Suche nach Arbeitsmöglichkeiten",
-                "facility": "Unternehmen",
-                "facilityDescription": "Ich vertrete ein Unternehmen oder eine Einrichtung, die Fachkräfte sucht"
-            },
-            "companySearch": {
-                "title": "Haben Sie ein Unternehmen?",
-                "description": "Wenn Sie für ein Unternehmen arbeiten, suchen und wählen Sie es unten aus",
-                "noCompany": "Ich habe kein Unternehmen",
-                "yesCompany": "Ja, ich habe ein Unternehmen",
-                "searchLabel": "Suchen Sie nach Ihrem Unternehmen",
-                "searchPlaceholder": "Firmennamen eingeben...",
-                "searching": "Suche...",
-                "noResults": "Keine Unternehmen gefunden. Sie können ohne Auswahl fortfahren."
-            },
-            "confirmation": {
-                "title": "Bestätigen Sie Ihre Auswahl",
-                "accountType": "Kontotyp",
-                "company": "Unternehmen",
-                "noCompany": "Kein Unternehmen",
-                "confirm": "Bestätigen"
-            },
-            "profileGuide": {
-                "title": "Grossartig! Jetzt vervollständigen wir Ihr Profil",
-                "description": "Wir führen Sie Schritt für Schritt durch die Vervollständigung Ihres Profils. Jeder Abschnitt wird hervorgehoben, während Sie fortschreiten.",
-                "startProfile": "Profilausfüllung starten"
-            },
-            "errors": {
-                "roleRequired": "Bitte wählen Sie eine Rolle",
-                "companyAnswerRequired": "Bitte beantworten Sie die Frage",
-                "companyRequired": "Bitte wählen Sie ein Unternehmen",
-                "searchFailed": "Unternehmenssuche fehlgeschlagen",
-                "updateFailed": "Onboarding konnte nicht abgeschlossen werden"
-            },
-            "employedByCompany": "Sind Sie derzeit bei einem Unternehmen angestellt?",
-            "employedByCompanyDesc": "Aktivieren, wenn Sie für eine Organisation arbeiten",
-            "joinTeam": "Einem Team beitreten",
-            "joinTeamDesc": "Aktivieren, um Ihren Arbeitsplatz zu finden und beizutreten",
-            "legalConsiderations": {
-                "title": "Wichtige rechtliche Hinweise",
-                "intro": "Für Mitarbeiter, die zu 100% arbeiten (normalerweise 40-42 Stunden/Woche), ist es nahezu unmöglich, legal zusätzliche Schichten in einer anderen Apotheke zu übernehmen.",
-                "hoursCap": {
-                    "title": "1. Maximale Wochenstunden",
-                    "content": "Das Schweizer Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche (45 Stunden in einigen Einzelhandelsbereichen). Ein 100%-Mitarbeiter arbeitet typischerweise 42 Stunden, was nur 8 Stunden Maximum übrig lässt. Eine volle Samstagsschicht (9 Stunden) würde das Gesetz brechen. Beide Arbeitgeber haften, wenn sie vom anderen Job wissen."
-                },
-                "dutyOfLoyalty": {
-                    "title": "2. Treuepflicht",
-                    "content": "Gemäss Obligationenrecht (Art. 321a) müssen Sie eine schriftliche Genehmigung Ihres Hauptarbeitgebers einholen, um für einen Konkurrenten zu arbeiten. Die meisten Apothekeninhaber werden diese Genehmigung nicht erteilen, da sie erwarten, dass das Personal ruht und am Montag frisch ist."
-                },
-                "dailyRest": {
-                    "title": "3. Tägliche Ruhezeit",
-                    "content": "Das Gesetz verlangt 11 aufeinanderfolgende Stunden Ruhe zwischen Schichten (kann einmal pro Woche auf 8 Stunden reduziert werden). Beispiel: Um 18:30 aufhören und eine Abendschicht bis 23:00 arbeiten, dann um 08:00 am nächsten Morgen zurückkehren, ergibt nur 9 Stunden Ruhe (illegal)."
-                },
-                "holidays": {
-                    "title": "4. Arbeiten während Ferien",
-                    "content": "Urlaub ist gesetzlich zur Erholung bestimmt (Erholungszweck). Das Arbeiten für Geld während bezahlter Ferien kann dazu führen, dass Ihr Arbeitgeber sich weigert, das Urlaubsgehalt zu zahlen, oder sogar zur Kündigung wegen Vertragsbruchs führen."
-                },
-                "confirm": "Ich verstehe und anerkenne diese rechtlichen Hinweise"
-            },
-            "generalWorkingLaws": {
-                "title": "Wichtige rechtliche Hinweise",
-                "warning": "Bitte beachten Sie die allgemeinen Arbeitsgesetze und -vorschriften, die für alle Arbeitnehmer gelten. Das Schweizer Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche (45 Stunden in einigen Einzelhandelsbereichen). Das Gesetz verlangt 11 aufeinanderfolgende Stunden Ruhe zwischen Schichten (kann einmal pro Woche auf 8 Stunden reduziert werden). Urlaub und Ruhezeiten sind gesetzlich zur Erholung bestimmt (Erholungszweck). Bitte stellen Sie sicher, dass Sie alle anwendbaren arbeitsrechtlichen Anforderungen bezüglich maximaler Arbeitszeiten, Ruhezeiten und anderen Vorschriften einhalten.",
-                "confirm": "Ich verstehe und anerkenne diese rechtlichen Hinweise"
-            },
-            "separateWorkerGLM": {
-                "title": "Separater Mitarbeiter mit GLM",
-                "description": "Sie haben eine GLM (Manager), aber keine GLN. Ihre GLM-Einstellung wird in Ihrem Profil gespeichert.",
-                "saveButton": "GLM-Einstellung speichern",
-                "saving": "Speichern...",
-                "complete": "GLM-Einstellung gespeichert!",
-                "completeMessage": "Ihre GLM-Einstellung wurde in Ihrem Profil gespeichert. Sie können diese Einstellung in Ihren Profileinstellungen verwalten.",
-                "hasGLMNoGLN": "Ich habe einen GLM und Mitarbeiter ohne GLN",
-                "hasGLMNoGLNDesc": "Aktivieren, wenn Sie einen Manager (GLM) haben, aber keine eigene GLN"
-            },
-            "exitOnboarding": "Onboarding beenden",
-            "step1": {
-                "title": "Rechtliche Überlegungen",
-                "facilityLegalNotice": "Rechtliche Hinweise für Einrichtungen/Ketten",
-                "facilityLegalText1": "Als Vertreter einer Einrichtung sind Sie dafür verantwortlich, dass alle bereitgestellten Daten korrekt sind und dass Sie die Befugnis haben, im Namen der Organisation zu handeln.",
-                "facilityLegalText2": "Die schweizerischen Arbeitsgesetze bezüglich maximaler Arbeitszeiten (LTr) und Ruhezeiten müssen bei der Planung von Schichten strikt eingehalten werden. Arbeitgeber teilen sich die Haftung für Verstöße gegen das Arbeitsrecht, wenn sie von einer Nebenbeschäftigung eines Arbeitnehmers wissen.",
-                "facilityLegalText3": "Durch Fortfahren stimmen Sie unseren Geschäftsbedingungen und Datenverarbeitungsvereinbarungen zu, die speziell für Gesundheitseinrichtungen in der Schweiz angepasst sind.",
-                "professionalLegalNotice": "Rechtliche Hinweise für Fachkräfte/Arbeitnehmer",
-                "professionalLegalText1": "Das schweizerische Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche. Wenn Sie 100% (42h) arbeiten, kann das Übernehmen zusätzlicher Schichten ohne vorherige Genehmigung illegal sein.",
-                "professionalLegalText2": "Die Treuepflicht (Art. 321a OR) verpflichtet Sie, eine schriftliche Genehmigung Ihres Hauptarbeitgebers einzuholen, um für einen Konkurrenten zu arbeiten.",
-                "professionalLegalText3": "Sie müssen Ruhezeiten einhalten: 11 aufeinanderfolgende Ruhestunden sind zwischen Schichten erforderlich. Das Arbeiten während bezahlter Ferien (Urlaub) ist gesetzlich auf Erholungszwecke beschränkt.",
-                "professionalLegalText4": "Durch Fortfahren erkennen Sie an, dass Sie allein für die Verwaltung Ihrer Arbeitszeiten bei verschiedenen Arbeitgebern verantwortlich sind.",
-                "agreementStatus": "Vereinbarungsstatus",
-                "areYouEmployed": "Sind Sie Angestellt",
-                "areYouEmployedDescription": "Dies kann später geändert werden.",
-                "termsAcceptance": "Bedingungen Akzeptieren",
-                "termsAcceptanceDescription": "Bestätigen Sie, dass Sie diesen rechtlichen Bedingungen zustimmen.",
-                "note": "Hinweis: Ihre Auswahl hier bestimmt den rechtlichen Rahmen, der für Ihr Konto und die Schichtverwaltung gilt."
-            },
-            "step2": {
-                "title": "Wählen Sie Ihren Weg",
-                "description": "Definieren Sie Ihre Rolle, um Ihr MediShift-Erlebnis zu personalisieren.",
-                "professional": "Fachkraft",
-                "professionalDescription": "Finden Sie medizinische Schichten in hochwertigen Einrichtungen in Ihrer Nähe.",
-                "facility": "Einrichtung",
-                "facilityDescription": "Rekrutieren Sie qualifizierte Gesundheitstalente und verwalten Sie Ihre Schichten einfach.",
-                "organization": "Organisation",
-                "organizationDescription": "Zentralisierte Verwaltung für mehrere Kliniken und Gesundheitsketten."
-            },
-            "step3": {
-                "chain": {
-                    "title": "Organisationseinrichtung",
-                    "description": "Zugang auf Führungsebene erfordert eine manuelle Überprüfung durch unser Sicherheitsteam.",
-                    "phonePrefix": "Telefonvorwahl",
-                    "phoneNumber": "Telefonnummer",
-                    "phoneNumberPlaceholder": "079 000 00 00",
-                    "messageToSupport": "Nachricht an den Support",
-                    "messagePlaceholder": "Bitte beschreiben Sie Ihre Organisation (Anzahl der Kliniken, Standorte)..."
-                }
-            },
-            "step4": {
-                "title": "Identitätsüberprüfung",
-                "description": "Helfen Sie uns, eine sichere und vertrauenswürdige medizinische Umgebung aufrechtzuerhalten.",
-                "hasGLN": "Ich habe eine GLN-Nummer"
-            },
-            "buttons": {
-                "back": "Zurück",
-                "sendCode": "Code Senden",
-                "validate": "Validieren",
-                "contactAndFinish": "Kontaktieren und Beenden",
-                "verifying": "Wird überprüft...",
-                "completeAccount": "Konto Vervollständigen",
-                "nextStep": "Nächster Schritt"
-            }
-        }
+  "dashboard": {
+    "sidebar": {
+      "overview": "Übersicht",
+      "profile": "Profil",
+      "contracts": "Verträge",
+      "messages": "Nachrichten",
+      "calendar": "Kalender",
+      "marketplace": "Marktplatz",
+      "payroll": "Lohnabrechnung",
+      "organization": "Organisation",
+      "settings": "Einstellungen",
+      "incompleteProfile": "Ihr Profil ist unvollständig",
+      "completeProfileFirst": "Bitte vervollständigen Sie zuerst Ihr Profil"
     },
-    "userMenu": {
-        "profile": "Mein Profil",
-        "settings": "Einstellungen",
-        "language": "Sprache",
-        "logout": "Abmelden",
-        "user": "Benutzer"
+    "header": {
+      "search": "Suchen...",
+      "worker": "Mitarbeiter",
+      "overview": {
+        "title": "Übersicht",
+        "subtitle": "Willkommen in Ihrem Dashboard"
+      },
+      "calendar": {
+        "title": "Kalender",
+        "subtitle": "Verwalten Sie Ihren Zeitplan und Termine"
+      },
+      "messages": {
+        "title": "Nachrichten",
+        "subtitle": "Kommunizieren Sie mit Einrichtungen und Fachkräften"
+      },
+      "contracts": {
+        "title": "Verträge",
+        "subtitle": "Sehen und verwalten Sie Ihre Verträge"
+      },
+      "profile": {
+        "title": "Profil",
+        "subtitle": "Verwalten Sie Ihre persönlichen Informationen"
+      },
+      "marketplace": {
+        "title": "Marktplatz",
+        "subtitle": "Finden Sie Stellen oder Fachkräfte"
+      },
+      "payroll": {
+        "title": "Lohnabrechnung",
+        "subtitle": "Verwalten Sie Mitarbeiterzahlungen und Anfragen"
+      },
+      "organization": {
+        "title": "Organisation",
+        "subtitle": "Verwalten Sie Ihre Apothekenkette oder Gruppe"
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "subtitle": "Konfigurieren Sie Ihre Kontoeinstellungen"
+      }
+    },
+    "loading": "Dashboard-Daten werden geladen...",
+    "error": "Fehler beim Laden der Dashboard-Daten",
+    "completeProfile": {
+      "completeProfileTitle": "Vervollständigen Sie Ihr Profil",
+      "completeProfileDescription": "Willkommen bei MediShift! Um alle Funktionen der Plattform nutzen zu können, vervollständigen Sie bitte zuerst Ihr Profil.",
+      "completeProfileButton": "Verstanden, Profil erstellen"
+    },
+    "overview": {
+      "title": "Willkommen bei MediShift!",
+      "welcome": "Hallo",
+      "welcomeTitle": "Willkommen bei MediShift!",
+      "totalContracts": "Gesamte Verträge",
+      "activeHours": "Aktive Stunden",
+      "earnings": "Einkommen",
+      "upcomingJobs": "Anstehende Jobs",
+      "recentActivity": "Letzte Aktivitäten",
+      "noRecentActivity": "Keine aktuellen Aktivitäten anzuzeigen"
+    },
+    "onboarding": {
+      "welcome": {
+        "title": "Willkommen bei MediShift!",
+        "description": "Lassen Sie uns mit einem kurzen Onboarding-Prozess beginnen, um Ihr Konto einzurichten.",
+        "continue": "Weiter"
+      },
+      "roleSelection": {
+        "title": "Welche Art von Konto benötigen Sie?",
+        "description": "Wählen Sie die Option, die Sie am besten beschreibt",
+        "professional": "Fachkraft",
+        "professionalDescription": "Ich bin eine Gesundheitsfachkraft auf der Suche nach Arbeitsmöglichkeiten",
+        "facility": "Unternehmen",
+        "facilityDescription": "Ich vertrete ein Unternehmen oder eine Einrichtung, die Fachkräfte sucht"
+      },
+      "companySearch": {
+        "title": "Haben Sie ein Unternehmen?",
+        "description": "Wenn Sie für ein Unternehmen arbeiten, suchen und wählen Sie es unten aus",
+        "noCompany": "Ich habe kein Unternehmen",
+        "yesCompany": "Ja, ich habe ein Unternehmen",
+        "searchLabel": "Suchen Sie nach Ihrem Unternehmen",
+        "searchPlaceholder": "Firmennamen eingeben...",
+        "searching": "Suche...",
+        "noResults": "Keine Unternehmen gefunden. Sie können ohne Auswahl fortfahren."
+      },
+      "confirmation": {
+        "title": "Bestätigen Sie Ihre Auswahl",
+        "accountType": "Kontotyp",
+        "company": "Unternehmen",
+        "noCompany": "Kein Unternehmen",
+        "confirm": "Bestätigen"
+      },
+      "profileGuide": {
+        "title": "Grossartig! Jetzt vervollständigen wir Ihr Profil",
+        "description": "Wir führen Sie Schritt für Schritt durch die Vervollständigung Ihres Profils. Jeder Abschnitt wird hervorgehoben, während Sie fortschreiten.",
+        "startProfile": "Profilausfüllung starten"
+      },
+      "errors": {
+        "roleRequired": "Bitte wählen Sie eine Rolle",
+        "companyAnswerRequired": "Bitte beantworten Sie die Frage",
+        "companyRequired": "Bitte wählen Sie ein Unternehmen",
+        "searchFailed": "Unternehmenssuche fehlgeschlagen",
+        "updateFailed": "Onboarding konnte nicht abgeschlossen werden"
+      },
+      "employedByCompany": "Sind Sie derzeit bei einem Unternehmen angestellt?",
+      "employedByCompanyDesc": "Aktivieren, wenn Sie für eine Organisation arbeiten",
+      "joinTeam": "Einem Team beitreten",
+      "joinTeamDesc": "Aktivieren, um Ihren Arbeitsplatz zu finden und beizutreten",
+      "legalConsiderations": {
+        "title": "Wichtige rechtliche Hinweise",
+        "intro": "Für Mitarbeiter, die zu 100% arbeiten (normalerweise 40-42 Stunden/Woche), ist es nahezu unmöglich, legal zusätzliche Schichten in einer anderen Apotheke zu übernehmen.",
+        "hoursCap": {
+          "title": "1. Maximale Wochenstunden",
+          "content": "Das Schweizer Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche (45 Stunden in einigen Einzelhandelsbereichen). Ein 100%-Mitarbeiter arbeitet typischerweise 42 Stunden, was nur 8 Stunden Maximum übrig lässt. Eine volle Samstagsschicht (9 Stunden) würde das Gesetz brechen. Beide Arbeitgeber haften, wenn sie vom anderen Job wissen."
+        },
+        "dutyOfLoyalty": {
+          "title": "2. Treuepflicht",
+          "content": "Gemäss Obligationenrecht (Art. 321a) müssen Sie eine schriftliche Genehmigung Ihres Hauptarbeitgebers einholen, um für einen Konkurrenten zu arbeiten. Die meisten Apothekeninhaber werden diese Genehmigung nicht erteilen, da sie erwarten, dass das Personal ruht und am Montag frisch ist."
+        },
+        "dailyRest": {
+          "title": "3. Tägliche Ruhezeit",
+          "content": "Das Gesetz verlangt 11 aufeinanderfolgende Stunden Ruhe zwischen Schichten (kann einmal pro Woche auf 8 Stunden reduziert werden). Beispiel: Um 18:30 aufhören und eine Abendschicht bis 23:00 arbeiten, dann um 08:00 am nächsten Morgen zurückkehren, ergibt nur 9 Stunden Ruhe (illegal)."
+        },
+        "holidays": {
+          "title": "4. Arbeiten während Ferien",
+          "content": "Urlaub ist gesetzlich zur Erholung bestimmt (Erholungszweck). Das Arbeiten für Geld während bezahlter Ferien kann dazu führen, dass Ihr Arbeitgeber sich weigert, das Urlaubsgehalt zu zahlen, oder sogar zur Kündigung wegen Vertragsbruchs führen."
+        },
+        "confirm": "Ich verstehe und anerkenne diese rechtlichen Hinweise"
+      },
+      "generalWorkingLaws": {
+        "title": "Wichtige rechtliche Hinweise",
+        "warning": "Bitte beachten Sie die allgemeinen Arbeitsgesetze und -vorschriften, die für alle Arbeitnehmer gelten. Das Schweizer Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche (45 Stunden in einigen Einzelhandelsbereichen). Das Gesetz verlangt 11 aufeinanderfolgende Stunden Ruhe zwischen Schichten (kann einmal pro Woche auf 8 Stunden reduziert werden). Urlaub und Ruhezeiten sind gesetzlich zur Erholung bestimmt (Erholungszweck). Bitte stellen Sie sicher, dass Sie alle anwendbaren arbeitsrechtlichen Anforderungen bezüglich maximaler Arbeitszeiten, Ruhezeiten und anderen Vorschriften einhalten.",
+        "confirm": "Ich verstehe und anerkenne diese rechtlichen Hinweise"
+      },
+      "separateWorkerGLM": {
+        "title": "Separater Mitarbeiter mit GLM",
+        "description": "Sie haben eine GLM (Manager), aber keine GLN. Ihre GLM-Einstellung wird in Ihrem Profil gespeichert.",
+        "saveButton": "GLM-Einstellung speichern",
+        "saving": "Speichern...",
+        "complete": "GLM-Einstellung gespeichert!",
+        "completeMessage": "Ihre GLM-Einstellung wurde in Ihrem Profil gespeichert. Sie können diese Einstellung in Ihren Profileinstellungen verwalten.",
+        "hasGLMNoGLN": "Ich habe einen GLM und Mitarbeiter ohne GLN",
+        "hasGLMNoGLNDesc": "Aktivieren, wenn Sie einen Manager (GLM) haben, aber keine eigene GLN"
+      },
+      "exitOnboarding": "Onboarding beenden",
+      "step1": {
+        "title": "Rechtliche Überlegungen",
+        "facilityLegalNotice": "Rechtliche Hinweise für Einrichtungen/Ketten",
+        "facilityLegalText1": "Als Vertreter einer Einrichtung sind Sie dafür verantwortlich, dass alle bereitgestellten Daten korrekt sind und dass Sie die Befugnis haben, im Namen der Organisation zu handeln.",
+        "facilityLegalText2": "Die schweizerischen Arbeitsgesetze bezüglich maximaler Arbeitszeiten (LTr) und Ruhezeiten müssen bei der Planung von Schichten strikt eingehalten werden. Arbeitgeber teilen sich die Haftung für Verstöße gegen das Arbeitsrecht, wenn sie von einer Nebenbeschäftigung eines Arbeitnehmers wissen.",
+        "facilityLegalText3": "Durch Fortfahren stimmen Sie unseren Geschäftsbedingungen und Datenverarbeitungsvereinbarungen zu, die speziell für Gesundheitseinrichtungen in der Schweiz angepasst sind.",
+        "professionalLegalNotice": "Rechtliche Hinweise für Fachkräfte/Arbeitnehmer",
+        "professionalLegalText1": "Das schweizerische Arbeitsrecht setzt ein striktes Maximum von 50 Stunden pro Woche. Wenn Sie 100% (42h) arbeiten, kann das Übernehmen zusätzlicher Schichten ohne vorherige Genehmigung illegal sein.",
+        "professionalLegalText2": "Die Treuepflicht (Art. 321a OR) verpflichtet Sie, eine schriftliche Genehmigung Ihres Hauptarbeitgebers einzuholen, um für einen Konkurrenten zu arbeiten.",
+        "professionalLegalText3": "Sie müssen Ruhezeiten einhalten: 11 aufeinanderfolgende Ruhestunden sind zwischen Schichten erforderlich. Das Arbeiten während bezahlter Ferien (Urlaub) ist gesetzlich auf Erholungszwecke beschränkt.",
+        "professionalLegalText4": "Durch Fortfahren erkennen Sie an, dass Sie allein für die Verwaltung Ihrer Arbeitszeiten bei verschiedenen Arbeitgebern verantwortlich sind.",
+        "agreementStatus": "Vereinbarungsstatus",
+        "areYouEmployed": "Sind Sie Angestellt",
+        "areYouEmployedDescription": "Dies kann später geändert werden.",
+        "termsAcceptance": "Bedingungen Akzeptieren",
+        "termsAcceptanceDescription": "Bestätigen Sie, dass Sie diesen rechtlichen Bedingungen zustimmen.",
+        "note": "Hinweis: Ihre Auswahl hier bestimmt den rechtlichen Rahmen, der für Ihr Konto und die Schichtverwaltung gilt."
+      },
+      "step2": {
+        "title": "Wählen Sie Ihren Weg",
+        "description": "Definieren Sie Ihre Rolle, um Ihr MediShift-Erlebnis zu personalisieren.",
+        "professional": "Fachkraft",
+        "professionalDescription": "Finden Sie medizinische Schichten in hochwertigen Einrichtungen in Ihrer Nähe.",
+        "facility": "Einrichtung",
+        "facilityDescription": "Rekrutieren Sie qualifizierte Gesundheitstalente und verwalten Sie Ihre Schichten einfach.",
+        "organization": "Organisation",
+        "organizationDescription": "Zentralisierte Verwaltung für mehrere Kliniken und Gesundheitsketten."
+      },
+      "step3": {
+        "chain": {
+          "title": "Organisationseinrichtung",
+          "description": "Zugang auf Führungsebene erfordert eine manuelle Überprüfung durch unser Sicherheitsteam.",
+          "phonePrefix": "Telefonvorwahl",
+          "phoneNumber": "Telefonnummer",
+          "phoneNumberPlaceholder": "079 000 00 00",
+          "messageToSupport": "Nachricht an den Support",
+          "messagePlaceholder": "Bitte beschreiben Sie Ihre Organisation (Anzahl der Kliniken, Standorte)..."
+        }
+      },
+      "step4": {
+        "title": "Identitätsüberprüfung",
+        "description": "Helfen Sie uns, eine sichere und vertrauenswürdige medizinische Umgebung aufrechtzuerhalten.",
+        "hasGLN": "Ich habe eine GLN-Nummer"
+      },
+      "buttons": {
+        "back": "Zurück",
+        "sendCode": "Code Senden",
+        "validate": "Validieren",
+        "contactAndFinish": "Kontaktieren und Beenden",
+        "verifying": "Wird überprüft...",
+        "completeAccount": "Konto Vervollständigen",
+        "nextStep": "Nächster Schritt"
+      },
+      "company_gln": {
+        "text1": "Text1",
+        "text2": "Text2"
+      },
+      "professional_gln": {
+        "text1": "Text1",
+        "text2": "Text2",
+        "text3": "Text3"
+      }
     }
+  },
+  "userMenu": {
+    "profile": "Mein Profil",
+    "settings": "Einstellungen",
+    "language": "Sprache",
+    "logout": "Abmelden",
+    "user": "Benutzer"
+  }
 }

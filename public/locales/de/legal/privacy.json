@@ -1,0 +1,15 @@
+{
+  "privacy": {
+    "title": "Title",
+    "description": "Description",
+    "sections": {
+      "content": {
+        "sections": "Sections",
+        "titre_document": "Titre_document",
+        "document_title": "Document_title",
+        "derniere_mise_a_jour_texte_complet": "Derniere_mise_a_jour_texte_complet",
+        "last_updated_full_text": "Last_updated_full_text"
+      }
+    }
+  }
+}

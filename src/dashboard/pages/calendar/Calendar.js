@@ -639,7 +639,7 @@ const Calendar = ({ userData }) => {
   return (
     <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
       {/* 1. Top Bar */}
-      <div className="shrink-0 w-full z-20 bg-card/95 backdrop-blur-sm border-b border-border shadow-sm flex items-center justify-between gap-4 px-6 h-16">
+      <div className="shrink-0 w-full z-20 bg-gradient-to-r from-card/95 via-card/80 to-transparent backdrop-blur-sm border-b border-border/60 shadow-sm flex items-center justify-between gap-4 px-6 sm:px-8 py-5 min-h-[84px]">
         {/* Tutorial Mock: Calendar View Options */}
         {isTutorialActive && activeTutorial === 'calendar' && (
           <div className="calendar-view-options flex gap-2 mr-4">
@@ -665,6 +665,7 @@ const Calendar = ({ userData }) => {
           calendarMode={calendarMode}
           setCalendarMode={setCalendarMode}
           isTeamWorkspace={isTeamWorkspace}
+          handleCreateEventClick={() => handleCreateEventClick(currentDate)}
         />
       </div>
 
@@ -693,18 +694,9 @@ const Calendar = ({ userData }) => {
           <>
             {/* Left: Sidebar */}
             <div className={cn(
-              "flex flex-col transition-all duration-300 w-full md:w-[320px] lg:w-[360px]",
+              "dashboard-sidebar-container",
               isMainSidebarCollapsed ? "flex" : (isSidebarCollapsed ? "hidden lg:flex w-0 overflow-hidden" : "flex")
             )}>
-              {/* Tutorial Mock: New Appointment Button */}
-              {isTutorialActive && activeTutorial === 'calendar' && (
-                <div className="mb-4">
-                  <button className="new-appointment-button w-full py-2.5 px-4 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
-                    <FiCalendar className="w-4 h-4" />
-                    {t('calendar:newAppointment')}
-                  </button>
-                </div>
-              )}
               <CalendarSidebar
                 currentDate={currentDate}
                 setCurrentDate={setCurrentDate}
@@ -725,8 +717,8 @@ const Calendar = ({ userData }) => {
             </div>
 
             {/* Right: Main Calendar Grid */}
-        <div className="flex-1 flex flex-col relative min-w-0 transition-all duration-300 bg-card border border-border/60 rounded-xl overflow-hidden">
-          <div className="flex-1 overflow-hidden relative calendar-grid flex flex-col">
+            <div className="flex-1 flex flex-col relative min-w-0 transition-all duration-300 bg-card border border-border/60 rounded-xl overflow-hidden">
+              <div className="flex-1 overflow-hidden relative calendar-grid flex flex-col">
             {/* Time Headers - scrollable horizontally (no scrollbar) */}
             <div className="flex flex-shrink-0" style={{ margin: 0, padding: 0 }}>
               {/* Time column header - above day headers */}
@@ -835,8 +827,8 @@ const Calendar = ({ userData }) => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+            </div>
+            </div>
           </>
         )}
       </div>

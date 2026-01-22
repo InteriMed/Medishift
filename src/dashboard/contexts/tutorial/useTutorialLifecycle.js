@@ -64,26 +64,37 @@ export const useTutorialLifecycle = ({
             }
 
             try {
-                // Check for profile existence instead of onboarding completion flag
-                // This determines if onboarding should be shown based on whether profile documents exist
-                let profileExists = false;
+                const userDocRef = doc(db, 'users', currentUser.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (!userDoc.exists()) {
+                    if (isInDashboard && !showFirstTimeModal) {
+                        dispatch({ type: ACTIONS.SET_ONBOARDING_TYPE, payload: 'professional' });
+                        dispatch({ type: ACTIONS.SET_FIRST_TIME_MODAL, payload: true });
+                        if (isTutorialActive) dispatch({ type: ACTIONS.COMPLETE_TUTORIAL });
+                    }
+                    return;
+                }
+
+                const userData = userDoc.data();
+                const onboardingProgress = userData.onboardingProgress || {};
+                
+                let onboardingCompleted = false;
                 let onboardingType = 'professional';
 
                 if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                    // Check facility profile existence
-                    const facilityDocRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
-                    const facilityDoc = await getDoc(facilityDocRef);
-                    profileExists = facilityDoc.exists();
                     onboardingType = 'facility';
+                    const facilityProgress = onboardingProgress.facility || {};
+                    onboardingCompleted = facilityProgress.completed === true;
                 } else {
-                    // Check professional profile existence
-                    const professionalDocRef = doc(db, 'professionalProfiles', currentUser.uid);
-                    const professionalDoc = await getDoc(professionalDocRef);
-                    profileExists = professionalDoc.exists();
                     onboardingType = 'professional';
+                    const professionalProgress = onboardingProgress.professional || {};
+                    onboardingCompleted = professionalProgress.completed === true || 
+                                         userData.onboardingCompleted === true || 
+                                         userData.GLN_certified === true;
                 }
 
-                if (!profileExists) {
+                if (!onboardingCompleted) {
                     if (isInDashboard && !showFirstTimeModal) {
                         dispatch({ type: ACTIONS.SET_ONBOARDING_TYPE, payload: onboardingType });
                         dispatch({ type: ACTIONS.SET_FIRST_TIME_MODAL, payload: true });
@@ -92,8 +103,7 @@ export const useTutorialLifecycle = ({
                     return;
                 }
 
-                // Restore from LocalStorage if profile exists
-                if (profileExists) {
+                if (onboardingCompleted) {
                     const storedState = loadLocalState();
                     if (storedState?.tutorialDismissed === true) {
                         if (isTutorialActive) dispatch({ type: ACTIONS.COMPLETE_TUTORIAL });
@@ -117,9 +127,8 @@ export const useTutorialLifecycle = ({
                     }
                 }
 
-                // Update showFirstTimeModal based on profile existence
                 if (isInDashboard && !tutorialPassed) {
-                    if (profileExists) {
+                    if (onboardingCompleted) {
                         dispatch({ type: ACTIONS.SET_FIRST_TIME_MODAL, payload: false });
                     }
                 }

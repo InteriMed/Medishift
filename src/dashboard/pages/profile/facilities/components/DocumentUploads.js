@@ -15,7 +15,6 @@ import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
 import { uploadFile } from '../../../../../services/storageService';
 import useAutoSave from '../../../../hooks/useAutoSave';
 
-// Tailwind styles (copied from Professional DocumentUploads.js)
 const styles = {
     sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
     headerCard: "bg-card rounded-xl border border-border/60 p-6 pb-4 shadow-sm w-full max-w-[1400px] mx-auto",
@@ -28,12 +27,12 @@ const styles = {
     sectionsWrapper: "facility-uploads-wrapper flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
     leftColumn: "flex flex-col gap-6 flex-1",
     rightColumn: "flex flex-col gap-6 flex-1",
-    sectionCard: "bg-card rounded-xl border border-border/60 p-6 shadow-sm w-full",
+    sectionCard: "space-y-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 w-full",
     cardHeader: "flex items-center gap-4 mb-0",
     cardIconWrapper: "p-2 rounded-lg bg-primary/10 text-primary",
     cardTitle: "flex-1",
-    cardTitleH3: "m-0",
-    cardTitleH3Style: { color: 'hsl(var(--card-foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+    cardTitleH3: "text-lg font-bold flex items-center gap-2 text-slate-800 m-0",
+    cardTitleH3Style: { fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto",
     sectionContent: "space-y-4",
     errorText: "text-destructive text-sm mt-2",
@@ -83,6 +82,9 @@ const DocumentUploads = ({
     onSave,
     onCancel,
     getNestedValue,
+    validateCurrentTabData,
+    onTabCompleted,
+    isTutorialActive
 }) => {
     const { t } = useTranslation(['dashboardProfile', 'common', 'validation']);
     const { upload, uploadState } = useFileUpload();
@@ -108,7 +110,10 @@ const DocumentUploads = ({
         onInputChange,
         onSave,
         getNestedValue,
-        extractTabData
+        extractTabData,
+        validateCurrentTabData,
+        onTabCompleted,
+        isTutorialActive
     });
 
     const handleCancel = useCallback(() => {
@@ -261,25 +266,29 @@ const DocumentUploads = ({
                             <FiCheckCircle size={12} /> {t('common.uploaded')}
                         </p>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
                         <button
                             onClick={() => inputRef.current && inputRef.current.click()}
-                            className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
+                            style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
                             title={t('documents.replace')}
                             aria-label={t('documents.replace')}
                         >
-                            <FiEdit className="w-4 h-4" />
+                            <FiEdit style={{ width: '16px', height: '16px', color: 'inherit' }} />
                         </button>
                         <button
                             onClick={() => {
                                 const urlToRemove = url;
                                 handleRemoveDocument(fieldConfig, isMultiple ? index : urlToRemove);
                             }}
-                            className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-destructive transition-colors"
+                            style={{ background: 'none', border: 'none', padding: 0, color: '#000000', cursor: 'pointer', transition: 'color 0.2s' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'hsl(221, 83%, 53%)'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#000000'}
                             title={t('documents.remove')}
                             aria-label={t('documents.remove')}
                         >
-                            <FiTrash2 className="w-4 h-4" />
+                            <FiTrash2 style={{ width: '16px', height: '16px', color: 'inherit' }} />
                         </button>
                     </div>
                 </div>
@@ -288,13 +297,10 @@ const DocumentUploads = ({
 
         return (
             <div className={styles.sectionCard}>
+                <h4 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
+                    <FiFileText /> {label} {required && <span className={styles.mandatoryMark}>*</span>}
+                </h4>
                 <div className={styles.sectionContent}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <div className={styles.cardIconWrapper}><FiUploadCloud /></div>
-                        <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
-                            {label} {required && <span className={styles.mandatoryMark}>*</span>}
-                        </h3>
-                    </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 0, paddingBottom: (!isMultiple && currentFiles.length === 1) ? 0 : undefined }}>
                         {isMultiple

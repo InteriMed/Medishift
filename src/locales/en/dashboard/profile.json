@@ -15,13 +15,21 @@
     "yesDiscard": "Yes, Discard Changes",
     "add": "Add",
     "edit": "Edit",
+    "view": "View",
     "mandatoryFields": "Required fields",
     "selectPlaceholder": "Select an option",
     "dates": "Dates",
     "summary": "Summary",
     "present": "Present",
     "update": "Update",
-    "uploaded": "Uploaded"
+    "uploaded": "Uploaded",
+    "selectTab": "Select a tab to view",
+    "collapse": "Collapse",
+    "fillCurrentTab": "Fill Current Tab",
+    "fillAllComplete": "Fill All (Complete)",
+    "betaFill": "(Beta) Fill",
+    "autofillOptions": "Autofill Options",
+    "confirmDeletePicture": "Are you sure you want to delete your profile picture?"
   },
   "validation": {
     "required": "This field is required",
@@ -60,17 +68,21 @@
     "tabSavedMovingToNext": "Changes saved! Moving to the next section.",
     "profileCompleted": "Congratulations! Your profile is now complete.",
     "errorDeletingAccount": "Error deleting your account. Please try again.",
-    "complete": "complete"
+    "complete": "complete",
+    "profileCompletion": "Profile Completion"
   },
   "subscription": {
     "status": "Subscription Status",
-    "free": "Free Plan"
+    "free": "Free Plan",
+    "premium": "Premium"
   },
   "errors": {
     "loadingConfig": "Error loading profile configuration. Please refresh the page.",
     "loadingProfile": "Error loading profile data",
     "accessDenied": "Access denied. You don't have permission to view this profile.",
-    "notLoggedIn": "You must be logged in to perform this action"
+    "notLoggedIn": "You must be logged in to perform this action",
+    "tooManyRequests": "Too Many Requests",
+    "popupClosed": "Popup Closed"
   },
   "tabs": {
     "accountBasics": "Account",
@@ -79,7 +91,12 @@
     "billingInformation": "Billing",
     "jobPreferences": "Preferences",
     "documentUploads": "Documents",
-    "settings": "Settings"
+    "subscription": "Subscription",
+    "settings": "Settings",
+    "accountManagement": "Account Management",
+    "facilityCoreDetails": "Facility Details",
+    "facilityLegalBilling": "Legal & Billing",
+    "facilityDocuments": "Documents"
   },
   "accountBasics": {
     "title": "Account Basics & Security",
@@ -159,7 +176,12 @@
       "fileTooLarge": "File size must be less than 2MB",
       "invalidFileType": "Only image files are allowed",
       "uploadFailed": "Failed to upload profile picture"
-    }
+    },
+    "twoFactorAuthentication": "Two Factor Authentication",
+    "enable2FA": "Enable2 F A",
+    "2faIsEnabledMessage": "2fa Is Enabled Message",
+    "2faIsDisabledMessage": "2fa Is Disabled Message",
+    "deleteAccountDescription": "Delete Account Description"
   },
   "personalDetails": {
     "identityInfo": "Identity Information",
@@ -168,6 +190,11 @@
     "basicInfo": "Basic Information",
     "firstName": "First Name",
     "lastName": "Last Name",
+    "useExistingData": "Use Recently Extracted Data",
+    "recentlyExtractedData": "Recently Extracted Data",
+    "noDocumentsAvailable": "No documents available. Please upload one first.",
+    "selectDocument": "Select a document",
+    "upload": "Upload",
     "dateOfBirth": "Date of Birth",
     "ahvNumber": "AVS Number",
     "ahvNumberPlaceholder": "756.1234.5678.90",
@@ -220,6 +247,7 @@
     "title": "Professional Background",
     "subtitle": "Manage your work experience and education",
     "education": "Education",
+    "educationDescription": "Present your education, work experience and qualifications.",
     "addEducation": "Add Education",
     "updateEducation": "Update Education",
     "degree": "Degree",
@@ -230,6 +258,7 @@
     "institutionPlaceholder": "e.g., University of Zurich",
     "graduationDate": "Graduation Date",
     "workExperience": "Work Experience",
+    "workExperienceDescription": "Present your education, work experience and qualifications.",
     "addWorkExperience": "Add Work Experience",
     "updateWorkExperience": "Update Work Experience",
     "position": "Position",
@@ -269,6 +298,7 @@
     "institutionName": "Institution Name",
     "currentlyStudyingHere": "Currently Study Here",
     "qualifications": "Qualifications",
+    "qualificationsDescription": "Present your education, work experience and qualifications.",
     "noQualifications": "No qualifications added yet.",
     "noWorkExperience": "No work experience added yet.",
     "noLicensesCertifications": "No licenses or certifications added yet.",
@@ -289,7 +319,8 @@
     "issuingOrganization": "Issuing Organization",
     "licenseNumberOptional": "License Number ",
     "issueDate": "Issue Date",
-    "noExpiration": "No Expiration"
+    "noExpiration": "No Expiration",
+    "experience": "Experience"
   },
   "jobPreferences": {
     "title": "Job Preferences & Availability",
@@ -315,13 +346,39 @@
     "km": "km",
     "compensationTitle": "Compensation",
     "currentWorkSituation": "Current Work Situation",
-    "currentWorkPercentageOptional": "Current Work Percentage (Optional)"
+    "currentWorkPercentageOptional": "Current Work Percentage (Optional)",
+    "preferredShiftsAndContracts": "Preferred Shifts And Contracts",
+    "activelyLooking": "Actively Looking",
+    "openToOffers": "Open To Offers",
+    "notLooking": "Not Looking",
+    "workPreferences": "Work Preferences"
   },
   "billingInformation": {
     "title": "Billing Information",
     "hiringRequiredLegend": "Required fields for working / hiring",
     "hiringInfoTitle": "Some hiring-required fields are missing",
     "hiringInfoMessage": "You won't be able to access all services of the platform (hiring, applying, etc.) until these fields are completed.",
+    "bankingAccessTitle": "Secure Banking Access",
+    "secureAccess": "Secure Banking Access",
+    "bankingAccessMessage": "For your security, please verify your identity to access banking information.",
+    "bankingAccessGranted": "Access granted",
+    "verificationMethod": "Choose verification method",
+    "sendToEmail": "Send code to your email",
+    "sendToPhone": "Send code via SMS",
+    "sendCode": "Send Code",
+    "sendCodeError": "Failed to send access code",
+    "codeSent": "Code sent successfully",
+    "codeSentTo": "Code sent to",
+    "yourEmail": "your email",
+    "yourPhone": "your phone",
+    "backToMethodSelection": "Back to method selection",
+    "accessCodeLabel": "Enter 6-digit verification code",
+    "accessCodePlaceholder": "000000",
+    "accessValidityInfo": "Access valid for 1 hour",
+    "resendCode": "Resend code",
+    "invalidAccessCode": "Invalid access code",
+    "accessCodeError": "Failed to verify access code",
+    "unlockBanking": "Unlock Banking Data",
     "workPermitType": "Work Permit Type",
     "withholdingTaxSubject": "Subject to withholding tax",
     "religion": "Religion",
@@ -374,31 +431,43 @@
     "privacyNoticeTitle": "Document Privacy",
     "privacyNoticeText": "Private and secure.",
     "autofill": "Auto Fill",
+    "analyzing": "Analyzing document...",
+    "uploading": "Uploading...",
+    "autoFillTitle": "Auto-fill Profile?",
     "selectDocumentType": "Document Type",
     "selectDocumentTypePlaceholder": "Select document type...",
     "clickToUpload": "click to upload",
     "selectDocumentTypeFirst": "Please select a document type first",
     "selectFileFirst": "Please select a file to upload",
     "selectedFile": "Selected file:",
+    "billingDocument": "Billing / Credit Card",
     "cv": "CV / Resume",
     "cvDescription": "Upload your most recent CV or resume. PDF format is preferred.",
     "uploadCV": "Upload CV",
+    "uploadCvButton": "Upload CV",
     "remove": "Remove",
     "diplomas": "Diplomas / Degrees",
     "diplomasDescription": "Upload degree certificates for your education qualifications.",
     "uploadDiploma": "Upload Diploma",
+    "addDiplomaButton": "Add Diploma",
     "licenses": "Licenses / Certificates",
     "licensesDescription": "Upload professional licenses and certification documents.",
     "uploadLicense": "Upload License/Certificate",
+    "addLicenseButton": "Add License/Certificate",
     "workPermit": "Work Permit",
     "workPermitDescription": "If you are not a Swiss citizen, please upload your work permit document.",
     "uploadWorkPermit": "Upload Work Permit",
+    "uploadWorkPermitButton": "Upload Work Permit",
+    "swissIdWorkPermit": "Swiss ID / Work Permit",
+    "swissIdWorkPermitDescription": "Upload your Swiss ID card (front/back) or work permit document if you are not a Swiss citizen.",
     "references": "Reference Letters",
     "referencesDescription": "Upload reference letters from previous employers .",
     "uploadReference": "Upload Reference Letter",
+    "addReferenceLetterButton": "Add Reference Letter",
     "other": "Other Supporting Documents",
     "otherDescription": "Upload any other relevant documents to support your profile.",
     "uploadOther": "Upload Other Document",
+    "addOtherDocumentButton": "Add Other Document",
     "replace": "Replace",
     "fillProfile": "Fill Profile",
     "autoFillDescription": "We have extracted information from your document. This will fill empty fields in your profile (Personal Details, Professional Background, etc.). Existing data will NOT be overwritten. Do you want to proceed?",
@@ -421,6 +490,9 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your platform preferences and notification settings.",
+    "accountManagement": {
+      "subtitle": "Manage your account settings, password, and account deletion"
+    },
     "platformSettingsTitle": "Platform Settings",
     "availabilitySettingsTitle": "Availability Settings",
     "notificationPreferencesTitle": "Notification Preferences",
@@ -437,7 +509,163 @@
     "smsNotifications": "SMS Notifications",
     "marketplaceNotifications": "Marketplace Updates",
     "scheduleNotifications": "Schedule Changes",
-    "contractNotifications": "Contract Updates"
+    "contractNotifications": "Contract Updates",
+    "savedSuccessfully": "Saved Successfully",
+    "saveFailed": "Save Failed",
+    "generalTab": "General Tab",
+    "advancedTab": "Advanced Tab",
+    "dangerZone": "Danger Zone",
+    "accountDeletion": {
+      "confirmMismatch": "Confirm Mismatch",
+      "success": "Success",
+      "error": "Error",
+      "loadingPreview": "Loading Preview",
+      "previewTitle": "Preview Title",
+      "immediatelyDeleted": "Immediately Deleted",
+      "retainedForLegalReasons": "Retained For Legal Reasons",
+      "retentionPeriod": "Retention Period",
+      "swissLawNotice": "Swiss Law Notice",
+      "noLegalRecords": "No Legal Records",
+      "title": "Title",
+      "description": "Description",
+      "deleteButton": "Delete Button",
+      "confirmTitle": "Confirm Title",
+      "confirmMessage": "Confirm Message",
+      "confirmPlaceholder": "Confirm Placeholder",
+      "reauthTitle": "Reauth Title",
+      "processing": "Processing",
+      "reauthMessageGoogle": "Reauth Message Google",
+      "reauthMessage": "Reauth Message"
+    },
+    "operationalSettingsTitle": "Operational Settings Title",
+    "contractSettingsTitle": "Contract Settings Title",
+    "premiumFeatureRequired": "Premium subscription required for this feature",
+    "premiumFeature": "Premium Feature"
   },
-  "userRole": "Healthcare Professional"
+  "subscription": {
+    "title": "Subscription Plan",
+    "subtitle": "Choose the plan that best fits your needs",
+    "facilityTitle": "Facility Subscription Plan",
+    "facilitySubtitle": "Select the right plan for your facility",
+    "currentPlan": "Current Plan",
+    "perMonth": "per month",
+    "upgrading": "Upgrading...",
+    "upgradeToPremium": "Upgrade to Premium",
+    "upgradeToStandard": "Upgrade to Standard",
+    "youAreOnThisPlan": "You are currently on this plan",
+    "classic": {
+      "title": "Classic",
+      "price": "Free"
+    },
+    "premium": {
+      "title": "Premium",
+      "price": "CHF 29.90"
+    },
+    "facility": {
+      "basic": {
+        "title": "Basic",
+        "price": "Free"
+      },
+      "standard": {
+        "title": "Standard",
+        "price": "CHF 99.90"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "CHF 249.90"
+      }
+    },
+    "features": {
+      "classic": {
+        "basicMatching": "Basic job matching",
+        "emailNotifications": "Email notifications",
+        "profileManagement": "Profile management",
+        "documentStorage": "Document storage"
+      },
+      "premium": {
+        "priorityMatching": "Priority job matching",
+        "smsNotifications": "SMS notifications",
+        "advancedAnalytics": "Advanced analytics",
+        "dedicatedSupport": "Dedicated support",
+        "bankingAccess": "Enhanced banking access"
+      },
+      "facility": {
+        "basic": {
+          "basicPosting": "Basic job posting",
+          "emailNotifications": "Email notifications",
+          "facilityProfile": "Facility profile",
+          "documentStorage": "Document storage"
+        },
+        "standard": {
+          "unlimitedPosting": "Unlimited job postings",
+          "prioritySupport": "Priority support",
+          "advancedSearch": "Advanced candidate search",
+          "analytics": "Basic analytics"
+        },
+        "premium": {
+          "dedicatedManager": "Dedicated account manager",
+          "customBranding": "Custom branding",
+          "apiAccess": "API access",
+          "advancedReporting": "Advanced reporting"
+        }
+      }
+    }
+  },
+  "userRole": "Healthcare Professional",
+  "restartTutorial": {
+    "title": "Unlock Full Access",
+    "message": "To unlock all features (work independently, do replacements, access all profile sections), you need to complete the full tutorial.",
+    "note": "Your current progress will be saved. You can continue from where you left off.",
+    "button": "Restart Tutorial",
+    "cancel": "Maybe Later"
+  },
+  "accessLevelChoice": {
+    "title": "Choose Your Access Level",
+    "message": "How would you like to use MediShift?",
+    "teamAccess": {
+      "title": "Team Access",
+      "subtitle": "Work with a team",
+      "benefits": ["Join existing teams", "Collaborate with colleagues", "Simplified profile setup"]
+    },
+    "fullAccess": {
+      "title": "Full Access",
+      "subtitle": "Work independently",
+      "benefits": ["Complete profile control", "Do replacements independently", "Full marketplace access"]
+    },
+    "continueButton": "Continue"
+  },
+  "autofillTabSuccess": "Tab fields filled successfully!",
+  "autofillSuccess": "Profile fields filled successfully!",
+  "operations": {
+    "workerTypes": {
+      "pharmacist": "Pharmacist",
+      "cashier": "Cashier",
+      "assistant": "Assistant",
+      "pharmacyTechnician": "Pharmacy Technician",
+      "other": "Other"
+    },
+    "facilityRolesTitle": "Facility Roles Title",
+    "addWorkerRequirement": "Add Worker Requirement",
+    "noWorkerRequirements": "No Worker Requirements",
+    "selectWorkerType": "Select Worker Type",
+    "workerTypeOther": "Worker Type Other",
+    "workerTypeOtherPlaceholder": "Worker Type Other Placeholder",
+    "facilityRolesDescription": "Facility Roles Description",
+    "workerRequirement": "Worker Requirement",
+    "workerType": "Worker Type",
+    "openingHoursTitle": "Opening Hours Title",
+    "subtitle": "Subtitle",
+    "closed": "Closed",
+    "openingTime": "Opening Time",
+    "closingTime": "Closing Time",
+    "title": "Title",
+    "workerRequirementsTitle": "Worker Requirements Title",
+    "workerRequirementsDescription": "Worker Requirements Description",
+    "quantity": "Quantity",
+    "everyday": "Everyday",
+    "selectDays": "Select Days"
+  },
+  "facilityDetails": {
+    "subtitle": "Please ensure facility details are accurate and up to date."
+  }
 }
