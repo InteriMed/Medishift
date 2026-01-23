@@ -39,8 +39,6 @@ const ResourceGrid = ({
         return getWeekDates(currentDate);
     }, [currentDate, view]);
 
-    // Debug View State
-    // console.log('ResourceGrid Render:', { view, currentDate, datesLength: dates.length });
 
     // Group events by employee and date for efficient rendering
     const eventsByEmployee = useMemo(() => {

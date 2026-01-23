@@ -7,7 +7,7 @@ import Button from '../../../../../components/BoxedInputFields/Button';
 import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
-import { FiEdit, FiTrash2, FiFileText, FiUploadCloud, FiCheckCircle, FiEye, FiDownload, FiUpload } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiFileText, FiUploadCloud, FiCheckCircle, FiEye, FiDownload, FiZap } from 'react-icons/fi';
 import { cn } from '../../../../../utils/cn';
 
 // --- Import Storage Service ---
@@ -29,11 +29,11 @@ const styles = {
     leftColumn: "flex flex-col gap-6 flex-1",
     rightColumn: "flex flex-col gap-6 flex-1",
     sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
-    cardHeader: "flex items-center gap-4 mb-4",
-    cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+    cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
+    cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
     cardIconStyle: { color: 'var(--primary-color)' },
-    cardTitle: "flex-1",
-    cardTitleH3: "m-0",
+    cardTitle: "flex-1 min-w-0",
+    cardTitleH3: "m-0 text-sm font-semibold truncate",
     cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto",
     sectionContent: "space-y-4",
@@ -570,7 +570,7 @@ const DocumentUploads = ({
             <div className={styles.sectionCard}>
                 <div className={styles.cardHeader}>
                     <div className={styles.cardIconWrapper}>
-                        <FiFileText />
+                        <FiFileText className="w-4 h-4" style={styles.cardIconStyle} />
                     </div>
                     <div className={styles.cardTitle}>
                         <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
@@ -580,9 +580,9 @@ const DocumentUploads = ({
                 </div>
                 <div className={styles.sectionContent}>
                     {currentFiles.length > 0 && (
-                        <div className="document-entries-wrapper" style={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
+                        <div className="document-entries-wrapper" style={{
+                            display: 'flex',
+                            flexDirection: 'column',
                             gap: 0,
                             padding: '0.75rem',
                             backgroundColor: 'hsl(var(--muted) / 0.3)',
@@ -771,7 +771,8 @@ const DocumentUploads = ({
                         )}
                     </div>
 
-                    {error && currentFiles.length === 0 && <p className={styles.errorText} style={{ marginTop: '0.5rem' }}>{error}</p>}
+                    {/* Error message text suppressed as per user request */}
+                    {/* {error && currentFiles.length === 0 && <p className={styles.errorText} style={{ marginTop: '0.5rem' }}>{error}</p>} */}
                     {uploadState.type === docType && uploadState.error && <p className={styles.errorText} style={{ marginTop: '0.5rem' }}>{uploadState.error}</p>}
                 </div>
             </div>
@@ -797,54 +798,16 @@ const DocumentUploads = ({
                     <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('documents.subtitle')}</p>
                 </div>
 
-                {isTutorialActive && (
-                    <div className="flex items-center gap-3">
-                        <div className="relative" ref={autoFillButtonRef}>
-                            <button
-                                onClick={handleAutoFillClick}
-                                disabled={isUploading || isAnalyzing}
-                                className={cn(
-                                    "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
-                                    "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
-                                    (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
-                                    (stepData?.highlightUploadButton) && "tutorial-highlight"
-                                )}
-                                style={{ height: 'var(--boxed-inputfield-height)' }}
-                                data-tutorial="profile-upload-button"
-                            >
-                                {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
-                                <span className="text-sm font-medium text-black">
-                                    {isAnalyzing
-                                        ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
-                                        : t('dashboardProfile:documents.autofill', 'Auto Fill')
-                                    }
-                                </span>
-                            </button>
+                {formData && completionPercentage !== undefined && (
+                    <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                        <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                        <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                            <div
+                                className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                                style={{ width: `${completionPercentage}%` }}
+                            ></div>
                         </div>
-                        {uploadInputRef && handleFileUploadProp && (
-                            <UploadFile
-                                ref={uploadInputRef}
-                                onChange={handleFileUploadProp}
-                                isLoading={isUploading}
-                                progress={uploadProgress}
-                                accept=".pdf,.doc,.docx,.jpg,.png"
-                                label=""
-                                className="hidden"
-                            />
-                        )}
-
-                        {formData && completionPercentage !== undefined && (
-                            <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                                <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                                <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                                        style={{ width: `${completionPercentage}%` }}
-                                    ></div>
-                                </div>
-                                <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
-                            </div>
-                        )}
+                        <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
                     </div>
                 )}
             </div>

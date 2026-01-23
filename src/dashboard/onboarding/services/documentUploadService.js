@@ -74,7 +74,6 @@ export const uploadDocument = async (file, userId, subfolder, documentType, onPr
       }));
     }
 
-    console.log(`[GLNVerification] Document reference saved: ${documentUID} (${idType})`);
   } catch (error) {
     console.warn('[GLNVerification] Failed to save upload metadata:', error);
   }

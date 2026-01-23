@@ -51,42 +51,6 @@
   color: var(--grey-5);
 }
 
-.upload-action-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  margin-top: 8px;
-  background-color: var(--color-logo-1);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: var(--font-family-text);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.upload-action-button:hover:not(:disabled) {
-  background-color: var(--color-logo-2);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-}
-
-.upload-action-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.upload-action-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.upload-button-icon {
-  width: 16px;
-  height: 16px;
-}
 
 .upload-drag-overlay {
   position: absolute;
@@ -325,19 +289,6 @@
 .upload-form.upload-form-error:hover:not(.disabled):not(.has-file) {
   background-color: rgba(239, 68, 68, 0.1);
   border-color: var(--boxed-inputfield-error-color);
-}
-
-.upload-form.upload-form-error:hover:not(.disabled):not(.has-file) .upload-action-button {
-  background-color: var(--boxed-inputfield-error-color);
-}
-
-.upload-form.upload-form-error .upload-action-button {
-  background-color: var(--boxed-inputfield-error-color);
-}
-
-.upload-form.upload-form-error .upload-action-button:hover:not(:disabled) {
-  background-color: #dc2626;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .upload-form.upload-form-error .upload-drag-icon,

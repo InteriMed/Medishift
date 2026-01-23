@@ -155,16 +155,15 @@ const Marketplace = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500 min-h-0 marketplace-page">
-      {/* 1. Page Top Bar - 2 Column Layout */}
-      <div className={cn(
-        "shrink-0 w-full z-20 bg-white px-6 sm:px-8 border-b border-border/60 shadow-sm flex flex-col transition-all",
-        isFiltersExpanded ? 'py-4 min-h-[80px]' : 'py-3 min-h-16'
-      )}>
-        <div className="grid grid-cols-2 items-start gap-3 w-full">
-          {/* Left Column: Search + Dates */}
-          <div className="flex flex-col gap-3">
+      <div className="flex-1 min-h-0 p-4 overflow-y-auto custom-scrollbar" style={{ scrollbarGutter: 'stable' }}>
+        {/* FLOATING TOOLBAR */}
+        <div className={cn(
+          "bg-card rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm w-full mb-4 transition-all",
+          isFiltersExpanded ? 'px-6 py-4' : 'px-6 py-3'
+        )}>
+          <div className="flex flex-wrap items-center gap-3 w-full">
             {/* Search Input */}
-            <div className="relative w-full min-w-[200px]">
+            <div className="relative flex-1 min-w-[200px] max-w-md">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
               <input
                 type="text"
@@ -181,36 +180,33 @@ const Marketplace = () => {
               />
             </div>
 
-            {/* Date Filters */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Date From */}
-              <div className="relative shrink-0 w-[130px]">
-                <input
-                  type="date"
-                  value={filters.fromDate || ''}
-                  onChange={(e) => handleFilterChange('fromDate', e.target.value)}
-                  className="w-full px-3 rounded-xl border-2 border-input bg-background text-sm font-medium focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                  style={{ height: 'var(--boxed-inputfield-height)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
-                  placeholder={t('marketplace:placeholders.from')}
-                />
-              </div>
-
-              {/* Date To */}
-              <div className="relative shrink-0 w-[130px]">
-                <input
-                  type="date"
-                  value={filters.toDate || ''}
-                  onChange={(e) => handleFilterChange('toDate', e.target.value)}
-                  className="w-full px-3 rounded-xl border-2 border-input bg-background text-sm font-medium focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                  style={{ height: 'var(--boxed-inputfield-height)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
-                  placeholder={t('marketplace:placeholders.to')}
-                />
-              </div>
+            {/* Date From */}
+            <div className="relative shrink-0 w-[130px]">
+              <input
+                type="date"
+                value={filters.fromDate || ''}
+                onChange={(e) => handleFilterChange('fromDate', e.target.value)}
+                className="w-full px-3 rounded-xl border-2 border-input bg-background text-sm font-medium focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                style={{ height: 'var(--boxed-inputfield-height)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
+                placeholder={t('marketplace:placeholders.from')}
+              />
             </div>
-          </div>
 
-          {/* Right Column: Actions + View Mode */}
-          <div className="flex items-center gap-2 justify-end flex-wrap self-center">
+            {/* Date To */}
+            <div className="relative shrink-0 w-[130px]">
+              <input
+                type="date"
+                value={filters.toDate || ''}
+                onChange={(e) => handleFilterChange('toDate', e.target.value)}
+                className="w-full px-3 rounded-xl border-2 border-input bg-background text-sm font-medium focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                style={{ height: 'var(--boxed-inputfield-height)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
+                placeholder={t('marketplace:placeholders.to')}
+              />
+            </div>
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
             {/* Filter Toggle */}
             <button
               onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
@@ -279,54 +275,51 @@ const Marketplace = () => {
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Expanded Filters Area */}
-        {isFiltersExpanded && (
-          <div className="mt-3 pt-3 border-t border-border animate-in slide-in-from-top-1 duration-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pb-2">
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.canton', 'Canton')}
-                options={cantons}
-                value={filters.canton}
-                onChange={(value) => handleFilterChange('canton', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.city', 'City')}
-                options={cities}
-                value={filters.city}
-                onChange={(value) => handleFilterChange('city', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.area', 'Area')}
-                options={areas}
-                value={filters.area}
-                onChange={(value) => handleFilterChange('area', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.experience', 'Experience')}
-                options={experienceLevels}
-                value={filters.experience}
-                onChange={(value) => handleFilterChange('experience', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.software', 'Software')}
-                options={software}
-                value={filters.software}
-                onChange={(value) => handleFilterChange('software', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.workAmount', 'Work Amount')}
-                options={workAmounts}
-                value={filters.workAmount}
-                onChange={(value) => handleFilterChange('workAmount', value)}
-              />
+          {/* Expanded Filters Area */}
+          {isFiltersExpanded && (
+            <div className="mt-3 pt-3 border-t border-border/50 animate-in slide-in-from-top-1 duration-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 pb-1">
+                <DropdownFieldAddListOriginal
+                  label={t('marketplace:filters.canton', 'Canton')}
+                  options={cantons}
+                  value={filters.canton}
+                  onChange={(value) => handleFilterChange('canton', value)}
+                />
+                <DropdownFieldAddListOriginal
+                  label={t('marketplace:filters.city', 'City')}
+                  options={cities}
+                  value={filters.city}
+                  onChange={(value) => handleFilterChange('city', value)}
+                />
+                <DropdownFieldAddListOriginal
+                  label={t('marketplace:filters.area', 'Area')}
+                  options={areas}
+                  value={filters.area}
+                  onChange={(value) => handleFilterChange('area', value)}
+                />
+                <DropdownFieldAddListOriginal
+                  label={t('marketplace:filters.experience', 'Experience')}
+                  options={experienceLevels}
+                  value={filters.experience}
+                  onChange={(value) => handleFilterChange('experience', value)}
+                />
+                <DropdownFieldAddListOriginal
+                  label={t('marketplace:filters.software', 'Software')}
+                  options={software}
+                  value={filters.software}
+                  onChange={(value) => handleFilterChange('software', value)}
+                />
+                <DropdownFieldAddListOriginal
+                  label={t('marketplace:filters.workAmount', 'Work Amount')}
+                  options={workAmounts}
+                  value={filters.workAmount}
+                  onChange={(value) => handleFilterChange('workAmount', value)}
+                />
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-h-0 p-4 overflow-y-auto custom-scrollbar" style={{ scrollbarGutter: 'stable' }}>
+          )}
+        </div>
         {error && (
           <div className="relative overflow-hidden p-5 bg-white border-2 border-[var(--red-2)] rounded-xl shadow-lg flex gap-4 text-[var(--red-4)] shrink-0 mb-4 animate-in fade-in slide-in-from-bottom-2" style={{ boxShadow: 'var(--shadow-elevated)' }}>
             <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--red-2)]/20 flex items-center justify-center border-2 border-[var(--red-2)]">

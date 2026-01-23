@@ -39,25 +39,14 @@ const firebaseConfig = {
 };
 
 if (!firebaseConfig.projectId || firebaseConfig.projectId !== DEFAULT_VALUES.FIREBASE_PROJECT_ID) {
-  console.warn(`⚠️ Firebase Project ID mismatch! Expected: ${DEFAULT_VALUES.FIREBASE_PROJECT_ID}, Got:`, firebaseConfig.projectId);
   firebaseConfig.projectId = DEFAULT_VALUES.FIREBASE_PROJECT_ID;
 }
 
-console.log('🔧 Firebase Configuration:');
-console.log('  API Key:', firebaseConfig.apiKey ? 'PRESENT ✅' : 'MISSING ❌');
-console.log('  Project ID:', firebaseConfig.projectId);
-console.log('  Auth Domain:', firebaseConfig.authDomain);
-console.log('  Storage Bucket:', firebaseConfig.storageBucket);
-console.log('  App ID:', firebaseConfig.appId ? 'PRESENT ✅' : 'MISSING ❌');
 
 if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'YOUR_API_KEY') {
-  console.error('❌ CRITICAL: Firebase API Key is missing or invalid!');
-  console.error('Please set REACT_APP_FIREBASE_API_KEY in your .env file');
 }
 
 if (firebaseConfig.projectId !== DEFAULT_VALUES.FIREBASE_PROJECT_ID) {
-  console.error('❌ CRITICAL: Project ID mismatch!');
-  console.error(`Expected: ${DEFAULT_VALUES.FIREBASE_PROJECT_ID}, Got: ${firebaseConfig.projectId}`);
 }
 
 const useEmulators = getEnvVar('USE_FIREBASE_EMULATORS') === 'true';
@@ -94,34 +83,25 @@ if (!isInitialized) {
     if (typeof window !== 'undefined') {
       window[INIT_FLAG] = true;
     }
-    console.log(`✅ Firestore initialized with MEMORY CACHE (offline enabled) - Database: ${FIRESTORE_DATABASE_NAME}`);
   } catch (error) {
-    console.warn('⚠️ initializeFirestore failed, attempting to get existing instance:', error);
     try {
       db = getFirestore(firebaseApp, FIRESTORE_DATABASE_NAME);
-      console.log(`✅ Retrieved existing Firestore instance - Database: ${FIRESTORE_DATABASE_NAME}`);
     } catch (e) {
-      console.error('🚨 CRITICAL: Could not initialize or retrieve Firestore:', e);
       throw e;
     }
   }
 } else {
   db = getFirestore(firebaseApp, FIRESTORE_DATABASE_NAME);
-  console.log(`✅ Using existing Firestore instance - Database: ${FIRESTORE_DATABASE_NAME}`);
 }
 
 if (typeof window !== 'undefined' && db) {
   if (getEnvVar('NODE_ENV') === 'development') {
-    console.log('🌐 Browser online status:', navigator.onLine ? 'ONLINE' : 'OFFLINE');
-    console.log('📦 Firestore instance ready for project:', firebaseConfig.projectId);
   }
 }
 const storage = getStorage(firebaseApp);
 const functions = getFunctions(firebaseApp, DEFAULT_VALUES.FIREBASE_REGION);
 
 if (getEnvVar('NODE_ENV') === 'development') {
-  console.log('Firebase Storage Bucket:', firebaseConfig.storageBucket);
-  console.log('Firebase Project ID:', firebaseConfig.projectId);
 }
 let analytics = null;
 
@@ -136,30 +116,25 @@ if (typeof window !== 'undefined') {
 
 // Connect to emulators if needed
 if (useEmulators) {
-  console.log('Using Firebase emulators');
 
   if (emulatorConfig.auth) {
     const [host, port] = emulatorConfig.auth.replace('http://', '').split(':');
     connectAuthEmulator(auth, `http://${host}:${port}`);
-    console.log(`Connected to Auth emulator at ${host}:${port}`);
   }
 
   if (emulatorConfig.firestore) {
     const [host, port] = emulatorConfig.firestore.replace('http://', '').split(':');
     connectFirestoreEmulator(db, host, parseInt(port, 10));
-    console.log(`Connected to Firestore emulator at ${host}:${port}`);
   }
 
   if (emulatorConfig.storage) {
     const [host, port] = emulatorConfig.storage.replace('http://', '').split(':');
     connectStorageEmulator(storage, host, parseInt(port, 10));
-    console.log(`Connected to Storage emulator at ${host}:${port}`);
   }
 
   if (emulatorConfig.functions) {
     const [host, port] = emulatorConfig.functions.replace('http://', '').split(':');
     connectFunctionsEmulator(functions, host, parseInt(port, 10));
-    console.log(`Connected to Functions emulator at ${host}:${port}`);
   }
 }
 
@@ -205,13 +180,9 @@ export const registerUser = async (email, password, displayName) => {
     if (!verifyDoc.exists()) {
       throw new Error('Failed to create user document in Firestore');
     }
-    console.log('✅ User document created successfully in Firestore');
 
     return user;
   } catch (error) {
-    console.error('❌ Error registering user:', error);
-    console.error('Error code:', error.code);
-    console.error('Error message:', error.message);
     throw error;
   }
 };
@@ -223,8 +194,6 @@ export const loginUser = async (email, password) => {
 
 export const loginWithGoogle = async () => {
   try {
-    console.log('Current domain:', window.location.hostname);
-    console.log('Current origin:', window.location.origin);
 
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({
@@ -233,12 +202,8 @@ export const loginWithGoogle = async () => {
 
     // Use popup for better reliability in some environments
     const result = await signInWithPopup(auth, provider);
-    console.log('✅ Google sign-in successful:', result.user.uid);
     return result.user;
   } catch (error) {
-    console.error('❌ Google login error:', error);
-    console.error('Error code:', error.code);
-    console.error('Error message:', error.message);
 
     if (error.code === 'auth/popup-blocked') {
       throw new Error('Popup was blocked. Please allow popups for this site.');

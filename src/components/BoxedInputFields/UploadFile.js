@@ -1,5 +1,5 @@
 import React, { useState, useRef, forwardRef } from 'react';
-import { FiUploadCloud, FiEye, FiEdit2, FiTrash2, FiFile, FiFolder } from 'react-icons/fi';
+import { FiUploadCloud, FiEye, FiEdit2, FiTrash2, FiFile } from 'react-icons/fi';
 import './styles/boxedInputFields.css';
 import './styles/UploadFile.css';
 
@@ -285,21 +285,7 @@ const UploadFile = forwardRef(({
             <>
               <div className="upload-idle-state">
                 <FiUploadCloud className="upload-icon-main" />
-                <span className="upload-text-main">Drag & Drop or</span>
-                <button
-                  type="button"
-                  className="upload-action-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isLoading && !disabled && inputRef.current) {
-                      inputRef.current.click();
-                    }
-                  }}
-                  disabled={isLoading || disabled}
-                >
-                  <FiFolder className="upload-button-icon" />
-                  <span>Select File</span>
-                </button>
+                <span className="upload-text-main">Drag & Drop or Click</span>
               </div>
               <div className="upload-drag-overlay">
                 <FiUploadCloud className="upload-drag-icon" />

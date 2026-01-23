@@ -10,6 +10,7 @@ import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxFi
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import TextareaField from '../../../../../components/BoxedInputFields/TextareaField';
+import DateField from '../../../../../components/BoxedInputFields/DateField';
 import Switch from '../../../../../components/BoxedInputFields/Switch';
 
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
@@ -27,16 +28,16 @@ const styles = {
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   mandatoryMark: "text-destructive",
   sectionsWrapper: "grid grid-cols-1 lg:grid-cols-2 gap-4 w-full max-w-[1400px] mx-auto",
-  sectionCard: "bg-card rounded-2xl border border-border/50 p-5 shadow-lg backdrop-blur-sm w-full",
+  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
   cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10 flex-shrink-0",
+  cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
   cardTitle: "flex-1 min-w-0",
   cardTitleH3: "m-0 text-sm font-semibold truncate",
   cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   cardDescription: "text-xs mt-1",
   cardDescriptionStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "flex flex-col gap-4",
+  grid: "flex flex-col gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "col-span-full",
   infoCard: "bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800 p-4 w-full max-w-[1400px] mx-auto",
@@ -169,27 +170,20 @@ const Settings = ({
         const maxDateValue = maxYear
           ? new Date(maxYear, 11, 31).toISOString().split('T')[0]
           : undefined;
-        const dateValue = value ? (typeof value === 'string' ? value : new Date(value).toISOString().split('T')[0]) : '';
+        const dateValue = value ? (typeof value === 'string' ? new Date(value) : value instanceof Date ? value : new Date(value)) : null;
         return (
-          <div key={name}>
-            {finalLabel && (
-              <label className={`boxed-date-label ${error ? 'boxed-date-label--error' : ''}`}>
-                {finalLabel}
-              </label>
-            )}
-            <input
-              type="date"
-              value={dateValue}
-              onChange={(e) => onInputChange(name, e.target.value || null)}
-              max={maxDateValue}
-              className={`w-full h-9 px-3 rounded-lg border bg-background text-xs text-left focus:outline-none focus:ring-2 focus:ring-ring transition-all ${error ? 'date-input-error' : ''}`}
-              style={{
-                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                borderColor: error ? 'var(--red-3)' : 'hsl(var(--border) / 0.6)',
-                color: error ? 'var(--red-3)' : 'inherit'
-              }}
-            />
-          </div>
+          <DateField
+            key={name}
+            label={finalLabel}
+            value={dateValue}
+            onChange={(date) => {
+              onInputChange(name, date ? date.toISOString().split('T')[0] : null);
+            }}
+            max={maxDateValue}
+            required={commonProps.required}
+            error={commonProps.error}
+            onErrorReset={() => {}}
+          />
         );
       case 'dropdown':
         const options = getDropdownOptions(optionsKey);
@@ -211,9 +205,8 @@ const Settings = ({
       case 'checkbox':
         // Use Switch for notification group AND marketplace group (requested by user)
         if (fieldConfig.group === 'notifications' || fieldConfig.group === 'marketplace') {
-          const isSmsNotification = name === 'notificationPreferences.sms';
           const isBankingAccess = name === 'banking.access';
-          const requiresPremium = isSmsNotification || isBankingAccess;
+          const requiresPremium = isBankingAccess;
           const isDisabled = requiresPremium && !isPremium;
           
           return (
@@ -328,9 +321,6 @@ const Settings = ({
               <div className={styles.cardIconWrapper}><FiSettings className="w-4 h-4" style={styles.cardIconStyle} /></div>
               <div className={styles.cardTitle}>
                 <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.platformSettingsTitle')}</h3>
-                <p className={styles.cardDescription} style={styles.cardDescriptionStyle}>
-                  {t('settings.platformSettingsDescription')}
-                </p>
               </div>
             </div>
             <div className={styles.grid}>
@@ -346,13 +336,25 @@ const Settings = ({
               <div className={styles.cardIconWrapper}><FiShield className="w-4 h-4" style={styles.cardIconStyle} /></div>
               <div className={styles.cardTitle}>
                 <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.privacySettingsTitle')}</h3>
-                <p className={styles.cardDescription} style={styles.cardDescriptionStyle}>
-                  {t('settings.privacySettingsDescription')}
-                </p>
               </div>
             </div>
             <div className={styles.grid}>
               {groupedFields.privacy.map(renderField)}
+            </div>
+          </div>
+        )}
+
+        {/* Notification Preferences */}
+        {groupedFields.notifications && (
+          <div className={styles.sectionCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiBell className="w-4 h-4" style={styles.cardIconStyle} /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.notificationPreferencesTitle')}</h3>
+              </div>
+            </div>
+            <div className={styles.grid}>
+              {groupedFields.notifications.map(renderField)}
             </div>
           </div>
         )}
@@ -364,9 +366,6 @@ const Settings = ({
               <div className={styles.cardIconWrapper}><FiGlobe className="w-4 h-4" style={styles.cardIconStyle} /></div>
               <div className={styles.cardTitle}>
                 <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.marketplaceSettingsTitle')}</h3>
-                <p className={styles.cardDescription} style={styles.cardDescriptionStyle}>
-                  {t('settings.marketplaceSettingsDescription')}
-                </p>
               </div>
             </div>
             <div className={styles.grid}>
@@ -382,31 +381,10 @@ const Settings = ({
               <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" style={styles.cardIconStyle} /></div>
               <div className={styles.cardTitle}>
                 <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilitySettingsTitle')}</h3>
-                <p className={styles.cardDescription} style={styles.cardDescriptionStyle}>
-                  {t('settings.availabilitySettingsDescription')}
-                </p>
               </div>
             </div>
             <div className={styles.grid}>
               {groupedFields.availability.map(renderField)}
-            </div>
-          </div>
-        )}
-
-        {/* Notification Preferences */}
-        {groupedFields.notifications && (
-          <div className={styles.sectionCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardIconWrapper}><FiBell className="w-4 h-4" style={styles.cardIconStyle} /></div>
-              <div className={styles.cardTitle}>
-                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.notificationPreferencesTitle')}</h3>
-                <p className={styles.cardDescription} style={styles.cardDescriptionStyle}>
-                  {t('settings.notificationPreferencesDescription')}
-                </p>
-              </div>
-            </div>
-            <div className={styles.grid}>
-              {groupedFields.notifications.map(renderField)}
             </div>
           </div>
         )}
@@ -418,9 +396,6 @@ const Settings = ({
               <div className={styles.cardIconWrapper}><FiInfo className="w-4 h-4" style={styles.cardIconStyle} /></div>
               <div className={styles.cardTitle}>
                 <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilityNotes')}</h3>
-                <p className={styles.cardDescription} style={styles.cardDescriptionStyle}>
-                  {t('settings.availabilityNotesDescription')}
-                </p>
               </div>
             </div>
             <div className={styles.grid}>

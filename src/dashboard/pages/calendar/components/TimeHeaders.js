@@ -49,30 +49,30 @@ const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, hand
               minWidth: view === 'day' ? `${100 / allDays.length}%` : `${100 / allDays.length}%`,
               minHeight: '3rem'
             }}
+            onClick={() => {
+              const clickedDate = new Date(date);
+              clickedDate.setHours(0, 0, 0, 0);
+              const currDate = new Date(currentDate);
+              currDate.setHours(0, 0, 0, 0);
+              
+              const isSameDate = clickedDate.getTime() === currDate.getTime();
+              
+              if (isSameDate && view === 'day' && setView) {
+                setView('week');
+              } else if (!isSameDate) {
+                handleDayClick(date);
+                if (setView) {
+                  setView('day');
+                }
+              } else if (isSameDate && view === 'week' && setView) {
+                setView('day');
+              }
+            }}
           >
             <div className="uppercase text-muted-foreground tracking-wider mb-1" style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
               {shortDays[dayIndex]}
             </div>
             <div
-              onClick={() => {
-                const clickedDate = new Date(date);
-                clickedDate.setHours(0, 0, 0, 0);
-                const currDate = new Date(currentDate);
-                currDate.setHours(0, 0, 0, 0);
-                
-                const isSameDate = clickedDate.getTime() === currDate.getTime();
-                
-                if (isSameDate && view === 'day' && setView) {
-                  setView('week');
-                } else if (!isSameDate) {
-                  handleDayClick(date);
-                  if (setView) {
-                    setView('day');
-                  }
-                } else if (isSameDate && view === 'week' && setView) {
-                  setView('day');
-                }
-              }}
               className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${isToday
                 ? 'bg-primary text-primary-foreground'
                 : isCurrentDay

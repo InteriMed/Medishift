@@ -36,7 +36,6 @@ const db = admin.firestore();
  */
 function detectMimeTypeFromMagicBytes(buffer, fallbackMimeType) {
   if (!buffer || buffer.length < 4) {
-    console.warn('[MagicBytes] Buffer too small, using fallback:', fallbackMimeType);
     return fallbackMimeType || 'application/octet-stream';
   }
 
@@ -90,10 +89,6 @@ function detectMimeTypeFromMagicBytes(buffer, fallbackMimeType) {
     return 'image/tiff';
   }
 
-  console.warn('[MagicBytes] Unknown format, first 8 bytes:',
-    Array.from(buffer.slice(0, 8)).map(b => b.toString(16).padStart(2, '0')).join(' '),
-    'Using fallback:', fallbackMimeType);
-
   return fallbackMimeType || 'application/octet-stream';
 }
 
@@ -115,11 +110,9 @@ exports.processDocument = onCall(
   },
   async (request) => {
     const logPrefix = `[ProcessDocument-${request.auth ? request.auth.uid : 'anon'}-${Date.now()}]`;
-    console.log(`${logPrefix} STARTING execution`);
 
     // Verify authentication
     if (!request.auth) {
-      console.warn(`${logPrefix} Unauthenticated request`);
       throw new HttpsError(
         'unauthenticated',
         'User must be authenticated to process documents'
@@ -128,7 +121,6 @@ exports.processDocument = onCall(
 
     const userId = request.auth.uid;
     const { documentUrl, documentType, storagePath, mimeType, dropdownOptions } = request.data;
-    console.log(`${logPrefix} Request data:`, { documentUrl, documentType, storagePath, mimeType, userId, hasDropdownOptions: !!dropdownOptions });
 
     // Rate limiting: 2 scans per minute
     try {
@@ -143,7 +135,6 @@ exports.processDocument = onCall(
         const recentScans = (data.scans || []).filter(timestamp => timestamp > oneMinuteAgo);
 
         if (recentScans.length >= 2) {
-          console.warn(`${logPrefix} Rate limit exceeded`);
           const oldestScan = Math.min(...recentScans);
           const waitTime = Math.ceil((oldestScan + 60000 - now) / 1000);
           throw new HttpsError(
@@ -163,13 +154,11 @@ exports.processDocument = onCall(
         });
       }
     } catch (rateLimitError) {
-      console.error(`${logPrefix} Rate limit check failed:`, rateLimitError);
       // Don't block execution on rate limit DB error, but log it
       if (rateLimitError.code === 'resource-exhausted') throw rateLimitError;
     }
 
     if (!storagePath) {
-      console.error(`${logPrefix} Missing storagePath`);
       throw new HttpsError(
         'invalid-argument',
         'Document Storage Path is required for AI processing'
@@ -177,49 +166,40 @@ exports.processDocument = onCall(
     }
 
     try {
-      console.log(`${logPrefix} Verifying file existence: ${storagePath}`);
 
       // Verify file exists in storage before processing
       const bucket = admin.storage().bucket();
       const file = bucket.file(storagePath);
 
-      console.log(`${logPrefix} Bucket: ${bucket.name}, File object created`);
 
       const [exists] = await file.exists();
       if (!exists) {
-        console.error(`${logPrefix} File NOT found at ${storagePath}`);
         throw new HttpsError(
           'not-found',
           `Document not found at path: ${storagePath}. Please ensure the file was uploaded successfully.`
         );
       }
-      console.log(`${logPrefix} File exists.`);
 
       // Construct gs:// URI
       const bucketName = bucket.name;
       const gsUri = `gs://${bucketName}/${storagePath}`;
 
-      console.log(`${logPrefix} Using GS URI: ${gsUri}`);
 
       // Check file metadata to detect actual content type
       const [metadata] = await file.getMetadata();
       const metadataContentType = metadata.contentType || mimeType;
 
-      console.log(`${logPrefix} Metadata ContentType: ${metadataContentType}, Size: ${metadata.size}`);
 
       // Download file header to detect actual format from magic bytes
-      console.log(`${logPrefix} Downloading magic bytes...`);
       const [fileBuffer] = await file.download({ start: 0, end: 32 }); // First 32 bytes for magic detection
       const actualMimeType = detectMimeTypeFromMagicBytes(fileBuffer, metadataContentType);
 
-      console.log(`${logPrefix} Magic detection: ${actualMimeType} (Metadata: ${metadataContentType})`);
 
       // Validate supported formats
       const fileExtension = storagePath.split('.').pop()?.toLowerCase();
 
       // Check for completely unsupported or undetectable formats
       if (actualMimeType === 'application/octet-stream') {
-        console.error(`${logPrefix} MIME detection failed for extension .${fileExtension}`);
         throw new HttpsError(
           'invalid-argument',
           'Unable to detect image format. The uploaded file may be corrupted or in an unsupported format. Please try uploading a JPEG or PNG image.'
@@ -230,11 +210,7 @@ exports.processDocument = onCall(
       const effectiveMimeType = actualMimeType;
 
       // Step 1: Use Gemini to extract data directly (pass file object for base64 fallback)
-      console.log(`${logPrefix} calling extractStructuredDataWithGemini...`);
       const extractionResult = await extractStructuredDataWithGemini(gsUri, effectiveMimeType, documentType, file, dropdownOptions);
-      console.log(`${logPrefix} extraction returned success`);
-
-      console.log(`${logPrefix} Extracted data keys:`, Object.keys(extractionResult.parsedData || {}));
 
       // Step 2: Save to transient cache (15 minutes TTL)
       try {
@@ -244,9 +220,7 @@ exports.processDocument = onCall(
           createdAt: now,
           expiresAt: now + (15 * 60 * 1000) // 15 minutes from now
         });
-        console.log(`${logPrefix} Cache saved.`);
       } catch (cacheError) {
-        console.error(`${logPrefix} Cache save failed (non-fatal):`, cacheError);
       }
 
       // Step 3: Return the structured data with verification details
@@ -263,8 +237,6 @@ exports.processDocument = onCall(
       };
 
     } catch (error) {
-      console.error(`${logPrefix} FATAL ERROR:`, error);
-      console.error(`${logPrefix} FATAL ERROR JSON:`, JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
       if (error instanceof HttpsError) {
         throw error;
@@ -292,7 +264,6 @@ async function extractStructuredDataWithGemini(gsUri, mimeType, documentType, fi
 
   for (const modelName of models) {
     try {
-      console.log(`[Gemini] Trying model: ${modelName}`);
 
       const model = vertexAI.getGenerativeModel({
         model: modelName
@@ -300,7 +271,6 @@ async function extractStructuredDataWithGemini(gsUri, mimeType, documentType, fi
 
       const prompt = getExtractionPrompt(documentType, dropdownOptions);
 
-      console.log(`[Gemini] Processing: gsUri=${gsUri}, mimeType=${mimeType}, documentType=${documentType}`);
 
       // Try GS URI first, fallback to base64 if it fails
       let filePart;
@@ -327,24 +297,20 @@ async function extractStructuredDataWithGemini(gsUri, mimeType, documentType, fi
           ]
         };
 
-        console.log('[Gemini] Attempting with GS URI...');
         const result = await model.generateContent(request);
         const response = result.response;
 
         return processGeminiResponse(response, prompt);
 
       } catch (gsError) {
-        console.warn(`[Gemini] GS URI failed with ${modelName}, trying base64 fallback:`, gsError.message);
 
         // If we have the file object, try base64 approach
         if (file) {
           try {
             // Download the file content
-            console.log('[Gemini] Downloading file for base64 encoding...');
             const [fileBuffer] = await file.download();
             const base64Data = fileBuffer.toString('base64');
 
-            console.log(`[Gemini] File downloaded: ${fileBuffer.length} bytes, base64 length: ${base64Data.length}`);
 
             // Validate the file isn't empty
             if (fileBuffer.length === 0) {
@@ -372,34 +338,29 @@ async function extractStructuredDataWithGemini(gsUri, mimeType, documentType, fi
               ]
             };
 
-            console.log('[Gemini] Attempting with base64 inline data...');
             const result = await model.generateContent(request);
             const response = result.response;
 
             return processGeminiResponse(response, prompt);
 
           } catch (base64Error) {
-            console.error(`[Gemini] Base64 fallback also failed with ${modelName}:`, base64Error.message);
             // Save error and try next model
             lastError = new Error(`Image processing failed with ${modelName}. GS URI error: ${gsError.message}. Base64 error: ${base64Error.message}`);
             continue; // TRY NEXT MODEL
           }
         } else {
           // No file object provided, throw the original error (or save and continue)
-          console.warn(`[Gemini] No file object for fallback with ${modelName}.`);
           lastError = gsError;
           continue; // TRY NEXT MODEL
         }
       }
     } catch (modelError) {
-      console.warn(`[Gemini] Model ${modelName} failed or crashed:`, modelError.message);
       lastError = modelError;
       continue; // TRY NEXT MODEL
     }
   }
 
   // If we get here, all models failed
-  console.error('[Gemini] All models failed. Last error:', lastError);
   throw lastError || new Error('All Gemini models failed to process the document.');
 }
 
@@ -482,7 +443,6 @@ function processGeminiResponse(response, prompt) {
     throw new Error('Unable to extract text from AI response');
   }
 
-  console.log('Gemini extraction complete, length:', extractedText.length);
 
   // Parse the JSON response
   let parsedData;
@@ -495,7 +455,6 @@ function processGeminiResponse(response, prompt) {
 
     parsedData = JSON.parse(jsonText);
   } catch (parseError) {
-    console.error('Failed to parse AI response:', extractedText);
     throw new Error('Failed to parse structured data from AI response');
   }
 
@@ -503,7 +462,6 @@ function processGeminiResponse(response, prompt) {
     parsedData.professionalBackground.qualifications = filterEmptyQualifications(
       parsedData.professionalBackground.qualifications
     );
-    console.log(`[processDocument] Filtered qualifications: ${parsedData.professionalBackground.qualifications.length} valid items`);
   }
 
   return {

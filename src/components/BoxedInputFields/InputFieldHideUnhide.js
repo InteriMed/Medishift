@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BiShow, BiHide } from "react-icons/bi";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import './styles/boxedInputFields.css';
 import { useNotification } from '../../contexts/NotificationContext';
 
@@ -181,11 +182,12 @@ function InputFieldHideUnhide({ label, placeholder, value, onChange, marginTop, 
                         className={`boxed-inputfield-password-toggle ${internalError ? 'boxed-inputfield-password-toggle--error' : ''}`}
                         onClick={togglePasswordVisibility}
                         style={{
-                            color: internalError ? 'var(--red-3)' : 'inherit'
+                            color: internalError ? 'var(--red-3)' : 'inherit',
+                            right: '15px'
                         }}
                         tabIndex={-1}
                     >
-                        {showPassword ? <BiHide /> : <BiShow />}
+                        {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
                     </button>
                 )}
             </div>

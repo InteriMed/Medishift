@@ -209,7 +209,7 @@ export const DEFAULT_VALUES = {
   EMULATOR_FUNCTIONS_URL: 'http://localhost:5001',
   EMULATOR_STORAGE_URL: 'http://localhost:9199',
   API_BASE_URL: 'http://localhost:5001/api',
-  API_BASE: 'https://europe-west6-medishift-fd594.cloudfunctions.net'
+  API_BASE: 'https://europe-west6-interimed-620fd.cloudfunctions.net'
 };
 
 // ============================================================================

@@ -45,7 +45,7 @@ const ProfileHeader = ({
   const { t } = useTranslation(['dashboardProfile', 'tabs']);
   const { isTutorialActive, stepData, accessLevelChoice, restartOnboarding, setAccessMode, maxAccessedProfileTab, setShowAccessLevelModal, setAllowAccessLevelModalClose } = useTutorial();
   const { currentUser } = useAuth();
-  
+
   const glnVerified = currentUser?.GLN_certified === true || currentUser?.GLN_certified === 'ADMIN_OVERRIDE' || profile?.GLN_certified === true || profile?.GLN_certified === 'ADMIN_OVERRIDE';
 
   const isAutofillHighlighted = isTutorialActive && stepData?.highlightUploadButton;
@@ -57,26 +57,8 @@ const ProfileHeader = ({
 
   const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads', 'facilityCoreDetails', 'facilityLegalBilling'];
 
-  const getMaxHighlightableIndex = () => {
-    if (!maxAccessedProfileTab) return 0;
-    const maxIndex = tabOrder.indexOf(maxAccessedProfileTab);
-    if (maxIndex === -1) return 0;
-    const maxCompleted = isTabCompleted(profile, maxAccessedProfileTab, config);
-    return maxCompleted ? maxIndex + 1 : maxIndex;
-  };
-
-  const computedHighlightTabId = (() => {
-    const maxHighlightIdx = getMaxHighlightableIndex();
-    if (!highlightTabId) return null;
-    const highlightIdx = tabOrder.indexOf(highlightTabId);
-    if (highlightIdx === -1) return highlightTabId;
-    if (highlightIdx <= maxHighlightIdx) return highlightTabId;
-    const clampedTab = tabOrder[maxHighlightIdx];
-    if (clampedTab && !isTabCompleted(profile, clampedTab, config)) {
-      return clampedTab;
-    }
-    return null;
-  })();
+  // Profile.js computes the correct highlightTabId (first incomplete accessible tab)
+  const computedHighlightTabId = highlightTabId;
 
   const lockedTabsForTeam = ['professionalBackground', 'billingInformation', 'documentUploads'];
 
@@ -85,16 +67,16 @@ const ProfileHeader = ({
     const facilityPopupKey = LOCALSTORAGE_KEYS.POPUP_SHOWN(`facilityAccessPopup_${currentUser?.uid}`);
     const wasShown = localStorage.getItem(popupShownKey);
     const facilityPopupShown = localStorage.getItem(facilityPopupKey);
-    
+
     if (isFacilityProfile && !facilityPopupShown && facilityTabs.includes(tabId)) {
       setPendingTabId(tabId);
       setShowFacilityAccessPopup(true);
       return;
     }
-    
+
     if (isTutorialActive && tabId === 'professionalBackground' && maxAccessedProfileTab === 'personalDetails') {
       const isChoiceAlreadyMade = accessLevelChoice === 'loading' || accessLevelChoice === 'team' || accessLevelChoice === 'full';
-      
+
       if (!wasShown && !isChoiceAlreadyMade) {
         setPendingTabId(tabId);
         setShowAccessLevelPopup(true);
@@ -118,7 +100,7 @@ const ProfileHeader = ({
   const handleContinueOnboarding = () => {
     const popupShownKey = LOCALSTORAGE_KEYS.POPUP_SHOWN(`accessLevelPopup_${currentUser?.uid}_personalToProf`);
     localStorage.setItem(popupShownKey, 'true');
-    
+
     if (activeTab !== 'personalDetails' && !pendingTabId) {
       if (isTabAccessible(profile, 'personalDetails', config)) {
         onTabChange('personalDetails');
@@ -126,7 +108,7 @@ const ProfileHeader = ({
     } else if (pendingTabId && isTabAccessible(profile, pendingTabId, config)) {
       onTabChange(pendingTabId);
     }
-    
+
     setPendingTabId(null);
     setShowAccessLevelPopup(false);
   };
@@ -143,7 +125,7 @@ const ProfileHeader = ({
     const facilityPopupKey = LOCALSTORAGE_KEYS.POPUP_SHOWN(`facilityAccessPopup_${currentUser?.uid}`);
     localStorage.setItem(facilityPopupKey, 'true');
     setShowFacilityAccessPopup(false);
-    
+
     if (pendingTabId && isTabAccessible(profile, pendingTabId, config)) {
       onTabChange(pendingTabId);
     }
@@ -179,9 +161,9 @@ const ProfileHeader = ({
     const isActive = activeTab === tab.id;
     const isCompleted = isTabCompleted(profile, tab.id, config);
     const isAccessible = isTabAccessible(profile, tab.id, config);
-    const stepDataHighlightMatch = isTutorialActive && stepData?.highlightTab && String(stepData.highlightTab) === String(tab.id);
-    const isHighlighted = stepDataHighlightMatch || (computedHighlightTabId === tab.id && !isCompleted);
-    
+    // Use computedHighlightTabId which properly clamps the highlight to accessible tabs
+    const isHighlighted = isTutorialActive && computedHighlightTabId === tab.id;
+
     const isLockedForTeam = accessLevelChoice === 'team' && lockedTabsForTeam.includes(tab.id);
     const isLockedForIncompleteAccess = !isTutorialActive && accessLevelChoice !== 'full' && lockedTabsForTeam.includes(tab.id);
     const shouldShowLocked = isLockedForTeam || isLockedForIncompleteAccess;
@@ -347,7 +329,7 @@ const ProfileHeader = ({
   };
 
   return (
-    <div 
+    <div
       className={cn(
         "w-full h-fit bg-card rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out profile-sidebar-menu",
         collapsed ? "p-2" : "p-4"
@@ -415,28 +397,15 @@ const ProfileHeader = ({
             onClick={() => setShowMenu(!showMenu)}
             data-tutorial="profile-upload-button"
             className={cn(
-              "w-full flex items-center justify-center gap-3 p-3 rounded-lg transition-all relative",
-              "bg-amber-500/10 hover:bg-amber-500/20 text-black border border-amber-500/20",
+              "w-full flex items-center justify-center gap-3 p-3 rounded-lg transition-all relative text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
               collapsed ? "px-2" : "px-3",
-              showMenu && "bg-amber-500/20 ring-2 ring-amber-500/30",
+              showMenu && "bg-muted/30",
               isAutofillHighlighted && "tutorial-highlight"
             )}
             title={t('dashboardProfile:common.autofillOptions')}
           >
-            <style dangerouslySetInnerHTML={{
-              __html: `
-                .tutorial-highlight[data-tutorial="profile-upload-button"] {
-                  color: #000000 !important;
-                }
-                .tutorial-highlight[data-tutorial="profile-upload-button"] span {
-                  color: #000000 !important;
-                }
-                .tutorial-highlight[data-tutorial="profile-upload-button"] svg {
-                  color: #000000 !important;
-                }
-              `}} />
             <FiZap className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="text-sm font-bold uppercase tracking-wider text-black">{t('dashboardProfile:common.betaFill')}</span>}
+            {!collapsed && <span className="text-sm font-bold uppercase tracking-wider">{t('dashboardProfile:common.betaFill')}</span>}
           </button>
         </div>
       )}

@@ -254,11 +254,11 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 min-w-0">
           <img
             src="/logo white.png"
-            alt={typeof t('common:header.logoAlt') === 'object' ? t('common:header.logoAlt').title : t('common:header.logoAlt', 'MediShift')}
+            alt={t('common:header.logoAlt', 'MediShift')}
             className="h-7 sm:h-8 w-auto object-contain shrink-0"
           />
           <span className="text-base sm:text-xl font-bold text-white hidden md:block truncate">
-            {typeof t('common:header.brandName') === 'object' ? t('common:header.brandName').title : t('common:header.brandName', 'MediShift')}
+            {t('common:header.brandName', 'MediShift')}
           </span>
         </div>
 
@@ -267,7 +267,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           <button
             onClick={onBackButtonClick}
             className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-white/10 text-white transition-colors flex-shrink-0"
-            aria-label={typeof t('common:header.goBack') === 'object' ? t('common:header.goBack').title : t('common:header.goBack', 'Go back')}
+            aria-label={t('common:header.goBack', 'Go back')}
           >
             <FiArrowLeft className="h-5 w-5" />
           </button>
@@ -276,7 +276,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             <button
               onClick={onMobileMenuToggle}
               className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-white/10 text-white transition-colors flex-shrink-0"
-              aria-label={typeof t('common:header.toggleMenu') === 'object' ? t('common:header.toggleMenu').title : t('common:header.toggleMenu', 'Toggle menu')}
+              aria-label={t('common:header.toggleMenu', 'Toggle menu')}
             >
               {isMobileMenuOpen ? (
                 <FiX className="h-5 w-5" />
@@ -380,7 +380,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         <div className="relative" ref={searchRef}>
           <ServiceSearchBar 
             className="header-service-search"
-            placeholder={typeof t('dashboard.header.search') === 'object' ? t('dashboard.header.search').title : t('dashboard.header.search', 'Search...')}
+            placeholder={t('common:header.search', 'Search...')}
           />
         </div>
 
@@ -443,15 +443,15 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             (isTutorialActive || showFirstTimeModal)
               ? "opacity-100"
               : "",
-            isTutorialActive ? "px-3 gap-1.5" : ""
+            isTutorialActive ? "px-3 gap-1.5 tutorial-button-active" : ""
           )}
           style={{ 
             height: 'var(--boxed-inputfield-height, 45px)',
             width: isTutorialActive ? 'auto' : 'var(--boxed-inputfield-height, 45px)'
           }}
           aria-label={isTutorialActive 
-            ? (typeof t('common:header.stopTutorial') === 'object' ? t('common:header.stopTutorial').title : t('common:header.stopTutorial', 'Stop Tutorial'))
-            : (typeof t('common:header.startTutorial') === 'object' ? t('common:header.startTutorial').title : t('common:header.startTutorial', 'Start Tutorial'))
+            ? t('common:header.stopTutorial', 'Stop Tutorial')
+            : t('common:header.startTutorial', 'Start Tutorial')
           }
           onClick={handleTutorialButtonClick}
           title={isTutorialActive ? "Stop Tutorial" : "Start Tutorial"}
@@ -530,7 +530,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
               }}
             >
               {user?.photoURL ? (
-                <img src={user.photoURL} alt={typeof t('common:header.profileAlt') === 'object' ? t('common:header.profileAlt').title : t('common:header.profileAlt', 'Profile')} className="h-full w-full rounded-lg object-cover" />
+                <img src={user.photoURL} alt={t('common:header.profileAlt', 'Profile')} className="h-full w-full rounded-lg object-cover" />
               ) : (
                 <FiUser className="h-4 w-4 text-white" />
               )}

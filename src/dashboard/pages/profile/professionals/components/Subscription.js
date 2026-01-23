@@ -1,25 +1,9 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiCreditCard, FiStar, FiCheck, FiZap, FiSettings } from 'react-icons/fi';
+import { FiCreditCard, FiStar, FiCheck, FiZap, FiSettings, FiShield } from 'react-icons/fi';
 import Button from '../../../../../components/BoxedInputFields/Button';
 import useAutoSave from '../../../../hooks/useAutoSave';
-
-const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto",
-  sectionTitle: "text-2xl font-semibold mb-0",
-  sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  sectionSubtitle: "text-sm font-medium",
-  sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  currentPlanCard: "bg-card rounded-xl border p-6 shadow-md w-full max-w-[1400px] mx-auto",
-  currentPlanContent: "flex items-start justify-between gap-6",
-  currentPlanInfo: "flex-1",
-  currentPlanTitle: "flex items-center gap-3 mb-4",
-  planFeatures: "grid grid-cols-1 md:grid-cols-2 gap-2",
-  featureItem: "flex items-center gap-2 text-sm",
-  upgradeActions: "flex flex-col items-end gap-3"
-};
 
 const Subscription = ({
   formData,
@@ -74,6 +58,11 @@ const Subscription = ({
     }
   }, [onInputChange, onSave]);
 
+  const handleManageSubscription = useCallback(() => {
+    // Placeholder for manage subscription logic
+    console.log('Manage subscription clicked');
+  }, []);
+
   const classicFeatures = [
     t('subscription.features.classic.basicMatching'),
     t('subscription.features.classic.emailNotifications'),
@@ -90,144 +79,145 @@ const Subscription = ({
   ];
 
   return (
-    <div className={styles.sectionContainer}>
-      <div className={styles.headerCard}>
-        <div className="flex flex-col gap-1 flex-1">
-          <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('subscription.title')}</h2>
-          <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>
+    <div className="w-full max-w-5xl mx-auto p-4 space-y-8">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b pb-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">{t('subscription.title')}</h2>
+          <p className="text-muted-foreground mt-1">
             {t('subscription.subtitle')}
           </p>
         </div>
+        {!isPremium && (
+          <Button
+            type="button"
+            onClick={handleUpgradeToPremium}
+            disabled={isUpgrading}
+            className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-0 shadow-md hover:shadow-lg transition-all"
+          >
+            <FiZap className="w-4 h-4 mr-2" />
+            {isUpgrading ? t('subscription.upgrading') : t('subscription.upgradeToPremium')}
+          </Button>
+        )}
       </div>
 
-      <div 
-        className={styles.currentPlanCard}
-        style={{ 
-          borderColor: isPremium ? 'var(--premium-gold)' : 'var(--border-color)',
-          backgroundColor: isPremium ? 'var(--premium-gold-bg)' : '#ffffff',
-          borderWidth: isPremium ? '2px' : '1px'
-        }}
-      >
-        <div className={styles.currentPlanContent}>
-          <div className={styles.currentPlanInfo}>
-            <div className={styles.currentPlanTitle}>
-              {isPremium ? (
-                <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--premium-gold-light)' }}>
-                  <FiStar className="w-5 h-5" style={{ color: 'var(--premium-gold)' }} />
-                </div>
-              ) : (
-                <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--muted)' }}>
-                  <FiCreditCard className="w-5 h-5" style={{ color: 'var(--text-color)' }} />
-                </div>
-              )}
-              <div>
-                <h3 className="text-lg font-semibold m-0" style={{ color: isPremium ? 'var(--premium-gold)' : 'var(--text-color)' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Current Plan Card - Grey Div */}
+        <div className="bg-gray-100 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col h-full">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`p-2 rounded-lg ${isPremium ? 'bg-yellow-100 text-yellow-700' : 'bg-white text-gray-700 border shadow-sm'}`}>
+                {isPremium ? <FiStar className="w-6 h-6" /> : <FiCreditCard className="w-6 h-6" />}
+              </div>
+              <div className="text-right">
+                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{t('subscription.currentPlan')}</div>
+                <div className={`text-lg font-bold ${isPremium ? 'text-yellow-700' : 'text-foreground'}`}>
                   {isPremium ? t('subscription.premium.title') : t('subscription.classic.title')}
-                </h3>
-                <p className="text-xs m-0 mt-1" style={{ color: 'var(--text-light-color)' }}>
-                  {t('subscription.currentPlan')}
-                </p>
+                </div>
               </div>
             </div>
-
-            <div className={styles.planFeatures}>
-              {(isPremium ? premiumFeatures : classicFeatures).map((feature, index) => (
-                <div key={index} className={styles.featureItem}>
-                  {isPremium ? (
-                    <FiZap className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--premium-gold)' }} />
-                  ) : (
-                    <FiCheck className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-color)' }} />
-                  )}
-                  <span style={{ color: 'var(--text-color)' }}>{feature}</span>
-                </div>
-              ))}
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold">
+                {isPremium ? t('subscription.premium.price') : t('subscription.classic.price')}
+              </span>
+              <span className="text-sm text-muted-foreground">{t('subscription.perMonth')}</span>
             </div>
           </div>
-
-          <div className={styles.upgradeActions}>
-            <div className="text-right mb-2">
-              <div className="text-2xl font-bold" style={{ color: isPremium ? 'var(--premium-gold)' : 'var(--text-color)' }}>
-                {isPremium ? t('subscription.premium.price') : t('subscription.classic.price')}
-              </div>
-              <div className="text-xs" style={{ color: 'var(--text-light-color)' }}>
-                {t('subscription.perMonth')}
-              </div>
-            </div>
-
-            {!isPremium && (
-              <Button
-                type="button"
-                onClick={handleUpgradeToPremium}
-                disabled={isUpgrading}
-                style={{ 
-                  backgroundColor: 'var(--premium-gold)',
-                  borderColor: 'var(--premium-gold)',
-                  color: 'white',
-                  fontWeight: '600',
-                  minWidth: '180px'
-                }}
-              >
-                <FiZap className="w-4 h-4 mr-2" />
-                {isUpgrading ? t('subscription.upgrading') : t('subscription.upgradeToPremium')}
-              </Button>
-            )}
-
-            <Button
+          
+          <div className="p-6 flex-1">
+            <h4 className="font-medium mb-4 flex items-center gap-2">
+              <FiShield className="w-4 h-4 text-primary" />
+              {t('subscription.includedFeatures')}
+            </h4>
+            <ul className="space-y-3">
+              {(isPremium ? premiumFeatures : classicFeatures).map((feature, index) => (
+                <li key={index} className="flex items-start gap-3 text-sm text-muted-foreground">
+                  <FiCheck className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isPremium ? 'text-yellow-600' : 'text-green-600'}`} />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          <div className="p-4 bg-gray-200/50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 mt-auto">
+             <Button
               type="button"
-              variant="secondary"
-              style={{ 
-                minWidth: '180px',
-                borderColor: 'var(--border-color)',
-                color: 'var(--text-color)'
-              }}
+              variant="outline"
+              onClick={handleManageSubscription}
+              className="w-full justify-center bg-background hover:bg-muted border-gray-300 dark:border-gray-600"
             >
               <FiSettings className="w-4 h-4 mr-2" />
               {t('subscription.manageSubscription')}
             </Button>
           </div>
         </div>
-      </div>
 
-      {!isPremium && (
-        <div 
-          className="rounded-xl p-5 shadow-md border-2 w-full max-w-[1400px] mx-auto"
-          style={{ 
-            borderColor: 'var(--premium-gold)',
-            background: 'linear-gradient(135deg, var(--premium-gold-bg) 0%, rgba(212, 175, 55, 0.03) 100%)'
-          }}
-        >
-          <div className="flex items-start gap-4 mb-4">
-            <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--premium-gold-light)' }}>
-              <FiStar className="w-6 h-6" style={{ color: 'var(--premium-gold)' }} />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-bold m-0 mb-1" style={{ color: 'var(--premium-gold)' }}>
-                {t('subscription.premium.title')}
-              </h3>
-              <p className="text-sm m-0" style={{ color: 'var(--text-color)' }}>
+        {/* Upgrade / Premium Benefits Card */}
+        {!isPremium ? (
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl shadow-lg overflow-hidden flex flex-col h-full relative">
+            <div className="absolute top-0 right-0 p-32 bg-yellow-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+            
+            <div className="p-8 flex-1 relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold uppercase tracking-wider mb-6 border border-yellow-500/20">
+                <FiStar className="w-3 h-3" />
+                Recommended
+              </div>
+              
+              <h3 className="text-2xl font-bold mb-2 text-white">{t('subscription.premium.title')}</h3>
+              <p className="text-slate-300 mb-8 max-w-md">
                 {t('subscription.unlockPremiumFeatures')}
               </p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold" style={{ color: 'var(--premium-gold)' }}>
-                {t('subscription.premium.price')}
-              </div>
-              <div className="text-xs" style={{ color: 'var(--text-light-color)' }}>
-                {t('subscription.perMonth')}
-              </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
-            {premiumFeatures.map((feature, index) => (
-              <div key={index} className="flex items-start gap-2 text-sm">
-                <FiZap className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--premium-gold)' }} />
-                <span style={{ color: 'var(--text-color)' }}>{feature}</span>
+              <div className="space-y-4 mb-8">
+                {premiumFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="p-1 rounded-full bg-yellow-500/20 text-yellow-400 mt-0.5">
+                      <FiZap className="w-3 h-3" />
+                    </div>
+                    <span className="text-sm text-slate-200">{feature}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div className="p-6 bg-white/5 border-t border-white/10 relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <span className="text-2xl font-bold text-white">{t('subscription.premium.price')}</span>
+                  <span className="text-sm text-slate-400 ml-1">{t('subscription.perMonth')}</span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                onClick={handleUpgradeToPremium}
+                disabled={isUpgrading}
+                className="w-full bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-bold border-0"
+              >
+                {isUpgrading ? t('subscription.upgrading') : t('subscription.upgradeToPremium')}
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="bg-card rounded-xl border shadow-sm p-6 flex flex-col items-center justify-center text-center h-full bg-gradient-to-br from-yellow-50/50 to-transparent">
+            <div className="w-16 h-16 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center mb-4">
+              <FiStar className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">{t('subscription.youArePremium')}</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto mb-6">
+              You have access to all premium features. Thank you for being a premium member!
+            </p>
+            <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+              <div className="bg-background p-4 rounded-lg border text-center">
+                <div className="text-2xl font-bold text-primary mb-1">∞</div>
+                <div className="text-xs text-muted-foreground">Matches</div>
+              </div>
+              <div className="bg-background p-4 rounded-lg border text-center">
+                <div className="text-2xl font-bold text-primary mb-1">VIP</div>
+                <div className="text-xs text-muted-foreground">Support</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -247,4 +237,3 @@ Subscription.propTypes = {
 };
 
 export default Subscription;
-

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import classNames from 'classnames';
-import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2, FiMail, FiUpload } from 'react-icons/fi';
+import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2, FiMail, FiZap } from 'react-icons/fi';
 import { httpsCallable } from 'firebase/functions';
 
 import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSwitchField';
@@ -39,11 +39,11 @@ const styles = {
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
   sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full overflow-visible",
-  cardHeader: "flex items-center gap-4 mb-0",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+  cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
+  cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
-  cardTitle: "flex-1",
-  cardTitleH3: "m-0",
+  cardTitle: "flex-1 min-w-0",
+  cardTitleH3: "m-0 text-sm font-semibold truncate",
   cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   grid: "grid grid-cols-1 gap-6 overflow-visible",
   gridSingle: "grid grid-cols-1 gap-6",
@@ -80,7 +80,7 @@ const BillingInformation = ({
   const [showHiringInfo, setShowHiringInfo] = useState(false);
   const [showBankingAccessModal, setShowBankingAccessModal] = useState(false);
   const [hasBankingAccess, setHasBankingAccess] = useState(false);
-  
+
   const previousBankingRef = useRef(null);
   const bankingModifiedRef = useRef(false);
 
@@ -109,15 +109,15 @@ const BillingInformation = ({
 
   const sendBankingUpdateNotification = useCallback(async () => {
     if (!bankingModifiedRef.current || !hasBankingAccess) return;
-    
+
     const currentBanking = JSON.stringify({
       iban: formData?.banking?.iban || '',
       bankName: formData?.banking?.bankName || '',
       accountHolderName: formData?.banking?.accountHolderName || ''
     });
-    
+
     if (currentBanking === previousBankingRef.current) return;
-    
+
     try {
       const notifyBankingUpdate = httpsCallable(functions, 'notifyBankingUpdate');
       const ibanLast4 = formData?.banking?.iban ? formData.banking.iban.slice(-4) : '';
@@ -157,7 +157,7 @@ const BillingInformation = ({
   const checkBankingAccess = useCallback(() => {
     const accessExpiry = localStorage.getItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED);
     if (!accessExpiry) return false;
-    
+
     const expiryTime = parseInt(accessExpiry, 10);
     if (Date.now() > expiryTime) {
       localStorage.removeItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED);
@@ -168,8 +168,8 @@ const BillingInformation = ({
 
   const hasExistingBankingInfo = useMemo(() => {
     return formData?.banking && (
-      formData.banking.iban || 
-      formData.banking.bankName || 
+      formData.banking.iban ||
+      formData.banking.bankName ||
       formData.banking.accountHolderName
     );
   }, [formData]);
@@ -182,7 +182,7 @@ const BillingInformation = ({
     } else {
       setHasBankingAccess(checkBankingAccess());
     }
-    
+
     const interval = setInterval(() => {
       const stillHasAccess = checkBankingAccess();
       if (hasBankingAccess && !stillHasAccess) {
@@ -204,7 +204,7 @@ const BillingInformation = ({
 
   const getMaskedValue = (value, fieldName) => {
     if (!value) return '';
-    
+
     if (fieldName.includes('iban')) {
       return '•••• •••• •••• ••••';
     }
@@ -323,7 +323,7 @@ const BillingInformation = ({
     const rawValue = getNestedValue(formData, name);
     const isBankingField = fieldConfig.group === 'banking';
     const shouldMaskValue = isBankingField && hasExistingBankingInfo && !hasBankingAccess;
-    
+
     const value = shouldMaskValue ? getMaskedValue(rawValue, name) : rawValue;
     const error = getNestedValue(errors, name);
     const label = t(labelKey, name);
@@ -497,16 +497,15 @@ const BillingInformation = ({
                   onClick={handleAutoFillClick}
                   disabled={isUploading || isAnalyzing}
                   className={cn(
-                    "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
-                    "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
+                    "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0 text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
                     (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
                     (stepData?.highlightUploadButton) && "tutorial-highlight"
                   )}
                   style={{ height: 'var(--boxed-inputfield-height)' }}
                   data-tutorial="profile-upload-button"
                 >
-                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
-                  <span className="text-sm font-medium text-black">
+                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4" />}
+                  <span className="text-sm font-medium">
                     {isAnalyzing
                       ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
                       : t('dashboardProfile:documents.autofill', 'Auto Fill')
@@ -550,7 +549,7 @@ const BillingInformation = ({
               <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 10 }}>
                 <div className={styles.grid}>
                   <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiBriefcase /></div>
+                    <div className={styles.cardIconWrapper}><FiBriefcase className="w-4 h-4" style={styles.cardIconStyle} /></div>
                     <div className={styles.cardTitle}>
                       <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.employmentEligibilityTitle')}</h3>
                     </div>
@@ -565,7 +564,7 @@ const BillingInformation = ({
               <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 5 }}>
                 <div className={styles.grid}>
                   <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiCreditCard /></div>
+                    <div className={styles.cardIconWrapper}><FiCreditCard className="w-4 h-4" style={styles.cardIconStyle} /></div>
                     <div className={styles.cardTitle}>
                       <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.bankingInfo')}</h3>
                     </div>
@@ -595,7 +594,7 @@ const BillingInformation = ({
               <div className={styles.sectionCard}>
                 <div className={styles.grid}>
                   <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiBriefcase /></div>
+                    <div className={styles.cardIconWrapper}><FiBriefcase className="w-4 h-4" style={styles.cardIconStyle} /></div>
                     <div className={styles.cardTitle}>
                       <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.residencyPermitTitle')}</h3>
                     </div>
@@ -609,7 +608,7 @@ const BillingInformation = ({
               <div className={styles.sectionCard}>
                 <div className={styles.grid}>
                   <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiShield /></div>
+                    <div className={styles.cardIconWrapper}><FiShield className="w-4 h-4" style={styles.cardIconStyle} /></div>
                     <div className={styles.cardTitle}>
                       <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.insurance')}</h3>
                     </div>
@@ -623,7 +622,7 @@ const BillingInformation = ({
               <div className={styles.sectionCard}>
                 <div className={styles.grid}>
                   <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiHome /></div>
+                    <div className={styles.cardIconWrapper}><FiHome className="w-4 h-4" style={styles.cardIconStyle} /></div>
                     <div className={styles.cardTitle}>
                       <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.billingAddress')}</h3>
                     </div>
@@ -642,7 +641,7 @@ const BillingInformation = ({
               <div className={styles.sectionCard}>
                 <div className={styles.gridSingle}>
                   <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiDollarSign /></div>
+                    <div className={styles.cardIconWrapper}><FiDollarSign className="w-4 h-4" style={styles.cardIconStyle} /></div>
                     <div className={styles.cardTitle}>
                       <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.payrollDataTitle')}</h3>
                     </div>

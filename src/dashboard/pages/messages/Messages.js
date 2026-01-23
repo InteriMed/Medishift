@@ -329,8 +329,8 @@ const Messages = () => {
       isMobile && "overflow-y-hidden"
     )} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
       <div className={cn(
-        "flex-1 flex min-h-0 relative",
-        isMobile ? "p-0 overflow-hidden" : "p-6 gap-6 overflow-visible"
+        "flex-1 flex min-h-0 relative ml-4 my-4",
+        isMobile ? "p-0 overflow-hidden" : "gap-6 overflow-visible"
       )}>
         <div className={cn(
           "dashboard-sidebar-container",

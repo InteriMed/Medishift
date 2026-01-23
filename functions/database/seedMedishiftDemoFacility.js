@@ -4,8 +4,13 @@
  * Creates a demo facility for admin users to access and use for presentations.
  * This facility is automatically available to all active admin users.
  * 
- * Run with: node -e "require('./seedMedishiftDemoFacility').seedMedishiftDemoFacility()"
- * Or from Firebase Functions: exports.seedDemoFacility = seedMedishiftDemoFacility
+ * RECOMMENDED: Use the Cloud Function instead:
+ *   - From frontend: httpsCallable(functions, 'seedDemoFacility')
+ *   - From Firebase CLI: firebase functions:call seedDemoFacility
+ * 
+ * To run directly (requires service account credentials):
+ *   - Set GOOGLE_APPLICATION_CREDENTIALS env var to service account JSON path
+ *   - Or use: firebase use <project> && node -e "require('./seedMedishiftDemoFacility').seedMedishiftDemoFacility()"
  */
 
 const admin = require('firebase-admin');
@@ -14,22 +19,46 @@ const config = require('../config');
 const MEDISHIFT_DEMO_FACILITY_ID = 'medishift-demo-facility';
 
 const seedMedishiftDemoFacility = async () => {
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      projectId: config.projectId,
-      databaseURL: config.databaseURL
-    });
-  }
+  try {
+    if (!admin.apps.length) {
+      try {
+        admin.initializeApp({
+          projectId: config.projectId || 'interimed-620fd',
+          databaseURL: config.databaseURL || `https://interimed-620fd-default-rtdb.europe-west1.firebasedatabase.app`,
+          databaseId: config.databaseId || 'medishift'
+        });
+      } catch (initError) {
+        if (initError.code === 'app/duplicate-app') {
+          // App already initialized, continue
+        } else {
+          throw new Error(`Failed to initialize Firebase Admin: ${initError.message}\n\n` +
+            `To run this script directly, you need:\n` +
+            `1. Set GOOGLE_APPLICATION_CREDENTIALS environment variable to your service account JSON file\n` +
+            `2. Or use the Cloud Function: httpsCallable(functions, 'seedDemoFacility')\n` +
+            `3. Or deploy and call: firebase functions:call seedDemoFacility`);
+        }
+      }
+    }
 
-  const db = admin.firestore();
-  if (config.databaseId) {
-    db.settings({ databaseId: config.databaseId });
+    const db = admin.firestore();
+    if (config.databaseId) {
+      db.settings({ databaseId: config.databaseId });
+    }
+  } catch (error) {
+    if (error.message.includes('Could not load the default credentials')) {
+      throw new Error(`Authentication Error: ${error.message}\n\n` +
+        `RECOMMENDED: Use the Cloud Function instead:\n` +
+        `  From frontend: const seed = httpsCallable(functions, 'seedDemoFacility'); await seed();\n\n` +
+        `To run directly, set credentials:\n` +
+        `  export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json\n` +
+        `  node -e "require('./seedMedishiftDemoFacility').seedMedishiftDemoFacility()"`);
+    }
+    throw error;
   }
 
   const facilityRef = db.collection('facilityProfiles').doc(MEDISHIFT_DEMO_FACILITY_ID);
   const adminsRef = db.collection('admins');
 
-  console.log('[seedMedishiftDemoFacility] Starting...');
 
   const adminsSnapshot = await adminsRef.where('isActive', '!=', false).get();
   const adminUserIds = [];
@@ -39,7 +68,6 @@ const seedMedishiftDemoFacility = async () => {
     }
   });
 
-  console.log(`[seedMedishiftDemoFacility] Found ${adminUserIds.length} active admins`);
 
   const facilityData = {
     role: 'facility',
@@ -148,7 +176,6 @@ const seedMedishiftDemoFacility = async () => {
   };
 
   await facilityRef.set(facilityData, { merge: true });
-  console.log(`[seedMedishiftDemoFacility] Created/Updated facility: ${MEDISHIFT_DEMO_FACILITY_ID}`);
 
   const batch = db.batch();
   for (const adminUserId of adminUserIds) {
@@ -172,15 +199,12 @@ const seedMedishiftDemoFacility = async () => {
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
         
-        console.log(`[seedMedishiftDemoFacility] Added demo facility to admin user: ${adminUserId}`);
       } else {
-        console.log(`[seedMedishiftDemoFacility] Admin user ${adminUserId} already has demo facility access`);
       }
     }
   }
 
   await batch.commit();
-  console.log('[seedMedishiftDemoFacility] Completed successfully');
 
   return {
     success: true,
@@ -202,7 +226,6 @@ const removeMedishiftDemoFacility = async () => {
     db.settings({ databaseId: config.databaseId });
   }
 
-  console.log('[removeMedishiftDemoFacility] Starting cleanup...');
 
   const usersSnapshot = await db.collection('users').get();
   const batch = db.batch();
@@ -217,14 +240,12 @@ const removeMedishiftDemoFacility = async () => {
         roles: filteredRoles,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
-      console.log(`[removeMedishiftDemoFacility] Removed demo facility from user: ${doc.id}`);
     }
   });
 
   await batch.commit();
 
   await db.collection('facilityProfiles').doc(MEDISHIFT_DEMO_FACILITY_ID).delete();
-  console.log(`[removeMedishiftDemoFacility] Deleted facility: ${MEDISHIFT_DEMO_FACILITY_ID}`);
 
   return { success: true };
 };

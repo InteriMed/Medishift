@@ -15,13 +15,13 @@
  */
 
 const admin = require('firebase-admin');
+const { getFirestore } = require('firebase-admin/firestore');
 const crypto = require('crypto');
 const config = require('../config');
 const { logAuditEvent } = require('./auditLog');
-const { FIRESTORE_COLLECTIONS } = require('../config/keysDatabase');
+const { FIRESTORE_COLLECTIONS, FIRESTORE_DATABASE_NAME } = require('../config/keysDatabase');
 
-// Get Firestore instance
-const db = admin.firestore();
+const db = getFirestore(admin.app(), FIRESTORE_DATABASE_NAME);
 const FieldValue = admin.firestore.FieldValue;
 
 // Salt for hashing - should be stored in environment variables in production
@@ -190,7 +190,6 @@ async function archiveLegalRecords(uid, userData, legalRecords) {
 
     await db.collection('legal_archive').doc(uid).set(archiveData);
 
-    console.log(`[AccountDeletion] Archived legal records for user ${uid}`);
     return archiveData;
 }
 
@@ -233,7 +232,6 @@ async function createAntiFraudHashes(uid, userData, bonusInfo) {
         }
     }
 
-    console.log(`[AccountDeletion] Created ${hashes.length} anti-fraud hashes for user ${uid}`);
     return hashes;
 }
 
@@ -313,7 +311,6 @@ async function deleteImmediateData(uid) {
         throw error;
     }
 
-    console.log(`[AccountDeletion] Deleted ${deletedItems.length} immediate data items for user ${uid}`);
     return deletedItems;
 }
 
@@ -373,7 +370,6 @@ async function anonymizeUserDocument(uid) {
 
     await db.collection(FIRESTORE_COLLECTIONS.USERS).doc(uid).update(anonymizedData);
 
-    console.log(`[AccountDeletion] Anonymized user document for ${uid}`);
     return anonymizedData;
 }
 
@@ -389,7 +385,6 @@ async function revokeUserAccess(uid) {
         // Delete the Firebase Auth user
         await admin.auth().deleteUser(uid);
 
-        console.log(`[AccountDeletion] Revoked access and deleted auth for user ${uid}`);
         return true;
     } catch (error) {
         console.error('[AccountDeletion] Error revoking user access:', error);
@@ -418,7 +413,6 @@ async function deleteUserAccount(uid, options = {}) {
         errors: []
     };
 
-    console.log(`[AccountDeletion] Starting account deletion for user ${uid}`);
 
     try {
         // 1. Get user data
@@ -492,7 +486,6 @@ async function deleteUserAccount(uid, options = {}) {
         summary.deletionType = legalRecords.hasAnyRecords ? 'anonymize_and_archive' : 'full_deletion';
         summary.processingTimeMs = Date.now() - startTime;
 
-        console.log(`[AccountDeletion] Successfully processed account deletion for user ${uid} in ${summary.processingTimeMs}ms`);
 
     } catch (error) {
         console.error(`[AccountDeletion] Error deleting account for user ${uid}:`, error);

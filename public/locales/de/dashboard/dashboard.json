@@ -268,12 +268,12 @@
       "allPages": "Vollständiges Tutorial von Anfang an starten",
       "allPagesTitle": "Vollständiges Tutorial",
       "allPagesDesc": "Von Anfang an beginnen und alle Funktionen erkunden",
-      "stopTitle": "Tutorial pausieren?",
+      "stopTitle": "Tutorial stoppen?",
       "stopDescription": "Sie können das Tutorial jederzeit fortsetzen, indem Sie auf die Hilfe-Schaltfläche in der Kopfzeile klicken.",
       "clickHere": "Klicken Sie hier",
       "toContinue": "um später fortzufahren",
       "keepGoing": "Weitermachen",
-      "pauseNow": "Tutorial pausieren"
+      "stopNow": "Tutorial stoppen"
     }
   },
   "userMenu": {

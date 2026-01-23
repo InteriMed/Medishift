@@ -21,6 +21,7 @@
   "fixErrors": "Bitte beheben Sie die Fehler vor dem Speichern.",
   "profileSaved": "Profil erfolgreich gespeichert!",
   "minItemsRequired": "Mindestens ein Element ist erforderlich",
-  "errorFixFieldsBeforeContinuing": "Bitte beheben Sie die Fehler vor dem Fortfahren"
+  "errorFixFieldsBeforeContinuing": "Bitte beheben Sie die Fehler vor dem Fortfahren",
+  "completePreviousSteps": "Bitte vervollständigen Sie die vorherigen Schritte, bevor Sie auf diesen Tab zugreifen"
 }
 

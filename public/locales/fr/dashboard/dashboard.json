@@ -291,12 +291,12 @@
       "allPages": "Démarrer le tutoriel complet depuis le début",
       "allPagesTitle": "Tutoriel complet",
       "allPagesDesc": "Commencer depuis le début et explorer toutes les fonctionnalités",
-      "stopTitle": "Mettre en pause le tutoriel ?",
+      "stopTitle": "Arrêter le tutoriel ?",
       "stopDescription": "Vous pouvez continuer le tutoriel à tout moment en cliquant sur le bouton d'aide dans l'en-tête.",
       "clickHere": "Cliquez ici",
       "toContinue": "pour continuer plus tard",
       "keepGoing": "Continuer",
-      "pauseNow": "Mettre en pause"
+      "stopNow": "Arrêter le tutoriel"
     }
   },
   "userMenu": {

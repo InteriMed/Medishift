@@ -199,6 +199,11 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
   const SIDEBAR_ORDER = ['overview', 'profile', 'messages', 'contracts', 'calendar', 'marketplace', 'payroll', 'organization', 'settings'];
 
   const getHighlightedItem = React.useMemo(() => {
+    // ONLY show highlight if tutorial is active
+    if (!isTutorialActive) {
+      return null;
+    }
+
     const highlightSidebarItem = stepData?.highlightSidebarItem;
     if (highlightSidebarItem) {
       return highlightSidebarItem;
@@ -237,7 +242,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
     }
 
     return null;
-  }, [stepData, tutorialPassed, completedTutorials, profileComplete]);
+  }, [stepData, tutorialPassed, completedTutorials, profileComplete, isTutorialActive]);
 
   const handleToggleClick = () => {
     if (isTutorialActive) return;
@@ -303,43 +308,46 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-1.5 px-2 flex flex-col gap-0.5">
+      <nav className={cn(
+        "flex-1 overflow-y-auto overflow-x-hidden flex flex-col gap-3",
+        collapsed ? "py-1.5 px-1" : "py-1.5 px-2"
+      )}>
         {(isAdminWorkspace ? getAdminSidebarItems(t).filter(item => !item.permission || hasPermission(userRoles, item.permission)) : REGULAR_SIDEBAR_ITEMS.filter(item => {
           const isPersonalWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.PERSONAL;
           const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
           const isAdminWorkspaceCheck = selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN;
-          
+
           if (isAdminWorkspaceCheck) {
             return false;
           }
-          
+
           if (item.facilityOnly) {
             return isTeamWorkspace;
           }
-          
+
           if (item.personalOnly) {
             return isPersonalWorkspace;
           }
-          
+
           const sharedItems = ['overview', 'messages', 'contracts', 'calendar'];
           const itemKey = item.path.split('/').pop();
           const hasProfessionalRole = userProfile?.role === 'professional' || hasProfessionalAccess(userProfile);
-          
+
           if (itemKey === 'profile') {
             return true;
           }
-          
+
           if (sharedItems.includes(itemKey)) {
             return true;
           }
-          
+
           return isPersonalWorkspace || (!selectedWorkspace && hasProfessionalRole);
         })).map((item) => {
           const itemPath = item.path.startsWith('/dashboard') ? item.path.replace('/dashboard', '') : item.path;
-          const workspaceAwarePath = selectedWorkspace?.id 
+          const workspaceAwarePath = selectedWorkspace?.id
             ? buildDashboardUrl(itemPath, selectedWorkspace.id)
             : item.path;
-          
+
           const isActive = item.exact
             ? normalizedPathname === item.path
             : normalizedPathname.startsWith(item.path);
@@ -391,28 +399,37 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                 }}
                 data-tutorial={`${itemKey}-link`}
                 className={cn(
-                  "group relative flex items-center justify-between w-full p-2 text-left rounded-lg transition-all duration-200 outline-none min-w-0",
+                  "group relative flex gap-3 rounded-lg border-2 border-transparent transition-all duration-200 outline-none",
+                  collapsed ? "p-2 justify-center" : "p-3",
                   "text-muted-foreground/50 cursor-pointer select-none",
-                  "border-2 border-transparent bg-muted/10",
-                  "hover:bg-muted/20 hover:border-muted/40",
-                  collapsed && "justify-center px-1.5"
+                  "bg-muted/10",
+                  "hover:bg-muted/20 hover:border-muted/40"
                 )}
               >
                 <div className={cn(
                   "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
                   "bg-muted/30"
                 )} />
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className={cn(
+                  "w-full flex items-center justify-between",
+                  collapsed ? "justify-center pl-0" : "pl-2"
+                )}>
                   <div className={cn(
-                    "p-1.5 rounded-md transition-colors shrink-0",
-                    "bg-muted/20 text-muted-foreground/50"
+                    "flex items-center",
+                    collapsed ? "justify-center" : "gap-3"
                   )}>
-                    <item.icon className="w-5 h-5 shrink-0" />
+                    <div className="shrink-0 bg-muted/10 text-muted-foreground/50">
+                      <item.icon className="w-5 h-5 shrink-0" />
+                    </div>
+                    {!collapsed && (
+                      <span className="text-sm font-medium truncate text-muted-foreground/50">
+                        {t(item.title, item.title.split('.').pop())}
+                      </span>
+                    )}
                   </div>
                   {!collapsed && (
-                    <span className="text-sm font-medium truncate flex-1">
-                      {t(item.title, item.title.split('.').pop())}
-                    </span>
+                    <div className="ml-2 shrink-0">
+                    </div>
                   )}
                 </div>
                 {!collapsed && (
@@ -443,7 +460,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                 const isCurrentlyOnProfile = location.pathname.includes('/profile');
                 const isClickingOtherTab = !item.path.includes('/profile');
                 const shouldShowAccessPopup = accessLevelChoice === 'team' || accessLevelChoice === 'loading';
-                
+
                 if (isCurrentlyOnProfile && isClickingOtherTab && shouldShowAccessPopup) {
                   e.preventDefault();
                   e.stopPropagation();
@@ -455,7 +472,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                   }
                   return false;
                 }
-                
+
                 const currentIsAccessible = isSidebarItemAccessible(item.path);
                 if (!currentIsAccessible) {
                   e.preventDefault();
@@ -478,12 +495,10 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                 const active = isActive || linkActive || isTutorialTarget;
 
                 return cn(
-                  "group flex items-center justify-between w-full p-2 text-left rounded-lg transition-all duration-200 outline-none relative min-w-0 border-2 border-transparent",
-                  active
-                    ? "bg-primary/5 text-primary shadow-sm"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                  (isTutorialTarget || shouldHighlight) && "tutorial-highlight",
-                  collapsed && "justify-center px-1.5"
+                  "group relative flex gap-3 rounded-lg hover:bg-muted/50 transition-all cursor-pointer border-2 border-transparent",
+                  collapsed ? "p-2 justify-center" : "p-3",
+                  active && "bg-primary/5 border-primary/10",
+                  (isTutorialTarget || shouldHighlight) && "tutorial-highlight"
                 );
               }}
             >
@@ -493,27 +508,38 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
 
                 return (
                   <>
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className={cn(
+                      "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
+                      active && "bg-primary"
+                    )} />
+                    <div className={cn(
+                      "w-full flex items-center justify-between",
+                      collapsed ? "justify-center pl-0" : "pl-2"
+                    )}>
                       <div className={cn(
-                        "p-1.5 rounded-md transition-colors shrink-0",
-                        active
-                          ? "bg-primary/10 text-primary"
-                          : "bg-muted/20 text-muted-foreground group-hover:text-foreground"
+                        "flex items-center",
+                        collapsed ? "justify-center" : "gap-3"
                       )}>
-                        <item.icon className="w-5 h-5 shrink-0" />
+                        <div className={cn(
+                          "transition-colors shrink-0",
+                          active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                        )}>
+                          <item.icon className="w-5 h-5 shrink-0" />
+                        </div>
+                        {!collapsed && (
+                          <span className={cn(
+                            "text-sm font-medium truncate",
+                            active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                          )}>
+                            {t(item.title, item.title.split('.').pop())}
+                          </span>
+                        )}
                       </div>
                       {!collapsed && (
-                        <span className={cn(
-                          "font-medium text-sm truncate min-w-0",
-                          active
-                            ? "text-foreground"
-                            : "text-muted-foreground group-hover:text-foreground"
-                        )}>
-                          {t(item.title, item.title.split('.').pop())}
-                        </span>
+                        <div className="ml-2 shrink-0">
+                        </div>
                       )}
                     </div>
-                    {/* Tooltip for collapsed mode */}
                     {collapsed && (
                       <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-border">
                         {t(item.title, item.title.split('.').pop())}

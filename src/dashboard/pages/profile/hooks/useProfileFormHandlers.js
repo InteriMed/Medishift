@@ -55,8 +55,10 @@ export const useProfileFormHandlers = (
                 saveToLocalStorage(newFormData);
                 validateCurrentTabData(newFormData, activeTab, true);
                 
+                // Always check for completion during tutorial, even if validation fails (it might be partial)
                 if (isTutorialActive && isProfileTutorial(activeTutorial)) {
                     const isCurrentTabComplete = isTabCompleted(newFormData, activeTab, profileConfig);
+                    console.log('[useProfileFormHandlers] Input change check:', { activeTab, isCurrentTabComplete });
                     if (isCurrentTabComplete) {
                         onTabCompleted(activeTab, true);
                     }
@@ -115,7 +117,9 @@ export const useProfileFormHandlers = (
                 if (shouldUpdateProfileCompletionStatus) await setProfileCompletionStatus(true);
 
                 if (isTutorialActive && isProfileTutorial(activeTutorial)) {
+                    // Force re-check of tab completion with updated data
                     const isCurrentTabComplete = isTabCompleted(updatedData, activeTab, profileConfig);
+                    console.log('[useProfileFormHandlers] Save check:', { activeTab, isCurrentTabComplete });
                     if (isCurrentTabComplete) {
                         onTabCompleted(activeTab, true);
                     }

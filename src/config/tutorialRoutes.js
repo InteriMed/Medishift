@@ -83,7 +83,9 @@ export const getPathForTutorial = (tutorialId) => {
 };
 
 export const normalizePathForComparison = (path) => {
-    return path.replace(/^\/(en|fr|de|it)\//, '/');
+    let normalized = path.replace(/^\/(en|fr|de|it)\//, '/');
+    normalized = normalized.replace(/\/dashboard\/[^\/]+\/profile/, '/dashboard/profile');
+    return normalized;
 };
 
 export const isOnCorrectPage = (currentPath, requiredPath) => {
@@ -101,8 +103,7 @@ export const isOnCorrectPage = (currentPath, requiredPath) => {
         }
     }
     
-    if (normalizedRequired.includes('/dashboard/profile') && 
-        normalizedCurrent.includes('/dashboard/profile')) {
+    if (isProfilePath(normalizedRequired) && isProfilePath(normalizedCurrent)) {
         return true;
     }
     
@@ -111,13 +112,16 @@ export const isOnCorrectPage = (currentPath, requiredPath) => {
 
 export const extractFeatureFromPath = (path) => {
     const normalizedPath = normalizePathForComparison(path);
+    if (isProfilePath(path)) {
+        return 'profile';
+    }
     const match = normalizedPath.match(/\/dashboard\/([^\/]+)/);
     return match ? match[1] : 'overview';
 };
 
 export const extractTabFromPath = (path) => {
     const normalizedPath = normalizePathForComparison(path);
-    const match = normalizedPath.match(/\/dashboard\/profile\/([^\/]+)/);
+    const match = normalizedPath.match(/\/profile\/([^\/]+)$/);
     return match ? match[1] : null;
 };
 
@@ -126,7 +130,7 @@ export const isDashboardPath = (path) => {
 };
 
 export const isProfilePath = (path) => {
-    return path.includes('/dashboard/profile');
+    return path.includes('/profile') && path.includes('/dashboard');
 };
 
 export default {

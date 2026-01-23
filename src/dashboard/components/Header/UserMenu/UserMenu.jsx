@@ -84,12 +84,16 @@ const UserMenu = () => {
       {isOpen && (
         <div className="user-menu-dropdown">
           <Link to={`/${lang}/dashboard/profile`} className="menu-item">
-            <FiSettings />
+            <div className="menu-item-icon-wrapper">
+              <FiSettings />
+            </div>
             {getTranslation('userMenu.profile', 'My Profile')}
           </Link>
           
           <Link to={`/${lang}/dashboard/settings`} className="menu-item">
-            <FiSettings />
+            <div className="menu-item-icon-wrapper">
+              <FiSettings />
+            </div>
             {getTranslation('userMenu.settings', 'Settings')}
           </Link>
           
@@ -101,7 +105,9 @@ const UserMenu = () => {
               className="menu-item language-trigger"
               onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
             >
-              <FiGlobe />
+              <div className="menu-item-icon-wrapper">
+                <FiGlobe />
+              </div>
               {getTranslation('userMenu.language', 'Language')}
               <span className={`chevron ${showLanguageDropdown ? 'open' : ''}`}>▼</span>
             </div>

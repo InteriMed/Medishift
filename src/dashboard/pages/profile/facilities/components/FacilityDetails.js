@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiUser, FiMapPin, FiInfo, FiFileText, FiBriefcase, FiCreditCard, FiHome, FiUpload } from 'react-icons/fi';
+import { FiUser, FiMapPin, FiInfo, FiFileText, FiBriefcase, FiCreditCard, FiHome, FiZap } from 'react-icons/fi';
 
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
@@ -317,16 +317,15 @@ const FacilityDetails = ({
                   onClick={handleAutoFillClick}
                   disabled={isUploading || isAnalyzing}
                   className={cn(
-                    "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
-                    "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
+                    "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0 text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
                     (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
                     (stepData?.highlightUploadButton) && "tutorial-highlight"
                   )}
                   style={{ height: 'var(--boxed-inputfield-height)' }}
                   data-tutorial="profile-upload-button"
                 >
-                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
-                  <span className="text-sm font-medium text-black">
+                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4" />}
+                  <span className="text-sm font-medium">
                     {isAnalyzing
                       ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
                       : t('dashboardProfile:documents.autofill', 'Auto Fill')

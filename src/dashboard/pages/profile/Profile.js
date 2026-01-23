@@ -33,6 +33,7 @@ import FacilityAccount from './facilities/components/Account';
 import FacilitySettings from './facilities/components/Settings';
 import { cn } from '../../../utils/cn';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { TUTORIAL_IDS, PROFILE_TAB_IDS } from '../../../config/tutorialConfig';
 
 import { useProfileTutorial } from './hooks/useProfileTutorial';
 import { useProfileConfig } from './hooks/useProfileConfig';
@@ -91,7 +92,19 @@ const Profile = () => {
     );
 
     const tutorial = useProfileTutorial(formData);
-    const { isTutorialActive, activeTutorial, stepData, onTabCompleted, maxAccessedProfileTab } = tutorial;
+    const { isTutorialActive, activeTutorial, stepData, onTabCompleted, maxAccessedProfileTab, registerValidation } = tutorial;
+
+    // Register validation for tutorial
+    useEffect(() => {
+        if (!registerValidation || !isTutorialActive) return;
+
+        return registerValidation(TUTORIAL_IDS.PROFILE_TABS, () => {
+            // Check if current tab is completed
+            if (!activeTab || !formData) return false;
+            const isComplete = isTabCompleted(formData, activeTab, profileConfig);
+            return isComplete;
+        });
+    }, [registerValidation, isTutorialActive, activeTab, formData, isTabCompleted, profileConfig]);
 
     // TUTORIAL-AWARE TAB ACCESSIBILITY (moved down to ensure tutorial is initialized)
     const isTabAccessibleDuringTutorial = useCallback((data, tabId, config) => {
@@ -100,9 +113,11 @@ const Profile = () => {
 
         // During tutorial, also check against maxAccessedProfileTab
         if (isTutorialActive && maxAccessedProfileTab) {
-            const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads'];
+            const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads', 'account', 'settings'];
             const maxIndex = tabOrder.indexOf(maxAccessedProfileTab);
             const requestedIndex = tabOrder.indexOf(tabId);
+
+            if (maxIndex === -1 || requestedIndex === -1) return normalAccessibility;
 
             // If requested tab is completed, allow access to next tab (max + 1)
             if (isTabCompleted(data, maxAccessedProfileTab, config)) {
@@ -413,7 +428,7 @@ const Profile = () => {
                                 </Button>
                             )}
                             <Button
-                                variant="primary"
+                                variant="info"
                                 onClick={handleAutoFillProcess}
                                 isLoading={isUploading}
                                 disabled={isUploading}
@@ -532,10 +547,10 @@ const Profile = () => {
                 </Dialog>
 
                 <div className={cn(
-                    "flex-1 flex min-h-0 relative",
-                    isMobile ? "p-0" : "p-6 gap-6"
-                )} style={{ overflow: 'visible' }}>
-                    <div 
+                    "flex-1 flex min-h-0 relative ml-4 my-4 overflow-visible",
+                    isMobile ? "p-0" : "gap-6"
+                )}>
+                    <div
                         className={cn(
                             "dashboard-sidebar-container",
                             isMobile
@@ -558,14 +573,30 @@ const Profile = () => {
                                 isTabCompleted={(tabId) => isTabCompleted(formData, tabId, profileConfig)}
                                 isTabAccessible={(data, tabId, config) => isTabAccessibleDuringTutorial(data, tabId, config)}
                                 nextIncompleteSection={nextIncompleteTab}
-                                highlightTabId={
-                                    isTutorialActive && maxAccessedProfileTab
-                                        ? (isTabCompleted(formData, maxAccessedProfileTab, profileConfig)
-                                            ? getNextTab(maxAccessedProfileTab)
-                                            : maxAccessedProfileTab
-                                        )
-                                        : nextIncompleteTab
-                                }
+                                highlightTabId={(() => {
+                                    // During tutorial, highlight the first incomplete tab within accessible range
+                                    // This ensures the highlight moves as tabs are completed
+                                    if (isTutorialActive && maxAccessedProfileTab) {
+                                        const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads', 'account', 'settings'];
+                                        const maxIdx = tabOrder.indexOf(maxAccessedProfileTab);
+
+                                        // Find first incomplete tab up to max accessible
+                                        for (let i = 0; i <= maxIdx; i++) {
+                                            const tab = tabOrder[i];
+                                            if (!isTabCompleted(formData, tab, profileConfig)) {
+                                                console.log('[Profile] highlightTabId: first incomplete tab', tab);
+                                                return tab;
+                                            }
+                                        }
+
+                                        // All accessible tabs complete - highlight max accessible
+                                        const result = tabOrder[maxIdx];
+                                        console.log('[Profile] highlightTabId: all complete, using max', result);
+                                        return result;
+                                    }
+
+                                    return nextIncompleteTab;
+                                })()}
                                 collapsed={isProfileMenuCollapsed}
                                 onToggle={() => setIsProfileMenuCollapsed(!isProfileMenuCollapsed)}
                                 onAutofill={handleAutofill}

@@ -36,7 +36,7 @@ const StopTutorialConfirmModal = ({
         <Dialog
             isOpen={isOpen}
             onClose={onClose}
-            title={t('dashboard.tutorial.stopTitle', 'Pause Tutorial?')}
+            title={t('dashboard.tutorial.stopTitle', 'Stop Tutorial?')}
             messageType="warning"
             size="small"
             centerTitle={false}
@@ -50,7 +50,7 @@ const StopTutorialConfirmModal = ({
                         onClick={handleConfirm} 
                         style={{ minWidth: '120px' }}
                     >
-                        {t('dashboard.tutorial.pauseNow', 'Pause Tutorial')}
+                        {t('dashboard.tutorial.stopNow', 'Stop Tutorial')}
                     </Button>
                 </div>
             }

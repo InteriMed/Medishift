@@ -460,7 +460,6 @@ const onContractCreate = onDocumentCreated({
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    console.log(`Notification created for contract ${contractId}`);
     return { success: true };
   } catch (error) {
     console.error('Error processing contract creation:', error);
@@ -603,7 +602,6 @@ const onPositionUpdate = onDocumentUpdated({
       })
     ]);
 
-    console.log(`Conversation ${conversationRef.id} created automatically for position ${positionId} interview`);
     return { success: true, conversationId: conversationRef.id };
   } catch (error) {
     console.error(`Error processing position interview status for ${positionId}:`, error);
@@ -671,7 +669,6 @@ const onContractUpdate = onDocumentUpdated({
             validation.professionalApproved = true;
             validation.professionalApprovedAt = admin.firestore.FieldValue.serverTimestamp();
             shouldAutoApprove = true;
-            console.log(`Auto-approved contract ${contractId} for professional (${hoursUntilStart.toFixed(1)}h in advance)`);
           }
         }
 
@@ -682,7 +679,6 @@ const onContractUpdate = onDocumentUpdated({
             validation.facilityApproved = true;
             validation.facilityApprovedAt = admin.firestore.FieldValue.serverTimestamp();
             shouldAutoApprove = true;
-            console.log(`Auto-approved contract ${contractId} for facility (${hoursUntilStart.toFixed(1)}h in advance)`);
           }
         }
 
@@ -761,7 +757,6 @@ const onContractUpdate = onDocumentUpdated({
             bookedByContractId: contractId,
             updated: admin.firestore.FieldValue.serverTimestamp()
           });
-          console.log(`Availability ${originAvailabilityId} marked as booked for contract ${contractId}`);
         }
       }
     }
@@ -817,7 +812,6 @@ const onContractUpdate = onDocumentUpdated({
 
     await Promise.all(notifications);
 
-    console.log(`Notification created for contract update ${contractId}`);
     return { success: true };
   } catch (error) {
     console.error('Error processing contract update:', error);
@@ -825,10 +819,9 @@ const onContractUpdate = onDocumentUpdated({
   }
 });
 
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { seedMedishiftDemoFacility, removeMedishiftDemoFacility, MEDISHIFT_DEMO_FACILITY_ID } = require('./seedMedishiftDemoFacility');
 
-const seedDemoFacility = onCall(
+const seedDemoFacility = onCallV2(
   {
     region: 'europe-west6',
     enforceAppCheck: false
@@ -855,7 +848,7 @@ const seedDemoFacility = onCall(
   }
 );
 
-const removeDemoFacility = onCall(
+const removeDemoFacility = onCallV2(
   {
     region: 'europe-west6',
     enforceAppCheck: false

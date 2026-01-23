@@ -11,15 +11,16 @@
 
 const { onRequest } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
+const { getFirestore } = require('firebase-admin/firestore');
 const {
     deleteUserAccount,
     getDeletionEligibility,
     checkAntifraudHash
 } = require('../services/accountDeletionService');
 const { logAuditEvent } = require('../services/auditLog');
+const { FIRESTORE_DATABASE_NAME } = require('../config/keysDatabase');
 
-// Get Firestore instance
-const db = admin.firestore();
+const db = getFirestore(admin.app(), FIRESTORE_DATABASE_NAME);
 
 // CORS configuration - Manual handling to ensure it works
 // Cloud Functions sometimes strips headers if not explicitly set this way

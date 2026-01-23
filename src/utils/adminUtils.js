@@ -205,3 +205,43 @@ export const getMonthlyRevenue = async (month, year) => {
   }
 };
 
+export const seedMedishiftDemoFacility = async () => {
+  try {
+    const seedDemoFacility = httpsCallable(functions, 'seedDemoFacility');
+    const result = await seedDemoFacility();
+    
+    if (result.data.success) {
+      return {
+        success: true,
+        facilityId: result.data.facilityId,
+        adminCount: result.data.adminCount,
+        message: `Demo facility created successfully for ${result.data.adminCount} admin(s)`
+      };
+    } else {
+      throw new Error(result.data.message || 'Failed to seed demo facility');
+    }
+  } catch (error) {
+    console.error('Error seeding demo facility:', error);
+    throw error;
+  }
+};
+
+export const removeMedishiftDemoFacility = async () => {
+  try {
+    const removeDemoFacility = httpsCallable(functions, 'removeDemoFacility');
+    const result = await removeDemoFacility();
+    
+    if (result.data.success) {
+      return {
+        success: true,
+        message: 'Demo facility removed successfully'
+      };
+    } else {
+      throw new Error(result.data.message || 'Failed to remove demo facility');
+    }
+  } catch (error) {
+    console.error('Error removing demo facility:', error);
+    throw error;
+  }
+};
+

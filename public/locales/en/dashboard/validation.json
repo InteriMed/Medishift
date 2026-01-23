@@ -21,5 +21,6 @@
   "fixErrors": "Please fix the errors before saving.",
   "profileSaved": "Profile saved successfully!",
   "minItemsRequired": "At least one item is required",
-  "errorFixFieldsBeforeContinuing": "Please fix the errors before continuing"
+  "errorFixFieldsBeforeContinuing": "Please fix the errors before continuing",
+  "completePreviousSteps": "Please complete the previous steps before accessing this tab"
 }

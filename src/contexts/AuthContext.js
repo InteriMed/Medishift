@@ -52,7 +52,6 @@ export const AuthProvider = ({ children }) => {
     Cookies.set(getCookieKey('PROFILE_COMPLETE', userId), profileComplete ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
     Cookies.set(getCookieKey('TUTORIAL_PASSED', userId), tutorialPassed ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
 
-    // console.log(`[AuthContext] Updated cookies - Profile Complete: ${profileComplete}, Tutorial Passed: ${tutorialPassed}`);
   }, []);
 
   const getCookieValues = useCallback((userId) => {
@@ -128,7 +127,7 @@ export const AuthProvider = ({ children }) => {
       if (user) {
         try {
           const isOnboarding = window.location.pathname.includes('/onboarding') || 
-                               window.location.pathname.includes('/dashboard/profile') ||
+                               (window.location.pathname.includes('/profile') && window.location.pathname.includes('/dashboard')) ||
                                window.location.pathname.includes('/dashboard/onboarding');
           
           const timeoutPromise = isOnboarding ? null : new Promise((_, reject) =>
@@ -170,7 +169,6 @@ export const AuthProvider = ({ children }) => {
               }
               return null;
             } catch (err) {
-              console.debug('[AuthContext] Admin data fetch error:', err.message);
               return null;
             }
           };
@@ -428,15 +426,14 @@ export const AuthProvider = ({ children }) => {
         try {
           const adminDocRef = doc(db, 'admins', currentUser.uid);
           const adminDoc = await getDoc(adminDocRef);
-          if (adminDoc.exists()) {
-            const data = adminDoc.data();
-            if (data.isActive !== false) {
-              adminData = data;
+            if (adminDoc.exists()) {
+              const data = adminDoc.data();
+              if (data.isActive !== false) {
+                adminData = data;
+              }
             }
+          } catch (err) {
           }
-        } catch (err) {
-          console.debug('[AuthContext] Admin data refresh error:', err.message);
-        }
         
         const profileWithAdmin = {
           ...profile,

@@ -4,14 +4,14 @@ export const TUTORIAL_SEQUENCES = {
     [ONBOARDING_TYPES.PROFESSIONAL]: {
         mandatory: [
             { 
-                id: TUTORIAL_IDS.DASHBOARD, 
-                skippable: false,
-                nextTutorial: TUTORIAL_IDS.PROFILE_TABS
-            },
-            { 
                 id: TUTORIAL_IDS.PROFILE_TABS, 
                 skippable: false,
                 completionTriggers: ['allTabsComplete', 'manualComplete'],
+                nextTutorial: TUTORIAL_IDS.DASHBOARD
+            },
+            { 
+                id: TUTORIAL_IDS.DASHBOARD, 
+                skippable: false,
                 nextTutorial: TUTORIAL_IDS.MESSAGES
             },
             { 
@@ -47,14 +47,14 @@ export const TUTORIAL_SEQUENCES = {
     [ONBOARDING_TYPES.FACILITY]: {
         mandatory: [
             { 
-                id: TUTORIAL_IDS.DASHBOARD, 
-                skippable: false,
-                nextTutorial: TUTORIAL_IDS.FACILITY_PROFILE_TABS
-            },
-            { 
                 id: TUTORIAL_IDS.FACILITY_PROFILE_TABS, 
                 skippable: false,
                 completionTriggers: ['allTabsComplete', 'manualComplete'],
+                nextTutorial: TUTORIAL_IDS.DASHBOARD
+            },
+            { 
+                id: TUTORIAL_IDS.DASHBOARD, 
+                skippable: false,
                 nextTutorial: TUTORIAL_IDS.MESSAGES
             },
             { 

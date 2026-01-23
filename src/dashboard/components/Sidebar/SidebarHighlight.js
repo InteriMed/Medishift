@@ -52,8 +52,8 @@ const SidebarHighlight = ({ highlightSidebarItem }) => {
   const targetItem = getNextSidebarItem();
 
   useEffect(() => {
-    if (!targetItem) return;
-    
+    if (!targetItem || !isTutorialActive) return;
+
     const element = document.querySelector(`a[data-tutorial="${targetItem}-link"]`);
     if (element) {
       element.classList.add('tutorial-highlight');
@@ -63,7 +63,7 @@ const SidebarHighlight = ({ highlightSidebarItem }) => {
         element.classList.remove('tutorial-highlight');
       }
     };
-  }, [targetItem]);
+  }, [targetItem, isTutorialActive]);
 
   if (!targetItem) return null;
 

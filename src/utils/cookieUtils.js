@@ -28,9 +28,8 @@ export const setWorkspaceCookie = (workspace) => {
       sameSite: 'strict'
     });
     
-    console.log(`[CookieUtils] Workspace set in cookie:`, workspace.name);
   } catch (error) {
-    console.error('Error setting workspace cookie:', error);
+    // Error setting workspace cookie
   }
 };
 
@@ -72,9 +71,8 @@ export const getWorkspaceCookie = () => {
 export const clearWorkspaceCookie = () => {
   try {
     Cookies.remove(WORKSPACE_COOKIE);
-    console.log('[CookieUtils] Workspace cookie cleared');
   } catch (error) {
-    console.error('Error clearing workspace cookie:', error);
+    // Error clearing workspace cookie
   }
 };
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Dialog from '../../../../components/Dialog/Dialog';
 import { FiUsers, FiBriefcase } from 'react-icons/fi';
 import { useTutorial } from '../../../contexts/TutorialContext';
@@ -12,25 +12,33 @@ import { WORKSPACE_TYPES } from '../../../../utils/sessionAuth';
 const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelectTeamAccess, glnVerified = false, allowClose = true }) => {
     const { t, i18n } = useTranslation('dashboardProfile');
     const navigate = useNavigate();
-    const { isTutorialActive, startTutorial, setAccessMode, resetProfileTabAccess, setMaxAccessedProfileTab } = useTutorial();
+    const location = useLocation();
+    const { isTutorialActive, startTutorial, setAccessLevelChoice, resetProfileTabAccess, setMaxAccessedProfileTab, stopTutorial } = useTutorial();
     const { user, selectedWorkspace } = useDashboard();
 
     const handleContinueOnboarding = async () => {
         resetProfileTabAccess();
         setMaxAccessedProfileTab('personalDetails');
         
-        if (setAccessMode) {
-            await setAccessMode('loading');
+        if (setAccessLevelChoice) {
+            await setAccessLevelChoice('loading');
         }
         
+        // Check if already on profile page
+        const isOnProfilePage = location.pathname.includes('/profile');
+        
+        if (!isOnProfilePage) {
+            // Navigate to profile if not already there
+            const workspaceId = selectedWorkspace?.id || 'personal';
+            navigate(`/dashboard/${workspaceId}/profile/personalDetails`);
+        }
+        
+        // Start tutorial if not active
         if (!isTutorialActive && startTutorial) {
             const onboardingType = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? ONBOARDING_TYPES.FACILITY : ONBOARDING_TYPES.PROFESSIONAL;
             const tutorialName = getProfileTutorialForType(onboardingType);
             startTutorial(tutorialName);
         }
-        
-        const workspaceId = selectedWorkspace?.id || 'personal';
-        navigate(`/dashboard/${workspaceId}/profile/personalDetails`);
         
         if (onContinueOnboarding) {
             onContinueOnboarding();
@@ -40,12 +48,20 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
     };
 
     const handleSelectTeamAccess = async () => {
+        // ALWAYS stop tutorial and set isTutorialActive = false
+        // Await to ensure tutorial is fully stopped before proceeding
+        if (stopTutorial) {
+            await stopTutorial({ forceStop: true, showAccessPopupForProfile: false });
+        }
+        
         if (resetProfileTabAccess) {
             resetProfileTabAccess();
         }
+        
         if (onSelectTeamAccess) {
             await onSelectTeamAccess();
         }
+        
         onClose();
     };
 
@@ -75,7 +91,10 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="border-2 border-border rounded-xl p-6 hover:border-primary/50 transition-colors flex flex-col">
+                    <div 
+                        onClick={handleSelectTeamAccess}
+                        className="border-2 border-border rounded-xl p-6 hover:border-blue-600 transition-colors flex flex-col cursor-pointer"
+                    >
                         <div className="mb-4">
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="p-3 rounded-lg bg-blue-500/10 text-blue-600">
@@ -108,17 +127,15 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
                             </li>
                         </ul>
                         <div className="mt-4 pt-4 border-t border-border">
-                            <button
-                                onClick={handleSelectTeamAccess}
-                                className="w-full px-4 py-2 rounded-lg border-2 border-blue-600 bg-transparent hover:bg-blue-600 text-blue-600 hover:text-white font-semibold transition-colors"
-                            >
+                            <div className="w-full px-4 py-2 rounded-lg border-2 border-blue-600 bg-transparent hover:bg-blue-600 text-blue-600 hover:text-white font-semibold transition-colors text-center">
                                 {t('accessLevelChoice.selectTeamAccess', 'Select Team Access')}
-                            </button>
+                            </div>
                         </div>
                     </div>
 
                     <div 
-                        className={`border-2 border-border rounded-xl p-6 transition-colors flex flex-col ${glnVerified ? 'hover:border-green-600' : 'opacity-60'}`}
+                        onClick={glnVerified ? handleContinueOnboarding : handleBackToOnboarding}
+                        className={`border-2 border-border rounded-xl p-6 transition-colors flex flex-col ${glnVerified ? 'hover:border-green-600 cursor-pointer' : 'opacity-60 cursor-pointer'}`}
                     >
                         <div className="mb-4">
                             <div className="flex items-center gap-3 mb-3">
@@ -157,20 +174,14 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
                                     <p className="text-red-600 text-sm font-medium mb-3 text-center">
                                         {t('accessLevelChoice.glnRequired', 'GLN verification required for Full Access')}
                                     </p>
-                                    <button
-                                        onClick={handleBackToOnboarding}
-                                        className="w-full px-4 py-2 rounded-lg border-2 border-red-600 bg-transparent text-red-600 hover:bg-red-600 hover:text-white font-semibold transition-colors"
-                                    >
+                                    <div className="w-full px-4 py-2 rounded-lg border-2 border-red-600 bg-transparent text-red-600 hover:bg-red-600 hover:text-white font-semibold transition-colors text-center">
                                         {t('accessLevelChoice.backToOnboarding', 'Back to Onboarding')}
-                                    </button>
+                                    </div>
                                 </div>
                             ) : (
-                                <button
-                                    onClick={handleContinueOnboarding}
-                                    className="w-full px-4 py-2 rounded-lg border-2 border-green-600 bg-transparent text-green-600 hover:bg-green-600 hover:text-white font-semibold transition-colors"
-                                >
+                                <div className="w-full px-4 py-2 rounded-lg border-2 border-green-600 bg-transparent text-green-600 hover:bg-green-600 hover:text-white font-semibold transition-colors text-center">
                                     {t('accessLevelChoice.continueProfile', 'Continue Profile')}
-                                </button>
+                                </div>
                             )}
                         </div>
                     </div>

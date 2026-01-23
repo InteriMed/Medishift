@@ -2,7 +2,11 @@
   "common": {
     "cancel": "Cancel",
     "autofillOptions": "Autofill Options",
-    "betaFill": "Beta Fill"
+    "betaFill": "Beta Fill",
+    "add": "Add",
+    "edit": "Edit",
+    "selectPlaceholder": "Select...",
+    "other": "Other"
   },
   "facilityAccessChoice": {
     "title": "Choose Your Facility Access",
@@ -343,7 +347,11 @@
     "issueDate": "Issue Date",
     "noExpiration": "No Expiration",
     "experience": "Experience",
-    "summary": "Summary"
+    "summary": "Summary",
+    "gpa": "GPA",
+    "honors": "Honors",
+    "qualificationType": "Type",
+    "qualificationTitle": "Title"
   },
   "jobPreferences": {
     "title": "Job Preferences & Availability",
@@ -495,7 +503,13 @@
     "education": "Education",
     "selectEducationPlaceholder": "Select an education entry",
     "selectQualificationPlaceholder": "Select a qualification",
-    "selectReferencePlaceholder": "Select a reference"
+    "selectReferencePlaceholder": "Select a reference",
+    "uploadWorkPermitButton": "Upload workPermit",
+    "addDiplomaButton": "Add diploma",
+    "addReferenceLetterButton": "Add referenceLetter",
+    "uploadCvButton": "Upload cv",
+    "addLicenseButton": "Add license",
+    "addOtherDocumentButton": "Add otherDocument"
   },
   "onboarding": {
     "title": "Onboarding",
@@ -572,7 +586,8 @@
       "processing": "Deleting account...",
       "reauthMessageGoogle": "Click the button below to sign in with Google and confirm account deletion.",
       "reauthMessage": "Please enter your password to confirm account deletion.",
-      "subtitle": "Manage your account security and deletion"
+      "subtitle": "Manage your account security and deletion",
+      "deleteWarningPermanent": "This action is permanent and cannot be undone."
     },
     "operationalSettingsTitle": "Operational Settings",
     "otherOperationalSettingsDescription": "Adjust your platform preferences and notification requirements.",

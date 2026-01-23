@@ -19,7 +19,7 @@ import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSw
 import Dialog from '../../../../../components/Dialog/Dialog';
 import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
 import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
-import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye, FiUpload } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye, FiZap } from 'react-icons/fi';
 import { cn } from '../../../../../utils/cn';
 
 
@@ -39,11 +39,11 @@ const styles = {
    leftColumn: "flex flex-col gap-6 flex-1",
    rightColumn: "flex flex-col gap-6 flex-1",
    sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
-   cardHeader: "flex items-center gap-4 mb-0",
-   cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+   cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
+   cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
    cardIconStyle: { color: 'var(--primary-color)' },
-   cardTitle: "flex-1",
-   cardTitleH3: "m-0",
+   cardTitle: "flex-1 min-w-0",
+   cardTitleH3: "m-0 text-sm font-semibold truncate",
    cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
    itemTitleStyle: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)', fontSize: 'var(--font-size-small)', fontWeight: '500' },
    grid: "grid grid-cols-1 gap-6 !grid-cols-1",
@@ -363,7 +363,7 @@ const ProfessionalBackground = ({
                   max={maxDateValue}
                   required={commonProps.required}
                   error={commonProps.error}
-                  onErrorReset={() => {}}
+                  onErrorReset={() => { }}
                   marginBottom={0}
                />
             );
@@ -403,10 +403,10 @@ const ProfessionalBackground = ({
 
    const getSectionIcon = (sectionKey) => {
       switch (sectionKey) {
-         case 'education': return <FiBookOpen />;
-         case 'workExperience': return <FiBriefcase />;
-         case 'qualifications': return <FiAward />;
-         default: return <FiBriefcase />;
+         case 'education': return <FiBookOpen className="w-4 h-4" style={styles.cardIconStyle} />;
+         case 'workExperience': return <FiBriefcase className="w-4 h-4" style={styles.cardIconStyle} />;
+         case 'qualifications': return <FiAward className="w-4 h-4" style={styles.cardIconStyle} />;
+         default: return <FiBriefcase className="w-4 h-4" style={styles.cardIconStyle} />;
       }
    };
 
@@ -582,18 +582,18 @@ const ProfessionalBackground = ({
 
    const checkItemHasNestedError = useCallback((errors, sectionPath, index) => {
       if (!errors || typeof errors !== 'object') return false;
-      
+
       const itemErrorPath = `${sectionPath}.${index}`;
       const directError = get(errors, itemErrorPath);
-      
+
       if (directError) {
          if (typeof directError === 'string') return true;
          if (typeof directError === 'object' && Object.keys(directError).length > 0) return true;
       }
-      
+
       const errorKeys = Object.keys(errors);
       const itemErrorPrefix = `${itemErrorPath}.`;
-      
+
       for (const key of errorKeys) {
          if (key.startsWith(itemErrorPrefix)) {
             return true;
@@ -607,7 +607,7 @@ const ProfessionalBackground = ({
             }
          }
       }
-      
+
       return false;
    }, []);
 
@@ -629,119 +629,119 @@ const ProfessionalBackground = ({
       return (
          <div key={sectionKey} className={styles.sectionCard}>
             <div className={styles.sectionContent}>
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                     <div className={styles.cardIconWrapper}>
-                        {getSectionIcon(sectionKey)}
-                     </div>
+               <div className={styles.cardHeader}>
+                  <div className={styles.cardIconWrapper}>
+                     {getSectionIcon(sectionKey)}
+                  </div>
+                  <div className={styles.cardTitle}>
                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
                         {subsectionTitle}
                      </h3>
                   </div>
-                  <p className={styles.sectionSubtitle} style={{
-                     fontSize: '0.75rem',
-                     margin: 0,
-                     fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                     color: 'hsl(var(--muted-foreground))'
-                  }}>
-                     {t(mainSectionRule.descriptionKey, t('professionalBackground.subtitle'))}
-                  </p>
                </div>
+               <p className={styles.sectionSubtitle} style={{
+                  fontSize: '0.75rem',
+                  margin: 0,
+                  fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                  color: 'hsl(var(--muted-foreground))'
+               }}>
+                  {t(mainSectionRule.descriptionKey, t('professionalBackground.subtitle'))}
+               </p>
+            </div>
 
-               <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0 }}>
-                  {currentList.length > 0 && currentList.map((item, index) => {
-                     const itemHasError = checkItemHasNestedError(errors, mainSectionPath, index);
-                     
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0 }}>
+               {currentList.length > 0 && currentList.map((item, index) => {
+                  const itemHasError = checkItemHasNestedError(errors, mainSectionPath, index);
 
-                     return (
-                        <React.Fragment key={`${sectionKey}-${index}`}>
-                           <div style={{
-                              padding: '0.5rem',
-                              margin: '2px 0',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              borderRadius: '8px',
-                              borderWidth: '1px',
-                              borderStyle: 'dotted',
-                              borderColor: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--border) / 0.6)',
-                              backgroundColor: itemHasError ? 'hsl(var(--destructive) / 0.03)' : 'transparent'
-                           }}>
-                              <div className={styles.itemContent}>
-                                 <div className="text-sm font-medium" style={{
-                                    color: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
-                                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'center'
-                                 }}>
-                                    <strong style={{ color: itemHasError ? 'hsl(var(--destructive))' : 'inherit' }}>{item.title || item.degree || item.jobTitle || 'Item'}</strong>
-                                    {itemHasError && (
-                                       <span className="text-[10px] uppercase tracking-wider font-bold text-destructive leading-tight">
-                                          {t('validation:incomplete', 'Incomplete')}
-                                       </span>
-                                    )}
-                                 </div>
-                                 <div className="text-xs" style={{
-                                    color: itemHasError ? 'hsl(var(--destructive) / 0.7)' : 'hsl(var(--muted-foreground))',
-                                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
-                                 }}>
-                                    {item.institution || item.employer}
-                                 </div>
+
+                  return (
+                     <React.Fragment key={`${sectionKey}-${index}`}>
+                        <div style={{
+                           padding: '0.5rem',
+                           margin: '2px 0',
+                           display: 'flex',
+                           justifyContent: 'space-between',
+                           alignItems: 'center',
+                           borderRadius: '8px',
+                           borderWidth: '1px',
+                           borderStyle: 'dotted',
+                           borderColor: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--border) / 0.6)',
+                           backgroundColor: itemHasError ? 'hsl(var(--destructive) / 0.03)' : 'transparent'
+                        }}>
+                           <div className={styles.itemContent}>
+                              <div className="text-sm font-medium" style={{
+                                 color: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
+                                 fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                 display: 'flex',
+                                 flexDirection: 'column',
+                                 justifyContent: 'center'
+                              }}>
+                                 <strong style={{ color: itemHasError ? 'hsl(var(--destructive))' : 'inherit' }}>{item.title || item.degree || item.jobTitle || 'Item'}</strong>
+                                 {itemHasError && (
+                                    <span className="text-[10px] uppercase tracking-wider font-bold text-destructive leading-tight">
+                                       {t('validation:incomplete', 'Incomplete')}
+                                    </span>
+                                 )}
                               </div>
-                              <div className={styles.itemActions} style={{ display: 'flex', gap: '0.75rem' }}>
-                                 <button
-                                    onClick={() => handleShowView(sectionKey, index)}
-                                    className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
-                                    title={t('common.view', 'View')}
-                                    aria-label={t('common.view', 'View')}
-                                    style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
-                                 >
-                                    <FiEye className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
-                                 </button>
-                                 <button
-                                    onClick={() => handleShowEditForm(sectionKey, index)}
-                                    className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
-                                    title={t('common.edit')}
-                                    aria-label={t('common.edit')}
-                                    style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
-                                 >
-                                    <FiEdit className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
-                                 </button>
-                                 <button
-                                    onClick={() => handleDeleteItem(sectionKey, index)}
-                                    className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-destructive")}
-                                    title={t('common.delete')}
-                                    aria-label={t('common.delete')}
-                                    style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
-                                 >
-                                    <FiTrash2 className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
-                                 </button>
+                              <div className="text-xs" style={{
+                                 color: itemHasError ? 'hsl(var(--destructive) / 0.7)' : 'hsl(var(--muted-foreground))',
+                                 fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
+                              }}>
+                                 {item.institution || item.employer}
                               </div>
                            </div>
-                           {index < currentList.length - 1 && !itemHasError && (
-                              <div style={{ height: '1px', backgroundColor: 'hsl(var(--border) / 0.3)', margin: '0.25rem 0' }} />
-                           )}
-                        </React.Fragment>
-                     );
-                  })}
+                           <div className={styles.itemActions} style={{ display: 'flex', gap: '0.75rem' }}>
+                              <button
+                                 onClick={() => handleShowView(sectionKey, index)}
+                                 className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
+                                 title={t('common.view', 'View')}
+                                 aria-label={t('common.view', 'View')}
+                                 style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
+                              >
+                                 <FiEye className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
+                              </button>
+                              <button
+                                 onClick={() => handleShowEditForm(sectionKey, index)}
+                                 className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
+                                 title={t('common.edit')}
+                                 aria-label={t('common.edit')}
+                                 style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
+                              >
+                                 <FiEdit className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
+                              </button>
+                              <button
+                                 onClick={() => handleDeleteItem(sectionKey, index)}
+                                 className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-destructive")}
+                                 title={t('common.delete')}
+                                 aria-label={t('common.delete')}
+                                 style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
+                              >
+                                 <FiTrash2 className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
+                              </button>
+                           </div>
+                        </div>
+                        {index < currentList.length - 1 && !itemHasError && (
+                           <div style={{ height: '1px', backgroundColor: 'hsl(var(--border) / 0.3)', margin: '0.25rem 0' }} />
+                        )}
+                     </React.Fragment>
+                  );
+               })}
 
-                  {currentList.length === 0 && (
-                     <p className={styles.emptyStateText} style={{ textAlign: 'center', color: 'gray', padding: '2rem' }}>{t(`professionalBackground.no${sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1)}`, 'No entries added yet.')}</p>
-                  )}
+               {currentList.length === 0 && (
+                  <p className={styles.emptyStateText} style={{ textAlign: 'center', color: 'gray', padding: '2rem' }}>{t(`professionalBackground.no${sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1)}`, 'No entries added yet.')}</p>
+               )}
 
-                  {typeof sectionErrors === 'string' && !currentList.length && <p className={styles.errorText}>{sectionErrors}</p>}
+               {typeof sectionErrors === 'string' && !currentList.length && <p className={styles.errorText}>{sectionErrors}</p>}
 
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: 0, padding: 0 }}>
-                     <button
-                        onClick={() => handleShowAddForm(sectionKey)}
-                        className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
-                        title={t('common.add')}
-                        aria-label={t('common.add')}
-                     >
-                        <FiPlus className="w-4 h-4" />
-                     </button>
-                  </div>
+               <div style={{ display: 'flex', justifyContent: 'center', marginTop: 0, padding: 0 }}>
+                  <button
+                     onClick={() => handleShowAddForm(sectionKey)}
+                     className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
+                     title={t('common:add', 'Add')}
+                     aria-label={t('common:add', 'Add')}
+                  >
+                     <FiPlus className="w-4 h-4" />
+                  </button>
                </div>
             </div>
          </div>
@@ -764,16 +764,15 @@ const ProfessionalBackground = ({
                         onClick={handleAutoFillClick}
                         disabled={isUploading || isAnalyzing}
                         className={cn(
-                           "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
-                           "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
+                           "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0 text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
                            (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
                            (stepData?.highlightUploadButton) && "tutorial-highlight"
                         )}
                         style={{ height: 'var(--boxed-inputfield-height)' }}
                         data-tutorial="profile-upload-button"
                      >
-                        {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
-                        <span className="text-sm font-medium text-black">
+                        {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4" />}
+                        <span className="text-sm font-medium">
                            {isAnalyzing
                               ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
                               : t('dashboardProfile:documents.autofill', 'Auto Fill')

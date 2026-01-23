@@ -107,7 +107,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.PERSONAL_DETAILS),
             requiresInteraction: true,
-            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }]
+            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
+            visualPreview: { type: 'autofill_button' }
         },
         {
             id: 'professional-background-tab',
@@ -118,7 +119,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             navigationPath: createProfilePath(PROFILE_TAB_IDS.PROFESSIONAL_BACKGROUND),
             requiresInteraction: true,
             requiresFullAccess: true,
-            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }]
+            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
+            visualPreview: { type: 'profile_tab', icon: 'briefcase', tabId: 'professionalBackground' }
         },
         {
             id: 'billing-information-tab',
@@ -128,7 +130,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.BILLING_INFORMATION),
             requiresInteraction: true,
-            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }]
+            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
+            visualPreview: { type: 'profile_tab', icon: 'credit-card', tabId: 'billingInformation' }
         },
         {
             id: 'document-uploads-tab',
@@ -138,7 +141,34 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.DOCUMENT_UPLOADS),
             requiresInteraction: true,
-            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }]
+            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
+            visualPreview: { type: 'profile_tab', icon: 'file-text', tabId: 'documentUploads' }
+        },
+        {
+            id: 'full-access-unlocked',
+            targetSelector: null,
+            targetArea: TARGET_AREAS.CONTENT,
+            messageType: 'success',
+            tooltipPosition: { top: '40%', left: '50%', transform: 'translate(-50%, -50%)' },
+            requiresInteraction: false
+        },
+        {
+            id: 'account-tab',
+            targetSelector: `button[data-tab="${PROFILE_TAB_IDS.ACCOUNT}"]`,
+            targetArea: TARGET_AREAS.CONTENT,
+            highlightTab: PROFILE_TAB_IDS.ACCOUNT,
+            navigationPath: createProfilePath(PROFILE_TAB_IDS.ACCOUNT),
+            requiresInteraction: false,
+            visualPreview: { type: 'profile_tab', icon: 'user', tabId: 'account' }
+        },
+        {
+            id: 'settings-tab',
+            targetSelector: `button[data-tab="${PROFILE_TAB_IDS.SETTINGS}"]`,
+            targetArea: TARGET_AREAS.CONTENT,
+            highlightTab: PROFILE_TAB_IDS.SETTINGS,
+            navigationPath: createProfilePath(PROFILE_TAB_IDS.SETTINGS),
+            requiresInteraction: false,
+            visualPreview: { type: 'profile_tab', icon: 'settings', tabId: 'settings' }
         },
         {
             id: 'profile-completion-info',
@@ -147,7 +177,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             tooltipPosition: { top: '150px', left: '50%' },
             navigationPath: createProfilePath(PROFILE_TAB_IDS.SETTINGS),
             highlightTab: PROFILE_TAB_IDS.SETTINGS,
-            actionButton: { textKey: 'buttons.continueToMessages', action: BUTTON_ACTIONS.START_MESSAGES_TUTORIAL }
+            actionButton: { textKey: 'buttons.continueToMessages', action: BUTTON_ACTIONS.START_MESSAGES_TUTORIAL },
+            visualPreview: { type: 'profile_tab', icon: 'settings', tabId: 'settings' }
         }
     ],
 
@@ -160,7 +191,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.FACILITY_CORE_DETAILS),
             requiresInteraction: true,
-            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }]
+            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
+            visualPreview: { type: 'autofill_button' }
         },
         {
             id: 'facility-legal-billing-tab',
@@ -170,7 +202,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.FACILITY_LEGAL_BILLING),
             requiresInteraction: true,
-            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }]
+            customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
+            visualPreview: { type: 'profile_tab', icon: 'credit-card', tabId: 'facilityLegalBilling' }
         },
         {
             id: 'facility-profile-completion-info',
@@ -179,7 +212,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             tooltipPosition: { top: '150px', left: '50%' },
             navigationPath: createProfilePath(PROFILE_TAB_IDS.SETTINGS),
             highlightTab: PROFILE_TAB_IDS.SETTINGS,
-            actionButton: { textKey: 'buttons.continueToMessages', action: BUTTON_ACTIONS.START_MESSAGES_TUTORIAL }
+            actionButton: { textKey: 'buttons.continueToMessages', action: BUTTON_ACTIONS.START_MESSAGES_TUTORIAL },
+            visualPreview: { type: 'profile_tab', icon: 'settings', tabId: 'settings' }
         }
     ],
 
@@ -190,7 +224,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '210px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.MESSAGES,
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('messages') }
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('messages') },
+            visualPreview: { type: 'sidebar_item', icon: 'message-square', textKey: 'dashboard.sidebar.messages' }
         },
         {
             id: 'messages-conversations',
@@ -218,7 +253,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '180px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.CONTRACTS,
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('contracts') }
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('contracts') },
+            visualPreview: { type: 'sidebar_item', icon: 'file-text', textKey: 'dashboard.sidebar.contracts' }
         },
         {
             id: 'contracts-list',
@@ -237,7 +273,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '240px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.CALENDAR,
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('calendar') }
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('calendar') },
+            visualPreview: { type: 'sidebar_item', icon: 'calendar', textKey: 'dashboard.sidebar.calendar' }
         },
         {
             id: 'calendar-view',
@@ -264,7 +301,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '270px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.MARKETPLACE,
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('marketplace') }
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('marketplace') },
+            visualPreview: { type: 'sidebar_item', icon: 'briefcase', textKey: 'dashboard.sidebar.marketplace' }
         },
         {
             id: 'marketplace-search',
@@ -291,7 +329,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '330px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.PAYROLL,
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('payroll') }
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('payroll') },
+            visualPreview: { type: 'sidebar_item', icon: 'dollar-sign', textKey: 'dashboard.sidebar.payroll' }
         },
         {
             id: 'payroll-requests',
@@ -318,7 +357,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '360px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.ORGANIZATION,
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('organization') }
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('organization') },
+            visualPreview: { type: 'sidebar_item', icon: 'users', textKey: 'dashboard.sidebar.organization' }
         },
         {
             id: 'organization-facilities',
@@ -345,7 +385,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '300px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: 'settings',
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('settings') }
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('settings') },
+            visualPreview: { type: 'sidebar_item', icon: 'settings', textKey: 'dashboard.sidebar.settings' }
         },
         {
             id: 'settings-account',
@@ -372,7 +413,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '150px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.PROFILE,
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('profile') }
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('profile') },
+            visualPreview: { type: 'sidebar_item', icon: 'user', textKey: 'dashboard.sidebar.profile' }
         },
         {
             id: 'profile-edit',

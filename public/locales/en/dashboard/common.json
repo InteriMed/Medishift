@@ -13,7 +13,25 @@
     "search": "Search",
     "notifications": "Notifications",
     "startTutorial": "Start Tutorial",
+    "stopTutorial": "Stop Tutorial",
+    "goBack": "Go back",
     "changeLanguage": "Change Language",
     "profileAlt": "Profile"
+  },
+  "buttons": {
+    "continue": "Continue",
+    "autoFill": "Auto Fill"
+  },
+  "add": "Add",
+  "phone": "Phone",
+  "email": "Email",
+  "continue": "Continue",
+  "auth": {
+    "login": {
+      "button": "Log In"
+    },
+    "signup": {
+      "button": "Sign Up"
+    }
   }
 }

@@ -8,7 +8,7 @@ import { db } from '../../services/firebase';
 import { useDashboard } from './DashboardContext';
 import { useSidebar } from './SidebarContext';
 import { debounce } from '../../utils/debounce';
-import i18n from '../../i18n';
+import i18n, { routeMappings } from '../../i18n';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
 import { LOCALSTORAGE_KEYS } from '../../config/keysDatabase';
 import {
@@ -21,6 +21,7 @@ import {
   isProfileTutorial,
   ONBOARDING_TYPES
 } from '../../config/tutorialSystem';
+import { extractFeatureFromPath, isProfilePath, normalizePathForComparison } from '../../config/tutorialRoutes';
 
 const tutorialSteps = {};
 Object.keys(TUTORIAL_IDS).forEach(key => {
@@ -59,7 +60,7 @@ export const TutorialProvider = ({ children }) => {
   // Refs for preventing infinite loops
   const syncTimestampRef = useRef({});
   const [isTutorialActive, setIsTutorialActive] = useState(false);
-  const [activeTutorial, setActiveTutorial] = useState(TUTORIAL_IDS.DASHBOARD);
+  const [activeTutorial, setActiveTutorial] = useState(TUTORIAL_IDS.PROFILE_TABS);
   const [currentStep, setCurrentStep] = useState(0);
   const [stepData, setStepData] = useState(null);
   const [elementPosition, setElementPosition] = useState(null);
@@ -96,7 +97,18 @@ export const TutorialProvider = ({ children }) => {
 
   // Debug: Log when accessLevelChoice changes
   useEffect(() => {
-  }, [accessLevelChoice]);
+    if (process.env.NODE_ENV === 'development') {
+      console.log("[TutorialContext] State Update:", {
+        isTutorialActive,
+        activeTutorial,
+        currentStep,
+        accessLevelChoice,
+        onboardingType,
+        isPaused,
+        isBusy
+      });
+    }
+  }, [isTutorialActive, activeTutorial, currentStep, accessLevelChoice, onboardingType, isPaused, isBusy]);
 
   // Auto-detect onboardingType based on selectedWorkspace
   useEffect(() => {
@@ -167,6 +179,9 @@ export const TutorialProvider = ({ children }) => {
   // Ref to track the last restored state to prevent duplicate restorations
   const lastRestoredStateRef = useRef({ tutorial: null, step: null });
 
+  // Ref to track last pathname to prevent duplicate tutorial restarts
+  const lastPathnameRef = useRef(location.pathname);
+
   // Ref for external validation (e.g., from Profile component)
   const validationRef = useRef({});
 
@@ -184,6 +199,13 @@ export const TutorialProvider = ({ children }) => {
     return path.includes('/dashboard');
   }, [location.pathname]);
 
+  // Helper function to get localized route
+  const getLocalizedRoute = (routeName, language = i18n.language) => {
+    const lang = routeMappings[language] ? language : 'en';
+    const route = routeMappings[lang][routeName] || routeName;
+    return route;
+  };
+
   // Add a utility function to safely update tutorial state
   const safelyUpdateTutorialState = useCallback(async (updates = [], callback = null) => {
     // Set busy flag to prevent concurrent updates
@@ -192,7 +214,6 @@ export const TutorialProvider = ({ children }) => {
     // Auto-clear busy flag after 10 seconds to prevent deadlock
     const timeoutId = setTimeout(() => {
       setIsBusy(false);
-      showWarning?.('Tutorial operation timed out. Please try again.');
     }, 10000);
 
     try {
@@ -216,10 +237,9 @@ export const TutorialProvider = ({ children }) => {
       // Error - clear timeout and busy flag
       clearTimeout(timeoutId);
       setIsBusy(false);
-      showWarning?.('Tutorial error occurred. The tutorial has been reset.');
       throw error; // Re-throw to allow caller to handle
     }
-  }, [showWarning]);
+  }, []);
 
   // Reset all tutorial state to default values (also clears Firestore to prevent reactivation)
   const resetTutorialState = useCallback(async () => {
@@ -228,7 +248,7 @@ export const TutorialProvider = ({ children }) => {
     await safelyUpdateTutorialState([
       [setShowFirstTimeModal, false],
       [setIsTutorialActive, false],
-      [setActiveTutorial, TUTORIAL_IDS.DASHBOARD],
+      [setActiveTutorial, getProfileTutorialForType(onboardingType)],
       [setCurrentStep, 0]
     ], async () => {
       if (currentUser && isTutorialActive) {
@@ -239,9 +259,7 @@ export const TutorialProvider = ({ children }) => {
             [`tutorialProgress.${onboardingType}.activeTutorial`]: null,
             updatedAt: serverTimestamp()
           });
-          console.log("[TutorialContext] resetTutorialState: Cleared activeTutorial from Firestore");
         } catch (error) {
-          console.error('[TutorialContext] Error clearing activeTutorial in resetTutorialState:', error);
         }
       }
     });
@@ -375,10 +393,11 @@ export const TutorialProvider = ({ children }) => {
     startTutorialRef.current = startTutorial;
   }, [startTutorial]);
 
-  // Start all tutorials from the beginning (dashboard)
+  // Start all tutorials from the beginning (profile)
   const startAllTutorials = useCallback(async () => {
-    await startTutorial(TUTORIAL_IDS.DASHBOARD);
-  }, [startTutorial]);
+    const firstTutorial = getProfileTutorialForType(onboardingType);
+    await startTutorial(firstTutorial);
+  }, [startTutorial, onboardingType]);
 
   // Check if tutorial should be shown based on tutorial status
   useEffect(() => {
@@ -436,7 +455,7 @@ export const TutorialProvider = ({ children }) => {
 
           const hasEstablishedWorkspace = hasProfessionalProfile === true || hasFacilityProfile === true || isAdmin || isVerifiedProfile;
 
-          const isProfilePage = location.pathname.includes('/dashboard/profile');
+          const isProfilePage = isProfilePath(location.pathname);
 
           // Wait for flags only if we don't have enough info to determine if workspace exists
           if (!hasEstablishedWorkspace && (typeof hasProfessionalProfile !== 'boolean' || typeof hasFacilityProfile !== 'boolean')) {
@@ -493,7 +512,9 @@ export const TutorialProvider = ({ children }) => {
             if (completedTutorials[savedTutorial] === true || typeProgress.tutorials?.[savedTutorial]?.completed) {
 
               if (isTutorialActive) {
-                setIsTutorialActive(false);
+                await safelyUpdateTutorialState([
+                  [setIsTutorialActive, false]
+                ]);
               }
               return;
             }
@@ -538,16 +559,21 @@ export const TutorialProvider = ({ children }) => {
           if (onboardingCompleted || isVerifiedProfile) {
             const isTutorialCompletedForAccount = typeProgress.completed === true;
 
-            if (!isTutorialCompletedForAccount && !isTutorialActive && !showFirstTimeModal) {
+            // Skip auto-start on account/settings tabs - these are end-of-tutorial tabs
+            // User navigating there intentionally shouldn't trigger a restart
+            const currentTab = location.pathname.split('/').pop();
+            const isOnAccountOrSettings = currentTab === 'account' || currentTab === 'settings';
+
+            if (!isTutorialCompletedForAccount && !isTutorialActive && !showFirstTimeModal && !isOnAccountOrSettings) {
 
               // Determine which tutorial to start based on what's already completed
               const completedInType = typeProgress.tutorials || {};
+              const profileTutorialName = getProfileTutorialForType(onboardingType);
 
-              if (!completedInType[TUTORIAL_IDS.DASHBOARD]?.completed) {
+              if (!completedInType[TUTORIAL_IDS.PROFILE_TABS]?.completed && !completedInType[TUTORIAL_IDS.FACILITY_PROFILE_TABS]?.completed) {
+                startTutorial(profileTutorialName);
+              } else if (!completedInType[TUTORIAL_IDS.DASHBOARD]?.completed) {
                 startTutorial(TUTORIAL_IDS.DASHBOARD);
-              } else if (!completedInType[TUTORIAL_IDS.PROFILE_TABS]?.completed && !completedInType[TUTORIAL_IDS.FACILITY_PROFILE_TABS]?.completed) {
-                const tutorialName = getProfileTutorialForType(onboardingType);
-                startTutorial(tutorialName);
               } else {
                 // If core ones are done but the account isn't marked as complete, do it now or start the next one in sequence
                 const remainingTutorials = [TUTORIAL_IDS.MESSAGES, TUTORIAL_IDS.CONTRACTS, TUTORIAL_IDS.CALENDAR, TUTORIAL_IDS.MARKETPLACE, TUTORIAL_IDS.SETTINGS];
@@ -654,12 +680,10 @@ export const TutorialProvider = ({ children }) => {
     const isProfileTutorialComplete = completedTutorials?.[TUTORIAL_IDS.PROFILE_TABS] === true || completedTutorials?.[TUTORIAL_IDS.FACILITY_PROFILE_TABS] === true;
     
     if (showAccessPopupForProfile && isInProfileTutorial && !isProfileTutorialComplete) {
-      if (accessLevelChoice === 'team') {
-      } else if (accessLevelChoice === 'full') {
-        setAllowAccessLevelModalClose(true);
-        setShowAccessLevelModal(true);
-        return false;
-      } else {
+      // ONLY show popup if on marketplace page
+      const isOnMarketplacePage = location.pathname.includes('/marketplace');
+
+      if (isOnMarketplacePage) {
         setAllowAccessLevelModalClose(true);
         setShowAccessLevelModal(true);
         return false;
@@ -691,6 +715,33 @@ export const TutorialProvider = ({ children }) => {
 
     return true;
   }, [isBusy, isTutorialActive, showFirstTimeModal, activeTutorial, completedTutorials, accessLevelChoice, safelyUpdateTutorialState, currentUser, onboardingType]);
+
+  // Pause the tutorial when next tooltip targets an inaccessible page/tab
+  // (e.g., tab locked due to missing validation/information)
+  // Tutorial remains active but paused until validation state allows continuation
+  const pauseTutorial = useCallback(() => {
+    if (isBusy) {
+      return;
+    }
+
+    safelyUpdateTutorialState([
+      [setIsPaused, true],
+      [setShowFirstTimeModal, false]
+    ]);
+  }, [isBusy, safelyUpdateTutorialState]);
+
+  // Resume the tutorial when validation state allows continuation
+  // (e.g., tab becomes accessible after required information is provided)
+  const resumeTutorial = useCallback(() => {
+    if (isBusy) {
+      return;
+    }
+
+    // Simply unpause - tutorial is already active, just resume from current step
+    safelyUpdateTutorialState([
+      [setIsPaused, false]
+    ]);
+  }, [isBusy, safelyUpdateTutorialState]);
 
   // Restart the onboarding flow (Smart Restart)
   const restartOnboarding = useCallback(async (type = 'professional') => {
@@ -724,7 +775,8 @@ export const TutorialProvider = ({ children }) => {
       }
 
       if (isTypeCompleted) {
-        startTutorial(TUTORIAL_IDS.DASHBOARD);
+        const firstTutorial = getProfileTutorialForType(type);
+        startTutorial(firstTutorial);
       } else {
         const lang = i18n.language || 'fr';
         navigate(`/${lang}/onboarding?type=${type}`);
@@ -739,7 +791,6 @@ export const TutorialProvider = ({ children }) => {
 
   // Start facility onboarding specifically (for "Create a business" button)
   const startFacilityOnboarding = useCallback(async () => {
-    console.log("[TutorialContext] Starting facility onboarding");
     await restartOnboarding('facility');
   }, [restartOnboarding]);
 
@@ -750,6 +801,86 @@ export const TutorialProvider = ({ children }) => {
     }
   }, [isInDashboard, resetTutorialState]);
 
+  // AUTO-RESTART TUTORIAL ON URL CHANGE
+  useEffect(() => {
+    if (!isInDashboard) {
+      return;
+    }
+
+    if (isBusy || isDashboardLoading || !currentUser) {
+      return;
+    }
+
+    const currentPath = location.pathname;
+    const lastPath = lastPathnameRef.current;
+
+    if (currentPath === lastPath) {
+      return;
+    }
+
+    lastPathnameRef.current = currentPath;
+
+    const normalizedPath = normalizePathForComparison(currentPath);
+    const feature = extractFeatureFromPath(normalizedPath);
+
+    const getTutorialForFeature = (featureName) => {
+      if (isProfilePath(normalizedPath)) {
+        return getProfileTutorialForType(onboardingType);
+      }
+
+      const featureToTutorialMap = {
+        'overview': TUTORIAL_IDS.DASHBOARD,
+        'messages': TUTORIAL_IDS.MESSAGES,
+        'contracts': TUTORIAL_IDS.CONTRACTS,
+        'calendar': TUTORIAL_IDS.CALENDAR,
+        'marketplace': TUTORIAL_IDS.MARKETPLACE,
+        'payroll': TUTORIAL_IDS.PAYROLL,
+        'organization': TUTORIAL_IDS.ORGANIZATION,
+        'settings': TUTORIAL_IDS.SETTINGS
+      };
+
+      return featureToTutorialMap[featureName] || null;
+    };
+
+    const tutorialForRoute = getTutorialForFeature(feature);
+
+    if (!tutorialForRoute) {
+      return;
+    }
+
+    const isCurrentlyInThisTutorial = isTutorialActive && activeTutorial === tutorialForRoute;
+    const isProfileTutorialRoute = isProfileTutorial(tutorialForRoute);
+    const wasProfileTutorialRoute = isProfilePath(normalizePathForComparison(lastPath));
+
+    if (isCurrentlyInThisTutorial) {
+      if (isProfileTutorialRoute && wasProfileTutorialRoute) {
+        return;
+      }
+      return;
+    }
+
+    // CRITICAL: Don't restart profile tutorial when navigating between profile tabs
+    // Even if isTutorialActive is temporarily false, if activeTutorial is a profile tutorial
+    // and we're on a profile path, don't restart - just let the state restoration handle it
+    if (isProfileTutorialRoute && wasProfileTutorialRoute && isProfileTutorial(activeTutorial)) {
+      return;
+    }
+
+    // Also skip restart for account/settings tabs - these are end-of-tutorial tabs
+    const currentTab = currentPath.split('/').pop();
+    if (isProfileTutorialRoute && (currentTab === 'account' || currentTab === 'settings')) {
+      return;
+    }
+
+    if (startTutorialRef.current) {
+      setTimeout(() => {
+        if (startTutorialRef.current) {
+          startTutorialRef.current(tutorialForRoute);
+        }
+      }, 300);
+    }
+  }, [location.pathname, isInDashboard, isBusy, isDashboardLoading, currentUser, isTutorialActive, activeTutorial, onboardingType]);
+
 
   // Update step data when current step or active tutorial changes
   useEffect(() => {
@@ -757,7 +888,7 @@ export const TutorialProvider = ({ children }) => {
       const steps = tutorialSteps[activeTutorial];
       
       // AUTO-SYNC: Detect correct step based on current URL for profile tutorials
-      if (isProfileTutorial(activeTutorial) && location.pathname.includes('/dashboard/profile')) {
+      if (isProfileTutorial(activeTutorial) && isProfilePath(location.pathname)) {
         let currentTab = location.pathname.split('/').pop();
         
         // If URL ends with 'profile', default to personalDetails
@@ -769,19 +900,68 @@ export const TutorialProvider = ({ children }) => {
           'personalDetails': 0,
           'professionalBackground': 1,
           'billingInformation': 2,
-          'documentUploads': 4
+          'documentUploads': 3,
+          'account': 4,
+          'settings': 5
         };
         
         const expectedStep = tabToStepMap[currentTab];
+        
+        // Debug Auto-Sync
+        console.log('[TutorialContext] Auto-Sync Check:', {
+          currentTab,
+          expectedStep,
+          currentStep,
+          isPaused,
+          isWaitingForSave,
+          showAccessLevelModal
+        });
+
+        // For account/settings tabs, don't force sync back - just allow being there
+        // This prevents the tutorial from restarting when clicking these tabs
+        if (currentTab === 'account' || currentTab === 'settings') {
+          return;
+        }
+
         if (expectedStep !== undefined && expectedStep !== currentStep && !showAccessLevelModal) {
-          setCurrentStep(expectedStep);
-          saveTutorialProgress(activeTutorial, expectedStep);
+          // Clear waiting state if user manually navigates to a new step
+          if (isWaitingForSave) {
+            console.log('[TutorialContext] Clearing isWaitingForSave due to manual navigation');
+            setIsWaitingForSave(false);
+          }
+          
+          console.log('[TutorialContext] Auto-syncing to step:', expectedStep);
+          safelyUpdateTutorialState([
+            [setCurrentStep, expectedStep]
+          ], async () => {
+            await saveTutorialProgress(activeTutorial, expectedStep);
+          });
           return;
         }
       }
       
       if (steps && steps[currentStep]) {
         let currentStepData = { ...steps[currentStep] };
+
+        // PAUSE CHECK: If step targets an inaccessible tab, pause tutorial
+        if (isProfileTutorial(activeTutorial) && currentStepData.highlightTab) {
+          const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads'];
+          const targetTabIndex = tabOrder.indexOf(currentStepData.highlightTab);
+          const maxTabIndex = tabOrder.indexOf(maxAccessedProfileTab);
+          
+          if (targetTabIndex !== -1 && maxTabIndex !== -1) {
+            // If target tab is ahead of max accessed tab, pause until validation unlocks it
+            if (targetTabIndex > maxTabIndex && !isPaused) {
+              console.log('[TutorialContext] Pausing tutorial: target tab ahead of max accessed', { targetTabIndex, maxTabIndex });
+              pauseTutorial();
+            }
+            // If target tab is now accessible and tutorial is paused, resume
+            else if (targetTabIndex <= maxTabIndex && isPaused) {
+              console.log('[TutorialContext] Resuming tutorial: target tab now accessible', { targetTabIndex, maxTabIndex });
+              resumeTutorial();
+            }
+          }
+        }
 
         // Check if step requires a specific page
         const requiredPath = currentStepData.navigationPath || currentStepData.requiredPage;
@@ -861,7 +1041,7 @@ export const TutorialProvider = ({ children }) => {
     } else {
       setStepData(null);
     }
-  }, [currentStep, activeTutorial, isTutorialActive, location.pathname, showAccessLevelModal]);
+  }, [currentStep, activeTutorial, isTutorialActive, location.pathname, showAccessLevelModal, maxAccessedProfileTab, isPaused, pauseTutorial, resumeTutorial]);
 
   // Get element position for highlighting
   useEffect(() => {
@@ -1047,7 +1227,7 @@ export const TutorialProvider = ({ children }) => {
     try {
       await safelyUpdateTutorialState([
         [setIsTutorialActive, false],
-        [setActiveTutorial, TUTORIAL_IDS.DASHBOARD]
+        [setActiveTutorial, getProfileTutorialForType(onboardingType)]
       ], async () => {
         if (currentUser) {
           try {
@@ -1249,7 +1429,6 @@ export const TutorialProvider = ({ children }) => {
         if (currentTab !== targetTabName && currentTab !== 'profile') {
           const validate = validationRef.current['profile'];
           if (validate && !validate(currentTab)) {
-            showWarning?.(i18n.t('validation:completePreviousSteps') || 'Please complete the required fields before continuing.');
             return;
           }
         }
@@ -1421,18 +1600,21 @@ export const TutorialProvider = ({ children }) => {
           [tutorialName]: true
         }));
 
-        // Complete the profile tabs tutorial (this will automatically chain to messages tutorial)
-        // No need to manually start messages as completeTutorial handles chaining
-        await completeTutorial();
+        // Team access: Stop tutorial instead of chaining to next tutorial
+        // User selected team access, so they want to skip the full tutorial flow
+        await safelyUpdateTutorialState([
+          [setIsTutorialActive, false],
+          [setActiveTutorial, getProfileTutorialForType(onboardingType)],
+          [setCurrentStep, 0]
+        ]);
       } else {
         // Full mode: User selected to continue with full access
         // Don't automatically advance to step 2
         // User will click on the tab themselves
       }
     } catch (error) {
-      showError?.('Failed to save access preference. Please try again.');
     }
-  }, [currentUser, onboardingType, completeTutorial, nextStep, showError, activeTutorial, currentStep, safelyUpdateTutorialState, saveTutorialProgress]);
+  }, [currentUser, onboardingType, completeTutorial, nextStep, activeTutorial, currentStep, safelyUpdateTutorialState, saveTutorialProgress]);
 
   // Callback for when a tab/section is completed during tutorial
   const onTabCompleted = useCallback((tabId, isComplete) => {
@@ -1444,16 +1626,29 @@ export const TutorialProvider = ({ children }) => {
     }
 
     if (isComplete) {
+      console.log('[TutorialContext] Tab completed:', tabId);
 
       const professionalTabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads'];
       const tabIndex = professionalTabOrder.indexOf(tabId);
       const currentMaxIndex = professionalTabOrder.indexOf(maxAccessedProfileTab);
       
       // RULE: When a tab is completed, unlock the next tab
-      if (tabIndex >= currentMaxIndex && tabIndex < professionalTabOrder.length - 1) {
+      if (tabIndex === currentMaxIndex && tabIndex < professionalTabOrder.length - 1) {
         const nextTab = professionalTabOrder[tabIndex + 1];
         
+        console.log('[TutorialContext] Unlocking next tab:', nextTab);
         setMaxAccessedProfileTab(nextTab);
+        
+        // RESUME: If tutorial was paused waiting for this tab to become accessible, resume now
+        if (isPaused) {
+          setTimeout(() => {
+            const currentStepData = tutorialSteps[activeTutorial]?.[currentStep];
+            if (currentStepData?.highlightTab === nextTab) {
+              console.log('[TutorialContext] Resuming tutorial after tab unlock');
+              resumeTutorial();
+            }
+          }, 100);
+        }
       }
 
       // Clear waiting state immediately
@@ -1482,63 +1677,7 @@ export const TutorialProvider = ({ children }) => {
 
       // URL-based sync will handle step advancement automatically
     }
-  }, [isTutorialActive, activeTutorial, setAllowAccessLevelModalClose, setShowAccessLevelModal, maxAccessedProfileTab]);
-
-  // Pause the tutorial (e.g., when a document upload popup is opened)
-  const pauseTutorial = useCallback(() => {
-    if (isBusy) {
-      return;
-    }
-
-    safelyUpdateTutorialState([
-      [setIsPaused, true],
-      [setShowFirstTimeModal, false],
-      [setIsTutorialActive, false]
-    ]);
-  }, [isBusy, safelyUpdateTutorialState]);
-
-  // Resume the tutorial (e.g., when "Save and Continue" is clicked)
-  const resumeTutorial = useCallback(() => {
-    if (isBusy) {
-      return;
-    }
-
-    // Resume by restarting the tutorial from where it was paused
-    safelyUpdateTutorialState([
-      [setIsPaused, false]
-    ], async () => {
-      // Check if onboarding was completed
-      if (currentUser) {
-        try {
-          const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
-          const profileDocRef = doc(db, profileCollection, currentUser.uid);
-          const profileDoc = await getDoc(profileDocRef);
-
-          if (profileDoc.exists()) {
-            const profileData = profileDoc.data();
-            const onboardingCompleted = profileData.tutorialAccessMode === 'enabled' || profileData.tutorialAccessMode === 'disabled';
-
-            if (onboardingCompleted) {
-              // Resume tutorial
-              setTimeout(() => {
-                if (startTutorialRef.current) {
-                  startTutorialRef.current(activeTutorial || TUTORIAL_IDS.DASHBOARD);
-                }
-              }, 100);
-            } else {
-              // Resume onboarding page
-              if (isInDashboard) {
-                const lang = i18n.language || 'fr';
-                navigate(`/${lang}/onboarding`);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('[TutorialContext] Error resuming tutorial:', error);
-        }
-      }
-    });
-  }, [isBusy, safelyUpdateTutorialState, currentUser, activeTutorial]);
+  }, [isTutorialActive, activeTutorial, setAllowAccessLevelModalClose, setShowAccessLevelModal, maxAccessedProfileTab, isPaused, resumeTutorial, currentStep]);
 
   // Check if a sidebar item should be accesssible during onboarding
   const isSidebarItemAccessible = useCallback((itemPath) => {
@@ -1613,7 +1752,7 @@ export const TutorialProvider = ({ children }) => {
     if (!isTutorialActive) return;
 
     // Special Exception: If completing Dashboard tutorial by reaching Profile page, allow it even if busy
-    if (activeTutorial === TUTORIAL_IDS.DASHBOARD && currentStep >= 3 && location.pathname.includes('/dashboard/profile')) {
+    if (activeTutorial === TUTORIAL_IDS.DASHBOARD && currentStep >= 3 && isProfilePath(location.pathname)) {
 
       // Force update if busy to ensure completion
       if (isBusy) {
@@ -1632,74 +1771,85 @@ export const TutorialProvider = ({ children }) => {
 
       // 2. Strict Redirection Logic based on Active Tutorial
 
-      // Case A: Profile Creation Tutorial
-      // User must stay within the profile section
-      if (isProfileTutorial(activeTutorial)) {
-        // SYNC: Check if current URL matches any step's navigationPath and switch to it
-        // This allows users to click tabs without getting stuck on previous steps
-        // Use a ref to prevent infinite sync loops
-        try {
-          const steps = tutorialSteps[activeTutorial];
-          if (steps) {
-            const currentPath = location.pathname;
-            const matchingStepIndex = steps.findIndex(step =>
-              step.navigationPath && currentPath.includes(step.navigationPath)
-            );
+          // Case A: Profile Creation Tutorial
+          // User must stay within the profile section
+          if (isProfileTutorial(activeTutorial)) {
+            // SYNC: Check if current URL matches any step's navigationPath and switch to it
+            // This allows users to click tabs without getting stuck on previous steps
+            // Use a ref to prevent infinite sync loops
+            try {
+              const steps = tutorialSteps[activeTutorial];
+              if (steps) {
+                const currentPath = location.pathname;
+                const normalizedCurrentPath = normalizePathForComparison(currentPath);
+                const matchingStepIndex = steps.findIndex(step =>
+                  step.navigationPath && normalizedCurrentPath.includes(step.navigationPath)
+                );
 
-            // Only sync if:
-            // 1. There's a matching step
-            // 2. It's different from current step
-            // 3. We're not busy
-            // 4. We haven't just synced to this step in the last 500ms (prevent rapid cycles)
-            const now = Date.now();
-            const lastSyncKey = `${matchingStepIndex}_${currentPath}`;
-            const lastSyncTime = syncTimestampRef.current[lastSyncKey] || 0;
-            const timeSinceLastSync = now - lastSyncTime;
+                // Only sync if:
+                // 1. There's a matching step
+                // 2. It's different from current step
+                // 3. We're not busy
+                // 4. We haven't just synced to this step in the last 500ms (prevent rapid cycles)
+                const now = Date.now();
+                const lastSyncKey = `${matchingStepIndex}_${currentPath}`;
+                const lastSyncTime = syncTimestampRef.current[lastSyncKey] || 0;
+                const timeSinceLastSync = now - lastSyncTime;
 
-            if (matchingStepIndex !== -1 &&
-              matchingStepIndex !== currentStep &&
-              !isBusy &&
-              timeSinceLastSync > 500) {
-              syncTimestampRef.current[lastSyncKey] = now;
-              setCurrentStep(matchingStepIndex);
-              return;
-            } else if (matchingStepIndex !== -1 && timeSinceLastSync <= 500) {
+                if (matchingStepIndex !== -1 &&
+                  matchingStepIndex !== currentStep &&
+                  !isBusy &&
+                  timeSinceLastSync > 500) {
+                  syncTimestampRef.current[lastSyncKey] = now;
+                  safelyUpdateTutorialState([
+                    [setCurrentStep, matchingStepIndex]
+                  ], async () => {
+                    await saveTutorialProgress(activeTutorial, matchingStepIndex);
+                  });
+                  return;
+                } else if (matchingStepIndex !== -1 && timeSinceLastSync <= 500) {
+                }
+              }
+            } catch (err) {
+              console.error('[TutorialContext] Error syncing tutorial step:', err);
             }
-          }
-        } catch (err) {
-          console.error('[TutorialContext] Error syncing tutorial step:', err);
-        }
 
-        if (!path.includes('/profile')) {
+            if (!isProfilePath(path)) {
+              // If team access, allow navigation and show access popup ONLY if navigating to marketplace
+              if (accessLevelChoice === 'team') {
+                if (path.includes('/marketplace')) {
+                  setAllowAccessLevelModalClose(true);
+                  setShowAccessLevelModal(true);
+                  return;
+                }
+                // Allow navigation to other tabs (overview, calendar, etc.) without redirecting back to profile
+                return;
+              }
 
-          // If team access, allow navigation and show access popup
-          if (accessLevelChoice === 'team') {
-            setAllowAccessLevelModalClose(true);
-            setShowAccessLevelModal(true);
+              // If full access and past first step, show Access Level popup ONLY if navigating to marketplace
+              if (accessLevelChoice === 'full' && currentStep >= 1) {
+                if (path.includes('/marketplace')) {
+                  setAllowAccessLevelModalClose(true);
+                  setShowAccessLevelModal(true);
+                  return;
+                }
+                // Allow navigation to other tabs
+                return;
+              }
+
+              // No access mode set - redirect back to profile
+              // Workspace is already in the path
+              const workspaceId = selectedWorkspace?.id || 'personal';
+              const profileUrl = `/dashboard/${workspaceId}/profile`;
+              navigate(profileUrl);
+            }
             return;
           }
-
-          // If full access and past first step, show Access Level popup
-          if (accessLevelChoice === 'full' && currentStep >= 1) {
-            setAllowAccessLevelModalClose(true);
-            setShowAccessLevelModal(true);
-            return;
-          }
-
-          // No access mode set - redirect back to profile
-          showWarning("Please complete your profile configuration to continue.");
-          // Workspace is already in the path
-          const workspaceId = selectedWorkspace?.id || 'personal';
-          const profileUrl = `/dashboard/${workspaceId}/profile`;
-          navigate(profileUrl);
-        }
-        return;
-      }
 
       // Case B: Dashboard Intro Tutorial
       if (activeTutorial === TUTORIAL_IDS.DASHBOARD) {
         const isOverview = path.includes('/overview');
-        const isProfile = path.includes('/profile');
+        const isProfile = isProfilePath(path);
         const isSharedFeature = path.includes('/messages') || path.includes('/calendar') || path.includes('/contracts');
 
         // Allow profile and shared features (messages, calendar, contracts) during dashboard tutorial
@@ -1714,7 +1864,6 @@ export const TutorialProvider = ({ children }) => {
         // Steps before "Navigate to Profile" (Step 3) -> Must stay on Overview
         if (currentStep < 3) {
           if (!isOverview) {
-            showWarning("Please follow the onboarding guide.");
             // Workspace is already in the path
             const workspaceId = selectedWorkspace?.id || 'personal';
             const dashboardUrl = `/dashboard/${workspaceId}/overview`;
@@ -1723,7 +1872,6 @@ export const TutorialProvider = ({ children }) => {
         } else {
           // Step 3+ but not on profile, overview, or shared features - redirect to dashboard
           if (!isOverview && !isProfile && !isSharedFeature) {
-            showWarning("Please click on Profile to proceed.");
             // Workspace is already in the path
             const workspaceId = selectedWorkspace?.id || 'personal';
             const dashboardUrl = `/dashboard/${workspaceId}/overview`;

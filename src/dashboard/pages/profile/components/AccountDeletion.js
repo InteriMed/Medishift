@@ -77,7 +77,7 @@ const AccountDeletion = () => {
 
     // Validate confirmation phrase and proceed to reauth
     const handleConfirmDelete = useCallback(() => {
-        if (confirmPhrase !== 'DELETE MY ACCOUNT') {
+        if (confirmPhrase.trim().toLowerCase() !== 'delete my account') {
             setConfirmError(t('settings.accountDeletion.confirmMismatch'));
             return;
         }
@@ -160,103 +160,39 @@ const AccountDeletion = () => {
         }
     }, [authProvider, reauthPassword, processAccountDeletion, showNotification, t]);
 
+    const hasLegalRecords = deletionPreview?.hasLegalRecords;
+
     return (
-        <div className="space-y-6">
-            {/* Deletion Preview Section */}
-            {isLoadingPreview ? (
-                <div className="bg-card rounded-xl border border-border/60 p-6 shadow-sm">
-                    <div className="flex items-center gap-3 text-muted-foreground">
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
-                        <span className="text-sm">{t('settings.accountDeletion.loadingPreview')}</span>
-                    </div>
-                </div>
-            ) : deletionPreview && (
-                <div className="bg-card rounded-xl border border-border/60 p-6 shadow-sm">
-                    <h3 className="text-sm font-medium m-0 mb-4" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                        {t('settings.accountDeletion.previewTitle')}
-                    </h3>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                        {/* What will be deleted */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-destructive font-medium text-sm">
-                                <FiX className="w-4 h-4" />
-                                {t('settings.accountDeletion.immediatelyDeleted')}
-                            </div>
-                            <ul className="space-y-2 text-sm text-muted-foreground pl-6">
-                                {deletionPreview.whatWillBeDeleted?.map((item, index) => (
-                                    <li key={index} className="list-disc">{item}</li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* What will be retained */}
-                        {deletionPreview.hasLegalRecords && (
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-medium text-sm">
-                                    <FiArchive className="w-4 h-4" />
-                                    {t('settings.accountDeletion.retainedForLegalReasons')}
-                                </div>
-                                <ul className="space-y-2 text-sm text-muted-foreground pl-6">
-                                    {deletionPreview.whatWillBeRetained?.map((item, index) => (
-                                        <li key={index} className="list-disc">{item}</li>
-                                    ))}
-                                </ul>
-                                {deletionPreview.retentionPeriod && (
-                                    <p className="text-xs text-muted-foreground italic mt-2 pl-6">
-                                        {t('settings.accountDeletion.retentionPeriod')}: {deletionPreview.retentionPeriod}
-                                    </p>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Legal notice */}
-                    {deletionPreview.hasLegalRecords ? (
-                        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                            <p className="text-xs text-amber-800 dark:text-amber-200">
-                                <FiLock className="inline w-3 h-3 mr-1" />
-                                {t('settings.accountDeletion.swissLawNotice')}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-                            <p className="text-xs text-green-800 dark:text-green-200">
-                                <FiCheck className="inline w-3 h-3 mr-1" />
-                                {t('settings.accountDeletion.noLegalRecords')}
-                            </p>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Danger Zone - Delete Account */}
-            <div className="bg-red-50/50 dark:bg-red-950/10 rounded-xl border border-red-100 dark:border-red-900/30 p-6 shadow-sm">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex items-start gap-4 flex-1">
-                        <div className="p-2 rounded-lg bg-white text-red-600 dark:text-red-400 shrink-0">
-                            <FiAlertTriangle className="w-5 h-5" />
-                        </div>
+        <div>
+            <div className="p-4 rounded-xl border-2" style={{ 
+                backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                borderColor: 'rgba(239, 68, 68, 0.2)'
+            }}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                        <FiAlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
                         <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-medium m-0 text-red-600 dark:text-red-400" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                            <h4 className="text-sm font-semibold m-0 mb-1" style={{ color: '#ef4444', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
                                 {t('settings.dangerZone')}
-                            </h3>
-                            <h4 className="font-medium text-foreground mt-2 mb-1">
-                                {t('settings.accountDeletion.title')}
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs m-0 leading-relaxed" style={{ color: 'var(--text-color)' }}>
                                 {t('settings.accountDeletion.description')}
                             </p>
                         </div>
                     </div>
-                    <div className="shrink-0 md:ml-4">
+                    <div className="shrink-0">
                         <Button
                             onClick={handleDeleteClick}
-                            disabled={isProcessingDelete}
+                            disabled={isProcessingDelete || isLoadingPreview}
                             variant="danger"
-                            size="sm"
-                            icon={<FiTrash2 />}
+                            style={{
+                                minWidth: '160px',
+                                height: '42px',
+                                fontSize: '14px',
+                                fontWeight: '500'
+                            }}
                         >
+                            <FiTrash2 className="w-4 h-4 mr-2" />
                             {t('settings.accountDeletion.deleteButton')}
                         </Button>
                     </div>
@@ -268,8 +204,8 @@ const AccountDeletion = () => {
                 isOpen={isDeleteDialogOpen}
                 onClose={() => setIsDeleteDialogOpen(false)}
                 title={t('settings.accountDeletion.confirmTitle')}
-                size="small"
-                messageType="warning"
+                size="medium"
+                messageType="error"
                 actions={
                     <>
                         <Button
@@ -282,7 +218,7 @@ const AccountDeletion = () => {
                         <Button
                             onClick={handleConfirmDelete}
                             variant="danger"
-                            disabled={isProcessingDelete || confirmPhrase !== 'DELETE MY ACCOUNT'}
+                            disabled={isProcessingDelete || confirmPhrase.trim().toLowerCase() !== 'delete my account'}
                         >
                             {t('accountBasics.confirmDelete')}
                         </Button>
@@ -290,6 +226,69 @@ const AccountDeletion = () => {
                 }
             >
                 <div className="space-y-4">
+                    {deletionPreview && (
+                        <div className="p-4 rounded-xl border-2 border-border/60" style={{ backgroundColor: 'var(--muted)' }}>
+                            <h4 className="text-sm font-semibold m-0 mb-3" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                                {t('settings.accountDeletion.previewTitle')}
+                            </h4>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-sm font-medium" style={{ color: '#ef4444' }}>
+                                        <FiX className="w-4 h-4" />
+                                        {t('settings.accountDeletion.immediatelyDeleted')}
+                                    </div>
+                                    <ul className="space-y-1.5 text-xs pl-5" style={{ color: 'var(--text-light-color)' }}>
+                                        {deletionPreview.whatWillBeDeleted?.map((item, index) => (
+                                            <li key={index} className="list-disc">{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                {hasLegalRecords && (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-sm font-medium" style={{ color: '#f59e0b' }}>
+                                            <FiArchive className="w-4 h-4" />
+                                            {t('settings.accountDeletion.retainedForLegalReasons')}
+                                        </div>
+                                        <ul className="space-y-1.5 text-xs pl-5" style={{ color: 'var(--text-light-color)' }}>
+                                            {deletionPreview.whatWillBeRetained?.map((item, index) => (
+                                                <li key={index} className="list-disc">{item}</li>
+                                            ))}
+                                        </ul>
+                                        {deletionPreview.retentionPeriod && (
+                                            <p className="text-xs italic mt-2 pl-5" style={{ color: 'var(--text-light-color)' }}>
+                                                {t('settings.accountDeletion.retentionPeriod')}: {deletionPreview.retentionPeriod}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {hasLegalRecords ? (
+                                <div className="mt-3 p-3 rounded-xl border-2" style={{ 
+                                    backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                                    borderColor: 'rgba(245, 158, 11, 0.2)'
+                                }}>
+                                    <p className="text-xs m-0 leading-relaxed" style={{ color: '#f59e0b' }}>
+                                        <FiLock className="inline w-3 h-3 mr-1" />
+                                        {t('settings.accountDeletion.swissLawNotice')}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="mt-3 p-3 rounded-xl border-2" style={{ 
+                                    backgroundColor: 'rgba(34, 197, 94, 0.05)',
+                                    borderColor: 'rgba(34, 197, 94, 0.2)'
+                                }}>
+                                    <p className="text-xs m-0 leading-relaxed" style={{ color: '#22c55e' }}>
+                                        <FiCheck className="inline w-3 h-3 mr-1" />
+                                        {t('settings.accountDeletion.noLegalRecords')}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <p className="font-bold text-red-600">{t('accountBasics.deleteWarningPermanent')}</p>
                     <p>{t('settings.accountDeletion.confirmMessage')}</p>
                     <PersonnalizedInputField
@@ -315,7 +314,7 @@ const AccountDeletion = () => {
                 }}
                 title={t('settings.accountDeletion.reauthTitle')}
                 size="small"
-                messageType="warning"
+                messageType="error"
                 actions={
                     <>
                         <Button

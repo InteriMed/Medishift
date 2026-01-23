@@ -146,17 +146,17 @@ Always provide a fallback default value:
 
 ### File Structure Mirroring
 Locale keys MUST mirror the source file structure:
-- `src/pages/Auth/LoginPage.js` → Uses `auth:` namespace → Keys in `src/locales/en/pages/auth/auth.json`
-- `src/dashboard/pages/admin/EmailCenter.js` → Uses `admin:` namespace → Keys in `src/locales/en/dashboard/admin/admin.json`
+- `src/pages/Auth/LoginPage.js` → Uses `auth:` namespace → Keys in `public/locales/en/pages/auth/auth.json`
+- `src/dashboard/pages/admin/EmailCenter.js` → Uses `admin:` namespace → Keys in `public/locales/en/dashboard/admin/admin.json`
 
 ### Adding New Locale Keys
 When adding new UI text:
-1. Add the key to the appropriate JSON file under `src/locales/en/`
+1. Add the key to the appropriate JSON file under `public/locales/en/`
 2. Use nested objects for related keys (e.g., `auth.ban.accountDisabled`)
 3. Keep keys descriptive and hierarchical
 
 ## SERVICE TREE (For New Dashboard Services)
-When creating new dashboard services, document them in `src/locales/en/service_tree/`.
+When creating new dashboard services, document them in `public/locales/en/service_tree/`.
 
 ### Service Action Schema
 ```json

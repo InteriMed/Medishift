@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FiBookOpen, FiHelpCircle, FiBell, FiChevronDown } from 'react-icons/fi';
+import {
+  FiBookOpen, FiHelpCircle, FiBell, FiChevronDown,
+  FiMessageSquare, FiFileText, FiCalendar, FiBriefcase,
+  FiDollarSign, FiUsers, FiSettings, FiUser, FiZap, FiCreditCard
+} from 'react-icons/fi';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { isLastStep as checkIsLastStep, TUTORIAL_IDS, TUTORIAL_STEP_DEFINITIONS as tutorialSteps } from '../../../config/tutorialSystem';
@@ -10,6 +14,19 @@ import Button from '../../../components/BoxedInputFields/Button';
 import SidebarHighlighter from './SidebarHighlighter';
 import { useTranslation } from 'react-i18next';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+
+const ICON_MAP = {
+  'message-square': FiMessageSquare,
+  'file-text': FiFileText,
+  'calendar': FiCalendar,
+  'briefcase': FiBriefcase,
+  'dollar-sign': FiDollarSign,
+  'credit-card': FiCreditCard,
+  'users': FiUsers,
+  'settings': FiSettings,
+  'user': FiUser,
+  'zap': FiZap
+};
 
 const ReplicatedElement = ({ selector, onReady }) => {
   const [element, setElement] = useState(null);
@@ -36,7 +53,7 @@ const ReplicatedElement = ({ selector, onReady }) => {
   if (!element) return null;
 
   return (
-    <div 
+    <div
       className="replicated-element-container"
       ref={(node) => {
         if (node && element) {
@@ -48,56 +65,97 @@ const ReplicatedElement = ({ selector, onReady }) => {
   );
 };
 
+const UnifiedPreviewContainer = ({ children, bgColor, iconColor, text }) => (
+  <div className="relative w-full p-1 rounded-xl mb-6 flex justify-center">
+    <div
+      className="flex items-center gap-3 px-3 py-2 relative z-10"
+      style={{
+        backgroundColor: bgColor || 'white',
+        width: '100%',
+        maxWidth: '240px',
+        borderRadius: '8px',
+        border: '1px solid var(--border, #e2e8f0)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+      }}
+    >
+      {children}
+    </div>
+  </div>
+);
+
+const GenericUIElement = ({ icon: Icon, text, iconColor, textColor }) => (
+  <>
+    {Icon && (
+      <div
+        className="flex items-center justify-center rounded-md transition-colors shrink-0"
+        style={{
+          width: '32px',
+          height: '32px',
+          backgroundColor: iconColor ? `${iconColor}15` : 'transparent',
+        }}
+      >
+        <Icon style={{ color: iconColor || 'var(--muted-foreground, #64748b)' }} size={18} />
+      </div>
+    )}
+    <span
+      className="font-medium text-sm truncate"
+      style={{ color: textColor || 'var(--foreground, #1e293b)' }}
+    >
+      {text}
+    </span>
+  </>
+);
+
 const VisualPreview = ({ type, data, workspaceColor }) => {
-  const { t } = useTranslation(['tutorial', 'common']);
+  const { t } = useTranslation(['tutorial', 'common', 'dashboard', 'tabs']);
 
   if (type === 'header_help') {
     return (
-      <div className="relative w-full overflow-hidden rounded-xl mb-6">
-        <div 
-            className="flex items-center justify-between px-6 py-4 mx-auto relative z-10"
-            style={{ 
-                backgroundColor: workspaceColor,
-                width: '100%',
-                maxWidth: '320px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                margin: '0 auto'
-            }}
+      <div className="relative w-full p-1 rounded-xl mb-6">
+        <div
+          className="flex items-center justify-between px-6 py-4 mx-auto relative z-10"
+          style={{
+            backgroundColor: workspaceColor,
+            width: '100%',
+            maxWidth: '320px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+            margin: '0 auto'
+          }}
         >
-            {/* Notification Button (Left) */}
-            <div className="relative rounded-lg p-2 bg-white/10 text-white flex items-center justify-center opacity-60">
-                <FiBell size={20} />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
-            </div>
+          {/* Notification Button (Left) */}
+          <div className="relative rounded-lg p-2 bg-white/10 text-white flex items-center justify-center opacity-60">
+            <FiBell size={20} />
+            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
+          </div>
 
-            {/* Main Help Button (Center) */}
-            <div className="flex items-center gap-3">
-                <div 
-                    className="flex items-center justify-center rounded-lg bg-white/20 border border-white/30 transition-all"
-                    style={{ 
-                        width: '36px', 
-                        height: '36px',
-                        animation: 'tutorialButtonPulse 2s ease-in-out infinite'
-                    }}
-                >
-                    <FiHelpCircle className="text-white" size={20} />
-                </div>
-                <div className="flex flex-col items-start">
-                    <span className="text-white/70" style={{ fontSize: '10px', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {t('dashboard.tutorial.clickHere', 'Click here')}
-                    </span>
-                    <span className="text-white font-semibold text-xs">
-                        {t('dashboard.tutorial.toContinue', 'to continue later')}
-                    </span>
-                </div>
+          {/* Main Help Button (Center) */}
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center justify-center rounded-lg bg-white/20 border border-white/30 transition-all"
+              style={{
+                width: '36px',
+                height: '36px',
+                animation: 'tutorialButtonPulse 2s ease-in-out infinite'
+              }}
+            >
+              <FiHelpCircle className="text-white" size={20} />
             </div>
+            <div className="flex flex-col items-start">
+              <span className="text-white/70" style={{ fontSize: '10px', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {t('dashboard:dashboard.tutorial.clickHere', 'Click here')}
+              </span>
+              <span className="text-white font-semibold text-xs">
+                {t('dashboard:dashboard.tutorial.toContinue', 'to continue later')}
+              </span>
+            </div>
+          </div>
 
-            {/* Language Button (Right) */}
-            <div className="flex items-center gap-1.5 rounded-lg p-1.5 bg-white/10 text-white opacity-60">
-                <span className="text-xs font-semibold uppercase">EN</span>
-                <FiChevronDown size={14} />
-            </div>
+          {/* Language Button (Right) */}
+          <div className="flex items-center gap-1.5 rounded-lg p-1.5 bg-white/10 text-white opacity-60">
+            <span className="text-xs font-semibold uppercase">EN</span>
+            <FiChevronDown size={14} />
+          </div>
         </div>
         <style>{`
             @keyframes tutorialButtonPulse {
@@ -115,8 +173,62 @@ const VisualPreview = ({ type, data, workspaceColor }) => {
     );
   }
 
+  if (type === 'sidebar_item') {
+    const Icon = ICON_MAP[data.icon] || FiBookOpen;
+
+    const fallback = data.textKey ? data.textKey.split('.').pop() : 'Menu Item';
+    const capitalizedFallback = fallback.charAt(0).toUpperCase() + fallback.slice(1);
+    let translationKey = data.textKey;
+    if (data.textKey?.startsWith('dashboard.')) {
+      translationKey = `dashboard:${data.textKey}`;
+    }
+    const displayText = t(translationKey, capitalizedFallback);
+
+    return (
+      <UnifiedPreviewContainer bgColor="white">
+        <GenericUIElement
+          icon={Icon}
+          text={displayText}
+          iconColor="var(--grey-3)"
+          textColor="var(--grey-3)"
+        />
+      </UnifiedPreviewContainer>
+    );
+  }
+
+  if (type === 'autofill_button') {
+    return (
+      <UnifiedPreviewContainer bgColor="transparent">
+        <GenericUIElement
+          icon={FiZap}
+          text={t('common:buttons.autoFill', 'Auto Fill')}
+          iconColor="var(--grey-3)"
+          textColor="var(--grey-3)"
+        />
+      </UnifiedPreviewContainer>
+    );
+  }
+
+  if (type === 'profile_tab') {
+    const Icon = ICON_MAP[data.icon] || FiUser;
+    const displayText = t(`tabs:${data.tabId}`, data.tabId);
+
+    return (
+      <UnifiedPreviewContainer>
+        <GenericUIElement
+          icon={Icon}
+          text={displayText}
+          iconColor="var(--muted-foreground, #64748b)"
+          textColor="var(--muted-foreground, #64748b)"
+        />
+      </UnifiedPreviewContainer>
+    );
+  }
+
   return null;
 };
+
+const LOG_PREFIX = '[TutorialTooltip]';
 
 const HighlightTooltip = ({
   tutorialStep,
@@ -131,7 +243,6 @@ const HighlightTooltip = ({
   const {
     skipTutorial,
     elementPosition,
-    pauseTutorial,
     isWaitingForSave,
     setWaitingForSave,
     completedTutorials,
@@ -160,10 +271,10 @@ const HighlightTooltip = ({
 
   const getWorkspaceColor = () => {
     if (selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN) {
-        return '#dc2626';
+      return '#dc2626';
     }
     if (selectedWorkspace?.type === 'team' || user?.role === 'facility' || user?.role === 'company') {
-        return 'var(--color-logo-2, #29517b)';
+      return 'var(--color-logo-2, #29517b)';
     }
     return 'var(--color-logo-1, #70a4cf)';
   };
@@ -174,6 +285,32 @@ const HighlightTooltip = ({
     tutorialSteps[featureKey] && tutorialSteps[featureKey][stepIndex]
       ? tutorialSteps[featureKey][stepIndex]
       : null;
+
+  useEffect(() => {
+    console.log(LOG_PREFIX, 'Mount', {
+      featureKey,
+      stepIndex,
+      currentPath: location.pathname,
+      activeTutorial,
+      currentStep,
+      stepId: currentStepData?.id
+    });
+    return () => {
+      console.log(LOG_PREFIX, 'Unmount');
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log(LOG_PREFIX, 'Step changed', {
+      featureKey,
+      stepIndex,
+      stepId: currentStepData?.id,
+      navigationPath: currentStepData?.navigationPath,
+      highlightTab: currentStepData?.highlightTab,
+      requiresInteraction: currentStepData?.requiresInteraction,
+      currentPath: location.pathname
+    });
+  }, [stepIndex, featureKey, currentStepData?.id]);
 
   // Initialize visibility to true by default - will be controlled by effects
   // This ensures tooltips show immediately on reload
@@ -192,37 +329,48 @@ const HighlightTooltip = ({
   // This prevents the Dialog from closing during re-renders
   const intendedVisibilityRef = React.useRef(true);
 
-  // CRITICAL: Always show tooltip when step data becomes available (unless explicitly waiting for save)
-  useEffect(() => {
-    if (currentStepData && !isWaitingForSave && intendedVisibilityRef.current) {
-      setIsVisible(true);
-      hasShownForStepRef.current = true;
-    } else if (isWaitingForSave) {
-      setIsVisible(false);
-    }
-  }, [currentStepData, isWaitingForSave]);
+  // Track previous step to detect changes
+  const previousStepIdRef = React.useRef(null);
 
-  // Update tooltip content when step data changes
+  // SIMPLE: Show tooltip only when position is ready, hide otherwise
   useEffect(() => {
-    if (currentStepData) {
+    const currentStepId = currentStepData?.id;
+    const stepChanged = previousStepIdRef.current !== null && previousStepIdRef.current !== currentStepId;
+
+    if (stepChanged) {
+      console.log(LOG_PREFIX, 'Step changed - resetting state', {
+        previousStep: previousStepIdRef.current,
+        newStep: currentStepId
+      });
+      setIsVisible(false);
+      intendedVisibilityRef.current = true;
+      hasShownForStepRef.current = false;
+    }
+
+    previousStepIdRef.current = currentStepId;
+
+    // Determine if we should show the tooltip
+    const hasValidPosition = elementPosition || currentStepData?.tooltipPosition;
+    const shouldShow = currentStepData && !isWaitingForSave && intendedVisibilityRef.current && hasValidPosition;
+
+    if (shouldShow && !hasShownForStepRef.current) {
+      console.log(LOG_PREFIX, 'Visibility → true (position ready)', { stepId: currentStepData.id });
+
       const title = currentStepData.title || t(`tutorials.${featureKey}.steps.${currentStepData.id}.title`, 'Tutorial');
       const description = currentStepData.content || t(`tutorials.${featureKey}.steps.${currentStepData.id}.content`, '');
-      
-      // Calculate position based on element position or fixed position
+
       let position = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
-      
+
       if (elementPosition) {
         const { top, left, width, height } = elementPosition;
         const padding = 20;
-        
-        // Default to right of element
+
         position = {
           top: `${top + height / 2}px`,
           left: `${left + width + padding}px`,
           transform: 'translateY(-50%)'
         };
 
-        // Adjust based on tooltipPosition override if provided
         if (currentStepData.tooltipPosition) {
           position = { ...position, ...currentStepData.tooltipPosition };
         }
@@ -235,43 +383,155 @@ const HighlightTooltip = ({
         description,
         position
       });
+
+      setIsVisible(true);
+      hasShownForStepRef.current = true;
+    } else if (isWaitingForSave && isVisible) {
+      console.log(LOG_PREFIX, 'Visibility → false (waiting for save)');
+      setIsVisible(false);
     }
-  }, [currentStepData, elementPosition, featureKey, t]);
+  }, [currentStepData, isWaitingForSave, elementPosition, featureKey, t, isVisible]);
+
+  // Position is now set once when showing - no updates while visible to prevent movement
+
+  const handleNextStep = async () => {
+    // Animation sequence: Fade out -> Wait -> Update State -> Fade in (handled by effect)
+    setIsVisible(false);
+
+    setTimeout(async () => {
+      try {
+        await nextStep();
+        console.log(LOG_PREFIX, 'Next step completed');
+      } catch (error) {
+        console.error(LOG_PREFIX, 'Next step error', error);
+      }
+    }, 300); // Wait for fade out
+  };
+
+  const handlePrevStep = async () => {
+    setIsVisible(false);
+
+    setTimeout(async () => {
+      try {
+        await prevStep();
+        console.log(LOG_PREFIX, 'Prev step completed');
+      } catch (error) {
+        console.error(LOG_PREFIX, 'Prev step error', error);
+      }
+    }, 300);
+  };
 
   const handleNextClick = async () => {
+    console.log(LOG_PREFIX, 'Click: Next', { stepIndex, stepId: currentStepData?.id, currentPath: location.pathname });
     if (isProcessingClick) return;
     setIsProcessingClick(true);
+
     try {
-      await nextStep();
+      // SMART NEXT BUTTON LOGIC
+      // Check if validation is required for this step/feature
+      if (validationRef.current && validationRef.current[featureKey]) {
+        const isValid = await validationRef.current[featureKey]();
+
+        if (!isValid) {
+          console.log(LOG_PREFIX, 'Validation failed - pausing tutorial');
+          setWaitingForSave(true);
+          setIsVisible(false);
+          intendedVisibilityRef.current = false;
+          setIsProcessingClick(false);
+          return;
+        }
+      }
+
+      await handleNextStep();
+    } catch (error) {
+      console.error(LOG_PREFIX, 'Next step error', error);
     } finally {
       setIsProcessingClick(false);
     }
   };
 
   const handlePrevClick = async () => {
+    console.log(LOG_PREFIX, 'Click: Previous', { stepIndex, stepId: currentStepData?.id, currentPath: location.pathname });
     if (isProcessingClick) return;
     setIsProcessingClick(true);
+
     try {
-      await prevStep();
+      await handlePrevStep();
+    } catch (error) {
+      console.error(LOG_PREFIX, 'Prev step error', error);
     } finally {
       setIsProcessingClick(false);
     }
   };
 
   const handleCustomButtonClick = async (action, e) => {
+    console.log(LOG_PREFIX, 'Click: Custom button', { action, stepId: currentStepData?.id, currentPath: location.pathname });
     if (e) e.stopPropagation();
     if (isProcessingClick) return;
     setIsProcessingClick(true);
-    
+
     try {
       if (action === 'pause_and_fill') {
+        console.log(LOG_PREFIX, 'Action: Pause and fill');
         setWaitingForSave(true);
         setIsVisible(false);
         intendedVisibilityRef.current = false;
       } else if (action === 'start_messages_tutorial') {
+        console.log(LOG_PREFIX, 'Action: Start messages tutorial');
         await completeTutorial();
-        // startTutorial is handled by TutorialContext chaining
       }
+    } catch (error) {
+      console.error(LOG_PREFIX, 'Custom button error', error);
+    } finally {
+      setIsProcessingClick(false);
+    }
+  };
+
+  const buildFullPath = (targetPath) => {
+    if (!targetPath) return null;
+
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    const lang = ['en', 'fr', 'de', 'it'].includes(pathParts[0]) ? pathParts[0] : null;
+    const workspace = ['personal', 'team', 'admin'].find(w => pathParts.includes(w));
+
+    let fullPath = '';
+    if (lang) fullPath += `/${lang}`;
+    if (workspace && targetPath.includes('/dashboard/')) {
+      fullPath += targetPath.replace('/dashboard/', `/dashboard/${workspace}/`);
+    } else {
+      fullPath += targetPath;
+    }
+
+    return fullPath;
+  };
+
+  const handleContinue = async () => {
+    const targetPath = currentStepData?.navigationPath || currentStepData?.requiredPage;
+    const fullPath = buildFullPath(targetPath);
+
+    console.log(LOG_PREFIX, 'Click: Continue', {
+      stepIndex,
+      stepId: currentStepData?.id,
+      currentPath: location.pathname,
+      targetPath,
+      fullPath,
+      highlightTab: currentStepData?.highlightTab
+    });
+    if (isProcessingClick) return;
+    setIsProcessingClick(true);
+
+    try {
+      if (fullPath && fullPath !== location.pathname) {
+        console.log(LOG_PREFIX, 'Navigating to', fullPath);
+        navigate(fullPath);
+      }
+      await nextStep();
+      console.log(LOG_PREFIX, 'Continue completed');
+    } catch (error) {
+      console.error(LOG_PREFIX, 'Continue error - pausing tutorial', error);
+      setWaitingForSave(true);
+      setIsVisible(false);
+      intendedVisibilityRef.current = false;
     } finally {
       setIsProcessingClick(false);
     }
@@ -279,10 +539,43 @@ const HighlightTooltip = ({
 
   const isLastStep = checkIsLastStep(featureKey, stepIndex);
   const requiresInteraction = currentStepData?.requiresInteraction || false;
-  const isOnCorrectPage = currentStepData?.navigationPath ? location.pathname.includes(currentStepData.navigationPath) : true;
 
-  // Final visibility check for the Dialog
+  const checkIsOnCorrectPage = () => {
+    const navPath = currentStepData?.navigationPath;
+    if (!navPath) return true;
+
+    const currentPath = location.pathname;
+    const navPathParts = navPath.split('/').filter(Boolean);
+    const currentPathParts = currentPath.split('/').filter(Boolean);
+
+    const relevantNavParts = navPathParts.filter(p => !['dashboard'].includes(p));
+    const relevantCurrentParts = currentPathParts.filter(p =>
+      !['dashboard', 'personal', 'team', 'admin', 'en', 'fr', 'de', 'it'].includes(p)
+    );
+
+    const isMatch = relevantNavParts.every(part => relevantCurrentParts.includes(part));
+    return isMatch;
+  };
+
+  const isOnCorrectPage = checkIsOnCorrectPage();
+
   const dialogIsOpen = isVisible && !!currentStepData && !isWaitingForSave;
+
+  useEffect(() => {
+    const fullPath = buildFullPath(currentStepData?.navigationPath);
+    console.log(LOG_PREFIX, 'State', {
+      dialogIsOpen,
+      isVisible,
+      isWaitingForSave,
+      isOnCorrectPage,
+      requiresInteraction,
+      isLastStep,
+      stepId: currentStepData?.id,
+      currentPath: location.pathname,
+      navigationPath: currentStepData?.navigationPath,
+      computedFullPath: fullPath
+    });
+  }, [dialogIsOpen, isVisible, isWaitingForSave, isOnCorrectPage, currentStepData?.id, location.pathname]);
 
   return (
     <>
@@ -292,6 +585,7 @@ const HighlightTooltip = ({
       <Dialog
         isOpen={dialogIsOpen}
         onClose={() => {
+          console.log(LOG_PREFIX, 'Dialog closed by user');
           setIsVisible(false);
         }}
         title={tooltipContent.title}
@@ -300,143 +594,92 @@ const HighlightTooltip = ({
         size="small"
         closeOnEscape={true}
         closeOnBackdropClick={false}
-        messageType="info"
+        messageType={currentStepData?.messageType || 'info'}
         showCloseButton={true}
         actions={
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{
-              pointerEvents: 'auto',
-              display: 'flex',
-              justifyContent: 'space-between',
-              flexWrap: 'nowrap',
-              gap: '0.75rem',
-              width: '100%'
-            }}
+            className="flex justify-between flex-nowrap gap-3 w-full pointer-events-auto"
           >
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div className="flex gap-3">
               {(tutorialStep || 0) > 0 && (
                 <Button
                   variant="secondary"
                   onClick={handlePrevClick}
                   disabled={isProcessingClick}
-                  style={{
-                    flexShrink: 0,
-                    width: 'auto',
-                    minWidth: 'fit-content',
-                    maxWidth: 'none',
-                    whiteSpace: 'nowrap'
-                  }}
+                  className="shrink-0 w-auto min-w-fit max-w-none whitespace-nowrap"
                 >
-                  Previous
+                  {t('tutorial:buttons.previous', 'Previous')}
                 </Button>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div className="flex gap-3">
               {(() => {
-                const requiredPath = currentStepData?.navigationPath || currentStepData?.requiredPage;
-                const shouldShowShowMeButton = requiredPath && !isOnCorrectPage;
+                // SMART BUTTON RENDERING
 
-                if (shouldShowShowMeButton) {
-                  return (
-                    <Button
-                      variant="info"
-                      onClick={handleNextClick}
-                      disabled={isProcessingClick}
-                      style={{
-                        flexShrink: 0,
-                        width: 'auto',
-                        minWidth: 'fit-content',
-                        maxWidth: 'none',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      Show me
-                    </Button>
-                  );
-                }
-
+                // 1. Custom Buttons (highest priority)
                 if (currentStepData?.customButtons) {
                   return (
                     <>
                       {currentStepData.customButtons.map((button, index) => (
                         <Button
                           key={index}
-                          variant="info"
+                          variant="primary"
                           onClick={(e) => handleCustomButtonClick(button.action, e)}
                           disabled={isProcessingClick}
-                          style={{
-                            flexShrink: 0,
-                            width: 'auto',
-                            minWidth: 'fit-content',
-                            maxWidth: 'none',
-                            whiteSpace: 'nowrap'
-                          }}
+                          className="shrink-0 w-auto min-w-fit max-w-none whitespace-nowrap"
                         >
-                          {button.text}
+                          {button.text || t(`tutorial:${button.textKey}`, button.textKey?.split('.').pop() || 'Continue')}
                         </Button>
                       ))}
                     </>
                   );
                 }
 
-                if (currentStepData?.actionButton) {
+                const requiredPath = currentStepData?.navigationPath || currentStepData?.requiredPage;
+                const shouldShowShowMeButton = requiredPath && !isOnCorrectPage;
+
+                // 2. Show Me Button (only if NOT on correct page AND this is the first step)
+                if (shouldShowShowMeButton && stepIndex === 0) {
                   return (
                     <Button
-                      variant="info"
-                      onClick={handleNextClick}
+                      variant="primary"
+                      onClick={handleContinue}
                       disabled={isProcessingClick}
-                      style={{
-                        flexShrink: 0,
-                        width: 'auto',
-                        minWidth: 'fit-content',
-                        maxWidth: 'none',
-                        whiteSpace: 'nowrap'
-                      }}
+                      className="shrink-0 w-auto min-w-fit max-w-none whitespace-nowrap"
                     >
-                      {currentStepData.actionButton.text || 'Continue'}
+                      {currentStepData.actionButton?.text || t('common:buttons.showMe', 'Show Me')}
                     </Button>
                   );
                 }
 
-                if (!requiresInteraction) {
-                  return (
-                    <Button
-                      variant="info"
-                      onClick={handleNextClick}
-                      disabled={isProcessingClick}
-                      style={{
-                        flexShrink: 0,
-                        width: 'auto',
-                        minWidth: 'fit-content',
-                        maxWidth: 'none',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {isLastStep ? 'Finish' : 'Next'}
-                    </Button>
-                  );
-                }
-
-                return null;
+                // 3. Next/Finish Button (Standard)
+                // If it's the last step, show Finish. Otherwise show Next.
+                // We REMOVED the "Continue" logic for step > 0 as requested.
+                return (
+                  <Button
+                    variant="primary"
+                    onClick={handleNextClick}
+                    disabled={isProcessingClick}
+                    className="shrink-0 w-auto min-w-fit max-w-none whitespace-nowrap"
+                  >
+                    {isLastStep ? t('tutorial:buttons.finish', 'Finish') : t('tutorial:buttons.next', 'Next')}
+                  </Button>
+                );
               })()}
             </div>
           </div>
         }
       >
         {currentStepData?.visualPreview && (
-          <VisualPreview 
-            type={currentStepData.visualPreview.type} 
-            data={currentStepData.visualPreview} 
+          <VisualPreview
+            type={currentStepData.visualPreview.type}
+            data={currentStepData.visualPreview}
             workspaceColor={workspaceColor}
           />
         )}
         <ReplicatedElement selector={currentStepData?.replicateSelector} onReady={setIsReplicationReady} />
-        <p style={{
-          lineHeight: '1.6',
-          color: 'var(--text-color, #333)',
-          margin: 0
-        }}>{tooltipContent.description}</p>
+        <p className="leading-relaxed text-slate-700 m-0">{tooltipContent.description}</p>
       </Dialog>
     </>
   );

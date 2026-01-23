@@ -114,14 +114,16 @@ const useProfessionalStats = () => {
         });
 
         // Add upcoming shifts
-        shifts.filter(s => {
+        const upcomingShifts = shifts.filter(s => {
           const start = s.startTime instanceof Timestamp ? s.startTime.toDate() : new Date(s.startTime);
           return start > now;
         }).sort((a, b) => {
           const startA = a.startTime instanceof Timestamp ? a.startTime.toDate() : new Date(a.startTime);
           const startB = b.startTime instanceof Timestamp ? b.startTime.toDate() : new Date(b.startTime);
           return startA - startB;
-        }).slice(0, 5).forEach(shift => {
+        });
+
+        upcomingShifts.forEach(shift => {
           const start = shift.startTime instanceof Timestamp ? shift.startTime.toDate() : new Date(shift.startTime);
           activities.push({
             id: `shift-${shift.id}`,
@@ -139,7 +141,8 @@ const useProfessionalStats = () => {
           activeHours: Math.round(totalHours * 10) / 10,
           earnings: Math.round(totalEarnings * 100) / 100,
           upcomingJobs: upcomingShiftsCount,
-          recentActivity: activities.slice(0, 5)
+          recentActivity: activities.slice(0, 5),
+          upcomingShifts: upcomingShifts.slice(0, 3) // Return top 3 upcoming shifts
         });
 
       } catch (err) {

@@ -11,9 +11,8 @@ const connectToEmulators = () => {
   
   try {
     // Emulators are now connected directly in the firebase/index.js file
-    console.log('Connected to Firebase emulators');
   } catch (error) {
-    console.error('Error connecting to emulators:', error);
+    // Error connecting to emulators
   }
 };
 

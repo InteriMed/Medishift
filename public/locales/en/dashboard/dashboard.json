@@ -80,7 +80,8 @@
       "resetProfileMessage": "Are you sure you want to reset your profile? This will remove all your data and set your account back to the initial onboarding state. This action cannot be undone.",
       "resetConfirm": "Reset Profile",
       "profileResetSuccess": "Profile reset successfully",
-      "profileResetError": "Failed to reset profile"
+      "profileResetError": "Failed to reset profile",
+      "logout": "Log out"
     },
     "loading": "Loading dashboard data...",
     "error": "Error loading dashboard data",
@@ -290,12 +291,12 @@
       "allPages": "Start complete tutorial from the beginning",
       "allPagesTitle": "Complete Tutorial",
       "allPagesDesc": "Start from the beginning and explore all features",
-      "stopTitle": "Pause Tutorial?",
+      "stopTitle": "Stop Tutorial?",
       "stopDescription": "You can continue the tutorial anytime by clicking the help button in the header.",
       "clickHere": "Click here",
       "toContinue": "to continue later",
       "keepGoing": "Keep Going",
-      "pauseNow": "Pause Tutorial"
+      "stopNow": "Stop Tutorial"
     }
   },
   "userMenu": {

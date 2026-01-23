@@ -119,14 +119,16 @@ export function DashboardLayout({ children }) {
                 {/* Main Content Area */}
                 <div 
                     className={cn(
-                        "flex-1 flex flex-col h-full",
+                        "flex-1 flex flex-col",
                         !isAdminRoute && !isMobileMode && (isSidebarCollapsed ? "md:ml-[70px]" : "md:ml-64"),
                         !isAdminRoute && isMobileMode && "ml-0 w-full"
                     )}
                     style={{
                         transition: !isAdminRoute && !isMobileMode 
                             ? 'margin-left 300ms cubic-bezier(0.4, 0, 0.2, 1)' 
-                            : 'none'
+                            : 'none',
+                        height: '100vh',
+                        overflow: 'visible'
                     }}
                 >
                     <Header
@@ -137,8 +139,20 @@ export function DashboardLayout({ children }) {
                         onBackButtonClick={onBackButtonClick}
                     />
 
-                    <main className="flex-1 h-full mt-16" style={{ position: 'relative', zIndex: 0 }} data-dashboard="true">
-                        <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ position: 'relative', zIndex: 0 }}>
+                    <main 
+                        className="animate-in fade-in slide-in-from-bottom-4 duration-500" 
+                        style={{ 
+                            position: 'relative', 
+                            zIndex: 0,
+                            height: 'calc(100vh - 4rem)',
+                            overflow: 'visible',
+                            marginTop: '4rem',
+                            padding: 0,
+                            width: '100%'
+                        }} 
+                        data-dashboard="true"
+                    >
+                        <div className="h-full w-full overflow-visible" style={{ position: 'relative', zIndex: 0 }}>
                             {children}
                         </div>
                     </main>

@@ -18,11 +18,9 @@ export const getCachedExtractedData = async (userId) => {
                 const localData = JSON.parse(localDataRaw);
                 const now = Date.now();
                 if (localData.expiresAt > now) {
-                    console.log('[DocumentProcessing] Found valid data in localStorage');
                     return localData.data;
                 }
             } catch (e) {
-                console.error('[DocumentProcessing] Error parsing localStorage data:', e);
             }
         }
 
@@ -48,7 +46,6 @@ export const getCachedExtractedData = async (userId) => {
             const expiresAt = autofill.expiresAt.toMillis();
             const now = Date.now();
             if (expiresAt < now) {
-                console.log('[DocumentProcessing] Cached data expired');
                 return null;
             }
         }
@@ -116,7 +113,6 @@ export const saveCachedExtractedData = async (userId, data) => {
             });
         }
 
-        console.log('[DocumentProcessing] Saved extracted data to professional profile (DB & Local)');
     } catch (error) {
         console.error('[DocumentProcessing] Error saving cached data to profile:', error);
     }
@@ -138,7 +134,6 @@ export const clearCachedExtractedData = async (userId) => {
             updatedAt: Timestamp.now()
         });
 
-        console.log('[DocumentProcessing] Cleared cached extracted data from profile');
     } catch (error) {
         console.error('[DocumentProcessing] Error clearing cached data from profile:', error);
     }

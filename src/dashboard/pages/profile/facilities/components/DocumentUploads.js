@@ -57,10 +57,8 @@ const useFileUpload = () => {
             });
 
             setUploadState({ isLoading: false, progress: 0, error: null, type: null });
-            console.log(`Upload complete for ${docType}: ${downloadURL}`);
             return downloadURL;
         } catch (error) {
-            console.error(`Error uploading ${docType}:`, error);
             setUploadState({
                 isLoading: false,
                 progress: 0,
@@ -167,7 +165,7 @@ const DocumentUploads = ({
                 onInputChange(fieldName, downloadURL);
             }
         } catch (error) {
-            console.error(`Error uploading ${docType}:`, error);
+            // Error uploading document
         }
     }, [upload, formData, getNestedValue, onInputChange, onArrayChange]);
 

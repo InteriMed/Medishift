@@ -13,6 +13,36 @@
           "content": "Ceci est votre centre de contrôle. Pour tirer le meilleur parti de MediShift, commençons par compléter les détails de votre profil."
         }
       }
+    },
+    "profileTabs": {
+      "name": "Configuration du profil professionnel",
+      "description": "Complétez votre profil professionnel étape par étape",
+      "steps": {
+        "personal-details-tab": {
+          "title": "Étape 1 : Détails personnels",
+          "content": "Commencez par remplir vos informations personnelles comme le nom, l'adresse et les coordonnées. Vous pouvez télécharger votre CV avec le bouton Auto Fill pour accélérer le processus, ou remplir manuellement."
+        },
+        "professional-background-tab": {
+          "title": "Étape 2 : Parcours professionnel",
+          "content": "Ajoutez vos qualifications, spécialités et expériences professionnelles. Vous pouvez utiliser le bouton Auto Fill pour accélérer le processus, ou remplir manuellement."
+        },
+        "billing-information-tab": {
+          "title": "Étape 3 : Informations de facturation",
+          "content": "Configurez vos informations de paiement pour être payé rapidement et en toute sécurité. Vous pouvez utiliser le bouton Auto Fill ou remplir manuellement."
+        },
+        "document-uploads-tab": {
+          "title": "Étape 4 : Téléchargement de documents",
+          "content": "Téléchargez vos documents professionnels tels que certificats, CV et lettres de recommandation."
+        },
+        "account-tab": {
+          "title": "Étape 5 : Compte",
+          "content": "Vérifiez les paramètres de votre compte, y compris l'email, le mot de passe et les préférences de sécurité. Vous pouvez modifier ces paramètres à tout moment."
+        },
+        "profile-completion-info": {
+          "title": "Profil terminé !",
+          "content": "Félicitations ! Votre profil est maintenant complet. Vous avez accès à toutes les fonctionnalités de la plateforme. Passons à la section suivante."
+        }
+      }
     }
   },
   "buttons": {

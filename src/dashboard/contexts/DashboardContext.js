@@ -893,8 +893,7 @@ export const DashboardProvider = ({ children }) => {
 
     // Skip session validation on profile paths - profile is accessible without strict session
     // This prevents an infinite loop where validation clears workspace, triggering re-init
-    if (location.pathname.includes('/dashboard/profile')) {
-      console.log('[DashboardContext] Skipping session validation on profile path');
+    if (location.pathname.includes('/profile') && location.pathname.includes('/dashboard')) {
       return;
     }
 
@@ -904,7 +903,6 @@ export const DashboardProvider = ({ children }) => {
       // let isValid = false;
       // ...
       // if (!isValid) { ... }
-      console.log('[DashboardContext] Session validation skipped (path-based routing active)');
     };
 
     // Validate immediately and then every 5 minutes

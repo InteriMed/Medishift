@@ -228,6 +228,7 @@
 .boxed-inputfield-container--error .boxed-inputfield-arrow,
 .boxed-inputfield-error .boxed-inputfield-label,
 .boxed-inputfield-container--error .boxed-inputfield-label,
+.boxed-dropdown-container--error .boxed-inputfield-label,
 .boxed-inputfield-container--error .boxed-inputfield-clear,
 .boxed-inputfield-container--error .boxed-inputfield-password-toggle,
 .boxed-dropdown-container--error .boxed-dropdown-selected,
@@ -261,9 +262,9 @@
   opacity: 0.6;
   transition: opacity 0.2s ease;
   margin-left: 8px;
-  margin-right: calc(var(--boxed-inputfield-padding-x) * 2);
+  margin-right: 0;
   position: absolute;
-  left: 120px;
+  right: 15px;
   top: 50%;
   transform: translateY(-50%);
   filter: brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(1000%) hue-rotate(200deg) brightness(95%) contrast(85%);
@@ -416,7 +417,8 @@
 .boxed-dropdown-container:has(.boxed-inputfield-label) .boxed-dropdown-selected:empty { color: transparent; }
 .boxed-dropdown-placeholder { color: var(--grey-3); font-weight: var(--boxed-inputfield-font-weight); }
 .boxed-dropdown-placeholder.required::after { content: ' *'; color: var(--boxed-inputfield-error-color); }
-.boxed-dropdown-selected--error .boxed-dropdown-placeholder { color: var(--boxed-inputfield-error-color); }
+.boxed-dropdown-selected--error.boxed-dropdown-placeholder,
+.boxed-dropdown-container--error .boxed-dropdown-placeholder { color: var(--boxed-inputfield-error-color); }
 
 .boxed-dropdown-no-options,
 .boxed-multi-dropdown-no-options { padding: 10px var(--boxed-inputfield-padding); color: var(--grey-3); text-align: center; font-style: italic; }

@@ -15,6 +15,14 @@
     "startTutorial": "Tutorial starten",
     "changeLanguage": "Sprache ändern",
     "profileAlt": "Profil"
+  },
+  "auth": {
+    "login": {
+      "button": "Anmelden"
+    },
+    "signup": {
+      "button": "Registrieren"
+    }
   }
 }
 

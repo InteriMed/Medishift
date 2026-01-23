@@ -3,15 +3,9 @@ import { useTutorial } from '../../contexts/TutorialContext';
 import { FiUpload, FiX, FiCheck } from 'react-icons/fi';
 
 /**
- * Example Component: Document Upload with Tutorial Pause/Resume
- * 
- * This component demonstrates how to:
- * 1. Pause the onboarding tutorial when a document upload popup is opened
- * 2. Keep the popup active while the tutorial is paused
- * 3. Resume the tutorial when "Save and Continue" is clicked
+ * Example Component: Document Upload
  */
 const DocumentUploadExample = () => {
-    const { pauseTutorial, resumeTutorial, isPaused } = useTutorial();
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -19,15 +13,9 @@ const DocumentUploadExample = () => {
     const [uploadedFiles, setUploadedFiles] = useState([]);
 
     /**
-     * Opens the upload popup and pauses the tutorial
+     * Opens the upload popup
      */
     const handleOpenUpload = () => {
-        console.log('[DocumentUpload] Opening upload popup');
-
-        // Pause the tutorial so it doesn't interfere with the popup
-        pauseTutorial();
-
-        // Open the popup
         setIsPopupOpen(true);
     };
 
@@ -38,7 +26,6 @@ const DocumentUploadExample = () => {
         const file = event.target.files[0];
         if (file) {
             setSelectedFile(file);
-            console.log('[DocumentUpload] File selected:', file.name);
         }
     };
 
@@ -66,31 +53,23 @@ const DocumentUploadExample = () => {
                 uploadedAt: new Date()
             }]);
 
-            console.log('[DocumentUpload] File uploaded successfully:', selectedFile.name);
 
             // Reset file selection
             setSelectedFile(null);
             setUploadProgress(0);
 
         } catch (error) {
-            console.error('[DocumentUpload] Upload failed:', error);
         } finally {
             setIsUploading(false);
         }
     };
 
     /**
-     * Closes the popup and resumes the tutorial
+     * Closes the popup
      * This is called when the user clicks "Save and Continue"
      */
     const handleSaveAndContinue = () => {
-        console.log('[DocumentUpload] Save and Continue clicked');
-
-        // Close the popup
         setIsPopupOpen(false);
-
-        // Resume the tutorial from where it was paused
-        resumeTutorial();
     };
 
     /**
@@ -98,7 +77,6 @@ const DocumentUploadExample = () => {
      * User can manually resume later
      */
     const handleCancel = () => {
-        console.log('[DocumentUpload] Cancel clicked');
 
         // Close the popup
         setIsPopupOpen(false);
@@ -236,12 +214,6 @@ const DocumentUploadExample = () => {
                             </button>
                         </div>
 
-                        {/* Debug info - remove in production */}
-                        {process.env.NODE_ENV === 'development' && (
-                            <div className="debug-info">
-                                <small>Tutorial paused: {isPaused ? 'Yes' : 'No'}</small>
-                            </div>
-                        )}
                     </div>
                 </div>
             )}

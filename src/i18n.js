@@ -35,6 +35,7 @@ const nsMapping = {
   validation: 'dashboard/validation',
   common: 'dashboard/common',
   dropdowns: 'dropdowns',
+  tabs: 'tabs',
   'pages/faq': 'pages/faq',
   tutorial: 'config/tutorial'
 };
@@ -45,7 +46,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'fr',
-    lng: 'fr', // Default language
+    lng: 'fr',
     debug: false,
 
     backend: {
@@ -63,13 +64,29 @@ i18n
       'blogArticles', 'contact', 'privacy', 'terms', 'sitemap', 'support', 'auth', 'onboarding',
       'dashboard', 'dashboardPersonal', 'dashboardProfile', 'admin', 'calendar', 'messages',
       'marketplace', 'validation', 'organization', 'payroll', 'contracts', 'team', 'common', 'dropdowns',
-      'notFound', 'tutorial'],
+      'notFound', 'tutorial', 'tabs'],
 
     defaultNS: 'dashboard',
 
     react: {
-      useSuspense: true, // Enable suspense for loading
+      useSuspense: true,
+      bindI18n: 'languageChanged loaded',
+      bindI18nStore: 'added removed',
+      transEmptyNodeValue: '',
+      transSupportBasicHtmlNodes: true,
+      transWrapTextNodes: '',
+      transKeepBasicHtmlNodesFor: ['br', 'strong', 'i', 'p'],
     },
+
+    saveMissing: false,
+    parseMissingKeyHandler: (key) => {
+      return key;
+    },
+    missingKeyHandler: (lng, ns, key, fallbackValue) => {
+      console.warn(`i18next::translator: missingKey ${lng} ${ns} ${key} ${key}`);
+    },
+    appendNamespaceToMissingKey: false,
+    appendNamespaceToCIMode: false,
 
     returnObjects: true,
   });

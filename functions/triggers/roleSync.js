@@ -57,7 +57,6 @@ exports.syncFacilityRoles = onDocumentUpdated({
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
                 });
                 updatesCount++;
-                console.log(`Added facility roles for user ${userId} in facility ${facilityId}`);
             }
         }
 
@@ -75,7 +74,6 @@ exports.syncFacilityRoles = onDocumentUpdated({
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
                 });
                 updatesCount++;
-                console.log(`Removed facility roles for user ${userId} from facility ${facilityId}`);
             }
         }
 
@@ -117,14 +115,12 @@ exports.syncFacilityRoles = onDocumentUpdated({
                         updatedAt: admin.firestore.FieldValue.serverTimestamp()
                     });
                     updatesCount++;
-                    console.log(`Updated facility roles for user ${userId} in facility ${facilityId}`);
                 }
             }
         }
 
         if (updatesCount > 0) {
             await batch.commit();
-            console.log(`Successfully synced ${updatesCount} user role(s) for facility ${facilityId}`);
         }
 
         return { success: true, updatesCount };
@@ -169,7 +165,6 @@ exports.cleanupFacilityRoles = onDocumentDeleted({
 
         if (updatesCount > 0) {
             await batch.commit();
-            console.log(`Cleaned up ${updatesCount} user role(s) after facility ${facilityId} deletion`);
         }
 
         return { success: true, updatesCount };

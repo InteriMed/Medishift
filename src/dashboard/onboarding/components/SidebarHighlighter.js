@@ -165,13 +165,6 @@ const SidebarHighlighter = () => {
     // Set waiting for interaction flag
     setWaitingForInteraction(true);
 
-    // Force a state update to ensure overlay is rendered
-    // console.log("[SidebarHighlighter] Added interaction listener to element:", element, "waitingForInteraction set to true");
-
-    // Double-check that waitingForInteraction is set (for mobile debugging)
-    setTimeout(() => {
-      // console.log("[SidebarHighlighter] After setting waitingForInteraction, current state should be true");
-    }, 100);
   }, [isTutorialActive, nextStep, targetElement, stepData, navigate]);
 
   // Position highlight box around target element - memoized to prevent unnecessary re-creation
@@ -374,14 +367,12 @@ const SidebarHighlighter = () => {
       const hrefSelector = `a[href="/dashboard/${stepData.highlightSidebarItem}"]`;
       targetElement = document.querySelector(hrefSelector);
       if (targetElement) {
-        console.log(`[SidebarHighlighter] Found element using href selector: ${hrefSelector}`);
       } else {
         // Try finding by NavLink structure
         const navLinks = document.querySelectorAll('a[href*="/dashboard/"]');
         for (const link of navLinks) {
           if (link.getAttribute('href') === `/dashboard/${stepData.highlightSidebarItem}`) {
             targetElement = link;
-            console.log(`[SidebarHighlighter] Found element by iterating NavLinks`);
             break;
           }
         }

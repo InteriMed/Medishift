@@ -1761,14 +1761,6 @@ exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true
         recurrenceSettings
       } = req.body;
 
-      console.log('checkAndCreateEventHTTP called with:', {
-        workspaceContext,
-        eventType,
-        eventData,
-        targetUserId,
-        recurrenceSettings,
-        authUID: decodedToken.uid
-      });
 
       // Validate inputs
       if (!workspaceContext || !eventType || !eventData || !targetUserId) {
@@ -1831,7 +1823,6 @@ exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true
         return;
       }
 
-      console.log('Validation passed, creating event of type:', eventType);
 
       // CONFLICT DETECTION: ONLY for Workers (availability, contracts, timeOffRequests)
       // SKIP conflict detection for Facility positions (eventType === 'position')
@@ -1923,7 +1914,6 @@ exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true
 
       // If conflicts detected, return them
       if (conflicts.length > 0) {
-        console.log('Conflicts detected:', conflicts);
         res.status(200).json({
           success: false,
           error: 'conflict',
@@ -1943,7 +1933,6 @@ exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true
         result = await createSingleEvent(eventType, eventData, targetUserId, workspaceContext);
       }
 
-      console.log('Event creation result:', result);
 
       logger.info('Event created successfully', {
         eventType,
@@ -1992,14 +1981,6 @@ exports.checkAndCreateEvent = onCall({ database: 'medishift', cors: true }, asyn
       recurrenceSettings
     } = data;
 
-    console.log('checkAndCreateEvent called with:', {
-      workspaceContext,
-      eventType,
-      eventData,
-      targetUserId,
-      recurrenceSettings,
-      authUID: context.auth.uid
-    });
 
     // Validate inputs
     if (!workspaceContext || !eventType || !eventData || !targetUserId) {
@@ -2041,7 +2022,6 @@ exports.checkAndCreateEvent = onCall({ database: 'medishift', cors: true }, asyn
       throw new HttpsError('invalid-argument', 'End time must be after start time');
     }
 
-    console.log('Validation passed, creating event of type:', eventType);
 
     // CONFLICT DETECTION: ONLY for Workers (availability, contracts, timeOffRequests)
     // SKIP conflict detection for Facility positions (eventType === 'position')
@@ -2133,7 +2113,6 @@ exports.checkAndCreateEvent = onCall({ database: 'medishift', cors: true }, asyn
 
     // If conflicts detected, return them
     if (conflicts.length > 0) {
-      console.log('Conflicts detected:', conflicts);
       return {
         success: false,
         error: 'conflict',
@@ -2152,7 +2131,6 @@ exports.checkAndCreateEvent = onCall({ database: 'medishift', cors: true }, asyn
       result = await createSingleEvent(eventType, eventData, targetUserId, workspaceContext);
     }
 
-    console.log('Event creation result:', result);
 
     logger.info('Event created successfully', {
       eventType,

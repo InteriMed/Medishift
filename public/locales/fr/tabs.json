@@ -2,6 +2,10 @@
   "personalDetails": "Détails personnels",
   "professionalBackground": "Parcours professionnel",
   "billingInformation": "Informations de facturation",
-  "documentUploads": "Téléchargement de documents"
+  "documentUploads": "Téléchargement de documents",
+  "facilityCoreDetails": "Détails de l'établissement",
+  "facilityLegalBilling": "Juridique & Facturation",
+  "settings": "Paramètres",
+  "account": "Compte"
 }
 

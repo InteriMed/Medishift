@@ -5,7 +5,7 @@ import { useAuth } from '../../../../../contexts/AuthContext';
 import useProfileData from '../../../../hooks/useProfileData';
 import useAutoSave from '../../../../hooks/useAutoSave';
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
-import { FiUser, FiMapPin, FiPhone, FiInfo, FiFileText, FiEdit2, FiEye, FiTrash2, FiX, FiUpload } from 'react-icons/fi';
+import { FiUser, FiMapPin, FiPhone, FiInfo, FiFileText, FiEdit2, FiEye, FiTrash2, FiX, FiZap } from 'react-icons/fi';
 import { generateBasicProfilePicture, isGoogleUser } from '../../../../../utils/profilePictureUtils';
 import '../../../../../styles/modals.css';
 
@@ -38,11 +38,11 @@ const styles = {
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
   sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
-  cardHeader: "flex items-center gap-4 mb-0",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+  cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
+  cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
-  cardTitle: "flex-1",
-  cardTitleH3: "m-0",
+  cardTitle: "flex-1 min-w-0",
+  cardTitleH3: "m-0 text-sm font-semibold truncate",
   cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   grid: "grid grid-cols-1 gap-6",
   gridSingle: "grid grid-cols-1 gap-6",
@@ -394,10 +394,10 @@ const PersonalDetails = ({
 
   const getGroupIcon = (groupKey) => {
     switch (groupKey) {
-      case 'identity': return <FiUser />;
-      case 'address': return <FiMapPin />;
-      case 'contact': return <FiPhone />;
-      default: return <FiInfo />;
+      case 'identity': return <FiUser className="w-4 h-4" style={styles.cardIconStyle} />;
+      case 'address': return <FiMapPin className="w-4 h-4" style={styles.cardIconStyle} />;
+      case 'contact': return <FiPhone className="w-4 h-4" style={styles.cardIconStyle} />;
+      default: return <FiInfo className="w-4 h-4" style={styles.cardIconStyle} />;
     }
   };
 
@@ -463,16 +463,15 @@ const PersonalDetails = ({
                   onClick={handleAutoFillClick}
                   disabled={isUploading || isAnalyzing}
                   className={cn(
-                    "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
-                    "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
+                    "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0 text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
                     (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
                     (stepData?.highlightUploadButton) && "tutorial-highlight"
                   )}
                   style={{ height: 'var(--boxed-inputfield-height)' }}
                   data-tutorial="profile-upload-button"
                 >
-                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
-                  <span className="text-sm font-medium text-black">
+                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4" />}
+                  <span className="text-sm font-medium">
                     {isAnalyzing
                       ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
                       : t('dashboardProfile:documents.autofill', 'Auto Fill')
@@ -565,7 +564,7 @@ const PersonalDetails = ({
               <div className={styles.gridSingle}>
                 <div className={styles.cardHeader}>
                   <div className={styles.cardIconWrapper}>
-                    <FiFileText />
+                    <FiFileText className="w-4 h-4" style={styles.cardIconStyle} />
                   </div>
                   <div className={styles.cardTitle}>
                     <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('personalDetails.summary', 'Summary')}</h3>

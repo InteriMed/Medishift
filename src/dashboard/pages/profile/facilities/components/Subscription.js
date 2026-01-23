@@ -1,27 +1,9 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiCreditCard, FiStar, FiCheck, FiZap, FiUsers } from 'react-icons/fi';
+import { FiCreditCard, FiStar, FiCheck, FiZap, FiUsers, FiSettings } from 'react-icons/fi';
 import Button from '../../../../../components/BoxedInputFields/Button';
 import useAutoSave from '../../../../hooks/useAutoSave';
-
-const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
-  sectionTitle: "text-2xl font-semibold mb-2",
-  sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  sectionSubtitle: "text-sm font-medium",
-  sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  sectionsWrapper: "flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
-  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
-  cardHeader: "flex items-center gap-4 mb-4",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10",
-  cardIconStyle: { color: 'var(--primary-color)' },
-  cardTitle: "flex-1",
-  cardTitleH3: "m-0",
-  cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "grid grid-cols-1 gap-6"
-};
 
 const Subscription = ({
   formData,
@@ -74,6 +56,11 @@ const Subscription = ({
     }
   }, [onInputChange, onSave]);
 
+  const handleManageSubscription = useCallback(() => {
+    // Placeholder for manage subscription logic
+    console.log('Manage subscription clicked');
+  }, []);
+
   const basicFeatures = [
     t('subscription.features.facility.basic.basicPosting'),
     t('subscription.features.facility.basic.emailNotifications'),
@@ -95,176 +82,143 @@ const Subscription = ({
     t('subscription.features.facility.premium.advancedReporting')
   ];
 
-  return (
-    <div className={styles.sectionContainer}>
-      <div className={styles.headerCard}>
-        <div className="flex flex-col gap-1 flex-1">
-          <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('subscription.facilityTitle')}</h2>
-          <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>
-            {t('subscription.facilitySubtitle')}
-          </p>
+  const PlanCard = ({ title, price, features, type, icon: Icon, isCurrent, onUpgrade, colorClass, borderColorClass, bgClass, iconColorClass }) => (
+    <div className={`relative flex flex-col h-full bg-card rounded-2xl border transition-all duration-300 hover:shadow-lg ${isCurrent ? `ring-2 ring-offset-2 ${borderColorClass}` : 'border-border/50 hover:border-border'} ${isCurrent ? 'shadow-md' : ''}`}>
+      {isCurrent && (
+        <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-white ${bgClass} shadow-sm`}>
+          {t('subscription.currentPlan')}
         </div>
-      </div>
-
-      <div className={styles.sectionsWrapper}>
-        {/* BASIC PLAN */}
-        <div className={`${styles.sectionCard} ${currentSubscription === 'basic' ? 'border-2 border-green-500' : ''}`}>
-          <div className={styles.cardHeader}>
-            <div className={`${styles.cardIconWrapper} ${currentSubscription === 'basic' ? 'bg-green-500/10 text-green-600' : ''}`}>
-              <FiCreditCard />
-            </div>
-            <div className={styles.cardTitle}>
-              <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
-                {t('subscription.facility.basic.title')}
-              </h3>
-            </div>
-            {currentSubscription === 'basic' && (
-              <div className="px-3 py-1 bg-green-500/10 text-green-600 rounded-full text-xs font-semibold">
-                {t('subscription.currentPlan')}
-              </div>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <div className="text-3xl font-bold text-foreground">
-              {t('subscription.facility.basic.price')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('subscription.perMonth')}
-            </div>
-          </div>
-
-          <div className="space-y-3 mb-6">
-            {basicFeatures.map((feature, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <FiCheck className={`w-5 h-5 mt-0.5 flex-shrink-0 ${currentSubscription === 'basic' ? 'text-green-600' : 'text-muted-foreground'}`} />
-                <span className="text-sm text-foreground">{feature}</span>
-              </div>
-            ))}
-          </div>
-
-          {currentSubscription === 'basic' && (
-            <div className="mt-4 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-              <p className="text-sm text-green-700 dark:text-green-400 font-medium">
-                {t('subscription.youAreOnThisPlan')}
-              </p>
-            </div>
-          )}
+      )}
+      
+      <div className="p-6 flex-1 flex flex-col">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${iconColorClass} bg-opacity-10`}>
+          <Icon className={`w-6 h-6 ${colorClass}`} />
+        </div>
+        
+        <h3 className="text-xl font-bold mb-2">{title}</h3>
+        
+        <div className="mb-6">
+          <span className="text-3xl font-bold">{price}</span>
+          <span className="text-muted-foreground text-sm ml-1">{t('subscription.perMonth')}</span>
         </div>
 
-        {/* STANDARD PLAN */}
-        <div className={`${styles.sectionCard} ${currentSubscription === 'standard' ? 'border-2 border-blue-500' : ''}`}>
-          <div className={styles.cardHeader}>
-            <div className={`${styles.cardIconWrapper} ${currentSubscription === 'standard' ? 'bg-blue-500/10 text-blue-600' : ''}`}>
-              <FiUsers />
-            </div>
-            <div className={styles.cardTitle}>
-              <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
-                {t('subscription.facility.standard.title')}
-              </h3>
-            </div>
-            {currentSubscription === 'standard' && (
-              <div className="px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-xs font-semibold">
-                {t('subscription.currentPlan')}
+        <div className="space-y-4 mb-8 flex-1">
+          {features.map((feature, index) => (
+            <div key={index} className="flex items-start gap-3">
+              <div className={`mt-1 rounded-full p-0.5 ${colorClass} bg-opacity-10`}>
+                <FiCheck className={`w-3 h-3 ${colorClass}`} />
               </div>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <div className="text-3xl font-bold text-foreground">
-              {t('subscription.facility.standard.price')}
+              <span className="text-sm text-muted-foreground leading-tight">{feature}</span>
             </div>
-            <div className="text-sm text-muted-foreground">
-              {t('subscription.perMonth')}
-            </div>
-          </div>
-
-          <div className="space-y-3 mb-6">
-            {standardFeatures.map((feature, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <FiCheck className={`w-5 h-5 mt-0.5 flex-shrink-0 ${currentSubscription === 'standard' ? 'text-blue-600' : 'text-muted-foreground'}`} />
-                <span className="text-sm text-foreground">{feature}</span>
-              </div>
-            ))}
-          </div>
-
-          {currentSubscription === 'standard' ? (
-            <div className="mt-4 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-              <p className="text-sm text-blue-700 dark:text-blue-400 font-medium">
-                {t('subscription.youAreOnThisPlan')}
-              </p>
-            </div>
-          ) : currentSubscription === 'basic' && (
-            <Button
-              type="button"
-              onClick={() => handleUpgrade('standard')}
-              disabled={isUpgrading}
-              className="w-full"
-            >
-              {isUpgrading ? t('subscription.upgrading') : t('subscription.upgradeToStandard')}
-            </Button>
-          )}
+          ))}
         </div>
 
-        {/* PREMIUM PLAN */}
-        <div className={`${styles.sectionCard} ${currentSubscription === 'premium' ? 'border-2' : ''}`} style={currentSubscription === 'premium' ? { borderColor: '#D4AF37' } : {}}>
-          <div className={styles.cardHeader}>
-            <div className={`${styles.cardIconWrapper} ${currentSubscription === 'premium' ? 'text-yellow-600' : ''}`} style={currentSubscription === 'premium' ? { backgroundColor: 'rgba(212, 175, 55, 0.1)', color: '#D4AF37' } : {}}>
-              <FiStar />
-            </div>
-            <div className={styles.cardTitle}>
-              <h3 className={styles.cardTitleH3} style={currentSubscription === 'premium' ? { ...styles.cardTitleH3Style, color: '#D4AF37' } : styles.cardTitleH3Style}>
-                {t('subscription.facility.premium.title')}
-              </h3>
-            </div>
-            {currentSubscription === 'premium' && (
-              <div className="px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)', color: '#D4AF37' }}>
-                {t('subscription.currentPlan')}
-              </div>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <div className="text-3xl font-bold text-foreground">
-              {t('subscription.facility.premium.price')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('subscription.perMonth')}
-            </div>
-          </div>
-
-          <div className="space-y-3 mb-6">
-            {premiumFeatures.map((feature, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <FiZap className={`w-5 h-5 mt-0.5 flex-shrink-0 ${currentSubscription === 'premium' ? 'text-yellow-600' : 'text-muted-foreground'}`} style={currentSubscription === 'premium' ? { color: '#D4AF37' } : {}} />
-                <span className="text-sm text-foreground">{feature}</span>
-              </div>
-            ))}
-          </div>
-
-          {currentSubscription === 'premium' ? (
-            <div className="mt-4 p-3 rounded-lg border" style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)', borderColor: 'rgba(212, 175, 55, 0.2)' }}>
-              <p className="text-sm font-medium" style={{ color: '#D4AF37' }}>
-                {t('subscription.youAreOnThisPlan')}
-              </p>
+        <div className="mt-auto">
+          {isCurrent ? (
+            <div className={`w-full py-2.5 px-4 rounded-lg text-center font-medium text-sm bg-muted text-muted-foreground cursor-default`}>
+              {t('subscription.activePlan')}
             </div>
           ) : (
             <Button
               type="button"
-              onClick={() => handleUpgrade('premium')}
+              onClick={() => onUpgrade(type)}
               disabled={isUpgrading}
-              className="w-full"
-              style={{ 
-                backgroundColor: '#D4AF37',
-                borderColor: '#D4AF37',
-                color: 'white'
-              }}
+              className={`w-full py-2.5 font-medium transition-colors ${
+                type === 'premium' 
+                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-0' 
+                  : ''
+              }`}
+              variant={type === 'premium' ? 'primary' : 'outline'}
             >
-              <FiZap className="w-4 h-4 mr-2" />
-              {isUpgrading ? t('subscription.upgrading') : t('subscription.upgradeToPremium')}
+              {isUpgrading ? t('subscription.upgrading') : (type === 'premium' ? t('subscription.upgradeToPremium') : t('subscription.upgrade'))}
             </Button>
           )}
         </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="w-full max-w-7xl mx-auto p-4 space-y-8">
+      <div className="text-center max-w-2xl mx-auto mb-8">
+        <h2 className="text-3xl font-bold tracking-tight mb-3">{t('subscription.facilityTitle')}</h2>
+        <p className="text-muted-foreground text-lg">
+          {t('subscription.facilitySubtitle')}
+        </p>
+      </div>
+
+      {/* Grey Div for Current Subscription Management */}
+      <div className="bg-gray-100 dark:bg-gray-800/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+        <div className="flex items-center gap-5">
+          <div className={`p-4 rounded-full bg-background border shadow-sm`}>
+             {currentSubscription === 'premium' ? <FiStar className="w-8 h-8 text-yellow-500" /> :
+              currentSubscription === 'standard' ? <FiUsers className="w-8 h-8 text-blue-500" /> :
+              <FiCreditCard className="w-8 h-8 text-emerald-500" />}
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-foreground mb-1">{t('subscription.currentPlan')}</h3>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <span className="font-medium text-foreground capitalize">{t(`subscription.facility.${currentSubscription}.title`)}</span>
+              <span>•</span>
+              <span>{t(`subscription.facility.${currentSubscription}.price`)}/{t('subscription.perMonth')}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-3 w-full sm:w-auto">
+           <Button
+              type="button"
+              variant="outline"
+              onClick={handleManageSubscription}
+              className="w-full sm:w-auto bg-background hover:bg-muted border-gray-300 dark:border-gray-600"
+           >
+             <FiSettings className="w-4 h-4 mr-2" />
+             {t('subscription.manageSubscription')}
+           </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        <PlanCard
+          title={t('subscription.facility.basic.title')}
+          price={t('subscription.facility.basic.price')}
+          features={basicFeatures}
+          type="basic"
+          icon={FiCreditCard}
+          isCurrent={currentSubscription === 'basic'}
+          onUpgrade={handleUpgrade}
+          colorClass="text-emerald-600"
+          borderColorClass="ring-emerald-500"
+          bgClass="bg-emerald-500"
+          iconColorClass="bg-emerald-500"
+        />
+
+        <PlanCard
+          title={t('subscription.facility.standard.title')}
+          price={t('subscription.facility.standard.price')}
+          features={standardFeatures}
+          type="standard"
+          icon={FiUsers}
+          isCurrent={currentSubscription === 'standard'}
+          onUpgrade={handleUpgrade}
+          colorClass="text-blue-600"
+          borderColorClass="ring-blue-500"
+          bgClass="bg-blue-500"
+          iconColorClass="bg-blue-500"
+        />
+
+        <PlanCard
+          title={t('subscription.facility.premium.title')}
+          price={t('subscription.facility.premium.price')}
+          features={premiumFeatures}
+          type="premium"
+          icon={FiStar}
+          isCurrent={currentSubscription === 'premium'}
+          onUpgrade={handleUpgrade}
+          colorClass="text-yellow-600"
+          borderColorClass="ring-yellow-500"
+          bgClass="bg-yellow-500"
+          iconColorClass="bg-yellow-500"
+        />
       </div>
     </div>
   );
@@ -285,4 +239,3 @@ Subscription.propTypes = {
 };
 
 export default Subscription;
-

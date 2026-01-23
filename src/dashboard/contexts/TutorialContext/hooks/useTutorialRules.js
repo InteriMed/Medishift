@@ -5,6 +5,7 @@ import {
     PROFILE_TAB_IDS,
     isProfileTutorial,
     normalizePathForComparison,
+    isProfilePath,
     PLATFORM_FEATURES,
     WORKSPACE_TYPES
 } from '../../../../config/tutorialSystem';
@@ -85,7 +86,7 @@ export const useTutorialRules = ({
                 normalizedCurrentPath.startsWith('/dashboard/overview')) {
                 isOnCorrectPage = true;
             }
-        } else if (normalizedRequiredPath.includes('/dashboard/profile') && normalizedCurrentPath.includes('/dashboard/profile')) {
+        } else if (isProfilePath(normalizedRequiredPath) && isProfilePath(normalizedCurrentPath)) {
             const requiredTab = currentStepData.requiredTab || currentStepData.highlightTab;
             if (currentStepData.highlightTab) {
                 isOnCorrectPage = true;

@@ -4,7 +4,6 @@ import { FiUpload, FiFile } from 'react-icons/fi';
 
 /**
  * Example showing how to use TutorialAwareModal
- * The modal automatically pauses/resumes the tutorial
  */
 const SimplifiedDocumentUpload = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,7 +28,7 @@ const SimplifiedDocumentUpload = () => {
             setSelectedFile(null);
         }
 
-        // Modal will close and tutorial will resume automatically
+            // Modal will close automatically
     };
 
     return (
@@ -52,7 +51,7 @@ const SimplifiedDocumentUpload = () => {
                 </ul>
             )}
 
-            {/* The TutorialAwareModal handles pause/resume automatically */}
+            {/* The TutorialAwareModal component */}
             <TutorialAwareModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

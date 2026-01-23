@@ -67,6 +67,13 @@ console.error = (...args) => {
       console.debug('[Global] Suppressed console.error for Timeout:', ...args);
       return;
     }
+    if (argStr.includes('[i18n]') || 
+        argStr.includes('Missing translation') ||
+        (argStr.includes('translation') && argStr.includes('missing')) ||
+        (args.some(arg => typeof arg === 'string' && arg.includes('Component Stack') && arg.includes('translation'))) ||
+        (args.some(arg => typeof arg === 'string' && arg.includes('Error Component Stack') && (arg.includes('Header') || arg.includes('AuthButtons'))))) {
+      return;
+    }
   }
   originalConsoleError.apply(console, args);
 };

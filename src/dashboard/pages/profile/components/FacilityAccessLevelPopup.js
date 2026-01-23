@@ -74,10 +74,17 @@ const FacilityAccessLevelPopup = ({ isOpen, onClose, allowClose = false }) => {
                     </div>
 
                     <div 
-                        className="border-2 rounded-xl p-6 transition-colors flex flex-col"
+                        onClick={handleLearnMore}
+                        className="border-2 rounded-xl p-6 transition-colors flex flex-col cursor-pointer"
                         style={{
                             borderColor: 'var(--premium-gold-light)',
                             background: 'linear-gradient(135deg, rgba(248, 176, 19, 0.05) 0%, rgba(255, 196, 21, 0.02) 100%)'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.borderColor = 'var(--premium-gold)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.borderColor = 'var(--premium-gold-light)';
                         }}
                     >
                         <div className="flex items-start justify-between mb-4">
@@ -128,25 +135,16 @@ const FacilityAccessLevelPopup = ({ isOpen, onClose, allowClose = false }) => {
                             </li>
                         </ul>
                         <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--premium-gold-light)' }}>
-                            <button
-                                onClick={handleLearnMore}
-                                className="w-full px-4 py-2 rounded-lg font-semibold transition-colors"
+                            <div
+                                className="w-full px-4 py-2 rounded-lg font-semibold transition-colors text-center"
                                 style={{
                                     border: '2px solid var(--premium-gold)',
                                     color: 'var(--premium-gold)',
                                     backgroundColor: 'transparent'
                                 }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'var(--premium-gold)';
-                                    e.currentTarget.style.color = 'white';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'transparent';
-                                    e.currentTarget.style.color = 'var(--premium-gold)';
-                                }}
                             >
                                 {t('facilityAccessChoice.learnMore', 'Learn More')}
-                            </button>
+                            </div>
                         </div>
                     </div>
                 </div>

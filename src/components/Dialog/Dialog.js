@@ -154,10 +154,10 @@ const Dialog = ({
             opacity: isVisible ? 1 : 0
           }}
         >
-          <div className={position ? "pl-6 pr-0 pb-6 pt-0" : "pl-8 pr-0 pb-8 pt-0"}>
+          <div className={position ? "pl-6 pr-6 pb-6 pt-0" : "pl-8 pr-0 pb-8 pt-0"}>
             <div className={cn("flex items-start", centerTitle ? "flex-col" : "justify-between")}>
               {!centerTitle && (
-                <div className="flex-1 pt-6 pr-6">
+                <div className="flex-1 pt-6">
                   <div className="flex items-center gap-3">
                     {getHeaderIcon()}
                     {title && (
@@ -173,7 +173,7 @@ const Dialog = ({
                 </div>
               )}
               {centerTitle && (
-                <div className="w-full relative pt-6 pr-6">
+                <div className="w-full relative pt-6">
                   <div className="flex items-center gap-3">
                     {getHeaderIcon()}
                     {title && (
@@ -192,7 +192,7 @@ const Dialog = ({
                 <button
                   onClick={onClose}
                   className={cn(
-                    "p-2 transition-colors",
+                    "p-2 transition-colors -mr-2 mt-4",
                     centerTitle ? "absolute top-0 right-0" : "",
                     getIconColorClass()
                   )}
@@ -203,14 +203,14 @@ const Dialog = ({
             </div>
 
             <div className={cn(
-              "text-slate-600 leading-relaxed custom-scrollbar overflow-y-auto mt-4 pr-8",
-              position ? "max-h-[62vh]" : "max-h-[100vh]"
+              "text-slate-600 leading-relaxed custom-scrollbar overflow-y-auto mt-4",
+              position ? "max-h-[62vh]" : "max-h-[100vh] pr-8"
             )}>
               {children}
             </div>
 
             {actions && (
-              <div className={cn("flex justify-end pr-8", position ? "mt-6 gap-2" : "mt-8 gap-3")}>
+              <div className={cn("flex justify-end", position ? "mt-6 gap-2" : "mt-8 gap-3 pr-8")}>
                 {actions}
               </div>
             )}
@@ -248,7 +248,7 @@ const Dialog = ({
       />
       <div
         className={cn(
-          "bg-white w-full rounded-2xl overflow-hidden flex flex-col relative transform transition-all duration-300 shadow-2xl border border-slate-200",
+          "bg-white w-full rounded-2xl overflow-hidden flex flex-col relative transform transition-all duration-300 shadow-2xl border border-slate-200 dialog-root",
           sizeClasses[size],
           accentClasses[messageType] || accentClasses.default,
           isVisible ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4"

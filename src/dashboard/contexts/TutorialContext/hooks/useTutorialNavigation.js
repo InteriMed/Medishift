@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { TUTORIAL_IDS, isProfileTutorial, getProfileTutorialForType, ONBOARDING_TYPES } from '../../../../config/tutorialSystem';
+import { TUTORIAL_IDS, isProfileTutorial, getProfileTutorialForType, ONBOARDING_TYPES, isProfilePath, normalizePathForComparison } from '../../../../config/tutorialSystem';
 
 /**
  * Tutorial navigation and route guards
@@ -98,7 +98,7 @@ export const useTutorialNavigation = ({
         if (!isTutorialActive) return;
 
         // Special Exception: Dashboard tutorial completion
-        if (activeTutorial === TUTORIAL_IDS.DASHBOARD && currentStep >= 3 && location.pathname.includes('/dashboard/profile')) {
+        if (activeTutorial === TUTORIAL_IDS.DASHBOARD && currentStep >= 3 && isProfilePath(location.pathname)) {
             if (isBusy) {
                 setIsBusy(false);
                 return;
@@ -120,8 +120,9 @@ export const useTutorialNavigation = ({
                 const steps = tutorialSteps[activeTutorial];
                 if (steps) {
                     const currentPath = location.pathname;
+                    const normalizedCurrentPath = normalizePathForComparison(currentPath);
                     const matchingStepIndex = steps.findIndex(step =>
-                        step.navigationPath && currentPath.includes(step.navigationPath)
+                        step.navigationPath && normalizedCurrentPath.includes(step.navigationPath)
                     );
 
                     const now = Date.now();
@@ -142,7 +143,7 @@ export const useTutorialNavigation = ({
                 // Error syncing tutorial step
             }
 
-            if (!path.includes('/dashboard/profile')) {
+            if (!isProfilePath(path)) {
                 if (accessLevelChoice === 'full' && currentStep >= 1) {
                     setAllowAccessLevelModalClose(true);
                     setShowAccessLevelModal(true);
@@ -160,7 +161,7 @@ export const useTutorialNavigation = ({
         // Dashboard Tutorial
         if (activeTutorial === TUTORIAL_IDS.DASHBOARD) {
             const isOverview = path === '/dashboard' || path === '/dashboard/' || path.includes('/dashboard/overview');
-            const isProfile = path.includes('/dashboard/profile');
+            const isProfile = isProfilePath(path);
 
             if (isProfile) {
                 if (currentStep >= 3) {

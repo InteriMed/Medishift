@@ -5,15 +5,12 @@ import { FiX } from 'react-icons/fi';
 import Button from '../../../components/BoxedInputFields/Button';
 
 /**
- * TutorialAwareModal - A reusable modal component that automatically
- * pauses the tutorial when opened and resumes when closed via "Save"
+ * TutorialAwareModal - A reusable modal component
  * 
  * @param {Object} props
  * @param {boolean} props.isOpen - Whether the modal is open
  * @param {function} props.onClose - Callback when modal is closed
  * @param {function} props.onSave - Callback when "Save and Continue" is clicked (optional)
- * @param {boolean} props.resumeOnClose - Whether to resume tutorial when modal closes (default: false)
- * @param {boolean} props.resumeOnSave - Whether to resume tutorial when save is clicked (default: true)
  * @param {string} props.title - Modal title
  * @param {React.ReactNode} props.children - Modal content
  * @param {React.ReactNode} props.footer - Custom footer (optional, replaces default buttons)
@@ -28,8 +25,6 @@ const TutorialAwareModal = ({
   isOpen,
   onClose,
   onSave,
-  resumeOnClose = false,
-  resumeOnSave = true,
   title,
   children,
   footer,
@@ -40,22 +35,10 @@ const TutorialAwareModal = ({
   className = '',
   size = 'medium',
 }) => {
-  const { pauseTutorial, resumeTutorial, isPaused } = useTutorial();
-
-  // Pause tutorial when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      pauseTutorial();
-    }
-  }, [isOpen, pauseTutorial]);
+  // Removed pause/resume - modals no longer pause tutorial
 
   // Handle close (cancel)
   const handleClose = () => {
-
-    if (resumeOnClose) {
-      resumeTutorial();
-    }
-
     if (onClose) {
       onClose();
     }
@@ -63,15 +46,9 @@ const TutorialAwareModal = ({
 
   // Handle save and continue
   const handleSave = async () => {
-
     // Call the onSave callback if provided
     if (onSave) {
       await onSave();
-    }
-
-    // Resume tutorial if configured to do so
-    if (resumeOnSave) {
-      resumeTutorial();
     }
 
     // Close the modal
@@ -142,14 +119,6 @@ const TutorialAwareModal = ({
           )}
         </div>
 
-        {/* Debug info in development */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="modal-debug p-2 bg-yellow-100/50 text-[10px] text-muted-foreground border-t border-border">
-            Tutorial paused: {isPaused ? 'Yes' : 'No'} |
-            Resume on save: {resumeOnSave ? 'Yes' : 'No'} |
-            Resume on close: {resumeOnClose ? 'Yes' : 'No'}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -159,8 +128,6 @@ TutorialAwareModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func,
-  resumeOnClose: PropTypes.bool,
-  resumeOnSave: PropTypes.bool,
   title: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
   footer: PropTypes.node,

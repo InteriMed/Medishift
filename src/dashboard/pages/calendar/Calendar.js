@@ -630,8 +630,8 @@ const Calendar = ({ userData }) => {
     <div className="h-full flex flex-col animate-in fade-in duration-500" style={{ overflow: 'visible' }}>
       {/* Main Split Content */}
       <div className={cn(
-        "flex-1 flex relative min-h-0",
-        calendarMode === 'team' ? "p-0" : "p-6 gap-6"
+        "flex-1 flex relative min-h-0 ml-4 my-4",
+        calendarMode === 'team' ? "p-0" : "gap-6"
       )} style={{ overflow: 'visible' }}>
         {calendarMode === 'team' && isTeamWorkspace ? (
           <div className="w-full h-full flex flex-col">

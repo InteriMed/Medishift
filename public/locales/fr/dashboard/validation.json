@@ -21,5 +21,6 @@
   "fixErrors": "Veuillez corriger les erreurs avant de sauvegarder.",
   "profileSaved": "Profil sauvegardé avec succès !",
   "minItemsRequired": "Au moins un élément est requis",
-  "errorFixFieldsBeforeContinuing": "Veuillez corriger les erreurs avant de continuer"
+  "errorFixFieldsBeforeContinuing": "Veuillez corriger les erreurs avant de continuer",
+  "completePreviousSteps": "Veuillez compléter les étapes précédentes avant d'accéder à cet onglet"
 } 

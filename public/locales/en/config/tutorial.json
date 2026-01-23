@@ -40,7 +40,19 @@
         },
         "document-uploads-tab": {
           "title": "Step 4: Document Uploads",
-          "content": "Finally, upload your professional documents such as certificates, resume, and identification. You can use the Auto Fill button if you have documents ready, or upload them manually. This is the last step!"
+          "content": "Upload your professional documents such as certificates, resume, and recommendation letters."
+        },
+        "full-access-unlocked": {
+          "title": "Full Access Unlocked!",
+          "content": "Congratulations! You've provided all required information. You now have full access to all platform features, including the marketplace and contract management."
+        },
+        "account-tab": {
+          "title": "Step 5: Account Settings",
+          "content": "Review your account details. This is where you can manage your email and profile preferences."
+        },
+        "settings-tab": {
+          "title": "Step 6: Preferences",
+          "content": "Finally, configure your notification preferences and availability to ensure you get the right opportunities at the right time."
         },
         "profile-completion-info": {
           "title": "Profile Complete!",
@@ -228,4 +240,3 @@
     }
   }
 }
-
