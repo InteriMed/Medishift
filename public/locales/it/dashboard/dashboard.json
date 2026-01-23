@@ -11,7 +11,9 @@
       "organization": "Organizzazione",
       "settings": "Impostazioni",
       "incompleteProfile": "Il tuo profilo è incompleto",
-      "completeProfileFirst": "Completa prima il tuo profilo"
+      "completeProfileFirst": "Completa prima il tuo profilo",
+      "lockedDuringTutorial": "Bloccato durante il tutorial",
+      "collapse": "Comprimi"
     },
     "header": {
       "search": "Cerca...",
@@ -52,16 +54,33 @@
         "title": "Impostazioni",
         "subtitle": "Configura le preferenze del tuo account"
       },
-      "profileResetSuccess": "Profile Reset Success",
-      "profileResetError": "Profile Reset Error",
-      "createBusiness": "Create Business",
-      "createBusinessDesc": "Create Business Desc",
-      "createProfessional": "Create Professional",
-      "createProfessionalDesc": "Create Professional Desc",
-      "resetProfile": "Reset Profile",
-      "resetProfileTitle": "Reset Profile Title",
-      "resetProfileMessage": "Reset Profile Message",
-      "resetConfirm": "Reset Confirm"
+      "profileResetSuccess": "Profilo reimpostato con successo",
+      "profileResetError": "Errore nel reimpostare il profilo",
+      "createBusiness": "Crea azienda",
+      "createBusinessDesc": "Configura il profilo della struttura",
+      "createProfessional": "Crea profilo professionale",
+      "createProfessionalDesc": "Passa all'account personale",
+      "resetProfile": "Reimposta profilo",
+      "resetProfileTitle": "Reimposta profilo",
+      "resetProfileMessage": "Sei sicuro di voler reimpostare il tuo profilo?",
+      "resetConfirm": "Reimposta profilo",
+      "notifications": {
+        "newEvent": {
+          "title": "Nuovo evento",
+          "message": "Riunione di team alle 15:00",
+          "time": "10m fa"
+        },
+        "confirmation": {
+          "title": "Conferma",
+          "message": "Il tuo trasferimento turno è stato approvato",
+          "time": "1h fa"
+        },
+        "system": {
+          "title": "Sistema",
+          "message": "Profilo aggiornato con successo",
+          "time": "2h fa"
+        }
+      }
     },
     "loading": "Caricamento dati dashboard...",
     "error": "Errore nel caricamento dei dati della dashboard",

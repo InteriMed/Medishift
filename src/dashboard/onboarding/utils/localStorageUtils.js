@@ -1,6 +1,6 @@
-// LocalStorage utilities for onboarding data persistence
+import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
 
-const ONBOARDING_STORAGE_KEY = 'onboarding_form_data';
+const ONBOARDING_STORAGE_KEY = LOCALSTORAGE_KEYS.ONBOARDING_FORM_DATA;
 
 export const saveOnboardingData = (data) => {
     try {

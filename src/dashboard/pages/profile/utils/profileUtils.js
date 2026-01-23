@@ -1,7 +1,8 @@
 import { get } from 'lodash';
 
 export const isTabCompleted = (profileData, tabId, config) => {
-    if (!profileData || !config?.fields || !config.fields[tabId]) return false;
+    if (!profileData || !config?.fields) return false;
+    if (!config.fields[tabId]) return true;
     const fieldsOrRules = config.fields[tabId];
 
     if (Array.isArray(fieldsOrRules)) {
@@ -74,7 +75,13 @@ export const isTabAccessible = (profileData, tabId, config) => {
 
 export const calculateProfileCompleteness = (data, config) => {
     if (!data || !config?.tabs) return 0;
-    const TABS_FOR_COMPLETENESS = config.tabs.map(t => t.id);
+    const TABS_FOR_COMPLETENESS = config.tabs
+        .map(t => t.id)
+        .filter(tabId => {
+            const isFacility = data?.role === 'facility' || data?.role === 'company';
+            if (isFacility && tabId === 'account') return false;
+            return true;
+        });
     const completedTabs = TABS_FOR_COMPLETENESS.filter(tabId => isTabCompleted(data, tabId, config));
     return TABS_FOR_COMPLETENESS.length > 0 ? Math.round((completedTabs.length / TABS_FOR_COMPLETENESS.length) * 100) : 0;
 };

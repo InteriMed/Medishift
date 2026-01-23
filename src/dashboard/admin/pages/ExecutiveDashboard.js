@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import {
   TrendingUp,
   Users,
@@ -116,7 +117,7 @@ const ExecutiveDashboard = () => {
   const getLiveShiftsCount = async () => {
     try {
       const now = new Date();
-      const shiftsRef = collection(db, 'shifts');
+      const shiftsRef = collection(db, FIRESTORE_COLLECTIONS.SHIFTS);
       const q = query(
         shiftsRef,
         where('startTime', '<=', now),
@@ -137,7 +138,7 @@ const ExecutiveDashboard = () => {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const shiftsRef = collection(db, 'shifts');
+      const shiftsRef = collection(db, FIRESTORE_COLLECTIONS.SHIFTS);
       const q = query(
         shiftsRef,
         where('date', '>=', now),
@@ -157,7 +158,7 @@ const ExecutiveDashboard = () => {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
 
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
       const q = query(
         usersRef,
         where('onboardingStatus', '==', 'pending_verification')
@@ -182,7 +183,7 @@ const ExecutiveDashboard = () => {
 
   const getGMV = async (startDate, endDate) => {
     try {
-      const shiftsRef = collection(db, 'shifts');
+      const shiftsRef = collection(db, FIRESTORE_COLLECTIONS.SHIFTS);
       const q = query(
         shiftsRef,
         where('date', '>=', startDate),
@@ -213,7 +214,7 @@ const ExecutiveDashboard = () => {
 
   const getSaaSFees = async (startDate, endDate) => {
     try {
-      const facilitiesRef = collection(db, 'facilityProfiles');
+      const facilitiesRef = collection(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES);
       const snapshot = await getDocs(facilitiesRef);
 
       let total = 0;
@@ -234,7 +235,7 @@ const ExecutiveDashboard = () => {
 
   const getFillRate = async (startDate, endDate) => {
     try {
-      const shiftsRef = collection(db, 'shifts');
+      const shiftsRef = collection(db, FIRESTORE_COLLECTIONS.SHIFTS);
       const q = query(
         shiftsRef,
         where('date', '>=', startDate),
@@ -262,7 +263,7 @@ const ExecutiveDashboard = () => {
 
   const getNewSignupsCount = async (type, startDate, endDate) => {
     try {
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
       const q = query(
         usersRef,
         where('roles', 'array-contains', type === 'facility' ? 'facility' : 'professional')

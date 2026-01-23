@@ -1,11 +1,11 @@
 {
   "meta": {
-    "title": "Contact Us",
+    "title": "Contact Us | InteriMed",
     "description": "Get in touch with InteriMed. We're here to answer your questions about our healthcare staffing services.",
     "keywords": "contact, healthcare staffing, medical professionals, InteriMed contact"
   },
   "title": "Contact Us",
-  "subtitle": "We're here to help! Whether you have a question, feedback, or need support, please reach out. We recommend checking our comprehensive FAQ page first, as you might find your answer there quickly.",
+  "subtitle": "We're here to help! Whether you have a question, feedback, or need support, please reach out.",
   "contact": {
     "title": "Contact Us",
     "hero": {
@@ -13,7 +13,7 @@
       "description": "We're here to help! Whether you have a question, feedback, or need support, please reach out. We recommend checking our comprehensive <a href='{{faqLink}}'>FAQ page</a> first, as you might find your answer there quickly. For other inquiries, please use the contact form below or reach out via email. Our team, based in Geneva, aims to respond within 1-2 business days."
     },
     "form": {
-      "title": "Contact Us",
+      "title": "Send us a message",
       "description": "Fill out the form below and we'll get back to you as soon as possible.",
       "name": "Name",
       "namePlaceholder": "Enter your full name",
@@ -43,7 +43,6 @@
         "title": "Message Sent Successfully!",
         "message": "Thank you for your message. We'll get back to you within 1-2 business days."
       },
-      "privacyPolicy": "I agree to the Privacy Policy",
       "privacyAgree": "I agree to the",
       "privacyLink": "Privacy Policy",
       "submitButton": "Send Message",
@@ -89,13 +88,5 @@
   },
   "map": {
     "title": "Our Location"
-  },
-  "errors": {
-    "nameRequired": "Name is required",
-    "emailRequired": "Email is required",
-    "emailInvalid": "Please enter a valid email address",
-    "inquiryTypeRequired": "Please select an inquiry type",
-    "messageRequired": "Message is required",
-    "privacyPolicyRequired": "You must agree to the Privacy Policy"
   }
 } 

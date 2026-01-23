@@ -10,6 +10,7 @@ import PersonnalizedInputField from '../../../components/BoxedInputFields/Person
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import UploadFile from '../../../components/BoxedInputFields/UploadFile';
 import { saveOnboardingData, loadOnboardingData, clearOnboardingData } from '../utils/localStorageUtils';
+import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 
 
 const ProfessionalGLNVerification = React.memo(React.forwardRef(function ProfessionalGLNVerification(props, ref) {
@@ -145,7 +146,7 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
 
             const { doc, updateDoc } = await import('firebase/firestore');
             const { db } = await import('../../../services/firebase');
-            await updateDoc(doc(db, 'users', currentUser.uid), {
+            await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {
                 GLN_certified: false,
                 bypassedGLN: true,
                 roles: ['professional']
@@ -153,9 +154,7 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
 
             setVerificationStatus('complete');
             clearOnboardingData();
-            console.log('[ProfessionalGLNVerification] Bypass completed successfully, triggering onComplete to start tutorial');
             setTimeout(() => {
-                console.log('[ProfessionalGLNVerification] Calling onComplete callback');
                 onComplete?.();
             }, 1500);
         } catch (error) {
@@ -247,7 +246,7 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             {allowBypass && (
                 <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
                     <span className="text-sm font-medium">Skip GLN Verification (Team Access)</span>
@@ -286,6 +285,7 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
             )}
 
             <SimpleDropdown
+                label={t('dashboardProfile:profession', 'Profession')}
                 options={MEDICAL_PROFESSION_OPTIONS}
                 value={profession}
                 onChange={(v) => {
@@ -293,20 +293,21 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
                     setFieldErrors(p => ({ ...p, profession: '' }));
                     if (verificationError) setVerificationError('');
                 }}
-                placeholder={t('dashboard.onboarding.profession.select')}
+                placeholder={t('dashboard.onboarding.profession.select', 'Select your profession')}
                 required error={fieldErrors.profession}
             />
 
             {!bypassMode && (
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <SimpleDropdown
+                        label={t('dashboard.onboarding.docs.professional_id', 'Authorization Document')}
                         options={DOCUMENT_TYPES} value={documentType}
                         onChange={(v) => {
                             setDocumentType(v);
                             setFieldErrors(p => ({ ...p, documentType: '' }));
                             if (verificationError) setVerificationError('');
                         }}
-                        placeholder={t('dashboard.onboarding.docs.select_doc_type')}
+                        placeholder={t('dashboard.onboarding.docs.select_doc_type', 'Select document type')}
                         error={fieldErrors.documentType}
                     />
 

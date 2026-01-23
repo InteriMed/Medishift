@@ -38,18 +38,19 @@
 }
 
 .sidebarTitle {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary, #1e293b);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-default);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
   margin-bottom: 0.25rem;
   padding: 0 0.75rem;
-  font-family: inherit;
   line-height: inherit;
 }
 
 .sidebarSubtitle {
-  font-size: 0.8rem;
-  color: var(--text-secondary, #64748b);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--text-light-color);
   margin-bottom: 1.5rem;
   padding: 0 0.75rem;
 }
@@ -69,7 +70,8 @@
   margin-bottom: 0;
   border-radius: 0;
   color: var(--color-logo-1);
-  font-weight: 300;
+  font-family: var(--font-family-text);
+  font-weight: var(--font-weight-normal);
   font-size: var(--font-size-medium);
   cursor: pointer;
   transition: background-color 0.2s;
@@ -83,7 +85,7 @@
 
 .sidebarTab span {
   color: var(--grey-3);
-  font-weight: 400;
+  font-weight: var(--font-weight-normal);
   font-size: var(--font-size-medium);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -105,7 +107,7 @@
 .sidebarTabActive {
   background-color: var(--color-logo-1-light);
   color: var(--color-logo-1);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .sidebarTabActive span {
@@ -113,7 +115,7 @@
 }
 
 .tabIcon {
-  font-size: 1.1rem;
+  font-size: var(--font-size-default);
   color: inherit;
 }
 
@@ -180,21 +182,24 @@
 }
 
 .sectionTitle {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-xlarge);
+  font-weight: var(--font-weight-large);
+  color: var(--text-color);
   margin: 0 0 0.5rem 0;
 }
 
 .sectionSubtitle {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
+  color: var(--text-light-color);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
   margin: 0;
 }
 
 .mandatoryFieldLegend {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--text-light-color);
   position: absolute;
   bottom: 1rem;
   right: 1.5rem;
@@ -228,16 +233,17 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background-color: var(--background-surface, #f8fafc);
-  color: var(--color-primary);
-  font-size: 1.25rem;
+  background-color: var(--grey-0);
+  color: var(--color-logo-1);
+  font-size: var(--font-size-large);
 }
 
 .cardTitle h3 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
 }
 
 .grid {
@@ -279,12 +285,13 @@
 }
 
 .pageTitle {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-color, #333);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-xlarge);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
   margin: 0 0 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+  border-bottom: 1px solid var(--grey-1);
 }
 
 .settingsTabs {
@@ -298,9 +305,10 @@
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--grey-3, #555);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-medium);
+  color: var(--grey-3);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -336,16 +344,18 @@
   justify-content: center;
   align-items: center;
   height: 400px;
-  font-size: 18px;
-  color: var(--grey-3, #555);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
+  color: var(--grey-3);
 }
 
 .selectField {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid var(--grey-2, #aaa);
+  border: 1px solid var(--grey-2);
   border-radius: 4px;
-  font-size: 14px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
   margin-bottom: 8px;
 }
 
@@ -356,8 +366,9 @@
 
 .rangeValue {
   text-align: right;
-  font-size: 14px;
-  color: var(--grey-3, #555);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--grey-3);
 }
 
 .dangerZone {
@@ -368,8 +379,9 @@
 }
 
 .dangerZoneTitle {
-  color: var(--color-error, #e53935);
-  font-size: 18px;
+  color: var(--red-3);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-medium);
   margin: 0 0 16px;
 }
 
@@ -392,15 +404,17 @@
 }
 
 .dangerItemInfo h3 {
-  font-size: 16px;
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-medium);
   margin: 0 0 4px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .dangerItemInfo p {
   margin: 0;
-  font-size: 14px;
-  color: var(--grey-3, #555);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--grey-3);
 }
 
 @media (max-width: 992px) {

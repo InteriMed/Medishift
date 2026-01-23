@@ -1,0 +1,20 @@
+{
+  "no": "No",
+  "yes": "Sì",
+  "cancel": "Annulla",
+  "saveAndContinue": "Salva e continua",
+  "discardChanges": "Annulla modifiche",
+  "yesDiscard": "Sì, annulla",
+  "collapse": "Comprimi",
+  "header": {
+    "logoAlt": "MediShift",
+    "brandName": "MediShift",
+    "toggleMenu": "Attiva/disattiva menu",
+    "search": "Cerca",
+    "notifications": "Notifiche",
+    "startTutorial": "Inizia tutorial",
+    "changeLanguage": "Cambia lingua",
+    "profileAlt": "Profilo"
+  }
+}
+

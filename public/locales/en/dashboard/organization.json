@@ -3,6 +3,8 @@
   "subtitle": "Manage your pharmacy chain",
   "noOrg": "Create or join an organization",
   "tabs": {
+    "overview": "Overview",
+    "headquarters": "Headquarters",
     "chain": "Chain",
     "openingHours": "Opening Hours",
     "facilityRoles": "Facility Roles",

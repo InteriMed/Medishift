@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import i18n from '../i18n';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -34,11 +35,11 @@ class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      // You can render any custom fallback UI
+      const t = (key, defaultValue) => i18n.t(key, defaultValue);
       return (
         <div className="error-boundary">
-          <h1>Something went wrong.</h1>
-          <p>The application encountered an error. Please refresh the page or try again later.</p>
+          <h1>{t('common:error.somethingWentWrong', 'Something went wrong.')}</h1>
+          <p>{t('common:error.applicationError', 'The application encountered an error. Please refresh the page or try again later.')}</p>
           {process.env.NODE_ENV === 'development' && (
             <details style={{ whiteSpace: 'pre-wrap' }}>
               {this.state.error && this.state.error.toString()}
@@ -46,7 +47,7 @@ class ErrorBoundary extends Component {
               {this.state.errorInfo && this.state.errorInfo.componentStack}
             </details>
           )}
-          <button onClick={() => window.location.reload()}>Refresh Page</button>
+          <button onClick={() => window.location.reload()}>{t('common:refreshPage', 'Refresh Page')}</button>
         </div>
       );
     }

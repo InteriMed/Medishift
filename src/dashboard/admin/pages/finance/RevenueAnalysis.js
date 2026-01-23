@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { DollarSign, TrendingUp, Users, Percent, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
-import DateField from '../../../../components/BoxedInputFields/DateField/DateField';
+import DateField from '../../../../components/BoxedInputFields/DateField';
 import '../../../../styles/variables.css';
 
 const RevenueAnalysis = () => {
@@ -96,7 +97,7 @@ const RevenueAnalysis = () => {
 
   const getSaaSMRR = async () => {
     try {
-      const facilitiesRef = collection(db, 'facilityProfiles');
+      const facilitiesRef = collection(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES);
       const snapshot = await getDocs(facilitiesRef);
 
       let totalMRR = 0;
@@ -155,7 +156,7 @@ const RevenueAnalysis = () => {
 
   const getChurnRate = async (month, year) => {
     try {
-      const facilitiesRef = collection(db, 'facilityProfiles');
+      const facilitiesRef = collection(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES);
       const snapshot = await getDocs(facilitiesRef);
 
       let activeAtStart = 0;
@@ -186,7 +187,7 @@ const RevenueAnalysis = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
-        <div style={{ color: 'var(--text-light-color)', fontSize: 'var(--font-size-medium)' }}>Loading revenue data...</div>
+        <div style={{ color: 'var(--text-light-color)', fontSize: 'var(--font-size-medium)' }}>{t('admin:finance.loadingRevenue', 'Loading revenue data...')}</div>
       </div>
     );
   }

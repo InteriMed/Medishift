@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp, deleteField } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
 
 export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
@@ -21,7 +22,7 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
         if (!currentUser) return;
         // type: 'professional' or 'facility'
         const fieldName = type === 'facility' ? 'onboardingFacility' : 'onboardingProfessional';
-        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
 
         try {
             const stepEntry = {
@@ -45,7 +46,7 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
     const markOnboardingFinished = useCallback(async (type) => {
         if (!currentUser) return;
         const fieldName = type === 'facility' ? 'onboardingFacility' : 'onboardingProfessional';
-        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
 
         try {
             await setDoc(userDocRef, {
@@ -62,7 +63,7 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
     const getOnboardingProgress = useCallback(async () => {
         if (!currentUser) return null;
         try {
-            const userDocRef = doc(db, 'users', currentUser.uid);
+            const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
             const snapshot = await getDoc(userDocRef);
             if (snapshot.exists()) {
                 const data = snapshot.data();
@@ -85,9 +86,9 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
         try {
             let docRef;
             if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                docRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
             } else {
-                docRef = doc(db, 'professionalProfiles', currentUser.uid);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, currentUser.uid);
             }
 
             const stepEntry = {
@@ -112,9 +113,9 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
         try {
             let docRef;
             if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                docRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
             } else {
-                docRef = doc(db, 'professionalProfiles', currentUser.uid);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, currentUser.uid);
             }
 
             await setDoc(docRef, {
@@ -132,9 +133,9 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
         try {
             let docRef;
             if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                docRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
             } else {
-                docRef = doc(db, 'professionalProfiles', currentUser.uid);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, currentUser.uid);
             }
 
             const snapshot = await getDoc(docRef);
@@ -167,9 +168,9 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
         try {
             let docRef;
             if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                docRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
             } else {
-                docRef = doc(db, 'professionalProfiles', currentUser.uid);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, currentUser.uid);
             }
 
             await setDoc(docRef, {
@@ -195,9 +196,9 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
         try {
             let docRef;
             if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                docRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
             } else {
-                docRef = doc(db, 'professionalProfiles', currentUser.uid);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, currentUser.uid);
             }
 
             // arrayUnion only works with updateDoc, not setDoc
@@ -221,9 +222,8 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
             const verifySnapshot = await getDoc(docRef);
             const verifyData = verifySnapshot.exists() ? verifySnapshot.data() : {};
             const savedCompleted = verifyData?.tutorial?.completedTutorials || [];
-            console.log('[TutorialPersistence] Marked tutorial complete:', tutorialName, 'Saved completed tutorials:', savedCompleted);
         } catch (error) {
-            console.error('[TutorialPersistence] Error marking tutorial complete:', error);
+            // Error marking tutorial complete
             throw error;
         }
     }, [currentUser, selectedWorkspace]);
@@ -233,9 +233,9 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
         try {
             let docRef;
             if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                docRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
             } else {
-                docRef = doc(db, 'professionalProfiles', currentUser.uid);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, currentUser.uid);
             }
 
             // For array-based deletion, we'd need arrayRemove but let's just update the whole field for now if it's simpler or use another approach.
@@ -250,7 +250,7 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
                 });
             }
         } catch (error) {
-            console.log('[TutorialPersistence] clearCompletedStatus failed', error);
+            // clearCompletedStatus failed
         }
     }, [currentUser, selectedWorkspace]);
 
@@ -259,9 +259,9 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
         try {
             let docRef;
             if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                docRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
             } else {
-                docRef = doc(db, 'professionalProfiles', currentUser.uid);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, currentUser.uid);
             }
 
             await setDoc(docRef, {
@@ -280,9 +280,9 @@ export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
         try {
             let docRef;
             if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                docRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
             } else {
-                docRef = doc(db, 'professionalProfiles', currentUser.uid);
+                docRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, currentUser.uid);
             }
             await setDoc(docRef, {
                 tutorial: {

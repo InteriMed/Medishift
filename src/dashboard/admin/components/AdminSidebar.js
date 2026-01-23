@@ -23,6 +23,7 @@ import { useDashboard } from '../../contexts/DashboardContext';
 import { hasPermission, PERMISSIONS } from '../utils/rbac';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import '../../../styles/variables.css';
 
 const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
@@ -41,13 +42,13 @@ const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
         const loadBadgeCounts = async () => {
             try {
                 // Pending verifications count
-                const usersRef = collection(db, 'users');
+                const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
                 const pendingQuery = query(usersRef, where('onboardingStatus', '==', 'pending_verification'));
                 const pendingSnapshot = await getDocs(pendingQuery);
                 setPendingCount(pendingSnapshot.size);
 
                 // Urgent vacancies (shifts starting in <24h with no candidate)
-                const shiftsRef = collection(db, 'shifts');
+                const shiftsRef = collection(db, FIRESTORE_COLLECTIONS.SHIFTS);
                 const tomorrow = new Date();
                 tomorrow.setHours(tomorrow.getHours() + 24);
 

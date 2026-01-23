@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './styles/BoxedSwitchField.css';
+import './styles/SwitchField.css';
 import { useNotification } from '../../contexts/NotificationContext';
 
 const hasRequiredIndicator = (label) => {

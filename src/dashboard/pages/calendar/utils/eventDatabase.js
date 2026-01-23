@@ -3,42 +3,31 @@ import { useState, useEffect, useCallback } from 'react';
 import { db, auth, functions } from '../../../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useTutorial } from '../../../contexts/TutorialContext';
+import { TUTORIAL_IDS } from '../../../../config/tutorialSystem';
 
 const saveEventFunction = httpsCallable(functions, 'saveCalendarEvent');
 const saveRecurringEventsFunction = httpsCallable(functions, 'saveRecurringEvents');
 
 const checkPermissions = async (uid) => {
-  console.log('checkPermissions called with uid:', uid);
-
   if (!uid) {
-    console.error('checkPermissions failed: User ID is required');
     return false;
   }
 
-  console.log('Auth state in checkPermissions:', {
-    currentUser: auth.currentUser ? auth.currentUser.uid : 'null',
-    isInitialized: auth._isInitialized
-  });
-
   // If auth is still initializing, wait a bit
   if (!auth._isInitialized) {
-    console.log('Auth not fully initialized, waiting...');
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   const currentUser = auth.currentUser;
 
   if (!currentUser) {
-    console.error('checkPermissions failed: User not authenticated');
     return false;
   }
 
   if (currentUser.uid !== uid) {
-    console.error(`checkPermissions failed: User ID mismatch - current: ${currentUser.uid}, requested: ${uid}`);
     return false;
   }
 
-  console.log('checkPermissions passed for uid:', uid);
   return true;
 };
 
@@ -68,7 +57,6 @@ export const fetchUserEvents = async (userId, accountType = "worker") => {
 
     // Fetch availability events
     if (accountType === 'worker') {
-      console.log('Fetching availability events');
       const availabilityRef = collection(db, 'availability');
       const availabilityQuery = query(availabilityRef, where('userId', '==', userId));
       const availabilitySnapshot = await getDocs(availabilityQuery);
@@ -84,13 +72,11 @@ export const fetchUserEvents = async (userId, accountType = "worker") => {
           eventColor = '#0f54bc';  // Match blue category color from Calendar.js
           color1 = '#a8c1ff';
           color2 = '#4da6fb';
-          console.log(`Event ${doc.id}: Assigned validated (blue) color`);
         } else {
           // Map to grey category - Unvalidated events  
           eventColor = '#8c8c8c';  // Match grey category color from Calendar.js
           color1 = '#e6e6e6';
           color2 = '#b3b3b3';
-          console.log(`Event ${doc.id}: Assigned unvalidated (grey) color`);
         }
 
         // Check if this is a recurring event
@@ -121,7 +107,6 @@ export const fetchUserEvents = async (userId, accountType = "worker") => {
       });
 
       // Fetch contracts events
-      console.log('Fetching contracts events');
       const contractsSnapshot = await fetchContracts();
 
       contractsSnapshot.forEach(doc => {
@@ -143,10 +128,8 @@ export const fetchUserEvents = async (userId, accountType = "worker") => {
       });
     }
 
-    console.log(`Fetched ${events.length} events for user:`, userId);
     return { success: true, events };
   } catch (error) {
-    console.error('Error fetching events:', error);
     return {
       success: false,
       error: error.message,
@@ -162,17 +145,9 @@ export const fetchUserEvents = async (userId, accountType = "worker") => {
  * @returns {Promise<Object>} - Result object with success/error status
  */
 export const saveEvent = async (event, userId) => {
-  console.log('SAVE SINGLE EVENT called with:', {
-    eventId: event.id,
-    userId,
-    title: event.title,
-    isAvailability: event.isAvailability
-  });
-
   // First check permissions and authentication
   const hasPermission = await checkPermissions(userId);
   if (!hasPermission) {
-    console.error('User does not have permission to save event');
     return { success: false, error: 'Permission denied' };
   }
 
@@ -204,20 +179,17 @@ export const saveEvent = async (event, userId) => {
     const result = await saveEventFunction(eventData);
 
     if (result.data.success) {
-      console.log(`Event saved with ID: ${result.data.id}`);
       return {
         success: true,
         id: result.data.id
       };
     } else {
-      console.error('Firebase function returned error:', result.data.error);
       return {
         success: false,
         error: result.data.error || 'Failed to save event'
       };
     }
   } catch (error) {
-    console.error('Error calling saveEvent Firebase function:', error);
     return {
       success: false,
       error: 'Failed to save event: ' + error.message
@@ -244,29 +216,16 @@ export function generateRecurringEventDates(
   endRepeatCount = 10,
   endRepeatDate = null
 ) {
-  console.log("generateRecurringEventDates called with params:", {
-    startDate: startDate instanceof Date ? startDate.toISOString() : startDate,
-    repeatType,
-    endType,
-    repeatConfig,
-    endRepeatCount,
-    endRepeatDate: endRepeatDate instanceof Date ? endRepeatDate.toISOString() : endRepeatDate
-  });
-
   // Input validation
   if (!startDate) {
-    console.error("No start date provided to generateRecurringEventDates");
     return [];
   }
 
   // Ensure startDate is a Date object
   const startDateObj = startDate instanceof Date ? startDate : new Date(startDate);
   if (isNaN(startDateObj.getTime())) {
-    console.error("Invalid start date provided to generateRecurringEventDates:", startDate);
     return [];
   }
-
-  console.log("Working with start date:", startDateObj.toISOString());
 
   const occurrenceDates = [];
 
@@ -293,8 +252,6 @@ export function generateRecurringEventDates(
     if (!isNaN(endRepeatDateObj.getTime())) {
       endDate = endRepeatDateObj;
       endDate.setHours(23, 59, 59, 999); // Include the entire end day
-    } else {
-      console.warn("Invalid endRepeatDate, using default MAX_END_DATE");
     }
   }
 
@@ -303,20 +260,11 @@ export function generateRecurringEventDates(
     maxOccurrences = Math.min(parseInt(endRepeatCount, 10), MAX_OCCURRENCES);
   }
 
-  console.log("Recurring event parameters:", {
-    startDate: startDateObj.toISOString(),
-    endDate: endDate.toISOString(),
-    maxOccurrences,
-    repeatType
-  });
-
   // Clone the start date to use as our current position
   const currentDate = new Date(startDateObj);
 
   // Standard repeat types 
   if (repeatType === 'Every Day' || repeatType === 'Every Week' || repeatType === 'Every Month') {
-    console.log(`Processing standard repeat type: ${repeatType}`);
-
     // Process standard repeat types (daily, weekly, monthly)
     let occurrenceCount = 1; // Start at 1 because we've already added the first occurrence
 
@@ -325,7 +273,6 @@ export function generateRecurringEventDates(
       const selectedDays = weeklyDays.map((selected, index) => selected ? index : null).filter(v => v !== null);
 
       if (selectedDays.length === 0) {
-        console.warn("No days selected for weekly repeat, using start date day");
         const startDayOfWeek = startDateObj.getDay();
         const mondayIndex = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
         selectedDays.push(mondayIndex);
@@ -430,14 +377,12 @@ export function generateRecurringEventDates(
             break;
           }
           default:
-            console.warn(`Unknown repeat type: ${repeatType}`);
             break;
         }
 
         currentDate.setTime(nextDate.getTime());
 
         if (currentDate > endDate) {
-          console.log("Reached end date, stopping recurring generation");
           break;
         }
 
@@ -446,12 +391,6 @@ export function generateRecurringEventDates(
           dateMap.add(dateKey);
           occurrenceDates.push(new Date(currentDate));
           occurrenceCount++;
-
-          if (occurrenceCount % 10 === 0) {
-            console.log(`Added occurrence ${occurrenceCount}: ${currentDate.toISOString()}`);
-          }
-        } else {
-          console.warn(`Skipping duplicate occurrence date: ${dateKey}`);
         }
       }
     }
@@ -459,23 +398,10 @@ export function generateRecurringEventDates(
   // Handle custom repeat configuration
   else if (repeatType === 'Custom...' && repeatConfig) {
     // Implement custom repeat logic here...
-    console.log("Processing custom repeat configuration:", repeatConfig);
-
-    // ... existing custom repeat code ...
   }
   else {
-    console.warn("Unsupported repeat type:", repeatType);
     // Return just the start date as a fallback
     return [new Date(startDateObj)];
-  }
-
-  console.log(`Generated ${occurrenceDates.length} occurrence dates for event starting on ${startDateObj.toDateString()}`);
-
-  if (occurrenceDates.length > 0) {
-    console.log("First occurrence:", occurrenceDates[0].toISOString());
-    if (occurrenceDates.length > 1) {
-      console.log("Last occurrence:", occurrenceDates[occurrenceDates.length - 1].toISOString());
-    }
   }
 
   return occurrenceDates;
@@ -496,29 +422,6 @@ export const updateEvent = async (eventId, event, userId, accountType = 'worker'
     if (accountType === 'professional') {
       mappedAccountType = 'worker'; // Map professional to worker for Firebase function
     }
-
-    console.log('Calling updateCalendarEvent Firebase function with:', {
-      eventId,
-      userId,
-      originalAccountType: accountType,
-      mappedAccountType: mappedAccountType,
-      startType: typeof event.start,
-      endType: typeof event.end,
-      start: event.start instanceof Date ? event.start.toISOString() : event.start,
-      end: event.end instanceof Date ? event.end.toISOString() : event.end,
-      title: event.title,
-      collectionToUse: mappedAccountType === 'manager' ? 'jobs-listing' : 'availability',
-      eventHasFromDatabaseFlag: event.fromDatabase === true,
-      eventHasValidatedFlag: event.isValidated === true,
-      isForceUpdate: forceUpdate
-    });
-
-    // Debug authentication
-    console.log('Auth debug:', {
-      currentUser: auth.currentUser?.uid,
-      isAuthenticated: !!auth.currentUser,
-      userIdParam: userId
-    });
 
     const updateEventFunction = httpsCallable(functions, 'updateCalendarEvent');
     const result = await updateEventFunction({
@@ -545,17 +448,8 @@ export const updateEvent = async (eventId, event, userId, accountType = 'worker'
       isAvailability: event.isAvailability
     });
 
-    console.log('Update event result:', result.data);
     return result.data;
   } catch (error) {
-    console.error('Error calling updateEvent Firebase function:', error);
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      stack: error.stack
-    });
-
     // Check for specific error types
     if (error.code === 'functions/not-found') {
       return {
@@ -580,7 +474,6 @@ export const updateEvent = async (eventId, event, userId, accountType = 'worker'
 
     // Check for specific CORS errors
     if (error.message.includes('CORS') || error.message.includes('Access-Control-Allow-Origin')) {
-      console.error('CORS error detected - this is a server configuration issue');
       return {
         success: false,
         error: 'Server configuration error. The backend needs to be configured to allow requests from this domain. Please contact your system administrator.'
@@ -589,7 +482,6 @@ export const updateEvent = async (eventId, event, userId, accountType = 'worker'
 
     // Check for network errors
     if (error.message.includes('net::ERR_FAILED') || error.message.includes('Failed to fetch')) {
-      console.error('Network error detected');
       return {
         success: false,
         error: 'Network error. Please check your internet connection and try again.'
@@ -614,8 +506,6 @@ export const updateEvent = async (eventId, event, userId, accountType = 'worker'
  */
 export const deleteEvent = async (eventId, userId, accountType = 'worker', deleteType = 'single', recurrenceId = null) => {
   try {
-    console.log('Deleting event:', eventId, 'for user:', userId, 'type:', deleteType);
-
     // Prepare the data for the delete operation
     const deleteData = {
       eventId,
@@ -625,19 +515,13 @@ export const deleteEvent = async (eventId, userId, accountType = 'worker', delet
       recurrenceId
     };
 
-    console.log('Delete data:', deleteData);
-
     const deleteEventFunction = httpsCallable(functions, 'deleteCalendarEvent');
     const result = await deleteEventFunction(deleteData);
 
-    console.log('Delete event result:', result.data);
     return result.data;
   } catch (error) {
-    console.error('Error deleting event:', error);
-
     // Check for specific CORS errors
     if (error.message.includes('CORS') || error.message.includes('Access-Control-Allow-Origin')) {
-      console.error('CORS error detected during delete - this is a server configuration issue');
       return {
         success: false,
         error: 'Server configuration error. The backend needs to be configured to allow requests from this domain. Please contact your system administrator.'
@@ -646,7 +530,6 @@ export const deleteEvent = async (eventId, userId, accountType = 'worker', delet
 
     // Check for network errors
     if (error.message.includes('net::ERR_FAILED') || error.message.includes('Failed to fetch')) {
-      console.error('Network error detected during delete');
       return {
         success: false,
         error: 'Network error. Please check your internet connection and try again.'
@@ -667,13 +550,6 @@ export const deleteEvent = async (eventId, userId, accountType = 'worker', delet
  * @returns {Promise<Object>} - Result object with success/error status
  */
 export const saveRecurringEvents = async (baseEvent, userId) => {
-  console.log('SAVE RECURRING EVENTS called with:', {
-    eventId: baseEvent.id,
-    userId,
-    repeatValue: baseEvent.repeatValue,
-    isRecurring: baseEvent.isRecurring
-  });
-
   try {
     await checkPermissions(userId);
 
@@ -720,21 +596,18 @@ export const saveRecurringEvents = async (baseEvent, userId) => {
     const result = await saveRecurringEventsFunction(recurringData);
 
     if (result.data.success) {
-      console.log(`Recurring events saved successfully. Count: ${result.data.count}`);
       return {
         success: true,
         recurrenceId: result.data.recurrenceId,
         count: result.data.count
       };
     } else {
-      console.error('Firebase function returned error:', result.data.error);
       return {
         success: false,
         error: result.data.error || 'Failed to save recurring events'
       };
     }
   } catch (error) {
-    console.error('Error calling saveRecurringEvents Firebase function:', error);
     return {
       success: false,
       error: 'Failed to save recurring events: ' + error.message
@@ -832,15 +705,13 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
       return;
     }
 
-    if (isTutorialActive && activeTutorial === 'calendar') {
+    if (isTutorialActive && activeTutorial === TUTORIAL_IDS.CALENDAR) {
       const mockEvents = getMockEvents();
       setEvents(mockEvents);
       setLoading(false);
       setError(null);
       return;
     }
-
-    console.log('Setting up real-time listener for user:', userId, 'accountType:', accountType);
 
     // Set up real-time listener for availability events
     const availabilityQuery = query(
@@ -905,8 +776,6 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
           // Sort client-side instead of server-side to avoid index requirement
           availabilityEvents.sort((a, b) => b.start - a.start);
 
-          console.log(`Real-time update: ${availabilityEvents.length} availability events loaded`);
-
           setEvents(prevEvents => {
             // Preserve existing contract events
             const contractEvents = prevEvents.filter(e => e.isContract);
@@ -915,13 +784,11 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
           setLoading(false);
           setError(null);
         } catch (err) {
-          console.error('Error processing availability events:', err);
           setError(err.message);
           setLoading(false);
         }
       },
       (err) => {
-        console.error('Error in availability events listener:', err);
         setError(err.message);
         setLoading(false);
       }
@@ -997,8 +864,6 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
                 });
               });
 
-              console.log(`Real-time update: ${contractEvents.length} contract events loaded from query ${index + 1}`);
-
               // Combine availability and contract events
               setEvents(prevEvents => {
                 const availabilityEvents = prevEvents.filter(event => event.isAvailability);
@@ -1016,11 +881,11 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
               });
 
             } catch (err) {
-              console.error('Error processing contract events:', err);
+              // Error processing contract events
             }
           },
           (err) => {
-            console.error('Error in contract events listener:', err);
+            // Error in contract events listener
           }
         );
 
@@ -1034,7 +899,6 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
 
     // Cleanup function
     return () => {
-      console.log('Cleaning up real-time listeners');
       unsubscribeAvailability();
       if (unsubscribeContracts) {
         unsubscribeContracts();
@@ -1054,8 +918,6 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
  */
 export const checkAndCreateEvent = async (eventData, userId, workspaceContext) => {
   try {
-    console.log('checkAndCreateEvent called with:', { eventData, userId, workspaceContext });
-
     if (!auth.currentUser) {
       throw new Error('User not authenticated');
     }
@@ -1100,7 +962,6 @@ export const checkAndCreateEvent = async (eventData, userId, workspaceContext) =
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error('Error in checkAndCreateEvent:', error);
     return {
       success: false,
       error: error.message,

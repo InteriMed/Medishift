@@ -28,6 +28,11 @@
   border-bottom: 1px solid var(--success);
 }
 
+.network-status {
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+}
+
 .network-status .network-icon {
   margin-right: 10px;
   font-size: var(--font-size-large);
@@ -51,11 +56,6 @@
 }
 
 @media (max-width: 768px) {
-  .network-status {
-    padding: 10px;
-    font-size: var(--font-size-small);
-  }
-  
   .network-status .network-icon {
     font-size: var(--font-size-small);
   }

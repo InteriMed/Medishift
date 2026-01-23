@@ -25,9 +25,9 @@
     "loadingConversations": "Impossibile caricare le conversazioni",
     "loadingMessages": "Impossibile caricare i messaggi",
     "sendingMessage": "Impossibile inviare il messaggio",
-    "title": "Title",
-    "description": "Description",
-    "retry": "Retry"
+    "title": "Titolo",
+    "description": "Descrizione",
+    "retry": "Riprova"
   },
   "actions": {
     "markAsRead": "Segna come letto",
@@ -35,63 +35,63 @@
     "blockUser": "Blocca utente"
   },
   "tutorial": {
-    "doctorName": "Doctor Name",
-    "doctorMessage": "Doctor Message",
-    "hospitalName": "Hospital Name",
-    "hospitalMessage": "Hospital Message",
-    "doctorMessage1": "Doctor Message1",
-    "doctorMessage2": "Doctor Message2",
-    "doctorMessage3": "Doctor Message3",
-    "hospitalMessage1": "Hospital Message1",
-    "hospitalMessage2": "Hospital Message2",
-    "hospitalMessage3": "Hospital Message3"
+    "doctorName": "Nome Medico",
+    "doctorMessage": "Messaggio Medico",
+    "hospitalName": "Nome Ospedale",
+    "hospitalMessage": "Messaggio Ospedale",
+    "doctorMessage1": "Messaggio Medico 1",
+    "doctorMessage2": "Messaggio Medico 2",
+    "doctorMessage3": "Messaggio Medico 3",
+    "hospitalMessage1": "Messaggio Ospedale 1",
+    "hospitalMessage2": "Messaggio Ospedale 2",
+    "hospitalMessage3": "Messaggio Ospedale 3"
   },
-  "searchPlaceholder": "Search Placeholder",
+  "searchPlaceholder": "Cerca...",
   "filters": {
-    "all": "All",
-    "unreadOnly": "Unread Only",
+    "all": "Tutti",
+    "unreadOnly": "Solo non letti",
     "date": {
-      "all": "All",
-      "lastWeek": "Last Week",
-      "lastMonth": "Last Month",
-      "last3Months": "Last3 Months",
-      "lastYear": "Last Year"
+      "all": "Tutti",
+      "lastWeek": "Ultima settimana",
+      "lastMonth": "Ultimo mese",
+      "last3Months": "Ultimi 3 mesi",
+      "lastYear": "Ultimo anno"
     }
   },
-  "unread": "Unread",
+  "unread": "Non letto",
   "empty": {
-    "noMessagesFound": "No Messages Found",
-    "noConversationsYet": "No Conversations Yet",
-    "adjustFilters": "Adjust Filters",
-    "startConversation": "Start Conversation",
-    "noMessagesInChat": "No Messages In Chat",
-    "startChatting": "Start Chatting",
-    "noConversationsFound": "No Conversations Found"
+    "noMessagesFound": "Nessun messaggio trovato",
+    "noConversationsYet": "Nessuna conversazione ancora",
+    "adjustFilters": "Regola filtri",
+    "startConversation": "Inizia conversazione",
+    "noMessagesInChat": "Nessun messaggio nella chat",
+    "startChatting": "Inizia a chattare",
+    "noConversationsFound": "Nessuna conversazione trovata"
   },
   "status": {
-    "you": "You",
-    "unknownUser": "Unknown User",
-    "sending": "Sending"
+    "you": "Tu",
+    "unknownUser": "Utente sconosciuto",
+    "sending": "Invio in corso..."
   },
-  "loading": "Loading",
+  "loading": "Caricamento...",
   "context": {
-    "facilityLabel": "Facility Label",
-    "facility": "Facility",
-    "contract": "Contract",
-    "personal": "Personal"
+    "facilityLabel": "Struttura",
+    "facility": "Struttura",
+    "contract": "Contratto",
+    "personal": "Personale"
   },
   "placeholders": {
-    "typeMessage": "Type Message",
-    "unknown": "Unknown",
-    "noMessages": "No Messages"
+    "typeMessage": "Scrivi un messaggio",
+    "unknown": "Sconosciuto",
+    "noMessages": "Nessun messaggio"
   },
   "time": {
-    "now": "Now",
-    "minutes": "Minutes",
-    "hours": "Hours",
-    "days": "Days"
+    "now": "Adesso",
+    "minutes": "Minuti",
+    "hours": "Ore",
+    "days": "Giorni"
   },
-  "conversationCreated": "Conversation Created",
-  "errorCreatingConversation": "Error Creating Conversation",
-  "noFacilityAccess": "No Facility Access"
+  "conversationCreated": "Conversazione creata",
+  "errorCreatingConversation": "Errore nella creazione della conversazione",
+  "noFacilityAccess": "Nessun accesso alla struttura"
 }

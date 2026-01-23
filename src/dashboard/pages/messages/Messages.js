@@ -15,7 +15,8 @@ import messagesService from '../../../services/messagesService';
 import { cn } from '../../../utils/cn';
 import { FiMessageSquare, FiSearch, FiX, FiSliders } from 'react-icons/fi';
 import { useTutorial } from '../../contexts/TutorialContext';
-import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
+import { TUTORIAL_IDS } from '../../../config/tutorialSystem';
+import '../../../components/BoxedInputFields/styles/boxedInputFields.css';
 
 const MESSAGE_CONTEXTS = {
   PERSONAL: 'personal',
@@ -36,12 +37,12 @@ const Messages = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [unreadOnly, setUnreadOnly] = useState(false);
-  const [dateRange, setDateRange] = useState('');
+  const [filterType, setFilterType] = useState('all');
   const [showSidebar, setShowSidebar] = useState(true);
   const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
   const [readConversationIds, setReadConversationIds] = useState(new Set());
   const conversationsListener = useRef(null);
+  const filterDropdownRef = useRef(null);
 
   const getUserRole = useMemo(() => {
     if (!selectedWorkspace || !user) return null;
@@ -55,6 +56,22 @@ const Messages = () => {
     const role = getUserRole;
     return role && role !== 'employee';
   }, [selectedWorkspace, getUserRole]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
+        setShowFiltersOverlay(false);
+      }
+    };
+
+    if (showFiltersOverlay) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFiltersOverlay]);
 
   useEffect(() => {
     if (!user || !selectedWorkspace) {
@@ -178,7 +195,7 @@ const Messages = () => {
   }, [isMobile, selectedConversation]);
 
   const getMockConversations = useCallback(() => {
-    if (!isTutorialActive || activeTutorial !== 'messages') return [];
+    if (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.MESSAGES) return [];
     
     const now = new Date();
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
@@ -220,7 +237,7 @@ const Messages = () => {
 
   useEffect(() => {
     if (selectedConversation?.isTutorial) {
-      if (!isTutorialActive || activeTutorial !== 'messages') {
+      if (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.MESSAGES) {
         setSelectedConversation(null);
         if (isMobile) {
           setShowSidebar(true);
@@ -249,37 +266,16 @@ const Messages = () => {
       );
     }
 
-    if (unreadOnly) {
+    if (filterType === 'unread') {
       filtered = filtered.filter(conv => conv.unreadCount > 0);
-    }
-
-    if (dateRange) {
-      const now = new Date();
-      let cutoffDate = new Date();
-      switch (dateRange) {
-        case 'last-week':
-          cutoffDate.setDate(now.getDate() - 7);
-          break;
-        case 'last-month':
-          cutoffDate.setMonth(now.getMonth() - 1);
-          break;
-        case 'last-3-months':
-          cutoffDate.setMonth(now.getMonth() - 3);
-          break;
-        case 'last-year':
-          cutoffDate.setFullYear(now.getFullYear() - 1);
-          break;
-        default:
-          cutoffDate = new Date(0);
-      }
-      filtered = filtered.filter(conv => {
-        const lastMessageDate = conv.lastMessageTimestamp?.toDate?.() || new Date(0);
-        return lastMessageDate >= cutoffDate;
-      });
+    } else if (filterType === 'unresponded') {
+      filtered = filtered.filter(conv => 
+        conv.lastMessage?.senderId !== user?.uid && conv.unreadCount > 0
+      );
     }
 
     return filtered;
-  }, [searchTerm, unreadOnly, dateRange]);
+  }, [searchTerm, filterType, user]);
 
   const allConversations = useMemo(() => {
     const mockConversations = getMockConversations();
@@ -314,7 +310,7 @@ const Messages = () => {
 
   const unreadCount = useMemo(() => filteredConversations.filter(c => c.unreadCount > 0).length, [filteredConversations]);
 
-  if (isLoading && conversations.length === 0 && (!isTutorialActive || activeTutorial !== 'messages')) return <LoadingSpinner />;
+  if (isLoading && conversations.length === 0 && (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.MESSAGES)) return <LoadingSpinner />;
 
   if (error) {
     return (
@@ -332,128 +328,10 @@ const Messages = () => {
       "h-full flex flex-col overflow-hidden animate-in fade-in duration-500 messages-page",
       isMobile && "overflow-y-hidden"
     )} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-      {/* Page Top Bar - Search and Filters Only (Title in main header) */}
-      <div className={cn(
-        "shrink-0 w-full z-20 bg-white border-b border-border/60 shadow-sm min-h-16 py-3",
-        isMobile ? "px-4" : "px-6 sm:px-8"
-      )}>
-        {isMobile ? (
-          <div className="flex items-center gap-2 h-full">
-            <div className="flex-1 relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                <input
-                  type="text"
-                  placeholder={t('messages:searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                  style={{
-                    height: 'var(--boxed-inputfield-height)',
-                    fontWeight: '500',
-                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                    color: 'var(--boxed-inputfield-color-text)'
-                  }}
-                />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="p-1.5 hover:bg-muted rounded-full transition-colors"
-                  >
-                    <FiX className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowFiltersOverlay(true)}
-                  className={cn(
-                    "p-1.5 rounded-full transition-colors relative",
-                    (unreadOnly || dateRange) ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
-                  )}
-                >
-                  <FiSliders className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 h-full">
-            {/* Search and Filters */}
-            <div className="flex-1 flex items-center gap-3">
-              {/* Search Input */}
-              <div className="flex-1 relative">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-              <input
-                type="text"
-                placeholder={t('messages:searchPlaceholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                style={{
-                  height: 'var(--boxed-inputfield-height)',
-                  fontWeight: '500',
-                  fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                  color: 'var(--boxed-inputfield-color-text)'
-                }}
-              />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
-                  >
-                    <FiX className="w-3.5 h-3.5 text-muted-foreground" />
-                  </button>
-                )}
-              </div>
-
-              {/* Filter: Message Type */}
-              <div className="shrink-0 min-w-[120px]" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                <SimpleDropdown
-                  label={null}
-                  options={[
-                    { value: 'all', label: t('messages:filters.all') },
-                    { value: 'unread', label: t('messages:filters.unreadOnly') }
-                  ]}
-                  value={unreadOnly ? 'unread' : 'all'}
-                  onChange={(value) => setUnreadOnly(value === 'unread')}
-                  placeholder={t('messages:filters.all')}
-                />
-              </div>
-
-              {/* Filter: Date Range */}
-              <div className="shrink-0 min-w-[120px]" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                <SimpleDropdown
-                  label={null}
-                  options={[
-                    { value: '', label: t('messages:filters.date.all') },
-                    { value: 'last-week', label: t('messages:filters.date.lastWeek') },
-                    { value: 'last-month', label: t('messages:filters.date.lastMonth') },
-                    { value: 'last-3-months', label: t('messages:filters.date.last3Months') },
-                    { value: 'last-year', label: t('messages:filters.date.lastYear') }
-                  ]}
-                  value={dateRange}
-                  onChange={(value) => setDateRange(value)}
-                  placeholder={t('messages:filters.date.all')}
-                />
-              </div>
-            </div>
-
-            {/* Right: Unread Count */}
-            {unreadCount > 0 && (
-              <div className="shrink-0 flex items-center gap-2 px-4 bg-destructive/10 rounded-xl border-2 border-destructive/20" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                <span className="text-sm font-medium text-muted-foreground m-0">{t('messages:unread')}</span>
-                <span className="text-sm font-bold text-destructive m-0">{unreadCount}</span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* 2. Main Split Content */}
       <div className={cn(
         "flex-1 flex min-h-0 relative",
         isMobile ? "p-0 overflow-hidden" : "p-6 gap-6 overflow-visible"
       )}>
-        {/* Left: Conversations List Sidebar (No search/filters, just list) */}
         <div className={cn(
           "dashboard-sidebar-container",
           isMobile
@@ -463,22 +341,96 @@ const Messages = () => {
             )
             : "dashboard-sidebar-container-desktop pr-0"
         )}>
-          {/* Sidebar Container - Just the conversation list */}
           <div className={cn(
             "dashboard-sidebar-inner",
             isMobile && "dashboard-sidebar-inner-mobile"
           )}>
-            {/* Conversations List */}
+                        <div className={cn(
+                            "shrink-0 w-full",
+                            isMobile ? "p-4 pb-3" : "p-4 pb-3"
+                        )} style={{ position: 'relative', zIndex: 100 }}>
+                            <div ref={filterDropdownRef} style={{ position: 'relative' }}>
+                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+                                <input
+                                    type="text"
+                                    placeholder={t('messages:searchPlaceholder')}
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                                    style={{
+                                        height: 'var(--boxed-inputfield-height)',
+                                        fontWeight: '500',
+                                        fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                        color: 'var(--boxed-inputfield-color-text)'
+                                    }}
+                                />
+                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                    {searchTerm && (
+                                        <button
+                                            onClick={() => setSearchTerm('')}
+                                            className="p-1.5 hover:bg-muted rounded-full transition-colors"
+                                        >
+                                            <FiX className="w-4 h-4 text-muted-foreground" />
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => setShowFiltersOverlay(!showFiltersOverlay)}
+                                        className={cn(
+                                            "p-1.5 rounded-full transition-colors relative",
+                                            filterType !== 'all' ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
+                                        )}
+                                    >
+                                        <FiSliders className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                {showFiltersOverlay && (
+                                    <div className="boxed-dropdown-options" style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+                                        <button
+                                            onClick={() => { setFilterType('all'); setShowFiltersOverlay(false); }}
+                                            className={cn(
+                                                "boxed-dropdown-option",
+                                                filterType === 'all' && "boxed-dropdown-option--selected"
+                                            )}
+                                            style={{ width: '100%', textAlign: 'left' }}
+                                        >
+                                            {t('messages:filters.all', 'All Messages')}
+                                        </button>
+                                        <button
+                                            onClick={() => { setFilterType('unread'); setShowFiltersOverlay(false); }}
+                                            className={cn(
+                                                "boxed-dropdown-option",
+                                                filterType === 'unread' && "boxed-dropdown-option--selected"
+                                            )}
+                                            style={{ width: '100%', textAlign: 'left' }}
+                                        >
+                                            {t('messages:filters.unreadOnly', 'Unread')}
+                                        </button>
+                                        <button
+                                            onClick={() => { setFilterType('unresponded'); setShowFiltersOverlay(false); }}
+                                            className={cn(
+                                                "boxed-dropdown-option",
+                                                filterType === 'unresponded' && "boxed-dropdown-option--selected"
+                                            )}
+                                            style={{ width: '100%', textAlign: 'left' }}
+                                        >
+                                            {t('messages:filters.unresponded', 'Unresponded')}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
             {filteredConversations.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 ring-4 ring-background">
                   <FiMessageSquare className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
                 </div>
                 <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                  {searchTerm || unreadOnly || dateRange ? t('messages:empty.noMessagesFound') : t('messages:empty.noConversationsYet')}
+                  {searchTerm || filterType !== 'all' ? t('messages:empty.noMessagesFound') : t('messages:empty.noConversationsYet')}
                 </h2>
                 <p className="mb-6" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                  {searchTerm || unreadOnly || dateRange ? t('messages:empty.adjustFilters') : t('messages:empty.startConversation')}
+                  {searchTerm || filterType !== 'all' ? t('messages:empty.adjustFilters') : t('messages:empty.startConversation')}
                 </p>
               </div>
             ) : (
@@ -495,7 +447,6 @@ const Messages = () => {
           </div>
         </div>
 
-        {/* Right: Content Area (Conversation View) - FIXED HEIGHT with internal scroll */}
         <div className={cn(
           "dashboard-main-content",
           isMobile && selectedConversation ? "translate-x-0 dashboard-main-content-mobile" : "dashboard-main-content-desktop"

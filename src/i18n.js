@@ -4,7 +4,7 @@ import Backend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Mapping of namespaces to file paths in public/locales/{{lng}}/
-// If a namespace is not in this list, it defaults to {{ns}}.json
+// All paths now in pages/ or dashboard/ folders
 const nsMapping = {
   home: 'pages/home',
   blog: 'pages/blog',
@@ -12,11 +12,15 @@ const nsMapping = {
   faq: 'pages/faq',
   facilities: 'pages/facilities',
   professionals: 'pages/professionals',
-  blogArticles: 'pages/blog', // shared file
+  blogArticles: 'pages/blog',
   contact: 'pages/contact',
   privacy: 'legal/privacy',
   terms: 'legal/terms',
-  common: 'common', // redundant but clear
+  support: 'support',
+  sitemap: 'pages/sitemap',
+  notFound: 'pages/notFound',
+  auth: 'pages/auth/auth',
+  onboarding: 'pages/onboarding/onboarding',
   admin: 'dashboard/admin',
   dashboard: 'dashboard/dashboard',
   calendar: 'dashboard/calendar',
@@ -27,11 +31,12 @@ const nsMapping = {
   organization: 'dashboard/organization',
   payroll: 'dashboard/payroll',
   contracts: 'dashboard/contracts',
+  team: 'dashboard/team',
+  validation: 'dashboard/validation',
+  common: 'dashboard/common',
   dropdowns: 'dropdowns',
-  validation: 'validation',
-  auth: 'auth',
-  'pages/faq': 'pages/faq', // mapping for specific ns
-  sitemap: 'pages/sitemap' // assuming sitemap exists or handled
+  'pages/faq': 'pages/faq',
+  tutorial: 'config/tutorial'
 };
 
 i18n
@@ -41,7 +46,7 @@ i18n
   .init({
     fallbackLng: 'fr',
     lng: 'fr', // Default language
-    debug: process.env.NODE_ENV === 'development',
+    debug: false,
 
     backend: {
       loadPath: (lng, ns) => {
@@ -55,11 +60,12 @@ i18n
     },
 
     ns: ['home', 'about', 'pages/faq', 'facilities', 'professionals',
-      'blogArticles', 'contact', 'privacy', 'terms', 'sitemap', 'support', 'common', 'auth',
-      'dashboard', 'dashboardPersonal', 'dashboardProfile', 'admin', 'calendar', 'dropdowns', 'messages',
-      'marketplace', 'validation', 'organization', 'payroll', 'contracts'],
+      'blogArticles', 'contact', 'privacy', 'terms', 'sitemap', 'support', 'auth', 'onboarding',
+      'dashboard', 'dashboardPersonal', 'dashboardProfile', 'admin', 'calendar', 'messages',
+      'marketplace', 'validation', 'organization', 'payroll', 'contracts', 'team', 'common', 'dropdowns',
+      'notFound', 'tutorial'],
 
-    defaultNS: 'common',
+    defaultNS: 'dashboard',
 
     react: {
       useSuspense: true, // Enable suspense for loading

@@ -26,7 +26,7 @@ const styles = {
   mandatoryFieldLegend: "text-xs",
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 w-full max-w-[1400px] mx-auto",
+  sectionsWrapper: "grid grid-cols-1 lg:grid-cols-2 gap-4 w-full max-w-[1400px] mx-auto",
   sectionCard: "bg-card rounded-2xl border border-border/50 p-5 shadow-lg backdrop-blur-sm w-full",
   cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
   cardIconWrapper: "p-2 rounded-lg bg-primary/10 flex-shrink-0",
@@ -117,9 +117,6 @@ const Settings = ({
       }
     }
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`No options found for key: ${optionsKey} (mapped to: ${mappedOptionsKey})`);
-    }
     return [];
   }, [dropdownOptionsFromHook, i18n]);
 
@@ -197,11 +194,6 @@ const Settings = ({
       case 'dropdown':
         const options = getDropdownOptions(optionsKey);
 
-        // Debug option loading issues
-        if (options.length === 0 && process.env.NODE_ENV !== 'production') {
-          console.warn(`No options found for dropdown ${name} with optionsKey ${optionsKey}`);
-        }
-
         return (
           <SimpleDropdown
             key={name}
@@ -209,7 +201,6 @@ const Settings = ({
             options={options}
             value={value}
             onChange={(newValue) => {
-              console.log('SimpleDropdown onChange:', { name, newValue });
               onInputChange(name, newValue);
             }}
             placeholder={placeholder || t('common.selectPlaceholder', 'Select...')}
@@ -326,20 +317,6 @@ const Settings = ({
         <div className="flex flex-col gap-1 flex-1">
           <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('settings.title')}</h2>
           <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('settings.subtitle')}</p>
-        </div>
-      </div>
-
-      <div className={styles.infoCard}>
-        <div className="flex items-start gap-3">
-          <FiLock className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
-          <div className="flex-1">
-            <h3 className="text-sm font-semibold m-0 mb-2 text-blue-900 dark:text-blue-100" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-              {t('settings.dataSecurityTitle')}
-            </h3>
-            <p className={styles.infoCardText} style={styles.infoCardTextStyle}>
-              {t('settings.dataSecurityMessage')}
-            </p>
-          </div>
         </div>
       </div>
 

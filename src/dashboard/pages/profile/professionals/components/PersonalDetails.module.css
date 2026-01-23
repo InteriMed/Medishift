@@ -12,15 +12,17 @@
 }
 
 .title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-primary);
+    font-family: var(--font-family-headings);
+    font-size: var(--font-size-xlarge);
+    font-weight: var(--font-weight-large);
+    color: var(--text-color);
     margin: 0 0 0.5rem 0;
 }
 
 .subtitle {
-    color: var(--text-secondary);
-    font-size: 1rem;
+    color: var(--text-light-color);
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-medium);
     margin: 0;
 }
 
@@ -55,22 +57,24 @@
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background-color: var(--background-icon, #f0f7ff);
+    background-color: var(--color-logo-1-light);
     color: var(--color-logo-1);
-    font-size: 1.25rem;
+    font-size: var(--font-size-large);
 }
 
 .cardTitle h3 {
     margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-family: var(--font-family-headings);
+    font-size: var(--font-size-large);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-color);
 }
 
 .cardDescription {
     margin: 0.25rem 0 0 0;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-small);
+    color: var(--text-light-color);
 }
 
 /* Grid Layout */

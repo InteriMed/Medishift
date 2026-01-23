@@ -101,14 +101,6 @@
     "hindu": "Hindu",
     "other": "Other"
   },
-  "educationLevels": {
-    "high_school": "High School Diploma",
-    "vocational": "Vocational Training",
-    "bachelors": "Bachelor's Degree",
-    "masters": "Master's Degree",
-    "doctorate": "Doctorate / PhD",
-    "other": "Other"
-  },
   "workPermits": {
     "notApplicable": "Not Applicable (Swiss Citizen)",
     "B": "B - Residence Permit (5 years)",

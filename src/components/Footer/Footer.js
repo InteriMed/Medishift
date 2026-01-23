@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { COOKIE_KEYS, COOKIE_CONFIG } from '../../config/keysDatabase';
 import newsletterService from '../../services/newsletterService';
 import { FaLinkedin, FaTwitter, FaFacebook } from 'react-icons/fa';
 
@@ -24,12 +25,12 @@ function Footer() {
   }, []);
 
   const checkRateLimit = () => {
-    const lastSubscriptionTime = parseInt(Cookies.get('newsletter_last_subscription_time') || '0');
+    const lastSubscriptionTime = parseInt(Cookies.get(COOKIE_KEYS.NEWSLETTER_LAST_SUBSCRIPTION_TIME) || '0');
     const currentTime = Date.now();
 
     if (currentTime - lastSubscriptionTime > 3600000) {
-      Cookies.set('newsletter_subscription_count', '0', { expires: 1 });
-      Cookies.set('newsletter_last_subscription_time', currentTime.toString(), { expires: 1 });
+      Cookies.set(COOKIE_KEYS.NEWSLETTER_SUBSCRIPTION_COUNT, '0', { expires: COOKIE_CONFIG.NEWSLETTER_EXPIRY_DAYS });
+      Cookies.set(COOKIE_KEYS.NEWSLETTER_LAST_SUBSCRIPTION_TIME, currentTime.toString(), { expires: COOKIE_CONFIG.NEWSLETTER_EXPIRY_DAYS });
     }
   };
 
@@ -41,7 +42,7 @@ function Footer() {
       return;
     }
 
-    const subscriptionCount = parseInt(Cookies.get('newsletter_subscription_count') || '0');
+    const subscriptionCount = parseInt(Cookies.get(COOKIE_KEYS.NEWSLETTER_SUBSCRIPTION_COUNT) || '0');
     const currentTime = Date.now();
 
     if (subscriptionCount >= 3) {
@@ -68,8 +69,8 @@ function Footer() {
         locale: currentLang
       });
 
-      Cookies.set('newsletter_subscription_count', (subscriptionCount + 1).toString(), { expires: 1 });
-      Cookies.set('newsletter_last_subscription_time', currentTime.toString(), { expires: 1 });
+      Cookies.set(COOKIE_KEYS.NEWSLETTER_SUBSCRIPTION_COUNT, (subscriptionCount + 1).toString(), { expires: COOKIE_CONFIG.NEWSLETTER_EXPIRY_DAYS });
+      Cookies.set(COOKIE_KEYS.NEWSLETTER_LAST_SUBSCRIPTION_TIME, currentTime.toString(), { expires: COOKIE_CONFIG.NEWSLETTER_EXPIRY_DAYS });
 
       setEmail('');
       setSubscriptionStatus(t('footer.newsletter.success'));
@@ -118,10 +119,10 @@ function Footer() {
         <div className="grid md:grid-cols-4 gap-12 lg:gap-16 mb-16">
           <div className="md:col-span-1">
             <div className="mb-6">
-              <span className="text-2xl font-extrabold text-white tracking-tight">Interi<span className="text-primary">Med</span></span>
+              <span className="text-2xl font-extrabold text-white tracking-tight">{t('footer.brand.name')}<span className="text-primary">{t('footer.brand.highlight')}</span></span>
             </div>
             <p className="text-sm leading-relaxed mb-6">
-              Leading the way in healthcare staffing and connections. Connecting professionals with top facilities.
+              {t('footer.brand.tagline')}
             </p>
           </div>
 
@@ -157,7 +158,7 @@ function Footer() {
         <div className="border-t border-slate-800 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-sm">
             <div className="flex flex-col md:flex-row items-center gap-4 order-2 md:order-1 opacity-60">
-              <p>© 2024 MediShift. All rights reserved.</p>
+              <p>{t('footer.copyright')}</p>
             </div>
 
             <div className="flex items-center gap-8 order-1 md:order-2">

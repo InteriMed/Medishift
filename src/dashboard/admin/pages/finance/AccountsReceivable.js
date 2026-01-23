@@ -6,7 +6,7 @@ import { DollarSign, Mail, Calendar, AlertCircle } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import Papa from 'papaparse';
-import DateField from '../../../../components/BoxedInputFields/DateField/DateField';
+import DateField from '../../../../components/BoxedInputFields/DateField';
 import { format } from 'date-fns';
 import '../../../../styles/variables.css';
 

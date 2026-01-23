@@ -1,0 +1,106 @@
+{
+  "categories": {
+    "calendar": "Calendar",
+    "contracts": "Contracts",
+    "messages": "Messages",
+    "profile": "Profile",
+    "payroll": "Payroll",
+    "common": "General",
+    "account": "Account",
+    "documents": "Documents",
+    "api": "Verification"
+  },
+  "calendar": {
+    "getEvents": "View calendar events",
+    "getEventsDesc": "Fetch all your scheduled shifts and events",
+    "createEvent": "Create event",
+    "createEventDesc": "Add a new shift or event to your calendar",
+    "updateEvent": "Edit event",
+    "updateEventDesc": "Modify an existing calendar event",
+    "deleteEvent": "Delete event",
+    "deleteEventDesc": "Remove an event from your calendar",
+    "syncCalendar": "Sync external calendar",
+    "syncCalendarDesc": "Synchronize with Google or Outlook calendar"
+  },
+  "contracts": {
+    "getContracts": "View contracts",
+    "getContractsDesc": "See all your active and past contracts",
+    "createContract": "Create contract",
+    "createContractDesc": "Draft a new employment contract",
+    "updateContract": "Update contract",
+    "updateContractDesc": "Modify or sign an existing contract",
+    "generatePdf": "Download contract PDF",
+    "generatePdfDesc": "Generate and download contract as PDF",
+    "applyToJob": "Apply to job",
+    "applyToJobDesc": "Submit an application for a job listing"
+  },
+  "messages": {
+    "getConversations": "View messages",
+    "getConversationsDesc": "See all your conversations",
+    "createConversation": "New conversation",
+    "createConversationDesc": "Start a chat with someone",
+    "sendMessage": "Send message",
+    "sendMessageDesc": "Send a message in a conversation"
+  },
+  "profile": {
+    "getCurrentUser": "View my profile",
+    "getCurrentUserDesc": "See your profile information",
+    "updateUserProfile": "Edit profile",
+    "updateUserProfileDesc": "Update your profile information",
+    "changePassword": "Change password",
+    "changePasswordDesc": "Update your account password",
+    "uploadProfilePicture": "Change profile picture",
+    "uploadProfilePictureDesc": "Upload a new profile photo",
+    "searchUsers": "Search professionals",
+    "searchUsersDesc": "Find healthcare professionals by name"
+  },
+  "payroll": {
+    "createPayrollRequest": "Request payment",
+    "createPayrollRequestDesc": "Submit a payroll request for completed shifts",
+    "getPayrollRequests": "View payments",
+    "getPayrollRequestsDesc": "See your payment history and pending requests",
+    "calculateShiftFees": "Calculate fees",
+    "calculateShiftFeesDesc": "Preview costs and fees for a shift"
+  },
+  "storage": {
+    "uploadFile": "Upload file",
+    "uploadFileDesc": "Upload a document or image",
+    "deleteFile": "Delete file",
+    "deleteFileDesc": "Remove a file from storage"
+  },
+  "notifications": {
+    "listNotifications": "View notifications",
+    "listNotificationsDesc": "See all your notifications",
+    "markAllAsRead": "Clear notifications",
+    "markAllAsReadDesc": "Mark all notifications as read"
+  },
+  "account": {
+    "getDeletionPreview": "Preview account deletion",
+    "getDeletionPreviewDesc": "See what happens when you delete your account",
+    "deleteAccount": "Delete account",
+    "deleteAccountDesc": "Permanently close your account",
+    "exportUserData": "Export my data",
+    "exportUserDataDesc": "Download all your personal data"
+  },
+  "documents": {
+    "processWithAI": "Scan document with AI",
+    "processWithAIDesc": "Extract information from CV or documents using AI"
+  },
+  "api": {
+    "healthRegistryLookup": "Verify GLN",
+    "healthRegistryLookupDesc": "Look up a healthcare professional in the registry",
+    "companySearch": "Search company",
+    "companySearchDesc": "Find a healthcare facility by GLN"
+  },
+  "search": {
+    "placeholder": "Search actions...",
+    "noResults": "No actions found",
+    "noActionsInCategory": "No actions in this category",
+    "suggestions": "Suggestions",
+    "recentActions": "Recent",
+    "allActions": "All actions",
+    "actions": "Actions",
+    "categories": "Categories"
+  }
+}
+

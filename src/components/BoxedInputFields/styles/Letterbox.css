@@ -1,4 +1,5 @@
-.letterbox-overlay {
+.letterbox-overlay,
+.confirmation-popup {
   position: fixed;
   top: 0;
   left: 0;
@@ -11,32 +12,41 @@
   z-index: 1000;
 }
 
-.letterbox-container {
+.letterbox-container,
+.confirmation-content {
   background-color: var(--div-color);
-  border-radius: 8px;
+  border-radius: var(--boxed-inputfield-radius-sm);
   padding: 24px;
   width: 90%;
   max-width: 500px;
   position: relative;
 }
 
+.confirmation-content {
+  text-align: center;
+}
+
 .letterbox-content {
   margin-bottom: 24px;
 }
 
-.letterbox-actions {
+.letterbox-actions,
+.confirmation-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
 }
 
-.letterbox-actions button {
+.letterbox-actions button,
+.confirmation-actions button {
   padding: 8px 16px;
   border-radius: 4px;
   border: none;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-fast);
 }
 
 .btn-validate {
@@ -64,42 +74,6 @@
 
 .btn-delete:hover {
   background-color: var(--red-3);
-}
-
-.confirmation-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--background-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1100;
-}
-
-.confirmation-content {
-  background-color: var(--div-color);
-  padding: 24px;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.confirmation-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-top: 16px;
-}
-
-.confirmation-actions button {
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
 }
 
 .confirmation-actions button:first-child {

@@ -1,12 +1,7 @@
 {
-  "accountBasics": "Compte",
-  "personalDetails": "Personnel",
-  "professionalBackground": "Professionnel",
-  "billingInformation": "Facturation",
-  "jobPreferences": "Préférences",
-  "documentUploads": "Documents",
-  "settings": "Paramètres",
-  "deleteAccount": "Supprimer le compte",
-  "accountManagement": "Gestion du compte"
+  "personalDetails": "Détails personnels",
+  "professionalBackground": "Parcours professionnel",
+  "billingInformation": "Informations de facturation",
+  "documentUploads": "Téléchargement de documents"
 }
 

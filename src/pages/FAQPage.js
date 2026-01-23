@@ -110,7 +110,7 @@ const FAQPage = () => {
         <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-colors border-transparent bg-primary/10 text-primary mb-6">
-              Support & Aide
+              {t('hero.badge')}
             </div>
             <h1 className="text-4xl lg:text-7xl font-black tracking-tight text-slate-900 pb-6 animate-gradient">
               {t('title')}
@@ -257,8 +257,8 @@ const FAQPage = () => {
                 <div className="w-80 h-96 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-2xl relative z-10 p-8 flex flex-col justify-between text-white">
                   <div>
                     <FaRegLightbulb size={48} className="mb-4 opacity-80" />
-                    <div className="text-2xl font-bold mb-2">Support</div>
-                    <p className="opacity-70">Nous sommes là pour vous aider.</p>
+                    <div className="text-2xl font-bold mb-2">{t('support.title')}</div>
+                    <p className="opacity-70">{t('support.description')}</p>
                   </div>
                   <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
                     <div className="flex items-center gap-3 mb-2">

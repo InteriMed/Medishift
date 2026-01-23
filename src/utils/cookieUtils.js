@@ -1,8 +1,8 @@
 import Cookies from 'js-cookie';
+import { COOKIE_KEYS, COOKIE_CONFIG } from '../config/keysDatabase';
 
-// Cookie configuration
-const WORKSPACE_COOKIE = 'medishift_workspace';
-const COOKIE_EXPIRY_DAYS = 30; // Workspace selection should persist longer
+const WORKSPACE_COOKIE = COOKIE_KEYS.WORKSPACE;
+const COOKIE_EXPIRY_DAYS = COOKIE_CONFIG.WORKSPACE_EXPIRY_DAYS;
 
 /**
  * Set the selected workspace in cookies

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import classNames from 'classnames';
-import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2, FiMail } from 'react-icons/fi';
+import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2, FiMail, FiUpload } from 'react-icons/fi';
 import { httpsCallable } from 'firebase/functions';
 
 import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSwitchField';
@@ -14,8 +14,12 @@ import Dialog from '../../../../../components/Dialog/Dialog';
 import BankingAccessModal from '../../components/BankingAccessModal';
 import useAutoSave from '../../../../hooks/useAutoSave';
 import { functions } from '../../../../../services/firebase';
+import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
+import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
+import { cn } from '../../../../../utils/cn';
 
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
+import { LOCALSTORAGE_KEYS } from '../../../../../config/keysDatabase';
 
 // --- FAKE Dropdown Options (Replace with real data loading/i18n) ---
 
@@ -60,7 +64,17 @@ const BillingInformation = ({
   getNestedValue,
   validateCurrentTabData,
   onTabCompleted,
-  isTutorialActive
+  isTutorialActive,
+  completionPercentage,
+  handleAutoFillClick,
+  isUploading,
+  isAnalyzing,
+  autoFillButtonRef,
+  uploadInputRef,
+  handleFileUpload,
+  uploadProgress,
+  t: tProp,
+  stepData
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
   const [showHiringInfo, setShowHiringInfo] = useState(false);
@@ -111,11 +125,10 @@ const BillingInformation = ({
         bankName: formData?.banking?.bankName || '',
         ibanLast4
       });
-      console.log('[BillingInfo] Banking update notification sent');
       previousBankingRef.current = currentBanking;
       bankingModifiedRef.current = false;
     } catch (error) {
-      console.error('[BillingInfo] Failed to send banking notification:', error);
+      // Error silently ignored
     }
   }, [formData?.banking, hasBankingAccess]);
 
@@ -137,18 +150,17 @@ const BillingInformation = ({
       });
       alert(t('billingInformation.testEmailSent', 'Test email sent successfully'));
     } catch (error) {
-      console.error('[BillingInfo] Failed to send test email:', error);
       alert(t('billingInformation.testEmailFailed', 'Failed to send test email'));
     }
   }, [formData?.banking, t]);
 
   const checkBankingAccess = useCallback(() => {
-    const accessExpiry = localStorage.getItem('bankingAccessGranted');
+    const accessExpiry = localStorage.getItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED);
     if (!accessExpiry) return false;
     
     const expiryTime = parseInt(accessExpiry, 10);
     if (Date.now() > expiryTime) {
-      localStorage.removeItem('bankingAccessGranted');
+      localStorage.removeItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED);
       return false;
     }
     return true;
@@ -165,7 +177,7 @@ const BillingInformation = ({
   useEffect(() => {
     if (!hasExistingBankingInfo) {
       const expiresAt = Date.now() + (60 * 60 * 1000);
-      localStorage.setItem('bankingAccessGranted', expiresAt.toString());
+      localStorage.setItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED, expiresAt.toString());
       setHasBankingAccess(true);
     } else {
       setHasBankingAccess(checkBankingAccess());
@@ -281,9 +293,6 @@ const BillingInformation = ({
       }
     }
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`No options found for key: ${optionsKey} (mapped to: ${mappedOptionsKey})`);
-    }
     return [];
   }, [dropdownOptionsFromHook, i18n]);
 
@@ -365,10 +374,6 @@ const BillingInformation = ({
         );
       case 'dropdown':
         const options = getDropdownOptions(optionsKey);
-
-        if (options.length === 0 && process.env.NODE_ENV !== 'production') {
-          console.warn(`No options found for dropdown ${name} with optionsKey ${optionsKey}`);
-        }
 
         return (
           <SimpleDropdown
@@ -484,6 +489,57 @@ const BillingInformation = ({
             <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('billingInformation.title')}</h2>
             <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('billingInformation.subtitle', 'Provide your employment and billing details.')}</p>
           </div>
+
+          {isTutorialActive && (
+            <div className="flex items-center gap-3">
+              <div className="relative" ref={autoFillButtonRef}>
+                <button
+                  onClick={handleAutoFillClick}
+                  disabled={isUploading || isAnalyzing}
+                  className={cn(
+                    "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
+                    "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
+                    (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
+                    (stepData?.highlightUploadButton) && "tutorial-highlight"
+                  )}
+                  style={{ height: 'var(--boxed-inputfield-height)' }}
+                  data-tutorial="profile-upload-button"
+                >
+                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
+                  <span className="text-sm font-medium text-black">
+                    {isAnalyzing
+                      ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
+                      : t('dashboardProfile:documents.autofill', 'Auto Fill')
+                    }
+                  </span>
+                </button>
+              </div>
+              {uploadInputRef && (
+                <UploadFile
+                  ref={uploadInputRef}
+                  onChange={handleFileUpload}
+                  isLoading={isUploading}
+                  progress={uploadProgress}
+                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  label=""
+                  className="hidden"
+                />
+              )}
+
+              {formData && completionPercentage !== undefined && (
+                <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                  <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                  <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                      style={{ width: `${completionPercentage}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className={styles.sectionsWrapper}>
@@ -523,18 +579,11 @@ const BillingInformation = ({
                       </button>
                     )}
                     {hasBankingAccess && (
-                      <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-                        <FiShield className="w-3 h-3" />
+                      <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-logo-1)' }}>
+                        <FiShield className="w-3 h-3" style={{ color: 'var(--color-logo-1)' }} />
                         {t('billingInformation.bankingAccessGranted', 'Access granted')}
                       </div>
                     )}
-                    <button
-                      onClick={handleTestEmail}
-                      className="p-2 text-muted-foreground hover:text-blue-600 transition-colors"
-                      title={t('billingInformation.sendTestEmail', 'Send Test Email')}
-                    >
-                      <FiMail className="w-4 h-4" />
-                    </button>
                   </div>
                   {groupedFields.banking.map(renderField)}
                 </div>

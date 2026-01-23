@@ -125,7 +125,6 @@ export const getScrollableWeekDates = (currentDate, scrollOffset = 0) => {
 export const getScrollableDayIndex = (date, scrollOffset = 0) => {
   // Safety check for undefined or null date
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
-    console.warn('Invalid date passed to getScrollableDayIndex:', date);
     return 0; // Return default index
   }
   

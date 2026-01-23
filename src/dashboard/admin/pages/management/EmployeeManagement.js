@@ -11,6 +11,7 @@ import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogge
 import Button from '../../../../components/BoxedInputFields/Button';
 import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import '../../../../styles/variables.css';
 
 const EmployeeManagement = () => {
@@ -30,7 +31,7 @@ const EmployeeManagement = () => {
   const loadEmployees = async () => {
     setLoading(true);
     try {
-      const adminsRef = collection(db, 'admins');
+      const adminsRef = collection(db, FIRESTORE_COLLECTIONS.ADMINS);
       const snapshot = await getDocs(adminsRef);
 
       const employeesList = [];
@@ -135,7 +136,7 @@ const EmployeeManagement = () => {
       const employee = employees.find(e => e.id === userId);
       const oldRoles = employee?.roles || [];
 
-      await updateDoc(doc(db, 'users', userId), {
+      await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId), {
         roles: newRoles,
         updatedAt: serverTimestamp(),
         roleUpdatedBy: userProfile?.uid || 'admin'

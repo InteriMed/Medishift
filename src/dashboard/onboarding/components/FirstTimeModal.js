@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../contexts/AuthContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import Button from '../../../components/BoxedInputFields/Button';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import PersonnalizedInputField from '../../../components/BoxedInputFields/Personnalized-InputField';
@@ -101,82 +102,19 @@ const FirstTimeModal = () => {
   const contentWrapperRef = useRef(null);
   const prevTwoColumnLayoutRef = useRef(false);
 
-  // Debug: Log on every render - use window to ensure it's visible
-  if (typeof window !== 'undefined') {
-    window.firstTimeModalDebug = window.firstTimeModalDebug || [];
-    const debugInfo = {
-      timestamp: new Date().toISOString(),
-      step,
-      displayStep,
-      contentOpacity,
-      isTransitioning,
-      shouldRenderContent,
-      isInDashboard: location.pathname.includes('/dashboard'),
-      showFirstTimeModal
-    };
-    window.firstTimeModalDebug.push(debugInfo);
-    console.log('[FirstTimeModal] RENDER', debugInfo);
-    console.warn('[FirstTimeModal] RENDER (warn)', debugInfo);
-  }
-
   // Sync displayStep with step when not transitioning
   useEffect(() => {
-    console.log('[FirstTimeModal] useEffect triggered - step:', step, 'isTransitioning:', isTransitioning);
     if (!isTransitioning) {
-      console.log('[FirstTimeModal] 🔄 Syncing displayStep with step', step);
       setDisplayStep(step);
       setContentOpacity(1);
       setShouldRenderContent(true);
-    } else {
-      console.log('[FirstTimeModal] ⏸️ Skipping sync (isTransitioning=true)');
     }
   }, [step, isTransitioning]);
-
-  // Log when content wrapper is mounted/unmounted
-  useEffect(() => {
-    console.log('[FirstTimeModal] Content wrapper effect - displayStep:', displayStep, 'shouldRenderContent:', shouldRenderContent, 'opacity:', contentOpacity);
-    if (contentWrapperRef.current) {
-      console.log('[FirstTimeModal] 🎬 Content wrapper MOUNTED');
-      console.log('  - displayStep:', displayStep);
-      console.log('  - opacity:', contentOpacity);
-      console.log('  - Element:', contentWrapperRef.current);
-      const element = contentWrapperRef.current;
-      const computedStyle = window.getComputedStyle(element);
-      console.log('  - Initial computed styles:', {
-        display: computedStyle.display,
-        opacity: computedStyle.opacity,
-        visibility: computedStyle.visibility
-      });
-
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-            const computedStyle = window.getComputedStyle(element);
-            console.log('[FirstTimeModal] 🎨 Style changed:', {
-              display: computedStyle.display,
-              opacity: computedStyle.opacity,
-              visibility: computedStyle.visibility
-            });
-          }
-        });
-      });
-      observer.observe(element, { attributes: true, attributeFilter: ['style'] });
-
-      return () => {
-        console.log('[FirstTimeModal] 🎭 Content wrapper UNMOUNTING');
-        observer.disconnect();
-      };
-    } else {
-      console.log('[FirstTimeModal] ⚠️ Content wrapper ref is null');
-    }
-  }, [displayStep, contentOpacity, shouldRenderContent]);
-
 
   // Helper function to check if user is in dashboard
   const isInDashboard = useMemo(() => {
     // Allow both dashboard and onboarding pages
     const inDashboard = location.pathname.includes('/dashboard') || location.pathname.includes('/onboarding');
-    console.warn('[FirstTimeModal] isInDashboard check:', inDashboard, 'pathname:', location.pathname);
     return inDashboard;
   }, [location.pathname]);
 
@@ -204,7 +142,7 @@ const FirstTimeModal = () => {
       }
 
       try {
-        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
@@ -216,7 +154,6 @@ const FirstTimeModal = () => {
 
           // Check if this type of onboarding is already completed
           if (typeProgress.completed) {
-            console.log(`[FirstTimeModal] ${onboardingType} onboarding already completed, skipping load`);
             setIsLoadingProgress(false);
             return;
           }
@@ -226,7 +163,6 @@ const FirstTimeModal = () => {
             const isVerifiedProfile = !!userData.GLN_certified;
             const legacyCompleted = userData.onboardingCompleted || onboardingProgress.completed;
             if (isVerifiedProfile || legacyCompleted) {
-              console.log('[FirstTimeModal] Professional onboarding already completed (legacy check)');
               setIsLoadingProgress(false);
               return;
             }
@@ -235,8 +171,6 @@ const FirstTimeModal = () => {
           // Load saved progress for this onboarding type
           if (Object.keys(typeProgress).length > 0) {
             const { step: savedStep, role: savedRole, isEmployed: savedIsEmployed, accessTeam: savedAccessTeam, selectedCompany: savedCompany, legalConsiderationsConfirmed: savedLegalConfirmed, generalWorkingLawsConfirmed: savedGeneralWorkingLawsConfirmed, hasGLN: savedHasGLN, chainPhonePrefix: savedChainPhonePrefix, chainPhoneNumber: savedChainPhoneNumber } = typeProgress;
-
-            console.log(`[FirstTimeModal] Loading saved ${onboardingType} progress:`, { savedStep, savedRole, savedIsEmployed });
 
             if (savedStep && savedStep >= 1 && savedStep <= 4) {
               setStep(savedStep);
@@ -305,9 +239,8 @@ const FirstTimeModal = () => {
         },
         updatedAt: new Date()
       });
-      console.log(`[FirstTimeModal] Saved ${onboardingType} onboarding progress:`, progressData);
     } catch (error) {
-      console.error('Error saving onboarding progress:', error);
+      // Error saving onboarding progress
     }
   };
 
@@ -410,27 +343,9 @@ const FirstTimeModal = () => {
 
   // Show modal if in dashboard and modal should be shown
   // Removed profileComplete requirement - tutorial should show regardless of profile completion
-  // Always log - use console.warn so it's harder to filter out
-  console.warn('=== FirstTimeModal Component Check ===');
-  console.warn('isInDashboard:', isInDashboard);
-  console.warn('showFirstTimeModal:', showFirstTimeModal);
-  console.warn('step:', step);
-  console.warn('displayStep:', displayStep);
-  console.warn('contentOpacity:', contentOpacity);
-  console.warn('isTransitioning:', isTransitioning);
-  console.warn('shouldRenderContent:', shouldRenderContent);
-  console.warn('pathname:', location.pathname);
-  console.warn('=====================================');
-
   if (!isInDashboard || !showFirstTimeModal) {
-    console.warn('[FirstTimeModal] ❌ NOT RENDERING');
-    console.warn('  - isInDashboard:', isInDashboard);
-    console.warn('  - showFirstTimeModal:', showFirstTimeModal);
-    console.warn('  - pathname:', location.pathname);
     return null;
   }
-
-  console.warn('[FirstTimeModal] ✅ WILL RENDER MODAL');
 
   if (isLoadingProgress) {
     return (
@@ -446,19 +361,10 @@ const FirstTimeModal = () => {
   const showValidationLoading = (step === 4 && (isVerifying || isProcessing)) && (role === 'worker' || role === 'company');
 
   const handleNext = async () => {
-    console.log('========================================');
-    console.log('[FirstTimeModal] 🚀 handleNext START');
-    console.log('Current step:', step);
-    console.log('Current displayStep:', displayStep);
-    console.log('Current opacity:', contentOpacity);
-    console.log('Current isTransitioning:', isTransitioning);
-    console.log('========================================');
     setIsTransitioning(true);
     setContentOpacity(0);
-    console.log('[FirstTimeModal] ⏳ Step 1: Set transitioning=true, opacity=0');
     // Wait for fade-out to complete (200ms transition + buffer)
     await new Promise(resolve => setTimeout(resolve, 250));
-    console.log('[FirstTimeModal] ⏳ Step 2: Fade-out complete (250ms waited)');
 
     const maxStep = role === 'chain' ? 3 : 4;
 
@@ -470,7 +376,6 @@ const FirstTimeModal = () => {
         newStep = 4;
       }
 
-      console.log('[FirstTimeModal] 📝 Step 3: Advancing from step', step, 'to step', newStep);
 
       // Check if layout will change - if so, hide content and set resizing BEFORE step change
       const willBeTwoColumn = newStep === 3 && isEmployed && !accessTeam;
@@ -478,32 +383,24 @@ const FirstTimeModal = () => {
       const layoutWillChange = willBeTwoColumn !== wasTwoColumn;
 
       if (layoutWillChange) {
-        console.warn('[FirstTimeModal] 🔄 Layout will change, hiding content and setting resize state');
         setIsResizing(true);
         setContentOpacity(0);
       }
 
       // Completely hide content before changing step
       setShouldRenderContent(false);
-      console.log('[FirstTimeModal] 👻 Step 4: Set shouldRenderContent=false (unmounting content)');
 
       // Wait multiple frames to ensure content is fully unmounted and browser has painted
       await new Promise(resolve => requestAnimationFrame(resolve));
-      console.log('[FirstTimeModal] ⏳ Step 5: First RAF complete');
       await new Promise(resolve => requestAnimationFrame(resolve));
-      console.log('[FirstTimeModal] ⏳ Step 6: Second RAF complete');
       await new Promise(resolve => setTimeout(resolve, 50));
-      console.log('[FirstTimeModal] ⏳ Step 7: 50ms timeout complete');
 
       // Update step state (but don't display yet) - this will trigger layout change
       setStep(newStep);
-      console.log('[FirstTimeModal] 📝 Step 8: Set step=', newStep, '(displayStep still:', displayStep, ')');
 
       // If layout changed, wait for resize animation BEFORE mounting new content
       if (layoutWillChange) {
-        console.warn('[FirstTimeModal] ⏳ Step 9: Waiting for resize animation (350ms)');
         await new Promise(resolve => setTimeout(resolve, 350));
-        console.warn('[FirstTimeModal] ✅ Step 10: Resize animation complete');
       }
 
       await saveOnboardingProgress({
@@ -547,7 +444,6 @@ const FirstTimeModal = () => {
       // Clear resizing state BEFORE fade-in to hide overlay
       if (layoutWillChange) {
         setIsResizing(false);
-        console.warn('[FirstTimeModal] ✅ Resize state cleared, overlay will hide');
         // Small delay to ensure overlay fades out
         await new Promise(resolve => setTimeout(resolve, 50));
       }
@@ -561,7 +457,6 @@ const FirstTimeModal = () => {
       await new Promise(resolve => setTimeout(resolve, 50));
       setIsTransitioning(false);
     } else {
-      console.log(`[FirstTimeModal] Step ${maxStep} completed, calling handleComplete`);
       setIsTransitioning(false);
       setShouldRenderContent(true);
       handleComplete();
@@ -570,13 +465,10 @@ const FirstTimeModal = () => {
 
   const handleBack = async () => {
     if (step > 1) {
-      console.log('[FirstTimeModal] 🚀 handleBack START - step:', step, 'displayStep:', displayStep, 'opacity:', contentOpacity);
       setIsTransitioning(true);
       setContentOpacity(0);
-      console.log('[FirstTimeModal] ⏳ Step 1: Set transitioning=true, opacity=0');
       // Wait for fade-out to complete (200ms transition + buffer)
       await new Promise(resolve => setTimeout(resolve, 250));
-      console.log('[FirstTimeModal] ⏳ Step 2: Fade-out complete (250ms waited)');
 
       let newStep = step - 1;
 
@@ -591,32 +483,24 @@ const FirstTimeModal = () => {
       const layoutWillChange = willBeTwoColumn !== wasTwoColumn;
 
       if (layoutWillChange) {
-        console.warn('[FirstTimeModal] 🔄 Layout will change, hiding content and setting resize state');
         setIsResizing(true);
         setContentOpacity(0);
       }
 
       // Completely hide content before changing step
       setShouldRenderContent(false);
-      console.log('[FirstTimeModal] 👻 Step 3: Set shouldRenderContent=false (unmounting content)');
 
       // Wait multiple frames to ensure content is fully unmounted and browser has painted
       await new Promise(resolve => requestAnimationFrame(resolve));
-      console.log('[FirstTimeModal] ⏳ Step 4: First RAF complete');
       await new Promise(resolve => requestAnimationFrame(resolve));
-      console.log('[FirstTimeModal] ⏳ Step 5: Second RAF complete');
       await new Promise(resolve => setTimeout(resolve, 50));
-      console.log('[FirstTimeModal] ⏳ Step 6: 50ms timeout complete');
 
       // Update step state (but don't display yet) - this will trigger layout change
       setStep(newStep);
-      console.log('[FirstTimeModal] 📝 Step 7: Set step=', newStep, '(displayStep still:', displayStep, ')');
 
       // If layout changed, wait for resize animation BEFORE mounting new content
       if (layoutWillChange) {
-        console.warn('[FirstTimeModal] ⏳ Step 8: Waiting for resize animation (350ms)');
         await new Promise(resolve => setTimeout(resolve, 350));
-        console.warn('[FirstTimeModal] ✅ Step 9: Resize animation complete');
       }
 
       await saveOnboardingProgress({
@@ -635,49 +519,31 @@ const FirstTimeModal = () => {
 
       // Wait for React to process state update
       await new Promise(resolve => setTimeout(resolve, 100));
-      console.log('[FirstTimeModal] ⏳ Step 8: 100ms timeout complete (React should have processed step change)');
 
       // Now update displayStep and re-enable rendering
       // But keep opacity at 0 and transitioning true
       setDisplayStep(newStep);
       setShouldRenderContent(true);
-      console.log('[FirstTimeModal] 🎨 Step 9: Set displayStep=', newStep, 'shouldRenderContent=true (mounting new content)');
 
       // Wait for React to mount new content and browser to paint
       await new Promise(resolve => requestAnimationFrame(resolve));
-      console.log('[FirstTimeModal] ⏳ Step 10: First RAF after mount complete');
       await new Promise(resolve => requestAnimationFrame(resolve));
-      console.log('[FirstTimeModal] ⏳ Step 11: Second RAF after mount complete');
       await new Promise(resolve => setTimeout(resolve, 50));
-      console.log('[FirstTimeModal] ⏳ Step 12: 50ms timeout after mount complete');
 
       // Verify element exists and is hidden before showing
       if (contentWrapperRef.current) {
         const element = contentWrapperRef.current;
-        const computedStyle = window.getComputedStyle(element);
-        console.log('[FirstTimeModal] 🔍 Step 15: Element found, checking state:', {
-          display: computedStyle.display,
-          opacity: computedStyle.opacity,
-          visibility: computedStyle.visibility,
-          inlineDisplay: element.style.display,
-          inlineOpacity: element.style.opacity
-        });
         element.style.display = 'none';
         element.style.opacity = '0';
         element.style.visibility = 'hidden';
-        console.log('[FirstTimeModal] 🔒 Step 16: Forced element to hidden state');
-      } else {
-        console.warn('[FirstTimeModal] ⚠️ Step 15: contentWrapperRef.current is null!');
       }
 
       // Wait one more frame to ensure styles are applied
       await new Promise(resolve => requestAnimationFrame(resolve));
-      console.log('[FirstTimeModal] ⏳ Step 17: Final RAF before fade-in');
 
       // Clear resizing state BEFORE fade-in to hide overlay
       if (layoutWillChange) {
         setIsResizing(false);
-        console.warn('[FirstTimeModal] ✅ Step 18: Resize state cleared, overlay will hide');
         // Small delay to ensure overlay fades out
         await new Promise(resolve => setTimeout(resolve, 50));
       }
@@ -685,14 +551,11 @@ const FirstTimeModal = () => {
       // Now fade in the new content
       if (contentWrapperRef.current) {
         contentWrapperRef.current.style.display = 'block';
-        console.log('[FirstTimeModal] 👁️ Step 19: Set display=block on element');
       }
       setContentOpacity(1);
-      console.log('[FirstTimeModal] ✨ Step 20: Set opacity=1 (fade-in started)');
       // Small delay before clearing transitioning flag
       await new Promise(resolve => setTimeout(resolve, 50));
       setIsTransitioning(false);
-      console.log('[FirstTimeModal] ✅ Step 20: Transition complete, isTransitioning=false');
     }
   };
 
@@ -702,7 +565,7 @@ const FirstTimeModal = () => {
 
     try {
       if (currentUser) {
-        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
 
         // Save completion to the nested structure based on onboarding type
         await updateDoc(userDocRef, {
@@ -724,25 +587,20 @@ const FirstTimeModal = () => {
           updatedAt: new Date()
         });
 
-        console.log(`[FirstTimeModal] ${onboardingType} onboarding marked as completed`);
       }
 
-      console.log(`[FirstTimeModal] Onboarding Data (${onboardingType}):`, { role, isEmployed, accessTeam, selectedCompany });
 
       // Close the modal first
       setShowFirstTimeModal(false);
-      console.log('[FirstTimeModal] Modal closed, preparing to start tutorial...');
 
       // Then start the tutorial after a short delay to ensure modal is closed
       actionTimeoutRef.current = setTimeout(() => {
         if (mountedRef.current) {
-          console.log('[FirstTimeModal] Starting dashboard tutorial');
           startTutorial('dashboard');
           setIsProcessing(false);
         }
       }, 500);
     } catch (error) {
-      console.error('[FirstTimeModal] Error completing onboarding:', error);
       setIsProcessing(false);
     }
   };
@@ -895,81 +753,53 @@ const FirstTimeModal = () => {
       phoneData: data
     });
 
-    console.log('[FirstTimeModal] 🚀 handlePhoneComplete START - step:', step, 'displayStep:', displayStep);
     setIsTransitioning(true);
     setContentOpacity(0);
-    console.log('[FirstTimeModal] ⏳ Step 1: Set transitioning=true, opacity=0');
     // Wait for fade-out to complete
     await new Promise(resolve => setTimeout(resolve, 250));
-    console.log('[FirstTimeModal] ⏳ Step 2: Fade-out complete (250ms waited)');
 
     // Completely hide content before changing step
     setShouldRenderContent(false);
-    console.log('[FirstTimeModal] 👻 Step 3: Set shouldRenderContent=false (unmounting content)');
 
     // Wait multiple frames to ensure content is fully unmounted and browser has painted
     await new Promise(resolve => requestAnimationFrame(resolve));
-    console.log('[FirstTimeModal] ⏳ Step 4: First RAF complete');
     await new Promise(resolve => requestAnimationFrame(resolve));
-    console.log('[FirstTimeModal] ⏳ Step 5: Second RAF complete');
     await new Promise(resolve => setTimeout(resolve, 50));
-    console.log('[FirstTimeModal] ⏳ Step 6: 50ms timeout complete');
 
     setStep(4);
-    console.log('[FirstTimeModal] 📝 Step 7: Set step=4 (displayStep still:', displayStep, ')');
 
     // Wait for React to process state update
     await new Promise(resolve => setTimeout(resolve, 100));
-    console.log('[FirstTimeModal] ⏳ Step 8: 100ms timeout complete (React should have processed step change)');
 
     // Update displayStep and re-enable rendering
     // But keep opacity at 0 and transitioning true
     setDisplayStep(4);
     setShouldRenderContent(true);
-    console.log('[FirstTimeModal] 🎨 Step 9: Set displayStep=4, shouldRenderContent=true (mounting new content)');
 
     // Wait for React to mount new content and browser to paint
     await new Promise(resolve => requestAnimationFrame(resolve));
-    console.log('[FirstTimeModal] ⏳ Step 10: First RAF after mount complete');
     await new Promise(resolve => requestAnimationFrame(resolve));
-    console.log('[FirstTimeModal] ⏳ Step 11: Second RAF after mount complete');
     await new Promise(resolve => setTimeout(resolve, 50));
-    console.log('[FirstTimeModal] ⏳ Step 12: 50ms timeout after mount complete');
 
     // Verify element exists and is hidden before showing
     if (contentWrapperRef.current) {
       const element = contentWrapperRef.current;
-      const computedStyle = window.getComputedStyle(element);
-      console.log('[FirstTimeModal] 🔍 Step 13: Element found, checking state:', {
-        display: computedStyle.display,
-        opacity: computedStyle.opacity,
-        visibility: computedStyle.visibility,
-        inlineDisplay: element.style.display,
-        inlineOpacity: element.style.opacity
-      });
       element.style.display = 'none';
       element.style.opacity = '0';
       element.style.visibility = 'hidden';
-      console.log('[FirstTimeModal] 🔒 Step 14: Forced element to hidden state');
-    } else {
-      console.warn('[FirstTimeModal] ⚠️ Step 13: contentWrapperRef.current is null!');
     }
 
     // Wait one more frame to ensure styles are applied
     await new Promise(resolve => requestAnimationFrame(resolve));
-    console.log('[FirstTimeModal] ⏳ Step 15: Final RAF before fade-in');
 
     // Now fade in the new content
     if (contentWrapperRef.current) {
       contentWrapperRef.current.style.display = 'block';
-      console.log('[FirstTimeModal] 👁️ Step 16: Set display=block on element');
     }
     setContentOpacity(1);
-    console.log('[FirstTimeModal] ✨ Step 17: Set opacity=1 (fade-in started)');
     // Small delay before clearing transitioning flag
     await new Promise(resolve => setTimeout(resolve, 50));
     setIsTransitioning(false);
-    console.log('[FirstTimeModal] ✅ Step 18: Transition complete, isTransitioning=false');
   };
 
   const renderStep3 = () => {
@@ -1165,13 +995,11 @@ ${chainMessage}
     const currentLayout = isTwoColumnLayout;
 
     if (prevLayout !== currentLayout && !isTransitioning) {
-      console.warn('[FirstTimeModal] 🔄 Layout change detected (not during step transition):', { prevLayout, currentLayout });
       setIsResizing(true);
       setContentOpacity(0);
 
       // Wait for resize animation to complete (300ms transition + buffer)
       const resizeTimeout = setTimeout(() => {
-        console.warn('[FirstTimeModal] ✅ Resize complete, starting fade-in');
         setIsResizing(false);
         // Small delay before fade-in to ensure resize is fully complete
         setTimeout(() => {
@@ -1277,37 +1105,37 @@ ${chainMessage}
         {/* Footer */}
         <div className={styles.modalFooter}>
           {step > 1 && (
-            <button
+            <Button
               onClick={handleBack}
               disabled={isProcessing}
-              className="modal-btn modal-btn-secondary"
+              variant="secondary"
             >
               Back
-            </button>
+            </Button>
           )}
 
           {step !== 3 && (step !== 3 || role !== 'chain') && step !== 4 && step !== 5 && (
-            <button
+            <Button
               onClick={handleNext}
               disabled={!canProceed() || isProcessing}
-              className="modal-btn modal-btn-primary"
+              variant="primary"
             >
               <span>{getNextButtonText()}</span>
               {!isProcessing && <FiArrowRight className="w-5 h-5" />}
-            </button>
+            </Button>
           )}
 
 
           {/* Step 4 & 5: Verify Account Button */}
           {(step === 4 || step === 5) && (role === 'worker' || role === 'company') && (
-            <button
+            <Button
               onClick={() => {
                 if (glnVerificationRef.current?.handleVerify) {
                   glnVerificationRef.current.handleVerify();
                 }
               }}
               disabled={!canProceed() || isProcessing || isVerifying}
-              className="modal-btn modal-btn-primary"
+              variant="primary"
             >
               {isVerifying ? (
                 <>
@@ -1320,7 +1148,7 @@ ${chainMessage}
                   <FiArrowRight className="w-5 h-5" />
                 </>
               )}
-            </button>
+            </Button>
           )}
         </div>
       </div>

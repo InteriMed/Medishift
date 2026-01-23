@@ -6,8 +6,9 @@
  */
 
 import { auth } from './firebase';
+import { DEFAULT_VALUES, getEnvVar } from '../config/keysDatabase';
 
-const API_BASE = process.env.REACT_APP_API_BASE_URL || 'https://europe-west6-medishift-fd594.cloudfunctions.net';
+const API_BASE = getEnvVar('API_BASE') || DEFAULT_VALUES.API_BASE;
 
 /**
  * Get authentication token for API calls

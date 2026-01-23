@@ -4,6 +4,7 @@
     "description": "Find answers to common questions about InteriMed's healthcare recruitment platform for facilities and professionals.",
     "keywords": "InteriMed FAQ, healthcare recruitment questions, healthcare jobs FAQ, temporary recruitment"
   },
+  "title": "FAQ",
   "subtitle": "Frequently Asked Questions",
   "allCategories": "All Categories",
   "introduction": "Find answers to common questions about our healthcare recruitment platform.",
@@ -147,6 +148,5 @@
     "description": "Our support team is ready to help you with any additional questions.",
     "buttonText": "Contact Support"
   },
-  "title": "Title",
-  "noResults": "No Results"
+  "noResults": "No results found"
 }

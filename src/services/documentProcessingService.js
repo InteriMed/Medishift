@@ -1,6 +1,7 @@
 import { getFunctions } from 'firebase/functions';
 import { functions, db, auth } from './firebase';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { getLocalStorageKey, FIRESTORE_COLLECTIONS, DEFAULT_VALUES, getEnvVar } from '../config/keysDatabase';
 
 /**
  * Get cached extracted data from professional profile in Firestore
@@ -10,8 +11,7 @@ import { doc, getDoc, deleteDoc } from 'firebase/firestore';
  */
 export const getCachedExtractedData = async (userId) => {
     try {
-        // Try to get from localStorage first (fastest)
-        const localKey = `autofill_cache_${userId}`;
+        const localKey = getLocalStorageKey('AUTOFILL_CACHE', userId);
         const localDataRaw = localStorage.getItem(localKey);
         if (localDataRaw) {
             try {
@@ -29,7 +29,7 @@ export const getCachedExtractedData = async (userId) => {
         const { doc, getDoc } = await import('firebase/firestore');
         const { db } = await import('./firebase');
 
-        const profileRef = doc(db, 'professionalProfiles', userId);
+        const profileRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
         const profileDoc = await getDoc(profileRef);
 
         if (!profileDoc.exists()) {
@@ -78,7 +78,7 @@ export const saveCachedExtractedData = async (userId, data) => {
         const { doc, updateDoc, getDoc, setDoc, Timestamp } = await import('firebase/firestore');
         const { db } = await import('./firebase');
 
-        const profileRef = doc(db, 'professionalProfiles', userId);
+        const profileRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
         const profileDoc = await getDoc(profileRef);
 
         const now = Date.now();
@@ -91,9 +91,8 @@ export const saveCachedExtractedData = async (userId, data) => {
             expiresAt: Timestamp.fromMillis(expiresAtMs)
         };
 
-        // Save to localStorage
         try {
-            const localKey = `autofill_cache_${userId}`;
+            const localKey = getLocalStorageKey('AUTOFILL_CACHE', userId);
             localStorage.setItem(localKey, JSON.stringify({
                 data,
                 savedAt: now,
@@ -133,7 +132,7 @@ export const clearCachedExtractedData = async (userId) => {
         const { doc, updateDoc, Timestamp } = await import('firebase/firestore');
         const { db } = await import('./firebase');
 
-        const profileRef = doc(db, 'professionalProfiles', userId);
+        const profileRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
         await updateDoc(profileRef, {
             autofill: null,
             updatedAt: Timestamp.now()
@@ -164,9 +163,8 @@ export const processDocumentWithAI = async (documentUrl, documentType = 'cv', st
 
         const token = await user.getIdToken();
 
-        // Construct function URL with known region (europe-west6 from firebase.js)
-        const region = 'europe-west6';
-        const projectId = process.env.REACT_APP_FIREBASE_PROJECT_ID || 'interimed-620fd';
+        const region = DEFAULT_VALUES.FIREBASE_REGION;
+        const projectId = getEnvVar('FIREBASE_PROJECT_ID') || DEFAULT_VALUES.FIREBASE_PROJECT_ID;
         const functionUrl = `https://${region}-${projectId}.cloudfunctions.net/processDocument`;
 
         // Create AbortController with 10-minute timeout
@@ -297,7 +295,7 @@ export const mergeExtractedData = (existingData, extractedData, dropdownOptions 
             (typeof value === 'string' && opt.value?.toLowerCase() === value.toLowerCase())
         );
 
-        if (!exists && process.env.NODE_ENV !== 'production') {
+        if (!exists && getEnvVar('NODE_ENV') !== 'production') {
             console.warn(`[DocumentProcessing] Extracted value "${value}" is not valid for ${optionsKey}`);
         }
 

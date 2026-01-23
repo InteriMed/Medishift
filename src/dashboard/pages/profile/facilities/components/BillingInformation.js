@@ -9,7 +9,7 @@ import { FiEye, FiShield } from 'react-icons/fi';
 
 // --- Import Base Components (Adjust Paths) ---
 import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxField';
-import DropdownDate from '../../../../../components/BoxedInputFields/Dropdown-Date';
+import DateField from '../../../../../components/BoxedInputFields/DateField';
 import DropdownField from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
@@ -17,6 +17,7 @@ import Button from '../../../../../components/BoxedInputFields/Button';
 import BankingAccessModal from '../../components/BankingAccessModal';
 import styles from '../../Profile.module.css'; // Use CSS module instead of regular CSS
 import useAutoSave from '../../../../hooks/useAutoSave';
+import { LOCALSTORAGE_KEYS } from '../../../../../config/keysDatabase';
 
 // --- FAKE Dropdown Options (Replace with real data loading/i18n) ---
 const FAKE_DROPDOWN_TRANSLATIONS = {
@@ -46,12 +47,12 @@ const BillingInformation = ({
   const fieldsToRender = useMemo(() => config?.fields?.billingInformation || [], [config]);
 
   const checkBankingAccess = useCallback(() => {
-    const accessExpiry = localStorage.getItem('bankingAccessGranted');
+    const accessExpiry = localStorage.getItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED);
     if (!accessExpiry) return false;
     
     const expiryTime = parseInt(accessExpiry, 10);
     if (Date.now() > expiryTime) {
-      localStorage.removeItem('bankingAccessGranted');
+      localStorage.removeItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED);
       return false;
     }
     return true;
@@ -128,7 +129,7 @@ const BillingInformation = ({
     
     // If nothing found, return empty array and warn in development
     if (process.env.NODE_ENV !== 'production') {
-      console.warn(`No options found for dropdown key: ${optionsKey}`);
+      // No options found for dropdown key
     }
     
     return [];
@@ -179,13 +180,13 @@ const BillingInformation = ({
 
       switch (type) {
           case 'date':
-              return <DropdownDate {...commonProps} value={value ? new Date(value) : null} onChange={(date) => onInputChange(name, date ? date.toISOString().split('T')[0] : null)} />;
+              return <DateField {...commonProps} value={value ? new Date(value) : null} onChange={(date) => onInputChange(name, date ? date.toISOString().split('T')[0] : null)} />;
           case 'dropdown':
               const options = getDropdownOptions(optionsKey);
               
               // Debug option loading issues
               if (options.length === 0 && process.env.NODE_ENV !== 'production') {
-                console.warn(`No options found for dropdown ${name} with optionsKey ${optionsKey}`);
+                // No options found for dropdown
               }
               
               return (
@@ -195,7 +196,6 @@ const BillingInformation = ({
                   options={options}
                   value={value}
                   onChange={(newValue) => {
-                    console.log('SimpleDropdown onChange:', { name, newValue });
                     onInputChange(name, newValue);
                   }}
                   placeholder={placeholder || t('common.selectPlaceholder', 'Select...')}

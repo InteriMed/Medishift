@@ -1,12 +1,13 @@
 import { db, auth, storage, functions } from './firebase';
+import { getEnvVar, DEFAULT_VALUES } from '../config/keysDatabase';
 
 const connectToEmulators = () => {
-  if (process.env.NODE_ENV !== 'development' || 
-      process.env.REACT_APP_USE_EMULATORS !== 'true') {
+  if (getEnvVar('NODE_ENV') !== 'development' || 
+      getEnvVar('USE_EMULATORS') !== 'true') {
     return;
   }
 
-  const EMULATOR_HOST = process.env.REACT_APP_EMULATOR_HOST || 'localhost';
+  const EMULATOR_HOST = getEnvVar('EMULATOR_HOST') || 'localhost';
   
   try {
     // Emulators are now connected directly in the firebase/index.js file

@@ -15,8 +15,10 @@
 .messages-sidebar h2 {
   padding: 16px;
   margin: 0;
-  font-size: 1.25rem;
-  border-bottom: 1px solid var(--grey-1, #e0e0e0);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-medium);
+  border-bottom: 1px solid var(--grey-1);
 }
 
 .no-conversations {
@@ -49,7 +51,9 @@
 
 .select-conversation h3 {
   margin-bottom: 8px;
-  font-size: 1.25rem;
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-medium);
 }
 
 .select-conversation p {

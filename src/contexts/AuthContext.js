@@ -20,12 +20,10 @@ import {
 // Import Firebase functions directly from firebase/auth and firebase/firestore
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import Cookies from 'js-cookie'; // Import js-cookie library
+import Cookies from 'js-cookie';
+import { getCookieKey, COOKIE_CONFIG, COOKIE_KEYS, FIRESTORE_COLLECTIONS } from '../config/keysDatabase';
 
-// Cookie names for storing onboarding status
-const PROFILE_COMPLETE_COOKIE = 'medishift_profile_complete';
-const TUTORIAL_PASSED_COOKIE = 'medishift_tutorial_passed';
-const COOKIE_EXPIRY_DAYS = 7; // Set cookies to expire after 7 days
+const COOKIE_EXPIRY_DAYS = COOKIE_CONFIG.PROFILE_TUTORIAL_EXPIRY_DAYS;
 
 // Create the Auth Context
 const AuthContext = createContext();
@@ -51,9 +49,8 @@ export const AuthProvider = ({ children }) => {
   const setCookieValues = useCallback((userId, profileComplete, tutorialPassed) => {
     if (!userId) return;
 
-    // Store values in cookies with expiry time
-    Cookies.set(`${PROFILE_COMPLETE_COOKIE}_${userId}`, profileComplete ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
-    Cookies.set(`${TUTORIAL_PASSED_COOKIE}_${userId}`, tutorialPassed ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
+    Cookies.set(getCookieKey('PROFILE_COMPLETE', userId), profileComplete ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
+    Cookies.set(getCookieKey('TUTORIAL_PASSED', userId), tutorialPassed ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
 
     // console.log(`[AuthContext] Updated cookies - Profile Complete: ${profileComplete}, Tutorial Passed: ${tutorialPassed}`);
   }, []);
@@ -61,8 +58,8 @@ export const AuthProvider = ({ children }) => {
   const getCookieValues = useCallback((userId) => {
     if (!userId) return { profileComplete: false, tutorialPassed: false };
 
-    const profileCompleteCookie = Cookies.get(`${PROFILE_COMPLETE_COOKIE}_${userId}`);
-    const tutorialPassedCookie = Cookies.get(`${TUTORIAL_PASSED_COOKIE}_${userId}`);
+    const profileCompleteCookie = Cookies.get(getCookieKey('PROFILE_COMPLETE', userId));
+    const tutorialPassedCookie = Cookies.get(getCookieKey('TUTORIAL_PASSED', userId));
 
     return {
       profileComplete: profileCompleteCookie === 'true',
@@ -73,8 +70,8 @@ export const AuthProvider = ({ children }) => {
   const clearCookieValues = useCallback((userId) => {
     if (!userId) return;
 
-    Cookies.remove(`${PROFILE_COMPLETE_COOKIE}_${userId}`);
-    Cookies.remove(`${TUTORIAL_PASSED_COOKIE}_${userId}`);
+    Cookies.remove(getCookieKey('PROFILE_COMPLETE', userId));
+    Cookies.remove(getCookieKey('TUTORIAL_PASSED', userId));
   }, []);
 
   // Check onboarding status
@@ -86,7 +83,7 @@ export const AuthProvider = ({ children }) => {
       // If no data provided, try to get from Firestore
       let userData = providedUserData;
       if (!userData) {
-        const userDoc = await getDoc(doc(db, 'users', userId));
+        const userDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId));
         if (userDoc.exists()) {
           userData = userDoc.data();
         }
@@ -101,8 +98,6 @@ export const AuthProvider = ({ children }) => {
         const tutorialPassed = userData.hasOwnProperty('tutorialPassed')
           ? userData.tutorialPassed
           : false;
-
-        console.log(`[AuthContext] Firestore values for ${userId} - Profile Complete: ${profileComplete}, Tutorial Passed: ${tutorialPassed}`);
 
         // Update state
         setIsProfessionalProfileComplete(profileComplete);
@@ -155,19 +150,13 @@ export const AuthProvider = ({ children }) => {
               phoneNumber: '',
               phonePrefix: '+41',
               photoURL: user.photoURL || '',
-              role: 'professional',
+              roles: [],
               createdAt: serverTimestamp(),
-              updatedAt: serverTimestamp(),
-              profileCompleted: false,
-              profileCompletionPercentage: 0,
-              isProfessionalProfileComplete: false,
-              tutorialPassed: false
-            };
-
-            console.log(`[AuthContext] Creating user document for ${user.uid}`);
-            await setDoc(userDocRef, userData);
-            console.log(`[AuthContext] ✅ User document created for ${user.uid}`);
+            updatedAt: serverTimestamp()
           };
+
+          await setDoc(userDocRef, userData);
+        };
 
           const fetchAdminData = async (userId) => {
             try {
@@ -191,7 +180,6 @@ export const AuthProvider = ({ children }) => {
               throw new Error('Firestore database not initialized');
             }
 
-            console.log(`[AuthContext] Fetching user document for ${user.uid}`);
             const userDocRef = doc(db, 'users', user.uid);
             
             try {
@@ -204,19 +192,17 @@ export const AuthProvider = ({ children }) => {
               try {
                 quickReadPromise.catch(err => {
                   if (err.message !== 'Quick read timeout') {
-                    console.debug('[AuthContext] Background quick read error (after timeout):', err.message);
+                    // Background quick read error
                   }
                 });
                 userDoc = await Promise.race([quickReadPromise, quickTimeout]);
               } catch (quickError) {
-                console.log(`[AuthContext] Quick read failed, creating user document directly for ${user.uid}`);
                 await createUserDocument(user, userDocRef);
                 userDoc = await getDoc(userDocRef);
               }
 
               if (userDoc.exists()) {
                 const userData = userDoc.data();
-                console.log(`[AuthContext] User document found for ${user.uid}`);
                 
                 const adminData = await fetchAdminData(user.uid);
                 const profileWithAdmin = { 
@@ -228,7 +214,6 @@ export const AuthProvider = ({ children }) => {
                 setUserProfile(profileWithAdmin);
                 await checkOnboardingStatus(user.uid, userData);
               } else {
-                console.log(`[AuthContext] User document doesn't exist, creating for ${user.uid}`);
                 await createUserDocument(user, userDocRef);
                 
                 const newUserDoc = await getDoc(userDocRef);
@@ -247,12 +232,10 @@ export const AuthProvider = ({ children }) => {
                 }
               }
             } catch (docError) {
-              console.error(`[AuthContext] Error with user document:`, docError);
               try {
-                console.log(`[AuthContext] Fallback: Creating user document for ${user.uid}`);
                 await createUserDocument(user, userDocRef);
               } catch (createError) {
-                console.error(`[AuthContext] Failed to create user document:`, createError);
+                // Failed to create user document
               }
               throw docError;
             }
@@ -264,7 +247,7 @@ export const AuthProvider = ({ children }) => {
             fetchDataPromise.catch(err => {
               // Silently handle - timeout already handled the error
               if (err.message !== 'Request timed out' && err.message !== 'Quick read timeout') {
-                console.debug('[AuthContext] Background fetch error (after timeout):', err.message);
+                // Background fetch error
               }
             });
             try {
@@ -279,15 +262,8 @@ export const AuthProvider = ({ children }) => {
 
         } catch (err) {
           if (err.message === 'Request timed out') {
-            console.warn("⚠️ User profile fetch timed out - allowing app to load without full profile");
-            console.warn("This may indicate:");
-            console.warn("  1. Firestore is slow to respond");
-            console.warn("  2. Network connectivity issues");
-            console.warn("  3. User document doesn't exist and needs to be created");
-            
             // Try a quick retry with shorter timeout
             try {
-              console.log("[AuthContext] Attempting quick retry...");
               const quickRetryPromise = getDoc(doc(db, 'users', user.uid));
               const quickRetryTimeout = new Promise((_, reject) => 
                 setTimeout(() => reject(new Error('Quick retry timed out')), 3000)
@@ -296,7 +272,7 @@ export const AuthProvider = ({ children }) => {
               // Catch any rejections from quickRetryPromise that occur after timeout
               quickRetryPromise.catch(err => {
                 if (err.message !== 'Quick retry timed out') {
-                  console.debug('[AuthContext] Background quick retry error (after timeout):', err.message);
+                  // Background quick retry error
                 }
               });
               
@@ -306,22 +282,10 @@ export const AuthProvider = ({ children }) => {
                 const userData = quickRetry.data();
                 setUserProfile({ id: quickRetry.id, ...userData });
                 await checkOnboardingStatus(user.uid, userData);
-                console.log("[AuthContext] Quick retry succeeded");
               }
             } catch (retryError) {
               // Silently handle timeout errors - they're expected
-              if (retryError.message !== 'Quick retry timed out') {
-                console.warn("[AuthContext] Quick retry also failed:", retryError.message);
-              }
             }
-          } else if (err.code === 'unavailable' || (err.message && err.message.includes('offline'))) {
-            console.warn("⚠️ User profile fetch skipped - client is offline");
-          } else if (err.code === 'permission-denied') {
-            console.error("❌ Permission denied accessing user document. Check Firestore security rules.");
-          } else {
-            console.error("❌ Error fetching user profile:", err);
-            console.error("Error code:", err.code);
-            console.error("Error message:", err.message);
           }
         }
       } else {
@@ -350,7 +314,6 @@ export const AuthProvider = ({ children }) => {
       // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log('✅ Auth user created:', user.uid);
 
       // Create user document in Firestore
       const userDocRef = doc(db, 'users', user.uid);
@@ -360,24 +323,18 @@ export const AuthProvider = ({ children }) => {
         lastName,
         phoneNumber: phoneNumber || '',
         phonePrefix: phonePrefix || '+41',
-        role: 'professional',
+        roles: [],
         createdAt: new Date(),
-        updatedAt: new Date(),
-        profileCompleted: false,
-        profileCompletionPercentage: 0,
-        isProfessionalProfileComplete: false,
-        tutorialPassed: false
+        updatedAt: new Date()
       };
 
       await setDoc(userDocRef, userData);
-      console.log('📝 User document write initiated');
 
       // Verify the document was created
       const verifyUserDoc = await getDoc(userDocRef);
       if (!verifyUserDoc.exists()) {
         throw new Error('Failed to create user document in Firestore - document does not exist after write');
       }
-      console.log('✅ User document verified in Firestore:', user.uid);
 
       // Create empty profile document
       const profileCollection = 'professionalProfiles';
@@ -396,27 +353,15 @@ export const AuthProvider = ({ children }) => {
       };
 
       await setDoc(profileDocRef, profileData);
-      console.log('📝 Profile document write initiated');
 
       // Verify the profile document was created
       const verifyProfileDoc = await getDoc(profileDocRef);
-      if (!verifyProfileDoc.exists()) {
-        console.warn('⚠️ Profile document may not have been created');
-      } else {
-        console.log('✅ Profile document verified in Firestore');
-      }
 
       // Set cookies for onboarding status
       setCookieValues(user.uid, false, false);
 
       return user;
     } catch (error) {
-      console.error("❌ Error registering user:", error);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
-      if (error.stack) {
-        console.error("Error stack:", error.stack);
-      }
       throw error;
     } finally {
       setLoading(false);
@@ -501,7 +446,6 @@ export const AuthProvider = ({ children }) => {
         setUserProfile(profileWithAdmin);
         return profileWithAdmin;
       } catch (err) {
-        console.error("Error refreshing user data:", err);
         throw err;
       }
     }
@@ -604,7 +548,7 @@ export const AuthProvider = ({ children }) => {
         };
         setUserProfile(targetUserProfile);
         
-        Cookies.set('medishift_impersonation_session', result.sessionId, {
+        Cookies.set(COOKIE_KEYS.IMPERSONATION_SESSION, result.sessionId, {
           expires: new Date(result.expiresAt)
         });
         
@@ -613,7 +557,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error(result.message || 'Failed to start impersonation');
       }
     } catch (error) {
-      console.error('[AuthContext] Impersonation error:', error);
       setError(error.message);
       throw error;
     }
@@ -636,11 +579,10 @@ export const AuthProvider = ({ children }) => {
       setImpersonatedUser(null);
       setOriginalUserProfile(null);
       
-      Cookies.remove('medishift_impersonation_session');
+      Cookies.remove(COOKIE_KEYS.IMPERSONATION_SESSION);
       
       return { success: true };
     } catch (error) {
-      console.error('[AuthContext] Stop impersonation error:', error);
       setError(error.message);
       throw error;
     }
@@ -648,7 +590,7 @@ export const AuthProvider = ({ children }) => {
 
   const validateImpersonationSession = useCallback(async () => {
     try {
-      const sessionId = Cookies.get('medishift_impersonation_session');
+      const sessionId = Cookies.get(COOKIE_KEYS.IMPERSONATION_SESSION);
       if (!sessionId) {
         if (impersonationSession) {
           setImpersonationSession(null);
@@ -671,7 +613,7 @@ export const AuthProvider = ({ children }) => {
           setUserProfile(originalUserProfile);
         }
         setOriginalUserProfile(null);
-        Cookies.remove('medishift_impersonation_session');
+        Cookies.remove(COOKIE_KEYS.IMPERSONATION_SESSION);
         return false;
       }
 
@@ -685,14 +627,13 @@ export const AuthProvider = ({ children }) => {
       
       return true;
     } catch (error) {
-      console.error('[AuthContext] Session validation error:', error);
       return false;
     }
   }, [impersonationSession, originalUserProfile]);
 
   useEffect(() => {
     if (currentUser && !impersonationSession) {
-      const sessionId = Cookies.get('medishift_impersonation_session');
+      const sessionId = Cookies.get(COOKIE_KEYS.IMPERSONATION_SESSION);
       if (sessionId) {
         validateImpersonationSession();
       }

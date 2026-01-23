@@ -8,16 +8,15 @@ export const useDocumentRestore = (currentUser, setDocumentFile, setBillingFile,
       try {
         const { doc, getDoc } = await import('firebase/firestore');
         const { db } = await import('../../../services/firebase');
+        const { FIRESTORE_COLLECTIONS } = await import('../../../config/keysDatabase');
 
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        const userDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid));
         const userData = userDoc.data();
 
         const onboardingDocs = userData?.onboardingDocuments || [];
         const tempUploads = userData?.temporaryUploads || {};
 
         if (onboardingDocs.length > 0) {
-          console.log('[GLNVerification] Found previous document references:', onboardingDocs);
-
           const documentsState = {};
           onboardingDocs.forEach(docRef => {
             const key = docRef.subfolder === 'responsible_person_id' ? 'identity' : docRef.subfolder;
@@ -50,7 +49,6 @@ export const useDocumentRestore = (currentUser, setDocumentFile, setBillingFile,
           setVerificationError(`📋 ${onboardingDocs.length} document${onboardingDocs.length > 1 ? 's' : ''} restored. You can continue from where you left off.`);
           setTimeout(() => setVerificationError(''), 6000);
         } else if (Object.keys(tempUploads).length > 0) {
-          console.log('[GLNVerification] Found previous uploads (legacy):', tempUploads);
           setUploadedDocuments({
             identity: tempUploads.identity || tempUploads.responsible_person_id || null,
             billing: tempUploads.billing_document || null
@@ -59,7 +57,7 @@ export const useDocumentRestore = (currentUser, setDocumentFile, setBillingFile,
           setTimeout(() => setVerificationError(''), 5000);
         }
       } catch (error) {
-        console.warn('[GLNVerification] Failed to load previous uploads:', error);
+        // Failed to load previous uploads
       }
     };
 

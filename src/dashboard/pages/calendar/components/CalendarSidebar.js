@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import MiniCalendar from '../miniCalendar/MiniCalendar';
 import { cn } from '../../../../utils/cn';
-import { FiCalendar, FiClock, FiMapPin, FiChevronRight } from 'react-icons/fi';
+import { FiClock, FiMapPin, FiChevronRight } from 'react-icons/fi';
 
 const CalendarSidebar = ({
   currentDate,
@@ -28,7 +28,7 @@ const CalendarSidebar = ({
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   return (
-    <div className="h-full flex flex-col gap-4 overflow-hidden">
+    <div className="h-full flex flex-col gap-4 calendar-sidebar-container p-1" style={{ overflow: 'visible' }}>
       {showMiniCalendar && (
         <MiniCalendar
           currentDate={currentDate}
@@ -41,8 +41,8 @@ const CalendarSidebar = ({
       )}
 
       {showUpcomingEvents && (
-        <div className="flex-1 flex flex-col min-h-0 bg-card backdrop-blur-sm rounded-2xl overflow-hidden">
-          <div className="flex flex-col px-6 py-3 border-b border-border mb-4">
+        <div className="flex-1 flex flex-col min-h-0 bg-card backdrop-blur-sm rounded-2xl border border-border/50 shadow-lg" style={{ overflow: 'visible' }}>
+          <div className="flex flex-col px-6 py-3 border-b border-border">
             <h4 className="text-xl font-bold m-0" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
               {t('calendar:upcomingEvents')}
             </h4>
@@ -97,7 +97,7 @@ const CalendarSidebar = ({
             ) : (
               <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 ring-4 ring-background">
-                  <FiCalendar className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
+                  <FiClock className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
                 </div>
                 <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('calendar:noUpcomingEvents')}</h2>
                 <p className="mb-6" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('calendar:checkBackLater')}</p>

@@ -1,16 +1,16 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate, useParams, Outlet } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { NetworkProvider } from './contexts/NetworkContext';
 import { TutorialProvider } from './dashboard/contexts/TutorialContext';
 import { DashboardProvider } from './dashboard/contexts/DashboardContext';
 import { SidebarProvider } from './dashboard/contexts/SidebarContext';
 import NetworkStatus from './components/NetworkStatus';
-import ScrollToTop from './components/ScrollToTop';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
-import Notification from './components/Notification/Notification';
+import Notification from './components/Header/Notification/Notification';
 import Dialog from './components/Dialog/Dialog';
 import Tutorial from './dashboard/tutorial/Tutorial';
 import GhostModeBanner from './components/GhostModeBanner/GhostModeBanner';
@@ -27,36 +27,18 @@ import DashboardRoot from './dashboard/DashboardRoot';
 import { testFirestoreConnection } from './utils/testFirestoreConnection';
 import { resetFirestoreCache } from './utils/resetFirestoreCache';
 import Footer from './components/Footer/Footer';
-import BlogPost from './pages/Blog/BlogPost';
-import VerificationSentPage from './pages/Auth/VerificationSentPage';
-import LoadingPage from './pages/LoadingPage'; // Import the new LoadingPage
+import { NotFoundPage } from './pages';
 import { getLocalizedRoute } from './i18n';
 
 import {
-  LoginPage,
-  SignupPage,
-  ForgotPasswordPage
-} from './pages/Auth';
-
-import {
-  HomePage,
-  AboutPage,
-  FacilitiesPage,
-  ProfessionalsPage,
-  FAQPage,
-  ContactPage,
-  BlogPage,
-  PrivacyPolicyPage,
-  TermsOfServicePage,
-  SitemapPage,
-  NotFoundPage,
-  TestPage,
-  TestPhonePage,
-  TestGLNPage,
-  TestPopupPage,
-  GLNTestVerifPage,
-  OnboardingPage
-} from './pages';
+  PUBLIC_ROUTES,
+  AUTH_ROUTES,
+  PROTECTED_ROUTES,
+  TEST_ROUTES,
+  ROUTE_TYPES,
+  getRouteById
+} from './config/appRoutes';
+import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE as DEFAULT_LANG } from './config/routeHelpers';
 
 // Import header component
 const Header = lazy(() =>
@@ -74,19 +56,20 @@ const AppContainer = () => {
     <ErrorBoundary>
       <HelmetProvider>
         <Router future={{ v7_startTransition: true }}>
-          <ScrollToTop />
           <AuthProvider>
             <NotificationProvider>
-              <DashboardProvider>
-                <SidebarProvider>
-                  <TutorialProvider>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <NetworkStatus />
-                      <AppContent />
-                    </Suspense>
-                  </TutorialProvider>
-                </SidebarProvider>
-              </DashboardProvider>
+              <NetworkProvider>
+                <DashboardProvider>
+                  <SidebarProvider>
+                    <TutorialProvider>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <NetworkStatus />
+                        <AppContent />
+                      </Suspense>
+                    </TutorialProvider>
+                  </SidebarProvider>
+                </DashboardProvider>
+              </NetworkProvider>
             </NotificationProvider>
           </AuthProvider>
         </Router>
@@ -99,9 +82,6 @@ const AppContainer = () => {
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   window.testFirestore = testFirestoreConnection;
   window.resetFirestoreCache = resetFirestoreCache;
-  console.log('🧪 Firestore utilities available:');
-  console.log('   - window.testFirestore() - Test Firestore connection');
-  console.log('   - window.resetFirestoreCache() - Clear Firestore cache');
 }
 
 // App content with language handling
@@ -117,8 +97,36 @@ function AppContent() {
   // Dashboard access flag
   const DASHBOARD_DISABLED = false;
 
-  // Set default language to French
-  const DEFAULT_LANGUAGE = 'fr';
+  // Helper component for dashboard routing and redirects
+  const DashboardGuard = () => {
+    const segments = location.pathname.split('/').filter(Boolean);
+    const dashboardIndex = segments.indexOf('dashboard');
+
+    // Handle /dashboard with no trailing slash or subpath
+    if (segments.length === dashboardIndex + 1) {
+      return <Navigate to="/dashboard/personal/overview" replace />;
+    }
+
+    const firstSegmentAfterDashboard = segments[dashboardIndex + 1];
+
+    // Known workspace types/patterns
+    const isWorkspaceId = firstSegmentAfterDashboard === 'personal' ||
+      firstSegmentAfterDashboard === 'admin' ||
+      firstSegmentAfterDashboard.length > 15; // Firestore IDs are ~20 chars
+
+    // If it's a valid workspace URL, allow Outlet to render children
+    if (isWorkspaceId) {
+      return <Outlet />;
+    }
+
+    // If it's a legacy URL (e.g., /dashboard/profile/...), redirect to personal workspace
+    // Preserve language prefix if present
+    const langPrefix = dashboardIndex > 0 ? `/${segments[0]}` : '';
+    const subPath = segments.slice(dashboardIndex + 1).join('/');
+    return <Navigate to={`${langPrefix}/dashboard/personal/${subPath}${location.search}${location.hash}`} replace />;
+  };
+
+  const DEFAULT_LANGUAGE = DEFAULT_LANG;
 
   // Extract language from URL
   const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -161,7 +169,6 @@ function AppContent() {
       const hash = location.hash;
       const newPath = path === '/' ? `/${lang}${search}${hash}` : `/${lang}${path}${search}${hash}`;
 
-      console.log(`[App] Redirecting to localized path: ${newPath}`);
       navigate(newPath, { replace: true });
     } else {
       // Language is in URL, just set it in i18n
@@ -188,15 +195,13 @@ function AppContent() {
 
   const path = location.pathname;
 
-  // Use a more direct check for dashboard pages
   const isDashboardPage =
     path.includes('/dashboard') ||
     path.includes('/login') ||
     path.includes('/signup') ||
     path.includes('/forgot-password') ||
     path.includes('/onboarding') ||
-    // Add localized versions
-    path.includes(`/${currentLang}/${getLocalizedRoute('dashboard', currentLang)}`) ||
+    path.includes(`/${currentLang}/dashboard`) ||
     path.includes(`/${currentLang}/${getLocalizedRoute('login', currentLang)}`) ||
     path.includes(`/${currentLang}/${getLocalizedRoute('signup', currentLang)}`) ||
     path.includes(`/${currentLang}/${getLocalizedRoute('forgotPassword', currentLang)}`) ||
@@ -215,75 +220,81 @@ function AppContent() {
       <main className="content">
         <Routes>
           <Route path="/:lang" element={<Layout />}>
-            <Route index element={<Navigate to={`/${DEFAULT_LANGUAGE}/home`} replace />} />
+            <Route index element={<Navigate to={buildLocalizedPath(ROUTE_IDS.HOME, DEFAULT_LANGUAGE)} replace />} />
 
-            {/* Pages routes - simplified to use standard English routes */}
-            <Route path="home" element={<HomePage />} />
-            <Route path="about" element={<AboutPage />} />
-            <Route path="professionals" element={<ProfessionalsPage />} />
-            <Route path="facilities" element={<FacilitiesPage />} />
-            <Route path="faq" element={<FAQPage />} />
-            <Route path="contact" element={<ContactPage />} />
-            <Route path="blog" element={<BlogPage />} />
-            <Route path="blog/:slug" element={<BlogPost />} />
-            <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
-            <Route path="terms-of-service" element={<TermsOfServicePage />} />
-            <Route path="sitemap" element={<SitemapPage />} />
+            {PUBLIC_ROUTES.map(route => (
+              <Route
+                key={route.id}
+                path={route.path}
+                element={<route.component />}
+              />
+            ))}
 
-            {/* Auth routes */}
-            <Route path="login" element={<LoginPage />} />
-            <Route path="signup" element={<SignupPage />} />
-            <Route path="signup/:step" element={<SignupPage />} />
-            <Route path="forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="verification-sent" element={<VerificationSentPage />} />
+            {AUTH_ROUTES.map(route => (
+              <Route
+                key={route.id}
+                path={route.path}
+                element={<route.component />}
+              />
+            ))}
 
-            {/* Onboarding route */}
-            <Route path="onboarding" element={
-              <ProtectedRoute>
-                <OnboardingPage />
-              </ProtectedRoute>
-            } />
+            {PROTECTED_ROUTES.filter(r => r.id !== 'dashboard').map(route => {
+              return (
+                <Route
+                  key={route.id}
+                  path={route.path}
+                  element={
+                    route.requiresAuth ? (
+                      <ProtectedRoute>
+                        <route.component />
+                      </ProtectedRoute>
+                    ) : (
+                      <route.component />
+                    )
+                  }
+                />
+              );
+            })}
 
-            {/* Protected dashboard routes - fixed routing */}
-            <Route path="dashboard/*" element={
+            {process.env.NODE_ENV === 'development' && TEST_ROUTES.map(route => (
+              <Route
+                key={route.id}
+                path={route.path}
+                element={<route.component />}
+              />
+            ))}
+
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+          {/* Unified Dashboard Routing with Workspace Guard */}
+          {/* Supports both /dashboard/... and /:lang/dashboard/... */}
+          <Route path="/dashboard" element={<DashboardGuard />}>
+            <Route path=":workspaceId/*" element={
               DASHBOARD_DISABLED ?
-                <Navigate to={`/${i18n.language}/not-found`} replace /> :
+                <Navigate to={buildLocalizedPath(ROUTE_IDS.NOT_FOUND, i18n.language)} replace /> :
                 <ProtectedRoute>
                   <DashboardRoot />
                 </ProtectedRoute>
             } />
-
-
-            {/* Loading page */}
-            <Route path="loading" element={<LoadingPage />} />
-
-            {/* Test pages */}
-            <Route path="test" element={<TestPage />} />
-            <Route path="testphone" element={<TestPhonePage />} />
-            <Route path="testpopup" element={<TestPopupPage />} />
-            <Route path="glntestverif" element={<GLNTestVerifPage />} />
-            <Route path="dashboard/admin/system/gln-test" element={<TestGLNPage />} />
-
-            {/* Not found route */}
-            <Route path="not-found" element={<NotFoundPage />} />
-            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
-          {/* Add direct access to dashboard without language prefix */}
-          <Route path="/dashboard/*" element={
-            DASHBOARD_DISABLED ?
-              <Navigate to={`/${i18n.language}/not-found`} replace /> :
-              <ProtectedRoute>
-                <DashboardRoot />
-              </ProtectedRoute>
-          } />
+          <Route path="/:lang/dashboard" element={<DashboardGuard />}>
+            <Route path=":workspaceId/*" element={
+              DASHBOARD_DISABLED ?
+                <Navigate to={buildLocalizedPath(ROUTE_IDS.NOT_FOUND, i18n.language)} replace /> :
+                <ProtectedRoute>
+                  <DashboardRoot />
+                </ProtectedRoute>
+            } />
+          </Route>
 
+          {/* Catch-all for dashboard paths that might need redirect */}
+          <Route path="/dashboard/*" element={<DashboardGuard />} />
+          <Route path="/:lang/dashboard/*" element={<DashboardGuard />} />
 
-          {/* Root redirects to language-prefixed path */}
           <Route path="/" element={<Navigate to={`/${DEFAULT_LANGUAGE}`} replace />} />
 
-          {/* Catch any other routes and redirect to language-prefixed 404 */}
-          <Route path="*" element={<Navigate to={`/${DEFAULT_LANGUAGE || 'fr'}/${getLocalizedRoute('notFound', DEFAULT_LANGUAGE || 'fr')}`} replace />} />
+          <Route path="*" element={<Navigate to={buildLocalizedPath(ROUTE_IDS.NOT_FOUND, DEFAULT_LANGUAGE)} replace />} />
         </Routes>
       </main>
       <Notification />

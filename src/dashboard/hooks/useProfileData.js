@@ -5,6 +5,9 @@ import { doc, getDoc, setDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDashboard } from '../contexts/DashboardContext';
+import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
+import { FIRESTORE_COLLECTIONS, LOCALSTORAGE_KEYS } from '../../config/keysDatabase';
 
 const storage = getStorage();
 
@@ -50,12 +53,13 @@ const useProfileData = () => {
   const [profileData, setProfileData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const dashboard = useDashboard();
+  const selectedWorkspace = dashboard?.selectedWorkspace;
 
   const getProfileCollectionName = useCallback((role) => {
-    if (role === 'facility' || role === 'company') return 'facilityProfiles';
-    if (role === 'professional') return 'professionalProfiles';
-    console.warn(`[useProfileData] Unknown role: ${role}, defaulting to professionalProfiles`);
-    return 'professionalProfiles'; // Default or throw error
+    if (role === 'facility' || role === 'company') return FIRESTORE_COLLECTIONS.FACILITY_PROFILES;
+    if (role === 'professional') return FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES;
+    return FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES; // Default or throw error
   }, []);
 
   // Function to determine the default profileType based on role
@@ -77,7 +81,7 @@ const useProfileData = () => {
 
     try {
       const TIMEOUT_MS = 4000;
-      const fetchUserDoc = getDoc(doc(db, 'users', currentUser.uid));
+      const fetchUserDoc = getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid));
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS)
       );
@@ -85,17 +89,22 @@ const useProfileData = () => {
       const userDoc = await Promise.race([fetchUserDoc, timeoutPromise]);
 
       if (!userDoc.exists()) {
-        console.warn('[useProfileData] User document not found. Call initializeProfileDocument.');
         return { uid: currentUser.uid, email: currentUser.email, role: 'professional', profileType: getDefaultProfileType('professional') };
       }
 
       const userData = convertTimestamps(userDoc.data());
-      const userRole = userData.role || 'professional';
-      const userProfileType = userData.profileType || getDefaultProfileType(userRole);
 
-      if (!userData.role || !userData.profileType) {
-        console.warn("[useProfileData] User role or profileType missing, will attempt to update in init.");
+      // Determine role based on workspace if available, fallback to user record
+      let userRole = userData.role || 'professional';
+      if (selectedWorkspace) {
+        if (selectedWorkspace.type === WORKSPACE_TYPES.TEAM) {
+          userRole = 'facility';
+        } else if (selectedWorkspace.type === WORKSPACE_TYPES.PERSONAL || selectedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
+          userRole = 'professional';
+        }
       }
+
+      const userProfileType = userData.profileType || getDefaultProfileType(userRole);
 
       const profileCollection = getProfileCollectionName(userRole);
 
@@ -110,15 +119,12 @@ const useProfileData = () => {
       if (profileDoc.exists()) {
         const specificProfileData = convertTimestamps(profileDoc.data());
         fetchedData = { ...fetchedData, ...specificProfileData };
-      } else {
-        console.warn(`[useProfileData] Profile document in ${profileCollection} not found.`);
       }
 
       setProfileData(fetchedData);
       return fetchedData;
 
     } catch (err) {
-      console.error('[useProfileData] Error fetching profile data:', err);
       setError(err.message || 'Failed to fetch profile data');
 
       // Return minimal valid data structure to allow UI to render (or show offline specific UI)
@@ -129,10 +135,6 @@ const useProfileData = () => {
         profileType: getDefaultProfileType('professional'),
         isOffline: true
       };
-
-      if (err.message === 'Request timed out' || err.code === 'unavailable' || err.message?.includes('offline')) {
-        console.warn('[useProfileData] Fetch timed out or client offline - using fallback mode');
-      }
 
       setProfileData(offlineData);
       return offlineData;
@@ -158,13 +160,19 @@ const useProfileData = () => {
     if (!profileData) throw new Error("Original profile data not loaded for context.");
 
     setIsLoading(true);
-    console.log('[useProfileData] Attempting to save:', dataToSave);
     try {
       const userFieldsToUpdate = {};
       const profileFieldsToUpdate = {};
       const now = Timestamp.now();
 
-      const currentRole = dataToSave.role || profileData.role || 'professional'; // Prioritize dataToSave, then current, then default
+      let currentRole = dataToSave.role || profileData.role || 'professional';
+      if (selectedWorkspace) {
+        if (selectedWorkspace.type === WORKSPACE_TYPES.TEAM) {
+          currentRole = 'facility';
+        } else if (selectedWorkspace.type === WORKSPACE_TYPES.PERSONAL || selectedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
+          currentRole = 'professional';
+        }
+      }
       const currentProfileType = dataToSave.profileType || profileData.profileType || getDefaultProfileType(currentRole);
 
       for (const [key, value] of Object.entries(dataToSave)) {
@@ -180,14 +188,13 @@ const useProfileData = () => {
 
 
       const profileCollection = getProfileCollectionName(currentRole);
-      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
       const profileDocRef = doc(db, profileCollection, currentUser.uid);
 
       if (Object.keys(userFieldsToUpdate).length > 0) {
         userFieldsToUpdate.updatedAt = now;
         const cleanedUserFields = cleanDataForFirebase(userFieldsToUpdate);
         if (cleanedUserFields && Object.keys(cleanedUserFields).length > 0) {
-          console.log("[useProfileData] Updating User Doc:", cleanedUserFields);
           await updateDoc(userDocRef, cleanedUserFields);
         }
       }
@@ -201,14 +208,12 @@ const useProfileData = () => {
         }
         const cleanedProfileFields = cleanDataForFirebase(profileFieldsToUpdate);
         if (cleanedProfileFields && Object.keys(cleanedProfileFields).length > 0) {
-          console.log(`[useProfileData] Updating Profile Doc in ${profileCollection}:`, cleanedProfileFields);
           await setDoc(profileDocRef, cleanedProfileFields, { merge: true });
         }
       }
 
       // Option to force re-fetch from server (for cases where backend may modify data)
       if (forceRefresh) {
-        console.log("[useProfileData] Force refresh enabled - fetching fresh data from server");
         const freshData = await fetchProfileData();
         return freshData;
       }
@@ -225,26 +230,27 @@ const useProfileData = () => {
 
       // Update local state to reflect the save
       setProfileData(mergedData);
-      console.log("[useProfileData] Update successful. Returning merged data (no re-fetch).");
       return mergedData;
 
-    } catch (err) { /* ... */ console.error('[useProfileData] Error updating profile data:', err); setError(err.message); throw err;
-    } finally { setIsLoading(false); }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const initializeProfileDocument = useCallback(async (role = 'professional', type) => {
     if (!currentUser) return false;
-    console.log(`[useProfileData] Initializing Profile Document for role: ${role}, type: ${type}`);
     setIsLoading(true);
     try {
-      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
       let userDoc = await getDoc(userDocRef);
       let currentData = {};
       const finalRole = role;
       const finalProfileType = type || getDefaultProfileType(finalRole);
 
       if (!userDoc.exists()) {
-        console.log("[useProfileData] Creating new user document with role and type...");
         currentData = {
           uid: currentUser.uid, email: currentUser.email,
           role: finalRole, profileType: finalProfileType,
@@ -269,7 +275,6 @@ const useProfileData = () => {
       const profileDoc = await getDoc(profileDocRef);
 
       if (!profileDoc.exists()) {
-        console.log(`[useProfileData] Creating new ${profileCollection} document for type ${finalProfileType}...`);
         const defaultProfileData = {
           userId: currentUser.uid,
           createdAt: Timestamp.now(),
@@ -280,12 +285,15 @@ const useProfileData = () => {
         };
         await setDoc(profileDocRef, defaultProfileData);
       }
-      console.log("[useProfileData] Initialization check complete.");
       // Fetch the fresh, possibly newly created/updated data
       await fetchProfileData();
       return true;
-    } catch (err) { /* ... */ console.error('[useProfileData] Error initializing profile:', err); setError(err.message); return false;
-    } finally { setIsLoading(false); }
+    } catch (err) {
+      setError(err.message);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   }, [currentUser, getProfileCollectionName, getDefaultProfileType, fetchProfileData]);
 
   const uploadProfilePicture = async (userId, imageDataUrl) => {
@@ -309,7 +317,6 @@ const useProfileData = () => {
 
       return downloadURL;
     } catch (error) {
-      console.error('[useProfileData] Error uploading profile picture:', error);
       throw error;
     }
   };
@@ -324,7 +331,7 @@ const useProfileData = () => {
       const userProfileType = targetProfileType || profileData?.profileType || (typeof getDefaultProfileType === 'function' ? getDefaultProfileType(userRole) : 'doctor');
       const profileCollection = getProfileCollectionName(userRole);
 
-      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
       const profileDocRef = doc(db, profileCollection, currentUser.uid);
 
       const userDoc = await getDoc(userDocRef);
@@ -361,8 +368,9 @@ const useProfileData = () => {
         userId: currentUser.uid,
         createdAt: profileDoc.exists() ? profileDoc.data().createdAt : now,
         updatedAt: now,
-        isProfessionalProfileComplete: false,
-        tutorialPassed: false,
+        tutorialAccessMode: 'loading',
+        currentStepIndex: 0,
+        subscriptionTier: 'free',
         ...(userRole === 'professional' ? {
           education: [],
           licensesCertifications: [],
@@ -386,10 +394,13 @@ const useProfileData = () => {
       // Merge: false ensures we completely wipe the previous profile data
       await setDoc(profileDocRef, resetProfileData, { merge: false });
 
+      // Clear local storage tutorial state
+      localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_STATE);
+      localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB);
+
       await fetchProfileData();
       return true;
     } catch (err) {
-      console.error('[useProfileData] Error resetting profile:', err);
       setError(err.message);
       throw err;
     } finally {

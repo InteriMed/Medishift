@@ -478,18 +478,20 @@ body {
 
 .dialog-box h3 {
   margin: 0 0 20px 0;
-  font-size: 22px;
-  font-weight: 600;
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-xlarge);
+  font-weight: var(--font-weight-medium);
   color: var(--text-color);
   text-align: center;
 }
 
 .dialog-box p {
   margin: 0 0 24px 0;
+  font-family: var(--font-family-text);
   color: var(--grey-3);
   text-align: center;
   line-height: 1.5;
-  font-size: 16px;
+  font-size: var(--font-size-medium);
 }
 
 .dialog-actions {
@@ -504,8 +506,9 @@ body {
   width: 100%;
   padding: 14px;
   border-radius: 10px;
-  font-size: 15px;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -683,12 +686,12 @@ body {
   }
   
   .mobile-calendar-grid .time-labels {
-    font-size: 12px;
+    font-size: var(--font-size-small);
   }
   
   .mobile-calendar-grid .time-label {
     height: 40px;
-    font-size: 12px;
+    font-size: var(--font-size-small);
   }
 }
 
@@ -1010,8 +1013,9 @@ body {
   align-items: center;
   padding: 8px 12px;
   cursor: pointer;
-  font-size: 14px;
-  color: #333;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--text-color);
   transition: background-color 0.15s ease;
   gap: 8px;
   border: none;
@@ -1138,8 +1142,9 @@ body {
 }
 
 .mobile-calendar-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-default);
+  font-weight: var(--font-weight-medium);
   color: var(--text-color);
   margin: 0;
   flex: 1;

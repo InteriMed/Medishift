@@ -1,6 +1,7 @@
 import { auth } from './firebase';
+import { DEFAULT_VALUES, getEnvVar } from '../config/keysDatabase';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = getEnvVar('API_BASE_URL') || DEFAULT_VALUES.API_BASE_URL;
 
 /**
  * Fetch with authentication

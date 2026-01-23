@@ -6,7 +6,7 @@ const Switch = ({
   checked = false, 
   onChange, 
   labelColor = '#333', 
-  switchColor = '#4CAF50',
+  switchColor = 'var(--color-logo-1)',
   marginTop = '0', 
   marginRight = '0', 
   marginBottom = '20px', 

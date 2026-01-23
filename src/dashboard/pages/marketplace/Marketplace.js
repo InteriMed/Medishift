@@ -9,6 +9,7 @@ import DetailedCard from './components/detailed_card/DetailedCard';
 import { useMarketplaceData } from '../../hooks/useMarketplaceData';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { cn } from '../../../utils/cn';
+import { TUTORIAL_IDS } from '../../../config/tutorialSystem';
 
 const Marketplace = () => {
   const { t } = useTranslation(['marketplace']);
@@ -43,9 +44,9 @@ const Marketplace = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (isTutorialActive && activeTutorial === 'marketplace') {
+    if (isTutorialActive && activeTutorial === TUTORIAL_IDS.MARKETPLACE) {
       fetchListings({}, 'jobs');
-    } else if (!isTutorialActive || activeTutorial !== 'marketplace') {
+    } else if (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.MARKETPLACE) {
       fetchListings({}, 'jobs');
     }
   }, [fetchListings, isTutorialActive, activeTutorial]);
@@ -325,13 +326,11 @@ const Marketplace = () => {
         )}
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0 p-4">
+      <div className="flex-1 min-h-0 p-4 overflow-y-auto custom-scrollbar" style={{ scrollbarGutter: 'stable' }}>
         {error && (
           <div className="relative overflow-hidden p-5 bg-white border-2 border-[var(--red-2)] rounded-xl shadow-lg flex gap-4 text-[var(--red-4)] shrink-0 mb-4 animate-in fade-in slide-in-from-bottom-2" style={{ boxShadow: 'var(--shadow-elevated)' }}>
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-[var(--red-2)]/20 flex items-center justify-center border-2 border-[var(--red-2)]">
-                <FiAlertCircle className="w-5 h-5 text-[var(--red-4)]" />
-              </div>
+            <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--red-2)]/20 flex items-center justify-center border-2 border-[var(--red-2)]">
+              <FiAlertCircle className="w-5 h-5 text-[var(--red-4)]" />
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-bold text-sm mb-1 text-[var(--red-4)]">Error</h4>
@@ -341,66 +340,54 @@ const Marketplace = () => {
         )}
 
         {isLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4 min-h-0">
+          <div className="h-full flex flex-col items-center justify-center p-8 gap-4">
             <LoadingSpinner />
             <p className="text-muted-foreground">{t('marketplace:loading', 'Loading positions...')}</p>
           </div>
-        ) : (
-          <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0" style={{ scrollbarGutter: 'stable' }}>
-            {listings.length === 0 ? (
-              <div className="dashboard-empty-state">
-                <div className="dashboard-empty-state-card">
-                  <div className="dashboard-empty-state-icon">
-                    <FiInbox className="w-8 h-8" />
-                  </div>
-                  <h2 className="dashboard-empty-state-title">{t('marketplace:noResults.title', 'No positions found')}</h2>
-                  <p className="dashboard-empty-state-description">
-                    {t('marketplace:noResults.empty', 'Start looking for positions in the marketplace')}
-                  </p>
-                </div>
+        ) : listings.length === 0 ? (
+          <div className="dashboard-empty-state">
+            <div className="dashboard-empty-state-card">
+              <div className="dashboard-empty-state-icon">
+                <FiInbox className="w-8 h-8" />
               </div>
-            ) : (
-              <>
-                {viewMode === 'grid' ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {processedListings.length > 0 ? (
-                      processedListings.map((listing) => (
-                        <ListingCard
-                          key={listing.id}
-                          listing={listing}
-                          onClick={() => handleListingClick(listing)}
-                          viewMode="grid"
-                        />
-                      ))
-                    ) : !error && (
-                      <div className="col-span-full flex flex-col items-center justify-center p-8 text-center">
-                        <div className="text-4xl mb-4 opacity-60">🔍</div>
-                        <h3 className="text-xl font-bold text-foreground mb-2">{t('marketplace:noResults.title', 'No positions found')}</h3>
-                        <p className="text-muted-foreground">{t('marketplace:noResults.withFilters', 'Try adjusting your filters to see more results')}</p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3 pb-4">
-                    {processedListings.length > 0 ? (
-                      processedListings.map((listing) => (
-                        <ListingCard
-                          key={listing.id}
-                          listing={listing}
-                          onClick={() => handleListingClick(listing)}
-                          viewMode="list"
-                        />
-                      ))
-                    ) : !error && (
-                      <div className="flex flex-col items-center justify-center p-8 text-center">
-                        <div className="text-4xl mb-4 opacity-60">🔍</div>
-                        <h3 className="text-xl font-bold text-foreground mb-2">{t('marketplace:noResults.title', 'No positions found')}</h3>
-                        <p className="text-muted-foreground">{t('marketplace:noResults.withFilters', 'Try adjusting your filters to see more results')}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
+              <h2 className="dashboard-empty-state-title">{t('marketplace:noResults.title', 'No positions found')}</h2>
+              <p className="dashboard-empty-state-description">
+                {t('marketplace:noResults.empty', 'Start looking for positions in the marketplace')}
+              </p>
+            </div>
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {processedListings.length > 0 ? processedListings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                onClick={() => handleListingClick(listing)}
+                viewMode="grid"
+              />
+            )) : !error && (
+              <div className="col-span-full flex flex-col items-center justify-center p-8 text-center">
+                <div className="text-4xl mb-4 opacity-60">🔍</div>
+                <h3 className="text-xl font-bold text-foreground mb-2">{t('marketplace:noResults.title', 'No positions found')}</h3>
+                <p className="text-muted-foreground">{t('marketplace:noResults.withFilters', 'Try adjusting your filters to see more results')}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 pb-4">
+            {processedListings.length > 0 ? processedListings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                onClick={() => handleListingClick(listing)}
+                viewMode="list"
+              />
+            )) : !error && (
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                <div className="text-4xl mb-4 opacity-60">🔍</div>
+                <h3 className="text-xl font-bold text-foreground mb-2">{t('marketplace:noResults.title', 'No positions found')}</h3>
+                <p className="text-muted-foreground">{t('marketplace:noResults.withFilters', 'Try adjusting your filters to see more results')}</p>
+              </div>
             )}
           </div>
         )}

@@ -86,29 +86,29 @@
       "present": "Aktuell",
       "age": "{{age}} Jahre alt"
     },
-    "pharmacist": "Pharmacist",
-    "verified": "Verified",
-    "pending": "Pending",
-    "open": "Open",
-    "locationNotSpecified": "Location Not Specified",
-    "type": "Type",
-    "fullTime": "Full Time",
-    "salary": "Salary",
-    "negotiable": "Negotiable",
-    "startDate": "Start Date",
-    "immediate": "Immediate",
-    "workingHours": "Working Hours",
-    "profession": "Profession",
-    "hourlyRate": "Hourly Rate",
-    "availability": "Availability",
-    "flexible": "Flexible",
-    "jobDescription": "Job Description",
-    "about": "About",
-    "requirements": "Requirements",
-    "specialties": "Specialties",
-    "agreement": "Agreement",
-    "applyForPosition": "Apply For Position",
-    "contactPharmacist": "Contact Pharmacist"
+    "pharmacist": "Apotheker",
+    "verified": "Verifiziert",
+    "pending": "Ausstehend",
+    "open": "Offen",
+    "locationNotSpecified": "Standort nicht angegeben",
+    "type": "Typ",
+    "fullTime": "Vollzeit",
+    "salary": "Gehalt",
+    "negotiable": "Verhandelbar",
+    "startDate": "Startdatum",
+    "immediate": "Sofort",
+    "workingHours": "Arbeitsstunden",
+    "profession": "Beruf",
+    "hourlyRate": "Stundensatz",
+    "availability": "Verfügbarkeit",
+    "flexible": "Flexibel",
+    "jobDescription": "Stellenbeschreibung",
+    "about": "Über",
+    "requirements": "Anforderungen",
+    "specialties": "Spezialgebiete",
+    "agreement": "Vereinbarung",
+    "applyForPosition": "Auf Stelle bewerben",
+    "contactPharmacist": "Apotheker kontaktieren"
   },
   "view": {
     "grid": "Rasteransicht",
@@ -124,24 +124,24 @@
     "months_plural": "{{count}} Monate"
   },
   "listingCard": {
-    "salaryNegotiable": "Salary Negotiable",
-    "availablePharmacist": "Available Pharmacist",
-    "generalPractice": "General Practice"
+    "salaryNegotiable": "Gehalt verhandelbar",
+    "availablePharmacist": "Verfügbarer Apotheker",
+    "generalPractice": "Allgemeinpraxis"
   },
   "experienceLevels": {
-    "beginner": "Beginner",
-    "intermediate": "Intermediate",
-    "experienced": "Experienced"
+    "beginner": "Anfänger",
+    "intermediate": "Fortgeschritten",
+    "experienced": "Erfahren"
   },
   "placeholders": {
-    "from": "From",
-    "to": "To"
+    "from": "Von",
+    "to": "Bis"
   },
   "overlay": {
-    "title": "Title",
-    "fromDate": "From Date",
-    "toDate": "To Date",
-    "clearAll": "Clear All",
-    "applyFilters": "Apply Filters"
+    "title": "Titel",
+    "fromDate": "Von Datum",
+    "toDate": "Bis Datum",
+    "clearAll": "Alle löschen",
+    "applyFilters": "Filter anwenden"
   }
 }

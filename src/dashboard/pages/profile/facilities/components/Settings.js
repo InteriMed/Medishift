@@ -13,6 +13,7 @@ import Switch from '../../../../../components/BoxedInputFields/Switch';
 
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
 import useAutoSave from '../../../../hooks/useAutoSave';
+import OpeningHours from './OpeningHours';
 
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
@@ -110,7 +111,7 @@ const Settings = ({
     }
 
     if (process.env.NODE_ENV !== 'production') {
-      console.warn(`No options found for key: ${optionsKey}`);
+      // No options found for key
     }
     return [];
   }, [dropdownOptionsFromHook, i18n]);
@@ -250,19 +251,15 @@ const Settings = ({
         </div>
       </div>
 
-      <div className={styles.infoCard}>
-        <div className="flex items-start gap-3">
-          <FiLock className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
-          <div className="flex-1">
-            <h3 className="text-sm font-semibold m-0 mb-2 text-blue-900 dark:text-blue-100" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-              {t('settings.dataSecurityTitle')}
-            </h3>
-            <p className={styles.infoCardText} style={styles.infoCardTextStyle}>
-              {t('settings.dataSecurityMessage')}
-            </p>
-          </div>
-        </div>
-      </div>
+      <OpeningHours
+        formData={formData}
+        config={config}
+        errors={errors}
+        isSubmitting={isSubmitting}
+        onInputChange={onInputChange}
+        getNestedValue={getNestedValue}
+        showActions={false}
+      />
 
       <div className={styles.sectionsWrapper}>
         {groupedFields.operationalSettings && (

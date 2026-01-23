@@ -12,6 +12,7 @@ import { cn } from '../../../../utils/cn';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { db } from '../../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import ColorPicker from '../../../components/ColorPicker/ColorPicker';
 import { generateFacilityRoleInvitation } from '../../../../services/cloudFunctions';
 import { useNotification } from '../../../../contexts/NotificationContext';
@@ -188,7 +189,7 @@ const AddFacilityRoleModal = ({ isOpen, onClose, profileData, onSave, editingRol
       
       setLoadingTeamMembers(true);
       try {
-        const facilityRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+        const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
         const facilitySnap = await getDoc(facilityRef);
         
         if (facilitySnap.exists()) {
@@ -200,7 +201,7 @@ const AddFacilityRoleModal = ({ isOpen, onClose, profileData, onSave, editingRol
           
           const memberPromises = allMemberIds.map(async (userId) => {
             try {
-              const professionalProfileRef = doc(db, 'professionalProfiles', userId);
+              const professionalProfileRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
               const professionalProfileSnap = await getDoc(professionalProfileRef);
               
               if (professionalProfileSnap.exists()) {
@@ -217,7 +218,7 @@ const AddFacilityRoleModal = ({ isOpen, onClose, profileData, onSave, editingRol
                   isAdmin: admins.includes(userId)
                 };
               } else {
-                const userRef = doc(db, 'users', userId);
+                const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
                 const userSnap = await getDoc(userRef);
                 
                 if (userSnap.exists()) {
@@ -232,7 +233,7 @@ const AddFacilityRoleModal = ({ isOpen, onClose, profileData, onSave, editingRol
                 }
               }
             } catch (error) {
-              console.error(`Error fetching profile for user ${userId}:`, error);
+              // Error fetching profile for user
             }
             return null;
           });
@@ -241,7 +242,7 @@ const AddFacilityRoleModal = ({ isOpen, onClose, profileData, onSave, editingRol
           setTeamMembers(members);
         }
       } catch (error) {
-        console.error('Error fetching team members:', error);
+        // Error fetching team members
       } finally {
         setLoadingTeamMembers(false);
       }
@@ -563,7 +564,6 @@ const AddFacilityRoleModal = ({ isOpen, onClose, profileData, onSave, editingRol
         showError(result.error || t('operations.invitationGenerationFailed', 'Failed to generate invitation'));
       }
     } catch (error) {
-      console.error('Error generating invitation:', error);
       showError(t('operations.invitationGenerationFailed', 'Failed to generate invitation'));
     } finally {
       setGeneratingInvitation(prev => ({ ...prev, [workerId]: false }));

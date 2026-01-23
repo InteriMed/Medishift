@@ -55,6 +55,7 @@ const OpeningHours = ({
   onSaveAndContinue,
   onCancel,
   getNestedValue,
+  showActions = true,
 }) => {
   const { t } = useTranslation(['dashboardProfile', 'common', 'validation']);
 
@@ -131,7 +132,6 @@ const OpeningHours = ({
             {openingHours.map(day => {
               const hasError = getNestedValue(errors, `operationalSettings.standardOpeningHours.${day.key}`);
               const borderClass = hasError ? `${styles.errorUpload} border-2` : 'border-border/60 hover:border-primary/30';
-              if (hasError) console.log(`OpeningHours Render: Error found for ${day.key}`, hasError);
 
 
               return (
@@ -187,16 +187,18 @@ const OpeningHours = ({
         </div>
       </div>
 
-      <div className={styles.sectionCard}>
-        <div className={styles.formActions} style={{ marginTop: 0 }}>
-          <Button onClick={handleCancel} variant="secondary" disabled={isSubmitting}>
-            {t('common.cancel')}
-          </Button>
-          <Button onClick={onSaveAndContinue} variant="confirmation" disabled={isSubmitting}>
-            {isSubmitting ? t('common.saving') : t('common.saveAndContinue')}
-          </Button>
+      {showActions && (
+        <div className={styles.sectionCard}>
+          <div className={styles.formActions} style={{ marginTop: 0 }}>
+            <Button onClick={handleCancel} variant="secondary" disabled={isSubmitting}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={onSaveAndContinue} variant="confirmation" disabled={isSubmitting}>
+              {isSubmitting ? t('common.saving') : t('common.saveAndContinue')}
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

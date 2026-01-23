@@ -11,7 +11,6 @@ const db = require('./db');
  */
 exports.createUserProfile = functions.region('europe-west6').auth.user().onCreate(async (user) => {
   try {
-    // Create a default profile for new users
     const userProfile = {
       uid: user.uid,
       email: user.email || '',
@@ -19,7 +18,7 @@ exports.createUserProfile = functions.region('europe-west6').auth.user().onCreat
       photoURL: user.photoURL || '',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      role: 'user', // Default role
+      roles: [],
       isVerified: false,
       metadata: {
         lastLogin: admin.firestore.FieldValue.serverTimestamp(),
@@ -105,15 +104,15 @@ exports.getUserProfile = onCallV2(
 
       const userData = userDoc.data();
 
-      // Determine role and fetch role-specific profile
-      const role = userData.role || 'professional';
-      const profileCollection = role === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
-      const profileDoc = await db.collection(profileCollection).doc(userId).get();
+      const professionalProfileDoc = await db.collection('professionalProfiles').doc(userId).get();
+      const facilityProfileDoc = await db.collection('facilityProfiles').doc(userId).get();
 
-      // Merge user data with role-specific profile data
       let profileData = { ...userData };
-      if (profileDoc.exists) {
-        profileData = { ...profileData, ...profileDoc.data() };
+      if (professionalProfileDoc.exists()) {
+        profileData = { ...profileData, ...professionalProfileDoc.data() };
+      }
+      if (facilityProfileDoc.exists()) {
+        profileData = { ...profileData, ...facilityProfileDoc.data() };
       }
 
       // Return the merged profile data
@@ -198,24 +197,17 @@ exports.updateUserProfile = onCallV2(
 
       const userId = request.auth.uid;
 
-      // Define fields that belong to the users collection
       const USER_COLLECTION_FIELDS = [
-        'uid', 'email', 'emailVerified', 'role', 'profileType',
+        'uid', 'email', 'emailVerified',
         'firstName', 'lastName', 'displayName', 'photoURL',
-        'createdAt', 'updatedAt'
+        'createdAt', 'updatedAt', 'roles'
       ];
 
-      // Get current user data to determine role
       currentStep = 'fetch_user_doc';
       functions.logger.info(`Fetching current user doc for ${userId}`);
       const currentUserDoc = await db.collection('users').doc(userId).get();
       const currentUserData = currentUserDoc.exists ? currentUserDoc.data() : {};
-      const currentRole = data.role || currentUserData.role;
-      const currentProfileType = data.profileType || currentUserData.profileType;
 
-      functions.logger.info(`Identified role: ${currentRole}, profileType: ${currentProfileType}`);
-
-      // Separate user fields from profile fields
       const userFieldsToUpdate = {};
       const profileFieldsToUpdate = {};
 
@@ -227,9 +219,6 @@ exports.updateUserProfile = onCallV2(
         }
       }
 
-      // Ensure role and profileType are in user fields
-      userFieldsToUpdate.role = currentRole;
-      userFieldsToUpdate.profileType = currentProfileType;
       userFieldsToUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
 
       // Update user document
@@ -266,25 +255,29 @@ exports.updateUserProfile = onCallV2(
         }
       }
 
-      // Update role-specific profile document
       if (Object.keys(profileFieldsToUpdate).length > 0) {
-        const profileCollection = currentRole === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
-        profileFieldsToUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+        const professionalProfileDoc = await db.collection('professionalProfiles').doc(userId).get();
+        const facilityProfileDoc = await db.collection('facilityProfiles').doc(userId).get();
+        
+        let profileCollection;
+        if (professionalProfileDoc.exists()) {
+          profileCollection = 'professionalProfiles';
+        } else if (facilityProfileDoc.exists()) {
+          profileCollection = 'facilityProfiles';
+        } else {
+          const hasFacilityFields = profileFieldsToUpdate.facilityName || profileFieldsToUpdate.facilityDetails || profileFieldsToUpdate.employees;
+          profileCollection = hasFacilityFields ? 'facilityProfiles' : 'professionalProfiles';
+        }
 
-        currentStep = `fetch_profile_doc_${profileCollection}`;
         const profileDocRef = db.collection(profileCollection).doc(userId);
-        functions.logger.info(`Fetching profile doc from ${profileCollection}`);
-        const profileDoc = await profileDocRef.get();
+        const profileDoc = profileCollection === 'professionalProfiles' ? professionalProfileDoc : facilityProfileDoc;
 
         functions.logger.info(`Updating ${profileCollection} for user ${userId}`, {
           profileExists: profileDoc.exists,
-          fieldsCount: Object.keys(profileFieldsToUpdate).length,
-          topLevelFields: Object.keys(profileFieldsToUpdate).slice(0, 10)
+          fieldsCount: Object.keys(profileFieldsToUpdate).length
         });
 
         if (!profileDoc.exists) {
-          const onboardingProgress = currentUserData.onboardingProgress || {};
-          
           let isAdmin = false;
           try {
             const adminDoc = await db.collection('admins').doc(userId).get();
@@ -294,20 +287,9 @@ exports.updateUserProfile = onCallV2(
           } catch (adminCheckError) {
             functions.logger.debug('Admin check failed, continuing without admin status');
           }
-          
-          let onboardingCompleted = false;
-          if (currentRole === 'facility') {
-            const facilityProgress = onboardingProgress.facility || {};
-            onboardingCompleted = facilityProgress.completed === true;
-          } else {
-            const professionalProgress = onboardingProgress.professional || {};
-            onboardingCompleted = professionalProgress.completed === true || 
-                                 currentUserData.onboardingCompleted === true || 
-                                 currentUserData.GLN_certified === true ||
-                                 (currentUserData.bypassedGLN === true && currentUserData.GLN_certified === false);
-          }
 
-          if (!onboardingCompleted && !isAdmin) {
+          const hasOnboardingData = currentUserData.onboardingData || currentUserData.onboardingProgress;
+          if (!hasOnboardingData && !isAdmin) {
             throw new HttpsError(
               'failed-precondition',
               'Profile can only be created after completing onboarding. Please complete the onboarding process first.'
@@ -316,48 +298,40 @@ exports.updateUserProfile = onCallV2(
 
           profileFieldsToUpdate.userId = userId;
           profileFieldsToUpdate.createdAt = admin.firestore.FieldValue.serverTimestamp();
+          profileFieldsToUpdate.currentStepIndex = 0;
+          profileFieldsToUpdate.tutorialAccessMode = 'loading';
+          profileFieldsToUpdate.subscriptionTier = profileFieldsToUpdate.subscriptionTier || 'free';
 
-          profileFieldsToUpdate.tutorial = {
-            global: false,
-            profile: 1,
-            calendar: false
-          };
-
-          // CRITICAL FIX: If creating a facility, assign creator as admin and employee
-          if (currentRole === 'facility') {
-            // New structure: employees array with objects containing uid and rights
-            profileFieldsToUpdate.employees = [{
-              uid: userId,
-              rights: 'admin'
+          if (profileCollection === 'facilityProfiles') {
+            profileFieldsToUpdate.employees = profileFieldsToUpdate.employees || [{
+              user_uid: userId,
+              roles: ['admin']
             }];
-            // Ensure facilityProfileId is set
             if (!profileFieldsToUpdate.facilityProfileId) {
               profileFieldsToUpdate.facilityProfileId = userId;
             }
 
-            // Also update user memberships
             const facilityName = profileFieldsToUpdate.facilityName || profileFieldsToUpdate.facilityDetails?.name || 'New Facility';
+            const existingRoles = currentUserData.roles || [];
+            const updatedRoles = existingRoles.filter(r => r.facility_uid !== userId);
+            updatedRoles.push({
+              facility_uid: userId,
+              roles: ['admin']
+            });
 
-            // Explicitly update user document as the main update block has already run
             try {
-              currentStep = 'update_facility_membership';
-              functions.logger.info('Updating facility memberships for creator...');
+              currentStep = 'update_facility_roles';
+              functions.logger.info('Updating facility roles for creator...');
               await db.collection('users').doc(userId).set({
-                facilityMemberships: admin.firestore.FieldValue.arrayUnion({
-                  facilityId: userId, // In this model, facilityProfileId is the userId
-                  facilityName: facilityName,
-                  role: 'admin',
-                  facilityProfileId: userId
-                }),
-                roles: admin.firestore.FieldValue.arrayUnion('facility')
+                roles: updatedRoles,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
               }, { merge: true });
             } catch (facilityError) {
-              functions.logger.error('Error updating facility memberships', {
+              functions.logger.error('Error updating facility roles', {
                 error: facilityError.message,
                 stack: facilityError.stack,
                 userId
               });
-              // Don't throw here - facility membership update failure shouldn't block profile creation
             }
           }
 
@@ -370,6 +344,19 @@ exports.updateUserProfile = onCallV2(
             currentStep = `create_new_profile_doc_${profileCollection}`;
             await profileDocRef.set(profileFieldsToUpdate);
             functions.logger.info(`Successfully created ${profileCollection} document for ${userId}`);
+
+            // DELETE ONBOARDING DATA FROM USER COLLECTION AFTER PROFILE CREATION
+            try {
+              functions.logger.info(`Deleting onboarding data for user ${userId}`);
+              await db.collection('users').doc(userId).update({
+                onboardingData: admin.firestore.FieldValue.delete(),
+                onboardingProgress: admin.firestore.FieldValue.delete()
+              });
+              functions.logger.info(`Successfully deleted onboarding data for user ${userId}`);
+            } catch (deleteError) {
+              functions.logger.error(`Error deleting onboarding data for user ${userId}`, deleteError);
+              // We don't throw here as the profile was already created successfully
+            }
           } catch (createError) {
             functions.logger.error(`Error creating ${profileCollection} document`, {
               error: createError.message,
@@ -527,8 +514,8 @@ const onPositionUpdate = onDocumentUpdated({
     }
 
     const facilityData = facilityDoc.data();
-    const adminEmployee = facilityData.employees?.find(emp => emp.rights === 'admin');
-    const facilityAdminId = position.postedByUserId || adminEmployee?.uid || (facilityData.employees && facilityData.employees[0]?.uid);
+    const adminEmployee = facilityData.employees?.find(emp => emp.roles?.includes('admin'));
+    const facilityAdminId = position.postedByUserId || adminEmployee?.user_uid || (facilityData.employees && facilityData.employees[0]?.user_uid);
 
     if (!facilityAdminId || !professionalUserId) {
       console.error(`Missing participant IDs: facilityAdminId=${facilityAdminId}, professionalUserId=${professionalUserId}`);
@@ -838,6 +825,63 @@ const onContractUpdate = onDocumentUpdated({
   }
 });
 
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { seedMedishiftDemoFacility, removeMedishiftDemoFacility, MEDISHIFT_DEMO_FACILITY_ID } = require('./seedMedishiftDemoFacility');
+
+const seedDemoFacility = onCall(
+  {
+    region: 'europe-west6',
+    enforceAppCheck: false
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    const userId = request.auth.uid;
+    const adminDoc = await db.collection('admins').doc(userId).get();
+    
+    if (!adminDoc.exists || adminDoc.data().isActive === false) {
+      throw new HttpsError('permission-denied', 'Only admins can seed the demo facility');
+    }
+
+    try {
+      const result = await seedMedishiftDemoFacility();
+      return result;
+    } catch (error) {
+      console.error('Error seeding demo facility:', error);
+      throw new HttpsError('internal', error.message);
+    }
+  }
+);
+
+const removeDemoFacility = onCall(
+  {
+    region: 'europe-west6',
+    enforceAppCheck: false
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    const userId = request.auth.uid;
+    const adminDoc = await db.collection('admins').doc(userId).get();
+    
+    if (!adminDoc.exists || adminDoc.data().isActive === false) {
+      throw new HttpsError('permission-denied', 'Only admins can remove the demo facility');
+    }
+
+    try {
+      const result = await removeMedishiftDemoFacility();
+      return result;
+    } catch (error) {
+      console.error('Error removing demo facility:', error);
+      throw new HttpsError('internal', error.message);
+    }
+  }
+);
+
 module.exports = {
   createUserProfile: exports.createUserProfile,
   cleanupDeletedUser: exports.cleanupDeletedUser,
@@ -845,5 +889,8 @@ module.exports = {
   updateUserProfile: exports.updateUserProfile,
   onContractCreate,
   onContractUpdate,
-  onPositionUpdate
+  onPositionUpdate,
+  seedDemoFacility,
+  removeDemoFacility,
+  MEDISHIFT_DEMO_FACILITY_ID
 }; 

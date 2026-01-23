@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { DollarSign, TrendingUp, TrendingDown, Calculator, Calendar } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
-import DateField from '../../../../components/BoxedInputFields/DateField/DateField';
+import DateField from '../../../../components/BoxedInputFields/DateField';
 import { format } from 'date-fns';
 import '../../../../styles/variables.css';
 
@@ -93,7 +94,7 @@ const BalanceSheet = () => {
         commissions += Math.max(0, commission * (data.duration || 8));
       });
 
-      const facilitiesRef = collection(db, 'facilityProfiles');
+      const facilitiesRef = collection(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES);
       const facilitiesSnapshot = await getDocs(facilitiesRef);
       let saasMRR = 0;
       facilitiesSnapshot.forEach((doc) => {

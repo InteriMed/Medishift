@@ -13,7 +13,6 @@
 /* --- Sidebar Styling --- */
 .sidebarContainer {
   width: 320px;
-  /* Match calendar and contracts sidebar width */
   flex-shrink: 0;
   background-color: white;
   border-right: 1px solid var(--border-light, #eff2f5);
@@ -22,8 +21,7 @@
   padding: 2rem 1rem;
   overflow-y: auto;
   height: 100%;
-  /* Match messages sidebar */
-  overflow-x: hidden;
+  overflow-x: visible;
   border-radius: 12px;
   margin-right: 1rem;
 }
@@ -42,18 +40,19 @@
 }
 
 .sidebarTitle {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary, #1e293b);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-default);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
   margin-bottom: 0.25rem;
   padding: 0 0.75rem;
-  font-family: inherit;
   line-height: inherit;
 }
 
 .sidebarSubtitle {
-  font-size: 0.8rem;
-  color: var(--text-secondary, #64748b);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--text-light-color);
   margin-bottom: 1.5rem;
   padding: 0 0.75rem;
 }
@@ -63,6 +62,7 @@
   display: flex;
   flex-direction: column;
   padding: 16px 0;
+  overflow-x: visible;
 }
 
 .sidebarTab {
@@ -73,7 +73,8 @@
   margin-bottom: 0;
   border-radius: 0;
   color: var(--color-logo-1);
-  font-weight: 300;
+  font-family: var(--font-family-text);
+  font-weight: var(--font-weight-normal);
   font-size: var(--font-size-medium);
   cursor: pointer;
   transition: background-color 0.2s;
@@ -83,11 +84,12 @@
   text-align: left;
   position: relative;
   white-space: nowrap;
+  overflow: visible;
 }
 
 .sidebarTab span {
   color: var(--grey-3);
-  font-weight: 400;
+  font-weight: var(--font-weight-normal);
   font-size: var(--font-size-medium);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -109,7 +111,7 @@
 .sidebarTabActive {
   background-color: var(--color-logo-1-light);
   color: var(--color-logo-1);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .sidebarTabActive span {
@@ -117,7 +119,7 @@
 }
 
 .tabIcon {
-  font-size: 1.1rem;
+  font-size: var(--font-size-default);
   color: inherit;
 }
 
@@ -190,21 +192,24 @@
 }
 
 .sectionTitle {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-xlarge);
+  font-weight: var(--font-weight-large);
+  color: var(--text-color);
   margin: 0 0 0.5rem 0;
 }
 
 .sectionSubtitle {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
+  color: var(--text-light-color);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
   margin: 0;
 }
 
 .mandatoryFieldLegend {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--text-light-color);
   position: absolute;
   bottom: 1rem;
   right: 1.5rem;
@@ -240,17 +245,17 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background-color: var(--background-surface, #f8fafc);
-  /* Light grey/blue background */
-  color: var(--color-primary);
-  font-size: 1.25rem;
+  background-color: var(--grey-0);
+  color: var(--color-logo-1);
+  font-size: var(--font-size-large);
 }
 
 .cardTitle h3 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
 }
 
 /* Grid System for Inputs */

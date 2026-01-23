@@ -18,22 +18,24 @@
 
 .contracts-header h1 {
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 600;
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-xxlarge);
+  font-weight: var(--font-weight-medium);
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-color, #333);
+  color: var(--text-color);
 }
 
 .workspace-indicator {
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: var(--grey-3, #666);
-  background: var(--grey-1-light, #f8f8f8);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-3);
+  background: var(--grey-1-light);
   padding: 4px 8px;
   border-radius: 6px;
-  border: 1px solid var(--grey-1, #e0e0e0);
+  border: 1px solid var(--grey-1);
 }
 
 .contracts-list-container {

@@ -31,19 +31,21 @@
 
 .conversationTitle {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary, #1e293b);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
 .facilityBadge {
-  background-color: var(--color-success, #10b981);
+  background-color: var(--green-3);
   color: white;
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
   padding: 4px 8px;
   border-radius: 12px;
   text-transform: uppercase;
@@ -52,8 +54,9 @@
 
 .conversationSubtitle {
   margin: 0;
-  color: var(--text-secondary, #64748b);
-  font-size: 0.85rem;
+  font-family: var(--font-family-text);
+  color: var(--text-light-color);
+  font-size: var(--font-size-small);
 }
 
 .contractLink {
@@ -62,9 +65,10 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background-color: rgba(59, 130, 246, 0.1);
-  color: var(--color-logo-1, #3b82f6);
-  font-size: 0.85rem;
-  font-weight: 500;
+  color: var(--color-logo-1);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
   border-radius: 8px;
   text-decoration: none;
   border: 1px solid rgba(59, 130, 246, 0.2);
@@ -82,8 +86,9 @@
 .contractInfo {
   margin: 0.5rem 0 0 0;
   color: var(--color-logo-1);
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
 }
 
 .messagesContainer {
@@ -122,7 +127,8 @@
 
 .emptyMessages p {
   margin: 0;
-  font-size: 0.95rem;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
 }
 
 .loadingContainer {
@@ -134,8 +140,9 @@
 }
 
 .loadingSpinner {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
+  color: var(--text-light-color);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
 }
 
 .messageForm {
@@ -154,14 +161,14 @@
 .messageInput {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--border-light, #cbd5e1);
+  border: 1px solid var(--grey-2);
   border-radius: 8px;
   background-color: rgba(255, 255, 255, 0.8);
-  font-family: var(--font-family);
-  font-size: 0.9rem;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
   outline: none;
   transition: all 0.2s ease;
-  color: var(--text-primary);
+  color: var(--text-color);
 }
 
 .messageInput:focus {
@@ -185,12 +192,12 @@
   background-color: var(--color-logo-1);
   border: none;
   color: white;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  font-family: var(--font-family);
 }
 
 .sendButton:hover:not(:disabled) {

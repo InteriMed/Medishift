@@ -1,5 +1,6 @@
 import { uploadFile } from '../../../services/storageService';
 import { generateDocumentUID } from '../utils/glnVerificationUtils';
+import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 
 export const uploadDocument = async (file, userId, subfolder, documentType, onProgress, isFacilityUpload = false, setUploadedDocuments) => {
   const timestamp = Date.now();
@@ -44,7 +45,7 @@ export const uploadDocument = async (file, userId, subfolder, documentType, onPr
       subfolder: subfolder
     };
 
-    const userDocRef = doc(db, 'users', userId);
+    const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
     const userDoc = await getDoc(userDocRef);
     const userData = userDoc.data() || {};
     const existingDocuments = userData.onboardingDocuments || [];

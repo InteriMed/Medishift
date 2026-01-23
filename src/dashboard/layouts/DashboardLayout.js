@@ -72,7 +72,7 @@ export function DashboardLayout({ children }) {
 
     return (
         <div className="dashboard-layout-wrapper">
-            <div className="dashboard-layout-content h-screen text-foreground font-sans antialiased flex flex-col overflow-hidden">
+            <div className="dashboard-layout-content h-screen text-foreground font-sans antialiased flex flex-col">
                 {/* Desktop Sidebar - Normal mode (viewport >= 1200px) - Hidden for admin routes */}
                 {!isAdminRoute && !isOverlayMode && !isMobileMode && (
                     <Sidebar
@@ -137,8 +137,8 @@ export function DashboardLayout({ children }) {
                         onBackButtonClick={onBackButtonClick}
                     />
 
-                    <main className="flex-1 overflow-hidden h-full mt-16" style={{ position: 'relative' }} data-dashboard="true">
-                        <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ position: 'relative', zIndex: 1 }}>
+                    <main className="flex-1 h-full mt-16" style={{ position: 'relative', zIndex: 0 }} data-dashboard="true">
+                        <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ position: 'relative', zIndex: 0 }}>
                             {children}
                         </div>
                     </main>

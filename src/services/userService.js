@@ -1,4 +1,5 @@
 import { db, storage, auth } from './firebase';
+import { FIRESTORE_COLLECTIONS } from '../config/keysDatabase';
 import { 
   doc, 
   getDoc, 
@@ -31,7 +32,7 @@ const userService = {
         throw new Error('No authenticated user');
       }
       
-      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
       const userDoc = await getDoc(userDocRef);
       
       if (!userDoc.exists()) {
@@ -51,7 +52,7 @@ const userService = {
    */
   getUserProfile: async (userId) => {
     try {
-      const userDocRef = doc(db, 'users', userId);
+      const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
       const userDoc = await getDoc(userDocRef);
       
       if (!userDoc.exists()) {
@@ -72,7 +73,7 @@ const userService = {
    */
   updateUserProfile: async (userId, userData) => {
     try {
-      const userDocRef = doc(db, 'users', userId);
+      const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
       
       // Remove any fields that should not be updated
       const { id, createdAt, email, ...updatableData } = userData;
@@ -141,7 +142,7 @@ const userService = {
       const downloadURL = await getDownloadURL(snapshot.ref);
       
       // Update user profile with new photo URL
-      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
       await updateDoc(userDocRef, {
         photoURL: downloadURL,
         updatedAt: serverTimestamp()
@@ -166,7 +167,7 @@ const userService = {
       
       // Firestore doesn't support direct partial string searches
       // For a production app, consider using Algolia or another search solution
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
       const nameStartsWithQuery = query(
         usersRef, 
         where('displayName', '>=', searchTerm),

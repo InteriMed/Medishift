@@ -220,7 +220,7 @@ const MiniCalendar = ({
   });
 
   return (
-    <div className="w-full bg-card backdrop-blur-sm rounded-2xl p-3 select-none">
+    <div className="w-full bg-card backdrop-blur-sm rounded-2xl p-3 select-none border border-border/50 shadow-lg" style={{ overflow: 'visible' }}>
       {/* Header with Navigation */}
       <div className="flex items-center justify-between mb-0 px-0.5">
         <div className="flex items-center gap-1 text-foreground" style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>

@@ -1,64 +1,33 @@
 {
   "common": {
     "cancel": "Cancel",
-    "save": "Save",
-    "delete": "Delete",
-    "confirm": "Confirm",
-    "refresh": "Refresh",
-    "error": "Error",
-    "warning": "Warning",
-    "saving": "Saving...",
-    "processing": "Processing...",
-    "saveAndContinue": "Save and Continue",
-    "no": "No",
-    "yes": "Yes",
-    "yesDiscard": "Yes, Discard Changes",
-    "add": "Add",
-    "edit": "Edit",
-    "mandatoryFields": "Required fields",
-    "selectPlaceholder": "Select an option",
-    "dates": "Dates",
-    "summary": "Summary",
-    "present": "Present",
-    "update": "Update",
-    "uploaded": "Uploaded",
-    "selectTab": "Select Tab",
-    "linkCopied": "Link Copied",
-    "copy": "Copy",
-    "autofillTabSuccess": "Autofill Tab Success",
-    "autofillSuccess": "Autofill Success",
     "autofillOptions": "Autofill Options",
-    "betaFill": "Beta Fill",
-    "cached": "Cached",
-    "other": "Other",
-    "view": "View",
-    "download": "Download",
-    "confirmDeletePicture": "Confirm Delete Picture",
-    "preview": "Preview",
-    "close": "Close"
+    "betaFill": "Beta Fill"
   },
-  "validation": {
-    "required": "This field is required",
-    "passwordMismatch": "Passwords do not match",
-    "passwordMinLength": "Password must be at least 6 characters long",
-    "passwordUpdateSuccess": "Password updated successfully",
-    "passwordUpdateError": "Your password does not match the current password",
-    "unsavedChangesWarning": "You have unsaved changes. Would you like to save before switching tabs?",
-    "confirmTabChange": "Confirm Tab Change",
-    "confirmTabChangeTitle": "Confirm Tab Change",
-    "unsavedChanges": "You have unsaved changes. Would you like to save before switching tabs?",
-    "unsavedChangesWarningNavigate": "You have unsaved changes. Would you like to save before switching tabs?",
-    "discardChanges": "Are you sure you want to discard your changes?",
-    "discardChangesWarning": "Are you sure you want to discard your changes? All unsaved changes will be lost.",
-    "confirmCancel": "Confirm Cancel",
-    "confirmCancelTitle": "Confirm Cancel",
-    "no": "No",
-    "yes": "Yes",
-    "saveSuccess": "Changes saved successfully",
-    "errorSavingProfile": "Error saving profile. Please try again.",
-    "errorSaving": "Error saving changes",
-    "fixErrors": "Please fix the errors before saving.",
-    "profileSaved": "Profile saved successfully!"
+  "facilityAccessChoice": {
+    "title": "Choose Your Facility Access",
+    "message": "Select the access tier that best fits your facility needs",
+    "freeTier": {
+      "label": "Free Tier",
+      "benefit1": "Free access to candidates",
+      "benefit2": "Create job offers",
+      "benefit3": "Basic candidate management",
+      "benefit4": "Standard fees for short-term positions"
+    },
+    "free": "Free",
+    "premiumTier": {
+      "label": "Premium Tier",
+      "benefit1": "Full HR system with team management",
+      "benefit2": "Automated scheduling for your team",
+      "benefit3": "Advanced schedule management",
+      "benefit4": "Reduced fees for short-term positions",
+      "benefit5": "Priority support"
+    },
+    "premium": "Premium",
+    "learnMore": "Learn More",
+    "profileRequirement": "Complete your facility profile to access either tier",
+    "mandatoryFields": "All fields in Facility Details, Legal, Billing, and Settings (including Opening Hours) must be completed",
+    "completeMyProfile": "Complete My Profile"
   },
   "profile": {
     "title": "Profile Settings",
@@ -80,7 +49,39 @@
   "subscription": {
     "status": "Subscription Status",
     "free": "Free Plan",
-    "premium": "Premium"
+    "premium": "Premium",
+    "title": "Subscription Plan",
+    "subtitle": "Choose the plan that best fits your needs",
+    "currentPlan": "Current Plan",
+    "perMonth": "per month",
+    "upgrading": "Upgrading...",
+    "upgrade": "Upgrade",
+    "upgradeToPremium": "Upgrade to Premium",
+    "manageSubscription": "Manage Subscription",
+    "unlockPremiumFeatures": "Unlock all premium features for enhanced experience",
+    "classic": {
+      "title": "Classic",
+      "price": "Free"
+    },
+    "premium": {
+      "title": "Premium",
+      "price": "CHF 29.90"
+    },
+    "features": {
+      "classic": {
+        "basicMatching": "Basic job matching",
+        "emailNotifications": "Email notifications",
+        "profileManagement": "Profile management",
+        "documentStorage": "Document storage"
+      },
+      "premium": {
+        "priorityMatching": "Priority job matching",
+        "smsNotifications": "SMS notifications",
+        "advancedAnalytics": "Advanced analytics",
+        "dedicatedSupport": "Dedicated support",
+        "bankingAccess": "Enhanced banking access"
+      }
+    }
   },
   "restartTutorial": {
     "title": "Unlock Full Access",
@@ -197,10 +198,10 @@
       "uploadFailed": "Failed to upload profile picture"
     },
     "twoFactorAuthentication": "Two Factor Authentication",
-    "enable2FA": "Enable2 F A",
-    "2faIsEnabledMessage": "2fa Is Enabled Message",
-    "2faIsDisabledMessage": "2fa Is Disabled Message",
-    "deleteAccountDescription": "Delete Account Description"
+    "enable2FA": "Enable 2FA",
+    "2faIsEnabledMessage": "Two-factor authentication is enabled for your account",
+    "2faIsDisabledMessage": "Two-factor authentication is currently disabled",
+    "deleteAccountDescription": "Permanently delete your account and all associated data"
   },
   "personalDetails": {
     "identityInfo": "Identity Information",
@@ -262,7 +263,7 @@
     "selectDocument": "Select Document",
     "noDocumentsAvailable": "No Documents Available",
     "summary": "Summary",
-    "summaryPlaceholder": "Summary Placeholder"
+    "summaryPlaceholder": "Enter a brief summary"
   },
   "professionalBackground": {
     "title": "Professional Background",
@@ -492,9 +493,9 @@
     "extractedSummary": "Extracted Summary",
     "workExperience": "Work Experience",
     "education": "Education",
-    "selectEducationPlaceholder": "Select Education Placeholder",
-    "selectQualificationPlaceholder": "Select Qualification Placeholder",
-    "selectReferencePlaceholder": "Select Reference Placeholder"
+    "selectEducationPlaceholder": "Select an education entry",
+    "selectQualificationPlaceholder": "Select a qualification",
+    "selectReferencePlaceholder": "Select a reference"
   },
   "onboarding": {
     "title": "Onboarding",
@@ -574,177 +575,10 @@
       "subtitle": "Manage your account security and deletion"
     },
     "operationalSettingsTitle": "Operational Settings",
-    "operationalSettingsDescription": "Configure your facility's operational hours and preferences.",
+    "otherOperationalSettingsDescription": "Adjust your platform preferences and notification requirements.",
     "contractSettingsTitle": "Contract Settings",
-    "contractSettingsDescription": "Manage default settings for contracts and agreements.",
-    "premiumFeatureRequired": "⚡ Premium subscription required for this feature",
-    "premiumFeature": "Premium Feature",
-    "openingTime": "Opening Time",
-    "closingTime": "Closing Time",
-    "autoRenewal": "Automatic Contract Renewal",
-    "requiresApproval": "Requires Approval for Contracts",
-    "leaveFacility": {
-      "success": "You have successfully left the facility",
-      "error": "Failed to leave facility",
-      "button": "Leave Facility",
-      "dialogTitle": "Confirm Leave Facility",
-      "confirm": "Leave Facility",
-      "message": "Are you sure you want to leave this facility?",
-      "warning": "This action will remove your access to this facility's data and features.",
-      "confirmPrompt": "Type 'LEAVE FACILITY' to confirm",
-      "toConfirm": "LEAVE FACILITY"
-    },
-    "accountManagement": {
-      "title": "Account Management",
-      "description": "Manage your account, including deletion and security settings.",
-      "subtitle": "Control your account settings and preferences"
-    },
-    "facilityMemberships": {
-      "title": "Facility Memberships",
-      "subtitle": "View and manage your facility memberships"
-    }
-  },
-  "userRole": "Healthcare Professional",
-  "operations": {
-    "addWorkerRequirement": "Add Worker Requirement",
-    "selectWorkerType": "Select Worker Type",
-    "workerTypeOther": "Worker Type Other",
-    "workerTypeOtherPlaceholder": "Worker Type Other Placeholder",
-    "workerTypes": {
-      "pharmacist": "Pharmacist",
-      "cashier": "Cashier",
-      "assistant": "Assistant",
-      "pharmacyTechnician": "Pharmacy Technician",
-      "other": "Other",
-      "none": "None"
-    },
-    "facilityRolesTitle": "Facility Roles Title",
-    "noWorkerRequirements": "No Worker Requirements",
-    "facilityRolesDescription": "Facility Roles Description",
-    "workerRequirement": "Worker Requirement",
-    "workerType": "Worker Type",
-    "openingHoursTitle": "Opening Hours Title",
-    "subtitle": "Subtitle",
-    "closed": "Closed",
-    "openingTime": "Opening Time",
-    "closingTime": "Closing Time",
-    "title": "Title",
-    "workerRequirementsTitle": "Worker Requirements Title",
-    "workerRequirementsDescription": "Worker Requirements Description",
-    "quantity": "Quantity",
-    "everyday": "Everyday",
-    "selectDays": "Select Days",
-    "selectPharmacistOrPlaceholder": "Select Pharmacist Or Placeholder",
-    "usePlaceholderName": "Use Placeholder Name",
-    "workerTypeRequired": "Worker Type Required",
-    "workerTypeOtherRequired": "Worker Type Other Required",
-    "atLeastOneWorkerRequired": "At Least One Worker Required",
-    "workerSelectionRequired": "Worker Selection Required",
-    "placeholderNameRequired": "Placeholder Name Required",
-    "facilityRequired": "Facility Required",
-    "invitationGenerated": "Invitation Generated",
-    "invitationGenerationFailed": "Invitation Generation Failed",
-    "invitationEmailSubject": "Invitation Email Subject",
-    "invitationEmailBody": "Invitation Email Body",
-    "invitationWhatsAppMessage": "Invitation Whats App Message",
-    "editWorkerRequirement": "Edit Worker Requirement",
-    "placeholder": "Placeholder",
-    "selectWorkerOrPlaceholder": "Select Worker Or Placeholder",
-    "placeholderName": "Placeholder Name",
-    "placeholderNamePlaceholder": "Placeholder Name Placeholder",
-    "generatingInvitation": "Generating Invitation",
-    "generateInvitationLink": "Generate Invitation Link",
-    "sendInvitation": "Send Invitation",
-    "shareEmail": "Share Email",
-    "shareWhatsApp": "Share Whats App",
-    "noWorkersAssigned": "No Workers Assigned",
-    "addWorker": "Add Worker",
-    "addTeamMember": "Add Team Member",
-    "assignedWorkers": "Assigned Workers",
-    "personnalize": "Personnalize",
-    "open": "Open"
-  },
-  "subscription": {
-    "title": "Subscription Plan",
-    "subtitle": "Choose the plan that best fits your needs",
-    "facilityTitle": "Facility Subscription Plan",
-    "facilitySubtitle": "Select the right plan for your facility",
-    "currentPlan": "Current Plan",
-    "perMonth": "per month",
-    "upgrading": "Upgrading...",
-    "upgraded": "Successfully upgraded to Premium!",
-    "upgradeFailed": "Failed to upgrade subscription. Please try again.",
-    "upgrade": "Upgrade",
-    "upgradeToPremium": "Upgrade to Premium",
-    "upgradeToStandard": "Upgrade to Standard",
-    "youAreOnThisPlan": "You are currently on this plan",
-    "classic": {
-      "title": "Classic",
-      "description": "Perfect for getting started",
-      "price": "Free"
-    },
-    "premium": {
-      "title": "Premium",
-      "description": "Unlock advanced features and priority support",
-      "price": "CHF 29.90"
-    },
-    "facility": {
-      "basic": {
-        "title": "Basic",
-        "price": "Free"
-      },
-      "standard": {
-        "title": "Standard",
-        "price": "CHF 99.90"
-      },
-      "premium": {
-        "title": "Premium",
-        "price": "CHF 249.90"
-      }
-    },
-    "features": {
-      "classic": {
-        "basicMatching": "Basic job matching",
-        "emailNotifications": "Email notifications",
-        "profileManagement": "Profile management",
-        "documentStorage": "Document storage"
-      },
-      "premium": {
-        "priorityMatching": "Priority job matching",
-        "smsNotifications": "SMS notifications",
-        "advancedAnalytics": "Advanced analytics",
-        "dedicatedSupport": "Dedicated support",
-        "bankingAccess": "Enhanced banking access"
-      },
-      "facility": {
-        "basic": {
-          "basicPosting": "Basic job posting",
-          "emailNotifications": "Email notifications",
-          "facilityProfile": "Facility profile",
-          "documentStorage": "Document storage"
-        },
-        "standard": {
-          "unlimitedPosting": "Unlimited job postings",
-          "prioritySupport": "Priority support",
-          "advancedSearch": "Advanced candidate search",
-          "analytics": "Basic analytics"
-        },
-        "premium": {
-          "dedicatedManager": "Dedicated account manager",
-          "customBranding": "Custom branding",
-          "apiAccess": "API access",
-          "advancedReporting": "Advanced reporting"
-        }
-      }
-    }
-  },
-  "facilityDetails": {
-    "groupTitle_legalRep": "Group Title_legal Rep",
-    "subtitle": "Subtitle"
-  },
-  "auth": {
-    "steps": {
-      "phoneVerification": "Phone Verification"
-    }
+    "contractSettingsDescription": "Configure default contract terms and conditions.",
+    "premiumFeatureRequired": "Premium subscription required for this feature",
+    "premiumFeature": "Premium Feature"
   }
 }

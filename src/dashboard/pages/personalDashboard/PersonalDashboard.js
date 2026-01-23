@@ -1,19 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useDashboard } from '../../contexts/DashboardContext';
-
+import useProfessionalStats from '../../hooks/useProfessionalStats';
 
 import styles from './personalDashboard.module.css';
 
 const PersonalDashboard = () => {
+  const { t } = useTranslation('dashboardPersonal');
   const navigate = useNavigate();
-  const { dashboardData, profileComplete, isLoading, loadingDebugInfo, error, user } = useDashboard();
+  const { profileComplete, isLoading: isDashboardLoading, loadingDebugInfo, error: dashboardError, user } = useDashboard();
+  const { stats, loading: isStatsLoading, error: statsError } = useProfessionalStats();
+
+  const isLoading = isDashboardLoading || isStatsLoading;
+  const error = dashboardError || statsError;
 
   console.log("PersonalDashboard render state:", {
     isLoading,
     profileComplete,
-    hasDashboardData: !!dashboardData,
+    hasStats: !!stats,
     loadingDebugInfo,
     error,
     user
@@ -24,8 +30,8 @@ const PersonalDashboard = () => {
     return (
       <div className={styles.dashboardContainer} data-tutorial="dashboard-container">
         <div className={styles.loadingState}>
-          <p>Loading your dashboard...</p>
-          <p>If this persists, please try refreshing the page.</p>
+          <p>{t('dashboard.loading')}</p>
+          <p>{t('dashboard.loadingPersists')}</p>
 
           {/* Show detailed loading state in development */}
           {process.env.NODE_ENV === 'development' && (
@@ -34,7 +40,7 @@ const PersonalDashboard = () => {
               <ul>
                 <li>Auth ready: {loadingDebugInfo?.isAuthReady ? 'Yes' : 'No'}</li>
                 <li>User data loaded: {loadingDebugInfo?.isUserDataLoaded ? 'Yes' : 'No'}</li>
-                <li>Dashboard data loaded: {loadingDebugInfo?.isDashboardDataLoaded ? 'Yes' : 'No'}</li>
+                <li>Stats loaded: {!isStatsLoading ? 'Yes' : 'No'}</li>
                 {loadingDebugInfo?.errorMessage && (
                   <li className={styles.errorMessage}>Error: {loadingDebugInfo.errorMessage}</li>
                 )}
@@ -57,16 +63,16 @@ const PersonalDashboard = () => {
         {!profileComplete && (
           <div className={styles.profileCompletionBanner} data-tutorial="profile-banner">
             <div className={styles.bannerContent}>
-              <h2>Complete Your Profile</h2>
+              <h2>{t('dashboard.completeProfile.completeProfileTitle')}</h2>
               <p>
-                Welcome to MediShift! To access all features of the platform, please complete your profile first.
+                {t('dashboard.completeProfile.completeProfileDescription')}
               </p>
               <button
                 className={styles.actionButton}
                 onClick={() => navigate('/dashboard/profile')}
                 data-tutorial="complete-profile-button"
               >
-                I understand, create my profile
+                {t('dashboard.completeProfile.completeProfileButton')}
               </button>
             </div>
           </div>
@@ -74,48 +80,45 @@ const PersonalDashboard = () => {
 
         <header className={styles.pageHeader} data-tutorial="dashboard-header">
           <h1 className={styles.pageTitle}>
-            {profileComplete
-              ? "Welcome to MediShift!"
-              : "Welcome to MediShift!"}
+            {t('dashboard.overview.welcomeTitle')}
           </h1>
 
           {user && (
             <p className={styles.welcomeMessage}>
-              Hello, {user.firstName || user.displayName}!
+              {t('dashboard.overview.welcome')}, {user.firstName || user.displayName}!
             </p>
           )}
         </header>
 
         <div className={styles.metricsGrid} data-tutorial="metrics-grid">
-          {/* Placeholder for metrics */}
           <div className={styles.metricCard} data-tutorial="metric-contracts">
-            <h3 className={styles.metricTitle}>Total Contracts</h3>
-            <p className={styles.metricValue}>{dashboardData?.metrics?.totalContracts || 0}</p>
+            <h3 className={styles.metricTitle}>{t('dashboard.overview.totalContracts')}</h3>
+            <p className={styles.metricValue}>{stats?.totalContracts || 0}</p>
           </div>
 
           <div className={styles.metricCard} data-tutorial="metric-hours">
-            <h3 className={styles.metricTitle}>Active Hours</h3>
-            <p className={styles.metricValue}>{dashboardData?.metrics?.activeHours || 0}</p>
+            <h3 className={styles.metricTitle}>{t('dashboard.overview.activeHours')}</h3>
+            <p className={styles.metricValue}>{stats?.activeHours || 0}</p>
           </div>
 
           <div className={styles.metricCard} data-tutorial="metric-earnings">
-            <h3 className={styles.metricTitle}>Earnings</h3>
+            <h3 className={styles.metricTitle}>{t('dashboard.overview.earnings')}</h3>
             <p className={styles.metricValue}>
-              ${dashboardData?.metrics?.earnings?.toLocaleString() || 0}
+              ${stats?.earnings?.toLocaleString() || 0}
             </p>
           </div>
 
           <div className={styles.metricCard} data-tutorial="metric-jobs">
-            <h3 className={styles.metricTitle}>Upcoming Jobs</h3>
-            <p className={styles.metricValue}>{dashboardData?.metrics?.upcomingJobs || 0}</p>
+            <h3 className={styles.metricTitle}>{t('dashboard.overview.upcomingJobs')}</h3>
+            <p className={styles.metricValue}>{stats?.upcomingJobs || 0}</p>
           </div>
         </div>
 
         <div className={styles.recentActivity} data-tutorial="recent-activity">
-          <h2>Recent Activity</h2>
-          {dashboardData?.recentActivity?.length > 0 ? (
+          <h2>{t('dashboard.overview.recentActivity')}</h2>
+          {stats?.recentActivity?.length > 0 ? (
             <ul className={styles.activityList}>
-              {dashboardData.recentActivity.map(activity => (
+              {stats.recentActivity.map(activity => (
                 <li key={activity.id} className={styles.activityItem}>
                   <div className={styles.activityContent}>
                     <h4>{activity.title}</h4>
@@ -128,13 +131,13 @@ const PersonalDashboard = () => {
             </ul>
           ) : (
             <p className={styles.emptyState}>
-              No recent activity to display
+              {t('dashboard.overview.noRecentActivity')}
             </p>
           )}
         </div>
 
         {/* Debug component - only visible in development */}
-        <DebugInfo data={dashboardData} />
+        <DebugInfo data={stats} />
       </div>
     </div>
   );
@@ -157,10 +160,6 @@ const DebugInfo = ({ data }) => {
       <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
   );
-};
-
-DebugInfo.propTypes = {
-  data: PropTypes.object
 };
 
 DebugInfo.propTypes = {

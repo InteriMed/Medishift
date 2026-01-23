@@ -1,4 +1,5 @@
 import { db, auth } from './firebase';
+import { FIRESTORE_COLLECTIONS } from '../config/keysDatabase';
 import { 
   collection, 
   doc, 
@@ -27,7 +28,7 @@ const messagesService = {
 
       // Query conversations where the current user is a participant
       // Use new structure (participantIds) with backward compatibility
-      const conversationsRef = collection(db, 'conversations');
+      const conversationsRef = collection(db, FIRESTORE_COLLECTIONS.CONVERSATIONS);
       const q = query(
         conversationsRef,
         where('participantIds', 'array-contains', currentUser.uid),
@@ -54,7 +55,7 @@ const messagesService = {
           const participantIds = convData.participantIds || convData.participants || [];
           for (const participantId of participantIds) {
             if (participantId !== currentUser.uid) {
-              const userDocRef = doc(db, 'users', participantId);
+              const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, participantId);
               const userDoc = await getDoc(userDocRef);
               if (userDoc.exists()) {
                 participantsDetails.push({
@@ -88,7 +89,7 @@ const messagesService = {
    */
   getConversation: async (conversationId) => {
     try {
-      const conversationRef = doc(db, 'conversations', conversationId);
+      const conversationRef = doc(db, FIRESTORE_COLLECTIONS.CONVERSATIONS, conversationId);
       const conversationDoc = await getDoc(conversationRef);
 
       if (!conversationDoc.exists()) {
@@ -152,7 +153,7 @@ const messagesService = {
         createdBy: currentUser.uid
       };
 
-      const conversationRef = collection(db, 'conversations');
+      const conversationRef = collection(db, FIRESTORE_COLLECTIONS.CONVERSATIONS);
       const docRef = await addDoc(conversationRef, newConversationData);
 
       // Get the newly created conversation
@@ -173,7 +174,7 @@ const messagesService = {
    */
   getMessages: async (conversationId) => {
     try {
-      const messagesRef = collection(db, 'conversations', conversationId, 'messages');
+      const messagesRef = collection(db, FIRESTORE_COLLECTIONS.CONVERSATIONS, conversationId, FIRESTORE_COLLECTIONS.MESSAGES);
       const q = query(messagesRef, orderBy('timestamp', 'asc'));
       const snapshot = await getDocs(q);
 
@@ -207,7 +208,7 @@ const messagesService = {
       }
 
       // Check if conversation exists
-      const conversationRef = doc(db, 'conversations', conversationId);
+      const conversationRef = doc(db, FIRESTORE_COLLECTIONS.CONVERSATIONS, conversationId);
       const conversationDoc = await getDoc(conversationRef);
 
       if (!conversationDoc.exists()) {
@@ -224,7 +225,7 @@ const messagesService = {
       }
 
       // Add message to the conversation
-      const messagesRef = collection(db, 'conversations', conversationId, 'messages');
+      const messagesRef = collection(db, FIRESTORE_COLLECTIONS.CONVERSATIONS, conversationId, FIRESTORE_COLLECTIONS.MESSAGES);
       const timestamp = Timestamp.now();
       
       const messageRef = await addDoc(messagesRef, {
@@ -287,7 +288,7 @@ const messagesService = {
       }
 
       // Get the conversation
-      const conversationRef = doc(db, 'conversations', conversationId);
+      const conversationRef = doc(db, FIRESTORE_COLLECTIONS.CONVERSATIONS, conversationId);
       const conversationDoc = await getDoc(conversationRef);
 
       if (!conversationDoc.exists()) {

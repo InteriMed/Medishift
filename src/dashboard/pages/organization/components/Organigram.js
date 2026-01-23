@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { doc, getDoc, onSnapshot, collection, query, where, getDocs, collectionGroup, Timestamp, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import { FiUsers, FiShield, FiUser, FiX, FiBriefcase, FiCalendar, FiMail, FiPhone, FiTrendingUp, FiFileText, FiClock, FiExternalLink, FiAlertCircle, FiCheckCircle, FiUserX } from 'react-icons/fi';
@@ -57,7 +58,7 @@ const Organigram = ({ formData }) => {
 
     setLoadingTeamMembers(true);
     try {
-      const facilityRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+      const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
       const facilitySnap = await getDoc(facilityRef);
 
       if (facilitySnap.exists()) {
@@ -68,7 +69,7 @@ const Organigram = ({ formData }) => {
 
         // Fetch invitations
         const invitationsQuery = query(
-          collection(db, 'facilityInvitations'),
+          collection(db, FIRESTORE_COLLECTIONS.FACILITY_INVITATIONS),
           where('facilityId', '==', selectedWorkspace.facilityId),
           where('status', '==', 'pending')
         );
@@ -89,7 +90,7 @@ const Organigram = ({ formData }) => {
         const memberPromises = allMemberIds.map(async (userId) => {
           try {
             // First try professionalProfiles
-            const professionalProfileRef = doc(db, 'professionalProfiles', userId);
+            const professionalProfileRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
             const professionalProfileSnap = await getDoc(professionalProfileRef);
 
             if (professionalProfileSnap.exists()) {
@@ -110,7 +111,7 @@ const Organigram = ({ formData }) => {
             }
 
             // Fallback to users collection
-            const userRef = doc(db, 'users', userId);
+            const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
             const userSnap = await getDoc(userRef);
 
             if (userSnap.exists()) {
@@ -171,7 +172,7 @@ const Organigram = ({ formData }) => {
 
     setLoadingDetails(true);
     try {
-      const professionalProfileRef = doc(db, 'professionalProfiles', employeeId);
+      const professionalProfileRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, employeeId);
       const professionalProfileSnap = await getDoc(professionalProfileRef);
 
       let details = {
@@ -200,7 +201,7 @@ const Organigram = ({ formData }) => {
           profileType: professionalData.profileType || ''
         };
       } else {
-        const userRef = doc(db, 'users', employeeId);
+        const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, employeeId);
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
@@ -349,7 +350,7 @@ const Organigram = ({ formData }) => {
     if (selectedWorkspace?.facilityId) {
       fetchTeamMembers();
 
-      const facilityRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+      const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
       const unsubscribe = onSnapshot(facilityRef, (snapshot) => {
         if (snapshot.exists()) {
           fetchTeamMembers();
@@ -386,7 +387,7 @@ const Organigram = ({ formData }) => {
       const facilityId = selectedWorkspace.facilityId;
       const userId = employeeToFire.uid;
 
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
         const userData = userSnap.data();
@@ -399,7 +400,7 @@ const Organigram = ({ formData }) => {
         });
       }
 
-      const facilityRef = doc(db, 'facilityProfiles', facilityId);
+      const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facilityId);
       const facilitySnap = await getDoc(facilityRef);
       if (facilitySnap.exists()) {
         const facilityData = facilitySnap.data();
@@ -736,7 +737,7 @@ const Organigram = ({ formData }) => {
           }}
           onClose={handleCloseDetails}
           onSave={(updatedData) => {
-            console.log('Save employee data:', updatedData);
+            // Save employee data
           }}
           isEditable={true}
           viewerIsAdmin={viewerIsAdmin}

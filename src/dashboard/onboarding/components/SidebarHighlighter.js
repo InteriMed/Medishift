@@ -30,8 +30,6 @@ const SidebarHighlighter = () => {
 
   // Clean up function to remove event listeners and timeouts
   const cleanup = useCallback(() => {
-    console.log("[SidebarHighlighter] Cleanup called - removing listeners and resetting state");
-
     // Force removal of highlight box immediately
     setHighlightBox(null);
 
@@ -99,8 +97,6 @@ const SidebarHighlighter = () => {
 
     // Create a new click handler
     const handleTargetClick = (e) => {
-      console.log("[SidebarHighlighter] Target element clicked!");
-
       // Mark that we've completed the interaction
       setWaitingForInteraction(false);
 
@@ -110,7 +106,6 @@ const SidebarHighlighter = () => {
       // First check if navigationPath is directly specified in stepData
       if (stepData.navigationPath) {
         navigationPath = stepData.navigationPath;
-        console.log(`[SidebarHighlighter] Using navigationPath from stepData: ${navigationPath}`);
       }
       // Otherwise check if this is a sidebar link and extract the path
       else if (stepData.highlightSidebarItem) {
@@ -125,14 +120,11 @@ const SidebarHighlighter = () => {
         if (!navigationPath && stepData.highlightSidebarItem) {
           navigationPath = `/dashboard/${stepData.highlightSidebarItem.replace('-link', '')}`;
         }
-
-        console.log(`[SidebarHighlighter] Navigation path extracted: ${navigationPath}`);
       }
 
       // For Profile navigation, allow default behavior and let React Router handle it
       // The Profile component will detect the tutorial state and start the profile tutorial
       if (navigationPath && navigationPath.includes('/profile')) {
-        console.log(`[SidebarHighlighter] Allowing Profile navigation without auto-advancing step (Manual validation required)`);
         // Don't prevent default - let the link navigate naturally
         // We do NOT call nextStep() here, ensuring "Save and Continue" is mandatory
         return; // Let the default navigation happen
@@ -140,7 +132,6 @@ const SidebarHighlighter = () => {
 
       // Check if this step should pause after click
       if (stepData?.pauseAfterClick) {
-        console.log(`[SidebarHighlighter] Step has pauseAfterClick flag, pausing tutorial`);
         // Don't call nextStep - tutorial will pause
         // The tutorial will resume when user manually continues or completes the action
         setWaitingForInteraction(false);
@@ -155,12 +146,10 @@ const SidebarHighlighter = () => {
       setTimeout(() => {
         // First navigate if needed
         if (navigationPath) {
-          console.log(`[SidebarHighlighter] Navigating to: ${navigationPath}`);
           navigate(navigationPath);
         }
 
         // Do NOT automatically advance to next step - user must click Next button
-        console.log(`[SidebarHighlighter] Navigation complete, waiting for user to click Next`);
       }, 100);
     };
 
@@ -177,11 +166,11 @@ const SidebarHighlighter = () => {
     setWaitingForInteraction(true);
 
     // Force a state update to ensure overlay is rendered
-    console.log("[SidebarHighlighter] Added interaction listener to element:", element, "waitingForInteraction set to true");
+    // console.log("[SidebarHighlighter] Added interaction listener to element:", element, "waitingForInteraction set to true");
 
     // Double-check that waitingForInteraction is set (for mobile debugging)
     setTimeout(() => {
-      console.log("[SidebarHighlighter] After setting waitingForInteraction, current state should be true");
+      // console.log("[SidebarHighlighter] After setting waitingForInteraction, current state should be true");
     }, 100);
   }, [isTutorialActive, nextStep, targetElement, stepData, navigate]);
 
@@ -189,7 +178,6 @@ const SidebarHighlighter = () => {
   const positionHighlightBox = useCallback(() => {
     // Prevent recursive calls
     if (isPositioningRef.current) {
-      console.log("[SidebarHighlighter] Already positioning, skipping duplicate call");
       return;
     }
 
@@ -202,7 +190,6 @@ const SidebarHighlighter = () => {
     }
 
     if (!stepData) {
-      console.log("[SidebarHighlighter] No step data available");
       setHighlightBox(null);
       cleanup();
       isPositioningRef.current = false;
@@ -222,7 +209,6 @@ const SidebarHighlighter = () => {
         if (isCollapsed) {
           const collapseButton = sidebar.querySelector('button[title="Expand"], button[title="Collapse"]');
           if (collapseButton) {
-            console.log("[SidebarHighlighter] Expanding sidebar");
             collapseButton.click();
             setTimeout(() => {
               isPositioningRef.current = false; // Reset before calling
@@ -245,7 +231,6 @@ const SidebarHighlighter = () => {
     if (stepData.highlightSidebar) {
       targetSelector = 'aside[class*="fixed left-0"]';
       requiresInteraction = false;
-      console.log("[SidebarHighlighter] Highlighting entire sidebar");
 
       // On mobile, ensure the sidebar is open before highlighting (only check once)
       if (isMobile) {
@@ -261,7 +246,6 @@ const SidebarHighlighter = () => {
             document.querySelector('button[aria-label*="menu" i]');
           if (mobileMenuButton) {
             sidebarOpenedForTutorialRef.current = true;
-            console.log("[SidebarHighlighter] Opening mobile menu for sidebar highlight (one-time)");
             mobileMenuButton.click();
 
             // Wait once for sidebar to appear
@@ -280,7 +264,6 @@ const SidebarHighlighter = () => {
     else if (stepData.highlightSidebarItem) {
       targetSelector = `[data-tutorial="${stepData.highlightSidebarItem}-link"]`;
       requiresInteraction = stepData.requiresInteraction !== undefined ? stepData.requiresInteraction : true;
-      console.log(`[SidebarHighlighter] Highlighting sidebar item: ${stepData.highlightSidebarItem}`);
 
       // On mobile, ensure the sidebar is open before highlighting sidebar items
       if (isMobile) {
@@ -294,22 +277,18 @@ const SidebarHighlighter = () => {
           window.getComputedStyle(sidebarElement).display !== 'none' &&
           window.getComputedStyle(sidebarElement).visibility !== 'hidden';
 
-        console.log(`[SidebarHighlighter] Mobile sidebar check - isSidebarVisible: ${isSidebarVisible}, isOpeningMenuRef: ${isOpeningMenuRef.current}, sidebarOpenedForTutorialRef: ${sidebarOpenedForTutorialRef.current}`);
-
         // Only try to open sidebar ONCE - if already marked as opened, just wait for it
         if (!isSidebarVisible) {
           // If we haven't tried to open it yet, do it once
           if (!sidebarOpenedForTutorialRef.current && !isOpeningMenuRef.current && mobileMenuButton) {
             isOpeningMenuRef.current = true;
             sidebarOpenedForTutorialRef.current = true;
-            console.log("[SidebarHighlighter] Opening mobile menu for sidebar item highlight (one-time)");
 
             // Wait for sidebar transition to complete using transitionend event
             const handleSidebarTransition = (e) => {
               // Only respond to transform or opacity transitions on the sidebar itself
               if (e.target === sidebarElement &&
                 (e.propertyName === 'transform' || e.propertyName === 'opacity')) {
-                console.log("[SidebarHighlighter] Sidebar transition completed");
                 sidebarElement.removeEventListener('transitionend', handleSidebarTransition);
 
                 isOpeningMenuRef.current = false;
@@ -327,7 +306,6 @@ const SidebarHighlighter = () => {
               // Fallback timeout in case transitionend doesn't fire
               setTimeout(() => {
                 if (isOpeningMenuRef.current) {
-                  console.warn("[SidebarHighlighter] Sidebar transition timeout, proceeding anyway");
                   sidebarElement.removeEventListener('transitionend', handleSidebarTransition);
                   isOpeningMenuRef.current = false;
                   isPositioningRef.current = false;
@@ -341,7 +319,6 @@ const SidebarHighlighter = () => {
             return; // Exit early, will be called again after sidebar opens
           } else if (sidebarOpenedForTutorialRef.current && !isOpeningMenuRef.current) {
             // Already marked as opened but not visible - just proceed (don't loop)
-            console.log("[SidebarHighlighter] Sidebar marked as opened, proceeding with positioning");
             isPositioningRef.current = false;
             // Continue to find and highlight the element
           } else {
@@ -359,14 +336,12 @@ const SidebarHighlighter = () => {
     else if (stepData.highlightTab) {
       targetSelector = `[data-tab="${stepData.highlightTab}"]`;
       requiresInteraction = stepData.requiresInteraction !== undefined ? stepData.requiresInteraction : true;
-      console.log(`[SidebarHighlighter] Highlighting profile tab: ${stepData.highlightTab}`);
       isProfileTab = true;
     }
     // Check if we should highlight the upload button
     else if (stepData.highlightUploadButton) {
       targetSelector = '[data-tutorial="profile-upload-button"]';
       requiresInteraction = false; // Upload button doesn't require click interaction (handled by custom buttons)
-      console.log(`[SidebarHighlighter] Highlighting upload button`);
       // Note: Even though requiresInteraction is false, we still want to show the overlay
       // The overlay will be non-interactive but visible
     }
@@ -381,11 +356,9 @@ const SidebarHighlighter = () => {
           stepData.targetSelector.includes('nav-') ||
           stepData.targetSelector.includes('toggle')
         ));
-      console.log(`[SidebarHighlighter] Highlighting element with selector: ${stepData.targetSelector}`);
     }
 
     if (!targetSelector) {
-      console.log("[SidebarHighlighter] No target selector found");
       setHighlightBox(null);
       cleanup();
       isPositioningRef.current = false;
@@ -416,15 +389,12 @@ const SidebarHighlighter = () => {
     }
 
     if (targetElement) {
-      console.log(`[SidebarHighlighter] Target element found: ${targetSelector}, requiresInteraction: ${requiresInteraction}`);
-
       // Get the element's position and dimensions
       let rect = targetElement.getBoundingClientRect();
 
       // Verify element has valid dimensions before proceeding
       // This prevents positioning at (0,0) when DOM isn't fully ready
       if (rect.width === 0 || rect.height === 0 || (rect.top === 0 && rect.left === 0 && rect.width < 10)) {
-        console.log("[SidebarHighlighter] Element not ready (zero dimensions or at origin), retrying...");
         isPositioningRef.current = false;
         // Retry after DOM is ready
         setTimeout(() => positionHighlightBox(), 100);
@@ -436,7 +406,6 @@ const SidebarHighlighter = () => {
 
       // If this element requires interaction, add a click listener
       if (requiresInteraction) {
-        console.log(`[SidebarHighlighter] Adding interaction listener to element`);
         addInteractionListener(targetElement);
 
         if (isProfileTab) {
@@ -456,11 +425,9 @@ const SidebarHighlighter = () => {
 
       // If on mobile and highlighting sidebar item, ensure element is visible
       if (isMobile && stepData.highlightSidebarItem && rect.width === 0 && rect.height === 0) {
-        console.log("[SidebarHighlighter] Element has zero dimensions, waiting for sidebar to render...");
         const checkDimensions = () => {
           const updatedRect = targetElement.getBoundingClientRect();
           if (updatedRect.width > 0 && updatedRect.height > 0) {
-            console.log("[SidebarHighlighter] Element now has dimensions, setting highlight");
             const highlightBoxValue = {
               top: updatedRect.top + 'px',
               left: updatedRect.left + 'px',
@@ -471,14 +438,12 @@ const SidebarHighlighter = () => {
               zIndex: requiresInteraction ? 9999 : 2500,
               pointerEvents: requiresInteraction ? 'auto' : 'none'
             };
-            console.log("[SidebarHighlighter] Setting highlight box with dimensions:", highlightBoxValue);
             setHighlightBox(highlightBoxValue);
             // Ensure waitingForInteraction is set if needed
             if (requiresInteraction) {
               setWaitingForInteraction(true);
             }
           } else {
-            console.log("[SidebarHighlighter] Element still has zero dimensions, retrying...");
             setTimeout(checkDimensions, 100);
           }
         };
@@ -500,8 +465,6 @@ const SidebarHighlighter = () => {
         pointerEvents: requiresInteraction ? 'auto' : 'none', // Ensure overlay is clickable when needed
         isolation: 'isolate' // Create new stacking context to ensure z-index works
       };
-
-      console.log(`[SidebarHighlighter] Setting highlight box:`, highlight, `requiresInteraction: ${requiresInteraction}`);
 
       // For profile tabs, ensure exact match with no extra height
       if (isProfileTab) {
@@ -528,7 +491,6 @@ const SidebarHighlighter = () => {
             height: updatedRect.height + 'px',
             zIndex: requiresInteraction ? 9999 : 2500
           };
-          console.log(`[SidebarHighlighter] Setting highlight box for mobile profile tab:`, updatedHighlight);
           setHighlightBox(updatedHighlight);
         }, 300);
       } else {
@@ -547,21 +509,17 @@ const SidebarHighlighter = () => {
                 zIndex: requiresInteraction ? 9999 : 2500,
                 pointerEvents: requiresInteraction ? 'auto' : 'none'
               };
-              console.log(`[SidebarHighlighter] Setting highlight box for mobile sidebar item:`, updatedHighlight, `waitingForInteraction: ${requiresInteraction}`);
               setHighlightBox(updatedHighlight);
             } else {
-              console.log(`[SidebarHighlighter] Element still has zero dimensions, retrying...`);
               setTimeout(checkAndSet, 100);
             }
           };
           setTimeout(checkAndSet, 100);
         } else {
-          console.log(`[SidebarHighlighter] Setting highlight box:`, highlight, `waitingForInteraction: ${requiresInteraction}`);
           setHighlightBox(highlight);
         }
       }
     } else {
-      console.log(`[SidebarHighlighter] Target element not found: ${targetSelector}`);
       setHighlightBox(null);
       cleanup();
       isPositioningRef.current = false;
@@ -580,8 +538,6 @@ const SidebarHighlighter = () => {
 
     e.stopPropagation();
     e.preventDefault();
-
-    console.log("[SidebarHighlighter] Overlay clicked, triggering element click");
 
     // Create and dispatch a click event on the target element
     const clickEvent = new MouseEvent('click', {
@@ -635,25 +591,8 @@ const SidebarHighlighter = () => {
   }
 
   // Early return for elements that handle their own highlighting
-  if (isSidebarItem || isProfileTab || isUploadButton || isInSidebar) {
-    return (
-      <>
-        {isUploadButton && (
-          <style dangerouslySetInnerHTML={{
-            __html: `
-              [data-tutorial="profile-upload-button"] {
-                color: #000000 !important;
-              }
-              [data-tutorial="profile-upload-button"] span {
-                color: #000000 !important;
-              }
-              [data-tutorial="profile-upload-button"] svg {
-                color: #000000 !important;
-              }
-            `}} />
-        )}
-      </>
-    );
+  if (isSidebarItem || isProfileTab || isInSidebar) {
+    return null;
   }
 
   const shouldShowOverlay = highlightBox && requiresInteraction;

@@ -55,7 +55,7 @@ const ListingCard = ({ listing, onClick, viewMode = 'grid' }) => {
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-foreground mb-1 text-base">{listing.title}</h3>
             <p className="text-sm text-muted-foreground mb-1">{formatLocation(listing.location)}</p>
-            <p className="text-sm text-muted-foreground mb-1">{listing.employer_name || 'Company'}</p>
+            <p className="text-sm text-muted-foreground mb-1">{listing.employer_name || t('marketplace:listingCard.company', 'Company')}</p>
             <p className="text-sm font-medium text-foreground">
               {listing.salary_range ? `${listing.salary_range}` : t('marketplace:listingCard.salaryNegotiable')}
             </p>
@@ -106,7 +106,7 @@ const ListingCard = ({ listing, onClick, viewMode = 'grid' }) => {
         <div className="p-4 flex flex-col gap-2">
           <h3 className="font-bold text-foreground text-base m-0">{listing.title}</h3>
           <p className="text-sm text-muted-foreground m-0">{formatLocation(listing.location)}</p>
-          <p className="text-sm text-muted-foreground m-0">{listing.employer_name || 'Company'}</p>
+          <p className="text-sm text-muted-foreground m-0">{listing.employer_name || t('marketplace:listingCard.company', 'Company')}</p>
           <p className="text-sm font-medium text-foreground m-0">
             {listing.salary_range ? `${listing.salary_range}` : t('marketplace:listingCard.salaryNegotiable')}
           </p>
@@ -131,7 +131,7 @@ const ListingCard = ({ listing, onClick, viewMode = 'grid' }) => {
         onClick={() => onClick(listing)}
         role="button"
         tabIndex="0"
-        aria-label="Pharmacist Profile"
+        aria-label={t('marketplace:listingCard.pharmacistProfile', 'Pharmacist Profile')}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             onClick(listing);
@@ -140,7 +140,7 @@ const ListingCard = ({ listing, onClick, viewMode = 'grid' }) => {
       >
         <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-muted">
           {listing.image ? (
-            <img src={listing.image} alt="Pharmacist Profile" className="w-full h-full object-cover" />
+            <img src={listing.image} alt={t('marketplace:listingCard.pharmacistProfile', 'Pharmacist Profile')} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-2xl text-muted-foreground">
               P

@@ -29,12 +29,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2em;
+  font-size: var(--font-size-large);
+  font-family: var(--font-family-text);
   color: white;
 }
 
 .user-name {
-  font-weight: bold;
+  font-family: var(--font-family-text);
+  font-weight: var(--font-weight-medium);
 }
 
 .user-menu-dropdown {
@@ -55,13 +57,13 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  color: #0f172a !important;
-  /* slate-900 */
+  color: var(--text-color) !important;
   text-decoration: none;
   transition: background-color 0.2s;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
 }
 
 .menu-item:hover {
@@ -110,10 +112,10 @@
 }
 
 .language-trigger .chevron {
-  font-size: 12px;
+  font-size: var(--font-size-small);
   transition: transform 0.2s ease;
   margin-left: auto;
-  color: #64748b;
+  color: var(--grey-3);
 }
 
 .language-trigger .chevron.open {
@@ -138,9 +140,9 @@
   border: none;
   cursor: pointer;
   transition: background-color 0.2s;
-  font-size: 14px;
-  color: #0f172a;
-  /* slate-900 */
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--text-color);
 }
 
 .language-option:hover {
@@ -153,7 +155,7 @@
 }
 
 .language-option .flag {
-  font-size: 16px;
+  font-size: var(--font-size-medium);
   width: 20px;
   text-align: center;
 }
@@ -164,9 +166,9 @@
 }
 
 .language-option .checkmark {
-  color: var(--color-logo-1, #4a90e2);
-  font-weight: bold;
-  font-size: 12px;
+  color: var(--color-logo-1);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-small);
 }
 
 /* Responsive styles */

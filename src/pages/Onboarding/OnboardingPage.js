@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import { useTutorial } from '../../dashboard/contexts/TutorialContext';
 import {
     FiBriefcase, FiCheck, FiArrowRight, FiHome,
@@ -92,7 +93,7 @@ const OnboardingPage = () => {
         const loadProgress = async () => {
             if (!currentUser) return;
             try {
-                const userDocRef = doc(db, 'users', currentUser.uid);
+                const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
                 const userDoc = await getDoc(userDocRef);
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
@@ -247,7 +248,7 @@ const OnboardingPage = () => {
         setIsProcessing(true);
         try {
             if (currentUser) {
-                const userDocRef = doc(db, 'users', currentUser.uid);
+                const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
                 await updateDoc(userDocRef, {
                     [`onboardingProgress.${onboardingType}`]: { completed: true, role, completedAt: new Date() },
                     ...(onboardingType === 'professional' ? { onboardingCompleted: true } : {}),
@@ -271,7 +272,6 @@ const OnboardingPage = () => {
             if (phoneVerified) return true;
 
             const isValid = phoneInternalStep === 1 ? isPhoneValid : true;
-            console.log('🛡️ Step 3 canProceed check:', { isPhoneValid, phoneInternalStep, isValid, phoneVerified });
             return isValid;
         }
         return true;
@@ -422,31 +422,35 @@ const OnboardingPage = () => {
                                 </div>
 
                                 <div className="space-y-6 flex flex-col justify-center text-left">
-                                    <div
-                                        className={`p-6 px-8 rounded-2xl border transition-all flex items-center justify-between cursor-pointer group ${belongsToFacility ? 'border-indigo-600 bg-indigo-50/50 shadow-md' : 'border-slate-100 bg-white hover:border-indigo-200 shadow-sm'}`}
-                                        onClick={(e) => {
-                                            // Don't toggle if clicking on the switch or its children
-                                            if (!e.target.closest('.switch-wrapper')) {
-                                                setBelongsToFacility(!belongsToFacility);
-                                            }
-                                        }}
-                                    >
-                                        <div className="flex items-center gap-6">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${belongsToFacility ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
-                                                <FiHome className="w-7 h-7" />
+                                    {role === 'worker' && (
+                                        <div
+                                            className={`p-6 px-8 rounded-2xl border transition-all flex items-center justify-between cursor-pointer group ${belongsToFacility ? 'border-indigo-600 bg-indigo-50/50 shadow-md' : 'border-slate-100 bg-white hover:border-indigo-200 shadow-sm'}`}
+                                            onClick={(e) => {
+                                                if (!e.target.closest('.switch-wrapper')) {
+                                                    setBelongsToFacility(!belongsToFacility);
+                                                }
+                                            }}
+                                        >
+                                            <div className="flex items-center gap-6">
+                                                <div 
+                                                    className={`flex-shrink-0 rounded-2xl flex items-center justify-center transition-all ${belongsToFacility ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}
+                                                    style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
+                                                >
+                                                    <FiHome className="w-7 h-7" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-slate-900 text-lg">{t('dashboard.onboarding.step1.areYouEmployed')}</h3>
+                                                    <p className="text-slate-500 text-sm">{t('dashboard.onboarding.step1.areYouEmployedDescription')}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h3 className="font-bold text-slate-900 text-lg">{t('dashboard.onboarding.step1.areYouEmployed')}</h3>
-                                                <p className="text-slate-500 text-sm">{t('dashboard.onboarding.step1.areYouEmployedDescription')}</p>
-                                            </div>
+                                            <Switch
+                                                checked={belongsToFacility}
+                                                onChange={(val) => setBelongsToFacility(val)}
+                                                switchColor="var(--color-logo-1)"
+                                                marginBottom="0"
+                                            />
                                         </div>
-                                        <Switch
-                                            checked={belongsToFacility}
-                                            onChange={(val) => setBelongsToFacility(val)}
-                                            switchColor="var(--color-logo-1)"
-                                            marginBottom="0"
-                                        />
-                                    </div>
+                                    )}
 
                                     <div
                                         className={`p-6 px-8 rounded-2xl border transition-all flex items-center justify-between cursor-pointer group ${legalConsiderationsConfirmed ? 'border-indigo-600 bg-indigo-50/50 shadow-md' : 'border-slate-100 bg-white hover:border-indigo-200 shadow-sm'}`}
@@ -458,7 +462,10 @@ const OnboardingPage = () => {
                                         }}
                                     >
                                         <div className="flex items-center gap-6">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${legalConsiderationsConfirmed ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
+                                            <div 
+                                                className={`flex-shrink-0 rounded-2xl flex items-center justify-center transition-all ${legalConsiderationsConfirmed ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}
+                                                style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
+                                            >
                                                 <FiShield className="w-7 h-7" />
                                             </div>
                                             <div>
@@ -525,7 +532,7 @@ const OnboardingPage = () => {
                                             const phonePrefix = phoneParts[0] || '';
                                             const phoneNumber = phoneParts.slice(1).join(' ') || '';
 
-                                            const userDocRef = doc(db, 'users', currentUser.uid);
+                                            const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
                                             await updateDoc(userDocRef, {
                                                 'contact.primaryPhonePrefix': phonePrefix,
                                                 'contact.primaryPhone': phoneNumber,
@@ -811,7 +818,7 @@ const OnboardingPage = () => {
                                             overallVerificationStatus: 'not_verified'
                                         }
                                     });
-                                    const userDocRef = doc(db, 'users', currentUser.uid);
+                                    const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
                                     await updateDoc(userDocRef, {
                                         [`onboardingProgress.${onboardingType}`]: {
                                             step: 3,

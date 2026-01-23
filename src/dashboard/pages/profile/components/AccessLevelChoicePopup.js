@@ -1,24 +1,36 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Dialog from '../../../../components/Dialog/Dialog';
 import { FiUsers, FiBriefcase } from 'react-icons/fi';
 import { useTutorial } from '../../../contexts/TutorialContext';
 import { useDashboard } from '../../../contexts/DashboardContext';
+import { TUTORIAL_IDS, getProfileTutorialForType, ONBOARDING_TYPES } from '../../../../config/tutorialSystem';
+import { WORKSPACE_TYPES } from '../../../../utils/sessionAuth';
 
 const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelectTeamAccess, glnVerified = false, allowClose = true }) => {
     const { t, i18n } = useTranslation('dashboardProfile');
     const navigate = useNavigate();
-    const location = useLocation();
-    const { isTutorialActive, activeTutorial, startTutorial, setAccessMode, resetProfileTabAccess } = useTutorial();
-    const { user } = useDashboard();
+    const { isTutorialActive, startTutorial, setAccessMode, resetProfileTabAccess, setMaxAccessedProfileTab } = useTutorial();
+    const { user, selectedWorkspace } = useDashboard();
 
     const handleContinueOnboarding = async () => {
-        console.log('[AccessLevelChoicePopup] Full Access selected - continuing tutorial in team mode');
+        resetProfileTabAccess();
+        setMaxAccessedProfileTab('personalDetails');
         
-        // Don't change access mode here - will change to 'full' only after profile completion
-        // Just close the popup and let user continue
+        if (setAccessMode) {
+            await setAccessMode('loading');
+        }
+        
+        if (!isTutorialActive && startTutorial) {
+            const onboardingType = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? ONBOARDING_TYPES.FACILITY : ONBOARDING_TYPES.PROFESSIONAL;
+            const tutorialName = getProfileTutorialForType(onboardingType);
+            startTutorial(tutorialName);
+        }
+        
+        const workspaceId = selectedWorkspace?.id || 'personal';
+        navigate(`/dashboard/${workspaceId}/profile/personalDetails`);
         
         if (onContinueOnboarding) {
             onContinueOnboarding();
@@ -28,7 +40,6 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
     };
 
     const handleSelectTeamAccess = async () => {
-        console.log('[AccessLevelChoicePopup] Team Access selected - resetting profile tab access');
         if (resetProfileTabAccess) {
             resetProfileTabAccess();
         }
@@ -65,8 +76,8 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="border-2 border-border rounded-xl p-6 hover:border-primary/50 transition-colors flex flex-col">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
+                        <div className="mb-4">
+                            <div className="flex items-center gap-3 mb-3">
                                 <div className="p-3 rounded-lg bg-blue-500/10 text-blue-600">
                                     <FiUsers size={24} />
                                 </div>
@@ -109,8 +120,8 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
                     <div 
                         className={`border-2 border-border rounded-xl p-6 transition-colors flex flex-col ${glnVerified ? 'hover:border-green-600' : 'opacity-60'}`}
                     >
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
+                        <div className="mb-4">
+                            <div className="flex items-center gap-3 mb-3">
                                 <div className="p-3 rounded-lg bg-green-500/10 text-green-600">
                                     <FiBriefcase size={24} />
                                 </div>

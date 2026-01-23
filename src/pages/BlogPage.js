@@ -25,8 +25,9 @@ const BlogPage = () => {
       try {
         setLoading(true);
 
-        const postsModule = await import(`../locales/${lang || 'en'}/blog/posts.json`)
-          .catch(() => import('../locales/en/blog/posts.json'));
+        const response = await fetch(`/locales/${lang || 'en'}/blog/posts.json`)
+          .then(r => r.ok ? r : fetch('/locales/en/blog/posts.json'));
+        const postsModule = { default: await response.json() };
 
         const posts = postsModule.default || [];
 
@@ -147,7 +148,7 @@ const BlogPage = () => {
         <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-colors border-transparent bg-primary/10 text-primary mb-6">
-              Blog & Actualités
+              {t('hero.badge')}
             </div>
             <h1 className="text-4xl lg:text-7xl font-black tracking-tight text-slate-900 pb-6 animate-gradient">
               {t('title')}
@@ -358,20 +359,20 @@ const BlogPage = () => {
             <div className="grid lg:grid-cols-2 gap-20 items-center relative z-10">
               <div>
                 <h2 className="text-4xl lg:text-5xl font-black mb-6 leading-tight">
-                  {t('ctaDescription') || "Lancez-vous aujourd'hui"}
+                  {t('ctaTitle') || t('cta.title')}
                 </h2>
                 <p className="text-xl text-slate-400 mb-10 leading-relaxed font-medium">
-                  Rejoignez la révolution du recrutement médical en Suisse.
+                  {t('ctaSubtitle') || t('cta.subtitle')}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-5">
                   <Link to={`/${lang}/facilities`} onClick={() => window.scrollTo(0, 0)}>
                     <button className="w-full sm:w-auto px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all hover:bg-slate-50 hover:shadow-xl hover:-translate-y-1">
-                      Etablissements <FaArrowRight className="text-blue-600" />
+                      {t('cta.facilities')} <FaArrowRight className="text-blue-600" />
                     </button>
                   </Link>
                   <Link to={`/${lang}/professionals`} onClick={() => window.scrollTo(0, 0)}>
                     <button className="w-full sm:w-auto px-8 py-4 bg-slate-800 text-white border border-slate-700 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all hover:bg-slate-700 hover:border-slate-600 hover:-translate-y-1">
-                      Professionnels <FaArrowRight />
+                      {t('cta.professionals')} <FaArrowRight />
                     </button>
                   </Link>
                 </div>
@@ -394,8 +395,8 @@ const BlogPage = () => {
                   </div>
                   <div className="space-y-4">
                     <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-6 rounded-3xl shadow-xl transform -translate-y-4">
-                      <div className="text-3xl font-black mb-1">100%</div>
-                      <div className="text-blue-100 text-sm font-medium">Digital &amp; Humain</div>
+                      <div className="text-3xl font-black mb-1">{t('cta.percentage')}</div>
+                      <div className="text-blue-100 text-sm font-medium">{t('cta.percentageLabel')}</div>
                     </div>
                     <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10">
                       <div className="h-2 w-24 bg-white/20 rounded-full mb-2"></div>

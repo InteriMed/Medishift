@@ -11,20 +11,19 @@ import { useTutorial } from '../../contexts/TutorialContext';
 const LockedMenuItem = ({ item, collapsed = false, isMobile = false }) => {
     const [showTooltip, setShowTooltip] = useState(false);
     const [isShaking, setIsShaking] = useState(false);
-    const { setShowAccessLevelModal, setAllowAccessLevelModalClose, accessMode } = useTutorial();
+    const { setShowAccessLevelModal, setAllowAccessLevelModalClose, isTutorialActive } = useTutorial();
 
     const itemName = item.path.split('/').pop();
-    const isMarketplaceTeamAccess = itemName === 'marketplace' && accessMode === 'team';
+    // Marketplace and Organization always show popup when clicked if locked
+    const isMarketplaceOrOrg = itemName === 'marketplace' || itemName === 'organization';
+    const isTeamAccessLocked = isMarketplaceOrOrg;
 
     const handleClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        console.log(`[LockedMenuItem] Click on ${item.path} - item is locked`);
 
-        // Check if this is marketplace and user has team access
-        if (isMarketplaceTeamAccess) {
-            console.log('[LockedMenuItem] Showing AccessLevelChoicePopup for marketplace with team access');
+        if (isTeamAccessLocked) {
             setAllowAccessLevelModalClose(true);
             setShowAccessLevelModal(true);
             return;
@@ -46,15 +45,15 @@ const LockedMenuItem = ({ item, collapsed = false, isMobile = false }) => {
     return (
         <div
             role="button"
-            aria-disabled={!isMarketplaceTeamAccess}
-            aria-label={`${item.title} - ${isMarketplaceTeamAccess ? 'Requires full access' : 'Locked. Complete the profile tutorial to unlock.'}`}
+            aria-disabled={!isTeamAccessLocked}
+            aria-label={`${item.title} - ${isTeamAccessLocked ? 'Requires full access' : 'Locked. Complete the profile tutorial to unlock.'}`}
             onClick={handleClick}
             className={cn(
-                isMarketplaceTeamAccess ? "" : "global-lock",
+                isTeamAccessLocked ? "" : "global-lock",
                 "group relative flex gap-3 rounded-lg border min-w-0 transition-all duration-200 outline-none select-none",
                 collapsed ? "p-2 justify-center" : "p-3",
                 "text-muted-foreground/40",
-                isMarketplaceTeamAccess ? "cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-950/20 hover:text-amber-600" : "",
+                isTeamAccessLocked ? "cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-950/20 hover:text-amber-600" : "",
                 "border-transparent",
                 "hover:bg-muted/20 hover:border-muted/30",
                 isShaking && "animate-shake"
@@ -62,7 +61,7 @@ const LockedMenuItem = ({ item, collapsed = false, isMobile = false }) => {
             style={{
                 userSelect: 'none',
                 pointerEvents: 'auto',
-                cursor: isMarketplaceTeamAccess ? 'pointer' : 'not-allowed'
+                cursor: isTeamAccessLocked ? 'pointer' : 'not-allowed'
             }}
         >
 
@@ -115,12 +114,12 @@ const LockedMenuItem = ({ item, collapsed = false, isMobile = false }) => {
             {/* Hover tooltip for collapsed mode */}
             {collapsed && (
                 <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-border">
-                    {isMarketplaceTeamAccess ? `${item.title} (Upgrade to Full Access)` : `${item.title} (Locked)`}
+                    {isTeamAccessLocked ? `${item.title} (Upgrade to Full Access)` : `${item.title} (Locked)`}
                 </div>
             )}
 
             {/* Feedback tooltip */}
-            {showTooltip && !collapsed && !isMarketplaceTeamAccess && (
+            {showTooltip && !collapsed && !isTeamAccessLocked && (
                 <div className={cn(
                     "absolute left-0 right-0 -bottom-2 translate-y-full",
                     "px-3 py-2 bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-100",

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import HeaderWorkspaceSelector from './WorkspaceSelector/HeaderWorkspaceSelector';
+import HeaderWorkspaceSelector from './WorkspaceSelector/WorkspaceSelector';
 import TutorialSelectionModal from '../modals/TutorialSelectionModal';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FiBell, FiSearch, FiUser, FiChevronDown, FiBriefcase, FiSettings, FiLogOut, FiX, FiMenu, FiArrowLeft, FiHelpCircle, FiRefreshCw } from 'react-icons/fi';
+import { FiBell, FiUser, FiChevronDown, FiBriefcase, FiSettings, FiLogOut, FiX, FiMenu, FiArrowLeft, FiHelpCircle, FiRefreshCw, FiGlobe, FiCheck } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../../utils/cn';
 import { getPageConfig } from '../../config/pageConfig';
@@ -14,6 +14,8 @@ import { normalizePathname } from '../../utils/pathUtils';
 import useProfileData from '../../hooks/useProfileData';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { TUTORIAL_IDS, isProfileTutorial, getProfileTutorialForType, ONBOARDING_TYPES } from '../../../config/tutorialSystem';
+import { ServiceSearchBar } from '../../../service_tree';
 
 export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen = false, onBackButtonClick, showBackButton = false }) {
   const location = useLocation();
@@ -39,11 +41,15 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
     setIsResetting(true);
     try {
       // Determine which profile to reset based on current workspace type
-      const isFacilityWorkspace = selectedWorkspace?.type === 'team';
+      const isFacilityWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY;
       const targetRole = isFacilityWorkspace ? 'facility' : 'professional';
       const targetProfileType = user?.profileType;
 
-      console.log(`[Header] Resetting ${targetRole} profile for user: ${user?.uid}`);
+      // Reset profile tab access in tutorial context
+      if (resetProfileTabAccess) {
+        resetProfileTabAccess();
+      }
+
       await resetProfile(targetRole, targetProfileType);
 
       showNotification(t('dashboard.header.profileResetSuccess', 'Profile reset successfully'), 'success');
@@ -51,7 +57,6 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       if (setProfileMenuOpen) setProfileMenuOpen(false);
       window.location.reload();
     } catch (error) {
-      console.error('Error resetting profile:', error);
       showNotification(t('dashboard.header.profileResetError', 'Failed to reset profile'), 'error');
     } finally {
       setIsResetting(false);
@@ -65,6 +70,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
     startTutorial,
     startAllTutorials,
     skipTutorial,
+    stopTutorial,
     isTutorialActive,
     activeTutorial,
     currentStep,
@@ -73,7 +79,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
     setShowTutorialSelectionModal,
     setShowAccessLevelModal,
     setAllowAccessLevelModalClose,
-    accessMode,
+    accessLevelChoice,
     isReady: isTutorialReady = false,
     resetProfileTabAccess
   } = useTutorial();
@@ -82,14 +88,18 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   const [workspaceSelectorOpen, setWorkspaceSelectorOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
 
   const notificationsRef = useRef(null);
   const profileMenuRef = useRef(null);
+  const searchRef = useRef(null);
+  const languageRef = useRef(null);
 
   const [notifications] = useState([
-    { id: 1, title: 'New Event', message: 'Team meeting at 3 PM', time: '10m ago', read: false },
-    { id: 2, title: 'Confirmation', message: 'Your shift transfer was approved', time: '1h ago', read: false },
-    { id: 3, title: 'System', message: 'Profile updated successfully', time: '2h ago', read: true }
+    { id: 1, title: typeof t('dashboard.header.notifications.newEvent.title') === 'object' ? t('dashboard.header.notifications.newEvent.title').title : t('dashboard.header.notifications.newEvent.title', 'New Event'), message: t('dashboard.header.notifications.newEvent.message', 'Team meeting at 3 PM'), time: t('dashboard.header.notifications.newEvent.time', '10m ago'), read: false },
+    { id: 2, title: typeof t('dashboard.header.notifications.confirmation.title') === 'object' ? t('dashboard.header.notifications.confirmation.title').title : t('dashboard.header.notifications.confirmation.title', 'Confirmation'), message: t('dashboard.header.notifications.confirmation.message', 'Your shift transfer was approved'), time: t('dashboard.header.notifications.confirmation.time', '1h ago'), read: false },
+    { id: 3, title: typeof t('dashboard.header.notifications.system.title') === 'object' ? t('dashboard.header.notifications.system.title').title : t('dashboard.header.notifications.system.title', 'System'), message: t('dashboard.header.notifications.system.message', 'Profile updated successfully'), time: t('dashboard.header.notifications.system.time', '2h ago'), read: true }
   ]);
 
   const [unreadCount] = useState(2);
@@ -109,6 +119,9 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   const title = React.useMemo(() => {
     if (pageConfig && titleKey) {
       const translated = t(titleKey);
+      if (typeof translated === 'object' && translated !== null) {
+        return translated.title || '';
+      }
       return translated || '';
     }
     return '';
@@ -122,6 +135,12 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       }
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setProfileMenuOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchOpen(false);
+      }
+      if (languageRef.current && !languageRef.current.contains(event.target)) {
+        setLanguageOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -142,7 +161,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   const isFacility = user?.role === 'facility' || user?.role === 'company';
   const hasFacilityMemberships = user?.facilityMemberships && Array.isArray(user.facilityMemberships) && user.facilityMemberships.length > 0;
 
-  const shouldShowWorkspaceSelector = !isLoading && isTutorialReady && !showFirstTimeModal;
+  const shouldShowWorkspaceSelector = !isLoading;
 
   const getHeaderColor = () => {
     if (selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN) {
@@ -164,7 +183,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       await logout();
       navigate('/login');
     } catch (error) {
-      console.error("Logout failed", error);
+      // Logout failed
     }
   };
 
@@ -189,56 +208,29 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       return 'settings';
       } else if (path.includes('/profile')) {
         // For profile page, use the comprehensive profile tabs tutorial
-        const isFacility = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
-        return isFacility ? 'facilityProfileTabs' : 'profileTabs';
+        const onboardingType = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? ONBOARDING_TYPES.FACILITY : ONBOARDING_TYPES.PROFESSIONAL;
+        return getProfileTutorialForType(onboardingType);
     } else {
       // Default to dashboard tutorial for overview/dashboard pages
-      return 'dashboard';
+      return TUTORIAL_IDS.DASHBOARD;
     }
   };
 
   // Handle tutorial button click with page-specific logic
-  const handleTutorialButtonClick = () => {
-    console.log("Tutorial button clicked from header");
-
-    // Show Access Level popup if profile tutorial is active with full access mode
-    if ((activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs') && currentStep >= 1) {
-      console.log("[Header] Profile tutorial active, checking access mode");
-      
-      if (accessMode === 'full') {
-        console.log("[Header] Full access mode, showing Access Level popup");
-        setAllowAccessLevelModalClose(true);
-        setShowAccessLevelModal(true);
-        return;
-      }
-      
-      console.log("[Header] Team access mode or no mode set, closing tutorial");
-      if (resetProfileTabAccess) resetProfileTabAccess();
-      skipTutorial();
+  const handleTutorialButtonClick = async () => {
+    if (isTutorialActive) {
+      await stopTutorial({ showConfirmation: true });
       return;
     }
 
-    // Check if we're in onboarding mode (mandatory tutorial flow)
-    // Only consider it onboarding if the modal is showing OR if we're in the profileTabs tutorial
-    const isInOnboarding = showFirstTimeModal || activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs';
+    const isInOnboarding = showFirstTimeModal || isProfileTutorial(activeTutorial);
 
-    // During onboarding, use the existing restartOnboarding behavior
     if (isInOnboarding) {
-      console.log("In onboarding mode, using restartOnboarding");
       restartOnboarding();
       return;
     }
 
-    // Toggle behavior: if tutorial is active, stop it
-    if (isTutorialActive) {
-      console.log(`Stopping active tutorial: ${activeTutorial}`);
-      if (resetProfileTabAccess) resetProfileTabAccess();
-      skipTutorial();
-    } else {
-      // Show the tutorial selection modal
-      console.log("Showing tutorial selection modal");
-      setShowTutorialSelectionModal(true);
-    }
+    setShowTutorialSelectionModal(true);
   };
 
   const headerColor = getHeaderColor();
@@ -246,8 +238,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   return (
     <header
       className={cn(
-        "min-h-16 border-b border-transparent w-full",
-        "flex items-center px-4 sm:px-6 fixed top-0 left-0 right-0 transition-all duration-300",
+        "h-16 border-b border-transparent w-full",
+        "flex items-center px-2 sm:px-4 md:px-6 fixed top-0 left-0 right-0 transition-all duration-300",
         "shadow-sm"
       )}
       style={{
@@ -257,16 +249,16 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       }}
     >
       {/* Left: Logo & Mobile Menu Button */}
-      <div className="flex items-center gap-4 flex-shrink-0">
+      <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0 min-w-0">
         {/* Logo Section */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 min-w-0">
           <img
             src="/logo white.png"
-            alt="MediShift"
-            className="h-8 w-auto object-contain shrink-0"
+            alt={typeof t('common:header.logoAlt') === 'object' ? t('common:header.logoAlt').title : t('common:header.logoAlt', 'MediShift')}
+            className="h-7 sm:h-8 w-auto object-contain shrink-0"
           />
-          <span className="text-xl font-bold text-white hidden md:block">
-            MediShift
+          <span className="text-base sm:text-xl font-bold text-white hidden md:block truncate">
+            {typeof t('common:header.brandName') === 'object' ? t('common:header.brandName').title : t('common:header.brandName', 'MediShift')}
           </span>
         </div>
 
@@ -274,8 +266,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         {showBackButton && onBackButtonClick ? (
           <button
             onClick={onBackButtonClick}
-            className="md:hidden p-2 rounded-lg hover:bg-white/10 text-white transition-colors flex-shrink-0"
-            aria-label="Go back"
+            className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-white/10 text-white transition-colors flex-shrink-0"
+            aria-label={typeof t('common:header.goBack') === 'object' ? t('common:header.goBack').title : t('common:header.goBack', 'Go back')}
           >
             <FiArrowLeft className="h-5 w-5" />
           </button>
@@ -283,8 +275,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           onMobileMenuToggle && (
             <button
               onClick={onMobileMenuToggle}
-              className="md:hidden p-2 rounded-lg hover:bg-white/10 text-white transition-colors flex-shrink-0"
-              aria-label="Toggle menu"
+              className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-white/10 text-white transition-colors flex-shrink-0"
+              aria-label={typeof t('common:header.toggleMenu') === 'object' ? t('common:header.toggleMenu').title : t('common:header.toggleMenu', 'Toggle menu')}
             >
               {isMobileMenuOpen ? (
                 <FiX className="h-5 w-5" />
@@ -297,12 +289,12 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       </div>
 
       {/* Left-Center: Page Title & Workspace Selector */}
-      <div className="flex-1 flex items-center justify-start min-w-0 px-4 ml-4 gap-6">
+      <div className="flex-1 flex items-center justify-center min-w-0 px-2 sm:px-4 ml-2 sm:ml-4 gap-2 sm:gap-4 lg:gap-6">
         {/* Page Icon & Title */}
         {Icon && (
-          <div key={`${location.pathname}-${i18n.language}`} className="flex items-center gap-2 flex-shrink-0">
+          <div key={`${location.pathname}-${i18n.language}`} className="hidden lg:flex items-center gap-2 flex-shrink-0">
             <Icon className="w-5 h-5 text-white" />
-            <h1 className="text-base font-medium text-white flex items-center m-0 p-0" style={{ fontFamily: 'var(--font-family-headings, Roboto, sans-serif)' }}>
+            <h1 className="text-sm lg:text-base font-medium text-white flex items-center m-0 p-0 truncate" style={{ fontFamily: 'var(--font-family-headings, Roboto, sans-serif)' }}>
               {title}
             </h1>
           </div>
@@ -310,7 +302,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         
         {/* Workspace Selector */}
         {!isLoading && shouldShowWorkspaceSelector && (
-          <div>
+          <div className="flex-shrink min-w-0">
             <HeaderWorkspaceSelector
               workspaces={sortedWorkspaces}
               selectedWorkspace={selectedWorkspace}
@@ -325,23 +317,23 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                   <button
                     onClick={handleCreateBusiness}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all",
+                      "w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg transition-all",
                       "hover:bg-muted/50 text-primary"
                     )}
                   >
                     <div className={cn(
-                      "p-2 rounded-lg",
+                      "p-1.5 sm:p-2 rounded-lg flex-shrink-0",
                       "bg-primary/10",
                       "border border-primary/20"
                     )}>
-                      <FiBriefcase className={cn("w-4 h-4", "text-primary")} />
+                      <FiBriefcase className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", "text-primary")} />
                     </div>
-                    <div className="flex-1 text-left">
-                      <div className="text-sm font-medium text-foreground">
-                        {t('dashboard.header.createBusiness', 'Create a business')}
+                    <div className="flex-1 text-left min-w-0">
+                      <div className="text-xs sm:text-sm font-medium text-foreground truncate">
+                        {typeof t('dashboard.header.createBusiness') === 'object' ? t('dashboard.header.createBusiness').title : t('dashboard.header.createBusiness', 'Create a business')}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {t('dashboard.header.createBusinessDesc', 'Set up your facility profile')}
+                      <div className="text-xs text-muted-foreground truncate hidden sm:block">
+                        {typeof t('dashboard.header.createBusinessDesc') === 'object' ? t('dashboard.header.createBusinessDesc').title : t('dashboard.header.createBusinessDesc', 'Set up your facility profile')}
                       </div>
                     </div>
                   </button>
@@ -353,25 +345,25 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                     <div className="my-1 h-px bg-border" />
                   )}
                   <button
-                    onClick={() => console.log("Action: Create/Switch to Professional Profile")}
+                    onClick={() => {}}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all",
+                      "w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg transition-all",
                       "hover:bg-muted/50 text-primary"
                     )}
                   >
                     <div className={cn(
-                      "p-2 rounded-lg",
+                      "p-1.5 sm:p-2 rounded-lg flex-shrink-0",
                       "bg-primary/10",
                       "border border-primary/20"
                     )}>
-                      <FiUser className={cn("w-4 h-4", "text-primary")} />
+                      <FiUser className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", "text-primary")} />
                     </div>
-                    <div className="flex-1 text-left">
-                      <div className="text-sm font-medium text-foreground">
-                        {t('dashboard.header.createProfessional', 'Create Professional Profile')}
+                    <div className="flex-1 text-left min-w-0">
+                      <div className="text-xs sm:text-sm font-medium text-foreground truncate">
+                        {typeof t('dashboard.header.createProfessional') === 'object' ? t('dashboard.header.createProfessional').title : t('dashboard.header.createProfessional', 'Create Professional Profile')}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {t('dashboard.header.createProfessionalDesc', 'Switch to personal account')}
+                      <div className="text-xs text-muted-foreground truncate hidden sm:block">
+                        {typeof t('dashboard.header.createProfessionalDesc') === 'object' ? t('dashboard.header.createProfessionalDesc').title : t('dashboard.header.createProfessionalDesc', 'Switch to personal account')}
                       </div>
                     </div>
                   </button>
@@ -383,19 +375,12 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       </div>
 
       {/* Right: Search, Notifications, Profile */}
-      <div data-tutorial="header-right-actions" className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-        <div className="relative hidden lg:block">
-          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70 pointer-events-none z-10" />
-          <input
-            type="text"
-            placeholder={t('dashboard.header.search', 'Search...')}
-            className="w-48 xl:w-64 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-sm pl-9 pr-3 text-sm text-white placeholder:text-white/70 outline-none focus:border-white/40 focus:ring-0 focus:shadow-[0_0_0_4px_rgba(255,255,255,0.1)] transition-all hover:border-white/30 hover:bg-white/[0.15]"
-            style={{ 
-              color: '#ffffff',
-              height: 'var(--boxed-inputfield-height)',
-              fontWeight: '500',
-              fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
-            }}
+      <div data-tutorial="header-right-actions" className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
+        {/* Search - Connected to Service Tree */}
+        <div className="relative" ref={searchRef}>
+          <ServiceSearchBar 
+            className="header-service-search"
+            placeholder={typeof t('dashboard.header.search') === 'object' ? t('dashboard.header.search').title : t('dashboard.header.search', 'Search...')}
           />
         </div>
 
@@ -403,38 +388,42 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         <div className="relative" ref={notificationsRef}>
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative rounded-lg p-2 hover:bg-white/10 text-white transition-colors flex-shrink-0"
-            aria-label="Notifications"
+            className="relative text-white hover:opacity-80 transition-opacity flex-shrink-0 flex items-center justify-center"
+            style={{ 
+              height: 'var(--boxed-inputfield-height, 45px)',
+              width: 'var(--boxed-inputfield-height, 45px)'
+            }}
+            aria-label={t('common:header.notifications', 'Notifications')}
           >
             <FiBell className="h-5 w-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white animate-pulse" />
+              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 border-2 border-white animate-pulse" />
             )}
           </button>
 
           {/* Notifications Dropdown */}
           {notificationsOpen && (
-            <div className="absolute top-full right-0 mt-2 w-80 sm:w-96 bg-card rounded-xl border border-border shadow-xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden max-h-[500px] flex flex-col" style={{ zIndex: 11000, backgroundColor: 'var(--background-div-color, #ffffff)' }}>
-              <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
-                <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
+            <div className="absolute top-full right-0 mt-2 w-[calc(100vw-2rem)] max-w-[320px] sm:max-w-[384px] bg-card rounded-xl border border-border shadow-xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden max-h-[min(500px,calc(100vh-5rem))] flex flex-col" style={{ zIndex: 11000, backgroundColor: 'var(--background-div-color, #ffffff)' }}>
+              <div className="p-3 sm:p-4 border-b border-border flex items-center justify-between bg-muted/30">
+                <h3 className="text-sm font-semibold text-foreground">{typeof t('dashboard.header.notifications.title') === 'object' ? t('dashboard.header.notifications.title').title : t('dashboard.header.notifications.title', 'Notifications')}</h3>
                 {unreadCount > 0 && (
-                  <button className="text-xs text-primary hover:text-primary/80 font-medium">
-                    Mark all as read
+                  <button className="text-xs text-primary hover:text-primary/80 font-medium whitespace-nowrap">
+                    {t('dashboard.header.notifications.markAllRead', 'Mark all as read')}
                   </button>
                 )}
               </div>
-              <div className="flex-1 overflow-y-auto max-h-[300px] custom-scrollbar" style={{ scrollbarGutter: 'stable' }}>
+              <div className="flex-1 overflow-y-auto max-h-[min(300px,calc(100vh-12rem))] custom-scrollbar" style={{ scrollbarGutter: 'stable' }}>
                 {notifications.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <p className="text-sm text-muted-foreground">No notifications</p>
+                  <div className="p-6 sm:p-8 text-center">
+                    <p className="text-sm text-muted-foreground">{t('dashboard.header.noNotifications', 'No notifications')}</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-border">
                     {notifications.map((notification) => (
-                      <div key={notification.id} className={cn("p-4 hover:bg-muted/30 transition-colors relative", !notification.read && "bg-primary/5")}>
+                      <div key={notification.id} className={cn("p-3 sm:p-4 hover:bg-muted/30 transition-colors relative", !notification.read && "bg-primary/5")}>
                         <div className="flex justify-between items-start gap-2">
                           <h4 className="text-sm font-medium">{notification.title}</h4>
-                          <span className="text-xs text-muted-foreground">{notification.time}</span>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">{notification.time}</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
                       </div>
@@ -450,45 +439,98 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         <button
           data-tutorial="onboarding-help-button"
           className={cn(
-            "relative rounded-lg p-2 transition-colors flex-shrink-0",
+            "relative text-white hover:opacity-80 transition-opacity flex-shrink-0 flex items-center justify-center",
             (isTutorialActive || showFirstTimeModal)
-              ? "bg-white/20 text-white hover:bg-white/30 ring-1 ring-white/30"
-              : "hover:bg-white/10 text-white"
+              ? "opacity-100"
+              : "",
+            isTutorialActive ? "px-3 gap-1.5" : ""
           )}
-          aria-label="Start Tutorial"
+          style={{ 
+            height: 'var(--boxed-inputfield-height, 45px)',
+            width: isTutorialActive ? 'auto' : 'var(--boxed-inputfield-height, 45px)'
+          }}
+          aria-label={isTutorialActive 
+            ? (typeof t('common:header.stopTutorial') === 'object' ? t('common:header.stopTutorial').title : t('common:header.stopTutorial', 'Stop Tutorial'))
+            : (typeof t('common:header.startTutorial') === 'object' ? t('common:header.startTutorial').title : t('common:header.startTutorial', 'Start Tutorial'))
+          }
           onClick={handleTutorialButtonClick}
-          title="Start Tutorial"
+          title={isTutorialActive ? "Stop Tutorial" : "Start Tutorial"}
         >
-          <FiHelpCircle className="h-5 w-5" />
+          {isTutorialActive ? (
+            <>
+              <FiHelpCircle className="h-5 w-5" />
+              <span className="text-sm font-medium whitespace-nowrap">Exit</span>
+            </>
+          ) : (
+            <FiHelpCircle className="h-5 w-5" />
+          )}
         </button>
 
-        {/* Language Selector */}
-        <div className="flex items-center gap-0.5 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-sm p-0.5" style={{ height: 'var(--boxed-inputfield-height)' }}>
-          {['en', 'fr', 'de'].map((lang) => (
-            <button
-              key={lang}
-              onClick={() => i18n.changeLanguage(lang)}
-              className={cn(
-                "h-full px-2.5 rounded-lg text-xs font-semibold uppercase transition-all",
-                i18n.language === lang || (i18n.language?.startsWith(lang))
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-white/80 hover:text-white hover:bg-white/10"
-              )}
-            >
-              {lang}
-            </button>
-          ))}
+        {/* Language Selector - Dropdown style like UserMenu */}
+        <div className="relative" ref={languageRef}>
+          <button
+            onClick={() => setLanguageOpen(!languageOpen)}
+            className="flex items-center justify-center gap-1.5 text-white hover:opacity-80 transition-opacity px-3"
+            style={{ 
+              height: 'var(--boxed-inputfield-height, 45px)'
+            }}
+          >
+            <span className="text-xs font-semibold uppercase text-white">{i18n.language?.slice(0, 2) || 'EN'}</span>
+            <FiChevronDown className={cn("w-3.5 h-3.5 text-white transition-transform", languageOpen && "rotate-180")} />
+          </button>
+
+          {languageOpen && (
+            <div className="absolute top-full right-0 mt-2 w-[calc(100vw-2rem)] max-w-[180px] bg-card rounded-xl border border-border shadow-xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden" style={{ zIndex: 11000, backgroundColor: 'var(--background-div-color, #ffffff)' }}>
+              <div className="p-1">
+                {[
+                  { code: 'en', name: 'English' },
+                  { code: 'fr', name: 'Français' },
+                  { code: 'de', name: 'Deutsch' }
+                ].map((lang) => {
+                  const isActive = i18n.language === lang.code || i18n.language?.startsWith(lang.code);
+                  return (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        i18n.changeLanguage(lang.code);
+                        setLanguageOpen(false);
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all",
+                        isActive
+                          ? "bg-muted/50"
+                          : "hover:bg-muted/50"
+                      )}
+                    >
+                      <span className="text-xs font-semibold uppercase w-6 text-muted-foreground">{lang.code}</span>
+                      <span className="flex-1 text-left text-foreground">{lang.name}</span>
+                      {isActive && <FiCheck className="w-4 h-4 text-primary flex-shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Profile */}
         <div className="relative" ref={profileMenuRef}>
           <button
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-            className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-white/10 transition-colors border border-transparent hover:border-white/20"
+            className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity px-2"
+            style={{ 
+              height: 'var(--boxed-inputfield-height, 45px)'
+            }}
           >
-            <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center border border-white/30 cursor-pointer transition-all flex-shrink-0">
+            <div 
+              className="rounded-lg flex items-center justify-center cursor-pointer transition-all flex-shrink-0"
+              style={{
+                height: 'calc(var(--boxed-inputfield-height, 45px) - 8px)',
+                width: 'calc(var(--boxed-inputfield-height, 45px) - 8px)'
+              }}
+            >
               {user?.photoURL ? (
-                <img src={user.photoURL} alt="Profile" className="h-full w-full rounded-lg object-cover" />
+                <img src={user.photoURL} alt={typeof t('common:header.profileAlt') === 'object' ? t('common:header.profileAlt').title : t('common:header.profileAlt', 'Profile')} className="h-full w-full rounded-lg object-cover" />
               ) : (
                 <FiUser className="h-4 w-4 text-white" />
               )}
@@ -498,28 +540,28 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
 
           {/* Profile Dropdown */}
           {profileMenuOpen && (
-            <div className="absolute top-full right-0 mt-2 w-56 bg-card rounded-xl border border-border shadow-xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden" style={{ zIndex: 11000, backgroundColor: 'var(--background-div-color, #ffffff)' }}>
+            <div className="absolute top-full right-0 mt-2 w-[calc(100vw-2rem)] max-w-[224px] bg-card rounded-xl border border-border shadow-xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden" style={{ zIndex: 11000, backgroundColor: 'var(--background-div-color, #ffffff)' }}>
               <div className="p-3 border-b border-border bg-muted/30">
-                <div className="text-sm font-semibold truncate">{user?.displayName || 'User'}</div>
+                <div className="text-sm font-semibold truncate">{user?.displayName || (typeof t('dashboard.header.defaultUser') === 'object' ? t('dashboard.header.defaultUser').title : t('dashboard.header.defaultUser', 'User'))}</div>
                 <div className="text-xs text-muted-foreground truncate">{user?.email}</div>
               </div>
               <div className="p-1">
                 <button onClick={() => { navigate('/dashboard/profile'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm text-black">
-                  <FiUser className="w-4 h-4 text-black" /> Profile
+                  <FiUser className="w-4 h-4 text-black flex-shrink-0" /> <span className="truncate">{typeof t('dashboard.header.profile') === 'object' ? t('dashboard.header.profile').title : t('dashboard.header.profile', 'Profile')}</span>
                 </button>
                 <button onClick={() => { navigate('/dashboard/profile/settings'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm text-black">
-                  <FiSettings className="w-4 h-4 text-black" /> Settings
+                  <FiSettings className="w-4 h-4 text-black flex-shrink-0" /> <span className="truncate">{typeof t('dashboard.header.settings') === 'object' ? t('dashboard.header.settings').title : t('dashboard.header.settings', 'Settings')}</span>
                 </button>
                 <div className="my-1 h-px bg-border" />
                 <button
                   onClick={() => { setShowResetConfirm(true); }}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-destructive/10 text-black text-sm"
                 >
-                  <FiRefreshCw className="w-4 h-4 text-black" /> {t('dashboard.header.resetProfile', 'Reset Profile')}
+                  <FiRefreshCw className="w-4 h-4 text-black flex-shrink-0" /> <span className="truncate">{typeof t('dashboard.header.resetProfile') === 'object' ? t('dashboard.header.resetProfile').title : t('dashboard.header.resetProfile', 'Reset Profile')}</span>
                 </button>
                 <div className="my-1 h-px bg-border" />
                 <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-destructive/10 text-destructive text-sm">
-                  <FiLogOut className="w-4 h-4" /> Log out
+                  <FiLogOut className="w-4 h-4 flex-shrink-0" /> <span className="truncate">{typeof t('dashboard.header.logout') === 'object' ? t('dashboard.header.logout').title : t('dashboard.header.logout', 'Log out')}</span>
                 </button>
               </div>
             </div>
@@ -538,26 +580,26 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
 
       {/* Reset Profile Confirmation Dialog */}
       {showResetConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[20000]" onClick={() => !isResetting && setShowResetConfirm(false)}>
-          <div className="bg-card rounded-xl border border-border shadow-xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-2">{t('dashboard.header.resetProfileTitle', 'Reset Profile')}</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('dashboard.header.resetProfileMessage', 'Are you sure you want to reset your profile? This will remove all your data and set your account back to the initial onboarding state. This action cannot be undone.')}
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[20000] px-4" onClick={() => !isResetting && setShowResetConfirm(false)}>
+          <div className="bg-card rounded-xl border border-border shadow-xl p-4 sm:p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base sm:text-lg font-semibold mb-2">{typeof t('dashboard.header.resetProfileTitle') === 'object' ? t('dashboard.header.resetProfileTitle').title : t('dashboard.header.resetProfileTitle', 'Reset Profile')}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+              {typeof t('dashboard.header.resetProfileMessage') === 'object' ? t('dashboard.header.resetProfileMessage').title : t('dashboard.header.resetProfileMessage', 'Are you sure you want to reset your profile? This will remove all your data and set your account back to the initial onboarding state. This action cannot be undone.')}
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
               <button
                 onClick={() => setShowResetConfirm(false)}
                 disabled={isResetting}
-                className="px-4 py-2 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50 text-sm"
               >
-                {t('common:cancel', 'Cancel')}
+                {typeof t('common:cancel') === 'object' ? t('common:cancel').title : t('common:cancel', 'Cancel')}
               </button>
               <button
                 onClick={handleResetProfile}
                 disabled={isResetting}
-                className="px-4 py-2 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50 text-sm"
               >
-                {isResetting ? t('common:processing', 'Processing...') : t('dashboard.header.resetConfirm', 'Reset Profile')}
+                {isResetting ? (typeof t('common:processing') === 'object' ? t('common:processing').title : t('common:processing', 'Processing...')) : (typeof t('dashboard.header.resetConfirm') === 'object' ? t('dashboard.header.resetConfirm').title : t('dashboard.header.resetConfirm', 'Reset Profile'))}
               </button>
             </div>
           </div>

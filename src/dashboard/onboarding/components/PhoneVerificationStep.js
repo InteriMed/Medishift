@@ -15,10 +15,11 @@ import { FiCheck, FiLoader, FiRefreshCw, FiMessageSquare } from 'react-icons/fi'
 import { useNotification } from '../../../contexts/NotificationContext';
 import Button from '../../../components/BoxedInputFields/Button';
 import { formatPhoneNumber } from '../utils/glnVerificationUtils';
+import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
 
-const PHONE_VERIFICATION_STORAGE_KEY = 'interimed_phone_verification';
-const RECAPTCHA_VERIFICATION_STORAGE_KEY = 'interimed_recaptcha_verified';
-const RECAPTCHA_RESPONSE_STORAGE_KEY = 'interimed_recaptcha_response';
+const PHONE_VERIFICATION_STORAGE_KEY = LOCALSTORAGE_KEYS.PHONE_VERIFICATION;
+const RECAPTCHA_VERIFICATION_STORAGE_KEY = LOCALSTORAGE_KEYS.RECAPTCHA_VERIFICATION;
+const RECAPTCHA_RESPONSE_STORAGE_KEY = LOCALSTORAGE_KEYS.RECAPTCHA_RESPONSE;
 
 const PhoneVerificationStep = forwardRef(({
     onComplete,

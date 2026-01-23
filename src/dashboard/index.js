@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDashboard } from './contexts/DashboardContext';
 import { SidebarProvider } from './contexts/SidebarContext';
@@ -9,43 +9,40 @@ import AdminRoute from './admin/AdminRoute';
 import AdminLayout from './admin/components/AdminLayout';
 import { WORKSPACE_TYPES } from '../utils/sessionAuth';
 import { WorkspaceAwareNavigate, WorkspaceDefaultRedirect } from './components/WorkspaceAwareNavigate';
+import {
+  SHARED_ROUTES,
+  PROFESSIONAL_ROUTES,
+  FACILITY_ROUTES,
+  ADMIN_ROUTES,
+  ACCESS_TYPES,
+  canAccessRoute,
+} from './config/routes';
 
-// Import PersonalDashboard directly instead of lazy-loading
-import PersonalDashboard from './pages/personalDashboard/PersonalDashboard';
+/**
+ * Renders a route element with proper workspace access control
+ * Note: Marketplace and Organization routes are always allowed to load
+ * Access control is handled at the UI level with popups
+ */
+const RouteElement = ({ route, workspaceType, userData }) => {
+  const isAccessible = canAccessRoute(route, workspaceType);
 
-// Lazy-load other dashboard pages for better performance
-const Calendar = lazy(() => import('./pages/calendar/Calendar'));
-const Messages = lazy(() => import('./pages/messages/Messages'));
-const Contracts = lazy(() => import('./pages/contracts/Contracts'));
-const Profile = lazy(() => import('./pages/profile/Profile'));
-const Marketplace = lazy(() => import('./pages/marketplace/Marketplace'));
+  // Allow marketplace and organization to load even if not fully accessible
+  // They will show access popups at the UI level
+  const isMarketplaceOrOrg = route.id === 'marketplace' || route.id === 'organization';
 
-// Phase 1 & 2 - Swiss Compliance Features
-const PayrollDashboard = lazy(() => import('./pages/payroll/PayrollDashboard'));
-const OrganizationDashboard = lazy(() => import('./pages/organization/OrganizationDashboard'));
+  if (!isAccessible && !isMarketplaceOrOrg) {
+    return <WorkspaceAwareNavigate to="/dashboard/overview" />;
+  }
 
-// Admin pages
-const ExecutiveDashboard = lazy(() => import('./admin/pages/ExecutiveDashboard'));
-const UserVerificationQueue = lazy(() => import('./admin/UserVerificationQueue'));
-const UserCRM = lazy(() => import('./admin/pages/operations/UserCRM'));
-const ShiftCommandCenter = lazy(() => import('./admin/pages/operations/ShiftCommandCenter'));
-const RevenueAnalysis = lazy(() => import('./admin/pages/finance/RevenueAnalysis'));
-const SpendingsTracker = lazy(() => import('./admin/pages/finance/SpendingsTracker'));
-const AccountsReceivable = lazy(() => import('./admin/pages/finance/AccountsReceivable'));
-const BalanceSheet = lazy(() => import('./admin/pages/finance/BalanceSheet'));
-const AuditLogs = lazy(() => import('./admin/pages/system/AuditLogs'));
-const NotificationsCenter = lazy(() => import('./admin/pages/system/NotificationsCenter'));
-const PayrollExport = lazy(() => import('./admin/pages/payroll/PayrollExport'));
-const EmployeeManagement = lazy(() => import('./admin/pages/management/EmployeeManagement'));
-const LinkedInJobScraper = lazy(() => import('./admin/pages/operations/LinkedInJobScraper'));
-const GLNTestPage = lazy(() => import('./pages/glnTest/GLNTestPage'));
-const EmailCenter = lazy(() => import('./pages/admin/EmailCenter'));
+  const Component = route.component;
+  return route.passUserData ? <Component userData={userData} /> : <Component />;
+};
 
 const Dashboard = () => {
   const location = useLocation();
-  const { profileComplete, isLoading, user, userProfile, selectedWorkspace } = useDashboard();
+  const { isLoading, user, userProfile, selectedWorkspace } = useDashboard();
 
-  // Combine user data from both user and userProfile for compatibility with existing components
+  // Combine user data for compatibility with existing components
   const userData = user ? {
     ...user,
     ...userProfile,
@@ -58,9 +55,8 @@ const Dashboard = () => {
     }
   } : null;
 
-  const isPersonalWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.PERSONAL;
-  const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
-  const isAdminWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN;
+  const workspaceType = selectedWorkspace?.type;
+  const isAdminWorkspace = workspaceType === WORKSPACE_TYPES.ADMIN;
 
   // Check if we're waiting for admin workspace to be set from URL
   const urlParams = new URLSearchParams(location.search);
@@ -76,40 +72,55 @@ const Dashboard = () => {
               <LoadingSpinner />
             ) : (
               <Routes>
+                {/* Default redirect */}
                 <Route path="/" element={<WorkspaceDefaultRedirect />} />
-                <Route path="overview" element={<PersonalDashboard />} />
 
-                <Route path="personal" element={<PersonalDashboard />} />
+                {/* Shared routes - accessible from all workspace types */}
+                {SHARED_ROUTES.map(route => (
+                  <Route
+                    key={route.id}
+                    path={route.path}
+                    element={
+                      <RouteElement
+                        route={route}
+                        workspaceType={workspaceType}
+                        userData={userData}
+                      />
+                    }
+                  />
+                ))}
 
-                <Route path="profile/*" element={<Profile />} />
+                {/* Professional routes - accessible from personal and facility workspaces */}
+                {PROFESSIONAL_ROUTES.map(route => (
+                  <Route
+                    key={route.id}
+                    path={route.path}
+                    element={
+                      <RouteElement
+                        route={route}
+                        workspaceType={workspaceType}
+                        userData={userData}
+                      />
+                    }
+                  />
+                ))}
 
-                <Route
-                  path="calendar/*"
-                  element={(isPersonalWorkspace || isTeamWorkspace || !selectedWorkspace) ? <Calendar userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
-                />
-                <Route
-                  path="messages/*"
-                  element={(isPersonalWorkspace || isTeamWorkspace || !selectedWorkspace) ? <Messages userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
-                />
-                <Route
-                  path="contracts/*"
-                  element={(isPersonalWorkspace || isTeamWorkspace || !selectedWorkspace) ? <Contracts userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
-                />
-                <Route
-                  path="marketplace/*"
-                  element={isPersonalWorkspace ? <Marketplace userData={userData} /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
-                />
+                {/* Facility routes - accessible from facility workspace only */}
+                {FACILITY_ROUTES.map(route => (
+                  <Route
+                    key={route.id}
+                    path={route.path}
+                    element={
+                      <RouteElement
+                        route={route}
+                        workspaceType={workspaceType}
+                        userData={userData}
+                      />
+                    }
+                  />
+                ))}
 
-                <Route
-                  path="payroll/*"
-                  element={isTeamWorkspace ? <PayrollDashboard /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
-                />
-
-                <Route
-                  path="organization/*"
-                  element={isTeamWorkspace ? <OrganizationDashboard /> : <WorkspaceAwareNavigate to="/dashboard/overview" />}
-                />
-
+                {/* Admin routes - accessible from admin workspace only */}
                 <Route
                   path="admin/*"
                   element={
@@ -125,23 +136,16 @@ const Dashboard = () => {
                   }
                 >
                   <Route index element={<Navigate to="portal" replace />} />
-                  <Route path="portal" element={<ExecutiveDashboard />} />
-                  <Route path="verification" element={<UserVerificationQueue />} />
-                  <Route path="operations/users" element={<UserCRM />} />
-                  <Route path="operations/shifts" element={<ShiftCommandCenter />} />
-                  <Route path="finance/revenue" element={<RevenueAnalysis />} />
-                  <Route path="finance/spendings" element={<SpendingsTracker />} />
-                  <Route path="finance/ar" element={<AccountsReceivable />} />
-                  <Route path="finance/balance-sheet" element={<BalanceSheet />} />
-                  <Route path="system/audit" element={<AuditLogs />} />
-                  <Route path="system/notifications" element={<NotificationsCenter />} />
-                  <Route path="payroll/export" element={<PayrollExport />} />
-                  <Route path="management/employees" element={<EmployeeManagement />} />
-                  <Route path="operations/job-scraper" element={<LinkedInJobScraper />} />
-                  <Route path="system/gln-test" element={<GLNTestPage />} />
-                  <Route path="email" element={<EmailCenter />} />
+                  {ADMIN_ROUTES.map(route => (
+                    <Route
+                      key={route.id}
+                      path={route.path}
+                      element={<route.component />}
+                    />
+                  ))}
                 </Route>
 
+                {/* Catch-all for unknown paths */}
                 <Route path="*" element={<div>Path not found: {location.pathname}</div>} />
               </Routes>
             )}
@@ -152,4 +156,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

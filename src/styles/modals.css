@@ -187,14 +187,14 @@
 .modal-close-btn {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: var(--font-size-xlarge);
     cursor: pointer;
     color: var(--text-secondary, #666);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 4px;
-    transition: color var(--transition-fast, 0.2s);
+    transition: color var(--transition-fast);
 }
 
 .modal-close-btn:hover {
@@ -238,12 +238,13 @@
 /* Modal Buttons */
 .modal-btn {
     padding: 10px 24px;
-    border-radius: var(--border-radius-sm, 8px);
-    font-weight: 600;
+    border-radius: var(--border-radius-sm);
+    font-family: var(--font-family-text);
+    font-weight: var(--font-weight-medium);
     cursor: pointer;
     transition: all 0.2s ease;
     border: none;
-    font-size: 14px;
+    font-size: var(--font-size-small);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -334,7 +335,7 @@
         min-width: 0 !important;
         max-width: 48% !important;
         padding: 6px 8px !important;
-        font-size: 11px !important;
+        font-size: var(--font-size-small) !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;

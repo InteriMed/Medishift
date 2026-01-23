@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { User, Building2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { hasPermission, PERMISSIONS } from '../../utils/rbac';
@@ -34,7 +35,7 @@ const AccountCreationTool = () => {
     setResult(null);
 
     try {
-      const userDocRef = doc(db, 'users', userId);
+      const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
@@ -94,19 +95,15 @@ const AccountCreationTool = () => {
     const now = serverTimestamp();
     const timestamp = new Date();
 
+    // User document - minimal fields, profile existence determines access
     const userData = {
       uid: userId,
       email: email,
       firstName: firstName || email.split('@')[0],
       lastName: lastName || '',
       displayName: `${firstName || ''} ${lastName || ''}`.trim() || email.split('@')[0],
-      role: 'professional',
-      roles: ['professional'],
-      hasProfessionalProfile: true,
       onboardingStatus: 'completed',
-      isProfessionalProfileComplete: true,
       profileCompleted: true,
-      profileCompletionPercentage: 100,
       verifiedAt: now,
       verifiedBy: 'admin',
       createdAt: timestamp,
@@ -136,25 +133,22 @@ const AccountCreationTool = () => {
       updatedAt: timestamp
     };
 
-    await setDoc(doc(db, 'professionalProfiles', userId), professionalProfileData, { merge: true });
+    await setDoc(doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId), professionalProfileData, { merge: true });
   };
 
   const createFacilityAccount = async (userId, email, firstName, lastName) => {
     const now = serverTimestamp();
     const timestamp = new Date();
 
+    // User document - minimal fields, facility membership determines access
     const userData = {
       uid: userId,
       email: email,
       firstName: firstName || email.split('@')[0],
       lastName: lastName || '',
       displayName: `${firstName || ''} ${lastName || ''}`.trim() || email.split('@')[0],
-      role: 'facility',
-      roles: ['facility'],
-      hasFacilityProfile: true,
       onboardingStatus: 'completed',
       profileCompleted: true,
-      profileCompletionPercentage: 100,
       verifiedAt: now,
       verifiedBy: 'admin',
       createdAt: timestamp,
@@ -254,15 +248,16 @@ const AccountCreationTool = () => {
       verificationStatus: 'verified'
     };
 
-    await setDoc(doc(db, 'facilityProfiles', userId), facilityProfileData, { merge: true });
+    await setDoc(doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, userId), facilityProfileData, { merge: true });
 
-    // Also need to update User's membershipt to include facilityName (critical for dashboard access)
+    // Attach professional to facility via centralized membership structure
     await setDoc(doc(db, 'users', userId), {
       facilityMemberships: [{
         facilityId: userId,
-        facilityName: firstName || email.split('@')[0],
         facilityProfileId: userId,
-        role: 'admin'
+        facilityName: firstName || email.split('@')[0],
+        role: 'admin',
+        joinedAt: new Date().toISOString()
       }]
     }, { merge: true });
   };
@@ -277,7 +272,7 @@ const AccountCreationTool = () => {
     setError(null);
 
     try {
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
       const q = query(usersRef, where('email', '==', email));
       const snapshot = await getDocs(q);
 

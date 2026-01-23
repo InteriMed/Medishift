@@ -134,10 +134,10 @@ const Header = () => {
         <Link to={`/${lang}/${getLocalizedRoute('home', lang)}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <img
             src="/logo.png"
-            alt="MediShift"
+            alt={t('common:header.logoAlt', 'MediShift')}
             className="h-10 w-auto"
           />
-          <span className="text-2xl font-bold" style={{ color: 'var(--color-logo-2)' }}>MediShift</span>
+          <span className="text-2xl font-bold" style={{ color: 'var(--color-logo-2)' }}>{t('common:header.brandName', 'MediShift')}</span>
         </Link>
 
         {isMobile ? (

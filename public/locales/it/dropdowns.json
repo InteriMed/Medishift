@@ -101,14 +101,6 @@
         "hindu": "Induista",
         "other": "Altro"
     },
-    "educationLevels": {
-        "high_school": "Diploma di Maturità",
-        "vocational": "Formazione Professionale",
-        "bachelors": "Laurea Triennale",
-        "masters": "Laurea Magistrale",
-        "doctorate": "Dottorato / PhD",
-        "other": "Altro"
-    },
     "workPermits": {
         "notApplicable": "Non applicabile (Cittadino Svizzero)",
         "B": "B - Permesso di Dimora (5 anni)",

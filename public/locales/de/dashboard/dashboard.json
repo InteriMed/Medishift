@@ -11,7 +11,9 @@
       "organization": "Organisation",
       "settings": "Einstellungen",
       "incompleteProfile": "Ihr Profil ist unvollständig",
-      "completeProfileFirst": "Bitte vervollständigen Sie zuerst Ihr Profil"
+      "completeProfileFirst": "Bitte vervollständigen Sie zuerst Ihr Profil",
+      "lockedDuringTutorial": "Während des Tutorials gesperrt",
+      "collapse": "Einklappen"
     },
     "header": {
       "search": "Suchen...",
@@ -52,16 +54,33 @@
         "title": "Einstellungen",
         "subtitle": "Konfigurieren Sie Ihre Kontoeinstellungen"
       },
-      "profileResetSuccess": "Profile Reset Success",
-      "profileResetError": "Profile Reset Error",
-      "createBusiness": "Create Business",
-      "createBusinessDesc": "Create Business Desc",
-      "createProfessional": "Create Professional",
-      "createProfessionalDesc": "Create Professional Desc",
-      "resetProfile": "Reset Profile",
-      "resetProfileTitle": "Reset Profile Title",
-      "resetProfileMessage": "Reset Profile Message",
-      "resetConfirm": "Reset Confirm"
+      "profileResetSuccess": "Profil erfolgreich zurückgesetzt",
+      "profileResetError": "Fehler beim Zurücksetzen des Profils",
+      "createBusiness": "Unternehmen erstellen",
+      "createBusinessDesc": "Einrichtungsprofil einrichten",
+      "createProfessional": "Professionelles Profil erstellen",
+      "createProfessionalDesc": "Zum persönlichen Konto wechseln",
+      "resetProfile": "Profil zurücksetzen",
+      "resetProfileTitle": "Profil zurücksetzen",
+      "resetProfileMessage": "Sind Sie sicher, dass Sie Ihr Profil zurücksetzen möchten?",
+      "resetConfirm": "Profil zurücksetzen",
+      "notifications": {
+        "newEvent": {
+          "title": "Neues Ereignis",
+          "message": "Teammeeting um 15 Uhr",
+          "time": "Vor 10m"
+        },
+        "confirmation": {
+          "title": "Bestätigung",
+          "message": "Ihre Schichtübertragung wurde genehmigt",
+          "time": "Vor 1h"
+        },
+        "system": {
+          "title": "System",
+          "message": "Profil erfolgreich aktualisiert",
+          "time": "Vor 2h"
+        }
+      }
     },
     "loading": "Dashboard-Daten werden geladen...",
     "error": "Fehler beim Laden der Dashboard-Daten",
@@ -240,15 +259,21 @@
       "settings": "Settings"
     },
     "tutorial": {
-      "selectionTitle": "Selection Title",
-      "selectionSubtitle": "Selection Subtitle",
-      "currentPage": "Current Page",
-      "currentPageOnly": "Current Page Only",
-      "currentPageOnlyTitle": "Current Page Only Title",
-      "currentPageOnlyDesc": "Current Page Only Desc",
-      "allPages": "All Pages",
-      "allPagesTitle": "All Pages Title",
-      "allPagesDesc": "All Pages Desc"
+      "selectionTitle": "Tutorial-Modus wählen",
+      "selectionSubtitle": "Wählen Sie aus, wie Sie die Plattform erkunden möchten",
+      "currentPage": "Aktuelle Seite",
+      "currentPageOnly": "Tutorial nur für diese Seite starten",
+      "currentPageOnlyTitle": "Nur aktuelle Seite",
+      "currentPageOnlyDesc": "Erfahren Sie mehr über die Funktionen auf dieser Seite",
+      "allPages": "Vollständiges Tutorial von Anfang an starten",
+      "allPagesTitle": "Vollständiges Tutorial",
+      "allPagesDesc": "Von Anfang an beginnen und alle Funktionen erkunden",
+      "stopTitle": "Tutorial pausieren?",
+      "stopDescription": "Sie können das Tutorial jederzeit fortsetzen, indem Sie auf die Hilfe-Schaltfläche in der Kopfzeile klicken.",
+      "clickHere": "Klicken Sie hier",
+      "toContinue": "um später fortzufahren",
+      "keepGoing": "Weitermachen",
+      "pauseNow": "Tutorial pausieren"
     }
   },
   "userMenu": {

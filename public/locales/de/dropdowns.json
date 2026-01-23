@@ -101,14 +101,6 @@
         "hindu": "Hinduistisch",
         "other": "Andere"
     },
-    "educationLevels": {
-        "high_school": "Matura",
-        "vocational": "Berufsausbildung",
-        "bachelors": "Bachelor-Abschluss",
-        "masters": "Master-Abschluss",
-        "doctorate": "Doktorat / PhD",
-        "other": "Andere"
-    },
     "workPermits": {
         "notApplicable": "Nicht zutreffend (Schweizer Bürger)",
         "B": "B - Aufenthaltsbewilligung (5 Jahre)",

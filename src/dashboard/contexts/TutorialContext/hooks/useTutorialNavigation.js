@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { TUTORIAL_IDS, isProfileTutorial, getProfileTutorialForType, ONBOARDING_TYPES } from '../../../../config/tutorialSystem';
 
 /**
  * Tutorial navigation and route guards
@@ -24,7 +25,7 @@ export const useTutorialNavigation = ({
     setIsBusy,
     syncTimestampRef,
     tutorialSteps,
-    accessMode,
+    accessLevelChoice,
     setShowAccessLevelModal,
     setAllowAccessLevelModalClose
 }) => {
@@ -65,18 +66,19 @@ export const useTutorialNavigation = ({
         }
 
         // Other items follow tutorial advancement
-        const tutorialOrder = ['overview', 'profile', 'messages', 'contracts', 'calendar', 'marketplace', 'payroll', 'organization', 'settings'];
+        const tutorialOrder = ['overview', 'profile', TUTORIAL_IDS.MESSAGES, TUTORIAL_IDS.CONTRACTS, TUTORIAL_IDS.CALENDAR, TUTORIAL_IDS.MARKETPLACE, TUTORIAL_IDS.PAYROLL, TUTORIAL_IDS.ORGANIZATION, TUTORIAL_IDS.SETTINGS];
         const itemIndex = tutorialOrder.indexOf(itemName);
 
         if (itemIndex !== -1) {
             // If the current tutorial is this item, it's accessible
-            if (activeTutorial === itemName || (itemName === 'profile' && (activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs'))) {
+            if (activeTutorial === itemName || (itemName === 'profile' && isProfileTutorial(activeTutorial))) {
                 return true;
             }
 
             // If previous item is completed, this one is accessible
             const prevItem = tutorialOrder[itemIndex - 1];
-            const prevTutorialKey = prevItem === 'profile' ? (user?.role === 'facility' || user?.role === 'company' ? 'facilityProfileTabs' : 'profileTabs') : prevItem;
+            const onboardingType = user?.role === 'facility' || user?.role === 'company' ? ONBOARDING_TYPES.FACILITY : ONBOARDING_TYPES.PROFESSIONAL;
+            const prevTutorialKey = prevItem === 'profile' ? getProfileTutorialForType(onboardingType) : prevItem;
             if (completedTutorials[prevTutorialKey]) {
                 return true;
             }
@@ -96,11 +98,8 @@ export const useTutorialNavigation = ({
         if (!isTutorialActive) return;
 
         // Special Exception: Dashboard tutorial completion
-        if (activeTutorial === 'dashboard' && currentStep >= 3 && location.pathname.includes('/dashboard/profile')) {
-            console.log("[useTutorialNavigation] User reached profile, completing dashboard tutorial");
-
+        if (activeTutorial === TUTORIAL_IDS.DASHBOARD && currentStep >= 3 && location.pathname.includes('/dashboard/profile')) {
             if (isBusy) {
-                console.log("[useTutorialNavigation] Bypassing busy flag for completion");
                 setIsBusy(false);
                 return;
             }
@@ -115,7 +114,7 @@ export const useTutorialNavigation = ({
         const path = location.pathname;
 
         // Profile Tutorial - must stay in profile
-        if (activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs') {
+        if (isProfileTutorial(activeTutorial)) {
             // URL Sync: Switch to matching step if user navigates directly
             try {
                 const steps = tutorialSteps[activeTutorial];
@@ -134,21 +133,17 @@ export const useTutorialNavigation = ({
                         matchingStepIndex !== currentStep &&
                         !isBusy &&
                         timeSinceLastSync > 500) {
-                        console.log(`[useTutorialNavigation] URL Sync: Switching to step ${matchingStepIndex} for path ${currentPath}`);
                         syncTimestampRef.current[lastSyncKey] = now;
                         setCurrentStep(matchingStepIndex);
                         return;
                     }
                 }
             } catch (err) {
-                console.error('[useTutorialNavigation] Error syncing tutorial step:', err);
+                // Error syncing tutorial step
             }
 
             if (!path.includes('/dashboard/profile')) {
-                console.log("[useTutorialNavigation] User trying to leave profile during tutorial, showing Access Level popup");
-                
-                if (accessMode === 'full' && currentStep >= 1) {
-                    console.log("[useTutorialNavigation] Full access selected, showing Access Level popup");
+                if (accessLevelChoice === 'full' && currentStep >= 1) {
                     setAllowAccessLevelModalClose(true);
                     setShowAccessLevelModal(true);
                 }
@@ -163,14 +158,12 @@ export const useTutorialNavigation = ({
         }
 
         // Dashboard Tutorial
-        if (activeTutorial === 'dashboard') {
+        if (activeTutorial === TUTORIAL_IDS.DASHBOARD) {
             const isOverview = path === '/dashboard' || path === '/dashboard/' || path.includes('/dashboard/overview');
             const isProfile = path.includes('/dashboard/profile');
 
             if (isProfile) {
-                console.log("[useTutorialNavigation] Profile access allowed during dashboard tutorial");
                 if (currentStep >= 3) {
-                    console.log("[useTutorialNavigation] User reached profile, completing dashboard tutorial");
                     completeTutorial();
                 }
                 return;
@@ -178,7 +171,6 @@ export const useTutorialNavigation = ({
 
             if (currentStep < 3) {
                 if (!isOverview) {
-                    console.log("[useTutorialNavigation] Redirecting to dashboard overview");
                     showWarning("Please follow the onboarding guide.");
                     const dashboardUrl = selectedWorkspace?.id
                         ? `/dashboard?workspace=${selectedWorkspace.id}`
@@ -187,7 +179,6 @@ export const useTutorialNavigation = ({
                 }
             } else {
                 if (!isOverview && !isProfile) {
-                    console.log("[useTutorialNavigation] Redirecting to dashboard");
                     showWarning("Please click on Profile to proceed.");
                     const dashboardUrl = selectedWorkspace?.id
                         ? `/dashboard?workspace=${selectedWorkspace.id}`

@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { WORKSPACE_TYPES } from '../../../../utils/sessionAuth';
 import { ACTIONS } from '../utils/tutorialReducer';
+import { getProfileCollection } from '../utils/tutorialHelpers';
 
 const isPlatformAdmin = (userProfile) => {
     if (!userProfile) return false;
@@ -60,39 +62,15 @@ export const useTutorialLifecycle = ({
             }
 
             try {
-                const userDocRef = doc(db, 'users', currentUser.uid);
-                const userDoc = await getDoc(userDocRef);
+                const onboardingType = selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY && selectedWorkspace?.facilityId
+                    ? 'facility'
+                    : 'professional';
 
-                if (!userDoc.exists()) {
-                    if (isInDashboard && !showFirstTimeModal) {
-                        dispatch({ type: ACTIONS.SET_ONBOARDING_TYPE, payload: 'professional' });
-                        dispatch({ type: ACTIONS.SET_FIRST_TIME_MODAL, payload: true });
-                        if (isTutorialActive) dispatch({ type: ACTIONS.COMPLETE_TUTORIAL });
-                    }
-                    return;
-                }
+                const profileCollection = getProfileCollection(onboardingType);
+                const profileDocRef = doc(db, profileCollection, currentUser.uid);
+                const profileDoc = await getDoc(profileDocRef);
 
-                const userData = userDoc.data();
-                const onboardingProgress = userData.onboardingProgress || {};
-
-                let onboardingCompleted = false;
-                let onboardingType = 'professional';
-
-                if (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM && selectedWorkspace?.facilityId) {
-                    onboardingType = 'facility';
-                    const facilityProgress = onboardingProgress.facility || {};
-                    onboardingCompleted = facilityProgress.completed === true;
-                } else {
-                    onboardingType = 'professional';
-                    const professionalProgress = onboardingProgress.professional || {};
-                    const bypassedGLN = userData.bypassedGLN === true && userData.GLN_certified === false;
-                    onboardingCompleted = professionalProgress.completed === true ||
-                        userData.onboardingCompleted === true ||
-                        userData.GLN_certified === true ||
-                        bypassedGLN;
-                }
-
-                if (!onboardingCompleted) {
+                if (!profileDoc.exists()) {
                     if (isInDashboard && !showFirstTimeModal) {
                         dispatch({ type: ACTIONS.SET_ONBOARDING_TYPE, payload: onboardingType });
                         dispatch({ type: ACTIONS.SET_FIRST_TIME_MODAL, payload: true });
@@ -101,7 +79,19 @@ export const useTutorialLifecycle = ({
                     return;
                 }
 
-                if (onboardingCompleted) {
+                const profileData = profileDoc.data();
+                const tutorialAccessMode = profileData.tutorialAccessMode || 'loading';
+
+                if (tutorialAccessMode === 'loading') {
+                    if (isInDashboard && !showFirstTimeModal) {
+                        dispatch({ type: ACTIONS.SET_ONBOARDING_TYPE, payload: onboardingType });
+                        dispatch({ type: ACTIONS.SET_FIRST_TIME_MODAL, payload: true });
+                        if (isTutorialActive) dispatch({ type: ACTIONS.COMPLETE_TUTORIAL });
+                    }
+                    return;
+                }
+
+                if (tutorialAccessMode === 'enabled' || tutorialAccessMode === 'disabled') {
                     const storedState = loadLocalState();
                     if (storedState?.tutorialDismissed === true) {
                         if (isTutorialActive) dispatch({ type: ACTIONS.COMPLETE_TUTORIAL });
@@ -126,7 +116,7 @@ export const useTutorialLifecycle = ({
                 }
 
                 if (isInDashboard && !tutorialPassed) {
-                    if (onboardingCompleted) {
+                    if (tutorialAccessMode === 'enabled' || tutorialAccessMode === 'disabled') {
                         dispatch({ type: ACTIONS.SET_FIRST_TIME_MODAL, payload: false });
                     }
                 }

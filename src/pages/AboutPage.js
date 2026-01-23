@@ -49,9 +49,9 @@ const AboutPage = () => {
   return (
     <div className="about-page flex flex-col min-h-screen bg-background text-foreground font-sans">
       <Helmet>
-        <title>{t('h1meta.title')} | MediShift</title>
-        <meta name="description" content={t('h1meta.description')} />
-        <meta name="keywords" content={t('h1meta.keywords')} />
+        <title>{t('meta.title')} | MediShift</title>
+        <meta name="description" content={t('meta.description')} />
+        <meta name="keywords" content={t('meta.keywords')} />
       </Helmet>
 
       {/* Hero Section */}
@@ -87,7 +87,7 @@ const AboutPage = () => {
         <div className="container mx-auto px-4 relative z-10" style={{ maxWidth: '1200px' }}>
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-colors border-blue-200 bg-blue-100/50 text-blue-700 mb-6 shadow-sm">
-              Notre histoire
+              {t('hero.badge')}
             </div>
             <h1 className="text-4xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[1.1] pb-6 mb-8">
               {t('hero.title')}
@@ -105,13 +105,13 @@ const AboutPage = () => {
               <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-slate-100">
                 <img
                   src={HeroImage}
-                  alt="MediShift Story"
+                  alt={t('story.imageAlt')}
                   className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
                 />
               </div>
             </div>
             <div className="order-1 md:order-2">
-              <span className="text-primary font-bold tracking-wider uppercase text-sm mb-4 block">Origine</span>
+              <span className="text-primary font-bold tracking-wider uppercase text-sm mb-4 block">{t('story.badge')}</span>
               <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-r from-secondary to-secondary/80">
                 {t('story.title')}
               </h2>
@@ -130,7 +130,7 @@ const AboutPage = () => {
         <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
           <div className="text-center max-w-4xl mx-auto mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-6">
-              <FaBullseye /> Vision & Missions
+              <FaBullseye /> {t('missionVision.badge')}
             </div>
             <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-secondary to-secondary/80">
               {t('missionVision.title')}
@@ -237,7 +237,7 @@ const AboutPage = () => {
             <div className="lg:w-1/2 text-left">
               <h2 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">{t('cta.title')}</h2>
               <p className="text-xl text-slate-400 mb-8 max-w-xl">
-                Rejoignez la révolution du recrutement médical.
+                {t('cta.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to={`/${lang}/facilities`} onClick={() => window.scrollTo(0, 0)}>
@@ -260,8 +260,8 @@ const AboutPage = () => {
                 <div className="w-80 h-96 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-2xl relative z-10 p-8 flex flex-col justify-between text-white">
                   <div>
                     <FaClinicMedical size={48} className="mb-4 opacity-80" />
-                    <div className="text-2xl font-bold mb-2">Innovation Santé</div>
-                    <p className="opacity-70">Une technologie au service de l'humain.</p>
+                    <div className="text-2xl font-bold mb-2">{t('cta.cardTitle')}</div>
+                    <p className="opacity-70">{t('cta.cardSubtitle')}</p>
                   </div>
                   <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
                     <div className="flex items-center gap-3 mb-2">

@@ -22,6 +22,7 @@ import 'react-phone-number-input/style.css';
 import { FcGoogle } from 'react-icons/fc';
 import { useNotification } from '../../contexts/NotificationContext';
 import InputFieldHideUnhide from '../../components/BoxedInputFields/InputFieldHideUnhide';
+import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import '../../styles/auth.css';
 
 function Signup() {
@@ -85,10 +86,10 @@ function Signup() {
       const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'normal',
         'callback': () => {
-          console.log('reCAPTCHA verified');
+          // reCAPTCHA verified
         },
         'expired-callback': () => {
-          console.log('reCAPTCHA expired');
+          // reCAPTCHA expired
           setRecaptchaVerifier(null);
         }
       });
@@ -182,7 +183,6 @@ function Signup() {
   // Handle navigation to dashboard after successful signup
   const handleNavigateToDashboard = () => {
     setHasUnsavedChanges(false);
-    console.log("Current language:", lang);
     navigate(`/${lang}/verification-sent`);
   };
 
@@ -202,18 +202,18 @@ function Signup() {
         // Create a temporary user account
         const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
         const user = userCredential.user;
-        console.log('✅ Auth user created:', user.uid);
 
         // Send email verification
         await sendEmailVerification(user);
 
         // Create user document in Firestore with onboarding flags
-        const userDocRef = doc(db, 'users', user.uid);
+        const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, user.uid);
+        const displayName = [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email.split('@')[0];
         const userData = {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          displayName: `${formData.firstName} ${formData.lastName}`,
+          displayName: displayName,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           role: 'professional',
@@ -225,14 +225,12 @@ function Signup() {
         };
 
         await setDoc(userDocRef, userData);
-        console.log('📝 User document write initiated');
 
         // Verify the document was created
         const verifyDoc = await getDoc(userDocRef);
         if (!verifyDoc.exists()) {
           throw new Error('Failed to create user document in Firestore - document does not exist after write');
         }
-        console.log('✅ User document verified in Firestore:', user.uid);
 
         // Store the user temporarily
         setTemporaryUser(user);
@@ -268,17 +266,18 @@ function Signup() {
 
         // Proceed with account creation after email verification
         const user = temporaryUser; // Use the temporarily stored user
+        const displayName = [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email.split('@')[0];
         await updateProfile(user, {
-          displayName: `${formData.firstName} ${formData.lastName}`
+          displayName: displayName
         });
 
         // Create user document in Firestore
-        await setDoc(doc(db, 'users', user.uid), {
+        await setDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, user.uid), {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
           phoneNumber: formData.phoneNumber,
-          displayName: `${formData.firstName} ${formData.lastName}`,
+          displayName: displayName,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           role: 'professional',
@@ -349,8 +348,9 @@ function Signup() {
 
         const user = userCredential.user;
 
+        const displayName = [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email.split('@')[0];
         await updateProfile(user, {
-          displayName: `${formData.firstName} ${formData.lastName}`
+          displayName: displayName
         });
 
         await linkWithCredential(user, phoneCredential);
@@ -360,7 +360,7 @@ function Signup() {
           lastName: formData.lastName,
           email: formData.email,
           phoneNumber: formData.phoneNumber,
-          displayName: `${formData.firstName} ${formData.lastName}`,
+          displayName: displayName,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           role: 'professional',
@@ -404,17 +404,6 @@ function Signup() {
   const validateForm = () => {
     const newErrors = {};
     let hasErrors = false;
-
-    // Collect all errors
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = t('auth.errors.nameRequired');
-      hasErrors = true;
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = t('auth.errors.nameRequired');
-      hasErrors = true;
-    }
 
     if (!formData.email.trim()) {
       newErrors.email = t('auth.errors.emailRequired');
@@ -480,8 +469,9 @@ function Signup() {
       const user = userCredential.user;
 
       // Update the user's display name
+      const displayName = [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email.split('@')[0];
       await updateProfile(user, {
-        displayName: `${formData.firstName} ${formData.lastName}`
+        displayName: displayName
       });
 
       // Send email verification
@@ -537,14 +527,13 @@ function Signup() {
               err.message?.includes('client is offline');
 
             if (isOfflineError && attempt < retries - 1) {
-              console.warn(`Firestore read failed (attempt ${attempt + 1}/${retries}), retrying...`);
               await new Promise(resolve => setTimeout(resolve, delay * (attempt + 1)));
               continue;
             }
 
             // If it's an offline error and we've exhausted retries, just log and throw
             if (isOfflineError && attempt === retries - 1) {
-              console.error('❌ Network issues persisted after retries');
+              // Network issues persisted after retries
             }
 
             throw err;
@@ -553,7 +542,7 @@ function Signup() {
       };
 
       // Check if user exists in Firestore, if not create them
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, user.uid);
 
       // Use retry logic with better error handling
       let userDoc;
@@ -565,7 +554,7 @@ function Signup() {
           error.message?.includes('client is offline');
 
         if (isOfflineError) {
-          console.warn('⚠️ Client is offline, user document will be created when online');
+          // Client is offline, user document will be created when online
           // Create user document anyway - it will be queued for when online
           try {
             await setDoc(userDocRef, {
@@ -582,9 +571,8 @@ function Signup() {
               tutorialPassed: false,
               isProfessionalProfileComplete: false,
             });
-            console.log('✅ User document queued for creation (offline mode)');
           } catch (setDocError) {
-            console.error('❌ Error queuing user document creation:', setDocError);
+            // Error queuing user document creation
           }
           // Navigate anyway since auth succeeded
           navigate(`/${lang}/dashboard/profile`);
@@ -611,7 +599,7 @@ function Signup() {
             isProfessionalProfileComplete: false,
           });
         } catch (setDocError) {
-          console.error("Error creating user doc:", setDocError);
+          // Error creating user doc
           // If setDoc fails, we should probably stop and show error, but existing code logged and continued?
           // Actually existing code just logged and navigated. 
           // If setDoc fails (e.g. offline), the write is queued. So navigating is actually OK if it's an offline write.
@@ -649,24 +637,22 @@ function Signup() {
               <div className="form-row">
                 <div className="form-group">
                   <InputField
-                    label={t('auth.signup.firstName') + ' *'}
+                    label={t('auth.signup.firstName')}
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
                     placeholder={t('auth.signup.firstNamePlaceholder')}
                     error={errors.firstName}
-                    required={true}
                   />
                 </div>
                 <div className="form-group">
                   <InputField
-                    label={t('auth.signup.lastName') + ' *'}
+                    label={t('auth.signup.lastName')}
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
                     placeholder={t('auth.signup.lastNamePlaceholder')}
                     error={errors.lastName}
-                    required={true}
                   />
                 </div>
               </div>
@@ -934,7 +920,7 @@ function Signup() {
             <h1 className="auth-title">{t('auth.signup.accountCreated')}</h1>
             <p className="auth-subtitle">
               {t('auth.signup.welcomeMessage')}
-              {formData.firstName}!
+              {formData.firstName || formData.email.split('@')[0]}!
             </p>
 
             <div className="auth-form">

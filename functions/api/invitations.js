@@ -59,7 +59,7 @@ exports.generateFacilityRoleInvitation = onCall({ cors: true, database: 'medishi
 
     const facilityData = facilitySnap.data();
     const employeesList = facilityData.employees || [];
-    const admins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
+    const admins = employeesList.filter(emp => emp.roles?.includes('admin')).map(emp => emp.user_uid);
 
     if (!admins.includes(context.auth.uid)) {
       throw new HttpsError('permission-denied', 'You must be an admin of this facility to generate invitations');
@@ -270,10 +270,10 @@ exports.acceptFacilityInvitation = onCall({ cors: true, database: 'medishift' },
     }
 
     const userData = userSnap.data();
-    const facilityMemberships = userData.facilityMemberships || [];
+    const userRoles = userData.roles || [];
     const facilityName = facilityData.facilityDetails?.name || facilityData.identityLegal?.legalCompanyName || 'Unknown Facility';
 
-    const isAlreadyMember = facilityMemberships.some(m => m.facilityId === facilityId || m.facilityProfileId === facilityId);
+    const isAlreadyMember = userRoles.some(r => r.facility_uid === facilityId);
 
     if (isAlreadyMember) {
       await invitationRef.update({
@@ -298,24 +298,29 @@ exports.acceptFacilityInvitation = onCall({ cors: true, database: 'medishift' },
       joinedAt: admin.firestore.FieldValue.serverTimestamp()
     };
 
+    const userDoc = await userRef.get();
+    const existingUserData = userDoc.exists ? userDoc.data() : {};
+    const existingRoles = existingUserData.roles || [];
+    const updatedUserRoles = existingRoles.filter(r => r.facility_uid !== facilityId);
+    updatedUserRoles.push({ facility_uid: facilityId, roles: ['admin'] });
+    
     batch.update(userRef, {
-      facilityMemberships: admin.firestore.FieldValue.arrayUnion(newMembership),
-      roles: admin.firestore.FieldValue.arrayUnion(`facility_admin_${facilityId}`),
+      roles: updatedUserRoles,
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
     const employeesList = facilityData.employees || [];
-    const admins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
+    const admins = employeesList.filter(emp => emp.roles?.includes('admin')).map(emp => emp.user_uid);
     if (!admins.includes(userId)) {
-      const existingEmployee = employeesList.find(emp => emp.uid === userId);
+      const existingEmployee = employeesList.find(emp => emp.user_uid === userId);
       if (!existingEmployee) {
         batch.update(facilityRef, {
-          employees: admin.firestore.FieldValue.arrayUnion({ uid: userId, rights: 'admin' }),
+          employees: admin.firestore.FieldValue.arrayUnion({ user_uid: userId, roles: ['admin'] }),
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
-      } else if (existingEmployee.rights !== 'admin') {
+      } else if (!existingEmployee.roles?.includes('admin')) {
         const updatedEmployees = employeesList.map(emp =>
-          emp.uid === userId ? { ...emp, rights: 'admin' } : emp
+          emp.user_uid === userId ? { ...emp, roles: [...(emp.roles || []), 'admin'] } : emp
         );
         batch.update(facilityRef, {
           employees: updatedEmployees,

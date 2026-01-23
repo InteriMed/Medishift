@@ -15,6 +15,7 @@ import EventPanel from './EventPanel/EventPanel';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useSidebar } from '../../contexts/SidebarContext';
 import { useTutorial } from '../../contexts/TutorialContext';
+import { TUTORIAL_IDS } from '../../../config/tutorialSystem';
 import { useCalendarState } from './hooks/useCalendarState';
 import { useEventOperations } from './hooks/useEventOperations';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -383,8 +384,6 @@ const Calendar = ({ userData }) => {
         return;
       }
 
-      console.log('Event moved - opening panel for confirmation');
-
       // Open panel to confirm or cancel the move
       setSelectedEvent(movedEvent);
       setSelectedEventId(movedEvent.id);
@@ -406,7 +405,6 @@ const Calendar = ({ userData }) => {
 
     // On first resize (temporary), store the original position
     if (isTemporary && !currentEvent.isBeingResized) {
-      console.log('Resize started - storing original position');
       setOriginalEventPosition({
         id: currentEvent.id,
         start: new Date(currentEvent.start),
@@ -435,8 +433,6 @@ const Calendar = ({ userData }) => {
     if (!isTemporary) {
       const resizedEvent = updatedEvents[eventIndex];
 
-      console.log('Event resized - opening panel for confirmation');
-
       // Open panel to confirm or cancel the resize
       setSelectedEvent(resizedEvent);
       setSelectedEventId(resizedEvent.id);
@@ -449,7 +445,6 @@ const Calendar = ({ userData }) => {
    * Handle grid event creation
    */
   const handleGridCreateEvent = useCallback((newEvent, openPanel = true) => {
-    console.log('handleGridCreateEvent called:', { newEvent, openPanel });
 
     // Add default color if not set
     const eventWithDefaults = {
@@ -464,16 +459,13 @@ const Calendar = ({ userData }) => {
       employees: '',
     };
 
-    console.log('Event with defaults:', eventWithDefaults);
 
     // ALWAYS add to events array immediately so it's visible in the UI
     const updatedEvents = [...events, eventWithDefaults];
     setEvents(updatedEvents);
     addToHistory(updatedEvents);
-    console.log('Event added to array, count:', updatedEvents.length);
 
     if (openPanel) {
-      console.log('Opening panel for event:', eventWithDefaults.id);
 
       // Store original position
       setOriginalEventPosition({
@@ -486,9 +478,7 @@ const Calendar = ({ userData }) => {
       setSelectedEvent(eventWithDefaults);
       setSelectedEventId(eventWithDefaults.id);
 
-      console.log('Panel opened, event visible in UI');
     } else {
-      console.log('Event added without panel (should not happen now)');
     }
   }, [events, setEvents, addToHistory, setSelectedEvent, setSelectedEventId, setOriginalEventPosition]);
 
@@ -616,8 +606,6 @@ const Calendar = ({ userData }) => {
 
   // Debug: Log when selectedEvent changes
   useEffect(() => {
-    console.log('selectedEvent changed:', selectedEvent);
-    console.log('selectedEventId changed:', selectedEventId);
   }, [selectedEvent, selectedEventId]);
 
   // Close context menu on outside click
@@ -639,180 +627,180 @@ const Calendar = ({ userData }) => {
   const hasActiveFilters = categories.some(cat => !cat.checked);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-      {/* 1. Top Bar */}
-      <div className="shrink-0 w-full z-20 bg-white flex items-center justify-between gap-4 px-6 sm:px-8 py-3 min-h-16">
-        {/* Tutorial Mock: Calendar View Options */}
-        {isTutorialActive && activeTutorial === 'calendar' && (
-          <div className="calendar-view-options flex gap-2 mr-4">
-            <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium">{t('calendar:dayView')}</button>
-            <button className="px-3 py-1.5 bg-muted text-muted-foreground rounded-md text-sm font-medium">{t('calendar:weekView')}</button>
-            <button className="px-3 py-1.5 bg-muted text-muted-foreground rounded-md text-sm font-medium">{t('calendar:monthView')}</button>
-          </div>
-        )}
-        <CalendarHeader
-          currentDate={currentDate}
-          view={view}
-          setView={setView}
-          navigateDate={navigateDate}
-          setCurrentDate={setCurrentDate}
-          isSidebarCollapsed={false}
-          toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          categories={categories}
-          handleCategoryToggle={handleCategoryToggle}
-          onResetCategories={handleResetCategories}
-          isTopBarMode={true}
-          onShowFiltersOverlay={setShowFiltersOverlay}
-          scrollContainerRef={scrollContainerRef}
-          calendarMode={calendarMode}
-          setCalendarMode={setCalendarMode}
-          isTeamWorkspace={isTeamWorkspace}
-          handleCreateEventClick={() => handleCreateEventClick(currentDate)}
-          showMiniCalendar={showMiniCalendar}
-          setShowMiniCalendar={setShowMiniCalendar}
-          showUpcomingEvents={showUpcomingEvents}
-          setShowUpcomingEvents={setShowUpcomingEvents}
-        />
-      </div>
-
-      {/* 2. Main Split Content */}
+    <div className="h-full flex flex-col animate-in fade-in duration-500" style={{ overflow: 'visible' }}>
+      {/* Main Split Content */}
       <div className={cn(
         "flex-1 flex relative min-h-0",
-        calendarMode === 'team' ? "p-0 overflow-hidden" : "p-6 gap-6"
-      )}>
+        calendarMode === 'team' ? "p-0" : "p-6 gap-6"
+      )} style={{ overflow: 'visible' }}>
         {calendarMode === 'team' && isTeamWorkspace ? (
-          <div className="w-full h-full">
-            <ResourceGrid
-              currentDate={currentDate}
-              events={filteredEvents}
-              employees={[]}
-              onEventClick={handleEventClick}
-              onCreateEvent={handleGridCreateEvent}
-              view={view}
-              onDateClick={handleDayClick}
-              onEventMove={handleGridEventMove}
-              profileData={profileData}
-              onUpdateProfileData={updateProfileData}
-              isLoadingProfile={isLoadingProfile}
-            />
+          <div className="w-full h-full flex flex-col">
+            {/* Header for Team Mode */}
+            <div className="shrink-0 w-full bg-white border-b border-border/60 shadow-sm px-6 py-3 min-h-16">
+              <CalendarHeader
+                currentDate={currentDate}
+                view={view}
+                setView={setView}
+                navigateDate={navigateDate}
+                setCurrentDate={setCurrentDate}
+                isSidebarCollapsed={false}
+                toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                categories={categories}
+                handleCategoryToggle={handleCategoryToggle}
+                onResetCategories={handleResetCategories}
+                isTopBarMode={true}
+                onShowFiltersOverlay={setShowFiltersOverlay}
+                scrollContainerRef={scrollContainerRef}
+                calendarMode={calendarMode}
+                setCalendarMode={setCalendarMode}
+                isTeamWorkspace={isTeamWorkspace}
+                handleCreateEventClick={() => handleCreateEventClick(currentDate)}
+                showMiniCalendar={showMiniCalendar}
+                setShowMiniCalendar={setShowMiniCalendar}
+                showUpcomingEvents={showUpcomingEvents}
+                setShowUpcomingEvents={setShowUpcomingEvents}
+              />
+            </div>
+            <div className="flex-1">
+              <ResourceGrid
+                currentDate={currentDate}
+                events={filteredEvents}
+                employees={[]}
+                onEventClick={handleEventClick}
+                onCreateEvent={handleGridCreateEvent}
+                view={view}
+                onDateClick={handleDayClick}
+                onEventMove={handleGridEventMove}
+                profileData={profileData}
+                onUpdateProfileData={updateProfileData}
+                isLoadingProfile={isLoadingProfile}
+              />
+            </div>
           </div>
         ) : (
           <>
-            {/* Left: Sidebar */}
-            <div className={cn(
-              "dashboard-sidebar-container min-h-0",
-              isMainSidebarCollapsed ? "flex" : (isSidebarCollapsed ? "hidden lg:flex w-0 overflow-hidden" : "flex")
-            )}>
-              <div className="dashboard-sidebar-inner p-0 overflow-hidden !bg-transparent !border-0 !shadow-none">
-                <CalendarSidebar
-                  currentDate={currentDate}
-                  setCurrentDate={setCurrentDate}
-                  handleUpcomingEventClick={handleUpcomingEventClick}
-                  events={filteredEvents}
-                  isSidebarCollapsed={isSidebarCollapsed}
-                  handleCreateEventClick={() => handleCreateEventClick(currentDate)}
-                  handleDayClick={handleDayClick}
-                  showHeaderDateDropdown={showHeaderDateDropdown}
-                  setShowHeaderDateDropdown={setShowHeaderDateDropdown}
-                  handleHeaderDateClick={handleHeaderDateClick}
-                  dropdownPosition={dropdownPosition}
-                  toggleSidebar={toggleSidebar}
-                  view={view}
-                  visibleWeekStart={visibleWeekStart}
-                  visibleWeekEnd={visibleWeekEnd}
-                  showMiniCalendar={showMiniCalendar}
-                  showUpcomingEvents={showUpcomingEvents}
-                />
+            {/* Left: Sidebar - Only show if mini calendar or upcoming events are visible */}
+            {(showMiniCalendar || showUpcomingEvents) && (
+              <div className={cn(
+                "dashboard-sidebar-container",
+                isMainSidebarCollapsed ? "flex" : (isSidebarCollapsed ? "hidden lg:flex w-0" : "flex"),
+                "dashboard-sidebar-container-desktop pr-0"
+              )} style={{ overflow: 'visible' }}>
+                <div className={cn(
+                  "dashboard-sidebar-inner",
+                  "p-0 !bg-transparent !border-0 !shadow-none"
+                )} style={{ overflow: 'visible' }}>
+                  <CalendarSidebar
+                    currentDate={currentDate}
+                    setCurrentDate={setCurrentDate}
+                    handleUpcomingEventClick={handleUpcomingEventClick}
+                    events={filteredEvents}
+                    isSidebarCollapsed={isSidebarCollapsed}
+                    handleCreateEventClick={() => handleCreateEventClick(currentDate)}
+                    handleDayClick={handleDayClick}
+                    showHeaderDateDropdown={showHeaderDateDropdown}
+                    setShowHeaderDateDropdown={setShowHeaderDateDropdown}
+                    handleHeaderDateClick={handleHeaderDateClick}
+                    dropdownPosition={dropdownPosition}
+                    toggleSidebar={toggleSidebar}
+                    view={view}
+                    visibleWeekStart={visibleWeekStart}
+                    visibleWeekEnd={visibleWeekEnd}
+                    showMiniCalendar={showMiniCalendar}
+                    showUpcomingEvents={showUpcomingEvents}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Right: Main Calendar Grid */}
-            <div className="dashboard-main-content overflow-hidden min-h-0">
-              <div className="flex-1 flex flex-col relative min-w-0 min-h-0 transition-all duration-300 bg-card backdrop-blur-sm rounded-2xl overflow-hidden h-full">
-                <div className="flex-1 overflow-hidden relative calendar-grid flex flex-col">
-            {/* Time Headers - scrollable horizontally (no scrollbar) */}
-            <div className="flex flex-shrink-0" style={{ margin: 0, padding: 0 }}>
-              {/* Time column header - above day headers */}
-              <div
-                className="flex-shrink-0 bg-background/95 backdrop-blur-sm z-10 flex items-end justify-center pb-2"
-                style={{
-                  width: '4rem',
-                  minHeight: '3rem',
-                  boxSizing: 'border-box',
-                  margin: 0,
-                  padding: 0
-                }}
-              >
-                {/* Empty space for time column alignment */}
-              </div>
-
-              {/* Scrollable day headers */}
-              <div
-                className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                ref={headerScrollRef}
-                onScroll={(e) => {
-                  if (scrollContainerRef.current) {
-                    scrollContainerRef.current.scrollLeft = e.target.scrollLeft;
-                  }
-                }}
-              >
-                <TimeHeaders
-                  currentDate={currentDate}
-                  referenceDate={currentDate}
-                  view={view}
-                  handleDayClick={handleDayClick}
-                  scrollContainerRef={headerScrollRef}
-                  numWeeks={numWeeks}
-                  numDays={numDays}
-                  setView={setView}
-                />
-              </div>
-            </div>
-
-            {/* Scrollable Grid Area (no scrollbars) */}
-            <div className="flex-1 time-slots bg-muted/5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <div className="relative min-h-full flex" style={{ margin: 0, padding: 0 }}>
-                {/* Time Labels - fixed, doesn't scroll horizontally - OUTSIDE scroll container */}
-                <div
-                  className="sticky flex-shrink-0 bg-background/95 backdrop-blur-sm z-10"
-                  style={{
-                    width: '4rem',
-                    height: '1440px',
-                    position: 'sticky',
-                    left: 0,
-                    top: 0,
-                    alignSelf: 'flex-start',
-                    boxSizing: 'border-box',
-                    margin: 0,
-                    padding: 0
-                  }}
-                >
-                  {Array.from({ length: 24 }, (_, i) => {
-                    const hour = i;
-                    return (
-                      <div key={i} className="h-[60px] text-[10px] text-muted-foreground text-right pr-4 relative">
-                        <span className="text-[10px] pb-1">
-                          {hour < 10 ? `0${hour}:00` : `${hour}:00`}
-                        </span>
-                      </div>
-                    );
-                  })}
+            <div className={cn(
+              "dashboard-main-content",
+              "dashboard-main-content-desktop",
+              !(showMiniCalendar || showUpcomingEvents) && "flex-1"
+            )}>
+              <div className="dashboard-main-inner flex flex-col h-full">
+                {/* Calendar Header inside main content */}
+                <div className="shrink-0 w-full bg-white border-b border-border/60 px-6 py-3" style={{ minHeight: 'var(--boxed-inputfield-height)' }}>
+                  <CalendarHeader
+                    currentDate={currentDate}
+                    view={view}
+                    setView={setView}
+                    navigateDate={navigateDate}
+                    setCurrentDate={setCurrentDate}
+                    isSidebarCollapsed={false}
+                    toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    categories={categories}
+                    handleCategoryToggle={handleCategoryToggle}
+                    onResetCategories={handleResetCategories}
+                    isTopBarMode={true}
+                    onShowFiltersOverlay={setShowFiltersOverlay}
+                    scrollContainerRef={scrollContainerRef}
+                    calendarMode={calendarMode}
+                    setCalendarMode={setCalendarMode}
+                    isTeamWorkspace={isTeamWorkspace}
+                    handleCreateEventClick={() => handleCreateEventClick(currentDate)}
+                    showMiniCalendar={showMiniCalendar}
+                    setShowMiniCalendar={setShowMiniCalendar}
+                    showUpcomingEvents={showUpcomingEvents}
+                    setShowUpcomingEvents={setShowUpcomingEvents}
+                  />
                 </div>
 
-                {/* Scrollable Grid Container - horizontal scroll only with week snapping */}
-                <div
-                  className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                  style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
-                  ref={scrollContainerRef}
-                  onScroll={(e) => {
-                    if (headerScrollRef.current) {
-                      headerScrollRef.current.scrollLeft = e.target.scrollLeft;
-                    }
-                  }}
-                >
-                  <div className="relative min-h-full min-w-max">
-                    {/* The Actual Grid */}
-                    <div className="time-grid h-full relative min-w-max">
+                <div className="flex-1 h-full flex flex-col calendar-grid overflow-hidden">
+                  {/* Time Headers */}
+                <div className="flex shrink-0">
+                  <div
+                    className="shrink-0 bg-background/95 backdrop-blur-sm z-10 flex items-end justify-center pb-2"
+                    style={{ width: '4rem', minHeight: '3rem' }}
+                  />
+                  <div
+                    className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    ref={headerScrollRef}
+                    onScroll={(e) => {
+                      if (scrollContainerRef.current) {
+                        scrollContainerRef.current.scrollLeft = e.target.scrollLeft;
+                      }
+                    }}
+                  >
+                    <TimeHeaders
+                      currentDate={currentDate}
+                      referenceDate={currentDate}
+                      view={view}
+                      handleDayClick={handleDayClick}
+                      scrollContainerRef={headerScrollRef}
+                      numWeeks={numWeeks}
+                      numDays={numDays}
+                      setView={setView}
+                    />
+                  </div>
+                </div>
+
+                {/* Scrollable Grid Area */}
+                <div className="flex-1 time-slots bg-muted/5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  <div className="relative min-h-full flex">
+                    <div
+                      className="sticky shrink-0 bg-background/95 backdrop-blur-sm z-10"
+                      style={{ width: '4rem', height: '1440px', left: 0, top: 0, alignSelf: 'flex-start' }}
+                    >
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <div key={i} className="h-[60px] text-[10px] text-muted-foreground text-right pr-4 relative">
+                          <span className="text-[10px] pb-1">
+                            {i < 10 ? `0${i}:00` : `${i}:00`}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div
+                      className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                      style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
+                      ref={scrollContainerRef}
+                      onScroll={(e) => {
+                        if (headerScrollRef.current) {
+                          headerScrollRef.current.scrollLeft = e.target.scrollLeft;
+                        }
+                      }}
+                    >
                       <TimeGrid
                         view={view}
                         events={filteredEvents}
@@ -834,8 +822,6 @@ const Calendar = ({ userData }) => {
                   </div>
                 </div>
               </div>
-            </div>
-            </div>
             </div>
           </div>
           </>

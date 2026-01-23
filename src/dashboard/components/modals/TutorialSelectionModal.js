@@ -1,16 +1,10 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { FiPlay, FiTarget } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
-import styles from './TutorialSelectionModal.module.css';
+import Dialog from '../../../components/Dialog/Dialog';
+import Button from '../../../components/BoxedInputFields/Button';
 
-/**
- * TutorialSelectionModal Component
- * 
- * Modal that appears when user clicks "Start Tutorial" button in header.
- * Offers choice between starting all tutorials or just the current page tutorial.
- */
 const TutorialSelectionModal = ({
     isOpen,
     onClose,
@@ -20,11 +14,7 @@ const TutorialSelectionModal = ({
 }) => {
     const { t } = useTranslation(['dashboard', 'common']);
 
-    if (!isOpen) return null;
-
-    // Format page name for display
     const formatPageName = (pageName) => {
-        // Capitalize first letter and handle special cases
         const nameMap = {
             'dashboard': t('dashboard.navigation.overview', 'Dashboard'),
             'messages': t('dashboard.navigation.messages', 'Messages'),
@@ -37,14 +27,7 @@ const TutorialSelectionModal = ({
             'profileTabs': t('dashboard.navigation.profile', 'Profile'),
             'facilityProfileTabs': t('dashboard.navigation.profile', 'Profile')
         };
-
         return nameMap[pageName] || pageName.charAt(0).toUpperCase() + pageName.slice(1);
-    };
-
-    const handleOverlayClick = (e) => {
-        if (e.target === e.currentTarget) {
-            onClose();
-        }
     };
 
     const handleStartAll = () => {
@@ -57,79 +40,68 @@ const TutorialSelectionModal = ({
         onClose();
     };
 
-    return createPortal(
-        <div className="modal-overlay" onClick={handleOverlayClick}>
-            <div className="modal-content" role="dialog" aria-labelledby="tutorial-modal-title" aria-modal="true">
-                <div className="modal-header flex-col items-start gap-1">
-                    <h2 id="tutorial-modal-title" className="modal-title">
-                        {t('dashboard.tutorial.selectionTitle', 'Choose Tutorial Mode')}
-                    </h2>
-                    <p className={styles.subtitle}>
-                        {t('dashboard.tutorial.selectionSubtitle', 'Select how you would like to explore the platform')}
-                    </p>
-                </div>
+    return (
+        <Dialog
+            isOpen={isOpen}
+            onClose={onClose}
+            title={t('dashboard.tutorial.selectionTitle', 'Choose Tutorial Mode')}
+            messageType="info"
+            size="small"
+            actions={
+                <Button variant="secondary" onClick={onClose}>
+                    {t('common.cancel', 'Cancel')}
+                </Button>
+            }
+        >
+            <p className="text-slate-500 text-sm mb-6">
+                {t('dashboard.tutorial.selectionSubtitle', 'Select how you would like to explore the platform')}
+            </p>
 
-                <div className="modal-body custom-scrollbar">
-                    <div className={styles.currentPageInfo}>
-                        <p className={styles.currentPageLabel}>
-                            {t('dashboard.tutorial.currentPage', 'Current Page')}
-                        </p>
-                        <p className={styles.currentPageName}>
-                            {formatPageName(currentPageName)}
-                        </p>
-                    </div>
-
-                    <div className={styles.options}>
-                        <button
-                            className={styles.optionButton}
-                            onClick={handleStartCurrent}
-                            aria-label={t('dashboard.tutorial.currentPageOnly', 'Start tutorial for current page only')}
-                        >
-                            <div className={styles.optionIcon}>
-                                <FiTarget />
-                            </div>
-                            <div className={styles.optionContent}>
-                                <h3 className={styles.optionTitle}>
-                                    {t('dashboard.tutorial.currentPageOnlyTitle', 'Current Page Only')}
-                                </h3>
-                                <p className={styles.optionDescription}>
-                                    {t('dashboard.tutorial.currentPageOnlyDesc', 'Learn about the features on this page')}
-                                </p>
-                            </div>
-                        </button>
-
-                        <button
-                            className={styles.optionButton}
-                            onClick={handleStartAll}
-                            aria-label={t('dashboard.tutorial.allPages', 'Start complete tutorial from the beginning')}
-                        >
-                            <div className={styles.optionIcon}>
-                                <FiPlay />
-                            </div>
-                            <div className={styles.optionContent}>
-                                <h3 className={styles.optionTitle}>
-                                    {t('dashboard.tutorial.allPagesTitle', 'Complete Tutorial')}
-                                </h3>
-                                <p className={styles.optionDescription}>
-                                    {t('dashboard.tutorial.allPagesDesc', 'Start from the beginning and explore all features')}
-                                </p>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-
-                <div className="modal-footer">
-                    <button
-                        className="modal-btn modal-btn-secondary"
-                        onClick={onClose}
-                        aria-label={t('common.cancel', 'Cancel')}
-                    >
-                        {t('common.cancel', 'Cancel')}
-                    </button>
-                </div>
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 mb-1">
+                    {t('dashboard.tutorial.currentPage', 'Current Page')}
+                </p>
+                <p className="text-base font-semibold text-slate-900">
+                    {formatPageName(currentPageName)}
+                </p>
             </div>
-        </div>,
-        document.body
+
+            <div className="flex flex-col gap-3">
+                <button
+                    onClick={handleStartCurrent}
+                    className="group flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all text-left"
+                >
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                        <FiTarget size={24} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-slate-900 mb-0.5">
+                            {t('dashboard.tutorial.currentPageOnlyTitle', 'Current Page Only')}
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                            {t('dashboard.tutorial.currentPageOnlyDesc', 'Learn about the features on this page')}
+                        </p>
+                    </div>
+                </button>
+
+                <button
+                    onClick={handleStartAll}
+                    className="group flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-green-300 hover:bg-green-50/50 transition-all text-left"
+                >
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                        <FiPlay size={24} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-slate-900 mb-0.5">
+                            {t('dashboard.tutorial.allPagesTitle', 'Complete Tutorial')}
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                            {t('dashboard.tutorial.allPagesDesc', 'Start from the beginning and explore all features')}
+                        </p>
+                    </div>
+                </button>
+            </div>
+        </Dialog>
     );
 };
 

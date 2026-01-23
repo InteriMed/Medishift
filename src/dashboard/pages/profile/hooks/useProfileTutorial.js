@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTutorial } from '../../../contexts/TutorialContext';
 import { useLocation } from 'react-router-dom';
+import { TUTORIAL_IDS, isProfileTutorial, getProfileTutorialForType, ONBOARDING_TYPES } from '../../../../config/tutorialSystem';
 
 export const useProfileTutorial = (formData) => {
     const { tutorialPassed, startTutorial, activeTutorial, completedTutorials, isTutorialActive, stepData, onTabCompleted, maxAccessedProfileTab } = useTutorial();
@@ -9,11 +10,12 @@ export const useProfileTutorial = (formData) => {
 
     useEffect(() => {
         const isFacility = formData?.role === 'facility' || formData?.role === 'company';
-        const tutorialName = isFacility ? 'facilityProfileTabs' : 'profileTabs';
+        const onboardingType = isFacility ? ONBOARDING_TYPES.FACILITY : ONBOARDING_TYPES.PROFESSIONAL;
+        const tutorialName = getProfileTutorialForType(onboardingType);
         const isTutorialComplete = isFacility
-            ? completedTutorials?.facilityProfileTabs
-            : completedTutorials?.profileTabs;
-        const isInTutorial = activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs';
+            ? completedTutorials?.[TUTORIAL_IDS.FACILITY_PROFILE_TABS]
+            : completedTutorials?.[TUTORIAL_IDS.PROFILE_TABS];
+        const isInTutorial = isProfileTutorial(activeTutorial);
 
         const shouldStartProfileTutorial =
             formData &&
@@ -21,7 +23,7 @@ export const useProfileTutorial = (formData) => {
             !isTutorialComplete &&
             !isInTutorial &&
             !profileTutorialStartedRef.current &&
-            (activeTutorial === 'dashboard' || location.pathname.includes('/profile'));
+            (activeTutorial === TUTORIAL_IDS.DASHBOARD || location.pathname.includes('/profile'));
 
         if (shouldStartProfileTutorial) {
             const timer = setTimeout(() => {

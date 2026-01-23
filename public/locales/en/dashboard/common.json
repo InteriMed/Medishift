@@ -3,5 +3,17 @@
   "yes": "Yes",
   "cancel": "Cancel",
   "saveAndContinue": "Save and Continue",
-  "discardChanges": "Discard Changes"
+  "discardChanges": "Discard Changes",
+  "yesDiscard": "Yes, Discard",
+  "collapse": "Collapse",
+  "header": {
+    "logoAlt": "MediShift",
+    "brandName": "MediShift",
+    "toggleMenu": "Toggle menu",
+    "search": "Search",
+    "notifications": "Notifications",
+    "startTutorial": "Start Tutorial",
+    "changeLanguage": "Change Language",
+    "profileAlt": "Profile"
+  }
 }

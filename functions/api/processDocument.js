@@ -20,9 +20,11 @@ const visionClient = new vision.ImageAnnotatorClient({
   apiEndpoint: 'eu-vision.googleapis.com'
 });
 
+const { getProjectId, CONFIG } = require('../config/keysDatabase');
+
 // CONFIGURE AI (GEMINI) TO RUN IN EUROPE-WEST1 (Belgium - Better Availability)
 const vertexAI = new VertexAI({
-  project: process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'interimed-620fd',
+  project: getProjectId(),
   location: 'europe-west1'
 });
 

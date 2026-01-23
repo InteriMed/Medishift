@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaInfoCircle } from 'react-icons/fa'; // Using a standard info icon
-import './styles/Hint.css';
+import './styles/boxedInputFields.css';
 
 const Hint = ({ text, xPos = '50%', yPos = '125%', arrowPosition = 'bottom', marginUp = '0px', marginDown = '0px', width = '200px', textAlign = 'left', variant = 'info' }) => {
   // Calculate margin-left dynamically based on xPos if it's a percentage

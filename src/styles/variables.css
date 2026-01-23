@@ -52,6 +52,11 @@
   --yellow-3: #ee991a;
   --yellow-4: #f8b013;
 
+  /* Premium/Subscription Colors */
+  --premium-gold: #D4AF37;
+  --premium-gold-light: rgba(212, 175, 55, 0.15);
+  --premium-gold-bg: rgba(212, 175, 55, 0.05);
+
   /* Modern Gradients */
   --gradient-primary: linear-gradient(135deg, #70a4cf 0%, #357abd 100%);
   --gradient-primary-hover: linear-gradient(135deg, #5a93c4 0%, #2668a8 100%);

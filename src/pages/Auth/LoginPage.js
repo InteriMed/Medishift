@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, sendPasswordResetEmail, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import InputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldHideUnhide from '../../components/BoxedInputFields/InputFieldHideUnhide';
 import UnderlinedLink from '../../components/Links/UnderlinedLink';
@@ -90,7 +91,7 @@ function Login() {
 
       // Get additional user profile data directly from Firestore
       try {
-        const userDocRef = doc(db, "users", user.uid);
+        const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
@@ -133,7 +134,7 @@ function Login() {
             });
           } catch (setDocError) {
             if (setDocError.code === 'unavailable' || (setDocError.message && setDocError.message.includes('offline'))) {
-              console.warn('User document creation skipped - client is offline, will be created when online');
+              // User document creation skipped - client is offline, will be created when online
             } else {
               throw setDocError;
             }
@@ -146,9 +147,9 @@ function Login() {
         }
       } catch (firestoreError) {
         if (firestoreError.code === 'unavailable' || (firestoreError.message && firestoreError.message.includes('offline'))) {
-          console.warn('Firestore data retrieval skipped - client is offline');
+          // Firestore data retrieval skipped - client is offline
         } else {
-          console.error('Firestore data retrieval error:', firestoreError);
+          // Firestore data retrieval error
         }
       }
 
@@ -156,7 +157,7 @@ function Login() {
       // Redirect to dashboard
       navigate(`/${lang}/dashboard`);
     } catch (error) {
-      console.error('Login error:', error);
+      // Login error
 
       // Handle specific Firebase auth errors
       let errorMessage = '';
@@ -206,7 +207,6 @@ function Login() {
           return await getDoc(docRef);
         } catch (err) {
           if (retries > 0 && (err.code === 'unavailable' || err.message?.includes('offline') || err.message?.includes('network'))) {
-            console.warn(`Firestore read failed, retrying... (${retries} attempts left)`);
             await new Promise(resolve => setTimeout(resolve, delay));
             return getDocWithRetry(docRef, retries - 1, delay);
           }
@@ -258,12 +258,12 @@ function Login() {
           navigate(`/${lang}/dashboard/profile`);
         }
       } catch (firestoreError) {
-        console.warn("Firestore error during login check:", firestoreError);
+        // Firestore error during login check
 
         // FAIL-SAFE: If we can't check Firestore (offline), assume the user is valid and let them in.
         // The DashboardContext will attempt to refetch/repair the profile when connection is restored.
         if (firestoreError.code === 'unavailable' || firestoreError.message?.includes('offline')) {
-          console.log("Proceeding with offline login fallback");
+          // Proceeding with offline login fallback
           // Default to profile page to ensure they fill in missing details if it is indeed a new user
           navigate(`/${lang}/dashboard/profile`);
         } else {
@@ -273,7 +273,7 @@ function Login() {
       }
 
     } catch (error) {
-      console.error('Google login error:', error);
+      // Google login error
       setIsLoading(false);
       showError(t('auth.errors.googleLoginFailed'));
     }
@@ -292,7 +292,7 @@ function Login() {
       showError(t('auth.passwordReset.emailSent'));
       setIsModalOpen(false);
     } catch (error) {
-      console.error('Password reset error:', error);
+      // Password reset error
       setModalError(t('auth.errors.resetFailed'));
       showError(t('auth.errors.resetFailed'));
     }
@@ -465,7 +465,7 @@ function Login() {
               </div>
 
               <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-color)', marginBottom: '10px' }}>
-                Account Disabled
+                {t('auth.ban.title')}
               </h2>
 
               <div style={{
@@ -473,14 +473,14 @@ function Login() {
                 marginBottom: '20px', border: '1px solid var(--grey-2)'
               }}>
                 <p style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  <strong style={{ color: 'var(--text-color)' }}>Reason:</strong><br />
+                  <strong style={{ color: 'var(--text-color)' }}>{t('auth.ban.reason')}:</strong><br />
                   <span style={{ color: 'var(--red-4)' }}>{banDetails?.reason}</span>
                 </p>
                 <p style={{ fontSize: '13px', color: 'var(--text-light-color)', lineHeight: '1.5' }}>
                   {banDetails?.info}
                 </p>
                 <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--text-light-color)', textAlign: 'right' }}>
-                  Disabled on: {banDetails?.date}
+                  {t('auth.ban.disabledOn')}: {banDetails?.date}
                 </div>
               </div>
 
@@ -489,7 +489,7 @@ function Login() {
                 className="auth-button primary-button"
                 style={{ width: '100%' }}
               >
-                Understood
+                {t('auth.ban.understood')}
               </button>
             </div>
           </div>

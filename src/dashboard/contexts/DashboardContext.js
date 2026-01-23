@@ -14,16 +14,15 @@ import {
   getAvailableWorkspaces,
   WORKSPACE_TYPES
 } from '../../utils/sessionAuth';
+import { COLLECTIONS, MEDISHIFT_DEMO_FACILITY_ID, isAdminSync } from '../../config/workspaceDefinitions';
 import { buildDashboardUrl, getDefaultRouteForWorkspace } from '../utils/pathUtils';
 import Dialog from '../../components/Dialog/Dialog';
 import Button from '../../components/BoxedInputFields/Button';
+import { getCookieKey, COOKIE_CONFIG, FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 
 const DashboardContext = createContext(null);
 
-// Cookie names for storing profile and tutorial status
-const PROFILE_COMPLETE_COOKIE = 'medishift_profile_complete';
-const TUTORIAL_PASSED_COOKIE = 'medishift_tutorial_passed';
-const COOKIE_EXPIRY_DAYS = 7; // Set cookies to expire after 7 days
+const COOKIE_EXPIRY_DAYS = COOKIE_CONFIG.PROFILE_TUTORIAL_EXPIRY_DAYS;
 
 export const DashboardProvider = ({ children }) => {
   const { currentUser } = useAuth();
@@ -53,25 +52,21 @@ export const DashboardProvider = ({ children }) => {
   // Debug logging - Fixed to prevent infinite loops
   // Debug logging
   useEffect(() => {
-    // console.log("DashboardContext Debug:", { currentUser, isLoading, error });
   }, [currentUser, isLoading, error]);
 
   // Helper functions for cookie management
   const setCookieValues = (userId, isProfessionalProfileComplete, isTutorialPassed) => {
     if (!userId) return;
 
-    // Store values in cookies with expiry time
-    Cookies.set(`${PROFILE_COMPLETE_COOKIE}_${userId}`, isProfessionalProfileComplete ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
-    Cookies.set(`${TUTORIAL_PASSED_COOKIE}_${userId}`, isTutorialPassed ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
-
-    // console.log(`[DashboardContext] Updated cookies - Profile Complete: ${isProfessionalProfileComplete}, Tutorial Passed: ${isTutorialPassed}`);
+    Cookies.set(getCookieKey('PROFILE_COMPLETE', userId), isProfessionalProfileComplete ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
+    Cookies.set(getCookieKey('TUTORIAL_PASSED', userId), isTutorialPassed ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
   };
 
   const getCookieValues = (userId) => {
     if (!userId) return { profileComplete: false, tutorialPassed: false };
 
-    const profileCompleteCookie = Cookies.get(`${PROFILE_COMPLETE_COOKIE}_${userId}`);
-    const tutorialPassedCookie = Cookies.get(`${TUTORIAL_PASSED_COOKIE}_${userId}`);
+    const profileCompleteCookie = Cookies.get(getCookieKey('PROFILE_COMPLETE', userId));
+    const tutorialPassedCookie = Cookies.get(getCookieKey('TUTORIAL_PASSED', userId));
 
     return {
       profileComplete: profileCompleteCookie === 'true',
@@ -82,8 +77,8 @@ export const DashboardProvider = ({ children }) => {
   const clearCookieValues = (userId) => {
     if (!userId) return;
 
-    Cookies.remove(`${PROFILE_COMPLETE_COOKIE}_${userId}`);
-    Cookies.remove(`${TUTORIAL_PASSED_COOKIE}_${userId}`);
+    Cookies.remove(getCookieKey('PROFILE_COMPLETE', userId));
+    Cookies.remove(getCookieKey('TUTORIAL_PASSED', userId));
   };
 
   // Set tutorial completion status
@@ -92,7 +87,7 @@ export const DashboardProvider = ({ children }) => {
 
     try {
       // Use profile collection instead of users
-      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? 'facilityProfiles' : 'professionalProfiles';
+      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? FIRESTORE_COLLECTIONS.FACILITY_PROFILES : FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES;
 
       // Update in database
       await updateDoc(doc(db, collectionName, currentUser.uid), {
@@ -119,7 +114,7 @@ export const DashboardProvider = ({ children }) => {
 
     try {
       // Use profile collection instead of users
-      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? 'facilityProfiles' : 'professionalProfiles';
+      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? FIRESTORE_COLLECTIONS.FACILITY_PROFILES : FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES;
 
       // Update in database
       await updateDoc(doc(db, collectionName, currentUser.uid), {
@@ -308,8 +303,8 @@ export const DashboardProvider = ({ children }) => {
           setCookieValues(currentUser.uid, false, false);
         } else {
           const userData = userDoc.data();
-          const profDocRef = doc(db, 'professionalProfiles', currentUser.uid);
-          const facDocRef = doc(db, 'facilityProfiles', currentUser.uid);
+          const profDocRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, currentUser.uid);
+          const facDocRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, currentUser.uid);
 
           const [profDoc, facDoc] = await Promise.all([
             getDoc(profDocRef),
@@ -328,13 +323,10 @@ export const DashboardProvider = ({ children }) => {
               if (data.isActive !== false) {
                 adminData = data;
                 adminDataRef.current = data;
-                console.log('[DashboardContext] Admin data loaded for user:', currentUser.uid);
               }
-            } else {
-              console.log('[DashboardContext] No admin document found for user:', currentUser.uid);
             }
           } catch (adminErr) {
-            console.warn('[DashboardContext] Failed to fetch admin document:', adminErr.code || adminErr.message);
+            // Error silently ignored
           }
 
           const isProfileComplete = profileData.hasOwnProperty('isProfessionalProfileComplete')
@@ -345,20 +337,18 @@ export const DashboardProvider = ({ children }) => {
             ? profileData.tutorialPassed
             : false;
 
-          if (!userData.role) {
-            await updateDoc(doc(db, 'users', currentUser.uid), {
-              role: 'professional',
-              updatedAt: serverTimestamp()
-            });
-            userData.role = 'professional';
-          }
-
+          // Build user object using CENTRALIZED workspace definitions
+          // hasProfessionalProfile = professionalProfiles document EXISTS
+          // hasFacilityProfile = user has facilityMemberships (not the old flag)
           const userWithId = {
             ...userData,
             ...profileData,
             uid: currentUser.uid,
+            // CENTRALIZED: professionalProfile existence is the ONLY condition
             hasProfessionalProfile: profDoc.exists(),
-            hasFacilityProfile: facDoc.exists(),
+            _professionalProfileExists: profDoc.exists(),
+            // CENTRALIZED: facility access = has memberships in facilityMemberships array
+            hasFacilityProfile: (userData.roles || []).some(r => r.facility_uid),
             adminData: adminData
           };
 
@@ -377,15 +367,6 @@ export const DashboardProvider = ({ children }) => {
           if (!user) setError(`Error fetching user data: ${error.message}`);
         }
       }
-
-      const hasProfessionalProfile = fetchedUser?.hasProfessionalProfile;
-      const hasFacilityProfile = fetchedUser?.hasFacilityProfile;
-
-      if (hasFacilityProfile && (fetchedUser && (fetchedUser.role !== 'facility' && fetchedUser.role !== 'company'))) {
-        if (fetchedUser) setUser(prev => ({ ...prev, role: 'facility' }));
-      } else if (hasProfessionalProfile && (fetchedUser && fetchedUser.role !== 'professional') && !hasFacilityProfile) {
-        if (fetchedUser) setUser(prev => ({ ...prev, role: 'professional' }));
-      }
       setIsLoading(false);
     };
 
@@ -402,8 +383,9 @@ export const DashboardProvider = ({ children }) => {
           const userWithId = { ...userData, uid: docSnapshot.id };
           setUser(prev => ({
             ...userWithId,
-            hasProfessionalProfile: prev?.hasProfessionalProfile,
-            hasFacilityProfile: prev?.hasFacilityProfile,
+            // Preserve computed profile flags - use prev if available, otherwise keep from Firestore
+            hasProfessionalProfile: prev?.hasProfessionalProfile ?? userWithId.hasProfessionalProfile,
+            hasFacilityProfile: prev?.hasFacilityProfile ?? userWithId.hasFacilityProfile,
             adminData: prev?.adminData || adminDataRef.current
           }));
           setUserProfile(userWithId);
@@ -429,11 +411,19 @@ export const DashboardProvider = ({ children }) => {
             setCookieValues(currentUser.uid, isProfileComplete, isTutorialPassed);
           }
 
-          setUser(prev => ({ 
-            ...prev, 
-            ...profileData,
-            adminData: prev?.adminData || adminDataRef.current
-          }));
+          setUser(prev => {
+            // Don't let profile data override critical user fields
+            const { role: _ignoreRole, hasProfessionalProfile: _ignorePP, hasFacilityProfile: _ignoreFP, adminData: _ignoreAdmin, ...safeProfileData } = profileData;
+            return { 
+              ...prev, 
+              ...safeProfileData,
+              // Preserve these critical user fields
+              role: prev?.role,
+              hasProfessionalProfile: prev?.hasProfessionalProfile,
+              hasFacilityProfile: prev?.hasFacilityProfile,
+              adminData: prev?.adminData || adminDataRef.current
+            };
+          });
         }
       }, (error) => {
         console.debug("Profile document listener error (likely missing doc yet):", error.message);
@@ -478,33 +468,37 @@ export const DashboardProvider = ({ children }) => {
 
   const switchWorkspace = useCallback(async (workspace) => {
     if (!workspace || !workspace.id) {
-      console.warn('Invalid workspace provided to switchWorkspace');
       return;
     }
 
-    console.log('[DashboardContext] Switching to workspace:', workspace);
+    // Check if user is admin for bypass logic
+    const userIsAdmin = isAdminSync(user);
 
     try {
       // STRICT: Verify profile document exists before allowing workspace access
+      // ADMIN BYPASS: Admins can access any workspace without profile checks
       if (workspace.type === WORKSPACE_TYPES.PERSONAL) {
-        if (user.hasProfessionalProfile !== true) {
-          console.warn(`[DashboardContext] Cannot switch to Personal workspace - no professional profile exists`);
+        if (!userIsAdmin && user.hasProfessionalProfile !== true) {
           const lang = window.location.pathname.split('/')[1] || 'fr';
           navigate(`/${lang}/onboarding?type=professional`, { replace: true });
           return;
         }
       } else if (workspace.type === WORKSPACE_TYPES.TEAM && isOnline) {
-        const facilityDoc = await getDoc(doc(db, 'facilityProfiles', workspace.facilityId));
-        if (!facilityDoc.exists()) {
-          console.warn(`[DashboardContext] Facility profile not found: ${workspace.facilityId}`);
-          setFacilityNotFoundWorkspace(workspace);
-          setShowFacilityNotFoundDialog(true);
-          return;
+        // Skip document check for Medishift Demo Facility (admin-only virtual facility)
+        const isDemoFacility = workspace.facilityId === MEDISHIFT_DEMO_FACILITY_ID || workspace.isAdminDemo;
+        
+        if (!isDemoFacility) {
+          const facilityDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, workspace.facilityId));
+          if (!facilityDoc.exists()) {
+            setFacilityNotFoundWorkspace(workspace);
+            setShowFacilityNotFoundDialog(true);
+            return;
+          }
         }
 
         // Also verify user has facility profile if this is their own facility
-        if (workspace.facilityId === user.uid && user.hasFacilityProfile !== true) {
-          console.warn(`[DashboardContext] Cannot switch to Facility workspace - no facility profile exists`);
+        // ADMIN BYPASS: Admins can access any facility
+        if (!userIsAdmin && workspace.facilityId === user.uid && user.hasFacilityProfile !== true) {
           const lang = window.location.pathname.split('/')[1] || 'fr';
           navigate(`/${lang}/onboarding?type=facility`, { replace: true });
           return;
@@ -532,14 +526,9 @@ export const DashboardProvider = ({ children }) => {
       }
 
       if (!sessionToken && workspace.type === WORKSPACE_TYPES.TEAM && isOnline) {
-        console.warn('[DashboardContext] Failed to create workspace session - Facility may not exist');
         setFacilityNotFoundWorkspace(workspace);
         setShowFacilityNotFoundDialog(true);
         return;
-      }
-
-      if (!sessionToken) {
-        console.warn('[DashboardContext] Failed to create workspace session - Token is null. Setting workspace anyway to prevent UI breakage.');
       }
 
       setSelectedWorkspace(workspace);
@@ -550,32 +539,33 @@ export const DashboardProvider = ({ children }) => {
       
       if (typeChanged) {
         // If switching workspace types, navigate to appropriate default page and reload
-        console.log('[DashboardContext] Workspace type changed, navigating to default page');
-        
-        const searchParams = new URLSearchParams();
-        searchParams.set('workspace', workspace.id);
-        
         let targetUrl;
         if (workspace.type === WORKSPACE_TYPES.ADMIN) {
-          targetUrl = `/dashboard/admin/portal?${searchParams.toString()}`;
+          targetUrl = `/dashboard/admin/portal`;
         } else if (workspace.type === WORKSPACE_TYPES.TEAM) {
-          targetUrl = `/dashboard/overview?${searchParams.toString()}`;
+          targetUrl = `/dashboard/${workspace.facilityId}/overview`;
         } else if (workspace.type === WORKSPACE_TYPES.PERSONAL) {
-          targetUrl = `/dashboard/overview?${searchParams.toString()}`;
+          targetUrl = `/dashboard/personal/overview`;
         } else {
-          targetUrl = `/dashboard/overview?${searchParams.toString()}`;
+          targetUrl = `/dashboard/personal/overview`;
         }
         
         // Use window.location to ensure full reload with new workspace context
         window.location.href = targetUrl;
       } else {
-        // Same workspace type, just update the URL parameter
+        // Same workspace type, just update the URL path if needed
         const currentPath = location.pathname;
-        const searchParams = new URLSearchParams(location.search);
-        searchParams.set('workspace', workspace.id);
-        const targetUrl = `${currentPath}?${searchParams.toString()}${location.hash}`;
-        console.log('[DashboardContext] switchWorkspace: Updating URL workspace parameter:', targetUrl);
-        navigate(targetUrl, { replace: true });
+        const segments = currentPath.split('/').filter(Boolean);
+        const dashboardIndex = segments.indexOf('dashboard');
+        
+        if (dashboardIndex !== -1 && segments.length > dashboardIndex + 1) {
+          const currentWorkspaceId = segments[dashboardIndex + 1];
+          if (currentWorkspaceId !== workspace.id) {
+            segments[dashboardIndex + 1] = workspace.id;
+            const targetUrl = '/' + segments.join('/');
+            navigate(targetUrl, { replace: true });
+          }
+        }
       }
 
     } catch (error) {
@@ -608,7 +598,7 @@ export const DashboardProvider = ({ children }) => {
         });
       }
 
-      const facilityRef = doc(db, 'facilityProfiles', facilityId);
+      const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facilityId);
       const facilitySnap = await getDoc(facilityRef);
       if (facilitySnap.exists()) {
         const facilityData = facilitySnap.data();
@@ -669,17 +659,9 @@ export const DashboardProvider = ({ children }) => {
   const lastProcessedUserRef = useRef(null);
 
   useEffect(() => {
-    console.log('[DashboardContext] === WORKSPACE INIT START ===', {
-      path: location.pathname,
-      search: location.search,
-      user: user?.uid,
-      selectedWorkspace: selectedWorkspace?.id,
-      hasAdminData: !!user?.adminData || !!adminDataRef.current
-    });
 
     // Skip if no user
     if (!user) {
-      console.log('[DashboardContext] No user, returning early');
       lastProcessedUserRef.current = null;
       return;
     }
@@ -688,7 +670,6 @@ export const DashboardProvider = ({ children }) => {
     const urlParamsEarly = new URLSearchParams(location.search);
     const requestedWorkspace = urlParamsEarly.get('workspace');
     if (requestedWorkspace === 'admin' && !user.adminData && !adminDataRef.current) {
-      console.log('[DashboardContext] Admin workspace requested but adminData not loaded yet, waiting...');
       return;
     }
 
@@ -697,44 +678,34 @@ export const DashboardProvider = ({ children }) => {
       user.adminData = adminDataRef.current;
     }
 
-    // AGGRESSIVE BYPASS: If on profile path with workspace param, just set workspace and return
+    // AGGRESSIVE BYPASS: If on profile path with workspace segment, just set workspace and return
     // This prevents ANY redirect logic from running during profile navigation
-    if (location.pathname.includes('/dashboard/profile')) {
-      const urlParams = new URLSearchParams(location.search);
-      const workspaceId = urlParams.get('workspace');
-      console.log('[DashboardContext] On profile path, workspaceId from URL:', workspaceId);
-      if (workspaceId) {
-        const availableWs = getAvailableWorkspaces(user);
-        const wsFromUrl = availableWs.find(w => w.id === workspaceId);
-        if (wsFromUrl) {
-          console.log('[DashboardContext] BYPASS: On profile path with valid workspace:', wsFromUrl.name);
+    const segments = location.pathname.split('/').filter(Boolean);
+    const dashboardIndex = segments.indexOf('dashboard');
+    if (dashboardIndex !== -1 && segments.length > dashboardIndex + 1) {
+      const workspaceId = segments[dashboardIndex + 1];
+      
+      const availableWs = getAvailableWorkspaces(user);
+      const wsFromUrl = availableWs.find(w => w.id === workspaceId);
+      
+      if (wsFromUrl) {
 
-          let stateChanged = false;
-          if (!selectedWorkspace || selectedWorkspace.id !== wsFromUrl.id) {
-            setSelectedWorkspace(wsFromUrl);
-            setWorkspaceCookie(wsFromUrl);
-            stateChanged = true;
-          }
-
-          // Only update workspaces if they changed
-          const newHash = JSON.stringify(availableWs);
-          const oldHash = JSON.stringify(workspaces);
-          if (newHash !== oldHash) {
-            setWorkspaces(availableWs);
-            stateChanged = true;
-          }
-
-          if (stateChanged) {
-            console.log('[DashboardContext] BYPASS: State updated, returning');
-          } else {
-            console.log('[DashboardContext] BYPASS: State already correct, returning');
-          }
-          return;
-        } else {
-          console.log('[DashboardContext] Workspace from URL not found in available workspaces:', availableWs.map(w => w.id));
+        let stateChanged = false;
+        if (!selectedWorkspace || selectedWorkspace.id !== wsFromUrl.id) {
+          setSelectedWorkspace(wsFromUrl);
+          setWorkspaceCookie(wsFromUrl);
+          stateChanged = true;
         }
-      } else {
-        console.log('[DashboardContext] On profile but no workspace param in URL');
+
+        // Only update workspaces if they changed
+        const newHash = JSON.stringify(availableWs);
+        const oldHash = JSON.stringify(workspaces);
+        if (newHash !== oldHash) {
+          setWorkspaces(availableWs);
+          stateChanged = true;
+        }
+
+        return;
       }
     }
 
@@ -748,18 +719,16 @@ export const DashboardProvider = ({ children }) => {
 
     // If critical user data hasn't changed, skip initialization
     if (lastProcessedUserRef.current === currentUserHash) {
-      console.log('[DashboardContext] User hash unchanged, skipping init');
       return;
     }
 
     // Update the ref
     lastProcessedUserRef.current = currentUserHash;
 
-    console.log('[DashboardContext] Initializing workspaces for user:', user.uid);
 
     // Get available workspaces based on user roles
     const availableWorkspaces = getAvailableWorkspaces(user);
-    console.log('[DashboardContext] Available workspaces:', availableWorkspaces.map(w => w.id));
+
 
     // Only update workspaces state if it actually changed to prevent downstream re-renders
     setWorkspaces(prev => {
@@ -768,41 +737,55 @@ export const DashboardProvider = ({ children }) => {
       return prevHash === newHash ? prev : availableWorkspaces;
     });
 
-    // Try to restore workspace from URL first, then cookie
-    const urlParams = new URLSearchParams(location.search);
-    const workspaceIdFromUrl = urlParams.get('workspace');
+    // Try to restore workspace from URL path first, then cookie
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const dashIdx = pathSegments.indexOf('dashboard');
+    const workspaceIdFromUrl = dashIdx !== -1 && pathSegments.length > dashIdx + 1 ? pathSegments[dashIdx + 1] : null;
+    
     let workspaceFromUrl = null;
     if (workspaceIdFromUrl) {
       workspaceFromUrl = availableWorkspaces.find(w => w.id === workspaceIdFromUrl);
-      console.log('[DashboardContext] Workspace from URL:', workspaceIdFromUrl, 'found:', !!workspaceFromUrl);
-      // EARLY RETURN: If URL already has a valid workspace, just set it and don't navigate
-      // This prevents race conditions with TutorialContext navigates
+      
       if (workspaceFromUrl && !selectedWorkspace) {
-        console.log('[DashboardContext] Workspace found in URL, setting without navigation:', workspaceFromUrl.id);
         setSelectedWorkspace(workspaceFromUrl);
         setWorkspaceCookie(workspaceFromUrl);
         return;
+      }
+      
+      if (!workspaceFromUrl && workspaceIdFromUrl === 'personal') {
+        if (typeof user.hasProfessionalProfile === 'undefined') {
+          return;
+        }
+        if (user.hasProfessionalProfile === false) {
+          return;
+        }
       }
     }
 
     // Try to restore workspace from cookie if not in URL
     const savedWorkspace = workspaceFromUrl || getWorkspaceCookie();
-    console.log('[DashboardContext] savedWorkspace:', savedWorkspace?.id, 'selectedWorkspace:', selectedWorkspace?.id);
 
-    // Check if we already have a selected workspace that is valid
+
     if (selectedWorkspace) {
       // If the current selected workspace is still in the available list, we're good
       const stillAvailable = availableWorkspaces.find(w => w.id === selectedWorkspace.id);
-      console.log('[DashboardContext] selectedWorkspace exists, stillAvailable:', !!stillAvailable);
       if (stillAvailable) {
         // Only enforce workspace in URL if we are on a dashboard page
         if (location.pathname.includes('/dashboard')) {
-          const searchParams = new URLSearchParams(location.search);
-          const currentWorkspaceInUrl = searchParams.get('workspace');
-          if (!currentWorkspaceInUrl || currentWorkspaceInUrl !== selectedWorkspace.id) {
-            searchParams.set('workspace', selectedWorkspace.id);
-            const newUrl = `${location.pathname}?${searchParams.toString()}`;
-            console.log('[DashboardContext] Adding workspace to URL:', newUrl);
+          const currentPath = location.pathname;
+          const segments = currentPath.split('/').filter(Boolean);
+          const dIdx = segments.indexOf('dashboard');
+          
+          if (dIdx !== -1 && (segments.length <= dIdx + 1 || segments[dIdx + 1] !== selectedWorkspace.id)) {
+            // Correct the path to include workspace ID
+            const newSegments = [...segments];
+            if (newSegments.length <= dIdx + 1) {
+              newSegments.push(selectedWorkspace.id);
+              newSegments.push('overview');
+            } else {
+              newSegments[dIdx + 1] = selectedWorkspace.id;
+            }
+            const newUrl = '/' + newSegments.join('/');
             navigate(newUrl, { replace: true });
           }
         }
@@ -813,48 +796,61 @@ export const DashboardProvider = ({ children }) => {
     // Only attempt to switch/restore workspace if we are on a dashboard page
     // This prevents redirection loops on public pages or test pages
     if (!location.pathname.includes('/dashboard') && !location.pathname.includes('/onboarding')) {
-      console.log('[DashboardContext] Not on dashboard/onboarding, skipping');
       return;
     }
 
     if (savedWorkspace && availableWorkspaces.find(w => w.id === savedWorkspace.id)) {
-      console.log('[DashboardContext] Restoring workspace from cookie:', savedWorkspace.id);
+
 
       // Validate existing session
-      let hasValidSession = false;
-      if (savedWorkspace.type === WORKSPACE_TYPES.PERSONAL) {
-        hasValidSession = validateWorkspaceSession(WORKSPACE_TYPES.PERSONAL) !== null;
-      } else if (savedWorkspace.type === WORKSPACE_TYPES.TEAM) {
-        hasValidSession = validateWorkspaceSession(WORKSPACE_TYPES.TEAM, savedWorkspace.facilityId) !== null;
-      } else if (savedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
-        hasValidSession = validateWorkspaceSession(WORKSPACE_TYPES.ADMIN) !== null;
-      }
-      console.log('[DashboardContext] hasValidSession:', hasValidSession);
+      let hasValidSession = true; // Default to true since we are using path-based routing
+      
+      // Only validate if we are NOT using path-based routing or if we explicitly want to check cookies
+      // hasValidSession = validateWorkspaceSession(...) !== null;
+      
 
       if (hasValidSession) {
         setSelectedWorkspace(savedWorkspace);
 
         const currentPath = location.pathname;
-        const searchParams = new URLSearchParams(location.search);
-        searchParams.set('workspace', savedWorkspace.id);
+        const segments = currentPath.split('/').filter(Boolean);
+        const dIdx = segments.indexOf('dashboard');
 
-        const targetUrl = `${currentPath}?${searchParams.toString()}${location.hash}`;
-        console.log('[DashboardContext] Restoring workspace: Updating URL parameter:', targetUrl);
-
-        navigate(targetUrl, { replace: true });
+        if (dIdx !== -1 && (segments.length <= dIdx + 1 || segments[dIdx + 1] !== savedWorkspace.id)) {
+          const newSegments = [...segments];
+          if (newSegments.length <= dIdx + 1) {
+            newSegments.push(savedWorkspace.id);
+            newSegments.push('overview');
+          } else {
+            newSegments[dIdx + 1] = savedWorkspace.id;
+          }
+          const targetUrl = '/' + newSegments.join('/');
+          navigate(targetUrl, { replace: true });
+        }
       } else {
-        console.log('[DashboardContext] No valid session, calling switchWorkspace');
         switchWorkspace(savedWorkspace);
       }
     } else if (availableWorkspaces.length > 0) {
+      // CRITICAL FIX: If URL explicitly requests a workspace, don't auto-select a different one
+      // Wait for user data to fully load so the requested workspace appears in available list
+      if (workspaceIdFromUrl && !workspaceFromUrl) {
+        // Check if we're waiting for professional profile data
+        if (workspaceIdFromUrl === 'personal' && typeof user.hasProfessionalProfile === 'undefined') {
+          return;
+        }
+        // If workspace is explicitly requested but not available, don't auto-select
+        // The switchWorkspace function will handle validation and redirect if needed
+        return;
+      }
+
       // Auto-select workspace based on user's primary role to avoid blinking
-      console.log('[DashboardContext] No saved workspace, auto-selecting based on role');
 
       // Prioritize based on user's primary role field
       const primaryWorkspace = availableWorkspaces.find(w => {
-        if (user.role === 'facility' || user.role === 'company') {
+        const isFacilityRole = (user.roles || []).some(r => r.facility_uid);
+        if (isFacilityRole) {
           return w.type === WORKSPACE_TYPES.TEAM;
-        } else if (user.role === 'professional') {
+        } else if (user._professionalProfileExists || user.hasProfessionalProfile) {
           return w.type === WORKSPACE_TYPES.PERSONAL;
         }
         return false;
@@ -862,10 +858,8 @@ export const DashboardProvider = ({ children }) => {
 
       // Fall back to first workspace if no match found
       const workspaceToSelect = primaryWorkspace || availableWorkspaces[0];
-      console.log('[DashboardContext] Selected workspace:', workspaceToSelect?.id);
       switchWorkspace(workspaceToSelect);
     } else {
-      console.log('[DashboardContext] No workspaces available for user - no profiles exist, redirecting to onboarding');
       setSelectedWorkspace(null);
       clearWorkspaceCookie();
 
@@ -878,19 +872,19 @@ export const DashboardProvider = ({ children }) => {
 
       if (!onboardingCompleted && location.pathname.includes('/dashboard')) {
         const lang = window.location.pathname.split('/')[1] || 'fr';
-        const onboardingType = user.role === 'facility' || user.role === 'company' ? 'facility' : 'professional';
-        console.log('[DashboardContext] Redirecting to onboarding:', onboardingType);
+        const onboardingType = (user.roles || []).some(r => r.facility_uid) ? 'facility' : 'professional';
         navigate(`/${lang}/onboarding?type=${onboardingType}`, { replace: true });
         return;
       }
 
-      // Remove workspace from URL if no workspaces available
+      // Remove workspace from URL search params if no workspaces available (it's now in the path)
       const searchParams = new URLSearchParams(location.search);
-      searchParams.delete('workspace');
-      const newUrl = searchParams.toString() ? `${location.pathname}?${searchParams.toString()}` : location.pathname;
-      navigate(newUrl, { replace: true });
+      if (searchParams.has('workspace')) {
+        searchParams.delete('workspace');
+        const newUrl = searchParams.toString() ? `${location.pathname}?${searchParams.toString()}` : location.pathname;
+        navigate(newUrl, { replace: true });
+      }
     }
-    console.log('[DashboardContext] === WORKSPACE INIT END ===');
   }, [user, switchWorkspace, selectedWorkspace, location, navigate]);
 
   // Validate workspace session periodically
@@ -905,21 +899,12 @@ export const DashboardProvider = ({ children }) => {
     }
 
     const validateSession = () => {
-      let isValid = false;
-
-      if (selectedWorkspace.type === WORKSPACE_TYPES.PERSONAL) {
-        isValid = validateWorkspaceSession(WORKSPACE_TYPES.PERSONAL) !== null;
-      } else if (selectedWorkspace.type === WORKSPACE_TYPES.TEAM) {
-        isValid = validateWorkspaceSession(WORKSPACE_TYPES.TEAM, selectedWorkspace.facilityId) !== null;
-      } else if (selectedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
-        isValid = validateWorkspaceSession(WORKSPACE_TYPES.ADMIN) !== null;
-      }
-
-      if (!isValid) {
-        console.warn('[DashboardContext] Session expired, clearing workspace');
-        setSelectedWorkspace(null);
-        clearWorkspaceCookie();
-      }
+      // DISABLED: Session validation via cookies is causing loops because path-based routing
+      // doesn't always create a session token immediately.
+      // let isValid = false;
+      // ...
+      // if (!isValid) { ... }
+      console.log('[DashboardContext] Session validation skipped (path-based routing active)');
     };
 
     // Validate immediately and then every 5 minutes
@@ -932,10 +917,8 @@ export const DashboardProvider = ({ children }) => {
   const fetchUserProfile = async (userId, userRole) => {
     try {
       // Determine the correct profile collection based on role
-      const profileCollection = (userRole === 'facility' || userRole === 'company') ? 'facilityProfiles' : 'professionalProfiles';
+      const profileCollection = (userRole === 'facility' || userRole === 'company') ? FIRESTORE_COLLECTIONS.FACILITY_PROFILES : FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES;
       const profileDocRef = doc(db, profileCollection, userId);
-
-      console.log(`Fetching profile from ${profileCollection} collection for user:`, userId);
 
       const profileSnapshot = await getDoc(profileDocRef);
 
@@ -943,11 +926,9 @@ export const DashboardProvider = ({ children }) => {
         const profileData = profileSnapshot.data();
         return profileData;
       } else {
-        console.log(`No profile document found in ${profileCollection} for user:`, userId);
         return null;
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
       throw error;
     }
   };

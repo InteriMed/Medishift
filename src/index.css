@@ -169,9 +169,6 @@ button:hover .arrow-animate,
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
-}
-
-.bg-hero-gradient::before {
   background-image:
     radial-gradient(circle at 10% 10%, rgba(251, 207, 232, 0.4) 0%, transparent 50%),
     radial-gradient(circle at 20% 20%, rgba(199, 210, 254, 0.4) 0%, transparent 50%),
@@ -201,20 +198,6 @@ button:hover .arrow-animate,
   }
 }
 
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
 @keyframes gradientShift {
   0% {
     background-position: 0% 50%;
@@ -231,7 +214,7 @@ button:hover .arrow-animate,
 
 .animate-gradient {
   background-size: 200% auto;
-  animation: gradient 3s ease infinite;
+  animation: gradientShift 3s ease infinite;
 }
 
 @keyframes bounce-slow {
@@ -338,6 +321,23 @@ button:hover .arrow-animate,
   animation: tutorial-highlight-pulse 1.5s ease-out infinite !important;
   z-index: 5 !important;
   pointer-events: auto !important;
+  overflow: visible !important;
+}
+
+nav:has(.tutorial-highlight) {
+  overflow-x: visible !important;
+}
+
+nav:has(.tutorial-highlight) > * {
+  overflow-x: visible !important;
+}
+
+div:has(.tutorial-highlight) {
+  overflow-x: visible !important;
+}
+
+[data-tutorial="profile-upload-button"]:has(.tutorial-highlight) {
+  overflow: visible !important;
 }
 
 @keyframes shake {
@@ -407,6 +407,7 @@ input[readonly].banking-masked::placeholder,
 /* CENTRALIZED DASHBOARD DIVS STYLING */
 .dashboard-sidebar-container {
   @apply flex flex-col transition-all duration-300 shrink-0;
+  overflow: visible !important;
 }
 
 .dashboard-sidebar-container-mobile {
@@ -414,11 +415,13 @@ input[readonly].banking-masked::placeholder,
 }
 
 .dashboard-sidebar-container-desktop {
-  @apply w-full md:w-[320px] lg:w-[360px] overflow-visible;
+  @apply w-full md:w-[320px] lg:w-[360px];
+  overflow: visible !important;
 }
 
 .dashboard-sidebar-inner {
-  @apply flex-1 flex flex-col bg-card backdrop-blur-sm border border-border/50 shadow-lg overflow-y-auto overflow-x-hidden rounded-2xl;
+  @apply flex-1 flex flex-col bg-card backdrop-blur-sm border border-border/50 shadow-lg rounded-2xl;
+  overflow: visible !important;
 }
 
 .dashboard-sidebar-inner-mobile {
@@ -471,4 +474,60 @@ input[readonly].banking-masked::placeholder,
   @apply mb-6;
   color: var(--text-light-color);
   font-family: var(--font-family-text, Roboto, sans-serif);
+}
+
+/* DASHBOARD HEADER MOBILE RESPONSIVE STYLES */
+.profile-sidebar-menu {
+  overflow: visible !important;
+}
+
+.profile-sidebar-tabs {
+  overflow: visible !important;
+}
+
+.profile-sidebar-tabs > * {
+  overflow: visible !important;
+}
+
+.profile-sidebar-autofill {
+  overflow: visible !important;
+}
+
+.calendar-sidebar-container {
+  overflow: visible !important;
+}
+
+.calendar-sidebar-container > * {
+  overflow: visible !important;
+}
+
+@media (max-width: 640px) {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    min-height: 56px;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  header {
+    min-height: 64px;
+  }
+}
+
+@media (min-width: 1400px) {
+  header > div {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
 }

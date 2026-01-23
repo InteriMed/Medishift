@@ -70,7 +70,7 @@ const AccountManagement = ({
     const loadFacilityMemberships = async () => {
       if (!currentUser?.uid) return;
       try {
-        const userRef = doc(db, 'users', currentUser.uid);
+        const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           const userData = userSnap.data();
@@ -246,7 +246,7 @@ const AccountManagement = ({
       const facilityId = targetFacility.facilityId || targetFacility.facilityProfileId;
       const userId = currentUser.uid;
 
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
         const userData = userSnap.data();

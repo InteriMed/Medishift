@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useMobileView } from '../../hooks/useMobileView';
@@ -9,11 +9,12 @@ import ContractPdfView from './components/ContractPdfView';
 import ContractsList from './components/ContractsList';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import EmptyState from '../../components/EmptyState/EmptyState';
-import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import { FiSearch, FiFileText, FiInbox, FiX, FiSliders } from 'react-icons/fi';
 import { cn } from '../../../utils/cn';
 import { useTutorial } from '../../contexts/TutorialContext';
+import { TUTORIAL_IDS } from '../../../config/tutorialSystem';
 import './contracts.module.css';
+import '../../../components/BoxedInputFields/styles/boxedInputFields.css';
 
 const Contracts = () => {
     const { t } = useTranslation(['dashboard', 'contracts']);
@@ -40,9 +41,10 @@ const Contracts = () => {
     const [isPdfView, setIsPdfView] = useState(false);
     const [showSidebar, setShowSidebar] = useState(true);
     const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
+    const filterDropdownRef = useRef(null);
 
     const getMockContracts = useCallback(() => {
-        if (!isTutorialActive || activeTutorial !== 'contracts') return [];
+        if (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.CONTRACTS) return [];
         
         return [
             {
@@ -163,7 +165,7 @@ const Contracts = () => {
     }, [contracts, getMockContracts]);
 
     const allFilteredContracts = useMemo(() => {
-        if (isTutorialActive && activeTutorial === 'contracts' && contracts.length === 0) {
+        if (isTutorialActive && activeTutorial === TUTORIAL_IDS.CONTRACTS && contracts.length === 0) {
             return mockContracts;
         }
         return filteredContracts;
@@ -186,7 +188,7 @@ const Contracts = () => {
     }, [isMobile, selectedContract, setPageMobileState]);
 
     useEffect(() => {
-        if (!isTutorialActive || activeTutorial !== 'contracts') {
+        if (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.CONTRACTS) {
             if (selectedContract?.isTutorial) {
                 setSelectedContract(null);
                 setIsPdfView(false);
@@ -196,6 +198,22 @@ const Contracts = () => {
             }
         }
     }, [isTutorialActive, activeTutorial, selectedContract, isMobile]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
+                setShowFiltersOverlay(false);
+            }
+        };
+
+        if (showFiltersOverlay && !isMobile) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showFiltersOverlay, isMobile]);
 
     const handleContractSelect = useCallback((contractId) => {
         const contract = allFilteredContracts.find(c => c.id === contractId) || allContracts.find(c => c.id === contractId);
@@ -238,14 +256,6 @@ const Contracts = () => {
         { value: 'sent', label: t('contracts:status.sent') }
     ];
 
-    const dateRangeOptions = [
-        { value: '', label: t('contracts:dateRange.all') },
-        { value: 'last-week', label: t('contracts:dateRange.lastWeek') },
-        { value: 'last-month', label: t('contracts:dateRange.lastMonth') },
-        { value: 'last-3-months', label: t('contracts:dateRange.last3Months') },
-        { value: 'last-year', label: t('contracts:dateRange.lastYear') }
-    ];
-
     if (isLoading) {
         return <LoadingSpinner />;
     }
@@ -270,110 +280,6 @@ const Contracts = () => {
             isMobile && "overflow-y-hidden"
         )} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
             <div className={cn(
-                "shrink-0 w-full z-20 bg-white border-b border-border/60 shadow-sm min-h-16 py-3 flex items-center",
-                isMobile ? "px-4" : "px-6 sm:px-8"
-            )}>
-                {isMobile ? (
-                    <div className="flex items-center gap-2">
-                        <div className="flex-1 relative">
-                            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                            <input
-                                type="text"
-                                placeholder={t('contracts:searchPlaceholder')}
-                                value={filters.searchTerm || ''}
-                                onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                                className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                                style={{ 
-                                  color: 'var(--boxed-inputfield-color-text)', 
-                                  fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                  height: 'var(--boxed-inputfield-height)',
-                                  fontWeight: '500'
-                                }}
-                            />
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                {filters.searchTerm && (
-                                    <button
-                                        onClick={() => updateFilters({ searchTerm: '' })}
-                                        className="p-1.5 hover:bg-muted rounded-full transition-colors"
-                                    >
-                                        <FiX className="w-4 h-4 text-muted-foreground" />
-                                    </button>
-                                )}
-                                <button
-                                    onClick={() => setShowFiltersOverlay(true)}
-                                    className={cn(
-                                        "p-1.5 rounded-full transition-colors",
-                                        hasActiveFilters ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
-                                    )}
-                                >
-                                    <FiSliders className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1 flex items-center gap-3">
-                            <div className="flex-1 relative">
-                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                                <input
-                                    type="text"
-                                    placeholder={t('contracts:searchPlaceholder')}
-                                    value={filters.searchTerm || ''}
-                                    onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                                    className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                                    style={{ 
-                                      color: 'var(--boxed-inputfield-color-text)', 
-                                      fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                      height: 'var(--boxed-inputfield-height)',
-                                      fontWeight: '500'
-                                    }}
-                                />
-                                {filters.searchTerm && (
-                                    <button
-                                        onClick={() => updateFilters({ searchTerm: '' })}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
-                                    >
-                                        <FiX className="w-3.5 h-3.5 text-muted-foreground" />
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="shrink-0 min-w-[120px] " style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                                <SimpleDropdown
-                                    label={null}
-                                    options={statusOptions}
-                                    value={filters.status || 'all'}
-                                    onChange={(value) => updateFilters({ status: value })}
-                                    placeholder={t('contracts:status.all')}
-                                />
-                            </div>
-
-                            <div className="shrink-0 min-w-[120px] " style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                                <SimpleDropdown
-                                    label={null}
-                                    options={dateRangeOptions}
-                                    value={filters.dateRange || ''}
-                                    onChange={(value) => updateFilters({ dateRange: value })}
-                                    placeholder={t('contracts:dateRange.all')}
-                                />
-                            </div>
-                        </div>
-
-                        {hasActiveFilters && (
-                            <button
-                                onClick={() => updateFilters({ status: 'all', dateRange: null, searchTerm: '' })}
-                                className="shrink-0 h-9 px-4 rounded-lg border border-input bg-background text-xs font-medium hover:bg-muted transition-all"
-                                style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
-                            >
-                                {t('contracts:clear')}
-                            </button>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            <div className={cn(
                 "flex-1 flex min-h-0 relative",
                 isMobile ? "p-0 overflow-hidden" : "p-6 gap-6 overflow-visible"
             )}>
@@ -390,7 +296,71 @@ const Contracts = () => {
                         "dashboard-sidebar-inner",
                         isMobile && "dashboard-sidebar-inner-mobile"
                     )}>
-                        {!hasAnyContracts && (!isTutorialActive || activeTutorial !== 'contracts') ? (
+                        <div className={cn(
+                            "shrink-0 w-full",
+                            isMobile ? "p-4 pb-3" : "p-4 pb-3"
+                        )} style={{ position: 'relative', zIndex: 100 }}>
+                            <div ref={filterDropdownRef} style={{ position: 'relative' }}>
+                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+                                <input
+                                    type="text"
+                                    placeholder={t('contracts:searchPlaceholder')}
+                                    value={filters.searchTerm || ''}
+                                    onChange={(e) => updateFilters({ searchTerm: e.target.value })}
+                                    className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                                    style={{ 
+                                      color: 'var(--boxed-inputfield-color-text)', 
+                                      fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                      height: 'var(--boxed-inputfield-height)',
+                                      fontWeight: '500'
+                                    }}
+                                />
+                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                    {filters.searchTerm && (
+                                        <button
+                                            onClick={() => updateFilters({ searchTerm: '' })}
+                                            className="p-1.5 hover:bg-muted rounded-full transition-colors"
+                                        >
+                                            <FiX className="w-4 h-4 text-muted-foreground" />
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => setShowFiltersOverlay(!showFiltersOverlay)}
+                                        className={cn(
+                                            "p-1.5 rounded-full transition-colors",
+                                            hasActiveFilters ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
+                                        )}
+                                    >
+                                        <FiSliders className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                {showFiltersOverlay && !isMobile && (
+                                    <div className="boxed-dropdown-options" style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+                                        {statusOptions.map(option => (
+                                            <button
+                                                key={option.value}
+                                                onClick={() => { 
+                                                    updateFilters({ status: option.value }); 
+                                                    if (option.value === 'all') {
+                                                        setShowFiltersOverlay(false);
+                                                    }
+                                                }}
+                                                className={cn(
+                                                    "boxed-dropdown-option",
+                                                    filters.status === option.value && "boxed-dropdown-option--selected"
+                                                )}
+                                                style={{ width: '100%', textAlign: 'left' }}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {!hasAnyContracts && (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.CONTRACTS) ? (
                             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 ring-4 ring-background">
                                     <FiInbox className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
@@ -398,7 +368,7 @@ const Contracts = () => {
                                 <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('contracts:noContracts')}</h2>
                                 <p className="mb-6" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('contracts:startApplying')}</p>
                             </div>
-                        ) : !hasAnyContracts && isTutorialActive && activeTutorial === 'contracts' ? (
+                        ) : !hasAnyContracts && isTutorialActive && activeTutorial === TUTORIAL_IDS.CONTRACTS ? (
                             <div className="flex-1 overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
                                 <ContractsList
                                     contracts={mockContracts}
@@ -473,7 +443,6 @@ const Contracts = () => {
                 </div>
             </div>
 
-            {/* Filters Overlay - Mobile Only */}
             {isMobile && showFiltersOverlay && (
                 <>
                     <div
@@ -483,7 +452,7 @@ const Contracts = () => {
                     <div className={cn(
                         "fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl shadow-2xl",
                         "animate-in slide-in-from-bottom duration-300"
-                    )} style={{ height: '75vh' }}>
+                    )} style={{ maxHeight: '75vh' }}>
                         <div className="p-4 border-b border-border flex items-center justify-between">
                             <h3 className="text-lg font-semibold m-0" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
                                 {t('contracts:filters')}
@@ -495,43 +464,25 @@ const Contracts = () => {
                                 <FiX className="w-5 h-5" />
                             </button>
                         </div>
-                        <div className="overflow-y-auto p-4 space-y-4" style={{ height: 'calc(75vh - 73px)', scrollbarGutter: 'stable' }}>
-                            <div>
-                                <label className="text-sm font-medium mb-2 block" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                                    {t('contracts:statusLabel')}
-                                </label>
-                                <SimpleDropdown
-                                    label={null}
-                                    options={statusOptions}
-                                    value={filters.status || 'all'}
-                                    onChange={(value) => updateFilters({ status: value })}
-                                    placeholder={t('contracts:status.all')}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium mb-2 block" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                                    {t('contracts:dateRangeLabel')}
-                                </label>
-                                <SimpleDropdown
-                                    label={null}
-                                    options={dateRangeOptions}
-                                    value={filters.dateRange || ''}
-                                    onChange={(value) => updateFilters({ dateRange: value })}
-                                    placeholder={t('contracts:dateRange.all')}
-                                />
-                            </div>
-                            {hasActiveFilters && (
+                        <div className="overflow-y-auto p-2" style={{ maxHeight: 'calc(75vh - 73px)', scrollbarGutter: 'stable' }}>
+                            {statusOptions.map(option => (
                                 <button
-                                    onClick={() => {
-                                        updateFilters({ status: 'all', dateRange: null, searchTerm: '' });
-                                        setShowFiltersOverlay(false);
+                                    key={option.value}
+                                    onClick={() => { 
+                                        updateFilters({ status: option.value }); 
+                                        if (option.value === 'all') {
+                                            setShowFiltersOverlay(false);
+                                        }
                                     }}
-                                    className="w-full h-10 rounded-lg border border-input bg-background text-sm font-medium hover:bg-muted transition-all"
-                                    style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
+                                    className={cn(
+                                        "boxed-dropdown-option",
+                                        filters.status === option.value && "boxed-dropdown-option--selected"
+                                    )}
+                                    style={{ width: '100%', textAlign: 'left' }}
                                 >
-                                    {t('contracts:clearAllFilters')}
+                                    {option.label}
                                 </button>
-                            )}
+                            ))}
                         </div>
                     </div>
                 </>

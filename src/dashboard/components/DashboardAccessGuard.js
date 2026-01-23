@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useDashboard } from '../contexts/DashboardContext';
-import { hasAdminAccess } from '../../utils/sessionAuth';
+import { isAdminSync } from '../../config/workspaceDefinitions';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 
 const DashboardAccessGuard = ({ children }) => {
@@ -11,9 +11,9 @@ const DashboardAccessGuard = ({ children }) => {
     return <LoadingSpinner />;
   }
 
-  const hasFacilityProfile = user.hasFacilityProfile === true;
-  const hasProfessionalProfile = user.hasProfessionalProfile === true;
-  const isAdmin = hasAdminAccess(user);
+  const hasFacilityProfile = (user.roles || []).some(r => r.facility_uid);
+  const hasProfessionalProfile = user.hasProfessionalProfile === true || user._professionalProfileExists === true;
+  const isAdmin = isAdminSync(user);
 
   // Check onboarding completion status as well
   const onboardingCompleted =
@@ -21,25 +21,18 @@ const DashboardAccessGuard = ({ children }) => {
     user.onboardingProgress?.professional?.completed === true ||
     user.onboardingProgress?.facility?.completed === true;
 
-  const profileFlagsReady = typeof user.hasFacilityProfile !== 'undefined' && typeof user.hasProfessionalProfile !== 'undefined';
+  const profileFlagsReady = typeof user.hasProfessionalProfile !== 'undefined' || typeof user._professionalProfileExists !== 'undefined';
 
   if (!profileFlagsReady) {
     return <LoadingSpinner />;
   }
 
-  const hasAccess = hasFacilityProfile || hasProfessionalProfile || isAdmin || onboardingCompleted;
+  // Admins are always safe
+  const hasAccess = isAdmin || hasFacilityProfile || hasProfessionalProfile || onboardingCompleted;
 
   if (!hasAccess) {
     const lang = window.location.pathname.split('/')[1] || 'fr';
-    const onboardingType = user.role === 'facility' || user.role === 'company' ? 'facility' : 'professional';
-    console.log('[DashboardAccessGuard] No profile access found, redirecting to onboarding:', {
-      hasFacilityProfile,
-      hasProfessionalProfile,
-      isAdmin,
-      onboardingCompleted,
-      onboardingType,
-      userRole: user.role
-    });
+    const onboardingType = (user.roles || []).some(r => r.facility_uid) ? 'facility' : 'professional';
     return <Navigate to={`/${lang}/onboarding?type=${onboardingType}`} replace />;
   }
 

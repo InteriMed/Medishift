@@ -28,7 +28,6 @@ export const getBaseEventId = (eventId) => {
  */
 export const modifyEventInDatabase = async (event, userId, accountType, options = {}) => {
   if (!event || !userId) {
-    console.error('Event and userId are required for modifyEventInDatabase');
     return { success: false, error: 'Missing required parameters' };
   }
 
@@ -38,11 +37,6 @@ export const modifyEventInDatabase = async (event, userId, accountType, options 
     updatedData = {},
     newRecurrenceId = null
   } = options;
-
-  console.log(`modifyEventInDatabase - operation: ${operation}, type: ${modificationType}`, {
-    eventId: event.id,
-    recurrenceId: event.recurrenceId
-  });
 
   try {
     // Check authentication
@@ -121,7 +115,6 @@ export const modifyEventInDatabase = async (event, userId, accountType, options 
     
     return { success: false, error: 'Invalid operation' };
   } catch (error) {
-    console.error('Error in modifyEventInDatabase:', error);
     return { 
       success: false, 
       error: error.message,
@@ -173,7 +166,6 @@ export const handleKeyboardDelete = async (event, events, userId, accountType, c
     showDeleteConfirmation(event);
   }
   } catch (error) {
-    console.error('Error in handleKeyboardDelete:', error);
     onError(error.message);
   }
 };
@@ -188,7 +180,6 @@ export const handleKeyboardDelete = async (event, events, userId, accountType, c
  */
 export const handleFutureOccurrences = async (event, userId, accountType, options = {}) => {
   if (!event || !userId) {
-    console.error('Event and userId are required for handleFutureOccurrences');
     return { success: false, error: 'Missing required parameters' };
   }
 
@@ -198,12 +189,6 @@ export const handleFutureOccurrences = async (event, userId, accountType, option
     newRecurrenceId = `${userId}_${Date.now()}_recurrence`,
     additionalData = {}
   } = options;
-
-  console.log(`Processing future occurrences for event ${event.id}`, {
-    newRecurrenceId,
-    start: newStart ? newStart.toISOString() : null,
-    end: newEnd ? newEnd.toISOString() : null
-  });
 
   try {
     // Check authentication
@@ -234,15 +219,11 @@ export const handleFutureOccurrences = async (event, userId, accountType, option
     const createResult = await saveRecurringEventsFunction(recurringData);
     
     if (!createResult.data.success) {
-      console.error('Failed to create new future occurrences:', createResult.data.error);
       return createResult.data;
     }
 
-    console.log(`Created ${createResult.data.count} new occurrences with recurrenceId: ${newRecurrenceId}`);
-
     // Delete the old future occurrences if there was an existing recurrence
     if (event.recurrenceId && event.recurrenceId !== newRecurrenceId) {
-      console.log(`Deleting old future occurrences with recurrenceId: ${event.recurrenceId}`);
       
       const deleteResult = await modifyEventInDatabase(event, userId, accountType, {
         operation: 'delete',
@@ -250,10 +231,8 @@ export const handleFutureOccurrences = async (event, userId, accountType, option
       });
 
       if (!deleteResult.success) {
-        console.warn('Warning: Failed to delete old future occurrences:', deleteResult.error);
         // Continue anyway since we've created the new occurrences
       } else {
-        console.log(`Deleted ${deleteResult.count || 0} old future occurrences`);
       }
     }
 
@@ -263,7 +242,6 @@ export const handleFutureOccurrences = async (event, userId, accountType, option
       count: createResult.data.count
     };
   } catch (error) {
-    console.error('Error in handleFutureOccurrences:', error);
     return {
       success: false,
       error: error.message,

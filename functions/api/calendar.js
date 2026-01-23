@@ -17,19 +17,18 @@ async function getUserRoles(userId) {
   try {
     const userDoc = await db.collection('users').doc(userId).get();
     if (!userDoc.exists) {
-      return { roles: [], facilityMemberships: [], organizationIds: [] };
+      return { roles: [], organizationIds: [] };
     }
     const userData = userDoc.data();
     return {
       roles: userData.roles || [],
-      facilityMemberships: userData.facilityMemberships || [],
       organizationIds: userData.organizationIds || [],
       professionalProfileId: userData.professionalProfileId,
       facilityProfileId: userData.facilityProfileId
     };
   } catch (error) {
     logger.error('Error fetching user roles', { userId, error: error.message });
-    return { roles: [], facilityMemberships: [], organizationIds: [] };
+    return { roles: [], organizationIds: [] };
   }
 }
 
@@ -40,7 +39,7 @@ async function isFacilityAdmin(userId, facilityProfileId) {
     if (!facilityDoc.exists) return false;
     const facilityData = facilityDoc.data();
     const employeesList = facilityData.employees || [];
-    const isAdmin = employeesList.some(emp => emp.uid === userId && emp.rights === 'admin');
+    const isAdmin = employeesList.some(emp => emp.user_uid === userId && emp.roles?.includes('admin'));
     return isAdmin ||
       facilityData.chainAdmins?.includes(userId) ||
       facilityProfileId === userId;
@@ -90,7 +89,7 @@ async function determineEventPermissions(eventData, userId) {
     if (facilityDoc.exists) {
       const facilityData = facilityDoc.data();
       const employeesList = facilityData.employees || [];
-      permissions.facilityAdmins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
+      permissions.facilityAdmins = employeesList.filter(emp => emp.roles?.includes('admin')).map(emp => emp.user_uid);
 
       if (facilityData.organizationId) {
         const orgDoc = await db.collection('organizations').doc(facilityData.organizationId).get();
@@ -465,8 +464,7 @@ async function canViewEvent(eventDoc, userId) {
     if (await isChainAdmin(userId, eventData.organizationId)) return true;
 
     const userRoles = await getUserRoles(userId);
-    const userFacilities = userRoles.facilityMemberships || [];
-    const userFacilityIds = userFacilities.map(f => f.facilityProfileId || f.facilityId);
+    const userFacilityIds = (userRoles.roles || []).map(r => r.facility_uid).filter(Boolean);
 
     if (eventData.facilityProfileId && userFacilityIds.includes(eventData.facilityProfileId)) {
       if (eventData.type === 'chain_internal_availability' ||
@@ -1796,7 +1794,7 @@ exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true
 
           const facilityData = facilityDoc.data();
           const employeesList = facilityData.employees || [];
-          const isAdmin = employeesList.some(emp => emp.uid === decodedToken.uid && emp.rights === 'admin');
+          const isAdmin = employeesList.some(emp => emp.user_uid === decodedToken.uid && emp.roles?.includes('admin'));
           if (!isAdmin) {
             res.status(403).json({
               success: false,
@@ -2022,7 +2020,7 @@ exports.checkAndCreateEvent = onCall({ database: 'medishift', cors: true }, asyn
 
         const facilityData = facilityDoc.data();
         const employeesList = facilityData.employees || [];
-        const isAdmin = employeesList.some(emp => emp.uid === context.auth.uid && emp.rights === 'admin');
+        const isAdmin = employeesList.some(emp => emp.user_uid === context.auth.uid && emp.roles?.includes('admin'));
         if (!isAdmin) {
           throw new HttpsError('permission-denied', 'Only facility admins can create events for employees');
         }

@@ -13,16 +13,12 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
 
   // Helper functions for auto-scroll
   const startAutoScroll = (direction) => {
-    console.log('startAutoScroll called with direction:', direction, 'current scrollInterval:', scrollIntervalRef.current);
     if (scrollIntervalRef.current) {
-      console.log('Already scrolling, returning early');
       return; // Already scrolling
     }
     
-    console.log('Setting up new scroll interval');
     setScrollDirection(direction);
     const interval = setInterval(() => {
-      console.log('Auto-scroll tick, direction:', direction);
       if (onWeekScroll) {
         onWeekScroll(direction, true);
         
@@ -37,19 +33,14 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
   };
 
   const stopAutoScroll = () => {
-    console.log('stopAutoScroll called, current scrollInterval:', scrollIntervalRef.current);
     if (scrollIntervalRef.current) {
-      console.log('Clearing scroll interval');
       clearInterval(scrollIntervalRef.current);
       scrollIntervalRef.current = null;
       setScrollDirection(null);
-    } else {
-      console.log('No scroll interval to clear');
     }
   };
 
   const updateEventPositionAfterScroll = (scrollDirection) => {
-    console.log('Updating event position after scroll, direction:', scrollDirection);
     
     // Ensure start and end are Date objects
     const startTime = start instanceof Date ? new Date(start) : new Date(start);
@@ -63,13 +54,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
       newStart.setDate(startTime.getDate() + scrollDirection);
       newEnd.setDate(endTime.getDate() + scrollDirection);
       
-      console.log('Moving dragged event:', { 
-        oldStart: startTime, 
-        newStart, 
-        oldEnd: endTime, 
-        newEnd 
-      });
-      
       onMove(newStart, newEnd, true);
     } else if (isResizing && resizeDirectionRef.current) {
       // For resizing, only move the end being resized
@@ -80,12 +64,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
         const newStart = new Date(startTime);
         newStart.setDate(startTime.getDate() + scrollDirection);
         
-        console.log('Moving resize start date:', { 
-          oldStart: startTime, 
-          newStart, 
-          end: endTime 
-        });
-        
         if (newStart < endTime) {
           onResize(newStart, end, true);
         }
@@ -93,12 +71,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
         // Resizing the end time
         const newEnd = new Date(endTime);
         newEnd.setDate(endTime.getDate() + scrollDirection);
-        
-        console.log('Moving resize end date:', { 
-          start: startTime, 
-          oldEnd: endTime, 
-          newEnd 
-        });
         
         if (newEnd > startTime) {
           onResize(start, newEnd, true);
@@ -195,7 +167,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
   };
 
   const handleDragStart = (e) => {
-    console.log('Drag start event:', e);
     e.preventDefault();
     e.stopPropagation();
     
@@ -231,7 +202,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
     // Find the time grid element safely
     const timeGrid = e.currentTarget.closest('.time-grid');
     if (!timeGrid) {
-      console.warn('Time grid element not found. Aborting drag operation.');
       return;
     }
     
@@ -279,29 +249,24 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
         
         // Auto-scroll logic: start scrolling when near edges, continue when completely outside, stop only when in safe zone
         if (isOutsideLeft && !isCompletelyOutside && scrollDirection !== -1) {
-          console.log('Starting auto-scroll LEFT');
           stopAutoScroll();
           startAutoScroll(-1);
         } else if (isOutsideRight && !isCompletelyOutside && scrollDirection !== 1) {
-          console.log('Starting auto-scroll RIGHT');
           stopAutoScroll();
           startAutoScroll(1);
         } else if (isCompletelyOutside && currentX < 0 && scrollDirection !== -1) {
           // Mouse is completely outside on the left
-          console.log('Continuing/Starting auto-scroll LEFT (completely outside)');
           if (scrollDirection !== -1) {
             stopAutoScroll();
             startAutoScroll(-1);
           }
         } else if (isCompletelyOutside && currentX > gridRect.width && scrollDirection !== 1) {
           // Mouse is completely outside on the right
-          console.log('Continuing/Starting auto-scroll RIGHT (completely outside)');
           if (scrollDirection !== 1) {
             stopAutoScroll();
             startAutoScroll(1);
           }
         } else if (!isOutsideLeft && !isOutsideRight && !isCompletelyOutside) {
-          console.log('Stopping auto-scroll - mouse in safe zone');
           stopAutoScroll();
         }
         
@@ -312,7 +277,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
         
         // Safety check for valid week dates
         if (!weekDates || weekDates.length < 7 || !weekDates[gridDayIndex]) {
-          console.warn('Invalid week dates or day index in Event drag', { weekDates, gridDayIndex });
           return; // Exit early if we don't have valid dates
         }
         
@@ -335,7 +299,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
     };
 
     const handleMouseUp = (e) => {
-      console.log('Mouse up event:', e);
       e.preventDefault();
       e.stopPropagation();
       
@@ -350,7 +313,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
       
       // If no movement or very small movement, treat as click
       if (!isDragging && Math.abs(deltaY) <= 3 && Math.abs(deltaX) <= 3) {
-        console.log('Detected click (no drag movement)');
         handleEventClick(e);
         setIsDragging(false);
         document.removeEventListener('mousemove', handleMouseMove);
@@ -418,7 +380,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
   };
 
   const handleResizeStart = (e, direction) => {
-    console.log(`Resize start event (${direction}):`, e);
     e.preventDefault();
     e.stopPropagation();
     
@@ -484,29 +445,24 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
         
         // Auto-scroll logic: start scrolling when near edges, continue when completely outside, stop only when in safe zone
         if (isOutsideLeft && !isCompletelyOutside && scrollDirection !== -1) {
-          console.log('Starting auto-scroll LEFT');
           stopAutoScroll();
           startAutoScroll(-1);
         } else if (isOutsideRight && !isCompletelyOutside && scrollDirection !== 1) {
-          console.log('Starting auto-scroll RIGHT');
           stopAutoScroll();
           startAutoScroll(1);
         } else if (isCompletelyOutside && currentX < 0 && scrollDirection !== -1) {
           // Mouse is completely outside on the left
-          console.log('Continuing/Starting auto-scroll LEFT (completely outside)');
           if (scrollDirection !== -1) {
             stopAutoScroll();
             startAutoScroll(-1);
           }
         } else if (isCompletelyOutside && currentX > gridRect.width && scrollDirection !== 1) {
           // Mouse is completely outside on the right
-          console.log('Continuing/Starting auto-scroll RIGHT (completely outside)');
           if (scrollDirection !== 1) {
             stopAutoScroll();
             startAutoScroll(1);
           }
         } else if (!isOutsideLeft && !isOutsideRight && !isCompletelyOutside) {
-          console.log('Stopping auto-scroll - mouse in safe zone');
           stopAutoScroll();
         }
         
@@ -517,7 +473,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
           // Additional safety check for valid scrollable day index calculation
           const weekDates = getScrollableWeekDates(currentDate, weekScrollOffset);
           if (!weekDates || weekDates.length < 7 || !weekDates[newGridDayIndex]) {
-            console.warn('Invalid week dates in resize operation', { weekDates, newGridDayIndex });
             return; // Exit early if we don't have valid dates
           }
           
@@ -596,7 +551,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
             // Additional safety check for valid scrollable day index calculation
             const weekDates = getScrollableWeekDates(currentDate, weekScrollOffset);
             if (!weekDates || weekDates.length < 7 || !weekDates[newGridDayIndex]) {
-              console.warn('Invalid week dates in resize mouseup', { weekDates, newGridDayIndex });
               onChangeComplete();
               return; // Exit early if we don't have valid dates
             }
@@ -632,7 +586,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
   };
 
   const handleEventClick = (e) => {
-    console.log('Event clicked directly:', e);
     // Directly invoke the onClick handler for clicks
     if (onClick) {
       onClick(e);
@@ -641,7 +594,6 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
 
   // Add a simple click handler as a fallback
   const handleSimpleClick = (e) => {
-    console.log('Simple click handler triggered:', e);
     // Only handle if we're not in a drag operation
     if (!window.calendarEventDragging && !isDragging && !isResizing) {
       e.stopPropagation();

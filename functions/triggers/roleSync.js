@@ -1,15 +1,7 @@
 const { onDocumentUpdated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const admin = require('firebase-admin');
 
-/**
- * Role Synchronization Trigger
- * Automatically syncs user roles when facility admin/employees arrays change
- */
-
-/**
- * Sync user roles when facility admin array changes
- */
-exports.syncAdminRoles = onDocumentUpdated({
+exports.syncFacilityRoles = onDocumentUpdated({
     document: 'facilityProfiles/{facilityId}',
     database: 'medishift',
     region: 'europe-west6'
@@ -20,277 +12,170 @@ exports.syncAdminRoles = onDocumentUpdated({
 
     const beforeEmployeesList = beforeData.employees || [];
     const afterEmployeesList = afterData.employees || [];
-    const beforeAdmins = beforeEmployeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
-    const afterAdmins = afterEmployeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
-    const beforeEmployees = beforeEmployeesList.filter(emp => emp.rights !== 'admin').map(emp => emp.uid);
-    const afterEmployees = afterEmployeesList.filter(emp => emp.rights !== 'admin').map(emp => emp.uid);
 
-    const facilityName = afterData.legalInfo?.tradeName || afterData.legalInfo?.legalCompanyName || 'Facility';
+    const beforeUserIds = beforeEmployeesList.map(emp => emp.user_uid);
+    const afterUserIds = afterEmployeesList.map(emp => emp.user_uid);
+
+    const addedUsers = afterUserIds.filter(uid => !beforeUserIds.includes(uid));
+    const removedUsers = beforeUserIds.filter(uid => !afterUserIds.includes(uid));
+    const modifiedUsers = afterUserIds.filter(uid => beforeUserIds.includes(uid));
 
     try {
         const batch = admin.firestore().batch();
         let updatesCount = 0;
 
-        // ====================================
-        // ADMIN ROLE CHANGES
-        // ====================================
-
-        // Find users added to admin
-        const addedAdmins = afterAdmins.filter(uid => !beforeAdmins.includes(uid));
-
-        // Find users removed from admin
-        const removedAdmins = beforeAdmins.filter(uid => !afterAdmins.includes(uid));
-
-        // Add admin roles
-        for (const userId of addedAdmins) {
+        for (const userId of addedUsers) {
             const userRef = admin.firestore().collection('users').doc(userId);
             const userDoc = await userRef.get();
 
             if (userDoc.exists) {
                 const userData = userDoc.data();
                 const currentRoles = userData.roles || [];
-                const adminRole = `facility_admin_${facilityId}`;
-                const employeeRole = `facility_employee_${facilityId}`;
-
-                // Remove employee role if exists (upgraded to admin)
-                const updatedRoles = currentRoles
-                    .filter(role => role !== employeeRole)
-                    .concat(currentRoles.includes(adminRole) ? [] : [adminRole]);
-
-                // Update facility memberships
-                const currentMemberships = userData.facilityMemberships || [];
-                const membershipIndex = currentMemberships.findIndex(m => m.facilityProfileId === facilityId);
-
-                let updatedMemberships;
-                if (membershipIndex >= 0) {
-                    // Update existing membership
-                    updatedMemberships = [...currentMemberships];
-                    updatedMemberships[membershipIndex] = {
-                        facilityProfileId: facilityId,
-                        facilityName: facilityName,
-                        role: 'admin'
+                const employeeEntry = afterEmployeesList.find(emp => emp.user_uid === userId);
+                
+                const existingIndex = currentRoles.findIndex(r => r.facility_uid === facilityId);
+                let updatedRoles;
+                
+                if (existingIndex >= 0) {
+                    updatedRoles = [...currentRoles];
+                    updatedRoles[existingIndex] = {
+                        facility_uid: facilityId,
+                        roles: employeeEntry?.roles || ['employee']
                     };
                 } else {
-                    // Add new membership
-                    updatedMemberships = [
-                        ...currentMemberships,
+                    updatedRoles = [
+                        ...currentRoles,
                         {
-                            facilityProfileId: facilityId,
-                            facilityName: facilityName,
-                            role: 'admin'
+                            facility_uid: facilityId,
+                            roles: employeeEntry?.roles || ['employee']
                         }
                     ];
                 }
 
                 batch.update(userRef, {
                     roles: updatedRoles,
-                    facilityMemberships: updatedMemberships,
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
                 });
                 updatesCount++;
-
-                console.log(`Added admin role for user ${userId} in facility ${facilityId}`);
+                console.log(`Added facility roles for user ${userId} in facility ${facilityId}`);
             }
         }
 
-        // Remove admin roles
-        for (const userId of removedAdmins) {
+        for (const userId of removedUsers) {
             const userRef = admin.firestore().collection('users').doc(userId);
             const userDoc = await userRef.get();
 
             if (userDoc.exists) {
                 const userData = userDoc.data();
                 const currentRoles = userData.roles || [];
-                const adminRole = `facility_admin_${facilityId}`;
-                const employeeRole = `facility_employee_${facilityId}`;
+                const updatedRoles = currentRoles.filter(r => r.facility_uid !== facilityId);
 
-                // Remove admin role
-                let updatedRoles = currentRoles.filter(role => role !== adminRole);
+                batch.update(userRef, {
+                    roles: updatedRoles,
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+                updatesCount++;
+                console.log(`Removed facility roles for user ${userId} from facility ${facilityId}`);
+            }
+        }
 
-                // If user is still in employees array, add employee role
-                if (afterEmployees.includes(userId)) {
-                    if (!updatedRoles.includes(employeeRole)) {
-                        updatedRoles.push(employeeRole);
-                    }
-                }
+        for (const userId of modifiedUsers) {
+            const beforeEmployee = beforeEmployeesList.find(emp => emp.user_uid === userId);
+            const afterEmployee = afterEmployeesList.find(emp => emp.user_uid === userId);
+            
+            const beforeRolesStr = JSON.stringify(beforeEmployee?.roles || []);
+            const afterRolesStr = JSON.stringify(afterEmployee?.roles || []);
+            
+            if (beforeRolesStr !== afterRolesStr) {
+                const userRef = admin.firestore().collection('users').doc(userId);
+                const userDoc = await userRef.get();
 
-                // Update facility memberships
-                const currentMemberships = userData.facilityMemberships || [];
-                let updatedMemberships;
-
-                if (afterEmployees.includes(userId)) {
-                    // Downgrade to employee
-                    const membershipIndex = currentMemberships.findIndex(m => m.facilityProfileId === facilityId);
-                    if (membershipIndex >= 0) {
-                        updatedMemberships = [...currentMemberships];
-                        updatedMemberships[membershipIndex] = {
-                            facilityProfileId: facilityId,
-                            facilityName: facilityName,
-                            role: 'employee'
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    const currentRoles = userData.roles || [];
+                    const existingIndex = currentRoles.findIndex(r => r.facility_uid === facilityId);
+                    
+                    let updatedRoles;
+                    if (existingIndex >= 0) {
+                        updatedRoles = [...currentRoles];
+                        updatedRoles[existingIndex] = {
+                            facility_uid: facilityId,
+                            roles: afterEmployee?.roles || ['employee']
                         };
+                    } else {
+                        updatedRoles = [
+                            ...currentRoles,
+                            {
+                                facility_uid: facilityId,
+                                roles: afterEmployee?.roles || ['employee']
+                            }
+                        ];
                     }
-                } else {
-                    // Remove membership entirely
-                    updatedMemberships = currentMemberships.filter(m => m.facilityProfileId !== facilityId);
-                }
-
-                batch.update(userRef, {
-                    roles: updatedRoles,
-                    facilityMemberships: updatedMemberships,
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
-                });
-                updatesCount++;
-
-                console.log(`Removed admin role for user ${userId} in facility ${facilityId}`);
-            }
-        }
-
-        // ====================================
-        // EMPLOYEE ROLE CHANGES
-        // ====================================
-
-        // Find users added to employees (but not admins)
-        const addedEmployees = afterEmployees.filter(uid =>
-            !beforeEmployees.includes(uid) && !afterAdmins.includes(uid)
-        );
-
-        // Find users removed from employees (and not in admins)
-        const removedEmployees = beforeEmployees.filter(uid =>
-            !afterEmployees.includes(uid) && !afterAdmins.includes(uid)
-        );
-
-        // Add employee roles
-        for (const userId of addedEmployees) {
-            const userRef = admin.firestore().collection('users').doc(userId);
-            const userDoc = await userRef.get();
-
-            if (userDoc.exists) {
-                const userData = userDoc.data();
-                const currentRoles = userData.roles || [];
-                const employeeRole = `facility_employee_${facilityId}`;
-
-                if (!currentRoles.includes(employeeRole)) {
-                    const updatedRoles = [...currentRoles, employeeRole];
-
-                    // Update facility memberships
-                    const currentMemberships = userData.facilityMemberships || [];
-                    const updatedMemberships = [
-                        ...currentMemberships,
-                        {
-                            facilityProfileId: facilityId,
-                            facilityName: facilityName,
-                            role: 'employee'
-                        }
-                    ];
 
                     batch.update(userRef, {
                         roles: updatedRoles,
-                        facilityMemberships: updatedMemberships,
                         updatedAt: admin.firestore.FieldValue.serverTimestamp()
                     });
                     updatesCount++;
-
-                    console.log(`Added employee role for user ${userId} in facility ${facilityId}`);
+                    console.log(`Updated facility roles for user ${userId} in facility ${facilityId}`);
                 }
             }
         }
 
-        // Remove employee roles
-        for (const userId of removedEmployees) {
-            const userRef = admin.firestore().collection('users').doc(userId);
-            const userDoc = await userRef.get();
-
-            if (userDoc.exists) {
-                const userData = userDoc.data();
-                const currentRoles = userData.roles || [];
-                const employeeRole = `facility_employee_${facilityId}`;
-
-                const updatedRoles = currentRoles.filter(role => role !== employeeRole);
-                const currentMemberships = userData.facilityMemberships || [];
-                const updatedMemberships = currentMemberships.filter(m => m.facilityProfileId !== facilityId);
-
-                batch.update(userRef, {
-                    roles: updatedRoles,
-                    facilityMemberships: updatedMemberships,
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
-                });
-                updatesCount++;
-
-                console.log(`Removed employee role for user ${userId} in facility ${facilityId}`);
-            }
-        }
-
-        // Commit all updates
         if (updatesCount > 0) {
             await batch.commit();
-            console.log(`Successfully synced ${updatesCount} user role changes for facility ${facilityId}`);
+            console.log(`Successfully synced ${updatesCount} user role(s) for facility ${facilityId}`);
         }
 
         return { success: true, updatesCount };
     } catch (error) {
-        console.error('Error syncing roles:', error);
+        console.error('Error syncing facility roles:', error);
         throw error;
     }
 });
 
-/**
- * Clean up roles when facility is deleted
- */
-exports.cleanupRolesOnFacilityDelete = onDocumentDeleted({
+exports.cleanupFacilityRoles = onDocumentDeleted({
     document: 'facilityProfiles/{facilityId}',
     database: 'medishift',
     region: 'europe-west6'
 }, async (event) => {
     const facilityId = event.params.facilityId;
     const facilityData = event.data.data();
-    const employeesList = facilityData.employees || [];
-    const admins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
-    const employees = employeesList.filter(emp => emp.rights !== 'admin').map(emp => emp.uid);
-    const allMembers = [...new Set([...admins, ...employees])];
+    const employeesList = facilityData?.employees || [];
 
     try {
         const batch = admin.firestore().batch();
+        let updatesCount = 0;
 
-        for (const userId of allMembers) {
+        for (const employee of employeesList) {
+            const userId = employee.user_uid;
+            if (!userId) continue;
+
             const userRef = admin.firestore().collection('users').doc(userId);
             const userDoc = await userRef.get();
 
             if (userDoc.exists) {
                 const userData = userDoc.data();
                 const currentRoles = userData.roles || [];
-                const adminRole = `facility_admin_${facilityId}`;
-                const employeeRole = `facility_employee_${facilityId}`;
-
-                // Remove all facility-related roles
-                const updatedRoles = currentRoles.filter(
-                    role => role !== adminRole && role !== employeeRole
-                );
-
-                // Remove from facility memberships
-                const currentMemberships = userData.facilityMemberships || [];
-                const updatedMemberships = currentMemberships.filter(
-                    m => m.facilityProfileId !== facilityId
-                );
+                const updatedRoles = currentRoles.filter(r => r.facility_uid !== facilityId);
 
                 batch.update(userRef, {
                     roles: updatedRoles,
-                    facilityMemberships: updatedMemberships,
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
                 });
+                updatesCount++;
             }
         }
 
-        await batch.commit();
-        console.log(`Cleaned up roles for ${allMembers.length} users after facility ${facilityId} deletion`);
+        if (updatesCount > 0) {
+            await batch.commit();
+            console.log(`Cleaned up ${updatesCount} user role(s) after facility ${facilityId} deletion`);
+        }
 
-        return { success: true, cleanedUsers: allMembers.length };
+        return { success: true, updatesCount };
     } catch (error) {
-        console.error('Error cleaning up roles on facility delete:', error);
+        console.error('Error cleaning up facility roles:', error);
         throw error;
     }
 });
 
-module.exports = {
-    syncAdminRoles: exports.syncAdminRoles,
-    cleanupRolesOnFacilityDelete: exports.cleanupRolesOnFacilityDelete
-};

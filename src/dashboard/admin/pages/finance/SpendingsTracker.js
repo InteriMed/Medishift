@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { DollarSign, Gift, TrendingUp, Users, Calendar } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
-import DateField from '../../../../components/BoxedInputFields/DateField/DateField';
+import DateField from '../../../../components/BoxedInputFields/DateField';
 import { format } from 'date-fns';
 import '../../../../styles/variables.css';
 
@@ -114,7 +115,7 @@ const SpendingsTracker = () => {
 
   const getNewSignupsCount = async (startDate, endDate) => {
     try {
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
       const snapshot = await getDocs(usersRef);
 
       let count = 0;
@@ -136,7 +137,7 @@ const SpendingsTracker = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
-        <div style={{ color: 'var(--text-light-color)', fontSize: 'var(--font-size-medium)' }}>Loading spendings data...</div>
+        <div style={{ color: 'var(--text-light-color)', fontSize: 'var(--font-size-medium)' }}>{t('admin:finance.loadingSpendings', 'Loading spendings data...')}</div>
       </div>
     );
   }

@@ -7,6 +7,7 @@ import { CALENDAR_COLORS } from '../../../calendar/utils/constants';
 import { useDashboard } from '../../../../contexts/DashboardContext';
 import { db } from '../../../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { FIRESTORE_COLLECTIONS } from '../../../../../config/keysDatabase';
 
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import Button from '../../../../../components/BoxedInputFields/Button';
@@ -67,7 +68,7 @@ const FacilityRoles = ({
       
       setLoadingTeamMembers(true);
       try {
-        const facilityRef = doc(db, 'facilityProfiles', selectedWorkspace.facilityId);
+        const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
         const facilitySnap = await getDoc(facilityRef);
         
         if (facilitySnap.exists()) {
@@ -95,7 +96,7 @@ const FacilityRoles = ({
                   email: professionalData.contact?.primaryEmail || ''
                 };
               } else {
-                const userRef = doc(db, 'users', userId);
+                const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
                 const userSnap = await getDoc(userRef);
                 
                 if (userSnap.exists()) {

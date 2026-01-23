@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs, Timestamp, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { Download, Calendar, Users, Clock, FileText, CheckCircle, Info, FileCode, FileType } from 'lucide-react';
 import { format } from 'date-fns';
 import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
@@ -32,7 +33,7 @@ const PayrollExport = () => {
     const loadStats = async () => {
         try {
             // Get total professional users
-            const usersRef = collection(db, 'users');
+            const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
             const usersSnapshot = await getDocs(usersRef);
 
             // Filter professionals locally to support both role (string) and roles (array)
@@ -194,7 +195,7 @@ const PayrollExport = () => {
 
                 // Get user data (cached to avoid repeated queries)
                 if (!userCache[userId]) {
-                    const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', userId)));
+                    const userDoc = await getDocs(query(collection(db, FIRESTORE_COLLECTIONS.USERS), where('__name__', '==', userId)));
                     if (!userDoc.empty) {
                         userCache[userId] = userDoc.docs[0].data();
                     }
@@ -390,7 +391,7 @@ const PayrollExport = () => {
 
     const handleUserExport = async () => {
         try {
-            const usersRef = collection(db, 'users');
+            const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
             const usersSnapshot = await getDocs(usersRef);
 
             // Filter professionals locally to support both role (string) and roles (array)
@@ -692,7 +693,7 @@ const PayrollExport = () => {
 
             if (!exportAllUsers && userIdsToUpdate.length > 0) {
                 const updatePromises = userIdsToUpdate.map(userId =>
-                    updateDoc(doc(db, 'users', userId), { userPayrollExported: true })
+                    updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId), { userPayrollExported: true })
                 );
                 await Promise.all(updatePromises);
             }

@@ -11,6 +11,7 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { useNotification } from '../../contexts/NotificationContext';
 import { useTutorial } from '../contexts/TutorialContext';
+import { TUTORIAL_IDS } from '../../config/tutorialSystem';
 
 export const useMarketplaceData = () => {
   const { isTutorialActive, activeTutorial } = useTutorial();
@@ -23,7 +24,7 @@ export const useMarketplaceData = () => {
   const [error, setError] = useState(null);
 
   const getMockListings = useCallback(() => {
-    if (!isTutorialActive || activeTutorial !== 'marketplace') return [];
+    if (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.MARKETPLACE) return [];
 
     const now = new Date();
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -144,7 +145,7 @@ export const useMarketplaceData = () => {
 
 
   useEffect(() => {
-    if (isTutorialActive && activeTutorial === 'marketplace') {
+    if (isTutorialActive && activeTutorial === TUTORIAL_IDS.MARKETPLACE) {
       const mockData = getMockListings();
       if (mockData.length > 0) {
         setListings(mockData);
@@ -161,7 +162,7 @@ export const useMarketplaceData = () => {
       setIsLoading(true);
       setError(null);
 
-      if (isTutorialActive && activeTutorial === 'marketplace') {
+      if (isTutorialActive && activeTutorial === TUTORIAL_IDS.MARKETPLACE) {
         const mockData = getMockListings();
         setListings(mockData);
         setFilteredListings(mockData);
@@ -236,7 +237,6 @@ export const useMarketplaceData = () => {
         }
 
       } catch (queryError) {
-        console.log('Firebase query failed:', queryError.message);
         setListings([]);
         setFilteredListings([]);
 
@@ -249,7 +249,6 @@ export const useMarketplaceData = () => {
       }
 
     } catch (err) {
-      console.error('Error fetching listings:', err);
       setError(err.message || 'Failed to fetch listings');
       setListings([]);
       setFilteredListings([]);
@@ -377,7 +376,6 @@ export const useMarketplaceData = () => {
       }
       throw new Error('Failed to create position');
     } catch (err) {
-      console.error('Error creating position:', err);
       setError(err.message || 'Failed to create position');
       if (showNotification) {
         showNotification({
@@ -415,7 +413,6 @@ export const useMarketplaceData = () => {
       }
       throw new Error('Failed to apply to position');
     } catch (err) {
-      console.error('Error applying to position:', err);
       setError(err.message || 'Failed to apply to position');
       if (showNotification) {
         showNotification({
@@ -454,7 +451,6 @@ export const useMarketplaceData = () => {
       }
       throw new Error('Failed to create availability');
     } catch (err) {
-      console.error('Error creating availability:', err);
       setError(err.message || 'Failed to create availability');
       if (showNotification) {
         showNotification({

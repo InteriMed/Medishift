@@ -5,16 +5,18 @@ import { useAuth } from '../../../../../contexts/AuthContext';
 import useProfileData from '../../../../hooks/useProfileData';
 import useAutoSave from '../../../../hooks/useAutoSave';
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
-import { FiUser, FiMapPin, FiPhone, FiInfo, FiFileText, FiEdit2, FiEye, FiTrash2, FiX } from 'react-icons/fi';
+import { FiUser, FiMapPin, FiPhone, FiInfo, FiFileText, FiEdit2, FiEye, FiTrash2, FiX, FiUpload } from 'react-icons/fi';
 import { generateBasicProfilePicture, isGoogleUser } from '../../../../../utils/profilePictureUtils';
 import '../../../../../styles/modals.css';
 
-// --- Import Base Components ---
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import TextareaField from '../../../../../components/BoxedInputFields/TextareaField';
-import DateField from '../../../../../components/BoxedInputFields/DateField/DateField';
+import DateField from '../../../../../components/BoxedInputFields/DateField';
 import Button from '../../../../../components/BoxedInputFields/Button';
+import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
+import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
+import { cn } from '../../../../../utils/cn';
 
 // --- 
 // Default bio is now empty to allow AI extraction or manual entry
@@ -23,7 +25,7 @@ const DEFAULT_BIO = "";
 // Tailwind styles
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
+  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex personal-details-header",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium",
@@ -62,7 +64,17 @@ const PersonalDetails = ({
   onStepGuideVisibilityChange,
   validateCurrentTabData,
   onTabCompleted,
-  isTutorialActive
+  isTutorialActive,
+  completionPercentage,
+  handleAutoFillClick,
+  isUploading,
+  isAnalyzing,
+  autoFillButtonRef,
+  uploadInputRef,
+  handleFileUpload,
+  uploadProgress,
+  t: tProp,
+  stepData
 }) => {
   const { t } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
   const { currentUser } = useAuth();
@@ -180,7 +192,7 @@ const PersonalDetails = ({
       };
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('Error reading profile picture:', error);
+      // Error reading profile picture
       setPictureError(t('accountBasics.errors.uploadFailed'));
       setIsUploadingPicture(false);
     }
@@ -222,13 +234,13 @@ const PersonalDetails = ({
             setPictureError('');
           }
         } catch (error) {
-          console.error('Error deleting profile picture:', error);
+          // Error deleting profile picture
           setPictureError(t('accountBasics.errors.uploadFailed'));
         } finally {
           setIsUploadingPicture(false);
         }
       } catch (error) {
-        console.error('Error deleting profile picture:', error);
+        // Error deleting profile picture
         setPictureError(t('accountBasics.errors.uploadFailed'));
         setIsUploadingPicture(false);
       }
@@ -257,7 +269,7 @@ const PersonalDetails = ({
       setPopupImageSrc(null);
       setIsUploadingPicture(false);
     } catch (error) {
-      console.error('Error uploading profile picture:', error);
+      // Error uploading profile picture
       setPictureError(t('accountBasics.errors.uploadFailed'));
       setIsUploadingPicture(false);
     }
@@ -345,9 +357,6 @@ const PersonalDetails = ({
           value={normalizedValue}
           onChange={(newValue) => {
             const normalizedNewValue = newValue !== null && newValue !== undefined && newValue !== '' ? newValue : null;
-            if (process.env.NODE_ENV !== 'production' && name === 'identity.nationality') {
-              console.log('[PersonalDetails] Nationality onChange:', { newValue, normalizedNewValue, name });
-            }
             onInputChange(name, normalizedNewValue);
           }}
           required={commonProps.required}
@@ -408,9 +417,32 @@ const PersonalDetails = ({
         .personal-details-container {
           container-type: inline-size;
         }
+        
+        .personal-details-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1rem;
+        }
+        
+        .personal-details-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+
         @container (min-width: 700px) {
           .personal-details-sections-wrapper {
             flex-direction: row;
+          }
+          
+          .personal-details-header {
+            flex-direction: row;
+            align-items: center;
+            gap: 0;
+          }
+          
+          .personal-details-actions {
+            width: auto;
+            justify-content: flex-end;
           }
         }
       `}</style>
@@ -423,6 +455,57 @@ const PersonalDetails = ({
             <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('personalDetails.title')}</h2>
             <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('personalDetails.subtitle', 'Please ensure your personal details are accurate and up to date.')}</p>
           </div>
+
+          {isTutorialActive && (
+            <div className="personal-details-actions flex items-center gap-3">
+              <div className="relative" ref={autoFillButtonRef}>
+                <button
+                  onClick={handleAutoFillClick}
+                  disabled={isUploading || isAnalyzing}
+                  className={cn(
+                    "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
+                    "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
+                    (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
+                    (stepData?.highlightUploadButton) && "tutorial-highlight"
+                  )}
+                  style={{ height: 'var(--boxed-inputfield-height)' }}
+                  data-tutorial="profile-upload-button"
+                >
+                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
+                  <span className="text-sm font-medium text-black">
+                    {isAnalyzing
+                      ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
+                      : t('dashboardProfile:documents.autofill', 'Auto Fill')
+                    }
+                  </span>
+                </button>
+              </div>
+              {uploadInputRef && (
+                <UploadFile
+                  ref={uploadInputRef}
+                  onChange={handleFileUpload}
+                  isLoading={isUploading}
+                  progress={uploadProgress}
+                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  label=""
+                  className="hidden"
+                />
+              )}
+
+              {formData && completionPercentage !== undefined && (
+                <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                  <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                  <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                      style={{ width: `${completionPercentage}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className={styles.sectionsWrapper}>
@@ -543,19 +626,19 @@ const PersonalDetails = ({
             </div>
             {popupImageSrc !== profilePicture && (
               <div className="modal-footer">
-                <button
+                <Button
                   onClick={handleCancelUpload}
-                  className="modal-btn modal-btn-secondary"
+                  variant="secondary"
                 >
                   {t('common.cancel', 'Cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleConfirmUpload}
-                  className="modal-btn modal-btn-primary"
+                  variant="primary"
                   disabled={isUploadingPicture}
                 >
                   {isUploadingPicture ? t('accountBasics.uploading', 'Uploading...') : t('common.confirm', 'Confirm')}
-                </button>
+                </Button>
               </div>
             )}
           </div>

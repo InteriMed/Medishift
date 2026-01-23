@@ -28,8 +28,8 @@ export const useTutorialState = (selectedWorkspace) => {
     const [isWaitingForSave, setIsWaitingForSave] = useState(false);
     const [isReady, setIsReady] = useState(false);
 
-    // Access mode: 'full' (complete all profile tabs) or 'team' (quick team access)
-    const [accessMode, setAccessModeState] = useState(null);
+    // Access level choice: 'full' (complete all profile tabs) or 'team' (quick team access)
+    const [accessLevelChoice, setAccessLevelChoice] = useState(null);
 
     // Dual onboarding type: 'professional' or 'facility'
     const [onboardingType, setOnboardingType] = useState('professional');
@@ -42,7 +42,6 @@ export const useTutorialState = (selectedWorkspace) => {
         if (selectedWorkspace) {
             const newType = selectedWorkspace.type === WORKSPACE_TYPES.TEAM ? 'facility' : 'professional';
             if (newType !== onboardingType) {
-                console.log(`[useTutorialState] Auto-detecting onboardingType: ${newType} (workspace: ${selectedWorkspace.type})`);
                 setOnboardingType(newType);
             }
         }
@@ -72,7 +71,7 @@ export const useTutorialState = (selectedWorkspace) => {
         isPaused,
         isWaitingForSave,
         isReady,
-        accessMode,
+        accessLevelChoice,
         onboardingType,
         maxAccessedProfileTab,
 
@@ -91,7 +90,7 @@ export const useTutorialState = (selectedWorkspace) => {
         setIsPaused,
         setIsWaitingForSave,
         setIsReady,
-        setAccessModeState,
+        setAccessLevelChoice,
         setOnboardingType,
         setMaxAccessedProfileTab,
 

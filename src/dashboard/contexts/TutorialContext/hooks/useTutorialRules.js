@@ -1,6 +1,13 @@
 import { useCallback } from 'react';
 import { isTabCompleted } from '../../../pages/profile/Profile';
-import { tutorialSteps } from '../config/tutorialSteps';
+import {
+    TUTORIAL_IDS,
+    PROFILE_TAB_IDS,
+    isProfileTutorial,
+    normalizePathForComparison,
+    PLATFORM_FEATURES,
+    WORKSPACE_TYPES
+} from '../../../../config/tutorialSystem';
 
 export const useTutorialRules = ({
     isTutorialActive,
@@ -19,54 +26,42 @@ export const useTutorialRules = ({
 
     // Normalize path for comparison
     const normalizeForComparison = useCallback((path) =>
-        path.replace(/^\/(en|fr|de|it)\//, '/'), []);
+        normalizePathForComparison(path), []);
 
     // Check if a sidebar item is accessible
     const isSidebarItemAccessible = useCallback((itemPath) => {
         const itemName = itemPath.split('/').pop();
-        const path = itemPath.startsWith('/') ? itemPath.substring(1).split('/')[1] : itemName;
-        const isFacilityWorkspace = selectedWorkspace?.type === 'team';
+        const isFacilityWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
 
-        // Dashboard/Overview always accessible
-        if (itemName === 'overview' || itemName === 'dashboard') {
+        if (itemName === 'overview' || itemName === TUTORIAL_IDS.DASHBOARD) {
             return true;
         }
 
-        // Profile accessible during profile tutorial or after
         if (itemName === 'profile') {
-            return activeTutorial === 'profileTabs' ||
-                activeTutorial === 'facilityProfileTabs' ||
-                (activeTutorial === 'dashboard' && currentStep >= 2) ||
+            return isProfileTutorial(activeTutorial) ||
+                (activeTutorial === TUTORIAL_IDS.DASHBOARD && currentStep >= 2) ||
                 !isTutorialActive ||
                 tutorialPassed;
         }
 
-        // --- PLATFORM FEATURES: Require full access ---
-        // All platform features (Messages, Contracts, Calendar, Marketplace, Organization, Settings)
-        // are locked until user completes full profile and gets full access
-        const platformFeatures = ['messages', 'contracts', 'calendar', 'marketplace', 'organization', 'settings', 'payroll'];
-
-        if (platformFeatures.includes(itemName)) {
-            // Full access unlocks everything
-            if (access === 'full') return true;
-
-            // Team Access Logic
-            if (access === 'team') {
-                if (isFacilityWorkspace) {
-                    // Facility: Everything unlocked at Team access
-                    return true;
-                } else {
-                    // Professional: Everything unlocked EXCEPT Marketplace
-                    if (itemName === 'marketplace') return false;
-                    return true;
-                }
+        if (PLATFORM_FEATURES.includes(itemName)) {
+            // Marketplace: Only accessible with full profile completion
+            if (itemName === TUTORIAL_IDS.MARKETPLACE) {
+                return tutorialPassed;
             }
 
-            // Otherwise, platform features are locked
+            // Organization: Only accessible in facility workspace with full access
+            if (itemName === TUTORIAL_IDS.ORGANIZATION || itemName === TUTORIAL_IDS.PAYROLL) {
+                if (!isFacilityWorkspace) return false;
+                return access === 'full' || tutorialPassed;
+            }
+
+            // Other features
+            if (access === 'full' || tutorialPassed) return true;
+
             return false;
         }
 
-        // Any other items are accessible by default
         return true;
     }, [tutorialPassed, isTutorialActive, activeTutorial, currentStep, completedTutorials, access, selectedWorkspace]);
 
@@ -98,7 +93,7 @@ export const useTutorialRules = ({
                 const currentTab = normalizedCurrentPath.split('/').pop();
                 if (currentTab === requiredTab || normalizedCurrentPath.endsWith(`/${requiredTab}`)) {
                     isOnCorrectPage = true;
-                } else if (normalizedCurrentPath === '/dashboard/profile' && requiredTab === 'personalDetails') {
+                } else if (normalizedCurrentPath === '/dashboard/profile' && requiredTab === PROFILE_TAB_IDS.PERSONAL_DETAILS) {
                     isOnCorrectPage = true;
                 }
             } else {

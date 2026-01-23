@@ -10,13 +10,67 @@
       "settings": "Settings",
       "incompleteProfile": "Your profile is incomplete",
       "completeProfileFirst": "Please complete your profile first",
-      "organization": "Organization"
+      "organization": "Organization",
+      "lockedDuringTutorial": "Locked during tutorial",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "payroll": "Payroll"
     },
     "header": {
+      "overview": {
+        "title": "Overview",
+        "subtitle": "Welcome to your dashboard"
+      },
       "profile": {
-        "title": "Profile"
+        "title": "Profile",
+        "subtitle": "Manage your personal information"
+      },
+      "messages": {
+        "title": "Messages",
+        "subtitle": "Communicate with facilities and professionals"
+      },
+      "calendar": {
+        "title": "Calendar",
+        "subtitle": "Manage your schedule and appointments"
+      },
+      "contracts": {
+        "title": "Contracts",
+        "subtitle": "View and manage your contracts"
+      },
+      "marketplace": {
+        "title": "Marketplace",
+        "subtitle": "Find positions or professionals"
+      },
+      "payroll": {
+        "title": "Payroll",
+        "subtitle": "Manage employee payments and requests"
+      },
+      "organization": {
+        "title": "Organization",
+        "subtitle": "Manage your pharmacy chain or group"
+      },
+      "settings": {
+        "title": "Settings",
+        "subtitle": "Configure your account settings"
       },
       "search": "Search...",
+      "notifications": {
+        "newEvent": {
+          "title": "New Event",
+          "message": "Team meeting at 3 PM",
+          "time": "10m ago"
+        },
+        "confirmation": {
+          "title": "Confirmation",
+          "message": "Your shift transfer was approved",
+          "time": "1h ago"
+        },
+        "system": {
+          "title": "System",
+          "message": "Profile updated successfully",
+          "time": "2h ago"
+        }
+      },
       "createBusiness": "Create a business",
       "createBusinessDesc": "Set up your facility profile",
       "createProfessional": "Create Professional Profile",
@@ -227,15 +281,21 @@
       "settings": "Settings"
     },
     "tutorial": {
-      "selectionTitle": "Selection Title",
-      "selectionSubtitle": "Selection Subtitle",
+      "selectionTitle": "Choose Tutorial Mode",
+      "selectionSubtitle": "Select how you would like to explore the platform",
       "currentPage": "Current Page",
-      "currentPageOnly": "Current Page Only",
-      "currentPageOnlyTitle": "Current Page Only Title",
-      "currentPageOnlyDesc": "Current Page Only Desc",
-      "allPages": "All Pages",
-      "allPagesTitle": "All Pages Title",
-      "allPagesDesc": "All Pages Desc"
+      "currentPageOnly": "Start tutorial for current page only",
+      "currentPageOnlyTitle": "Current Page Only",
+      "currentPageOnlyDesc": "Learn about the features on this page",
+      "allPages": "Start complete tutorial from the beginning",
+      "allPagesTitle": "Complete Tutorial",
+      "allPagesDesc": "Start from the beginning and explore all features",
+      "stopTitle": "Pause Tutorial?",
+      "stopDescription": "You can continue the tutorial anytime by clicking the help button in the header.",
+      "clickHere": "Click here",
+      "toContinue": "to continue later",
+      "keepGoing": "Keep Going",
+      "pauseNow": "Pause Tutorial"
     }
   },
   "userMenu": {

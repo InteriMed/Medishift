@@ -1,7 +1,8 @@
 .underlined-link {
   text-decoration: none;
   position: relative;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-weight: var(--font-weight-medium);
   transition: color 0.2s ease;
 }
 
@@ -21,4 +22,4 @@
 .underlined-link:hover::after {
   transform: scaleX(1);
   transform-origin: bottom left;
-} 
+}

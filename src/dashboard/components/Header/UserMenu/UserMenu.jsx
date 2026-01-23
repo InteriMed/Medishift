@@ -8,6 +8,14 @@ import './UserMenu.css'; // Import the CSS file
 
 const UserMenu = () => {
   const { t, i18n } = useTranslation(['dashboard']);
+
+  const getTranslation = (key, defaultValue) => {
+    const translated = t(key, defaultValue);
+    if (typeof translated === 'object' && translated !== null) {
+      return translated.title || defaultValue;
+    }
+    return translated;
+  };
   const { lang } = useParams();
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
@@ -70,19 +78,19 @@ const UserMenu = () => {
             </div>
           )}
         </div>
-        <span className="user-name">{currentUser?.displayName || t('userMenu.user')}</span>
+        <span className="user-name">{currentUser?.displayName || getTranslation('userMenu.user', 'User')}</span>
       </div>
       
       {isOpen && (
         <div className="user-menu-dropdown">
           <Link to={`/${lang}/dashboard/profile`} className="menu-item">
             <FiSettings />
-            {t('userMenu.profile')}
+            {getTranslation('userMenu.profile', 'My Profile')}
           </Link>
           
           <Link to={`/${lang}/dashboard/settings`} className="menu-item">
             <FiSettings />
-            {t('userMenu.settings')}
+            {getTranslation('userMenu.settings', 'Settings')}
           </Link>
           
           <div className="menu-divider"></div>
@@ -94,7 +102,7 @@ const UserMenu = () => {
               onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
             >
               <FiGlobe />
-              {t('userMenu.language')}
+              {getTranslation('userMenu.language', 'Language')}
               <span className={`chevron ${showLanguageDropdown ? 'open' : ''}`}>▼</span>
             </div>
             
@@ -119,7 +127,7 @@ const UserMenu = () => {
           
           <div className="menu-item-logout">
             <Button onClick={handleLogout} variant="warning">
-              {t('userMenu.logout')}
+              {getTranslation('userMenu.logout', 'Log Out')}
             </Button>
           </div>
         </div>

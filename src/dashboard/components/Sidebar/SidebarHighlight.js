@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { useDashboard } from '../../contexts/DashboardContext';
+import { TUTORIAL_IDS } from '../../../config/tutorialSystem';
 
 const SIDEBAR_ORDER = ['profile', 'messages', 'contracts', 'calendar', 'marketplace', 'payroll', 'organization', 'settings'];
 
@@ -17,7 +18,7 @@ const SidebarHighlight = ({ highlightSidebarItem }) => {
       return null;
     }
 
-    const isProfileTabsComplete = completedTutorials.includes('profileTabs') || completedTutorials.includes('facilityProfileTabs');
+    const isProfileTabsComplete = completedTutorials.includes(TUTORIAL_IDS.PROFILE_TABS) || completedTutorials.includes(TUTORIAL_IDS.FACILITY_PROFILE_TABS);
     const isProfileComplete = profileComplete === true;
 
     if (!isProfileTabsComplete && !isProfileComplete) {
@@ -32,13 +33,13 @@ const SidebarHighlight = ({ highlightSidebarItem }) => {
         continue;
       }
 
-      const tutorialKey = item === 'messages' ? 'messages' :
-        item === 'contracts' ? 'contracts' :
-          item === 'calendar' ? 'calendar' :
-            item === 'marketplace' ? 'marketplace' :
-              item === 'payroll' ? 'payroll' :
-                item === 'organization' ? 'organization' :
-                  item === 'settings' ? 'settings' : null;
+      const tutorialKey = item === 'messages' ? TUTORIAL_IDS.MESSAGES :
+        item === 'contracts' ? TUTORIAL_IDS.CONTRACTS :
+          item === 'calendar' ? TUTORIAL_IDS.CALENDAR :
+            item === 'marketplace' ? TUTORIAL_IDS.MARKETPLACE :
+              item === 'payroll' ? TUTORIAL_IDS.PAYROLL :
+                item === 'organization' ? TUTORIAL_IDS.ORGANIZATION :
+                  item === 'settings' ? TUTORIAL_IDS.SETTINGS : null;
 
       if (tutorialKey && !completedTutorials.includes(tutorialKey)) {
         return item;

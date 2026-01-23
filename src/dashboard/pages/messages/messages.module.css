@@ -56,13 +56,13 @@
   padding: 0.5rem 1rem;
   border: none;
   background: transparent;
-  color: var(--text-secondary, #64748b);
-  font-size: 0.85rem;
-  font-weight: 500;
+  color: var(--text-light-color);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 8px;
-  font-family: var(--font-family);
 }
 
 .tabButton:hover {
@@ -71,9 +71,9 @@
 }
 
 .tabButton.activeTab {
-  color: var(--color-logo-1, #3b82f6);
+  color: var(--color-logo-1);
   background-color: rgba(59, 130, 246, 0.1);
-  font-weight: 600;
+  font-weight: var(--font-weight-medium);
 }
 
 .sidebarHeader {
@@ -83,9 +83,10 @@
 
 .sidebarHeader h2 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary, #1e293b);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-default);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
 }
 
 .noResultsMessage {
@@ -98,22 +99,24 @@
 }
 
 .noResultsIcon {
-  font-size: 2rem;
+  font-size: var(--font-size-xxxlarge);
   margin-bottom: 0.5rem;
   opacity: 0.6;
 }
 
 .noResultsMessage h3 {
   margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
 }
 
 .noResultsMessage p {
   margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
+  color: var(--text-light-color);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
   line-height: 1.5;
 }
 
@@ -160,15 +163,17 @@
 
 .emptyContent h3 {
   margin: 0 0 1rem 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary, #1e293b);
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-xlarge);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
 }
 
 .emptyContent p {
   margin: 0 0 0.5rem 0;
-  color: var(--text-secondary, #64748b);
-  font-size: 0.95rem;
+  color: var(--text-light-color);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
   line-height: 1.6;
 }
 
@@ -177,8 +182,9 @@
   padding: 1rem;
   border-radius: 8px;
   border-left: 4px solid var(--color-logo-1);
-  font-size: 0.85rem;
-  color: var(--text-primary);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--text-color);
   max-width: 400px;
   margin-top: 1rem;
 }

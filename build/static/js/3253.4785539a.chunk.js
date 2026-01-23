@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmedishift_deployment_server=self.webpackChunkmedishift_deployment_server||[]).push([[3253],{3253(e){e.exports=JSON.parse('{"users":{"crm":"Gestion Utilisateurs"},"verification":{"title":"V\xe9rification","pending":"En attente","verified":"V\xe9rifi\xe9","rejected":"Rejet\xe9"}}')}}]);

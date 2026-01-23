@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
 
-// --- Import Base Components ---
 import Button from '../../../../../components/BoxedInputFields/Button';
 import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
-import { FiEdit, FiTrash2, FiFileText, FiUploadCloud, FiCheckCircle, FiEye, FiDownload } from 'react-icons/fi';
+import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
+import { FiEdit, FiTrash2, FiFileText, FiUploadCloud, FiCheckCircle, FiEye, FiDownload, FiUpload } from 'react-icons/fi';
+import { cn } from '../../../../../utils/cn';
 
 // --- Import Storage Service ---
 import { uploadFile } from '../../../../../services/storageService';
@@ -55,10 +56,8 @@ const useFileUpload = () => {
             });
 
             setUploadState({ isLoading: false, progress: 0, error: null, type: null });
-            console.log(`Upload complete for ${docType}: ${downloadURL}`);
             return downloadURL;
         } catch (error) {
-            console.error(`Error uploading ${docType}:`, error);
             setUploadState({
                 isLoading: false,
                 progress: 0,
@@ -85,7 +84,17 @@ const DocumentUploads = ({
     getNestedValue,
     validateCurrentTabData,
     onTabCompleted,
-    isTutorialActive
+    isTutorialActive,
+    completionPercentage,
+    handleAutoFillClick,
+    isUploading,
+    isAnalyzing,
+    autoFillButtonRef,
+    uploadInputRef,
+    handleFileUpload: handleFileUploadProp,
+    uploadProgress,
+    t: tProp,
+    stepData
 }) => {
     const { t } = useTranslation(['dashboardProfile', 'common', 'validation']);
     const { upload, uploadState } = useFileUpload();
@@ -253,7 +262,7 @@ const DocumentUploads = ({
                 onInputChange(fieldName, downloadURL);
             }
         } catch (error) {
-            console.error(`Error uploading ${docType}:`, error);
+            // Error uploading document
         }
     }, [upload, formData, getNestedValue, onInputChange, onArrayChange, normalizeDocumentName]);
 
@@ -787,6 +796,57 @@ const DocumentUploads = ({
                     <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('documents.title')}</h2>
                     <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('documents.subtitle')}</p>
                 </div>
+
+                {isTutorialActive && (
+                    <div className="flex items-center gap-3">
+                        <div className="relative" ref={autoFillButtonRef}>
+                            <button
+                                onClick={handleAutoFillClick}
+                                disabled={isUploading || isAnalyzing}
+                                className={cn(
+                                    "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
+                                    "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
+                                    (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
+                                    (stepData?.highlightUploadButton) && "tutorial-highlight"
+                                )}
+                                style={{ height: 'var(--boxed-inputfield-height)' }}
+                                data-tutorial="profile-upload-button"
+                            >
+                                {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
+                                <span className="text-sm font-medium text-black">
+                                    {isAnalyzing
+                                        ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
+                                        : t('dashboardProfile:documents.autofill', 'Auto Fill')
+                                    }
+                                </span>
+                            </button>
+                        </div>
+                        {uploadInputRef && handleFileUploadProp && (
+                            <UploadFile
+                                ref={uploadInputRef}
+                                onChange={handleFileUploadProp}
+                                isLoading={isUploading}
+                                progress={uploadProgress}
+                                accept=".pdf,.doc,.docx,.jpg,.png"
+                                label=""
+                                className="hidden"
+                            />
+                        )}
+
+                        {formData && completionPercentage !== undefined && (
+                            <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                                <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                                <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                                        style={{ width: `${completionPercentage}%` }}
+                                    ></div>
+                                </div>
+                                <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className={styles.sectionsWrapper}>

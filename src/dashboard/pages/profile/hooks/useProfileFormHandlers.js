@@ -5,6 +5,8 @@ import { get, set, cloneDeep, isEqual } from 'lodash';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import { isTabCompleted, isTabAccessible } from '../utils/profileUtils';
+import { isProfileTutorial } from '../../../../config/tutorialSystem';
+import { getLocalStorageKey } from '../../../../config/keysDatabase';
 
 export const useProfileFormHandlers = (
     formData,
@@ -25,16 +27,42 @@ export const useProfileFormHandlers = (
     const navigate = useNavigate();
     const { setProfileCompletionStatus } = useDashboard();
     const { showNotification } = useNotification();
+    const localSaveTimeoutRef = useRef(null);
 
     const isFormModified = useMemo(() => {
         if (!originalData.current || !formData) return false;
         return !isEqual(originalData.current, formData);
     }, [formData, originalData]);
 
+    const saveToLocalStorage = useCallback((data) => {
+        try {
+            const localStorageKey = getLocalStorageKey('PROFILE_DRAFT', activeTab);
+            localStorage.setItem(localStorageKey, JSON.stringify(data));
+        } catch (error) {
+            // Error saving to localStorage
+        }
+    }, [activeTab]);
+
     const handleInputChange = useCallback((name, value) => {
         setFormData(currentFormData => {
             const newFormData = cloneDeep(currentFormData);
             set(newFormData, name, value);
+            
+            if (localSaveTimeoutRef.current) {
+                clearTimeout(localSaveTimeoutRef.current);
+            }
+            localSaveTimeoutRef.current = setTimeout(() => {
+                saveToLocalStorage(newFormData);
+                validateCurrentTabData(newFormData, activeTab, true);
+                
+                if (isTutorialActive && isProfileTutorial(activeTutorial)) {
+                    const isCurrentTabComplete = isTabCompleted(newFormData, activeTab, profileConfig);
+                    if (isCurrentTabComplete) {
+                        onTabCompleted(activeTab, true);
+                    }
+                }
+            }, 300);
+            
             return newFormData;
         });
         setErrors(prevErrors => {
@@ -42,7 +70,7 @@ export const useProfileFormHandlers = (
             set(newErrors, name, undefined);
             return newErrors;
         });
-    }, [setFormData, setErrors]);
+    }, [setFormData, setErrors, saveToLocalStorage, validateCurrentTabData, activeTab, isTutorialActive, activeTutorial, profileConfig, onTabCompleted]);
 
     const handleArrayChange = useCallback((arrayName, newArray) => {
         setFormData(prev => ({ ...prev, [arrayName]: newArray }));
@@ -86,13 +114,10 @@ export const useProfileFormHandlers = (
                 showNotification(t('validation:profileSaved'), 'success');
                 if (shouldUpdateProfileCompletionStatus) await setProfileCompletionStatus(true);
 
-                if (isTutorialActive && (activeTutorial === 'profileTabs' || activeTutorial === 'facilityProfileTabs')) {
+                if (isTutorialActive && isProfileTutorial(activeTutorial)) {
                     const isCurrentTabComplete = isTabCompleted(updatedData, activeTab, profileConfig);
                     if (isCurrentTabComplete) {
-                        console.log('[Profile] Tab completed:', activeTab, '- notifying tutorial context');
                         onTabCompleted(activeTab, true);
-                    } else {
-                        console.log('[Profile] Tab saved but not complete yet:', activeTab);
                     }
                 }
 
@@ -123,16 +148,33 @@ export const useProfileFormHandlers = (
 
     const handleTabChange = useCallback(async (tabId) => {
         if (tabId === activeTab) return;
-        if (!isTabAccessible(formData, tabId, profileConfig)) {
-            showNotification(t('validation:completePreviousSteps'), 'warning');
-            return;
-        }
         
-        validateCurrentTabData();
+        const tabOrder = profileConfig?.tabs?.map(t => t.id) || [];
+        const currentIndex = tabOrder.indexOf(activeTab);
+        const targetIndex = tabOrder.indexOf(tabId);
+        const isGoingForward = targetIndex > currentIndex;
+        
+        if (isGoingForward) {
+            const isCurrentTabValid = validateCurrentTabData(formData, activeTab, false);
+            
+            if (!isCurrentTabValid) {
+                showNotification(t('validation:errorFixFieldsBeforeContinuing'), 'warning');
+                return;
+            }
+            
+            if (!isTabAccessible(formData, tabId, profileConfig)) {
+                showNotification(t('validation:completePreviousSteps'), 'warning');
+                return;
+            }
+        }
         
         if (isFormModified) {
-            await handleSave({ navigateToNextTab: false });
+            const saveSuccess = await handleSave({ navigateToNextTab: false });
+            if (!saveSuccess) {
+                return;
+            }
         }
+        
         navigate(`/dashboard/profile/${tabId}`);
     }, [isFormModified, activeTab, navigate, formData, profileConfig, showNotification, t, handleSave, validateCurrentTabData]);
 

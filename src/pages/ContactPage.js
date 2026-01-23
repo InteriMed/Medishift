@@ -101,7 +101,6 @@ const ContactPage = () => {
     setFormSubmitting(true);
 
     setTimeout(() => {
-      console.log('Form submitted:', formData);
       setFormSubmitting(false);
       setFormSubmitted(true);
 
@@ -163,13 +162,13 @@ const ContactPage = () => {
           <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
             <div className="text-center max-w-4xl mx-auto">
               <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-colors border-transparent bg-primary/10 text-primary mb-6">
-                Contactez-nous
+                {t('hero.badge')}
               </div>
               <h1 className="text-4xl lg:text-7xl font-black tracking-tight text-slate-900 pb-6 animate-gradient">
                 {t('title')}
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-                Notre équipe est à votre écoute pour répondre à toutes vos questions.
+                {t('subtitle')}
               </p>
             </div>
           </div>
@@ -202,7 +201,7 @@ const ContactPage = () => {
                   <div>
                     <SimpleDropdown
                       label={t('contact.form.inquiryType.label')}
-                      placeholder="Select inquiry type"
+                      placeholder={t('form.inquiryType.placeholder')}
                       value={formData.type}
                       onChange={(value) => handleDropdownChange('type', value)}
                       options={[
@@ -327,7 +326,7 @@ const ContactPage = () => {
                       style={{ border: 0, minHeight: '400px' }}
                       allowFullScreen=""
                       loading="lazy"
-                      title="MediShift Office Location"
+                      title={t('map.title')}
                     ></iframe>
                   </div>
                 </div>
@@ -344,10 +343,10 @@ const ContactPage = () => {
             </h2>
             <div className="flex flex-wrap justify-center gap-6">
               {[
-                { icon: FaFacebook, href: 'https://facebook.com', color: 'hover:text-blue-600', label: 'Facebook' },
-                { icon: FaTwitter, href: 'https://twitter.com', color: 'hover:text-blue-400', label: 'Twitter' },
-                { icon: FaLinkedin, href: 'https://linkedin.com', color: 'hover:text-blue-700', label: 'LinkedIn' },
-                { icon: FaInstagram, href: 'https://instagram.com', color: 'hover:text-pink-600', label: 'Instagram' }
+                { icon: FaFacebook, href: 'https://facebook.com', color: 'hover:text-blue-600', label: t('social.facebook') },
+                { icon: FaTwitter, href: 'https://twitter.com', color: 'hover:text-blue-400', label: t('social.twitter') },
+                { icon: FaLinkedin, href: 'https://linkedin.com', color: 'hover:text-blue-700', label: t('social.linkedin') },
+                { icon: FaInstagram, href: 'https://instagram.com', color: 'hover:text-pink-600', label: t('social.instagram') }
               ].map((social, index) => (
                 <a
                   key={index}
@@ -378,11 +377,10 @@ const ContactPage = () => {
             <div className="flex flex-col lg:flex-row items-center justify-between gap-16 relative z-10">
               <div className="lg:w-1/2 text-left">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-blue-300 text-xs font-bold tracking-wider uppercase mb-6 border border-white/20">
-                  <FaRegLightbulb className="mr-1" /> Centre d'aide
+                  <FaRegLightbulb className="mr-1" /> {t('faq.badge')}
                 </div>
                 <h2 className="text-4xl lg:text-6xl font-black mb-6 leading-tight">
-                  Des questions ? <br />
-                  <span className="text-blue-500">Nous avons les réponses.</span>
+                  {t('faq.title')}
                 </h2>
                 <p className="text-xl text-slate-400 mb-10 leading-relaxed font-medium max-w-xl">
                   {t('faq.description')}

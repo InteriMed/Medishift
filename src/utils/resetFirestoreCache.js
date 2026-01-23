@@ -1,3 +1,5 @@
+import { LOCALSTORAGE_KEYS, INDEXEDDB_DATABASES, WINDOW_FLAGS, getEnvVar } from '../config/keysDatabase';
+
 export function resetFirestoreCache() {
   if (typeof window === 'undefined') {
     console.warn('resetFirestoreCache can only run in browser');
@@ -39,13 +41,17 @@ export function resetFirestoreCache() {
     };
 
     const clearAll = async () => {
-      const dbNames = ['firestore', 'firebaseLocalStorageDb', 'firebase-heartbeat-database'];
+      const dbNames = [
+        INDEXEDDB_DATABASES.FIRESTORE,
+        INDEXEDDB_DATABASES.FIREBASE_LOCAL_STORAGE,
+        INDEXEDDB_DATABASES.FIREBASE_HEARTBEAT
+      ];
       
       for (const name of dbNames) {
         await deleteDatabase(name);
       }
 
-      localStorage.removeItem('__FIRESTORE_INITIALIZED__');
+      localStorage.removeItem(LOCALSTORAGE_KEYS.FIRESTORE_INITIALIZED);
       sessionStorage.clear();
       
       console.log('✅ Firestore cache cleared!');
@@ -58,8 +64,8 @@ export function resetFirestoreCache() {
   }
 }
 
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  window.resetFirestoreCache = resetFirestoreCache;
+if (typeof window !== 'undefined' && getEnvVar('NODE_ENV') === 'development') {
+  window[WINDOW_FLAGS.RESET_FIRESTORE_CACHE] = resetFirestoreCache;
   console.log('🧹 Cache reset function available: window.resetFirestoreCache()');
 }
 

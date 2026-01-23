@@ -14,6 +14,7 @@ import PersonnalizedInputField from '../../components/BoxedInputFields/Personnal
 import DropdownField from '../../components/BoxedInputFields/Dropdown-Field';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../utils/auditLogger';
 import { useAuth } from '../../contexts/AuthContext';
+import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import '../../styles/variables.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -116,7 +117,7 @@ const UserVerificationQueue = () => {
   const loadPendingUsers = async () => {
     setLoading(true);
     try {
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
       const q = query(usersRef, where('verificationStatus', '!=', 'verified'));
       const snapshot = await getDocs(q);
 
@@ -129,12 +130,12 @@ const UserVerificationQueue = () => {
 
         let professionalProfile = null;
         const profId = userData.professionalProfileId || userId;
-        const profDoc = await getDoc(doc(db, 'professionalProfiles', profId));
+        const profDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, profId));
         if (profDoc.exists()) professionalProfile = profDoc.data();
 
         let facilityProfile = null;
         const facId = userData.facilityProfileId || userId;
-        const facDoc = await getDoc(doc(db, 'facilityProfiles', facId));
+        const facDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facId));
         if (facDoc.exists()) facilityProfile = facDoc.data();
 
         if (!professionalProfile && !facilityProfile && userData.onboardingStatus !== 'pending_verification') continue;

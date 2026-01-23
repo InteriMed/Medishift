@@ -359,7 +359,7 @@ const SettingsPage = () => {
   };
 
   if (isLoading) {
-    return <div className={styles.loadingContainer}>Loading settings...</div>;
+    return <div className={styles.loadingContainer}>{t('common:loading', 'Loading settings...')}</div>;
   }
   
   const displayProfile = profileData || currentUser || {};

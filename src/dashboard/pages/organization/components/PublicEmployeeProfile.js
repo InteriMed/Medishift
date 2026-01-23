@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import {
     FiMapPin, FiBriefcase, FiCheckCircle, FiStar,
     FiClock, FiGlobe, FiAward, FiX
@@ -22,14 +23,14 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
             setLoading(true);
             try {
                 // Fetch professional profile
-                const profRef = doc(db, 'professionalProfiles', employeeId);
+                const profRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, employeeId);
                 const profSnap = await getDoc(profRef);
 
                 if (profSnap.exists()) {
                     setProfile({ id: profSnap.id, ...profSnap.data() });
                 } else {
                     // Fallback to basic user data
-                    const userRef = doc(db, 'users', employeeId);
+                    const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, employeeId);
                     const userSnap = await getDoc(userRef);
                     if (userSnap.exists()) {
                         setProfile({ id: userSnap.id, ...userSnap.data() });
@@ -198,14 +199,14 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
                                         Available for bookings
                                     </div>
                                     <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-                                        Open to interim shifts and coverage within Geneva and surroundings.
+                                        {t('organization:employee.openToInterim', 'Open to interim shifts and coverage within Geneva and surroundings.')}
                                     </p>
                                 </div>
 
                                 <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100 text-center">
                                     <FiAward className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
-                                    <div className="font-bold text-indigo-900 text-lg">Top Candidate</div>
-                                    <p className="text-indigo-700/80 text-sm">Reliable professional with excellent feedback.</p>
+                                    <div className="font-bold text-indigo-900 text-lg">{t('organization:employee.topCandidate', 'Top Candidate')}</div>
+                                    <p className="text-indigo-700/80 text-sm">{t('organization:employee.reliableProfessional', 'Reliable professional with excellent feedback.')}</p>
                                 </div>
                             </div>
                         </div>
@@ -213,8 +214,8 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
                 ) : !loading && (
                     <div className="flex-1 flex items-center justify-center p-8">
                         <div className="text-center">
-                            <h3 className="text-lg font-semibold text-gray-900">Profile Not Found</h3>
-                            <p className="text-gray-500">The requested profile could not be loaded.</p>
+                            <h3 className="text-lg font-semibold text-gray-900">{t('organization:employee.profileNotFound', 'Profile Not Found')}</h3>
+                            <p className="text-gray-500">{t('organization:employee.profileNotLoaded', 'The requested profile could not be loaded.')}</p>
                         </div>
                     </div>
                 )}

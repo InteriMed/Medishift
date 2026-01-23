@@ -25,7 +25,6 @@ const Dialog = ({
 
   useEffect(() => {
     if (isOpen) {
-      console.log('[Dialog] Opening dialog:', { title, position, isOpen });
       setIsAnimating(true);
       // Set visible immediately for positioned dialogs (tooltips) to avoid delay
       // For centered dialogs, use double RAF for animation
@@ -36,7 +35,6 @@ const Dialog = ({
         // Centered dialogs use animation
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            console.log('[Dialog] Setting visible to true');
             setIsVisible(true);
           });
         });
@@ -45,7 +43,6 @@ const Dialog = ({
         document.body.style.overflow = 'hidden';
       }
     } else {
-      console.log('[Dialog] Closing dialog');
       setIsVisible(false);
       const timer = setTimeout(() => {
         setIsAnimating(false);
@@ -95,15 +92,30 @@ const Dialog = ({
   const getHeaderIcon = () => {
     switch (messageType) {
       case 'warning':
-        return <div className="p-3 rounded-full bg-amber-50 text-amber-600 mb-4 w-fit"><FiAlertTriangle size={24} /></div>;
+        return <div className="p-3 rounded-full bg-amber-50 text-amber-600 w-fit"><FiAlertTriangle size={24} /></div>;
       case 'error':
-        return <div className="p-3 rounded-full bg-red-50 text-red-600 mb-4 w-fit"><FiAlertCircle size={24} /></div>;
+        return <div className="p-3 rounded-full bg-red-50 text-red-600 w-fit"><FiAlertCircle size={24} /></div>;
       case 'success':
-        return <div className="p-3 rounded-full bg-green-50 text-green-600 mb-4 w-fit"><FiCheckCircle size={24} /></div>;
+        return <div className="p-3 rounded-full bg-green-50 text-green-600 w-fit"><FiCheckCircle size={24} /></div>;
       case 'info':
-        return <div className="p-3 rounded-full bg-blue-50 text-blue-600 mb-4 w-fit"><FiInfo size={24} /></div>;
+        return <div className="p-3 rounded-full bg-blue-50 text-blue-600 w-fit"><FiInfo size={24} /></div>;
       default:
         return null;
+    }
+  };
+
+  const getIconColorClass = () => {
+    switch (messageType) {
+      case 'warning':
+        return 'text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg';
+      case 'error':
+        return 'text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg';
+      case 'success':
+        return 'text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg';
+      case 'info':
+        return 'text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg';
+      default:
+        return 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg';
     }
   };
 
@@ -142,62 +154,63 @@ const Dialog = ({
             opacity: isVisible ? 1 : 0
           }}
         >
-          <div className={position ? "p-6" : "p-8"}>
+          <div className={position ? "pl-6 pr-0 pb-6 pt-0" : "pl-8 pr-0 pb-8 pt-0"}>
             <div className={cn("flex items-start", centerTitle ? "flex-col" : "justify-between")}>
-              {showCloseButton && !centerTitle && (
-                <div className="flex-1">
-                  {getHeaderIcon()}
-                  {title && (
-                    <h2 className={cn(
-                      position ? "text-lg" : "text-2xl",
-                      "font-bold text-slate-900 mb-2 tracking-tight",
-                      "flex items-center gap-2"
-                    )} style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
-                      {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
-                      {title}
-                    </h2>
-                  )}
+              {!centerTitle && (
+                <div className="flex-1 pt-6 pr-6">
+                  <div className="flex items-center gap-3">
+                    {getHeaderIcon()}
+                    {title && (
+                      <h2 className={cn(
+                        position ? "text-lg" : "text-2xl",
+                        "font-bold text-slate-900 tracking-tight"
+                      )} style={{ fontFamily: 'var(--font-family-headings, inherit)', margin: 0 }}>
+                        {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
+                        {title}
+                      </h2>
+                    )}
+                  </div>
                 </div>
               )}
               {centerTitle && (
-                <div className="w-full text-center relative">
-                  {getHeaderIcon()}
-                  {title && (
-                    <h2 className={cn(
-                      position ? "text-lg" : "text-2xl",
-                      "font-bold text-slate-900 mb-2 tracking-tight",
-                      "flex items-center justify-center gap-2"
-                    )} style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
-                      {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
-                      {title}
-                    </h2>
-                  )}
-                  {showCloseButton && (
-                    <button
-                      onClick={onClose}
-                      className="absolute top-0 right-0 p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-900"
-                    >
-                      <FiX size={20} />
-                    </button>
-                  )}
+                <div className="w-full relative pt-6 pr-6">
+                  <div className="flex items-center gap-3">
+                    {getHeaderIcon()}
+                    {title && (
+                      <h2 className={cn(
+                        position ? "text-lg" : "text-2xl",
+                        "font-bold text-slate-900 tracking-tight"
+                      )} style={{ fontFamily: 'var(--font-family-headings, inherit)', margin: 0 }}>
+                        {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
+                        {title}
+                      </h2>
+                    )}
+                  </div>
                 </div>
               )}
-              {showCloseButton && !centerTitle && (
+              {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-900"
+                  className={cn(
+                    "p-2 transition-colors",
+                    centerTitle ? "absolute top-0 right-0" : "",
+                    getIconColorClass()
+                  )}
                 >
                   <FiX size={20} />
                 </button>
               )}
             </div>
 
-            <div className="text-slate-600 leading-relaxed custom-scrollbar overflow-y-auto max-h-[60vh]">
+            <div className={cn(
+              "text-slate-600 leading-relaxed custom-scrollbar overflow-y-auto mt-4 pr-8",
+              position ? "max-h-[62vh]" : "max-h-[100vh]"
+            )}>
               {children}
             </div>
 
             {actions && (
-              <div className={cn("flex justify-end", position ? "mt-6 gap-2" : "mt-8 gap-3")}>
+              <div className={cn("flex justify-end pr-8", position ? "mt-6 gap-2" : "mt-8 gap-3")}>
                 {actions}
               </div>
             )}
@@ -242,54 +255,54 @@ const Dialog = ({
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-8">
+        <div className="pl-8 pr-0 pb-8 pt-0">
           <div className={cn("flex items-start", centerTitle ? "flex-col" : "justify-between")}>
             {!centerTitle && (
-              <div className="flex-1">
-                {getHeaderIcon()}
-                {title && (
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight flex items-center gap-2" style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
-                    {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
-                    {title}
-                  </h2>
-                )}
+              <div className="flex-1 pt-6 pr-6">
+                <div className="flex items-center gap-3">
+                  {getHeaderIcon()}
+                  {title && (
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2" style={{ fontFamily: 'var(--font-family-headings, inherit)', margin: 0 }}>
+                      {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
+                      {title}
+                    </h2>
+                  )}
+                </div>
               </div>
             )}
             {centerTitle && (
-              <div className="w-full text-center relative">
-                {getHeaderIcon()}
-                {title && (
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight flex items-center justify-center gap-2" style={{ fontFamily: 'var(--font-family-headings, inherit)' }}>
-                    {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
-                    {title}
-                  </h2>
-                )}
-                {showCloseButton && (
-                  <button
-                    onClick={onClose}
-                    className="absolute top-0 right-0 p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-900"
-                  >
-                    <FiX size={20} />
-                  </button>
-                )}
+              <div className="w-full text-center relative pt-6 pr-6">
+                <div className="flex flex-col items-center justify-center">
+                  {getHeaderIcon()}
+                  {title && (
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center justify-center gap-2" style={{ fontFamily: 'var(--font-family-headings, inherit)', margin: 0 }}>
+                      {titleIcon && <span className="inline-flex items-center">{titleIcon}</span>}
+                      {title}
+                    </h2>
+                  )}
+                </div>
               </div>
             )}
-            {!centerTitle && showCloseButton && (
+            {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-900"
+                className={cn(
+                  "p-2 transition-colors",
+                  centerTitle ? "absolute top-0 right-0" : "",
+                  getIconColorClass()
+                )}
               >
                 <FiX size={20} />
               </button>
             )}
           </div>
 
-          <div className="text-slate-600 leading-relaxed custom-scrollbar overflow-y-auto max-h-[60vh]">
+          <div className="text-slate-600 leading-relaxed custom-scrollbar overflow-y-auto max-h-[100vh] mt-4 pr-8">
             {children}
           </div>
 
           {actions && (
-            <div className="mt-8 flex justify-end gap-3">
+            <div className="mt-8 flex justify-end gap-3 pr-8">
               {actions}
             </div>
           )}

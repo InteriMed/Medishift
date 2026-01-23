@@ -4,6 +4,7 @@ import { useTutorial } from '../contexts/TutorialContext';
 import { useDashboard } from '../contexts/DashboardContext';
 import HighlightTooltip from '../onboarding/components/HighlightTooltip';
 import AccessLevelChoicePopup from '../pages/profile/components/AccessLevelChoicePopup';
+import StopTutorialConfirmModal from '../components/modals/StopTutorialConfirmModal';
 import { useTranslation } from 'react-i18next';
 
 
@@ -23,16 +24,20 @@ const Tutorial = () => {
     isTutorialActive,
     showFirstTimeModal,
     showAccessLevelModal,
+    showStopTutorialConfirm,
     currentStep,
     activeTutorial,
     prevStep,
     nextStep,
     completeTutorial,
+    stopTutorial,
     isBusy,
     isPaused,
     setShowAccessLevelModal,
+    setShowStopTutorialConfirm,
     setAccessMode,
     allowAccessLevelModalClose,
+    resetProfileTabAccess,
     tutorialSteps
   } = useTutorial();
 
@@ -41,12 +46,6 @@ const Tutorial = () => {
   const glnVerified = user?.GLN_certified === true || user?.GLN_certified === 'ADMIN_OVERRIDE';
   const [hasRendered, setHasRendered] = useState(false);
 
-  // Debug: log when modal state changes
-  useEffect(() => {
-    console.log('[Tutorial] showAccessLevelModal changed:', showAccessLevelModal);
-    console.log('[Tutorial] allowAccessLevelModalClose:', allowAccessLevelModalClose);
-  }, [showAccessLevelModal, allowAccessLevelModalClose]);
-
   // Helper function to check if user is in dashboard - Memoized to prevent infinite loops
   const isInDashboard = useMemo(() => {
     return location.pathname.includes('/dashboard');
@@ -54,13 +53,11 @@ const Tutorial = () => {
 
   // Add effect to log component mounting and state updates - Fixed dependency array
   useEffect(() => {
-    // console.log("Tutorial component mounted/updated with state:", { ... });
 
     // Set hasRendered to true after initial render
     setHasRendered(true);
 
     return () => {
-      // console.log("Tutorial component unmounting");
     };
   }, [
     isTutorialActive,
@@ -129,21 +126,23 @@ const Tutorial = () => {
       <AccessLevelChoicePopup
         isOpen={showAccessLevelModal}
         onClose={() => {
-          console.log('[Tutorial] AccessLevelChoicePopup onClose called');
           setShowAccessLevelModal(false);
         }}
         onSelectTeamAccess={() => {
-          console.log('[Tutorial] onSelectTeamAccess called');
           setAccessMode('team');
         }}
         onContinueOnboarding={() => {
-          console.log('[Tutorial] onContinueOnboarding called - Continue Profile selected, keeping accessMode as loading');
-          // Keep accessMode at 'loading' - user is continuing but hasn't committed to full yet
-          // Access mode will change to 'full' only after profile completion
           setAccessMode('loading');
         }}
         glnVerified={glnVerified}
         allowClose={allowAccessLevelModalClose !== undefined ? allowAccessLevelModalClose : false}
+      />
+      <StopTutorialConfirmModal
+        isOpen={showStopTutorialConfirm}
+        onClose={() => setShowStopTutorialConfirm(false)}
+        onConfirm={() => {
+          stopTutorial({ forceStop: true, showAccessPopupForProfile: true });
+        }}
       />
     </>
   );

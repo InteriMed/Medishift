@@ -71,7 +71,7 @@ const NewHomepage = () => {
                             </div>
 
                             <h1 className="text-5xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[1.1] mb-8">
-                                Gestion RH Digitale
+                                {t('hero.mainTitle')}
                                 <span className="text-blue-600">.</span>
                             </h1>
 
@@ -102,7 +102,7 @@ const NewHomepage = () => {
                                     <div className="bg-white rounded-[3rem] p-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-100">
                                         <img
                                             src={phoneAppMockup}
-                                            alt="MediShift App"
+                                            alt={t('hero.appAlt')}
                                             className="w-full h-auto rounded-[2.5rem]"
                                         />
                                     </div>
@@ -113,8 +113,8 @@ const NewHomepage = () => {
                                         <FaCheckCircle size={18} />
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Vérifié</div>
-                                        <div className="text-sm font-bold text-slate-800">Profil Validé</div>
+                                        <div className="text-[10px] text-slate-400 font-black uppercase tracking-tight">{t('hero.verifiedBadge')}</div>
+                                        <div className="text-sm font-bold text-slate-800">{t('hero.verifiedProfile')}</div>
                                     </div>
                                 </div>
 
@@ -123,8 +123,8 @@ const NewHomepage = () => {
                                         <FaFileContract size={18} />
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Contrat</div>
-                                        <div className="text-sm font-bold text-slate-800">Signature Digitale</div>
+                                        <div className="text-[10px] text-slate-400 font-black uppercase tracking-tight">{t('hero.contractBadge')}</div>
+                                        <div className="text-sm font-bold text-slate-800">{t('hero.digitalSignature')}</div>
                                     </div>
                                 </div>
                             </div>
@@ -137,10 +137,10 @@ const NewHomepage = () => {
             <section className="relative py-12 bg-white/60 backdrop-blur-sm border-y border-slate-100/50 z-10">
                 <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
                     <div className="flex flex-wrap justify-center items-center gap-16 md:gap-32 transition-all duration-500">
-                        <img src={spsLogo} alt="SPS" className="h-16 w-auto object-contain" />
-                        <img src="https://assets.onedoc.ch/images/groups/233046662f84ce9a70aaf7dbadf02b6de290d4c613fffd0ac40e38709e28e404-small.png" alt="OneDoc Group" className="h-20 w-auto object-contain" />
-                        <img src="https://www.pikpng.com/pngl/b/577-5770945_switzerland-global-value-propositions-confdration-suisse-clipart.png" alt="Confédération Suisse" className="h-24 w-auto object-contain" />
-                        <img src="https://assets.onedoc.ch/images/entities/b76d5e33eab4aa7bd5940f08ef50511e7e4c6c1227ebb9491d4d16b97f2637e0-medium.png" alt="Dental Clinic" className="h-20 w-auto object-contain" />
+                        <img src={spsLogo} alt={t('trustedBy.alt1')} className="h-16 w-auto object-contain" />
+                        <img src="https://assets.onedoc.ch/images/groups/233046662f84ce9a70aaf7dbadf02b6de290d4c613fffd0ac40e38709e28e404-small.png" alt={t('trustedBy.alt2')} className="h-20 w-auto object-contain" />
+                        <img src="https://www.pikpng.com/pngl/b/577-5770945_switzerland-global-value-propositions-confdration-suisse-clipart.png" alt={t('trustedBy.alt3')} className="h-24 w-auto object-contain" />
+                        <img src="https://assets.onedoc.ch/images/entities/b76d5e33eab4aa7bd5940f08ef50511e7e4c6c1227ebb9491d4d16b97f2637e0-medium.png" alt={t('trustedBy.alt4')} className="h-20 w-auto object-contain" />
                     </div>
                 </div>
             </section>
@@ -150,10 +150,10 @@ const NewHomepage = () => {
                 <div className="container mx-auto px-4 relative z-10" style={{ maxWidth: '1200px' }}>
                     <div className="max-w-3xl mx-auto text-center mb-20">
                         <h2 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6">
-                            Une plateforme pensée pour <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">votre efficacité</span>
+                            {t('features.title')} <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">{t('features.titleHighlight')}</span>
                         </h2>
                         <p className="text-lg text-slate-600 font-medium">
-                            Simplifiez votre quotidien administratif et concentrez-vous sur l'essentiel : le soin.
+                            {t('features.subtitle')}
                         </p>
                     </div>
 
@@ -164,9 +164,9 @@ const NewHomepage = () => {
                                 <FaBolt size={32} />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-slate-900 mb-4">Matching Intelligent & Instantané</h3>
+                                <h3 className="text-2xl font-black text-slate-900 mb-4">{t('features.smartMatching.title')}</h3>
                                 <p className="text-lg text-slate-500 font-medium leading-relaxed">
-                                    Notre algorithme de pointe connecte les talents avec les besoins en personnel en temps réel, garantissant une réactitivé sans précédent sur le marché suisse.
+                                    {t('features.smartMatching.description')}
                                 </p>
                             </div>
                         </div>
@@ -177,8 +177,8 @@ const NewHomepage = () => {
                                 <FaLock size={24} />
                             </div>
                             <div className="relative z-10">
-                                <h3 className="text-xl font-black text-white mb-3">Données nLPD Ready</h3>
-                                <p className="text-slate-400 font-medium text-sm leading-relaxed">Souveraineté totale de vos données hébergées au cœur des Alpes suisses.</p>
+                                <h3 className="text-xl font-black text-white mb-3">{t('features.dataCompliance.title')}</h3>
+                                <p className="text-slate-400 font-medium text-sm leading-relaxed">{t('features.dataCompliance.description')}</p>
                             </div>
                         </div>
 
@@ -186,16 +186,16 @@ const NewHomepage = () => {
                             <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 mb-6 group-hover:scale-110 transition-transform">
                                 <FaCalendarAlt size={24} />
                             </div>
-                            <h3 className="text-xl font-black text-slate-900 mb-3">Planning Collaboratif</h3>
-                            <p className="text-slate-500 font-medium text-sm leading-relaxed">Gérez vos shifts et disponibilités via une interface interactive ultra-fluide.</p>
+                            <h3 className="text-xl font-black text-slate-900 mb-3">{t('features.calendar.title')}</h3>
+                            <p className="text-slate-500 font-medium text-sm leading-relaxed">{t('features.calendar.description')}</p>
                         </div>
 
                         <div className="md:col-span-4 group p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
                             <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600 mb-6 group-hover:scale-110 transition-transform">
                                 <FaFileContract size={24} />
                             </div>
-                            <h3 className="text-xl font-black text-slate-900 mb-3">Zéro Bureaucratie</h3>
-                            <p className="text-slate-500 font-medium text-sm leading-relaxed">Contrats, signatures et paie : tout est automatisé et digitalisé à 100%.</p>
+                            <h3 className="text-xl font-black text-slate-900 mb-3">{t('features.zeroBureaucracy.title')}</h3>
+                            <p className="text-slate-500 font-medium text-sm leading-relaxed">{t('features.zeroBureaucracy.description')}</p>
                         </div>
 
                         <div className="md:col-span-4 group p-8 rounded-[2.5rem] bg-blue-600 text-white shadow-xl hover:shadow-blue-200 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between">
@@ -203,8 +203,8 @@ const NewHomepage = () => {
                                 <FaRocket size={24} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-white mb-3">Accès Illimité & Gratuit</h3>
-                                <p className="text-blue-100 font-medium text-sm leading-relaxed">Zéro frais d'inscription ou de publication.</p>
+                                <h3 className="text-xl font-black text-white mb-3">{t('features.unlimitedAccess.title')}</h3>
+                                <p className="text-blue-100 font-medium text-sm leading-relaxed">{t('features.unlimitedAccess.description')}</p>
                             </div>
                         </div>
                     </div>
@@ -225,10 +225,10 @@ const NewHomepage = () => {
                         <div className="grid lg:grid-cols-2 gap-20 items-center relative z-10 text-white text-left">
                             <div>
                                 <h2 className="text-4xl lg:text-5xl font-black mb-8 leading-tight">
-                                    Rejoignez le futur du <span className="text-blue-500">recrutement médical</span>
+                                    {t('dualPersona.title')} <span className="text-blue-500">{t('dualPersona.titleHighlight')}</span>
                                 </h2>
                                 <p className="text-xl text-slate-400 mb-10 leading-relaxed font-medium">
-                                    Une plateforme pensée pour connecter les meilleurs talents avec les établissements de santé en toute simplicité.
+                                    {t('dualPersona.subtitle')}
                                 </p>
 
                                 <div className="space-y-6">
@@ -243,9 +243,9 @@ const NewHomepage = () => {
                                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                                                     </span>
-                                                    <h4 className="text-lg font-bold text-white">Établissements de santé</h4>
+                                                    <h4 className="text-lg font-bold text-white">{t('dualPersona.facilities.title')}</h4>
                                                 </div>
-                                                <p className="text-slate-500 text-sm">Gérez vos besoins en personnel avec flexibilité et sans frais de placement.</p>
+                                                <p className="text-slate-500 text-sm">{t('dualPersona.facilities.description')}</p>
                                             </div>
                                             <FaArrowRight className="text-blue-500 group-hover:translate-x-1 transition-transform" />
                                         </div>
@@ -262,9 +262,9 @@ const NewHomepage = () => {
                                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/60 opacity-75"></span>
                                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
                                                     </span>
-                                                    <h4 className="text-lg font-bold text-white">Professionnels de santé</h4>
+                                                    <h4 className="text-lg font-bold text-white">{t('dualPersona.professionals.title')}</h4>
                                                 </div>
-                                                <p className="text-slate-500 text-sm">Reprenez le contrôle de votre emploi du temps et trouvez des missions.</p>
+                                                <p className="text-slate-500 text-sm">{t('dualPersona.professionals.description')}</p>
                                             </div>
                                             <FaArrowRight className="text-white group-hover:translate-x-1 transition-transform opacity-50 group-hover:opacity-100" />
                                         </div>
@@ -277,13 +277,13 @@ const NewHomepage = () => {
                                 <FaRocket size={80} className="mx-auto mb-8 text-blue-200 opacity-50" />
 
                                 <div className="relative z-10">
-                                    <h3 className="text-3xl font-black mb-6 text-white">100% En ligne & Gratuit</h3>
+                                    <h3 className="text-3xl font-black mb-6 text-white">{t('dualPersona.card.title')}</h3>
                                     <p className="text-lg font-medium text-blue-100 mb-8 leading-relaxed">
-                                        Aucun frais d'inscription, aucun frais mensuel. MediShift se rémunère uniquement lors de la signature réussie d'un contrat.
+                                        {t('dualPersona.card.description')}
                                     </p>
                                     <Link to={`/${lang || 'fr'}/signup`}>
                                         <button className="w-full py-4 bg-white text-blue-600 rounded-2xl font-black text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2">
-                                            Essayer maintenant
+                                            {t('dualPersona.card.button')}
                                             <FaArrowRight />
                                         </button>
                                     </Link>
@@ -303,13 +303,13 @@ const NewHomepage = () => {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
                                 </span>
-                                Sécurité & Confiance
+                                {t('security.badge')}
                             </div>
                             <h2 className="text-4xl lg:text-5xl font-black text-slate-900 mb-8 leading-tight">
-                                Vos données sont <span className="text-red-500">en sécurité</span> en Suisse
+                                {t('security.title')} <span className="text-red-500">{t('security.titleHighlight')}</span>
                             </h2>
                             <p className="text-xl text-slate-600 mb-12 leading-relaxed font-medium">
-                                MediShift est conçu selon les standards de sécurité les plus élevés. Toutes vos informations professionnelles et personnelles sont protégées par les lois suisses sur la protection des données.
+                                {t('security.description')}
                             </p>
 
                             <div className="grid sm:grid-cols-2 gap-8">
@@ -318,8 +318,8 @@ const NewHomepage = () => {
                                         <FaServer size={20} />
                                     </div>
                                     <div>
-                                        <h4 className="font-black text-slate-900 mb-1">Hébergement Suisse</h4>
-                                        <p className="text-sm text-slate-500 font-medium">Données stockées exclusivement dans des datacenters helvétiques hautement sécurisés.</p>
+                                        <h4 className="font-black text-slate-900 mb-1">{t('security.hosting.title')}</h4>
+                                        <p className="text-sm text-slate-500 font-medium">{t('security.hosting.description')}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4 items-start group">
@@ -327,8 +327,8 @@ const NewHomepage = () => {
                                         <FaShieldAlt size={20} />
                                     </div>
                                     <div>
-                                        <h4 className="font-black text-slate-900 mb-1">Conformité nLPD</h4>
-                                        <p className="text-sm text-slate-500 font-medium">Plateforme 100% conforme à la nouvelle loi fédérale sur la protection des données.</p>
+                                        <h4 className="font-black text-slate-900 mb-1">{t('security.compliance.title')}</h4>
+                                        <p className="text-sm text-slate-500 font-medium">{t('security.compliance.description')}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4 items-start group">
@@ -336,8 +336,8 @@ const NewHomepage = () => {
                                         <FaLock size={20} />
                                     </div>
                                     <div>
-                                        <h4 className="font-black text-slate-900 mb-1">Encryption de pointe</h4>
-                                        <p className="text-sm text-slate-500 font-medium">Chiffrement SSL/TLS de toutes les communications et des données au repos.</p>
+                                        <h4 className="font-black text-slate-900 mb-1">{t('security.encryption.title')}</h4>
+                                        <p className="text-sm text-slate-500 font-medium">{t('security.encryption.description')}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4 items-start group">
@@ -345,8 +345,8 @@ const NewHomepage = () => {
                                         <FaCode size={20} />
                                     </div>
                                     <div>
-                                        <h4 className="font-black text-slate-900 mb-1">Développement Suisse</h4>
-                                        <p className="text-sm text-slate-500 font-medium">Une plateforme pensée, développée et maintenue par des experts en Suisse.</p>
+                                        <h4 className="font-black text-slate-900 mb-1">{t('security.development.title')}</h4>
+                                        <p className="text-sm text-slate-500 font-medium">{t('security.development.description')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -367,11 +367,11 @@ const NewHomepage = () => {
                                     <div className="flex gap-4 justify-center">
                                         <div className="px-6 py-2.5 bg-slate-900 text-white rounded-full shadow-lg text-xs font-black tracking-widest uppercase flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                                            nLPD Ready
+                                            {t('security.badge1')}
                                         </div>
                                         <div className="px-6 py-2.5 bg-white text-slate-900 rounded-full shadow-lg border border-slate-100 text-xs font-black tracking-widest uppercase flex items-center gap-2">
                                             <FaLock size={12} className="text-slate-400" />
-                                            SSL Secure
+                                            {t('security.badge2')}
                                         </div>
                                     </div>
                                 </div>
@@ -386,40 +386,40 @@ const NewHomepage = () => {
                 <div className="container mx-auto px-4 relative z-10" style={{ maxWidth: '1200px' }}>
                     <div className="text-center max-w-3xl mx-auto mb-20">
                         <h2 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6">
-                            Pourquoi nous choisir
+                            {t('whyChooseUs.title')}
                         </h2>
                         <h3 className="text-3xl lg:text-4xl font-black text-blue-600 mb-4">
-                            C'est gratuit
+                            {t('whyChooseUs.subtitle')}
                         </h3>
                         <p className="text-lg text-slate-600 font-medium leading-relaxed">
-                            Rejoignez notre plateforme sans frais cachés. Simple, transparent et gratuit pour tous.
+                            {t('whyChooseUs.description')}
                         </p>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {[
                             {
-                                title: "Aucun frais d'inscription",
-                                subtitle: "Etablissements",
-                                desc: "Inscrivez-vous gratuitement et commencez à publier vos offres d'emploi dès aujourd'hui",
+                                title: t('pricing.free.item1.title'),
+                                subtitle: t('pricing.free.item1.subtitle'),
+                                desc: t('pricing.free.item1.desc'),
                                 icon: FaBuilding,
                                 color: 'text-primary',
                                 bg: 'bg-primary/10',
                                 link: `/${lang || 'fr'}/facilities`
                             },
                             {
-                                title: "Gratuit pour toujours",
-                                subtitle: "Professionnels",
-                                desc: "Créez votre profil gratuitement et accédez à toutes les opportunités sans frais cachés",
+                                title: t('pricing.free.item2.title'),
+                                subtitle: t('pricing.free.item2.subtitle'),
+                                desc: t('pricing.free.item2.desc'),
                                 icon: FaUserMd,
                                 color: 'text-purple-500',
                                 bg: 'bg-purple-50',
                                 link: `/${lang || 'fr'}/professionals`
                             },
                             {
-                                title: "Sans engagement",
-                                subtitle: "Pour tous",
-                                desc: "Utilisez notre plateforme sans frais, sans engagement et sans surprise. Simple et transparent",
+                                title: t('pricing.free.item3.title'),
+                                subtitle: t('pricing.free.item3.subtitle'),
+                                desc: t('pricing.free.item3.desc'),
                                 icon: FaUsers,
                                 color: 'text-green-500',
                                 bg: 'bg-green-50',
@@ -476,12 +476,12 @@ const NewHomepage = () => {
                 <div className="container mx-auto px-4 relative z-10" style={{ maxWidth: '1200px' }}>
                     <div className="text-center max-w-4xl mx-auto">
                         <h2 className="text-4xl lg:text-5xl font-black text-slate-900 mb-8 leading-tight">
-                            Prêt à optimiser votre gestion RH ?
+                            {t('finalCta.title')}
                         </h2>
                         <div className="flex justify-center gap-4">
                             <Link to={`/${lang || 'fr'}/signup`}>
                                 <button className="px-10 py-5 bg-blue-600 text-white rounded-2xl font-black text-xl hover:bg-blue-700 transition-all shadow-xl hover:shadow-blue-500/20 transform hover:-translate-y-1">
-                                    Commencer maintenant
+                                    {t('finalCta.button')}
                                 </button>
                             </Link>
                         </div>

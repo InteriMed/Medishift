@@ -211,7 +211,7 @@ const createOrganization = onCall(
 
                     const facilityData = facilityDoc.data();
                     const employeesList = facilityData.employees || [];
-                    const isAdmin = employeesList.some(emp => emp.uid === createdBy && emp.rights === 'admin') || facilityId === createdBy;
+                    const isAdmin = employeesList.some(emp => emp.user_uid === createdBy && emp.roles?.includes('admin')) || facilityId === createdBy;
 
                     if (!isAdmin) {
                         throw new HttpsError('permission-denied', `You are not an admin of facility ${facilityId}`);

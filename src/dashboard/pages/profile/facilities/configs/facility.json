@@ -5,9 +5,8 @@
     "tabs": [
       { "id": "facilityCoreDetails", "labelKey": "tabs.facilityCoreDetails" },
       { "id": "facilityLegalBilling", "labelKey": "tabs.facilityLegalBilling" },
-      { "id": "facilityDocuments", "labelKey": "tabs.facilityDocuments" },
-      { "id": "account", "labelKey": "tabs.account" },
-      { "id": "settings", "labelKey": "tabs.settings" }
+      { "id": "settings", "labelKey": "tabs.settings" },
+      { "id": "account", "labelKey": "tabs.account" }
     ],
   
     "fields": {
@@ -42,15 +41,7 @@
         { "name": "facilityIBAN", "type": "text", "required": true, "labelKey": "facilityDetails.facilityIBAN", "group": "bankingFacility", "infoKey": "facilityDetails.facilityIBANInfo", "validationRules": {"pattern": "^CH[0-9]{2}[0-9A-Za-z]{1,17}$|^CH[0-9]{2}\\s?([0-9A-Za-z]{4}\\s?){4}[0-9A-Za-z]{1}$", "patternErrorKey": "validation.invalidIbanSwiss"} },
         { "name": "facilityBankName", "type": "text", "required": true, "labelKey": "facilityDetails.facilityBankName", "group": "bankingFacility"}
       ],
-  
-      "facilityDocuments": [
-        { "docType": "commercialRegisterExtract", "name": "commercialRegisterExtractUrl", "required": true, "isMultiple": false, "labelKey": "facilityDocs.commercialRegisterExtract", "descriptionKey": "facilityDocs.commercialRegisterExtractDescription", "accept": ".pdf,.jpg,.png,.jpeg" },
-        { "docType": "proofOfAddress", "name": "proofOfAddressUrl", "required": true, "isMultiple": false, "labelKey": "facilityDocs.proofOfAddress", "descriptionKey": "facilityDocs.proofOfAddressDescription", "infoKey": "facilityDocs.proofOfAddressInfo", "accept": ".pdf,.jpg,.png,.jpeg" },
-        { "docType": "pharmacyLicense", "name": "pharmacyLicenseUrl", "required": true, "isMultiple": false, "labelKey": "facilityDocs.pharmacyLicense", "descriptionKey": "facilityDocs.pharmacyLicenseDescription", "accept": ".pdf,.jpg,.png,.jpeg" }
-      ],
       "settings": [
-        { "name": "operationalHours.openingTime", "type": "text", "required": false, "labelKey": "settings.openingTime", "group": "operationalSettings", "placeholder": "08:00" },
-        { "name": "operationalHours.closingTime", "type": "text", "required": false, "labelKey": "settings.closingTime", "group": "operationalSettings", "placeholder": "18:00" },
         { "name": "contractSettings.autoRenewal", "type": "checkbox", "required": false, "labelKey": "settings.autoRenewal", "group": "contractSettings" },
         { "name": "contractSettings.requiresApproval", "type": "checkbox", "required": false, "labelKey": "settings.requiresApproval", "group": "contractSettings" }
       ]

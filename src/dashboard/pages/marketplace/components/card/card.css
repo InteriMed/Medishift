@@ -38,8 +38,9 @@
 }
 
 .detail-item {
-  font-size: 13px;
-  color: #666;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--text-light-color);
 }
 
 .requirement-tag,
@@ -47,19 +48,21 @@
   display: inline-block;
   padding: 4px 8px;
   margin: 4px 4px 4px 0;
-  background: #e3f2fd;
-  color: #2196f3;
+  background: var(--color-logo-1-light);
+  color: var(--color-logo-1);
   border-radius: 12px;
-  font-size: 12px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
 }
 
 .verified-badge {
   display: inline-flex;
   align-items: center;
-  background: #e8f5e9;
-  color: #4caf50;
+  background: var(--green-1);
+  color: var(--green-3);
   border-radius: 12px;
-  font-size: 12px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
   padding: 10px !important;
   margin: 10px !important;
 }
@@ -105,21 +108,24 @@
 
 .listing-info h3 {
   margin: 0 0 8px 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-medium);
 }
 
 .listing-info p {
   margin: 0 0 8px 0;
-  color: #717171;
-  font-size: 14px;
+  font-family: var(--font-family-text);
+  color: var(--text-light-color);
+  font-size: var(--font-size-small);
 }
 
 .status {
   display: inline-block;
   padding: 4px 8px;
-  background: #f5f5f5;
+  background: var(--grey-1);
   border-radius: 4px;
-  font-size: 12px;
-  color: #717171;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--text-light-color);
 }

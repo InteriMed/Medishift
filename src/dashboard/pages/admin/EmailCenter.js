@@ -281,7 +281,7 @@ const EmailCenter = () => {
                   onChange={(e) => handleInputChange('inviteRole', e.target.value)}
                   className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background"
                 >
-                  <option value="">Select a role...</option>
+                  <option value="">{t('admin:email.selectRole', 'Select a role...')}</option>
                   {ROLE_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
@@ -343,9 +343,9 @@ const EmailCenter = () => {
   const renderHistory = () => (
     <div className="space-y-4">
       {loadingLogs ? (
-        <div className="text-center py-8 text-muted-foreground">Loading...</div>
+        <div className="text-center py-8 text-muted-foreground">{t('common:loading', 'Loading...')}</div>
       ) : emailLogs.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">No emails sent yet</div>
+        <div className="text-center py-8 text-muted-foreground">{t('admin:email.noEmailsYet', 'No emails sent yet')}</div>
       ) : (
         <div className="space-y-3">
           {emailLogs.map((log) => (

@@ -9,7 +9,7 @@ import { DOCUMENT_TYPES } from '../dashboard/onboarding/constants/documentTypes'
 import { useAuth } from '../contexts/AuthContext';
 
 const GLNTestVerifPage = () => {
-    const { t } = useTranslation(['dashboard', 'common', 'dashboardProfile']);
+    const { t } = useTranslation(['dashboard', 'common', 'dashboardProfile', 'pages']);
     const { currentUser } = useAuth();
     const [gln, setGln] = useState('');
     const [profession, setProfession] = useState('');
@@ -55,11 +55,11 @@ const GLNTestVerifPage = () => {
         setVerificationStatus('error');
 
         if (errorType === 'api_limit') {
-            setVerificationError("Our verification services are currently experiencing high demand. Please wait before trying again.");
+            setVerificationError(t('pages.glnTestVerif.errors.apiLimit'));
         } else if (errorType === 'verification_failed') {
-            setVerificationError('No record found in MedReg or GesReg for this GLN.');
+            setVerificationError(t('pages.glnTestVerif.errors.verificationFailed'));
         } else if (errorType === 'network_error') {
-            setVerificationError('Network request failed. Please check your connection and try again.');
+            setVerificationError(t('pages.glnTestVerif.errors.networkError'));
         } else if (errorType === 'clear') {
             setVerificationError('');
             setVerificationStatus(null);
@@ -71,12 +71,12 @@ const GLNTestVerifPage = () => {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4">
             <div className="max-w-4xl mx-auto">
                 <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                    <h1 className="text-3xl font-black text-slate-900 mb-2">GLN Verification Test & Validation</h1>
-                    <p className="text-slate-600">Test the improved validation and error screens for GLN verification</p>
+                    <h1 className="text-3xl font-black text-slate-900 mb-2">{t('pages.glnTestVerif.title')}</h1>
+                    <p className="text-slate-600">{t('pages.glnTestVerif.description')}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6">Test Mode</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">{t('pages.glnTestVerif.testMode.title')}</h2>
                     <div className="flex gap-4 mb-6">
                         <button
                             onClick={() => {
@@ -89,7 +89,7 @@ const GLNTestVerifPage = () => {
                                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                                 }`}
                         >
-                            Professional Verification
+                            {t('pages.glnTestVerif.testMode.professional')}
                         </button>
                         <button
                             onClick={() => {
@@ -102,16 +102,16 @@ const GLNTestVerifPage = () => {
                                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                                 }`}
                         >
-                            Facility Verification
+                            {t('pages.glnTestVerif.testMode.facility')}
                         </button>
                     </div>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6">Form Fields</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">{t('pages.glnTestVerif.formFields.title')}</h2>
                     <div className="space-y-6">
                         <PersonnalizedInputField
-                            label={testMode === 'professional' ? 'Professional GLN' : 'Company GLN'}
+                            label={testMode === 'professional' ? t('pages.glnTestVerif.formFields.professionalGLN') : t('pages.glnTestVerif.formFields.companyGLN')}
                             required
                             value={gln}
                             onChange={(e) => {
@@ -125,16 +125,16 @@ const GLNTestVerifPage = () => {
                         {testMode === 'professional' && (
                             <SimpleDropdown
                                 options={[
-                                    { value: 'Doctor', label: 'Doctor' },
-                                    { value: 'Nurse', label: 'Nurse' },
-                                    { value: 'Pharmacist', label: 'Pharmacist' }
+                                    { value: 'Doctor', label: t('pages.glnTestVerif.formFields.professions.doctor') },
+                                    { value: 'Nurse', label: t('pages.glnTestVerif.formFields.professions.nurse') },
+                                    { value: 'Pharmacist', label: t('pages.glnTestVerif.formFields.professions.pharmacist') }
                                 ]}
                                 value={profession}
                                 onChange={(v) => {
                                     setProfession(v);
                                     setFieldErrors(p => ({ ...p, profession: '' }));
                                 }}
-                                placeholder="Select profession"
+                                placeholder={t('pages.glnTestVerif.formFields.selectProfession')}
                                 required
                                 error={fieldErrors.profession}
                             />
@@ -147,7 +147,7 @@ const GLNTestVerifPage = () => {
                                 setDocumentType(v);
                                 setFieldErrors(p => ({ ...p, documentType: '' }));
                             }}
-                            placeholder="Select document type"
+                            placeholder={t('pages.glnTestVerif.formFields.selectDocumentType')}
                             required
                             error={fieldErrors.documentType}
                         />
@@ -157,7 +157,7 @@ const GLNTestVerifPage = () => {
                                 setDocumentFile(f[0]);
                                 setFieldErrors(p => ({ ...p, documentFile: '' }));
                             }}
-                            label="Upload Document"
+                            label={t('pages.glnTestVerif.formFields.uploadDocument')}
                             error={fieldErrors.documentFile}
                             value={documentFile}
                         />
@@ -168,42 +168,42 @@ const GLNTestVerifPage = () => {
                                 variant="primary"
                                 className="flex-1"
                             >
-                                Test Validation
+                                {t('pages.glnTestVerif.formFields.testValidation')}
                             </Button>
                         </div>
                     </div>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6">Simulate Errors</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">{t('pages.glnTestVerif.simulate.title')}</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <button
                             onClick={() => handleSimulateError('api_limit')}
                             className="p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl hover:bg-yellow-100 transition-colors text-left"
                         >
-                            <div className="font-semibold text-yellow-900 mb-1">API Limit</div>
-                            <div className="text-xs text-yellow-700">Rate limit error</div>
+                            <div className="font-semibold text-yellow-900 mb-1">{t('pages.glnTestVerif.simulate.apiLimit.title')}</div>
+                            <div className="text-xs text-yellow-700">{t('pages.glnTestVerif.simulate.apiLimit.description')}</div>
                         </button>
                         <button
                             onClick={() => handleSimulateError('verification_failed')}
                             className="p-4 bg-red-50 border-2 border-red-300 rounded-xl hover:bg-red-100 transition-colors text-left"
                         >
-                            <div className="font-semibold text-red-900 mb-1">Verification Failed</div>
-                            <div className="text-xs text-red-700">No record found</div>
+                            <div className="font-semibold text-red-900 mb-1">{t('pages.glnTestVerif.simulate.verificationFailed.title')}</div>
+                            <div className="text-xs text-red-700">{t('pages.glnTestVerif.simulate.verificationFailed.description')}</div>
                         </button>
                         <button
                             onClick={() => handleSimulateError('network_error')}
                             className="p-4 bg-orange-50 border-2 border-orange-300 rounded-xl hover:bg-orange-100 transition-colors text-left"
                         >
-                            <div className="font-semibold text-orange-900 mb-1">Network Error</div>
-                            <div className="text-xs text-orange-700">Connection issue</div>
+                            <div className="font-semibold text-orange-900 mb-1">{t('pages.glnTestVerif.simulate.networkError.title')}</div>
+                            <div className="text-xs text-orange-700">{t('pages.glnTestVerif.simulate.networkError.description')}</div>
                         </button>
                         <button
                             onClick={() => handleSimulateError('clear')}
                             className="p-4 bg-slate-50 border-2 border-slate-300 rounded-xl hover:bg-slate-100 transition-colors text-left"
                         >
-                            <div className="font-semibold text-slate-900 mb-1">Clear Errors</div>
-                            <div className="text-xs text-slate-700">Reset display</div>
+                            <div className="font-semibold text-slate-900 mb-1">{t('pages.glnTestVerif.simulate.clear.title')}</div>
+                            <div className="text-xs text-slate-700">{t('pages.glnTestVerif.simulate.clear.description')}</div>
                         </button>
                     </div>
                 </div>
@@ -217,7 +217,7 @@ const GLNTestVerifPage = () => {
 
                 {Object.keys(fieldErrors).length > 0 && (
                     <div className="bg-white rounded-2xl shadow-xl p-8">
-                        <h2 className="text-xl font-bold text-slate-900 mb-4">Field Validation Errors</h2>
+                        <h2 className="text-xl font-bold text-slate-900 mb-4">{t('pages.glnTestVerif.fieldErrors')}</h2>
                         <div className="space-y-2">
                             {Object.entries(fieldErrors).map(([field, error]) => (
                                 <div key={field} className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">

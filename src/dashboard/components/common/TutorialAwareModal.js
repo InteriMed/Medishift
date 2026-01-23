@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { FiX } from 'react-icons/fi';
+import Button from '../../../components/BoxedInputFields/Button';
 
 /**
  * TutorialAwareModal - A reusable modal component that automatically
@@ -44,14 +45,12 @@ const TutorialAwareModal = ({
   // Pause tutorial when modal opens
   useEffect(() => {
     if (isOpen) {
-      console.log('[TutorialAwareModal] Modal opened, pausing tutorial');
       pauseTutorial();
     }
   }, [isOpen, pauseTutorial]);
 
   // Handle close (cancel)
   const handleClose = () => {
-    console.log('[TutorialAwareModal] Modal closed via cancel');
 
     if (resumeOnClose) {
       resumeTutorial();
@@ -64,7 +63,6 @@ const TutorialAwareModal = ({
 
   // Handle save and continue
   const handleSave = async () => {
-    console.log('[TutorialAwareModal] Save and Continue clicked');
 
     // Call the onSave callback if provided
     if (onSave) {
@@ -123,22 +121,22 @@ const TutorialAwareModal = ({
             footer
           ) : (
             <>
-              <button
+              <Button
                 onClick={handleClose}
-                className="modal-btn modal-btn-secondary"
+                variant="secondary"
                 type="button"
               >
                 {cancelButtonText}
-              </button>
+              </Button>
               {onSave && (
-                <button
+                <Button
                   onClick={handleSave}
-                  className="modal-btn modal-btn-primary"
+                  variant="primary"
                   type="button"
                   disabled={disableSave}
                 >
                   {saveButtonText}
-                </button>
+                </Button>
               )}
             </>
           )}

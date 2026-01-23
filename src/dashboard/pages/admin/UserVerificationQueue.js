@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, storage } from '../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { CheckCircle, XCircle, Eye, FileText, Image as ImageIcon } from 'lucide-react';
 import Lightbox from 'yet-another-react-lightbox';
@@ -27,7 +28,7 @@ const UserVerificationQueue = () => {
   const loadPendingUsers = async () => {
     setLoading(true);
     try {
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
       const q = query(usersRef, where('onboardingStatus', '==', 'pending_verification'));
       const snapshot = await getDocs(q);
       
@@ -38,7 +39,7 @@ const UserVerificationQueue = () => {
         
         let professionalProfile = null;
         if (userData.professionalProfileId) {
-          const profDoc = await getDoc(doc(db, 'professionalProfiles', userData.professionalProfileId));
+          const profDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userData.professionalProfileId));
           if (profDoc.exists()) {
             professionalProfile = profDoc.data();
           }
@@ -61,14 +62,14 @@ const UserVerificationQueue = () => {
 
   const handleApprove = async (userId) => {
     try {
-      await updateDoc(doc(db, 'users', userId), {
+      await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId), {
         onboardingStatus: 'completed',
         verifiedAt: serverTimestamp(),
         verifiedBy: 'admin'
       });
       
       if (users.find(u => u.id === userId)?.professionalProfileId) {
-        await updateDoc(doc(db, 'professionalProfiles', users.find(u => u.id === userId).professionalProfileId), {
+        await updateDoc(doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, users.find(u => u.id === userId).professionalProfileId), {
           'verification.status': 'approved',
           'verification.verifiedAt': serverTimestamp()
         });
@@ -86,7 +87,7 @@ const UserVerificationQueue = () => {
     if (!rejectionReason) return;
     
     try {
-      await updateDoc(doc(db, 'users', userId), {
+      await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId), {
         onboardingStatus: 'rejected',
         rejectionReason,
         rejectedAt: serverTimestamp()
@@ -130,7 +131,7 @@ const UserVerificationQueue = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading verification queue...</div>
+        <div className="text-muted-foreground">{t('admin:verification.loading', 'Loading verification queue...')}</div>
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './styles/Slider.css';
+import './styles/boxedInputFields.css';
 
 const Slider = ({
   onChange,

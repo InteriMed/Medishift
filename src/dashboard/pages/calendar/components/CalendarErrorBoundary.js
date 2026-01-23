@@ -17,7 +17,6 @@ class CalendarErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Calendar Error Boundary caught an error:', error, errorInfo);
     
     this.setState({
       error: error,
@@ -46,7 +45,6 @@ class CalendarErrorBoundary extends React.Component {
       userId: this.props.userId || 'unknown'
     };
 
-    console.error('Error Report:', errorReport);
     
     // Example: Send to error reporting service
     // errorReportingService.captureException(error, errorReport);

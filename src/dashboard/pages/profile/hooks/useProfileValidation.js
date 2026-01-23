@@ -121,36 +121,20 @@ export const useProfileValidation = (formData, profileConfig, activeTab, isLoadi
 
     useEffect(() => {
         if (!isLoadingConfig && !isLoadingData && profileConfig && formData && activeTab && !initialValidationRun.current) {
-            validateCurrentTabData();
+            validateCurrentTabData(null, null, true);
             initialValidationRun.current = true;
         }
     }, [isLoadingConfig, isLoadingData, profileConfig, formData, activeTab, validateCurrentTabData]);
 
     useEffect(() => {
-        if (!isLoadingConfig && !isLoadingData && profileConfig && formData && activeTab === 'professionalBackground') {
-            validateCurrentTabData(null, null, false);
+        if (activeTab !== prevActiveTab.current) {
+            setErrors({});
         }
         prevActiveTab.current = activeTab;
-    }, [activeTab, isLoadingConfig, isLoadingData, profileConfig, formData, validateCurrentTabData]);
+    }, [activeTab]);
 
     useEffect(() => {
         if (!isLoadingConfig && !isLoadingData && profileConfig && formData && activeTab && initialValidationRun.current) {
-            if (activeTab === 'professionalBackground') {
-                return;
-            }
-            const timeoutId = setTimeout(() => {
-                setErrors({});
-            }, 400);
-            return () => clearTimeout(timeoutId);
-        }
-    }, [activeTab, isLoadingConfig, isLoadingData, profileConfig, formData]);
-
-    useEffect(() => {
-        if (!isLoadingConfig && !isLoadingData && profileConfig && formData && activeTab && initialValidationRun.current) {
-            if (activeTab === 'professionalBackground') {
-                validateCurrentTabData(null, null, false);
-                return;
-            }
             const timeoutId = setTimeout(() => {
                 validateCurrentTabData(null, null, true);
             }, 300);

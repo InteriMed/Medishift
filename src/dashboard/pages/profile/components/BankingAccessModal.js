@@ -6,6 +6,7 @@ import InputField from '../../../../components/BoxedInputFields/Personnalized-In
 import Button from '../../../../components/BoxedInputFields/Button';
 import { FiLock, FiUnlock, FiMail, FiPhone, FiShield, FiArrowLeft } from 'react-icons/fi';
 import SpinnerLoader from '../../../../components/LoadingAnimations/SpinnerLoader';
+import { LOCALSTORAGE_KEYS } from '../../../../config/keysDatabase';
 
 const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, userPhonePrefix }) => {
   const { t } = useTranslation(['dashboardProfile', 'common']);
@@ -23,41 +24,28 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
     return `${prefix} ${userPhone}`.trim();
   }, [userPhone, userPhonePrefix]);
 
-  const handleSendCode = async () => {
+  const handleSendCode = async (method) => {
+    const selectedMethod = method || verificationMethod;
     setError('');
     setSendingCode(true);
 
     try {
-      console.log('[Banking] Step 1: Loading Firebase modules...');
       const { httpsCallable } = await import('firebase/functions');
       const { functions, auth } = await import('../../../../services/firebaseService');
       
-      console.log('[Banking] Step 2: Checking auth...');
       const currentUser = auth.currentUser;
       if (!currentUser) {
         throw new Error('You must be logged in to request a banking access code');
       }
-      console.log('[Banking] Step 3: User authenticated:', currentUser.uid);
 
-      console.log('[Banking] Step 4: Getting fresh token...');
-      const token = await currentUser.getIdToken(true);
-      console.log('[Banking] Step 5: Token acquired:', token ? 'YES' : 'NO');
+      await currentUser.getIdToken(true);
       
-      console.log('[Banking] Step 6: Creating callable function...');
       const requestBankingAccessCode = httpsCallable(functions, 'requestBankingAccessCode');
-      console.log('[Banking] Step 7: Calling function with method:', verificationMethod);
       
-      const result = await requestBankingAccessCode({ method: verificationMethod });
-      console.log('[Banking] Step 8: Function returned:', result);
+      await requestBankingAccessCode({ method: selectedMethod });
       
       setCodeSent(true);
     } catch (err) {
-      console.error('[Banking] ERROR at some step:', err);
-      console.error('[Banking] ERROR code:', err.code);
-      console.error('[Banking] ERROR message:', err.message);
-      console.error('[Banking] ERROR details:', err.details);
-      console.error('[Banking] Full error object:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
-      
       const errorMessage = err.message || t('billingInformation.sendCodeError', 'Failed to send access code');
       setError(errorMessage);
     } finally {
@@ -86,7 +74,7 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
       if (result.data.success) {
         const editDurationMs = result.data.editDuration || (60 * 60 * 1000);
         const expiresAt = Date.now() + editDurationMs;
-        localStorage.setItem('bankingAccessGranted', expiresAt.toString());
+        localStorage.setItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED, expiresAt.toString());
         
         setAccessCode('');
         setCodeSent(false);
@@ -95,7 +83,6 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
         setError(t('billingInformation.invalidAccessCode', 'Invalid access code'));
       }
     } catch (err) {
-      console.error('Error verifying banking access:', err);
       setError(t('billingInformation.accessCodeError', 'Failed to verify access code'));
     } finally {
       setIsVerifying(false);
@@ -148,7 +135,10 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative">
                   <button
-                    onClick={() => setVerificationMethod('email')}
+                    onClick={() => {
+                      setVerificationMethod('email');
+                      handleSendCode('email');
+                    }}
                     className={`border-2 rounded-xl p-6 hover:border-blue-600 transition-colors flex flex-col items-center text-center w-full ${
                       verificationMethod === 'email'
                         ? 'border-blue-600 bg-blue-500/5'
@@ -186,7 +176,10 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
                 </div>
                 <div className="relative">
                   <button
-                    onClick={() => setVerificationMethod('phone')}
+                    onClick={() => {
+                      setVerificationMethod('phone');
+                      handleSendCode('phone');
+                    }}
                     className={`border-2 rounded-xl p-6 hover:border-green-600 transition-colors flex flex-col items-center text-center w-full ${
                       verificationMethod === 'phone'
                         ? 'border-green-600 bg-green-500/5'
@@ -225,24 +218,13 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
               </div>
             </div>
 
-            <div className="flex justify-between pt-4">
+            <div className="flex justify-center pt-4">
               <button
                 onClick={handleCancel}
                 disabled={sendingCode}
                 className="px-4 py-2 rounded-lg border-2 border-border bg-transparent hover:bg-muted text-foreground font-medium transition-colors"
               >
                 {t('common.cancel', 'Cancel')}
-              </button>
-              <button
-                onClick={handleSendCode}
-                disabled={sendingCode}
-                className={`px-6 py-2 rounded-lg border-2 font-semibold transition-colors ${
-                  verificationMethod === 'email'
-                    ? 'border-blue-600 bg-transparent text-blue-600 hover:bg-blue-600 hover:text-white'
-                    : 'border-green-600 bg-transparent text-green-600 hover:bg-green-600 hover:text-white'
-                }`}
-              >
-                {sendingCode ? t('common:sending', 'Sending...') : t('billingInformation.sendCode', 'Send Code')}
               </button>
             </div>
           </div>

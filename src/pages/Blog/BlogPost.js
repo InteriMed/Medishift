@@ -23,13 +23,13 @@ const BlogPost = () => {
       try {
         setLoading(true);
         
-        // Try to load the specific blog post translation
-        const postData = await import(`../../locales/${lang}/blog/${slug}.json`)
-          .catch(() => import(`../../locales/en/blog/${slug}.json`)); // Fallback to English
+        const postResponse = await fetch(`/locales/${lang}/blog/${slug}.json`)
+          .then(r => r.ok ? r : fetch(`/locales/en/blog/${slug}.json`));
+        const postData = { default: await postResponse.json() };
         
-        // Load all blog posts to find related ones
-        const allPostsData = await import(`../../locales/${lang}/blog/posts.json`)
-          .catch(() => import(`../../locales/en/blog/posts.json`));
+        const postsResponse = await fetch(`/locales/${lang}/blog/posts.json`)
+          .then(r => r.ok ? r : fetch('/locales/en/blog/posts.json'));
+        const allPostsData = { default: await postsResponse.json() };
         
         const allPosts = allPostsData.default || [];
         

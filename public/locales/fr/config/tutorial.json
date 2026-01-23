@@ -1,0 +1,28 @@
+{
+  "tutorials": {
+    "dashboard": {
+      "name": "Aperçu du tableau de bord",
+      "description": "Découvrez votre tableau de bord et la navigation",
+      "steps": {
+        "onboarding-help-button": {
+          "title": "Aide à l'intégration",
+          "content": "Vous pouvez recommencer le tutoriel d'intégration à tout moment en cliquant sur ce bouton d'aide dans la barre supérieure. Cela vous guidera à travers toutes les fonctionnalités de MediShift."
+        },
+        "onboarding-intro": {
+          "title": "Bienvenue sur votre tableau de bord",
+          "content": "Ceci est votre centre de contrôle. Pour tirer le meilleur parti de MediShift, commençons par compléter les détails de votre profil."
+        }
+      }
+    }
+  },
+  "buttons": {
+    "iUnderstood": "J'ai compris",
+    "showMe": "Montrez-moi",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "skip": "Passer",
+    "finish": "Terminer",
+    "restart": "Recommencer le tutoriel"
+  }
+}
+

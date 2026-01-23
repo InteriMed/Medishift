@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './styles/Letterbox.css';
+import { useTranslation } from 'react-i18next';
+import './styles/boxedInputFields.css';
 import DaySelector from './DaySelector';
 
 const Letterbox = ({ onClose, onSave, initialData }) => {
+  const { t } = useTranslation(['common']);
   const [formData, setFormData] = useState(initialData);
   const [selectedDays, setSelectedDays] = useState(new Array(7).fill(false));
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -69,10 +71,10 @@ const Letterbox = ({ onClose, onSave, initialData }) => {
         {showConfirmation && (
           <div className="confirmation-popup">
             <div className="confirmation-content">
-              <p>Your modifications will not be saved. Continue?</p>
+              <p>{t('common:confirmDiscard', 'Your modifications will not be saved. Continue?')}</p>
               <div className="confirmation-actions">
-                <button onClick={() => handleConfirmClose(true)}>Yes</button>
-                <button onClick={() => handleConfirmClose(false)}>Cancel</button>
+                <button onClick={() => handleConfirmClose(true)}>{t('common:yes', 'Yes')}</button>
+                <button onClick={() => handleConfirmClose(false)}>{t('common:cancel', 'Cancel')}</button>
               </div>
             </div>
           </div>

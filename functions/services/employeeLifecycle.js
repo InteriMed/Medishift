@@ -51,7 +51,7 @@ const terminateEmployee = onCall(
 
             const facilityData = facilityDoc.data();
             const employeesList = facilityData.employees || [];
-            const isAdmin = employeesList.some(emp => emp.uid === performedBy && emp.rights === 'admin') ||
+            const isAdmin = employeesList.some(emp => emp.user_uid === performedBy && emp.roles?.includes('admin')) ||
                 facilityData.chainAdmins?.includes(performedBy) ||
                 performedBy === facilityId;
 

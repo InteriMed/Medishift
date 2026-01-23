@@ -22,7 +22,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-weight: var(--font-weight-medium);
 }
 
 .filterSummary {
@@ -31,15 +32,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--grey-2, #888);
-  font-size: 14px;
+  color: var(--grey-2);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
 }
 
 .expandButton {
   background: none;
   border: none;
-  font-size: 1.25rem;
-  color: var(--grey-3, #555);
+  font-size: var(--font-size-large);
+  color: var(--grey-3);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -65,17 +67,19 @@
 }
 
 .filterGroup label {
-  font-size: 14px;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
 }
 
 .filterGroup select, 
 .filterGroup input {
   padding: 8px 12px;
   border-radius: 8px;
-  border: 1px solid var(--grey-1, #e0e0e0);
-  background-color: var(--background-div-color, white);
-  font-size: 14px;
+  border: 1px solid var(--grey-1);
+  background-color: var(--background-div-color);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
 }
 
 .filterGroup select[multiple] {
@@ -94,7 +98,9 @@
 .applyButton {
   padding: 8px 16px;
   border-radius: 8px;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
 }
 

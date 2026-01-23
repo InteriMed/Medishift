@@ -7,9 +7,6 @@ import CheckboxField from '../../../../components/BoxedInputFields/CheckboxField
 import Button from '../../../../components/BoxedInputFields/Button';
 import styles from './styles/profileUnified.module.css';
 
-// Import the translations directly for dropdowns
-import dropdownTranslations from '../../../../locales/en/dropdowns.json'; // Or your primary language
-
 // Helper to generate options
 const generateOptionsFromObject = (optionsObject, t, translationPrefix) => {
   if (!optionsObject) return [];
@@ -50,22 +47,24 @@ const JobPreferences = ({
   };
 
   const availabilityStatusOptions = useMemo(() => {
-    return dropdownTranslations && dropdownTranslations.availability 
-      ? Object.entries(dropdownTranslations.availability).map(([key, value]) => ({
+    const availabilityObj = t('dropdowns:availability', { returnObjects: true });
+    return availabilityObj && typeof availabilityObj === 'object'
+      ? Object.entries(availabilityObj).map(([key, value]) => ({
           value: key,
           label: value
         }))
       : [];
-  }, [dropdownTranslations]);
+  }, [t]);
 
   const contractTypeOptions = useMemo(() => {
-    return dropdownTranslations && dropdownTranslations.contractTypes 
-      ? Object.entries(dropdownTranslations.contractTypes).map(([key, value]) => ({
+    const contractTypesObj = t('dropdowns:contractTypes', { returnObjects: true });
+    return contractTypesObj && typeof contractTypesObj === 'object'
+      ? Object.entries(contractTypesObj).map(([key, value]) => ({
           value: key,
           label: value
         }))
       : [];
-  }, [dropdownTranslations]);
+  }, [t]);
 
   // Handle slider changes for nested objects like desiredWorkPercentage and targetHourlyRate
   const handleRangeSliderChange = (objectName, values) => {

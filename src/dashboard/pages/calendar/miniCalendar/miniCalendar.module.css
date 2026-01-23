@@ -1,9 +1,12 @@
 .miniCalendar {
-  background-color: var(--background-div-color, #ffffff);
-  border-radius: 10px;
+  background-color: hsl(var(--card));
+  border-radius: 1rem;
   padding: 16px;
-  border: 1px solid var(--grey-1, #e0e0e0);
+  border: 1px solid hsl(var(--border) / 0.5);
   max-width: 100%;
+  overflow: visible;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(4px);
 }
 
 .miniCalendar h4{
@@ -40,9 +43,10 @@
   border: none;
   padding: 4px 8px;
   cursor: pointer;
+  font-family: var(--font-family-text);
   font-size: var(--font-size-small);
-  font-weight: 500;
-  color: var(--text-color, #333);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -92,9 +96,9 @@
 }
 
 .dropdownItem.active {
-  background-color: var(--color-logo-1-light, #e9f2ff);
-  color: var(--color-logo-1, #4a90e2);
-  font-weight: 500;
+  background-color: var(--color-logo-1-light);
+  color: var(--color-logo-1);
+  font-weight: var(--font-weight-medium);
 }
 
 .navButton {
@@ -125,9 +129,10 @@
 
 .weekDay {
   text-align: center;
+  font-family: var(--font-family-text);
   font-size: var(--font-size-small);
-  font-weight: 500;
-  color: var(--grey-3, #888);
+  font-weight: var(--font-weight-medium);
+  color: var(--grey-3);
   text-transform: uppercase;
   padding: 4px 0;
 }
@@ -157,10 +162,11 @@
 }
 
 .dayNumber {
+  font-family: var(--font-family-text);
   font-size: var(--font-size-small);
   line-height: 1;
-  color: var(--text-color, #333);
-  font-weight: 400;
+  color: var(--text-color);
+  font-weight: var(--font-weight-normal);
   transition: color 0.2s;
 }
 
@@ -175,8 +181,8 @@
 }
 
 .today .dayNumber {
-  font-weight: 600;
-  color: var(--text-color, #333);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
 }
 
 .selected {
@@ -185,8 +191,8 @@
 }
 
 .selected .dayNumber {
-  color: var(--color-logo-1, #4a90e2);
-  font-weight: 600;
+  color: var(--color-logo-1);
+  font-weight: var(--font-weight-medium);
 }
 
 .eventDots {

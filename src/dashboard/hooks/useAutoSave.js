@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { get } from 'lodash';
+import { getLocalStorageKey } from '../../config/keysDatabase';
 
 const useAutoSave = ({
   formData,
@@ -16,7 +17,7 @@ const useAutoSave = ({
   disableLocalStorage = false
 }) => {
   const location = useLocation();
-  const localStorageKey = `profile_${activeTab}_draft`;
+  const localStorageKey = getLocalStorageKey('PROFILE_DRAFT', activeTab);
   const previousLocationRef = useRef(location.pathname);
   const saveTimeoutRef = useRef(null);
   const validationTimeoutRef = useRef(null);
@@ -60,31 +61,25 @@ const useAutoSave = ({
     }
   }, [extractData, localStorageKey, disableLocalStorage]);
 
-  const performValidation = useCallback(() => {
+  const performValidation = useCallback((isInitial = false) => {
     if (!validateCurrentTabData || !onTabCompleted) return;
     
-    if (isTutorialActive) {
+    if (isTutorialActive && !isInitial) {
       const timeSinceTabChange = Date.now() - tabChangeTimestampRef.current;
       if (timeSinceTabChange < 2000) {
-        console.log('[useAutoSave] Skipping auto-validation - recently changed tabs during tutorial');
         return;
       }
     }
     
     const isValid = validateCurrentTabData(null, null, true);
     
-    console.log('[useAutoSave] Validation result for', activeTab, ':', isValid);
-    
     if (isValid !== lastValidationStateRef.current) {
       lastValidationStateRef.current = isValid;
-      console.log('[useAutoSave] Validation state changed to:', isValid);
       
       if (isValid && isTutorialActive && activeTab) {
-        console.log('[useAutoSave] Tab validation passed, notifying tutorial:', activeTab);
         onTabCompleted(activeTab, true);
       }
     } else if (isValid && isTutorialActive && activeTab) {
-      console.log('[useAutoSave] Tab is valid but state unchanged, notifying tutorial anyway:', activeTab);
       onTabCompleted(activeTab, true);
     }
   }, [validateCurrentTabData, onTabCompleted, isTutorialActive, activeTab]);
@@ -111,7 +106,6 @@ const useAutoSave = ({
 
   useEffect(() => {
     if (activeTab !== lastActiveTabRef.current) {
-      console.log('[useAutoSave] Tab changed from', lastActiveTabRef.current, 'to', activeTab);
       lastActiveTabRef.current = activeTab;
       tabChangeTimestampRef.current = Date.now();
       lastValidationStateRef.current = false;
@@ -133,12 +127,12 @@ const useAutoSave = ({
       }, 300);
       
       const validationDelay = initialValidationDoneRef.current ? 500 : 100;
+      const isInitialValidation = !initialValidationDoneRef.current;
       
       validationTimeoutRef.current = setTimeout(() => {
-        performValidation();
-        if (!initialValidationDoneRef.current) {
+        performValidation(isInitialValidation);
+        if (isInitialValidation) {
           initialValidationDoneRef.current = true;
-          console.log('[useAutoSave] Initial validation completed on mount/tab load');
         }
       }, validationDelay);
     }

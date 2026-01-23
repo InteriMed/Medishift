@@ -4,25 +4,23 @@ import { useTranslation } from 'react-i18next';
 import { get, set, cloneDeep } from 'lodash';
 import classNames from 'classnames';
 
-// --- Import Utilities ---
 import { validateProfileItem, addOrUpdateProfileItem, deleteProfileItem } from '../../utils/professionalBackgroundUtils';
-// Import the dropdown options hook
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
 import useAutoSave from '../../../../hooks/useAutoSave';
 
-// --- Import Base Components (Adjust Paths) ---
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import TextareaField from '../../../../../components/BoxedInputFields/TextareaField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
-import DateField from '../../../../../components/BoxedInputFields/DateField/DateField';
+import DateField from '../../../../../components/BoxedInputFields/DateField';
 import Button from '../../../../../components/BoxedInputFields/Button';
 import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxField';
 import Switch from '../../../../../components/BoxedInputFields/Switch';
 import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSwitchField';
 import Dialog from '../../../../../components/Dialog/Dialog';
-import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye } from 'react-icons/fi';
-
-// =====================================================================
+import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
+import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
+import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye, FiUpload } from 'react-icons/fi';
+import { cn } from '../../../../../utils/cn';
 
 
 // Tailwind styles
@@ -77,7 +75,17 @@ const ProfessionalBackground = ({
    onInputChange,
    validateCurrentTabData,
    onTabCompleted,
-   isTutorialActive
+   isTutorialActive,
+   completionPercentage,
+   handleAutoFillClick,
+   isUploading,
+   isAnalyzing,
+   autoFillButtonRef,
+   uploadInputRef,
+   handleFileUpload,
+   uploadProgress,
+   t: tProp,
+   stepData
 }) => {
    const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
 
@@ -111,7 +119,7 @@ const ProfessionalBackground = ({
 
    useEffect(() => {
       if (validateCurrentTabData && formData && config) {
-         validateCurrentTabData(null, null, false);
+         validateCurrentTabData(null, null, true);
       }
    }, [validateCurrentTabData, formData, config]);
 
@@ -178,7 +186,6 @@ const ProfessionalBackground = ({
          }
       }
 
-      console.warn(`No options found for key: ${optionsKey} (mapped to: ${mappedOptionsKey})`);
       return [];
    }, [dropdownOptionsFromHook, i18n]);
 
@@ -645,13 +652,6 @@ const ProfessionalBackground = ({
                   {currentList.length > 0 && currentList.map((item, index) => {
                      const itemHasError = checkItemHasNestedError(errors, mainSectionPath, index);
                      
-                     if (process.env.NODE_ENV === 'development' && itemHasError) {
-                        console.log(`[ProfessionalBackground] Item ${index} in ${sectionKey} has error:`, {
-                           sectionPath: mainSectionPath,
-                           index,
-                           errors: Object.keys(errors).filter(key => key.includes(`${mainSectionPath}.${index}`))
-                        });
-                     }
 
                      return (
                         <React.Fragment key={`${sectionKey}-${index}`}>
@@ -670,10 +670,17 @@ const ProfessionalBackground = ({
                               <div className={styles.itemContent}>
                                  <div className="text-sm font-medium" style={{
                                     color: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
-                                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
+                                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center'
                                  }}>
                                     <strong style={{ color: itemHasError ? 'hsl(var(--destructive))' : 'inherit' }}>{item.title || item.degree || item.jobTitle || 'Item'}</strong>
-                                    {itemHasError && <span className="ml-2 text-[10px] uppercase tracking-wider font-bold text-destructive">{t('validation:incomplete', 'Incomplete')}</span>}
+                                    {itemHasError && (
+                                       <span className="text-[10px] uppercase tracking-wider font-bold text-destructive leading-tight">
+                                          {t('validation:incomplete', 'Incomplete')}
+                                       </span>
+                                    )}
                                  </div>
                                  <div className="text-xs" style={{
                                     color: itemHasError ? 'hsl(var(--destructive) / 0.7)' : 'hsl(var(--muted-foreground))',
@@ -749,6 +756,57 @@ const ProfessionalBackground = ({
                <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('professionalBackground.title')}</h2>
                <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('professionalBackground.subtitle')}</p>
             </div>
+
+            {isTutorialActive && (
+               <div className="flex items-center gap-3">
+                  <div className="relative" ref={autoFillButtonRef}>
+                     <button
+                        onClick={handleAutoFillClick}
+                        disabled={isUploading || isAnalyzing}
+                        className={cn(
+                           "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
+                           "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
+                           (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
+                           (stepData?.highlightUploadButton) && "tutorial-highlight"
+                        )}
+                        style={{ height: 'var(--boxed-inputfield-height)' }}
+                        data-tutorial="profile-upload-button"
+                     >
+                        {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
+                        <span className="text-sm font-medium text-black">
+                           {isAnalyzing
+                              ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
+                              : t('dashboardProfile:documents.autofill', 'Auto Fill')
+                           }
+                        </span>
+                     </button>
+                  </div>
+                  {uploadInputRef && (
+                     <UploadFile
+                        ref={uploadInputRef}
+                        onChange={handleFileUpload}
+                        isLoading={isUploading}
+                        progress={uploadProgress}
+                        accept=".pdf,.doc,.docx,.jpg,.png"
+                        label=""
+                        className="hidden"
+                     />
+                  )}
+
+                  {formData && completionPercentage !== undefined && (
+                     <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                        <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                        <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                           <div
+                              className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                              style={{ width: `${completionPercentage}%` }}
+                           ></div>
+                        </div>
+                        <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                     </div>
+                  )}
+               </div>
+            )}
          </div>
 
          {/* Dynamically render each section based on config items */}

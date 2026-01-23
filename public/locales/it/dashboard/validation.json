@@ -1,0 +1,26 @@
+{
+  "required": "Questo campo è obbligatorio",
+  "passwordMismatch": "Le password non corrispondono",
+  "passwordMinLength": "La password deve contenere almeno 6 caratteri",
+  "passwordUpdateSuccess": "Password aggiornata con successo",
+  "passwordUpdateError": "La tua password non corrisponde alla password attuale",
+  "unsavedChangesWarning": "Hai modifiche non salvate. Vuoi salvare prima di cambiare scheda?",
+  "confirmTabChange": "Conferma cambio scheda",
+  "confirmTabChangeTitle": "Conferma cambio scheda",
+  "unsavedChanges": "Hai modifiche non salvate. Vuoi salvare prima di cambiare scheda?",
+  "unsavedChangesWarningNavigate": "Hai modifiche non salvate. Vuoi salvare prima di cambiare scheda?",
+  "discardChanges": "Sei sicuro di voler annullare le modifiche?",
+  "discardChangesWarning": "Sei sicuro di voler annullare le modifiche? Tutte le modifiche non salvate andranno perse.",
+  "confirmCancel": "Conferma annullamento",
+  "confirmCancelTitle": "Conferma annullamento",
+  "no": "No",
+  "yes": "Sì",
+  "saveSuccess": "Modifiche salvate con successo",
+  "errorSavingProfile": "Errore durante il salvataggio del profilo. Riprova.",
+  "errorSaving": "Errore durante il salvataggio delle modifiche",
+  "fixErrors": "Correggi gli errori prima di salvare.",
+  "profileSaved": "Profilo salvato con successo!",
+  "minItemsRequired": "È richiesto almeno un elemento",
+  "errorFixFieldsBeforeContinuing": "Correggi gli errori prima di continuare"
+}
+

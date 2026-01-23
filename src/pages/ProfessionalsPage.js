@@ -20,8 +20,8 @@ const ProfessionalsNew = () => {
     return (
         <div className="flex flex-col min-h-screen text-foreground font-sans overflow-x-hidden relative" style={{ backgroundColor: '#ffffff' }}>
             <Helmet>
-                <title>Emploi Santé & Flexibilité | MediShift pour Professionnels</title>
-                <meta name="description" content="Développez votre carrière avec MediShift. Inscription GLN simplifiée, création de CV automatisée et missions sur mesure." />
+                <title>{t('meta.title')}</title>
+                <meta name="description" content={t('meta.description')} />
             </Helmet>
 
             {/* Hero Section */}
@@ -63,27 +63,27 @@ const ProfessionalsNew = () => {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
                                 </span>
-                                Espace Professionnels
+                                {t('hero.badge')}
                             </div>
 
                             <h1 className="text-5xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[1.1] mb-8">
-                                Votre carrière, <span className="text-blue-600">vos règles</span>
+                                {t('hero.title')}
                             </h1>
 
                             <p className="text-xl text-slate-600 max-w-xl mb-10 leading-relaxed font-medium">
-                                Simplifiez votre vie professionnelle. De la validation GLN à la signature de contrat, tout est automatisé pour vous faire gagner du temps.
+                                {t('hero.subtitle')}
                             </p>
 
                             <div className="flex flex-wrap gap-5">
                                 <Link to={`/${lang || 'fr'}/signup`} className="group">
                                     <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-lg flex items-center gap-3 transition-all hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-200 transform hover:-translate-y-1">
-                                        Créer mon profil
+                                        {t('hero.ctaCreate')}
                                         <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                                     </button>
                                 </Link>
                                 <Link to="#details">
                                     <button className="px-8 py-4 bg-white text-slate-900 border-2 border-slate-200 rounded-2xl font-black text-lg flex items-center gap-3 transition-all hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transform hover:-translate-y-1">
-                                        En savoir plus
+                                        {t('hero.ctaLearnMore')}
                                     </button>
                                 </Link>
                             </div>
@@ -95,7 +95,7 @@ const ProfessionalsNew = () => {
                                     <div className="bg-white rounded-[3rem] p-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-100">
                                         <img
                                             src={phoneAppMockup}
-                                            alt="Application MediShift"
+                                            alt={t('hero.appAlt')}
                                             className="w-full h-auto rounded-[2.5rem]"
                                         />
                                     </div>
@@ -107,10 +107,10 @@ const ProfessionalsNew = () => {
                                         <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
                                             <FaFingerprint size={18} />
                                         </div>
-                                        <div className="font-black text-slate-800">Verification GLN</div>
+                                        <div className="font-black text-slate-800">{t('hero.glnVerification')}</div>
                                     </div>
                                     <div className="flex items-center gap-2 text-green-500 font-bold text-xs">
-                                        <FaCheckDouble /> Validé par MediShift
+                                        <FaCheckDouble /> {t('hero.validated')}
                                     </div>
                                 </div>
                             </div>
@@ -123,8 +123,8 @@ const ProfessionalsNew = () => {
             <section id="details" className="py-24 bg-slate-50 relative overflow-hidden">
                 <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
                     <div className="text-center max-w-2xl mx-auto mb-20">
-                        <h2 className="text-4xl font-black text-slate-900 mb-6">Postulez en <span className="text-blue-600">1 minute chrono</span></h2>
-                        <p className="text-lg text-slate-600 font-medium">Nous avons supprimé la lourdeur administrative pour que vous puissiez vous concentrer sur vos patients.</p>
+                        <h2 className="text-4xl font-black text-slate-900 mb-6">{t('quickApply.title')}</h2>
+                        <p className="text-lg text-slate-600 font-medium">{t('quickApply.description')}</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
@@ -134,9 +134,9 @@ const ProfessionalsNew = () => {
                                 <FaPassport size={24} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-slate-900 mb-3">Vérification GLN Simplify</h3>
+                                <h3 className="text-xl font-black text-slate-900 mb-3">{t('features.glnVerification.title')}</h3>
                                 <p className="text-slate-500 font-medium leading-relaxed">
-                                    Entrez simplement votre numéro GLN. Notre système vérifie automatiquement vos accréditations en temps réel auprès des registres suisses.
+                                    {t('features.glnVerification.description')}
                                 </p>
                             </div>
                         </div>
@@ -147,9 +147,9 @@ const ProfessionalsNew = () => {
                                 <FaMagic size={24} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-slate-900 mb-3">CV Intelligent & Automatisé</h3>
+                                <h3 className="text-xl font-black text-slate-900 mb-3">{t('features.smartCV.title')}</h3>
                                 <p className="text-slate-500 font-medium leading-relaxed">
-                                    Pas besoin de rédiger. MediShift génère un CV professionnel optimisé pour la santé à partir de vos données de profil et GLN.
+                                    {t('features.smartCV.description')}
                                 </p>
                             </div>
                         </div>
@@ -160,9 +160,9 @@ const ProfessionalsNew = () => {
                                 <FaClock size={24} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-slate-900 mb-3">Applications Fast-Track</h3>
+                                <h3 className="text-xl font-black text-slate-900 mb-3">{t('features.fastTrack.title')}</h3>
                                 <p className="text-slate-500 font-medium leading-relaxed">
-                                    Une fois votre profil vérifié, postulez à n'importe quelle mission d'un simple clic. Réponse garantie sous 24h.
+                                    {t('features.fastTrack.description')}
                                 </p>
                             </div>
                         </div>
@@ -176,20 +176,20 @@ const ProfessionalsNew = () => {
                     <div className="grid lg:grid-cols-2 gap-20 items-center">
                         <div>
                             <h2 className="text-4xl lg:text-5xl font-black text-slate-900 mb-8 leading-tight">
-                                Gérez votre temps <span className="text-blue-600">depuis votre mobile</span>
+                                {t('availability.title')}
                             </h2>
                             <p className="text-xl text-slate-600 mb-10 leading-relaxed font-medium">
-                                Notre calendrier interactif vous permet de définir vos disponibilités récurrentes ou ponctuelles en quelques secondes.
+                                {t('availability.description')}
                             </p>
 
                             <div className="grid sm:grid-cols-2 gap-8">
                                 <div className="p-8 rounded-[2rem] bg-blue-50/50 border border-blue-100">
-                                    <h4 className="font-black text-slate-900 mb-3">Flexibilité Totale</h4>
-                                    <p className="text-slate-500 text-sm font-medium">Contrôlez quand et où vous travaillez. Pas d'obligations minimales.</p>
+                                    <h4 className="font-black text-slate-900 mb-3">{t('availability.flexibility.title')}</h4>
+                                    <p className="text-slate-500 text-sm font-medium">{t('availability.flexibility.description')}</p>
                                 </div>
                                 <div className="p-8 rounded-[2rem] bg-indigo-50/50 border border-indigo-100">
-                                    <h4 className="font-black text-slate-900 mb-3">Messagerie Directe</h4>
-                                    <p className="text-slate-500 text-sm font-medium">Discutez directement avec les RH des établissements via notre chat sécurisé.</p>
+                                    <h4 className="font-black text-slate-900 mb-3">{t('availability.messaging.title')}</h4>
+                                    <p className="text-slate-500 text-sm font-medium">{t('availability.messaging.description')}</p>
                                 </div>
                             </div>
                         </div>
@@ -201,20 +201,20 @@ const ProfessionalsNew = () => {
                                     <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
                                         <FaLaptopCode />
                                     </div>
-                                    <h3 className="text-2xl font-black">Admin Simplifiée</h3>
+                                    <h3 className="text-2xl font-black">{t('availability.adminCard.title')}</h3>
                                 </div>
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4 text-slate-300 font-medium">
-                                        <FaCheckCircle className="text-green-500" /> Gestion des fiches de paie automatisée
+                                        <FaCheckCircle className="text-green-500" /> {t('availability.adminCard.item1')}
                                     </div>
                                     <div className="flex items-center gap-4 text-slate-300 font-medium">
-                                        <FaCheckCircle className="text-green-500" /> Signature de contrats électronique nLPD
+                                        <FaCheckCircle className="text-green-500" /> {t('availability.adminCard.item2')}
                                     </div>
                                     <div className="flex items-center gap-4 text-slate-300 font-medium">
-                                        <FaCheckCircle className="text-green-500" /> Suivi des heures en temps réel
+                                        <FaCheckCircle className="text-green-500" /> {t('availability.adminCard.item3')}
                                     </div>
                                     <div className="flex items-center gap-4 text-slate-300 font-medium">
-                                        <FaCheckCircle className="text-green-500" /> Paiements hebdomadaires sécurisés
+                                        <FaCheckCircle className="text-green-500" /> {t('availability.adminCard.item4')}
                                     </div>
                                 </div>
                             </div>
@@ -232,21 +232,21 @@ const ProfessionalsNew = () => {
 
                         <div className="grid lg:grid-cols-2 gap-16 items-center">
                             <div className="text-white relative z-10">
-                                <h2 className="text-4xl lg:text-5xl font-black mb-8 leading-tight">Prêt à changer de dimension ?</h2>
+                                <h2 className="text-4xl lg:text-5xl font-black mb-8 leading-tight">{t('cta.title')}</h2>
                                 <div className="space-y-6 mb-10">
                                     <div className="flex items-center gap-4 text-lg font-medium text-slate-300">
-                                        <FaCheckCircle className="text-blue-500" /> Profil vérifié en moins de 12h
+                                        <FaCheckCircle className="text-blue-500" /> {t('cta.item1')}
                                     </div>
                                     <div className="flex items-center gap-4 text-lg font-medium text-slate-300">
-                                        <FaCheckCircle className="text-blue-500" /> Zéro frais de dossier
+                                        <FaCheckCircle className="text-blue-500" /> {t('cta.item2')}
                                     </div>
                                     <div className="flex items-center gap-4 text-lg font-medium text-slate-300">
-                                        <FaCheckCircle className="text-blue-500" /> Paiements hebdomadaires garantis
+                                        <FaCheckCircle className="text-blue-500" /> {t('cta.item3')}
                                     </div>
                                 </div>
                                 <Link to={`/${lang || 'fr'}/signup`}>
                                     <button className="px-10 py-5 bg-blue-600 text-white rounded-2xl font-black text-xl hover:bg-blue-700 transition-all shadow-xl hover:shadow-blue-500/20">
-                                        Lancer mon inscription
+                                        {t('cta.button')}
                                     </button>
                                 </Link>
                             </div>
@@ -257,8 +257,8 @@ const ProfessionalsNew = () => {
                                             <FaUserMd size={32} />
                                         </div>
                                         <div>
-                                            <div className="text-white font-black text-xl">Profil Professionnel</div>
-                                            <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">Statut : Prêt à travailler</div>
+                                            <div className="text-white font-black text-xl">{t('cta.card.title')}</div>
+                                            <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">{t('cta.card.status')}</div>
                                         </div>
                                     </div>
 

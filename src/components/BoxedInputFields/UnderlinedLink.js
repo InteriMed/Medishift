@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './UnderlinedLink.css';
+import './styles/boxedInputFields.css';
 
 const UnderlinedLink = ({ text, to, color = '#333', margin = '0', onClick, className = '' }) => {
   const style = {

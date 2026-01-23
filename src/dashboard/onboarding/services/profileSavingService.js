@@ -1,11 +1,11 @@
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { firebaseApp as app } from '../../../services/firebaseService';
 import { extractStreetName, extractHouseNumber, convertPermitTypeToProfileFormat, formatPhoneNumber } from '../utils/glnVerificationUtils';
+import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 
 const functions = getFunctions(app, 'europe-west6');
 
 export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnValue, currentUser, manualProfession) => {
-  console.log('[saveWorkerProfile] Full extracted data:', JSON.stringify(extracted, null, 2));
   
   const identity = extracted.personalDetails?.identity || {};
   const address = extracted.personalDetails?.address || {};
@@ -13,13 +13,6 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
   const additionalInfo = extracted.additionalInfo || {};
   const professionalBackground = extracted.professionalBackground || {};
   
-  console.log('[saveWorkerProfile] Parsed sections:', {
-    hasIdentity: Object.keys(identity).length > 0,
-    hasAddress: Object.keys(address).length > 0,
-    hasContact: Object.keys(contact).length > 0,
-    hasAdditionalInfo: Object.keys(additionalInfo).length > 0,
-    hasProfessionalBackground: Object.keys(professionalBackground).length > 0
-  });
 
   const extractedLegalFirstName = identity.legalFirstName || identity.firstName || identity.givenName || '';
   const extractedLegalLastName = identity.legalLastName || identity.lastName || identity.surname || '';
@@ -157,28 +150,12 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
     });
   }
 
-  console.log('[GLNVerification] Saving professional profile with ALL extracted data:', {
-    identity: profileData.identity,
-    contact: profileData.contact,
-    employmentEligibility: profileData.employmentEligibility,
-    professionalDetails: profileData.professionalDetails,
-    residencyPermit: profileData.residencyPermit,
-    verification: {
-      ...profileData.verification,
-      verificationDocuments: profileData.verification.verificationDocuments.map(doc => ({
-        ...doc,
-        extractedData: 'See full log below'
-      }))
-    }
-  });
-  console.log('[GLNVerification] Full verification documents data:', 
-    JSON.stringify(profileData.verification.verificationDocuments, null, 2));
   
   try {
     const { doc, updateDoc, deleteField } = await import('firebase/firestore');
     const { db } = await import('../../../services/firebase');
 
-    await updateDoc(doc(db, 'users', currentUser.uid), {
+    await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {
       GLN_certified: true,
       onboardingCompleted: true,
       'onboardingProgress.professional': {
@@ -188,7 +165,6 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
       }
     });
 
-    console.log('[GLNVerification] Set onboarding flags before profile creation');
   } catch (error) {
     console.warn('[GLNVerification] Failed to update user document flags:', error);
     throw error;
@@ -201,19 +177,16 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
     const { doc, updateDoc, deleteField } = await import('firebase/firestore');
     const { db } = await import('../../../services/firebase');
 
-    await updateDoc(doc(db, 'users', currentUser.uid), {
+    await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {
       temporaryUploads: deleteField()
     });
 
-    console.log('[GLNVerification] Cleaned up temporaryUploads (kept onboardingDocuments for Profile reference)');
   } catch (error) {
     console.warn('[GLNVerification] Failed to cleanup temporaryUploads:', error);
   }
 };
 
 export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, glnValue, currentUser) => {
-  console.log('[saveFacilityProfile] GLN Data (bag):', JSON.stringify(bag, null, 2));
-  console.log('[saveFacilityProfile] Billing Info:', JSON.stringify(billingInfo, null, 2));
   
   const idPersonalDetails = billingInfo.responsiblePersonAnalysis?.personalDetails || {};
   const idIdentity = idPersonalDetails.identity || {};
@@ -380,28 +353,12 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
     verificationStatus: 'verified'
   };
 
-  console.log('[GLNVerification] Saving facility profile with ALL extracted data:', {
-    facilityDetails: facilityData.facilityDetails,
-    responsiblePersonIdentity: facilityData.responsiblePersonIdentity,
-    identityLegal: facilityData.identityLegal,
-    billingInformation: facilityData.billingInformation,
-    contact: facilityData.contact,
-    verification: {
-      ...facilityData.verification,
-      verificationDocuments: facilityData.verification.verificationDocuments.map(doc => ({
-        ...doc,
-        extractedData: 'See full log below'
-      }))
-    }
-  });
-  console.log('[GLNVerification] Full facility verification documents data:', 
-    JSON.stringify(facilityData.verification.verificationDocuments, null, 2));
   
   try {
     const { doc, updateDoc, deleteField } = await import('firebase/firestore');
     const { db } = await import('../../../services/firebase');
 
-    await updateDoc(doc(db, 'users', currentUser.uid), {
+    await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {
       GLN_certified: true,
       onboardingCompleted: true,
       'onboardingProgress.facility': {
@@ -411,7 +368,6 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
       }
     });
 
-    console.log('[GLNVerification] Set onboarding flags before profile creation');
   } catch (error) {
     console.warn('[GLNVerification] Failed to update user document flags:', error);
     throw error;
@@ -424,11 +380,10 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
     const { doc, updateDoc, deleteField } = await import('firebase/firestore');
     const { db } = await import('../../../services/firebase');
 
-    await updateDoc(doc(db, 'users', currentUser.uid), {
+    await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {
       temporaryUploads: deleteField()
     });
 
-    console.log('[GLNVerification] Cleaned up temporaryUploads (kept onboardingDocuments for Profile reference)');
   } catch (error) {
     console.warn('[GLNVerification] Failed to cleanup temporaryUploads:', error);
   }

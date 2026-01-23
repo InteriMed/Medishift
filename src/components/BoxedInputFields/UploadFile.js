@@ -1,5 +1,6 @@
 import React, { useState, useRef, forwardRef } from 'react';
-import { FiUploadCloud, FiEye, FiEdit2, FiTrash2, FiFile } from 'react-icons/fi';
+import { FiUploadCloud, FiEye, FiEdit2, FiTrash2, FiFile, FiFolder } from 'react-icons/fi';
+import './styles/boxedInputFields.css';
 import './styles/UploadFile.css';
 
 const UploadFile = forwardRef(({
@@ -55,7 +56,9 @@ const UploadFile = forwardRef(({
     if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
     } else if (e.type === "dragleave") {
-      setDragActive(false);
+      if (!e.currentTarget.contains(e.relatedTarget)) {
+        setDragActive(false);
+      }
     }
   };
 
@@ -228,7 +231,14 @@ const UploadFile = forwardRef(({
         />
 
         <div className="upload-content">
-          {fileName ? (
+          {(isUploadingInternal || isLoading) ? (
+            <div className="upload-progress-container">
+              <div className="progress-bar">
+                <div className="progress-value" style={{ width: `${internalProgress > 0 ? internalProgress : 0}%` }}></div>
+              </div>
+              <span className="progress-percentage">{Math.round(internalProgress > 0 ? internalProgress : 0)}%</span>
+            </div>
+          ) : fileName ? (
             <div className="flex items-center justify-between w-full px-4" style={{ gap: '12px' }}>
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
@@ -272,59 +282,33 @@ const UploadFile = forwardRef(({
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-2">
-              <button
-                type="button"
-                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors rounded-md ${isLoading || disabled ? 'opacity-50 cursor-not-allowed' : ''} ${hasError ? 'upload-button-error' : ''}`}
-                style={{ backgroundColor: hasError ? 'var(--boxed-inputfield-error-color)' : 'var(--color-logo-2)' }}
-                onMouseOver={(e) => {
-                  if (!isLoading && !disabled) {
-                    e.currentTarget.style.backgroundColor = hasError ? 'var(--boxed-inputfield-error-color)' : 'var(--color-logo-1)';
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!isLoading && !disabled) {
-                    e.currentTarget.style.backgroundColor = hasError ? 'var(--boxed-inputfield-error-color)' : 'var(--color-logo-2)';
-                  }
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (!isLoading && !disabled) {
-                    inputRef.current.click();
-                  }
-                }}
-                disabled={isLoading || disabled}
-              >
-                <FiUploadCloud className="w-4 h-4" />
-                Drag & Drop or Select File
-              </button>
-            </div>
-          )}
-
-
-          {(isUploadingInternal || isLoading) && internalProgress > 0 && (
-            <div className="upload-progress">
-              <div className="progress-bar">
-                <div className="progress-value" style={{ width: `${internalProgress}%` }}></div>
+            <>
+              <div className="upload-idle-state">
+                <FiUploadCloud className="upload-icon-main" />
+                <span className="upload-text-main">Drag & Drop or</span>
+                <button
+                  type="button"
+                  className="upload-action-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isLoading && !disabled && inputRef.current) {
+                      inputRef.current.click();
+                    }
+                  }}
+                  disabled={isLoading || disabled}
+                >
+                  <FiFolder className="upload-button-icon" />
+                  <span>Select File</span>
+                </button>
               </div>
-            </div>
+              <div className="upload-drag-overlay">
+                <FiUploadCloud className="upload-drag-icon" />
+                <span className="upload-drag-text">Drop File Here</span>
+              </div>
+            </>
           )}
         </div>
       </form>
-      {localError && (
-        <div className="upload-error-message" style={{ 
-          marginTop: '8px', 
-          padding: '8px 12px', 
-          backgroundColor: 'var(--boxed-inputfield-error-color, #ef4444)', 
-          color: 'white', 
-          borderRadius: '6px', 
-          fontSize: '14px',
-          textAlign: 'center'
-        }}>
-          {localError}
-        </div>
-      )}
     </div>
   );
 });

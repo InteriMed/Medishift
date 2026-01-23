@@ -1,16 +1,14 @@
-// FILE: /src/pages/dashboard/profile/facilities/components/FacilityDetails.js
-// Renders sections like Facility Core Details, Legal/Billing, Facility Documents
-
 import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiUser, FiMapPin, FiInfo, FiFileText, FiBriefcase, FiCreditCard, FiHome } from 'react-icons/fi';
+import { FiUser, FiMapPin, FiInfo, FiFileText, FiBriefcase, FiCreditCard, FiHome, FiUpload } from 'react-icons/fi';
 
-// --- Import Base Components ---
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import Button from '../../../../../components/BoxedInputFields/Button';
+import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
+import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
+import { cn } from '../../../../../utils/cn';
 
-// Import the dropdown options hook
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
 import useAutoSave from '../../../../hooks/useAutoSave';
 
@@ -55,7 +53,17 @@ const FacilityDetails = ({
   getNestedValue,
   validateCurrentTabData,
   onTabCompleted,
-  isTutorialActive
+  isTutorialActive,
+  completionPercentage,
+  handleAutoFillClick,
+  isUploading,
+  isAnalyzing,
+  autoFillButtonRef,
+  uploadInputRef,
+  handleFileUpload,
+  uploadProgress,
+  t: tProp,
+  stepData
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'validation', 'common']);
 
@@ -301,6 +309,57 @@ const FacilityDetails = ({
             <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{currentTabConfig ? t(currentTabConfig.labelKey) : activeTab}</h2>
             <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('facilityDetails.subtitle', 'Please ensure facility details are accurate and up to date.')}</p>
           </div>
+
+          {isTutorialActive && (
+            <div className="flex items-center gap-3">
+              <div className="relative" ref={autoFillButtonRef}>
+                <button
+                  onClick={handleAutoFillClick}
+                  disabled={isUploading || isAnalyzing}
+                  className={cn(
+                    "px-4 flex items-center justify-center gap-2 rounded-xl border-2 transition-all shrink-0",
+                    "bg-background border-input text-black hover:text-black hover:bg-muted/50 hover:border-muted-foreground/30",
+                    (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
+                    (stepData?.highlightUploadButton) && "tutorial-highlight"
+                  )}
+                  style={{ height: 'var(--boxed-inputfield-height)' }}
+                  data-tutorial="profile-upload-button"
+                >
+                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiUpload className="w-4 h-4 text-black" />}
+                  <span className="text-sm font-medium text-black">
+                    {isAnalyzing
+                      ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
+                      : t('dashboardProfile:documents.autofill', 'Auto Fill')
+                    }
+                  </span>
+                </button>
+              </div>
+              {uploadInputRef && (
+                <UploadFile
+                  ref={uploadInputRef}
+                  onChange={handleFileUpload}
+                  isLoading={isUploading}
+                  progress={uploadProgress}
+                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  label=""
+                  className="hidden"
+                />
+              )}
+
+              {formData && completionPercentage !== undefined && (
+                <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                  <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                  <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                      style={{ width: `${completionPercentage}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className={styles.sectionsWrapper}>

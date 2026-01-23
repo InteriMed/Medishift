@@ -69,8 +69,9 @@
 
 .dialog-title {
   margin: 0;
+  font-family: var(--font-family-headings);
   font-size: var(--font-size-large);
-  font-weight: 600;
+  font-weight: var(--font-weight-medium);
 }
 
 .dialog-close {
@@ -117,7 +118,9 @@
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
   transition: background-color 0.3s, transform 0.2s;
 }
 

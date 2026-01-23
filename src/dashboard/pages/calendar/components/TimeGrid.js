@@ -491,25 +491,15 @@ const TimeGrid = ({
    * Handle grid mouse down - for drag-to-create
    */
   const handleGridMouseDown = useCallback((e) => {
-    // Debug: log what was clicked
-    console.log('Grid mousedown fired');
-    console.log('Click target:', e.target);
-    console.log('Target className:', e.target.className);
-    console.log('Target data-event-id:', e.target.getAttribute('data-event-id'));
-
     // Check if click is on an event - check target and all parents
     const clickedEvent = e.target.closest('[data-event-id]');
-    console.log('Closest event element:', clickedEvent);
 
     if (clickedEvent) {
-      console.log('Click on event detected, ignoring grid mousedown');
       return; // Let the event handle it
     }
 
     // Only handle left button
     if (e.button !== 0) return;
-
-    console.log('Grid mousedown - creating new event');
 
     e.preventDefault();
 
@@ -612,7 +602,6 @@ const TimeGrid = ({
 
       if (hasMovedRef.current) {
         // Drag create - open panel to fill in details
-        console.log('Creating drag event with panel:', latestDraftRef.current);
         onCreateEvent?.({
           ...latestDraftRef.current,
           id: `temp-${Date.now()}`,
@@ -627,7 +616,6 @@ const TimeGrid = ({
           end: endTime,     // From closure - already 1 hour after start
           color: '#3b82f6',
         };
-        console.log('Creating single-click event and opening panel:', newEvent);
         onCreateEvent?.(newEvent, true); // true = open panel
       }
     };
@@ -828,7 +816,7 @@ const TimeGrid = ({
 
   return (
     <div
-      className="relative flex-1 bg-background select-none min-w-max"
+      className="relative flex-1 bg-transparent select-none min-w-max"
       ref={gridRef}
       style={{
         height: '1440px',

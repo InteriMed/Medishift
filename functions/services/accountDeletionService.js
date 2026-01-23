@@ -18,6 +18,7 @@ const admin = require('firebase-admin');
 const crypto = require('crypto');
 const config = require('../config');
 const { logAuditEvent } = require('./auditLog');
+const { FIRESTORE_COLLECTIONS } = require('../config/keysDatabase');
 
 // Get Firestore instance
 const db = admin.firestore();
@@ -42,7 +43,7 @@ async function checkLegalRecordRequirements(uid) {
 
     try {
         // Check for employment contracts
-        const contractsSnap = await db.collection('contracts')
+        const contractsSnap = await db.collection(FIRESTORE_COLLECTIONS.CONTRACTS)
             .where('userId', '==', uid)
             .get();
         records.contracts = contractsSnap.docs.map(doc => ({
@@ -256,7 +257,7 @@ async function deleteImmediateData(uid) {
         }
 
         // Delete chat messages (unless they constitute legal order modifications)
-        const chatMessagesSnap = await db.collection('messages')
+        const chatMessagesSnap = await db.collection(FIRESTORE_COLLECTIONS.MESSAGES)
             .where('senderId', '==', uid)
             .get();
 
@@ -296,7 +297,7 @@ async function deleteImmediateData(uid) {
         await availBatch.commit();
 
         // Delete notifications
-        const notificationsSnap = await db.collection('notifications')
+        const notificationsSnap = await db.collection(FIRESTORE_COLLECTIONS.NOTIFICATIONS)
             .where('userId', '==', uid)
             .get();
 
@@ -370,7 +371,7 @@ async function anonymizeUserDocument(uid) {
         updatedAt: FieldValue.serverTimestamp()
     };
 
-    await db.collection('users').doc(uid).update(anonymizedData);
+    await db.collection(FIRESTORE_COLLECTIONS.USERS).doc(uid).update(anonymizedData);
 
     console.log(`[AccountDeletion] Anonymized user document for ${uid}`);
     return anonymizedData;

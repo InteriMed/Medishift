@@ -1,20 +1,17 @@
 .dashboardContainer {
-  composes: dashboard-container from global;
+  @apply p-6 space-y-6 max-w-[1600px] mx-auto;
 }
 
 .profileCompletionBanner {
-  composes: dashboard-card from global;
-  background-color: var(--yellow-1);
-  color: var(--yellow-2);
-  border-left: 4px solid var(--yellow-2);
-  margin-bottom: 24px;
+  @apply bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-r-xl mb-6 shadow-sm;
 }
 
 .profileCompletionBanner h2 {
-  margin: 0 0 10px 0;
-  color: var(--yellow-3) !important;
-  font-size: 1.5rem;
-  font-weight: 700;
+  @apply text-yellow-800 text-lg font-bold mb-2;
+}
+
+.profileCompletionBanner p {
+  @apply text-yellow-700 mb-4;
 }
 
 .actionButton {
@@ -22,15 +19,15 @@
 }
 
 .pageHeader {
-  composes: dashboard-header from global;
+  @apply mb-8;
 }
 
 .pageTitle {
-  composes: dashboard-title from global;
+  @apply text-3xl font-bold text-foreground tracking-tight;
 }
 
 .welcomeMessage {
-  composes: dashboard-subtitle from global;
+  @apply text-muted-foreground mt-2 text-lg;
 }
 
 .metricsGrid {
@@ -38,19 +35,19 @@
 }
 
 .metricCard {
-  composes: metric-card from global;
+  @apply bg-card p-6 rounded-xl border border-border shadow-sm hover:shadow-md transition-all duration-200;
 }
 
 .metricTitle {
-  composes: metric-title from global;
+  @apply text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wide;
 }
 
 .metricValue {
-  composes: metric-value from global;
+  @apply text-3xl font-bold text-foreground;
 }
 
 .recentActivity {
-  composes: dashboard-card from global;
+  @apply bg-card p-6 rounded-xl border border-border shadow-sm;
 }
 
 .recentActivity h2 {
@@ -62,15 +59,15 @@
 }
 
 .activityItem {
-  composes: activity-item from global;
+  @apply py-4 flex items-start gap-4 first:pt-0 last:pb-0;
 }
 
 .activityContent h4 {
-  @apply font-semibold text-foreground;
+  @apply font-semibold text-foreground text-sm;
 }
 
 .activityTime {
-  @apply text-xs text-muted-foreground;
+  @apply text-xs text-muted-foreground mt-1;
 }
 
 .loadingState,

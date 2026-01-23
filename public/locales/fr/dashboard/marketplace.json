@@ -85,29 +85,29 @@
       "present": "Présent",
       "age": "{{age}} ans"
     },
-    "pharmacist": "Pharmacist",
-    "verified": "Verified",
-    "pending": "Pending",
-    "open": "Open",
-    "locationNotSpecified": "Location Not Specified",
+    "pharmacist": "Pharmacien",
+    "verified": "Vérifié",
+    "pending": "En attente",
+    "open": "Ouvert",
+    "locationNotSpecified": "Lieu non spécifié",
     "type": "Type",
-    "fullTime": "Full Time",
-    "salary": "Salary",
-    "negotiable": "Negotiable",
-    "startDate": "Start Date",
-    "immediate": "Immediate",
-    "workingHours": "Working Hours",
+    "fullTime": "Temps plein",
+    "salary": "Salaire",
+    "negotiable": "Négociable",
+    "startDate": "Date de début",
+    "immediate": "Immédiat",
+    "workingHours": "Heures de travail",
     "profession": "Profession",
-    "hourlyRate": "Hourly Rate",
-    "availability": "Availability",
+    "hourlyRate": "Taux horaire",
+    "availability": "Disponibilité",
     "flexible": "Flexible",
-    "jobDescription": "Job Description",
-    "about": "About",
-    "requirements": "Requirements",
-    "specialties": "Specialties",
-    "agreement": "Agreement",
-    "applyForPosition": "Apply For Position",
-    "contactPharmacist": "Contact Pharmacist"
+    "jobDescription": "Description du poste",
+    "about": "À propos",
+    "requirements": "Exigences",
+    "specialties": "Spécialités",
+    "agreement": "Accord",
+    "applyForPosition": "Postuler pour ce poste",
+    "contactPharmacist": "Contacter le pharmacien"
   },
   "common": {
     "notAvailable": "Non disponible",
@@ -119,27 +119,27 @@
     "months_plural": "{{count}} mois"
   },
   "listingCard": {
-    "salaryNegotiable": "Salary Negotiable",
-    "availablePharmacist": "Available Pharmacist",
-    "generalPractice": "General Practice"
+    "salaryNegotiable": "Salaire négociable",
+    "availablePharmacist": "Pharmacien disponible",
+    "generalPractice": "Pratique générale"
   },
   "experienceLevels": {
-    "beginner": "Beginner",
-    "intermediate": "Intermediate",
-    "experienced": "Experienced"
+    "beginner": "Débutant",
+    "intermediate": "Intermédiaire",
+    "experienced": "Expérimenté"
   },
   "placeholders": {
-    "from": "From",
-    "to": "To"
+    "from": "De",
+    "to": "À"
   },
   "overlay": {
-    "title": "Title",
-    "fromDate": "From Date",
-    "toDate": "To Date",
-    "clearAll": "Clear All",
-    "applyFilters": "Apply Filters"
+    "title": "Titre",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
+    "clearAll": "Effacer tout",
+    "applyFilters": "Appliquer les filtres"
   },
-  "searchPlaceholder": "Search Placeholder",
+  "searchPlaceholder": "Rechercher...",
   "view": {
     "grid": "Grid",
     "list": "List"

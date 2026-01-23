@@ -1,5 +1,5 @@
 import React from 'react';
-import './styles/DaySelector.css';
+import './styles/boxedInputFields.css';
 
 const DaySelector = ({ selectedDays, onChange, error, onErrorReset }) => {
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];

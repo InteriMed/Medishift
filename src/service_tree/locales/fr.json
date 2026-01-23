@@ -1,0 +1,106 @@
+{
+  "categories": {
+    "calendar": "Calendrier",
+    "contracts": "Contrats",
+    "messages": "Messages",
+    "profile": "Profil",
+    "payroll": "Paie",
+    "common": "Général",
+    "account": "Compte",
+    "documents": "Documents",
+    "api": "Vérification"
+  },
+  "calendar": {
+    "getEvents": "Voir les événements",
+    "getEventsDesc": "Afficher tous vos shifts et événements planifiés",
+    "createEvent": "Créer un événement",
+    "createEventDesc": "Ajouter un nouveau shift ou événement au calendrier",
+    "updateEvent": "Modifier un événement",
+    "updateEventDesc": "Modifier un événement existant",
+    "deleteEvent": "Supprimer un événement",
+    "deleteEventDesc": "Retirer un événement du calendrier",
+    "syncCalendar": "Synchroniser calendrier externe",
+    "syncCalendarDesc": "Synchroniser avec Google ou Outlook"
+  },
+  "contracts": {
+    "getContracts": "Voir les contrats",
+    "getContractsDesc": "Consulter tous vos contrats actifs et passés",
+    "createContract": "Créer un contrat",
+    "createContractDesc": "Rédiger un nouveau contrat de travail",
+    "updateContract": "Modifier un contrat",
+    "updateContractDesc": "Modifier ou signer un contrat existant",
+    "generatePdf": "Télécharger le PDF",
+    "generatePdfDesc": "Générer et télécharger le contrat en PDF",
+    "applyToJob": "Postuler",
+    "applyToJobDesc": "Soumettre une candidature pour une offre"
+  },
+  "messages": {
+    "getConversations": "Voir les messages",
+    "getConversationsDesc": "Consulter toutes vos conversations",
+    "createConversation": "Nouvelle conversation",
+    "createConversationDesc": "Démarrer une discussion avec quelqu'un",
+    "sendMessage": "Envoyer un message",
+    "sendMessageDesc": "Envoyer un message dans une conversation"
+  },
+  "profile": {
+    "getCurrentUser": "Voir mon profil",
+    "getCurrentUserDesc": "Consulter vos informations de profil",
+    "updateUserProfile": "Modifier le profil",
+    "updateUserProfileDesc": "Mettre à jour vos informations",
+    "changePassword": "Changer le mot de passe",
+    "changePasswordDesc": "Modifier le mot de passe de votre compte",
+    "uploadProfilePicture": "Changer la photo de profil",
+    "uploadProfilePictureDesc": "Télécharger une nouvelle photo",
+    "searchUsers": "Rechercher des professionnels",
+    "searchUsersDesc": "Trouver des professionnels de santé par nom"
+  },
+  "payroll": {
+    "createPayrollRequest": "Demander un paiement",
+    "createPayrollRequestDesc": "Soumettre une demande de paie pour les shifts effectués",
+    "getPayrollRequests": "Voir les paiements",
+    "getPayrollRequestsDesc": "Consulter l'historique des paiements",
+    "calculateShiftFees": "Calculer les frais",
+    "calculateShiftFeesDesc": "Prévisualiser les coûts d'un shift"
+  },
+  "storage": {
+    "uploadFile": "Télécharger un fichier",
+    "uploadFileDesc": "Envoyer un document ou une image",
+    "deleteFile": "Supprimer un fichier",
+    "deleteFileDesc": "Retirer un fichier du stockage"
+  },
+  "notifications": {
+    "listNotifications": "Voir les notifications",
+    "listNotificationsDesc": "Consulter toutes vos notifications",
+    "markAllAsRead": "Tout marquer comme lu",
+    "markAllAsReadDesc": "Marquer toutes les notifications comme lues"
+  },
+  "account": {
+    "getDeletionPreview": "Aperçu de suppression",
+    "getDeletionPreviewDesc": "Voir ce qui se passe lors de la suppression du compte",
+    "deleteAccount": "Supprimer le compte",
+    "deleteAccountDesc": "Fermer définitivement votre compte",
+    "exportUserData": "Exporter mes données",
+    "exportUserDataDesc": "Télécharger toutes vos données personnelles"
+  },
+  "documents": {
+    "processWithAI": "Scanner avec l'IA",
+    "processWithAIDesc": "Extraire les informations d'un CV ou document par IA"
+  },
+  "api": {
+    "healthRegistryLookup": "Vérifier un GLN",
+    "healthRegistryLookupDesc": "Rechercher un professionnel de santé dans le registre",
+    "companySearch": "Rechercher une entreprise",
+    "companySearchDesc": "Trouver un établissement de santé par GLN"
+  },
+  "search": {
+    "placeholder": "Rechercher des actions...",
+    "noResults": "Aucune action trouvée",
+    "noActionsInCategory": "Aucune action dans cette catégorie",
+    "suggestions": "Suggestions",
+    "recentActions": "Récent",
+    "allActions": "Toutes les actions",
+    "actions": "Actions",
+    "categories": "Catégories"
+  }
+}
+

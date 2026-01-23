@@ -20,8 +20,8 @@ const FacilitiesNew = () => {
     return (
         <div className="flex flex-col min-h-screen text-foreground font-sans overflow-x-hidden relative" style={{ backgroundColor: '#ffffff' }}>
             <Helmet>
-                <title>Gestion RH Hospitalière & Etablissements | MediShift</title>
-                <meta name="description" content="Solution complète de gestion RH pour les établissements de santé suisses. Planning, recrutement et gestion d'équipe." />
+                <title>{t('meta.title')}</title>
+                <meta name="description" content={t('meta.description')} />
             </Helmet>
 
             {/* Hero Section */}
@@ -63,27 +63,27 @@ const FacilitiesNew = () => {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
                                 </span>
-                                Espace Établissements
+                                {t('hero.badge')}
                             </div>
 
                             <h1 className="text-5xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[1.1] mb-8">
-                                Optimisez votre <span className="text-blue-600">Gestion RH</span>
+                                {t('hero.title')}
                             </h1>
 
                             <p className="text-xl text-slate-600 max-w-xl mb-10 leading-relaxed font-medium">
-                                Une plateforme tout-en-un pour piloter vos équipes, vos plannings et vos recrutements avec une efficacité inégalée.
+                                {t('hero.subtitle')}
                             </p>
 
                             <div className="flex flex-wrap gap-5">
                                 <Link to={`/${lang || 'fr'}/signup`} className="group">
                                     <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-lg flex items-center gap-3 transition-all hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-200 transform hover:-translate-y-1">
-                                        Commencer gratuitement
+                                        {t('hero.ctaStart')}
                                         <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                                     </button>
                                 </Link>
                                 <Link to="#details">
                                     <button className="px-8 py-4 bg-white text-slate-900 border-2 border-slate-200 rounded-2xl font-black text-lg flex items-center gap-3 transition-all hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transform hover:-translate-y-1">
-                                        Voir les solutions
+                                        {t('hero.ctaSolutions')}
                                     </button>
                                 </Link>
                             </div>
@@ -95,7 +95,7 @@ const FacilitiesNew = () => {
                                     <div className="bg-white rounded-[3rem] p-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-100">
                                         <img
                                             src={institutionalMockup}
-                                            alt="Espace Santé"
+                                            alt={t('hero.appAlt')}
                                             className="w-full h-auto rounded-[2.5rem]"
                                         />
                                     </div>
@@ -107,10 +107,10 @@ const FacilitiesNew = () => {
                                         <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
                                             <FaBuilding size={18} />
                                         </div>
-                                        <div className="font-black text-slate-800">Partenaire Certifié</div>
+                                        <div className="font-black text-slate-800">{t('hero.certifiedPartner')}</div>
                                     </div>
                                     <div className="flex items-center gap-2 text-green-500 font-bold text-xs">
-                                        <FaCheckCircle /> Swiss Made
+                                        <FaCheckCircle /> {t('hero.swissMade')}
                                     </div>
                                 </div>
                             </div>
@@ -128,16 +128,16 @@ const FacilitiesNew = () => {
                             <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform shadow-lg shadow-blue-200">
                                 <FaUsers size={28} />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 mb-4">Gestion d'Équipe</h3>
+                            <h3 className="text-2xl font-black text-slate-900 mb-4">{t('features.teamManagement.title')}</h3>
                             <p className="text-slate-600 font-medium leading-relaxed mb-6">
-                                Centralisez tous vos collaborateurs. Gérez les rôles, les accès et les dossiers administratifs en un clic.
+                                {t('features.teamManagement.description')}
                             </p>
                             <ul className="space-y-3">
                                 <li className="flex items-center gap-2 text-sm text-slate-500 font-bold">
-                                    <FaCheckCircle className="text-blue-600" /> Dossiers RH digitaux
+                                    <FaCheckCircle className="text-blue-600" /> {t('features.teamManagement.item1')}
                                 </li>
                                 <li className="flex items-center gap-2 text-sm text-slate-500 font-bold">
-                                    <FaCheckCircle className="text-blue-600" /> Gestion multi-rôles
+                                    <FaCheckCircle className="text-blue-600" /> {t('features.teamManagement.item2')}
                                 </li>
                             </ul>
                         </div>
@@ -147,16 +147,16 @@ const FacilitiesNew = () => {
                             <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform shadow-lg shadow-indigo-200">
                                 <FaCalendarAlt size={28} />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 mb-4">Planning Intelligent</h3>
+                            <h3 className="text-2xl font-black text-slate-900 mb-4">{t('features.smartCalendar.title')}</h3>
                             <p className="text-slate-600 font-medium leading-relaxed mb-6">
-                                Planifiez vos shifts, gérez les absences et comblez les lacunes de planning en temps réel.
+                                {t('features.smartCalendar.description')}
                             </p>
                             <ul className="space-y-3">
                                 <li className="flex items-center gap-2 text-sm text-slate-500 font-bold">
-                                    <FaCheckCircle className="text-indigo-600" /> Synchronisation temps réel
+                                    <FaCheckCircle className="text-indigo-600" /> {t('features.smartCalendar.item1')}
                                 </li>
                                 <li className="flex items-center gap-2 text-sm text-slate-500 font-bold">
-                                    <FaCheckCircle className="text-indigo-600" /> Alertes de sous-effectif
+                                    <FaCheckCircle className="text-indigo-600" /> {t('features.smartCalendar.item2')}
                                 </li>
                             </ul>
                         </div>
@@ -166,16 +166,16 @@ const FacilitiesNew = () => {
                             <div className="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform shadow-lg shadow-emerald-200">
                                 <FaLayerGroup size={28} />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 mb-4">Gestion des Groupes</h3>
+                            <h3 className="text-2xl font-black text-slate-900 mb-4">{t('features.groupManagement.title')}</h3>
                             <p className="text-slate-600 font-medium leading-relaxed mb-6">
-                                Solution idéale pour les chaînes de cliniques et pharmacies. Vision globale et mobilité inter-sites (subletting).
+                                {t('features.groupManagement.description')}
                             </p>
                             <ul className="space-y-3">
                                 <li className="flex items-center gap-2 text-sm text-slate-500 font-bold">
-                                    <FaCheckCircle className="text-emerald-600" /> Mobilité inter-sites
+                                    <FaCheckCircle className="text-emerald-600" /> {t('features.groupManagement.item1')}
                                 </li>
                                 <li className="flex items-center gap-2 text-sm text-slate-500 font-bold">
-                                    <FaCheckCircle className="text-emerald-600" /> Reporting consolidé
+                                    <FaCheckCircle className="text-emerald-600" /> {t('features.groupManagement.item2')}
                                 </li>
                             </ul>
                         </div>
@@ -196,8 +196,8 @@ const FacilitiesNew = () => {
                                             <FaUsers />
                                         </div>
                                         <div>
-                                            <h4 className="font-black text-slate-900 text-lg">Work-life Balance</h4>
-                                            <p className="text-slate-500 font-medium">Gestion des demandes de congés et absences via des flux d'approbation personnalisés.</p>
+                                            <h4 className="font-black text-slate-900 text-lg">{t('teamWorkspace.workLife.title')}</h4>
+                                            <p className="text-slate-500 font-medium">{t('teamWorkspace.workLife.description')}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-6">
@@ -205,8 +205,8 @@ const FacilitiesNew = () => {
                                             <FaHandshake />
                                         </div>
                                         <div>
-                                            <h4 className="font-black text-slate-900 text-lg">Subletting (Prêt de personnel)</h4>
-                                            <p className="text-slate-500 font-medium">Partagez vos collaborateurs entre différents sites de votre réseau en un clic.</p>
+                                            <h4 className="font-black text-slate-900 text-lg">{t('teamWorkspace.subletting.title')}</h4>
+                                            <p className="text-slate-500 font-medium">{t('teamWorkspace.subletting.description')}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-6">
@@ -214,8 +214,8 @@ const FacilitiesNew = () => {
                                             <FaRegLightbulb />
                                         </div>
                                         <div>
-                                            <h4 className="font-black text-slate-900 text-lg">Niveaux de dotation minimaux</h4>
-                                            <p className="text-slate-500 font-medium">Définissez vos besoins critiques en personnel pour chaque service et shift.</p>
+                                            <h4 className="font-black text-slate-900 text-lg">{t('teamWorkspace.staffingLevels.title')}</h4>
+                                            <p className="text-slate-500 font-medium">{t('teamWorkspace.staffingLevels.description')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -223,15 +223,15 @@ const FacilitiesNew = () => {
                         </div>
                         <div className="order-1 lg:order-2">
                             <h2 className="text-4xl lg:text-5xl font-black text-slate-900 mb-8 leading-tight">
-                                Votre Espace de <span className="text-blue-600">Travail Collaboratif</span>
+                                {t('teamWorkspace.title')}
                             </h2>
                             <p className="text-xl text-slate-600 mb-10 leading-relaxed font-medium">
-                                MediShift ne se contente pas de recruter. Nous vous offrons un véritable outil de pilotage pour votre équipe interne.
+                                {t('teamWorkspace.subtitle')}
                             </p>
                             <ul className="space-y-4 font-bold text-slate-700">
-                                <li className="flex items-center gap-3"><FaCheckCircle className="text-blue-600" /> Profils membres d'équipe complets</li>
-                                <li className="flex items-center gap-3"><FaCheckCircle className="text-blue-600" /> Gestion des droits et permissions</li>
-                                <li className="flex items-center gap-3"><FaCheckCircle className="text-blue-600" /> Horaires d'ouverture standards personnalisés</li>
+                                <li className="flex items-center gap-3"><FaCheckCircle className="text-blue-600" /> {t('teamWorkspace.list.item1')}</li>
+                                <li className="flex items-center gap-3"><FaCheckCircle className="text-blue-600" /> {t('teamWorkspace.list.item2')}</li>
+                                <li className="flex items-center gap-3"><FaCheckCircle className="text-blue-600" /> {t('teamWorkspace.list.item3')}</li>
                             </ul>
                         </div>
                     </div>
@@ -248,10 +248,10 @@ const FacilitiesNew = () => {
                         <div className="grid lg:grid-cols-2 gap-20 items-center relative z-10">
                             <div>
                                 <h2 className="text-4xl lg:text-5xl font-black mb-8 leading-tight">
-                                    Pilotage Multi-sites & <span className="text-blue-500">Besoins Flexibles</span>
+                                    {t('vacancy.title')}
                                 </h2>
                                 <p className="text-xl text-slate-400 mb-10 leading-relaxed font-medium">
-                                    Que vous soyez un cabinet indépendant ou une chaîne nationale, MediShift s'adapte à votre échelle.
+                                    {t('vacancy.subtitle')}
                                 </p>
 
                                 <div className="space-y-6">
@@ -260,8 +260,8 @@ const FacilitiesNew = () => {
                                             <FaBriefcase />
                                         </div>
                                         <div>
-                                            <div className="font-bold text-lg">Vacancy Management</div>
-                                            <div className="text-slate-500 text-sm">Postez vos besoins en un éclair et recevez des candidatures qualifiées instantanément.</div>
+                                            <div className="font-bold text-lg">{t('vacancy.vacancyManagement.title')}</div>
+                                            <div className="text-slate-500 text-sm">{t('vacancy.vacancyManagement.description')}</div>
                                         </div>
                                     </div>
                                     <div className="flex gap-4 items-center p-6 bg-white/5 rounded-2xl border border-white/10">
@@ -269,8 +269,8 @@ const FacilitiesNew = () => {
                                             <FaChartLine />
                                         </div>
                                         <div>
-                                            <div className="font-bold text-lg">Analytics RH</div>
-                                            <div className="text-slate-500 text-sm">Suivez vos indicateurs de performance, coûts et taux de remplissage en temps réel.</div>
+                                            <div className="font-bold text-lg">{t('vacancy.analytics.title')}</div>
+                                            <div className="text-slate-500 text-sm">{t('vacancy.analytics.description')}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -279,13 +279,13 @@ const FacilitiesNew = () => {
                             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3rem] p-12 text-center relative overflow-hidden shadow-2xl">
                                 <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_50%_50%,#fff,transparent)]"></div>
                                 <FaLayerGroup size={80} className="mx-auto mb-8 text-blue-200 opacity-50" />
-                                <h3 className="text-3xl font-black mb-6">Prêt pour la Santé 2.0 ?</h3>
+                                <h3 className="text-3xl font-black mb-6">{t('vacancy.card.title')}</h3>
                                 <p className="text-blue-100 mb-8 font-medium">
-                                    Rejoignez les établissements qui ont déjà digitalisé leur gestion RH avec MediShift.
+                                    {t('vacancy.card.description')}
                                 </p>
                                 <Link to={`/${lang || 'fr'}/signup`}>
                                     <button className="w-full py-4 bg-white text-blue-600 rounded-2xl font-black text-lg hover:shadow-xl hover:bg-slate-50 transition-all">
-                                        Essayer maintenant
+                                        {t('vacancy.card.button')}
                                     </button>
                                 </Link>
                             </div>

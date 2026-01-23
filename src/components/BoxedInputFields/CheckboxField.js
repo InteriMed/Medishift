@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import './styles/CheckboxField.css';
+import './styles/boxedInputFields.css';
 import { useNotification } from '../../contexts/NotificationContext';
 
 /**

@@ -10,7 +10,11 @@
       "settings": "Paramètres",
       "incompleteProfile": "Votre profil est incomplet",
       "completeProfileFirst": "Veuillez d'abord compléter votre profil",
-      "organization": "Organization"
+      "organization": "Organisation",
+      "lockedDuringTutorial": "Verrouillé pendant le tutoriel",
+      "collapse": "Réduire",
+      "expand": "Agrandir",
+      "payroll": "Paie"
     },
     "loading": "Chargement des données du tableau de bord...",
     "error": "Erreur lors du chargement des données du tableau de bord",
@@ -201,17 +205,70 @@
       }
     },
     "header": {
-      "profileResetSuccess": "Profile Reset Success",
-      "profileResetError": "Profile Reset Error",
-      "createBusiness": "Create Business",
-      "createBusinessDesc": "Create Business Desc",
-      "createProfessional": "Create Professional",
-      "createProfessionalDesc": "Create Professional Desc",
-      "search": "Search",
-      "resetProfile": "Reset Profile",
-      "resetProfileTitle": "Reset Profile Title",
-      "resetProfileMessage": "Reset Profile Message",
-      "resetConfirm": "Reset Confirm"
+      "overview": {
+        "title": "Aperçu",
+        "subtitle": "Bienvenue sur votre tableau de bord"
+      },
+      "profile": {
+        "title": "Profil",
+        "subtitle": "Gérez vos informations personnelles"
+      },
+      "messages": {
+        "title": "Messages",
+        "subtitle": "Communiquez avec les établissements et professionnels"
+      },
+      "calendar": {
+        "title": "Calendrier",
+        "subtitle": "Gérez votre emploi du temps et vos rendez-vous"
+      },
+      "contracts": {
+        "title": "Contrats",
+        "subtitle": "Consultez et gérez vos contrats"
+      },
+      "marketplace": {
+        "title": "Marché",
+        "subtitle": "Trouvez des postes ou des professionnels"
+      },
+      "payroll": {
+        "title": "Paie",
+        "subtitle": "Gérez les paiements et demandes des employés"
+      },
+      "organization": {
+        "title": "Organisation",
+        "subtitle": "Gérez votre chaîne ou groupe de pharmacies"
+      },
+      "settings": {
+        "title": "Paramètres",
+        "subtitle": "Configurez les paramètres de votre compte"
+      },
+      "profileResetSuccess": "Profil réinitialisé avec succès",
+      "profileResetError": "Erreur lors de la réinitialisation du profil",
+      "createBusiness": "Créer une entreprise",
+      "createBusinessDesc": "Configurer le profil de votre établissement",
+      "createProfessional": "Créer un profil professionnel",
+      "createProfessionalDesc": "Passer au compte personnel",
+      "search": "Rechercher...",
+      "resetProfile": "Réinitialiser le profil",
+      "resetProfileTitle": "Réinitialiser le profil",
+      "resetProfileMessage": "Êtes-vous sûr de vouloir réinitialiser votre profil ?",
+      "resetConfirm": "Réinitialiser le profil",
+      "notifications": {
+        "newEvent": {
+          "title": "Nouvel événement",
+          "message": "Réunion d'équipe à 15h",
+          "time": "Il y a 10m"
+        },
+        "confirmation": {
+          "title": "Confirmation",
+          "message": "Votre transfert de poste a été approuvé",
+          "time": "Il y a 1h"
+        },
+        "system": {
+          "title": "Système",
+          "message": "Profil mis à jour avec succès",
+          "time": "Il y a 2h"
+        }
+      }
     },
     "navigation": {
       "overview": "Overview",
@@ -225,15 +282,21 @@
       "settings": "Settings"
     },
     "tutorial": {
-      "selectionTitle": "Selection Title",
-      "selectionSubtitle": "Selection Subtitle",
-      "currentPage": "Current Page",
-      "currentPageOnly": "Current Page Only",
-      "currentPageOnlyTitle": "Current Page Only Title",
-      "currentPageOnlyDesc": "Current Page Only Desc",
-      "allPages": "All Pages",
-      "allPagesTitle": "All Pages Title",
-      "allPagesDesc": "All Pages Desc"
+      "selectionTitle": "Choisir le mode du tutoriel",
+      "selectionSubtitle": "Sélectionnez comment vous souhaitez explorer la plateforme",
+      "currentPage": "Page actuelle",
+      "currentPageOnly": "Démarrer le tutoriel pour cette page uniquement",
+      "currentPageOnlyTitle": "Page actuelle uniquement",
+      "currentPageOnlyDesc": "Découvrez les fonctionnalités de cette page",
+      "allPages": "Démarrer le tutoriel complet depuis le début",
+      "allPagesTitle": "Tutoriel complet",
+      "allPagesDesc": "Commencer depuis le début et explorer toutes les fonctionnalités",
+      "stopTitle": "Mettre en pause le tutoriel ?",
+      "stopDescription": "Vous pouvez continuer le tutoriel à tout moment en cliquant sur le bouton d'aide dans l'en-tête.",
+      "clickHere": "Cliquez ici",
+      "toContinue": "pour continuer plus tard",
+      "keepGoing": "Continuer",
+      "pauseNow": "Mettre en pause"
     }
   },
   "userMenu": {

@@ -86,29 +86,29 @@
       "present": "Attuale",
       "age": "{{age}} anni"
     },
-    "pharmacist": "Pharmacist",
-    "verified": "Verified",
-    "pending": "Pending",
-    "open": "Open",
-    "locationNotSpecified": "Location Not Specified",
-    "type": "Type",
-    "fullTime": "Full Time",
-    "salary": "Salary",
-    "negotiable": "Negotiable",
-    "startDate": "Start Date",
-    "immediate": "Immediate",
-    "workingHours": "Working Hours",
-    "profession": "Profession",
-    "hourlyRate": "Hourly Rate",
-    "availability": "Availability",
-    "flexible": "Flexible",
-    "jobDescription": "Job Description",
-    "about": "About",
-    "requirements": "Requirements",
-    "specialties": "Specialties",
-    "agreement": "Agreement",
-    "applyForPosition": "Apply For Position",
-    "contactPharmacist": "Contact Pharmacist"
+    "pharmacist": "Farmacista",
+    "verified": "Verificato",
+    "pending": "In attesa",
+    "open": "Aperto",
+    "locationNotSpecified": "Sede non specificata",
+    "type": "Tipo",
+    "fullTime": "Tempo pieno",
+    "salary": "Stipendio",
+    "negotiable": "Trattabile",
+    "startDate": "Data di inizio",
+    "immediate": "Immediato",
+    "workingHours": "Ore di lavoro",
+    "profession": "Professione",
+    "hourlyRate": "Tariffa oraria",
+    "availability": "Disponibilità",
+    "flexible": "Flessibile",
+    "jobDescription": "Descrizione del lavoro",
+    "about": "Informazioni",
+    "requirements": "Requisiti",
+    "specialties": "Specialità",
+    "agreement": "Accordo",
+    "applyForPosition": "Candidati per questa posizione",
+    "contactPharmacist": "Contatta il farmacista"
   },
   "view": {
     "grid": "Vista Griglia",
@@ -124,24 +124,24 @@
     "months_plural": "{{count}} mesi"
   },
   "listingCard": {
-    "salaryNegotiable": "Salary Negotiable",
-    "availablePharmacist": "Available Pharmacist",
-    "generalPractice": "General Practice"
+    "salaryNegotiable": "Stipendio trattabile",
+    "availablePharmacist": "Farmacista disponibile",
+    "generalPractice": "Pratica generale"
   },
   "experienceLevels": {
-    "beginner": "Beginner",
-    "intermediate": "Intermediate",
-    "experienced": "Experienced"
+    "beginner": "Principiante",
+    "intermediate": "Intermedio",
+    "experienced": "Esperto"
   },
   "placeholders": {
-    "from": "From",
-    "to": "To"
+    "from": "Da",
+    "to": "A"
   },
   "overlay": {
-    "title": "Title",
-    "fromDate": "From Date",
-    "toDate": "To Date",
-    "clearAll": "Clear All",
-    "applyFilters": "Apply Filters"
+    "title": "Titolo",
+    "fromDate": "Da data",
+    "toDate": "A data",
+    "clearAll": "Cancella tutto",
+    "applyFilters": "Applica filtri"
   }
 }

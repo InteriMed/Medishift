@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiFilter, FiX, FiCalendar, FiCheckSquare } from 'react-icons/fi';
+import { FiSliders, FiX, FiCalendar, FiClock, FiPlus } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 const CalendarHeader = ({
   currentDate,
@@ -76,7 +76,7 @@ const CalendarHeader = ({
           onClick={() => setShowUpcomingEvents(!showUpcomingEvents)}
           title={showUpcomingEvents ? "Hide upcoming events" : "Show upcoming events"}
         >
-          <FiCheckSquare className="w-4 h-4" />
+          <FiClock className="w-4 h-4" />
         </button>
 
         <div className="h-6 w-px bg-border/50 hidden md:block" />
@@ -132,6 +132,21 @@ const CalendarHeader = ({
         )}
       </div>
 
+      {/* Center: New Appointment Button - Always visible in calendar mode */}
+      {calendarMode === 'calendar' && (
+        <div className="flex items-center justify-center">
+          <button
+            className="new-appointment-button flex items-center gap-2 px-4 text-sm font-medium rounded-xl transition-all bg-primary text-primary-foreground hover:bg-primary/90"
+            style={{ height: 'var(--boxed-inputfield-height)' }}
+            onClick={handleCreateEventClick}
+            title={t('calendar:newAppointment')}
+          >
+            <FiPlus className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('calendar:newAppointment')}</span>
+          </button>
+        </div>
+      )}
+
       {/* Center: Calendar/Team Toggle - Only show for team workspaces */}
       {isTeamWorkspace && (
         <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input absolute left-1/2 -translate-x-1/2" style={{ height: 'var(--boxed-inputfield-height)' }}>
@@ -163,38 +178,20 @@ const CalendarHeader = ({
       {/* Right: Filters & Actions - Only show in calendar mode */}
       {calendarMode === 'calendar' && (
         <div className="flex items-center gap-2 flex-1 justify-end">
-        
-        {/* New Appointment Button */}
-        <button
-          className="new-appointment-button flex items-center gap-2 px-4 text-sm font-medium rounded-xl transition-all bg-primary text-primary-foreground hover:bg-primary/90"
-          style={{ height: 'var(--boxed-inputfield-height)' }}
-          onClick={handleCreateEventClick}
-          title={t('calendar:newAppointment')}
-        >
-          <FiCalendar className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('calendar:newAppointment')}</span>
-        </button>
 
         {/* Category Filter */}
         <div className="relative" ref={categoryDropdownRef}>
           <button
             className={cn(
-              "flex items-center gap-2 px-3 text-sm font-medium rounded-xl transition-all border-2",
+              "p-1.5 rounded-full transition-colors relative",
               showCategoryDropdown
-                ? "bg-secondary border-primary/60 text-foreground"
-                : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                ? "bg-primary/10 text-primary"
+                : "hover:bg-muted text-muted-foreground"
             )}
-            style={{ height: 'var(--boxed-inputfield-height)' }}
             onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
             title={t('calendar:filterCategories')}
           >
-            <FiFilter className="w-4 h-4" />
-
-            {hasActiveFilters && (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-                {activeCategoriesCount}
-              </span>
-            )}
+            <FiSliders className="w-4 h-4" />
           </button>
 
           {showCategoryDropdown && (

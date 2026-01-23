@@ -1,9 +1,13 @@
 import { useCallback } from 'react';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
-import { saveTutorialProgress } from '../utils/tutorialStorage';
+import { saveTutorialStep, saveTutorialAccessMode } from '../utils/tutorialStorage';
 import { getProfileCollection } from '../utils/tutorialHelpers';
-import { tutorialSteps } from '../config/tutorialSteps';
+import { TUTORIAL_IDS, getTutorialSteps } from '../../../../config/tutorialSystem';
+
+const tutorialSteps = {};
+Object.keys(TUTORIAL_IDS).forEach(key => {
+    const id = TUTORIAL_IDS[key];
+    tutorialSteps[id] = getTutorialSteps(id);
+});
 
 /**
  * Tutorial action hooks
@@ -31,11 +35,10 @@ export const useTutorialActions = ({
     showError
 }) => {
 
-    /**
-     * Save tutorial progress to Firestore
-     */
     const saveTutorialProgressAction = useCallback(async (tutorialName, stepIndex) => {
-        await saveTutorialProgress(currentUser, onboardingType, tutorialName, stepIndex, tutorialSteps);
+        if (!currentUser) return;
+        const profileCollection = getProfileCollection(onboardingType);
+        await saveTutorialStep(profileCollection, currentUser.uid, stepIndex);
     }, [currentUser, onboardingType]);
 
     /**
@@ -46,16 +49,13 @@ export const useTutorialActions = ({
         lastRestoredStateRef.current = { tutorial: null, step: null };
 
         if (isBusy) {
-            console.log('[useTutorialActions] Tutorial is busy, ignoring start request');
             return;
         }
 
         setIsBusy(true);
-        console.log('[useTutorialActions] Starting tutorial for:', feature);
 
         // Clear from completed list if restarting
         if (completedTutorials[feature]) {
-            console.log(`[useTutorialActions] Clearing completed status for ${feature} to allow restart`);
             setCompletedTutorials(prev => {
                 const updated = { ...prev };
                 delete updated[feature];
@@ -71,7 +71,7 @@ export const useTutorialActions = ({
                         [`completedTutorials.${feature}`]: null
                     });
                 } catch (error) {
-                    console.error('Error clearing completed tutorial status:', error);
+                    // Error clearing completed tutorial status
                 }
             }
         }
@@ -92,17 +92,15 @@ export const useTutorialActions = ({
                         const savedStepIndex = typeProgress.currentStepIndex || 0;
                         const isCompleted = typeProgress.tutorials?.[feature]?.completed;
 
-                        if (feature === 'profileTabs' && !isCompleted && typeProgress.currentStepIndex === undefined) {
+                        if ((feature === TUTORIAL_IDS.PROFILE_TABS || feature === TUTORIAL_IDS.FACILITY_PROFILE_TABS) && !isCompleted && typeProgress.currentStepIndex === undefined) {
                             startStep = 0;
-                            console.log('[useTutorialActions] Starting fresh profileTabs tutorial at step 0');
                         } else {
                             startStep = savedStepIndex;
-                            console.log(`[useTutorialActions] Resuming ${feature} at step ${startStep}`);
                         }
                     }
                 }
             } catch (error) {
-                console.error('Error loading tutorial progress:', error);
+                // Error loading tutorial progress
             }
         }
 
@@ -127,22 +125,18 @@ export const useTutorialActions = ({
      * Complete current tutorial
      */
     const completeTutorial = useCallback(async () => {
-        console.log("[useTutorialActions] Completing tutorial:", activeTutorial);
-
         if (isBusy) {
-            console.log("[useTutorialActions] Cannot complete tutorial: system busy");
             return;
         }
 
         const previousTutorial = activeTutorial;
         lastRestoredStateRef.current = { tutorial: null, step: null };
         completingTutorialRef.current = previousTutorial;
-        console.log("[useTutorialActions] Set completingTutorialRef to:", previousTutorial);
 
         try {
             await safelyUpdateTutorialState([
                 [setIsTutorialActive, false],
-                [setActiveTutorial, 'dashboard']
+                [setActiveTutorial, TUTORIAL_IDS.DASHBOARD]
             ], async () => {
                 if (currentUser) {
                     try {
@@ -163,18 +157,17 @@ export const useTutorialActions = ({
                         }));
 
                         // If finishing profile tabs, mark as tutorialPassed
-                        if (previousTutorial === 'profileTabs' || previousTutorial === 'facilityProfileTabs') {
-                            console.log("[useTutorialActions] Profile tutorial finished, marking as tutorialPassed");
+                        if (previousTutorial === TUTORIAL_IDS.PROFILE_TABS || previousTutorial === TUTORIAL_IDS.FACILITY_PROFILE_TABS) {
                             await setTutorialComplete(true);
                         }
 
                         // Chain next tutorial
-                        const mandatoryTutorials = ['dashboard', 'profileTabs', 'facilityProfileTabs', 'messages', 'contracts', 'calendar', 'marketplace', 'settings'];
+                        const { getMandatoryTutorials } = require('../../../../config/tutorialSystem');
+                        const mandatoryTutorials = getMandatoryTutorials(onboardingType);
                         const currentIndex = mandatoryTutorials.indexOf(previousTutorial);
 
                         if (currentIndex !== -1 && currentIndex < mandatoryTutorials.length - 1) {
                             const nextFeature = mandatoryTutorials[currentIndex + 1];
-                            console.log(`[useTutorialActions] Chaining next tutorial: ${nextFeature}`);
                             setTimeout(() => {
                                 if (startTutorialRef.current) {
                                     startTutorialRef.current(nextFeature);
@@ -196,14 +189,13 @@ export const useTutorialActions = ({
                             }
                         }
                     } catch (error) {
-                        console.error('Error updating tutorial completion status:', error);
+                        // Error updating tutorial completion status
                     }
                 }
             });
         } finally {
             setTimeout(() => {
                 completingTutorialRef.current = null;
-                console.log("[useTutorialActions] Cleared completingTutorialRef");
             }, 1000);
         }
     }, [
@@ -218,7 +210,6 @@ export const useTutorialActions = ({
      */
     const nextStep = useCallback(() => {
         if (isBusy) {
-            console.log("[useTutorialActions] Cannot advance: system busy");
             return;
         }
 
@@ -247,7 +238,6 @@ export const useTutorialActions = ({
      */
     const prevStep = useCallback(() => {
         if (isBusy) {
-            console.log("[useTutorialActions] Cannot go back: system busy");
             return;
         }
 
@@ -271,10 +261,7 @@ export const useTutorialActions = ({
      * Skip entire tutorial
      */
     const skipTutorial = useCallback(() => {
-        console.log("[useTutorialActions] Skipping entire tutorial");
-
         if (isBusy) {
-            console.log("[useTutorialActions] Cannot skip tutorial: system busy");
             return;
         }
 
@@ -303,7 +290,7 @@ export const useTutorialActions = ({
                         updatedAt: serverTimestamp()
                     });
                 } catch (error) {
-                    console.error('Error updating tutorial status:', error);
+                    // Error updating tutorial status
                 }
             }
         });
@@ -317,7 +304,6 @@ export const useTutorialActions = ({
      * Pause tutorial
      */
     const pauseTutorial = useCallback(() => {
-        console.log("[useTutorialActions] Pausing tutorial");
         setIsPaused(true);
     }, [setIsPaused]);
 
@@ -325,10 +311,7 @@ export const useTutorialActions = ({
      * Resume tutorial
      */
     const resumeTutorial = useCallback(() => {
-        console.log("[useTutorialActions] Resuming tutorial");
-
         if (isBusy) {
-            console.log("[useTutorialActions] Cannot resume tutorial: system busy");
             return;
         }
 
@@ -354,7 +337,7 @@ export const useTutorialActions = ({
                         }
                     }
                 } catch (error) {
-                    console.error('[useTutorialActions] Error resuming tutorial:', error);
+                    // Error resuming tutorial
                 }
             }
         });

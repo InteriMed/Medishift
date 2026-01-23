@@ -2,21 +2,21 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner';
+import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE } from '../config/routeHelpers';
+import { useTranslation } from 'react-i18next';
 
-// Protected Route component that redirects to login if not authenticated
 export const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
+  const { i18n } = useTranslation();
+  const lang = i18n.language || DEFAULT_LANGUAGE;
 
-  // Show loading indicator while checking auth state
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  // Redirect to login if not authenticated
   if (!currentUser) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={buildLocalizedPath(ROUTE_IDS.LOGIN, lang)} replace />;
   }
 
-  // Render children if authenticated
   return children;
 }; 

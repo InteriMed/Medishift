@@ -65,7 +65,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
                 throw new Error('Analysis failed or returned no data');
             }
         } catch (error) {
-            console.error('[Profile] Error analyzing document:', error);
+            // Error analyzing document
             showNotification(t('dashboardProfile:documents.analysisError', 'Failed to analyze document'), 'error');
         } finally {
             setIsAnalyzing(false);
@@ -179,7 +179,6 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
 
             try {
                 await updateProfileData(updatedFormData);
-                console.log('[Profile] Document metadata saved to database');
                 showNotification(t('dashboardProfile:documents.uploadSuccess', 'Document uploaded successfully'), 'success');
 
                 setTimeout(() => {
@@ -187,7 +186,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
                     processAndFillProfile(fileMetadata);
                 }, 500);
             } catch (dbError) {
-                console.error('[Profile] Error saving document metadata to database:', dbError);
+                // Error saving document metadata to database
                 showNotification(t('dashboardProfile:documents.uploadSuccessButSaveError', 'Document uploaded but failed to save metadata. Please try again.'), 'warning');
             }
 
@@ -195,7 +194,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
             setUploadProgress(0);
             setSelectedFile(null);
         } catch (error) {
-            console.error('[Profile] Error uploading file:', error);
+            // Error uploading file
             setIsUploading(false);
             setUploadProgress(0);
             setFileUploadError(t('dashboardProfile:documents.uploadError', 'Error uploading document'));
@@ -219,7 +218,6 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
     }, []);
 
     const handleSelectDocument = useCallback((document) => {
-        console.log('Selected document:', document);
         setShowDocumentsView(false);
         processAndFillProfile(document);
     }, [processAndFillProfile]);
@@ -240,7 +238,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
             setShowAnalysisConfirmation(false);
             setExtractedData(null);
         } catch (error) {
-            console.error('[Profile] Error applying extracted data:', error);
+            // Error applying extracted data
             showNotification(t('dashboardProfile:documents.autoFillError', 'Error updating profile'), 'error');
         } finally {
             setIsSubmitting(false);

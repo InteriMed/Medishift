@@ -6,6 +6,7 @@ import { RecaptchaVerifier, PhoneAuthProvider, linkWithCredential } from 'fireba
 import { doc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, auth, functions } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import Button from '../../../../components/BoxedInputFields/Button';
 import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
 import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
@@ -199,7 +200,7 @@ const CreateOrganizationModal = ({ isOpen, onClose, onSuccess }) => {
         await linkWithCredential(auth.currentUser, phoneCredential);
 
         const { cleanNumber, cleanPrefix } = formatPhoneNumber(phoneNumber, phonePrefix);
-        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
         await updateDoc(userDocRef, {
           'contact.primaryPhonePrefix': cleanPrefix,
           'contact.primaryPhone': cleanNumber,

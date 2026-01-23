@@ -26,22 +26,21 @@ import {
   updateDoc,
   serverTimestamp
 } from 'firebase/firestore';
-// Firebase configuration - Primary configuration file
+import { ENV_VARS, DEFAULT_VALUES, WINDOW_FLAGS, FIRESTORE_DATABASE_NAME, FIRESTORE_COLLECTIONS, getEnvVar } from '../config/keysDatabase';
 
-// This consolidated file replaces both firebase.config.js and firebaseConfig.js
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || 'AIzaSyBKMnh477m8ZDmk7WhQZKPzb3VDe3PktDs',
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || 'interimed-620fd.firebaseapp.com',
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || 'interimed-620fd',
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || 'interimed-620fd.firebasestorage.app',
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '436488373074',
-  appId: process.env.REACT_APP_FIREBASE_APP_ID || '1:436488373074:web:60c3a26935b6238d9a308b',
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || 'G-66V8BS82V0'
+  apiKey: getEnvVar('FIREBASE_API_KEY') || 'AIzaSyBKMnh477m8ZDmk7WhQZKPzb3VDe3PktDs',
+  authDomain: getEnvVar('FIREBASE_AUTH_DOMAIN') || DEFAULT_VALUES.FIREBASE_AUTH_DOMAIN,
+  projectId: getEnvVar('FIREBASE_PROJECT_ID') || DEFAULT_VALUES.FIREBASE_PROJECT_ID,
+  storageBucket: getEnvVar('FIREBASE_STORAGE_BUCKET') || DEFAULT_VALUES.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: getEnvVar('FIREBASE_MESSAGING_SENDER_ID') || DEFAULT_VALUES.FIREBASE_MESSAGING_SENDER_ID,
+  appId: getEnvVar('FIREBASE_APP_ID') || DEFAULT_VALUES.FIREBASE_APP_ID,
+  measurementId: getEnvVar('FIREBASE_MEASUREMENT_ID') || DEFAULT_VALUES.FIREBASE_MEASUREMENT_ID
 };
 
-if (!firebaseConfig.projectId || firebaseConfig.projectId !== 'interimed-620fd') {
-  console.warn('⚠️ Firebase Project ID mismatch! Expected: interimed-620fd, Got:', firebaseConfig.projectId);
-  firebaseConfig.projectId = 'interimed-620fd';
+if (!firebaseConfig.projectId || firebaseConfig.projectId !== DEFAULT_VALUES.FIREBASE_PROJECT_ID) {
+  console.warn(`⚠️ Firebase Project ID mismatch! Expected: ${DEFAULT_VALUES.FIREBASE_PROJECT_ID}, Got:`, firebaseConfig.projectId);
+  firebaseConfig.projectId = DEFAULT_VALUES.FIREBASE_PROJECT_ID;
 }
 
 console.log('🔧 Firebase Configuration:');
@@ -56,20 +55,18 @@ if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'YOUR_API_KEY') {
   console.error('Please set REACT_APP_FIREBASE_API_KEY in your .env file');
 }
 
-if (firebaseConfig.projectId !== 'interimed-620fd') {
+if (firebaseConfig.projectId !== DEFAULT_VALUES.FIREBASE_PROJECT_ID) {
   console.error('❌ CRITICAL: Project ID mismatch!');
-  console.error(`Expected: interimed-620fd, Got: ${firebaseConfig.projectId}`);
+  console.error(`Expected: ${DEFAULT_VALUES.FIREBASE_PROJECT_ID}, Got: ${firebaseConfig.projectId}`);
 }
 
-// Flag to control emulator usage - supports both explicit env var and development environment check
-const useEmulators = process.env.REACT_APP_USE_FIREBASE_EMULATORS === 'true';
+const useEmulators = getEnvVar('USE_FIREBASE_EMULATORS') === 'true';
 
-// Emulator configuration with fallbacks to default local ports
 const emulatorConfig = {
-  auth: process.env.REACT_APP_FIREBASE_AUTH_EMULATOR_URL || 'http://localhost:9099',
-  firestore: process.env.REACT_APP_FIREBASE_FIRESTORE_EMULATOR_URL || 'http://localhost:8080',
-  functions: process.env.REACT_APP_FIREBASE_FUNCTIONS_EMULATOR_URL || 'http://localhost:5001',
-  storage: process.env.REACT_APP_FIREBASE_STORAGE_EMULATOR_URL || 'http://localhost:9199'
+  auth: getEnvVar('FIREBASE_AUTH_EMULATOR_URL') || DEFAULT_VALUES.EMULATOR_AUTH_URL,
+  firestore: getEnvVar('FIREBASE_FIRESTORE_EMULATOR_URL') || DEFAULT_VALUES.EMULATOR_FIRESTORE_URL,
+  functions: getEnvVar('FIREBASE_FUNCTIONS_EMULATOR_URL') || DEFAULT_VALUES.EMULATOR_FUNCTIONS_URL,
+  storage: getEnvVar('FIREBASE_STORAGE_EMULATOR_URL') || DEFAULT_VALUES.EMULATOR_STORAGE_URL
 };
 
 // Initialize Firebase app - Robust Singleton Pattern
@@ -85,49 +82,44 @@ if (getApps().length === 0) {
 const auth = getAuth(firebaseApp);
 let db;
 
-// Initialize Firestore - Attempt custom settings, fallback to default if any issues
-// Use window-level flag to persist across hot reloads
-const INIT_FLAG = '__FIRESTORE_INITIALIZED__';
+const INIT_FLAG = WINDOW_FLAGS.FIRESTORE_INITIALIZED;
 const isInitialized = typeof window !== 'undefined' && window[INIT_FLAG];
 
 if (!isInitialized) {
   try {
     db = initializeFirestore(firebaseApp, {
       localCache: memoryLocalCache()
-    }, 'medishift');
+    }, FIRESTORE_DATABASE_NAME);
 
     if (typeof window !== 'undefined') {
       window[INIT_FLAG] = true;
     }
-    console.log('✅ Firestore initialized with MEMORY CACHE (offline enabled) - Database: medishift');
+    console.log(`✅ Firestore initialized with MEMORY CACHE (offline enabled) - Database: ${FIRESTORE_DATABASE_NAME}`);
   } catch (error) {
-    // If it fails (likely because it was already initialized elsewhere), try to get the existing instance
     console.warn('⚠️ initializeFirestore failed, attempting to get existing instance:', error);
     try {
-      db = getFirestore(firebaseApp, 'medishift');
-      console.log('✅ Retrieved existing Firestore instance - Database: medishift');
+      db = getFirestore(firebaseApp, FIRESTORE_DATABASE_NAME);
+      console.log(`✅ Retrieved existing Firestore instance - Database: ${FIRESTORE_DATABASE_NAME}`);
     } catch (e) {
       console.error('🚨 CRITICAL: Could not initialize or retrieve Firestore:', e);
       throw e;
     }
   }
 } else {
-  db = getFirestore(firebaseApp, 'medishift');
-  console.log('✅ Using existing Firestore instance - Database: medishift');
+  db = getFirestore(firebaseApp, FIRESTORE_DATABASE_NAME);
+  console.log(`✅ Using existing Firestore instance - Database: ${FIRESTORE_DATABASE_NAME}`);
 }
 
-// Log connection status in development
 if (typeof window !== 'undefined' && db) {
-  if (process.env.NODE_ENV === 'development') {
+  if (getEnvVar('NODE_ENV') === 'development') {
     console.log('🌐 Browser online status:', navigator.onLine ? 'ONLINE' : 'OFFLINE');
     console.log('📦 Firestore instance ready for project:', firebaseConfig.projectId);
   }
 }
 const storage = getStorage(firebaseApp);
-const functions = getFunctions(firebaseApp, 'europe-west6');
+const functions = getFunctions(firebaseApp, DEFAULT_VALUES.FIREBASE_REGION);
 
-// Log storage bucket configuration for debugging
-if (process.env.NODE_ENV === 'development') {
+if (getEnvVar('NODE_ENV') === 'development') {
   console.log('Firebase Storage Bucket:', firebaseConfig.storageBucket);
   console.log('Firebase Project ID:', firebaseConfig.projectId);
 }
@@ -205,7 +197,7 @@ export const registerUser = async (email, password, displayName) => {
     delete userData.professionalProfile;
 
     // Create the user document with error handling
-    const userDocRef = doc(db, 'users', user.uid);
+    const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, user.uid);
     await setDoc(userDocRef, userData);
 
     // Verify the document was created
@@ -274,7 +266,7 @@ export const resetPassword = async (email) => {
 
 // User profile services
 export const getUserProfile = async (userId) => {
-  const userDoc = await getDoc(doc(db, 'users', userId));
+  const userDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId));
   if (userDoc.exists()) {
     return { id: userDoc.id, ...userDoc.data() };
   }
@@ -282,7 +274,7 @@ export const getUserProfile = async (userId) => {
 };
 
 export const updateUserProfile = async (userId, data) => {
-  await updateDoc(doc(db, 'users', userId), {
+  await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId), {
     ...data,
     updatedAt: serverTimestamp()
   });

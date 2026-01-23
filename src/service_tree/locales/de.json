@@ -1,0 +1,106 @@
+{
+  "categories": {
+    "calendar": "Kalender",
+    "contracts": "Verträge",
+    "messages": "Nachrichten",
+    "profile": "Profil",
+    "payroll": "Lohnabrechnung",
+    "common": "Allgemein",
+    "account": "Konto",
+    "documents": "Dokumente",
+    "api": "Verifizierung"
+  },
+  "calendar": {
+    "getEvents": "Termine anzeigen",
+    "getEventsDesc": "Alle geplanten Schichten und Termine abrufen",
+    "createEvent": "Termin erstellen",
+    "createEventDesc": "Neue Schicht oder Termin hinzufügen",
+    "updateEvent": "Termin bearbeiten",
+    "updateEventDesc": "Bestehenden Termin ändern",
+    "deleteEvent": "Termin löschen",
+    "deleteEventDesc": "Termin aus dem Kalender entfernen",
+    "syncCalendar": "Externen Kalender synchronisieren",
+    "syncCalendarDesc": "Mit Google oder Outlook synchronisieren"
+  },
+  "contracts": {
+    "getContracts": "Verträge anzeigen",
+    "getContractsDesc": "Alle aktiven und vergangenen Verträge einsehen",
+    "createContract": "Vertrag erstellen",
+    "createContractDesc": "Neuen Arbeitsvertrag aufsetzen",
+    "updateContract": "Vertrag aktualisieren",
+    "updateContractDesc": "Bestehenden Vertrag ändern oder unterschreiben",
+    "generatePdf": "PDF herunterladen",
+    "generatePdfDesc": "Vertrag als PDF generieren und herunterladen",
+    "applyToJob": "Bewerben",
+    "applyToJobDesc": "Bewerbung für eine Stelle einreichen"
+  },
+  "messages": {
+    "getConversations": "Nachrichten anzeigen",
+    "getConversationsDesc": "Alle Konversationen einsehen",
+    "createConversation": "Neue Konversation",
+    "createConversationDesc": "Chat mit jemandem starten",
+    "sendMessage": "Nachricht senden",
+    "sendMessageDesc": "Nachricht in einer Konversation senden"
+  },
+  "profile": {
+    "getCurrentUser": "Mein Profil anzeigen",
+    "getCurrentUserDesc": "Ihre Profilinformationen einsehen",
+    "updateUserProfile": "Profil bearbeiten",
+    "updateUserProfileDesc": "Ihre Profilinformationen aktualisieren",
+    "changePassword": "Passwort ändern",
+    "changePasswordDesc": "Ihr Kontopasswort aktualisieren",
+    "uploadProfilePicture": "Profilbild ändern",
+    "uploadProfilePictureDesc": "Neues Profilfoto hochladen",
+    "searchUsers": "Fachkräfte suchen",
+    "searchUsersDesc": "Gesundheitsfachkräfte nach Namen suchen"
+  },
+  "payroll": {
+    "createPayrollRequest": "Zahlung anfordern",
+    "createPayrollRequestDesc": "Lohnanfrage für abgeschlossene Schichten einreichen",
+    "getPayrollRequests": "Zahlungen anzeigen",
+    "getPayrollRequestsDesc": "Zahlungshistorie und ausstehende Anfragen einsehen",
+    "calculateShiftFees": "Gebühren berechnen",
+    "calculateShiftFeesDesc": "Kosten und Gebühren für eine Schicht vorschau"
+  },
+  "storage": {
+    "uploadFile": "Datei hochladen",
+    "uploadFileDesc": "Dokument oder Bild hochladen",
+    "deleteFile": "Datei löschen",
+    "deleteFileDesc": "Datei aus dem Speicher entfernen"
+  },
+  "notifications": {
+    "listNotifications": "Benachrichtigungen anzeigen",
+    "listNotificationsDesc": "Alle Benachrichtigungen einsehen",
+    "markAllAsRead": "Alle als gelesen markieren",
+    "markAllAsReadDesc": "Alle Benachrichtigungen als gelesen markieren"
+  },
+  "account": {
+    "getDeletionPreview": "Löschvorschau",
+    "getDeletionPreviewDesc": "Sehen was bei Kontolöschung passiert",
+    "deleteAccount": "Konto löschen",
+    "deleteAccountDesc": "Ihr Konto dauerhaft schließen",
+    "exportUserData": "Meine Daten exportieren",
+    "exportUserDataDesc": "Alle persönlichen Daten herunterladen"
+  },
+  "documents": {
+    "processWithAI": "Mit KI scannen",
+    "processWithAIDesc": "Informationen aus Lebenslauf oder Dokumenten mit KI extrahieren"
+  },
+  "api": {
+    "healthRegistryLookup": "GLN verifizieren",
+    "healthRegistryLookupDesc": "Gesundheitsfachkraft im Register nachschlagen",
+    "companySearch": "Unternehmen suchen",
+    "companySearchDesc": "Gesundheitseinrichtung nach GLN finden"
+  },
+  "search": {
+    "placeholder": "Aktionen suchen...",
+    "noResults": "Keine Aktionen gefunden",
+    "noActionsInCategory": "Keine Aktionen in dieser Kategorie",
+    "suggestions": "Vorschläge",
+    "recentActions": "Kürzlich",
+    "allActions": "Alle Aktionen",
+    "actions": "Aktionen",
+    "categories": "Kategorien"
+  }
+}
+

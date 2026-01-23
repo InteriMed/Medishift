@@ -1,34 +1,34 @@
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useDashboard } from '../contexts/DashboardContext';
-import { buildDashboardUrl, getDefaultRouteForWorkspace } from '../utils/pathUtils';
-import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
+import { buildDashboardUrl, getDefaultRouteForWorkspace, getWorkspaceIdForUrl } from '../utils/pathUtils';
 
 export const WorkspaceAwareNavigate = ({ to, fallbackTo = null }) => {
   const { selectedWorkspace } = useDashboard();
-  
+
   if (!selectedWorkspace) {
-    const defaultRoute = fallbackTo || '/dashboard/overview';
+    const defaultRoute = fallbackTo || '/dashboard/personal/overview';
     return <Navigate to={defaultRoute} replace />;
   }
 
-  const workspaceId = selectedWorkspace.id;
+  const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
   const targetPath = to.startsWith('/dashboard') ? to.replace('/dashboard', '') : to;
   const finalPath = buildDashboardUrl(targetPath, workspaceId);
-  
+
   return <Navigate to={finalPath} replace />;
 };
 
 export const WorkspaceDefaultRedirect = () => {
   const { selectedWorkspace } = useDashboard();
-  
+
   if (!selectedWorkspace) {
-    return <Navigate to="/dashboard/overview" replace />;
+    return <Navigate to="/dashboard/personal/overview" replace />;
   }
 
   const defaultRoute = getDefaultRouteForWorkspace(selectedWorkspace.type);
-  const workspaceId = selectedWorkspace.id;
-  const finalPath = buildDashboardUrl(defaultRoute.replace('/dashboard', ''), workspaceId);
-  
+  const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+  const finalPath = buildDashboardUrl(defaultRoute, workspaceId);
+
   return <Navigate to={finalPath} replace />;
 };
 

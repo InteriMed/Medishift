@@ -11,6 +11,7 @@ import Button from '../../../../components/BoxedInputFields/Button';
 import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
 import Dialog from '../../../../components/Dialog/Dialog';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import '../../../../styles/variables.css';
 
 const UserCRM = () => {
@@ -84,31 +85,35 @@ const UserCRM = () => {
     setLoading(true);
     try {
       const accountType = accountTypeOverride || activeFilters.accountType;
-      const collectionName = accountType === 'professional' ? 'users' : 'facilityProfiles';
-      const ref = collection(db, collectionName);
-      const snapshot = await getDocs(ref);
+      let usersList = [];
 
-      const usersList = [];
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        if (accountType === 'professional') {
-          // Check both role string and roles array for "professional"
-          const role = data.role?.toLowerCase();
-          const roles = (Array.isArray(data.roles) ? data.roles : []).map(r => r.toLowerCase());
-
-          if (role === 'professional' || roles.includes('professional') || data.isProfessionalProfileComplete) {
+      if (accountType === 'professional') {
+        // CENTRALIZED QUERY: Get users who have a professionalProfile document
+        const profilesSnapshot = await getDocs(collection(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES));
+        
+        for (const profileDoc of profilesSnapshot.docs) {
+          const userId = profileDoc.id;
+          const userDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId));
+          
+          if (userDoc.exists()) {
             usersList.push({
-              id: docSnap.id,
-              ...data
+              id: userId,
+              ...userDoc.data(),
+              hasProfessionalProfile: true,
+              professionalProfile: profileDoc.data(),
             });
           }
-        } else {
+        }
+      } else {
+        // Facility query - get all facility profiles
+        const facilitySnapshot = await getDocs(collection(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES));
+        facilitySnapshot.forEach((docSnap) => {
           usersList.push({
             id: docSnap.id,
-            ...data
+            ...docSnap.data()
           });
-        }
-      });
+        });
+      }
 
       setUsers(usersList);
       setSelectedUser(null);
@@ -530,11 +535,16 @@ const UserCRM = () => {
         verificationStatus: 'verified'
       };
       await setDoc(doc(db, 'facilityProfiles', newFacilityId), facilityData);
+      
+      // Use centralized facility attachment
       await updateDoc(doc(db, 'users', userId), {
-        hasFacilityProfile: true,
-        role: 'facility',
-        facilityMemberships: arrayUnion({ facilityId: newFacilityId, facilityName: newFacilityName, role: 'admin', facilityProfileId: newFacilityId }),
-        roles: arrayUnion('facility', `facility_admin_${newFacilityId}`),
+        facilityMemberships: arrayUnion({ 
+          facilityId: newFacilityId, 
+          facilityProfileId: newFacilityId,
+          facilityName: newFacilityName, 
+          role: 'admin',
+          joinedAt: new Date().toISOString()
+        }),
         updatedAt: serverTimestamp()
       });
       await loadUserDetails(userId);
@@ -953,9 +963,9 @@ const UserCRM = () => {
                       </div>
                     ) : (
                       <div style={{ textAlign: 'center', padding: '40px' }}>
-                        <p>No professional profile exists for this user.</p>
+                        <p>{t('admin:crm.noProfileExists', 'No professional profile exists for this user.')}</p>
                         <Button onClick={handleCreateProfessionalProfile} variant="primary" disabled={isCreatingProfile}>
-                          {isCreatingProfile ? 'Creating...' : 'Create Professional Profile (Bypass GLN)'}
+                          {isCreatingProfile ? t('admin:crm.creating', 'Creating...') : t('admin:crm.createProfile', 'Create Professional Profile (Bypass GLN)')}
                         </Button>
                       </div>
                     )}

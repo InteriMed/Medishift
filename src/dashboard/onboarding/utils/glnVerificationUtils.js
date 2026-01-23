@@ -3,7 +3,6 @@ export const getMimeType = (file) => {
 
   const unsupportedFormats = ['heic', 'heif'];
   if (unsupportedFormats.includes(ext) || file.type === 'image/heic' || file.type === 'image/heif') {
-    console.warn('[getMimeType] HEIC/HEIF detected - these formats may not be supported. Consider converting to JPEG.');
     return 'image/jpeg';
   }
 

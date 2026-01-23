@@ -57,11 +57,6 @@ export const useDropdownOptions = () => {
         label  // Value becomes the visible label (e.g., 'Not Applicable (Swiss Citizen)')
       }));
 
-      // Log the created options for debugging
-      if (process.env.NODE_ENV !== 'production') {
-        console.debug(`Created ${options.length} options for ${translationKey}`);
-      }
-
       return options;
     } catch (err) {
       console.error(`Error creating options for ${translationKey}:`, err);
@@ -113,16 +108,6 @@ export const useDropdownOptions = () => {
   };
 
   if (process.env.NODE_ENV !== 'production') {
-    const stats = Object.entries(allOptions)
-      .map(([key, options]) => ({ key, count: options?.length || 0 }))
-      .filter(item => item.count > 0);
-
-    if (stats.length > 0) {
-      console.debug('✅ Loaded dropdown options:', stats);
-    } else {
-      console.warn('⚠️ No dropdown options were loaded');
-    }
-
     if (!allOptions.phonePrefixOptions || allOptions.phonePrefixOptions.length === 0) {
       console.error('❌ phonePrefixOptions is empty!');
       console.error('Current language:', i18n.language);

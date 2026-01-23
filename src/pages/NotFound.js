@@ -5,7 +5,7 @@ import '../styles/auth.css';
 import './styles/NotFound.css';
 
 const NotFound = () => {
-  const { t } = useTranslation(['common']);
+  const { t } = useTranslation(['notFound', 'common']);
   const { lang } = useParams();
   const defaultLang = lang || 'en';
 
@@ -19,11 +19,11 @@ const NotFound = () => {
         <div className="not-found-code">404</div>
 
         <h1 className="auth-title">
-          {t('pages.not_found.title', 'Whoa, You\'re Fast!')}
+          {t('title', 'Whoa, You\'re Fast!')}
         </h1>
 
         <p className="auth-subtitle">
-          {t('pages.not_found.description', 'The page you are looking for doesn\'t exist or has not been deployed yet, but leave us your contact, in the newsletter or register already. We\'ll be in touch soon!')}
+          {t('description', 'The page you are looking for doesn\'t exist or has not been deployed yet, but leave us your contact, in the newsletter or register already. We\'ll be in touch soon!')}
         </p>
 
         <div className="not-found-actions">
@@ -35,7 +35,7 @@ const NotFound = () => {
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
-            <span>{t('pages.not_found.return_home', 'Return to Homepage')}</span>
+            <span>{t('return_home', 'Return to Homepage')}</span>
           </Link>
           
           <button
@@ -45,7 +45,7 @@ const NotFound = () => {
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7"></path>
             </svg>
-            <span>{t('pages.not_found.go_back', 'Go Back')}</span>
+            <span>{t('go_back', 'Go Back')}</span>
           </button>
         </div>
       </div>

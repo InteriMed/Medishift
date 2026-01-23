@@ -1,151 +1,160 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FiCalendar } from 'react-icons/fi';
-import DropdownDate from './Dropdown-Date';
+import React, { useState } from 'react';
 import './styles/boxedInputFields.css';
+
+const hasRequiredIndicator = (label) => {
+    if (!label) return false;
+    if (typeof label === 'string') {
+        return label.includes('*');
+    }
+    if (React.isValidElement(label)) {
+        const checkElement = (element) => {
+            if (!element) return false;
+            if (typeof element === 'string') {
+                return element.includes('*');
+            }
+            if (React.isValidElement(element)) {
+                const props = element.props || {};
+                const className = props.className || '';
+                if (className.includes('boxed-inputfield-required') ||
+                    className.includes('mandatoryMark') ||
+                    className.includes('date-field-required') ||
+                    className.includes('required')) {
+                    return true;
+                }
+                const children = props.children;
+                if (children) {
+                    if (Array.isArray(children)) {
+                        return children.some(child => checkElement(child));
+                    }
+                    return checkElement(children);
+                }
+            }
+            return false;
+        };
+        return checkElement(label);
+    }
+    return false;
+};
 
 const DateField = ({ 
   label, 
   value, 
   onChange, 
-  marginBottom = '20px', 
+  marginBottom = '20px',
+  marginLeft,
+  marginRight,
   disabled = false,
+  readOnly = false,
   required = false,
   error = null,
-  onErrorReset
+  onErrorReset,
+  clearFilter,
+  showClearButton = true,
+  min,
+  max
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef(null);
-  
-  // Format date for display
-  const formatDate = (date) => {
+  const [isFocused, setIsFocused] = useState(false);
+
+  const formatDateForInput = (date) => {
     if (!date) return '';
     
     try {
       const dateObj = new Date(date);
       if (isNaN(dateObj.getTime())) return '';
       
-      return dateObj.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
+      return dateObj.toISOString().split('T')[0];
     } catch (e) {
       console.error("Error formatting date:", e);
       return '';
     }
   };
-  
-  // Toggle dropdown visibility
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
-  
-  // Handle clicks outside of the component to close the dropdown
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
+
+  const handleDateChange = (e) => {
+    const dateValue = e.target.value;
     
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-  
-  // Handle date change
-  const handleDateChange = (newDate) => {
-    onChange(newDate);
-    setIsOpen(false);
+    if (dateValue) {
+      const dateObj = new Date(dateValue);
+      onChange(dateObj);
+    } else {
+      onChange(null);
+    }
+    
+    if (error && onErrorReset) {
+      onErrorReset();
+    }
   };
-  
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    if (error && onErrorReset) {
+      onErrorReset();
+    }
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+  };
+
+  const handleClear = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange(null);
+    setIsFocused(false);
+    if (clearFilter) {
+      clearFilter();
+    }
+  };
+
+  const hasValue = value && !isNaN(new Date(value).getTime());
+
   return (
-    <div className="date-field-container" style={{ marginBottom }} ref={containerRef}>
+    <div 
+      className="boxed-inputfield-wrapper"
+      style={{ marginBottom: marginBottom || 0, marginLeft, marginRight }}
+    >
       <div 
-        className="date-field-display" 
-        onClick={toggleDropdown}
-        style={{ 
-          display: 'flex',
-          alignItems: 'center',
-          padding: '8px 12px',
-          cursor: 'pointer',
-          border: '1px solid var(--grey-1, #e0e0e0)',
-          borderRadius: '8px',
-          justifyContent: 'space-between',
-          backgroundColor: 'var(--background-div-color, #ffffff)',
-          fontSize: 'var(--font-size-small)',
-          maxWidth: '150px'
-        }}
+        className={`boxed-inputfield-container ${error ? 'boxed-inputfield-container--error' : ''} ${hasValue ? 'has-value' : ''} ${disabled || readOnly ? 'boxed-inputfield-container--disabled' : ''}`}
       >
-        <div 
-          className="date-field-value"
-          style={{
-            fontWeight: '500',
-            color: 'var(--text-color, #333)'
-          }}
-        >
-          {formatDate(value) || 'Select a date'}
-        </div>
-        <FiCalendar 
-          style={{ 
-            marginLeft: '8px',
-            color: 'var(--grey-2, #666)'
-          }} 
+        {label && (
+          <label 
+            className={`boxed-inputfield-label ${(isFocused || hasValue) ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}
+          >
+            {label}
+            {required && !hasRequiredIndicator(label) && <span className="boxed-inputfield-required">*</span>}
+          </label>
+        )}
+        
+        <input
+          type="date"
+          className={`boxed-inputfield-input 
+            ${isFocused ? 'boxed-inputfield-input--focused' : ''} 
+            ${hasValue ? 'boxed-inputfield-input--has-value' : ''} 
+            ${error ? 'boxed-inputfield-input--error' : ''}
+            ${disabled || readOnly ? 'boxed-inputfield-input--disabled' : ''}`}
+          value={formatDateForInput(value)}
+          onChange={handleDateChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          disabled={disabled}
+          readOnly={readOnly}
+          min={min}
+          max={max}
+          required={required}
+          style={{ outline: 'none' }}
         />
+
+        {hasValue && showClearButton && !disabled && !readOnly && (
+          <button
+            className="boxed-inputfield-clear"
+            onClick={handleClear}
+            type="button"
+            aria-label="Clear input"
+            tabIndex={-1}
+          >
+            x
+          </button>
+        )}
       </div>
-      
-      {isOpen && (
-        <div 
-          className="date-field-dropdown"
-          style={{ 
-            position: 'absolute',
-            zIndex: 99999,
-            marginTop: '4px',
-            backgroundColor: 'var(--background-div-color, #ffffff)',
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
-            borderRadius: '8px',
-            padding: '12px',
-            border: '1px solid var(--grey-1, #e0e0e0)'
-          }}
-        >
-          <DropdownDate
-            value={value}
-            onChange={handleDateChange}
-            disabled={disabled}
-            required={required}
-            error={error}
-            onErrorReset={onErrorReset}
-            minYear={2000}
-            maxYear={new Date().getFullYear() + 10}
-          />
-        </div>
-      )}
-      
-      {label && (
-        <label 
-          style={{ 
-            display: 'block', 
-            marginBottom: '6px',
-            fontSize: '14px',
-            color: error ? 'var(--color-danger, #e53935)' : 'var(--text-color, #333)'
-          }}
-        >
-          {label} {required && <span style={{ color: 'var(--color-danger, #e53935)' }}>*</span>}
-        </label>
-      )}
-      
-      {error && (
-        <div 
-          style={{ 
-            color: 'var(--color-danger, #e53935)', 
-            fontSize: '12px', 
-            marginTop: '4px' 
-          }}
-        >
-          {error}
-        </div>
-      )}
     </div>
   );
 };

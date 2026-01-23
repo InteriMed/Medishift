@@ -29,7 +29,6 @@ export const handleEventResize = async (
   const event = events.find(e => e.id === eventId);
   
   if (!event) {
-    console.error('Event not found:', eventId);
     return;
   }
   
@@ -37,7 +36,6 @@ export const handleEventResize = async (
   const eventIndex = updatedEvents.findIndex(e => e.id === eventId);
   
   if (eventIndex === -1) {
-    console.error('Event index not found:', eventId);
     return;
   }
   
@@ -105,7 +103,6 @@ export const handleEventResize = async (
   addToHistory(updatedEvents);
   
   // Save changes to local storage immediately and mark for sync
-  console.log('Event resized, saving to local storage');
   markEventForSync(eventId);
   
   // Check if the event exists in the database before updating
@@ -113,14 +110,7 @@ export const handleEventResize = async (
   
   // Only update in the database if we have userId and it's not a new event
   if (userId && !isNewEvent) {
-    console.log('Skipping database update for resize operation (temporary fix for Firebase function issue):', {
-      eventId: eventId,
-      reason: 'Firebase function updateCalendarEvent is throwing internal errors',
-      uiResizeCompleted: true,
-      willRetryOnSave: true
-    });
   } else {
-    console.log('Skipping database resize update for new event that will be saved later');
   }
 };
 
@@ -145,7 +135,6 @@ export const handleEventMove = async (
   const currentEvent = events.find(e => e.id === eventId);
   
   if (!currentEvent) {
-    console.error('Event not found:', eventId);
     return;
   }
 
@@ -163,7 +152,6 @@ export const handleEventMove = async (
   const eventIndex = updatedEvents.findIndex(e => e.id === eventId);
 
   if (eventIndex === -1) {
-    console.error('Event index not found:', eventId);
     return;
   }
 
@@ -202,7 +190,6 @@ export const handleEventMove = async (
       // Check if this is the last event in the series
       const latestEvent = seriesEvents[0]; // After sorting, first is latest
       isLastOccurrence = currentEvent.id === latestEvent.id;
-      console.log(`Checking if event ${currentEvent.id} is last in series: ${isLastOccurrence}`);
     }
   }
   
@@ -258,30 +245,13 @@ export const handleEventMove = async (
   addToHistory(updatedEvents);
   
   // Save changes to local storage immediately and mark for sync
-  console.log('Event moved, saving to local storage');
   markEventForSync(eventId);
   
   // Update in database if it's an existing event
   const isNewEvent = !currentEvent.isValidated && !currentEvent.fromDatabase;
   
-  console.log('Event move - database update check:', {
-    eventId: eventId,
-    isValidated: currentEvent.isValidated,
-    fromDatabase: currentEvent.fromDatabase,
-    isNewEvent: isNewEvent,
-    userId: userId,
-    willUpdateDatabase: userId && !isNewEvent
-  });
-  
   if (userId && !isNewEvent) {
-    console.log('Skipping database update for move operation (temporary fix for Firebase function issue):', {
-      eventId: eventId,
-      reason: 'Firebase function updateCalendarEvent is throwing internal errors',
-      uiMoveCompleted: true,
-      willRetryOnSave: true
-    });
   } else {
-    console.log('Skipping database update - either no userId or event is new');
   }
 };
 
@@ -305,9 +275,7 @@ export const handleModificationConfirm = async (
   saveEventsToLocalStorage,
   setPendingChanges
 ) => {
-  console.log('handleModificationConfirm called with type:', modificationType, 'pendingModification:', pendingModification);
   if (!pendingModification) {
-    console.error('handleModificationConfirm called but no pending modification');
     return;
   }
   
@@ -315,7 +283,6 @@ export const handleModificationConfirm = async (
   setShowMoveConfirmation(false);
   
   const { type, eventId, event, newStart, newEnd } = pendingModification;
-  console.log('Processing event:', eventId, 'with modification type:', type);
   
   if (modificationType === 'cancel') {
     // Reset the event's position to original state
@@ -338,7 +305,6 @@ export const handleModificationConfirm = async (
       
       // Save reverted events to local storage
       if (saveEventsToLocalStorage) {
-        console.log('Event move canceled, resetting local storage');
         saveEventsToLocalStorage(updatedEvents);
       }
       
@@ -365,7 +331,6 @@ export const handleModificationConfirm = async (
     // Update only this occurrence
     const index = events.findIndex(e => String(e.id) === String(eventId));
     if (index !== -1) {
-      console.log(`Modifying single event ${eventId} from recurring series`);
       
       const newEvents = [...events];
       // Check if the event had a recurrenceId before updating
@@ -381,7 +346,6 @@ export const handleModificationConfirm = async (
       
       // Remove recurrenceId when moving a single child event
       if (hadRecurrenceId) {
-        console.log(`Removing recurrenceId from single moved event ${eventId}`);
         delete newEvents[index].recurrenceId;
         newEvents[index].isRecurring = false;
       }
@@ -390,7 +354,6 @@ export const handleModificationConfirm = async (
       setEvents(newEvents);
       addToHistory(newEvents);
       
-      console.log('Single recurring event modification completed');
       
       // Update in database
       if (userId) {
@@ -415,18 +378,14 @@ export const handleModificationConfirm = async (
           isAvailability: newEvents[index].isAvailability
         };
 
-        console.log('Sending update to database for single event:', eventForUpdate);
 
         updateEvent(eventId, eventForUpdate, userId, accountType)
           .then(result => {
             if (result.success) {
-              console.log('Single event modified successfully in database');
             } else {
-              console.error('Failed to modify single event in database:', result.error);
             }
           })
           .catch(error => {
-            console.error('Error modifying single event in database:', error);
           });
       }
     }
@@ -438,7 +397,6 @@ export const handleModificationConfirm = async (
     const baseId = String(eventId).split(/[-_]/)[0];
     const recurrenceId = event.recurrenceId;
     
-    console.log(`Modifying all future occurrences with baseId: ${baseId}, recurrenceId: ${recurrenceId}, eventId: ${eventId}`);
     
     // First, identify all events in this series
     const seriesEvents = events.filter(e => {
@@ -447,15 +405,12 @@ export const handleModificationConfirm = async (
       return isInSeries;
     });
     
-    console.log(`Found ${seriesEvents.length} events in this series`);
     
     // Calculate the time difference between original and new times
     const timeDiff = newStart.getTime() - originalDate.getTime();
-    console.log(`Time difference to apply: ${timeDiff}ms`);
     
     // Generate a new recurrenceId for this set of modified events
     const newRecurrenceId = `${userId}_${Date.now()}_recurrence`;
-    console.log(`Generated new recurrenceId for modified events: ${newRecurrenceId}`);
     
     // Create a set of modified events for the series
     const modifiedSeriesEvents = [];
@@ -463,7 +418,6 @@ export const handleModificationConfirm = async (
     // First, ensure the current event is properly updated
     const currentEventIndex = seriesEvents.findIndex(e => String(e.id) === String(eventId));
     if (currentEventIndex !== -1) {
-      console.log(`Found current event at index ${currentEventIndex}: ${eventId}`);
       
       const updatedEvent = {
         ...seriesEvents[currentEventIndex],
@@ -475,7 +429,6 @@ export const handleModificationConfirm = async (
       
       modifiedSeriesEvents.push(updatedEvent);
     } else {
-      console.warn(`Could not find current event ${eventId} in series events`);
     }
     
     // Now process the rest of the events
@@ -493,7 +446,6 @@ export const handleModificationConfirm = async (
         const newStart = new Date(e.start.getTime() + timeDiff);
         const newEnd = new Date(e.end.getTime() + timeDiff);
         
-        console.log(`Modifying event ${e.id} from ${e.start} to ${newStart}`);
         
         const updatedEvent = {
           ...e,
@@ -507,7 +459,6 @@ export const handleModificationConfirm = async (
       }
     }
     
-    console.log(`Modified ${modifiedSeriesEvents.length} events in total`);
     
     // Replace the entire series in the events array
     const eventsWithoutSeries = events.filter(e => {
@@ -521,11 +472,9 @@ export const handleModificationConfirm = async (
     setEvents(updatedEvents);
     addToHistory(updatedEvents);
     
-    console.log('All recurring event modifications completed');
     
     // Update in database
     if (userId) {
-      console.log('Updating database with modified recurring events');
       
       // For each modified event, update it in the database
       modifiedSeriesEvents.forEach(e => {
@@ -555,13 +504,10 @@ export const handleModificationConfirm = async (
         updateEvent(e.id, eventForUpdate, userId, accountType)
           .then(result => {
             if (result.success) {
-              console.log(`Event ${e.id} modified successfully in database`);
             } else {
-              console.error(`Failed to modify event ${e.id} in database:`, result.error);
             }
           })
           .catch(error => {
-            console.error(`Error modifying event ${e.id} in database:`, error);
           });
       });
     }

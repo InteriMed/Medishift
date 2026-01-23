@@ -7,7 +7,7 @@
 
 .hint-icon {
   color: var(--color-logo-1);
-  font-size: var(--font-size-small);
+  font-size: var(--boxed-inputfield-font-size);
 }
 
 .hint-tooltip {
@@ -19,6 +19,7 @@
   opacity: 0;
   transition: opacity 0.3s;
   font-size: var(--font-size-small);
+  font-family: var(--font-family-text);
   white-space: pre-wrap;
 }
 
@@ -28,10 +29,8 @@
   border-width: 5px;
   border-style: solid;
   border-color: transparent;
-  /* Reset border color */
 }
 
-/* Default Bottom Arrow */
 .hint-tooltip[data-arrow-position="bottom"]::after {
   top: 100%;
   left: 50%;
@@ -39,7 +38,6 @@
   border-top-color: var(--color-logo-1);
 }
 
-/* Top Arrow */
 .hint-tooltip[data-arrow-position="top"]::after {
   top: -22%;
   left: 50%;
@@ -47,21 +45,17 @@
   border-bottom-color: var(--color-logo-1);
 }
 
-/* Left Arrow */
 .hint-tooltip[data-arrow-position="left"]::after {
   top: 50%;
   right: 100%;
   margin-top: -5px;
-  /* Center vertically */
   border-right-color: var(--color-logo-1);
 }
 
-/* Right Arrow */
 .hint-tooltip[data-arrow-position="right"]::after {
   top: 50%;
   left: 100%;
   margin-top: -5px;
-  /* Center vertically */
   border-left-color: var(--color-logo-1);
 }
 
@@ -70,29 +64,26 @@
   opacity: 1;
 }
 
-/* Danger variant styles - using same red as error states */
 .hint-icon-danger {
-  color: #ef4444;
-  /* Same as --boxed-inputfield-error-color */
+  color: var(--boxed-inputfield-error-color);
 }
 
 .hint-tooltip-danger {
-  background-color: #ef4444;
-  /* Same as --boxed-inputfield-error-color */
+  background-color: var(--boxed-inputfield-error-color);
 }
 
 .hint-tooltip-danger[data-arrow-position="bottom"]::after {
-  border-top-color: #ef4444;
+  border-top-color: var(--boxed-inputfield-error-color);
 }
 
 .hint-tooltip-danger[data-arrow-position="top"]::after {
-  border-bottom-color: #ef4444;
+  border-bottom-color: var(--boxed-inputfield-error-color);
 }
 
 .hint-tooltip-danger[data-arrow-position="left"]::after {
-  border-right-color: #ef4444;
+  border-right-color: var(--boxed-inputfield-error-color);
 }
 
 .hint-tooltip-danger[data-arrow-position="right"]::after {
-  border-left-color: #ef4444;
+  border-left-color: var(--boxed-inputfield-error-color);
 }

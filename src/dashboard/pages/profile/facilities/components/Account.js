@@ -93,7 +93,7 @@ const Account = ({
       }
       showNotification(t('subscription.upgraded'), 'success');
     } catch (error) {
-      console.error('Error upgrading subscription:', error);
+      // Error upgrading subscription
       showNotification(t('subscription.upgradeFailed'), 'error');
     } finally {
       setIsUpgrading(false);
@@ -155,7 +155,7 @@ const Account = ({
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setPasswordErrors({});
     } catch (error) {
-      console.error('Error changing password:', error);
+      // Error changing password
       if (error.code === 'auth/wrong-password') {
         setPasswordErrors({ currentPassword: t('accountBasics.errors.wrongPassword') });
       } else {

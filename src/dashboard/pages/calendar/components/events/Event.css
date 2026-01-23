@@ -1,7 +1,8 @@
 .calendar-event {
   position: absolute;
   border-radius: 10px;
-  font-size: 12px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
   cursor: pointer;
   overflow: hidden;
   transition: all 0.2s ease;
@@ -33,7 +34,7 @@
 }
 
 .event-title {
-  font-weight: bold;
+  font-weight: var(--font-weight-medium);
   margin-bottom: 2px;
   overflow: hidden;
   white-space: normal;
@@ -43,12 +44,12 @@
 }
 
 .event-time {
-  font-size: 11px;
+  font-size: var(--font-size-small);
   margin-bottom: 2px;
 }
 
 .event-notes {
-  font-size: 11px;
+  font-size: var(--font-size-small);
   overflow: hidden;
   white-space: normal;
   display: -webkit-box;
@@ -112,7 +113,7 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  font-size: 12px;
+  font-size: var(--font-size-small);
 }
 
 .event-content > div:not(:last-child) {
@@ -121,7 +122,7 @@
 }
 
 .event-location, .event-employees {
-  font-size: 11px;
+  font-size: var(--font-size-small);
   overflow: hidden;
   white-space: normal;
   display: -webkit-box;
@@ -169,14 +170,14 @@
 .calendar-event[style*="width: calc(50%"] .event-title,
 .calendar-event[style*="width: calc(33%"] .event-title,
 .calendar-event[style*="width: calc(25%"] .event-title {
-  font-size: 11px;
+  font-size: var(--font-size-small);
   -webkit-line-clamp: 2;
 }
 
 .calendar-event[style*="width: calc(50%"] .event-time,
 .calendar-event[style*="width: calc(33%"] .event-time,
 .calendar-event[style*="width: calc(25%"] .event-time {
-  font-size: 10px;
+  font-size: var(--font-size-small);
 }
 
 .calendar-event[style*="width: calc(33%"] .event-notes,
@@ -198,7 +199,7 @@
 .calendar-event[style*="width: calc(20%"] .event-title,
 .calendar-event[style*="width: calc(16%"] .event-title,
 .calendar-event[style*="width: calc(14%"] .event-title {
-  font-size: 10px;
+  font-size: var(--font-size-small);
   -webkit-line-clamp: 1;
   overflow: hidden;
   text-overflow: ellipsis;

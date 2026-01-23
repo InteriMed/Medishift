@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import { getUnverifiedUsersCount, getActiveShiftsCount, getMonthlyRevenue } from '../../utils/adminUtils';
 import { TrendingUp, Users, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -20,7 +21,7 @@ const AdminDashboard = () => {
 
   const getPendingVerificationsCount = async () => {
     try {
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
       const q = query(usersRef, where('onboardingStatus', '==', 'pending_verification'));
       const snapshot = await getDocs(q);
       return snapshot.size;

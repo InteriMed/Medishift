@@ -19,16 +19,17 @@
 
 .cardHeader h2 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-medium);
 }
 
 .closeButton {
   background: none;
   border: none;
-  font-size: 1.25rem;
+  font-size: var(--font-size-large);
   cursor: pointer;
-  color: var(--grey-3, #555);
+  color: var(--grey-3);
 }
 
 .cardContent {
@@ -69,8 +70,9 @@
 }
 
 .salary, .rate {
-  font-weight: 500;
-  color: var(--color-logo-1, #4a90e2);
+  font-family: var(--font-family-text);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-logo-1);
   margin: 16px 0;
 }
 
@@ -79,7 +81,8 @@
 }
 
 .description h3, .requirements h3, .experience h3, .availability h3 {
-  font-size: 1.1rem;
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-default);
   margin: 0 0 12px 0;
 }
 
@@ -101,10 +104,11 @@
 
 .specialtyTag {
   padding: 4px 8px;
-  background-color: var(--color-logo-1-light, #e9f2ff);
-  color: var(--color-logo-1, #4a90e2);
+  background-color: var(--color-logo-1-light);
+  color: var(--color-logo-1);
   border-radius: 4px;
-  font-size: 12px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
 }
 
 .cardFooter {
@@ -117,21 +121,25 @@
 
 .actionButton {
   padding: 10px 20px;
-  background-color: var(--color-logo-1, #4a90e2);
+  background-color: var(--color-logo-1);
   color: white;
   border: none;
   border-radius: 8px;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
 }
 
 .secondaryButton {
   padding: 10px 20px;
   background-color: transparent;
-  color: var(--grey-3, #555);
-  border: 1px solid var(--grey-1, #e0e0e0);
+  color: var(--grey-3);
+  border: 1px solid var(--grey-1);
   border-radius: 8px;
-  font-weight: 500;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   display: flex;
   align-items: center;

@@ -3,6 +3,7 @@ import { db } from '../services/firebase';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { firebaseApp } from '../services/firebase';
 import Papa from 'papaparse';
+import { FIRESTORE_COLLECTIONS } from '../config/keysDatabase';
 
 const functions = getFunctions(firebaseApp, 'europe-west6');
 
@@ -20,7 +21,7 @@ export const fetchAdminDocument = async (userId) => {
   if (!userId) return null;
   
   try {
-    const adminDoc = await getDoc(doc(db, 'admins', userId));
+    const adminDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.ADMINS, userId));
     if (adminDoc.exists()) {
       const data = adminDoc.data();
       if (data.isActive !== false) {
@@ -95,7 +96,7 @@ export const validateImpersonationSession = async (sessionId) => {
 
 export const exportShiftsToCSV = async (month, year) => {
   try {
-    const shiftsRef = collection(db, 'shifts');
+    const shiftsRef = collection(db, FIRESTORE_COLLECTIONS.SHIFTS);
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
     
@@ -146,7 +147,7 @@ export const exportShiftsToCSV = async (month, year) => {
 
 export const getUnverifiedUsersCount = async () => {
   try {
-    const usersRef = collection(db, 'users');
+    const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
     const q = query(usersRef, where('onboardingStatus', '==', 'pending_verification'));
     const snapshot = await getDocs(q);
     return snapshot.size;
@@ -158,7 +159,7 @@ export const getUnverifiedUsersCount = async () => {
 
 export const getActiveShiftsCount = async () => {
   try {
-    const shiftsRef = collection(db, 'shifts');
+    const shiftsRef = collection(db, FIRESTORE_COLLECTIONS.SHIFTS);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -178,7 +179,7 @@ export const getActiveShiftsCount = async () => {
 
 export const getMonthlyRevenue = async (month, year) => {
   try {
-    const shiftsRef = collection(db, 'shifts');
+    const shiftsRef = collection(db, FIRESTORE_COLLECTIONS.SHIFTS);
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
     
