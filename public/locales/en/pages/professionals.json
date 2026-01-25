@@ -8,7 +8,13 @@
     "title": "Work less, earn more, you decide",
     "subtitle": "Connect directly with healthcare facilities seeking qualified professionals like you",
     "trustSnippet": "InteriMed is developing a specialized platform for healthcare professionals across Switzerland",
-    "cta": "Create your profile"
+    "cta": "Create your profile",
+    "ctaCreate": "Create Profile",
+    "ctaLearnMore": "Learn More",
+    "badge": "For Professionals",
+    "appAlt": "Mobile App",
+    "glnVerification": "GLN Verification",
+    "validated": "Validated"
   },
   "problem": {
     "title": "We understand the challenges of the healthcare industry",
@@ -102,11 +108,52 @@
     "feature7": {
       "title": "Automated payroll",
       "description": "We take care of the admin, contracts and payroll, all in one place"
+    },
+    "glnVerification": {
+      "title": "GLN Verification",
+      "description": "Automatic verification of your credentials."
+    },
+    "smartCV": {
+      "title": "Smart CV",
+      "description": "Auto-generated CV highlighting your skills."
+    },
+    "fastTrack": {
+      "title": "Fast Track",
+      "description": "Skip the line with verified status."
+    }
+  },
+  "quickApply": {
+    "title": "Quick Apply",
+    "description": "Apply to jobs in seconds."
+  },
+  "availability": {
+    "title": "Your Availability",
+    "description": "Work when you want, where you want.",
+    "flexibility": {
+      "title": "Total Flexibility",
+      "description": "Set your own schedule."
+    },
+    "messaging": {
+      "title": "Direct Messaging",
+      "description": "Chat directly with facilities."
+    },
+    "adminCard": {
+      "title": "Admin Dashboard",
+      "item1": "Schedule view",
+      "item2": "Payments",
+      "item3": "Contracts",
+      "item4": "Profile settings"
     }
   },
   "cta": {
-    "title": "Ready to advance your healthcare career?",
-    "description": "Join our community of healthcare professionals finding fulfilling opportunities across Switzerland",
-    "button": "Sign up now"
+    "title": "Join the Network",
+    "item1": "Free to join",
+    "item2": "Access exclusive jobs",
+    "item3": "Grow your career",
+    "button": "Sign Up",
+    "card": {
+      "title": "Status",
+      "status": "Active"
+    }
   }
-} 
+}

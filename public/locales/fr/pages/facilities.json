@@ -14,7 +14,13 @@
       "contracts": "Contrats sécurisés",
       "planning": "Planification facile",
       "qualifiedStaff": "Personnel qualifié"
-    }
+    },
+    "ctaStart": "Start Hiring",
+    "ctaSolutions": "View Solutions",
+    "badge": "New Feature",
+    "appAlt": "Dashboard Preview",
+    "certifiedPartner": "Certified Partner",
+    "swissMade": "Swiss Made"
   },
   "problem": {
     "title": "Des solutions à vos défis quotidiens",
@@ -149,11 +155,67 @@
     "feature7": {
       "title": "Gestion RH directe",
       "description": "Toute votre équipe peut s'inscrire sur la plateforme, vous permettant de gérer efficacement leurs horaires et leurs missions"
+    },
+    "teamManagement": {
+      "title": "Team Management",
+      "description": "Manage your entire team in one place.",
+      "item1": "Easy onboarding",
+      "item2": "Role management"
+    },
+    "smartCalendar": {
+      "title": "Smart Calendar",
+      "description": "Visualize shifts and availability effortlessly.",
+      "item1": "Drag & drop scheduling",
+      "item2": "Real-time updates"
+    },
+    "groupManagement": {
+      "title": "Group Management",
+      "description": "Manage multiple locations or groups seamlessly.",
+      "item1": "Centralized control",
+      "item2": "Unified reporting"
     }
   },
   "cta": {
     "title": "Transformez votre approche du recrutement",
     "description": "Rejoignez la révolution du recrutement médical avec Interimed, la nouvelle référence en matière de recrutement médical en Suisse",
     "button": "Commencer maintenant"
+  },
+  "teamWorkspace": {
+    "title": "Your Team Workspace",
+    "subtitle": "A dedicated space for your facility's operations.",
+    "list": {
+      "item1": "Collaborative tools",
+      "item2": "Document sharing",
+      "item3": "Instant communication"
+    },
+    "workLife": {
+      "title": "Work-Life Balance",
+      "description": "Optimized schedules for satisfied staff."
+    },
+    "subletting": {
+      "title": "Staff Subletting",
+      "description": "Share resources with other facilities."
+    },
+    "staffingLevels": {
+      "title": "Staffing Levels",
+      "description": "Maintain optimal staffing at all times."
+    }
+  },
+  "vacancy": {
+    "title": "Vacancy Management",
+    "subtitle": "Fill open shifts instantly.",
+    "vacancyManagement": {
+      "title": "Efficient Management",
+      "description": "Track and fill vacancies in real-time."
+    },
+    "analytics": {
+      "title": "Advanced Analytics",
+      "description": "Insights to improve your staffing strategy."
+    },
+    "card": {
+      "title": "Fill a Vacancy Today",
+      "description": "Don't let shortages affect patient care.",
+      "button": "Post a Job"
+    }
   }
 }

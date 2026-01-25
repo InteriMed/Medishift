@@ -7,6 +7,7 @@ const { JSDOM } = require('jsdom');
 
 // Import centralized database instance configured for medishift
 const db = require('../database/db');
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
 
 const LINKEDIN_JOBS_API = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search';
 
@@ -127,7 +128,7 @@ async function scrapeLinkedInJobs(keywords, location, maxJobs = 100) {
 }
 
 exports.scrapeLinkedInJobs = onCall(
-  { region: 'europe-west6', database: 'medishift', cors: true, timeoutSeconds: 540, memory: '512MiB' },
+  { ...FUNCTION_CONFIG, timeoutSeconds: 540, memory: '512MiB' },
   async (request) => {
     logger.info('scrapeLinkedInJobs called', { structuredData: true });
 
@@ -188,7 +189,7 @@ exports.scrapeLinkedInJobs = onCall(
 );
 
 exports.getLinkedInJobs = onCall(
-  { region: 'europe-west6', database: 'medishift', cors: true },
+  FUNCTION_CONFIG,
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'You must be signed in to view jobs');

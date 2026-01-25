@@ -41,7 +41,8 @@ export const LOCALSTORAGE_KEYS = {
 
 export const SESSIONSTORAGE_KEYS = {
   SESSION_DATA: 'session_data',
-  TEMP_FORM_DATA: 'temp_form_data'
+  TEMP_FORM_DATA: 'temp_form_data',
+  ONBOARDING_VALIDATION_SUCCESS: 'onboarding_validation_success'
 };
 
 // ============================================================================
@@ -94,7 +95,8 @@ export const FIRESTORE_COLLECTIONS = {
   AVAILABILITY: 'availability',
   POSITIONS: 'positions',
   PROFESSIONAL_AVAILABILITIES: 'professionalAvailabilities',
-  FACILITY_INVITATIONS: 'facilityInvitations'
+  FACILITY_INVITATIONS: 'facilityInvitations',
+  AUDIT_PROFESSIONAL_CERTIFICATION: 'auditProfessionalCertification'
 };
 
 // ============================================================================

@@ -24,7 +24,7 @@ const styles = {
   mandatoryFieldLegend: "text-xs",
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "facility-details-sections-wrapper flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
+  sectionsWrapper: "facility-details-sections-wrapper w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
   sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
@@ -296,9 +296,17 @@ const FacilityDetails = ({
         .facility-details-container {
           container-type: inline-size;
         }
-        @container (min-width: 700px) {
+
+        .facility-details-sections-wrapper {
+          container-type: inline-size;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
+        }
+
+        @container (max-width: 700px) {
           .facility-details-sections-wrapper {
-            flex-direction: row;
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
@@ -317,15 +325,15 @@ const FacilityDetails = ({
                   onClick={handleAutoFillClick}
                   disabled={isUploading || isAnalyzing}
                   className={cn(
-                    "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0 text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
+                    "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0",
                     (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
                     (stepData?.highlightUploadButton) && "tutorial-highlight"
                   )}
-                  style={{ height: 'var(--boxed-inputfield-height)' }}
+                  style={{ height: 'var(--boxed-inputfield-height)', backgroundColor: 'rgba(255, 191, 14, 1)' }}
                   data-tutorial="profile-upload-button"
                 >
-                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4" />}
-                  <span className="text-sm font-medium">
+                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4 text-white" />}
+                  <span className="text-sm font-medium text-white">
                     {isAnalyzing
                       ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
                       : t('dashboardProfile:documents.autofill', 'Auto Fill')

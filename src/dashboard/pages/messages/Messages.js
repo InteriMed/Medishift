@@ -196,11 +196,11 @@ const Messages = () => {
 
   const getMockConversations = useCallback(() => {
     if (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.MESSAGES) return [];
-    
+
     const now = new Date();
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    
+
     return [
       {
         id: 'tutorial-doctor-smith',
@@ -269,7 +269,7 @@ const Messages = () => {
     if (filterType === 'unread') {
       filtered = filtered.filter(conv => conv.unreadCount > 0);
     } else if (filterType === 'unresponded') {
-      filtered = filtered.filter(conv => 
+      filtered = filtered.filter(conv =>
         conv.lastMessage?.senderId !== user?.uid && conv.unreadCount > 0
       );
     }
@@ -329,7 +329,7 @@ const Messages = () => {
       isMobile && "overflow-y-hidden"
     )} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
       <div className={cn(
-        "flex-1 flex min-h-0 relative ml-4 my-4",
+        "flex-1 flex min-h-0 relative mx-4 my-4",
         isMobile ? "p-0 overflow-hidden" : "gap-6 overflow-visible"
       )}>
         <div className={cn(
@@ -345,81 +345,81 @@ const Messages = () => {
             "dashboard-sidebar-inner",
             isMobile && "dashboard-sidebar-inner-mobile"
           )}>
-                        <div className={cn(
-                            "shrink-0 w-full",
-                            isMobile ? "p-4 pb-3" : "p-4 pb-3"
-                        )} style={{ position: 'relative', zIndex: 100 }}>
-                            <div ref={filterDropdownRef} style={{ position: 'relative' }}>
-                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                                <input
-                                    type="text"
-                                    placeholder={t('messages:searchPlaceholder')}
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                                    style={{
-                                        height: 'var(--boxed-inputfield-height)',
-                                        fontWeight: '500',
-                                        fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                        color: 'var(--boxed-inputfield-color-text)'
-                                    }}
-                                />
-                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                    {searchTerm && (
-                                        <button
-                                            onClick={() => setSearchTerm('')}
-                                            className="p-1.5 hover:bg-muted rounded-full transition-colors"
-                                        >
-                                            <FiX className="w-4 h-4 text-muted-foreground" />
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => setShowFiltersOverlay(!showFiltersOverlay)}
-                                        className={cn(
-                                            "p-1.5 rounded-full transition-colors relative",
-                                            filterType !== 'all' ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
-                                        )}
-                                    >
-                                        <FiSliders className="w-4 h-4" />
-                                    </button>
-                                </div>
+            <div className={cn(
+              "shrink-0 w-full",
+              isMobile ? "p-4 pb-3" : "p-4 pb-3"
+            )} style={{ position: 'relative', zIndex: 100 }}>
+              <div ref={filterDropdownRef} style={{ position: 'relative' }}>
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+                <input
+                  type="text"
+                  placeholder={t('messages:searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                  style={{
+                    height: 'var(--boxed-inputfield-height)',
+                    fontWeight: '500',
+                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                    color: 'var(--boxed-inputfield-color-text)'
+                  }}
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="p-1.5 hover:bg-muted rounded-full transition-colors"
+                    >
+                      <FiX className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowFiltersOverlay(!showFiltersOverlay)}
+                    className={cn(
+                      "p-1.5 rounded-full transition-colors relative",
+                      filterType !== 'all' ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
+                    )}
+                  >
+                    <FiSliders className="w-4 h-4" />
+                  </button>
+                </div>
 
-                                {showFiltersOverlay && (
-                                    <div className="boxed-dropdown-options" style={{ overflowX: 'hidden', overflowY: 'auto' }}>
-                                        <button
-                                            onClick={() => { setFilterType('all'); setShowFiltersOverlay(false); }}
-                                            className={cn(
-                                                "boxed-dropdown-option",
-                                                filterType === 'all' && "boxed-dropdown-option--selected"
-                                            )}
-                                            style={{ width: '100%', textAlign: 'left' }}
-                                        >
-                                            {t('messages:filters.all', 'All Messages')}
-                                        </button>
-                                        <button
-                                            onClick={() => { setFilterType('unread'); setShowFiltersOverlay(false); }}
-                                            className={cn(
-                                                "boxed-dropdown-option",
-                                                filterType === 'unread' && "boxed-dropdown-option--selected"
-                                            )}
-                                            style={{ width: '100%', textAlign: 'left' }}
-                                        >
-                                            {t('messages:filters.unreadOnly', 'Unread')}
-                                        </button>
-                                        <button
-                                            onClick={() => { setFilterType('unresponded'); setShowFiltersOverlay(false); }}
-                                            className={cn(
-                                                "boxed-dropdown-option",
-                                                filterType === 'unresponded' && "boxed-dropdown-option--selected"
-                                            )}
-                                            style={{ width: '100%', textAlign: 'left' }}
-                                        >
-                                            {t('messages:filters.unresponded', 'Unresponded')}
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                {showFiltersOverlay && (
+                  <div className="boxed-dropdown-options" style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+                    <button
+                      onClick={() => { setFilterType('all'); setShowFiltersOverlay(false); }}
+                      className={cn(
+                        "boxed-dropdown-option",
+                        filterType === 'all' && "boxed-dropdown-option--selected"
+                      )}
+                      style={{ width: '100%', textAlign: 'left' }}
+                    >
+                      {t('messages:filters.all', 'All Messages')}
+                    </button>
+                    <button
+                      onClick={() => { setFilterType('unread'); setShowFiltersOverlay(false); }}
+                      className={cn(
+                        "boxed-dropdown-option",
+                        filterType === 'unread' && "boxed-dropdown-option--selected"
+                      )}
+                      style={{ width: '100%', textAlign: 'left' }}
+                    >
+                      {t('messages:filters.unreadOnly', 'Unread')}
+                    </button>
+                    <button
+                      onClick={() => { setFilterType('unresponded'); setShowFiltersOverlay(false); }}
+                      className={cn(
+                        "boxed-dropdown-option",
+                        filterType === 'unresponded' && "boxed-dropdown-option--selected"
+                      )}
+                      style={{ width: '100%', textAlign: 'left' }}
+                    >
+                      {t('messages:filters.unresponded', 'Unresponded')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {filteredConversations.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">

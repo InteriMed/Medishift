@@ -1,31 +1,103 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { 
-  FiBriefcase, 
-  FiClock, 
-  FiDollarSign, 
-  FiCalendar, 
+import {
+  FiBriefcase,
+  FiClock,
+  FiDollarSign,
+  FiCalendar,
   FiSearch,
-  FiAlertCircle
+  FiAlertCircle,
+  FiCheckCircle,
+  FiArrowRight,
+  FiPlus
 } from 'react-icons/fi';
 import { useDashboard } from '../../contexts/DashboardContext';
+import { useSidebar } from '../../contexts/SidebarContext';
+import { useTutorial } from '../../contexts/TutorialContext';
+import { useCalendarState } from '../calendar/hooks/useCalendarState';
+import useCalendarStore from '../calendar/hooks/useCalendarStore';
+import { useCalendarEvents } from '../calendar/utils/eventDatabase';
 import useProfessionalStats from '../../hooks/useProfessionalStats';
 import { cn } from '../../../utils/cn';
 import styles from './personalDashboard.module.css';
-import DashboardSidebar from './components/DashboardSidebar';
 import DashboardMainContent from './components/DashboardMainContent';
+import CalendarSidebar from '../calendar/components/CalendarSidebar';
 
 const PersonalDashboard = () => {
   const { t } = useTranslation('dashboardPersonal');
   const navigate = useNavigate();
-  const { profileComplete, isLoading: isDashboardLoading, user } = useDashboard();
-  const { stats, loading: isStatsLoading, error } = useProfessionalStats();
+  const { profileComplete, isLoading: isDashboardLoading, user, selectedWorkspace } = useDashboard();
+  const { isMainSidebarCollapsed } = useSidebar();
+  const { isTutorialActive, activeTutorial } = useTutorial();
 
-  const isLoading = isDashboardLoading || isStatsLoading;
+  const accountType = user?.role || 'professional';
+  const userId = user?.uid;
 
-  // Mock data for the chart - in a real app this would come from historical data
+  const getWorkspaceContext = () => {
+    if (!selectedWorkspace) {
+      return { type: 'personal', role: 'professional' };
+    }
+    let role = selectedWorkspace.role;
+    if (role === 'admin') role = 'manager';
+    return { type: selectedWorkspace.type, role: role };
+  };
+
+  const workspaceContext = getWorkspaceContext();
+
+  // Initialize Store Context
+  useEffect(() => {
+    if (userId) {
+      useCalendarStore.getState().setContext(userId, accountType, workspaceContext);
+    }
+  }, [userId, accountType, JSON.stringify(workspaceContext)]);
+
+  const { stats, loading: isStatsLoading, error: statsError } = useProfessionalStats();
+
+  // Connect to Zustand Store for sidebar upcoming events
+  const events = useCalendarStore(state => state.events);
+  const setEvents = useCalendarStore(state => state.setEvents);
+  const { events: calendarEvents, loading: isCalendarLoading } = useCalendarEvents(userId, accountType);
+
+  // Stats from calendar events (mocking the dashboard stats for now or using processed data)
+  // In a real app, useProfessionalStats would be used, but here we want to match Sidebar data
+  useEffect(() => {
+    if (calendarEvents) {
+      const eventsWithDbFlag = calendarEvents.map(event => ({
+        ...event, fromDatabase: true, isValidated: true
+      }));
+      setEvents(eventsWithDbFlag);
+    }
+  }, [calendarEvents, setEvents]);
+
+  const {
+    currentDate: calDate, setCurrentDate: setCalDate, view, setView,
+    isSidebarCollapsed, setIsSidebarCollapsed,
+    handleDayClick, handleUpcomingEventClick, toggleSidebar
+  } = useCalendarState();
+
+  // Track visible week for MiniCalendar highlighting
+  const [visibleWeekStart, setVisibleWeekStart] = useState(() => {
+    const start = new Date(calDate);
+    const day = start.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    start.setDate(start.getDate() + diff);
+    start.setHours(0, 0, 0, 0);
+    return start;
+  });
+  const [visibleWeekEnd, setVisibleWeekEnd] = useState(() => {
+    const end = new Date(calDate);
+    const day = end.getDay();
+    const diff = day === 0 ? 0 : 7 - day;
+    end.setDate(end.getDate() + diff);
+    end.setHours(23, 59, 59, 999);
+    return end;
+  });
+
+  const isLoading = isDashboardLoading || isStatsLoading || isCalendarLoading;
+
+  // Mock data for the chart remains
   const chartData = [
     { name: 'Mon', hours: 4 },
     { name: 'Tue', hours: 6 },
@@ -44,117 +116,163 @@ const PersonalDashboard = () => {
     );
   }
 
-  if (error) {
+  if (statsError) {
     return (
       <div className="p-6 text-center text-red-500 bg-red-50 rounded-xl border border-red-100 m-6">
         <FiAlertCircle className="w-8 h-8 mx-auto mb-2" />
-        <p>Error loading dashboard: {error}</p>
+        <p>Error loading dashboard: {statsError}</p>
       </div>
     );
   }
 
-  const currentDate = new Date().toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const currentDateDisplay = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
 
+  // Calculate some simple stats from events for the cards
+  const upcomingJobsCount = events?.filter(e => new Date(e.start) > new Date()).length || 0;
+
   return (
-    <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500 min-h-0 bg-background">
-      {/* 1. Dashboard Header - Consistent with Marketplace/Calendar */}
-      <div className="shrink-0 w-full z-20 bg-white px-6 sm:px-8 border-b border-border/60 shadow-sm flex flex-col py-4 min-h-16">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'var(--font-family-headings)' }}>
-              {t('dashboard.overview.welcome')}, {user?.firstName || 'Professional'}!
-            </h1>
-            <p className="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
-              <FiCalendar className="w-4 h-4" />
-              {currentDate}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => navigate('/dashboard/marketplace')}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm text-sm"
-              style={{ height: 'var(--boxed-inputfield-height)' }}
-            >
-              <FiSearch className="w-4 h-4" />
-              Find Work
-            </button>
+    <div className="h-full flex flex-col animate-in fade-in duration-500" style={{ overflow: 'visible' }}>
+      <div className={cn(
+        "flex-1 flex relative min-h-0 mx-4 my-4 gap-6",
+      )} style={{ overflow: 'visible' }}>
+
+        {/* Sidebar - Same as Calendar Sidebar */}
+        <div className={cn(
+          "dashboard-sidebar-container",
+          isMainSidebarCollapsed ? "flex" : (isSidebarCollapsed ? "hidden lg:flex w-0" : "flex"),
+          "dashboard-sidebar-container-desktop pr-0"
+        )} style={{ overflow: 'visible' }}>
+          <div className={cn(
+            "dashboard-sidebar-inner",
+            "p-0 !bg-transparent !border-0 !shadow-none"
+          )} style={{ overflow: 'visible' }}>
+            <CalendarSidebar
+              currentDate={calDate}
+              setCurrentDate={setCalDate}
+              handleUpcomingEventClick={handleUpcomingEventClick}
+              events={events}
+              isSidebarCollapsed={isSidebarCollapsed}
+              handleCreateEventClick={() => navigate('/dashboard/calendar')}
+              handleDayClick={handleDayClick}
+              toggleSidebar={toggleSidebar}
+              view={view}
+              visibleWeekStart={visibleWeekStart}
+              visibleWeekEnd={visibleWeekEnd}
+            />
           </div>
         </div>
-      </div>
 
-      {/* 2. Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 sm:p-8" style={{ scrollbarGutter: 'stable' }}>
-        <div className="max-w-[1600px] mx-auto space-y-8">
-          
-          {/* Profile Completion Banner */}
-          {!profileComplete && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
-              <div className="flex gap-4">
-                <div className="p-3 bg-amber-100 rounded-full text-amber-600 shrink-0">
-                  <FiAlertCircle className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-amber-900">Complete Your Profile</h3>
-                  <p className="text-amber-700 mt-1">
-                    Unlock all features and get verified to start applying for jobs.
-                  </p>
-                </div>
+        {/* Main Content Area */}
+        <div className={cn(
+          "dashboard-main-content dashboard-main-content-desktop flex-1"
+        )}>
+          <div className="dashboard-main-inner flex flex-col h-full bg-background/50 rounded-2xl border border-border/50 overflow-hidden">
+
+            {/* Header Tool Area with Quick Actions */}
+            <div className="shrink-0 w-full bg-white border-b border-border/60 px-6 py-4 min-h-20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h1 className="text-xl font-bold text-foreground tracking-tight m-0" style={{ fontFamily: 'var(--font-family-headings)' }}>
+                  {t('dashboard.overview.welcome')}, {user?.firstName || 'Professional'}!
+                </h1>
+                <p className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
+                  <FiCalendar className="w-3.5 h-3.5" />
+                  {currentDateDisplay}
+                </p>
               </div>
-              <button
-                onClick={() => navigate('/dashboard/profile')}
-                className="px-6 py-2.5 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors whitespace-nowrap"
-              >
-                Complete Profile
-              </button>
-            </div>
-          )}
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard 
-              title="Total Earnings" 
-              value={`$${stats?.earnings?.toLocaleString() || 0}`} 
-              icon={FiDollarSign} 
-              trend="+12%" 
-              color="green"
-            />
-            <StatCard 
-              title="Active Hours" 
-              value={stats?.activeHours || 0} 
-              icon={FiClock} 
-              trend="+5%" 
-              color="blue"
-            />
-            <StatCard 
-              title="Active Contracts" 
-              value={stats?.totalContracts || 0} 
-              icon={FiBriefcase} 
-              color="purple"
-            />
-            <StatCard 
-              title="Upcoming Jobs" 
-              value={stats?.upcomingJobs || 0} 
-              icon={FiCalendar} 
-              color="orange"
-            />
-          </div>
-
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            {/* Left Column - Activity & Charts */}
-            <div className="lg:col-span-2">
-              <DashboardMainContent stats={stats} chartData={chartData} />
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => navigate('/dashboard/marketplace')}
+                  className="flex items-center gap-2 px-4 text-sm font-medium rounded-xl transition-all bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                  style={{ height: 'var(--boxed-inputfield-height)' }}
+                >
+                  <FiSearch className="w-4 h-4" />
+                  <span>Find Work</span>
+                </button>
+                <button
+                  onClick={() => navigate('/dashboard/calendar')}
+                  className="flex items-center gap-2 px-4 text-sm font-medium rounded-xl transition-all border-2 bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                  style={{ height: 'var(--boxed-inputfield-height)' }}
+                >
+                  <FiCalendar className="w-4 h-4" />
+                  <span className="hidden sm:inline">Update Availability</span>
+                </button>
+                <button
+                  onClick={() => navigate('/dashboard/profile/documents')}
+                  className="flex items-center gap-2 px-4 text-sm font-medium rounded-xl transition-all border-2 bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                  style={{ height: 'var(--boxed-inputfield-height)' }}
+                >
+                  <FiCheckCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">Verify Documents</span>
+                </button>
+              </div>
             </div>
 
-            {/* Right Column - Side Widgets */}
-            <div className="space-y-8">
-              <DashboardSidebar stats={stats} navigate={navigate} />
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 sm:p-8" style={{ scrollbarGutter: 'stable' }}>
+              <div className="max-w-[1600px] mx-auto space-y-8">
+
+                {/* Profile Completion Banner */}
+                {!profileComplete && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm animate-in slide-in-from-top duration-500">
+                    <div className="flex gap-4">
+                      <div className="p-3 bg-amber-100 rounded-full text-amber-600 shrink-0">
+                        <FiAlertCircle className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-amber-900">Complete Your Profile</h3>
+                        <p className="text-amber-700 mt-1">
+                          Unlock all features and get verified to start applying for jobs.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate('/dashboard/profile')}
+                      className="px-6 py-2.5 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors whitespace-nowrap shadow-sm"
+                    >
+                      Complete Profile
+                    </button>
+                  </div>
+                )}
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <StatCard
+                    title="Total Earnings"
+                    value={`$${stats?.earnings?.toLocaleString() || 0}`}
+                    icon={FiDollarSign}
+                    trend="+0%"
+                    color="green"
+                  />
+                  <StatCard
+                    title="Active Hours"
+                    value={stats?.activeHours || 0}
+                    icon={FiClock}
+                    trend="+0%"
+                    color="blue"
+                  />
+                  <StatCard
+                    title="Active Contracts"
+                    value={stats?.totalContracts || 0}
+                    icon={FiBriefcase}
+                    color="purple"
+                  />
+                  <StatCard
+                    title="Upcoming Jobs"
+                    value={stats?.upcomingJobs || upcomingJobsCount}
+                    icon={FiCalendar}
+                    color="orange"
+                  />
+                </div>
+
+                {/* Activity & Charts */}
+                <DashboardMainContent stats={stats} chartData={chartData} />
+              </div>
             </div>
           </div>
         </div>

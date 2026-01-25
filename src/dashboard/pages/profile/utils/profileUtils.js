@@ -2,12 +2,33 @@ import { get } from 'lodash';
 
 export const isTabCompleted = (profileData, tabId, config) => {
     if (!profileData || !config?.fields) return false;
+
+    // Account and Marketplace tabs have no required fields, so they are always considered complete
+    if (tabId === 'account' || tabId === 'marketplace') {
+        return true;
+    }
+
     if (!config.fields[tabId]) return true;
     const fieldsOrRules = config.fields[tabId];
 
     if (Array.isArray(fieldsOrRules)) {
-        return fieldsOrRules.every(field => {
+        const allFieldsComplete = fieldsOrRules.every(field => {
             if (!field.required) return true;
+
+            // Special handling for document uploads - Swiss citizens need ID card instead of work permit
+            if (tabId === 'documentUploads' && field.docType === 'workPermit') {
+                const nationality = get(profileData, 'identity.nationality');
+                const isSwiss = nationality === 'switzerland';
+
+                if (isSwiss) {
+                    // Swiss citizens MUST upload ID card (stored in same field)
+                    const value = get(profileData, field.name);
+                    const isEmpty = value === null || value === undefined || value === '' || (typeof value === 'string' && value.trim() === '');
+                    return !isEmpty;
+                }
+                // For non-Swiss, continue with normal dependsOn check below
+            }
+
             if (field.dependsOn) {
                 const dependentValue = get(profileData, field.dependsOn);
                 if (field.dependsOnValue && !field.dependsOnValue.includes(dependentValue)) return true;
@@ -18,6 +39,8 @@ export const isTabCompleted = (profileData, tabId, config) => {
 
             return !isEmpty;
         });
+
+        return allFieldsComplete;
     }
     else if (typeof fieldsOrRules === 'object') {
         let isComplete = true;
@@ -61,6 +84,11 @@ export const isTabCompleted = (profileData, tabId, config) => {
 };
 
 export const isTabAccessible = (profileData, tabId, config) => {
+    // Account and Marketplace tabs are ALWAYS accessible (utility tabs)
+    if (tabId === 'account' || tabId === 'marketplace') {
+        return true;
+    }
+
     if (!config?.tabs) return tabId === config?.tabs?.[0]?.id;
     const tabIndex = config.tabs.findIndex(t => t.id === tabId);
     if (tabIndex <= 0) return true;

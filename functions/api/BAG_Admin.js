@@ -1,8 +1,9 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
 
-const healthRegistryAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
+const healthRegistryAPI = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -65,7 +66,7 @@ const healthRegistryAPI = onCall({ region: 'europe-west6', database: 'medishift'
   }
 });
 
-const companySearchAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
+const companySearchAPI = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -119,7 +120,7 @@ const companySearchAPI = onCall({ region: 'europe-west6', database: 'medishift',
   }
 });
 
-const companyDetailsAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
+const companyDetailsAPI = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -163,7 +164,7 @@ const companyDetailsAPI = onCall({ region: 'europe-west6', database: 'medishift'
   }
 });
 
-const verifyProfileAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
+const verifyProfileAPI = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -194,7 +195,7 @@ const verifyProfileAPI = onCall({ region: 'europe-west6', database: 'medishift',
   }
 });
 
-const uidAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
+const uidAPI = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',
@@ -442,7 +443,7 @@ const uidAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: tru
   }
 });
 
-const gesRegAPI = onCall({ region: 'europe-west6', database: 'medishift', cors: true }, async (request) => {
+const gesRegAPI = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       'unauthenticated',

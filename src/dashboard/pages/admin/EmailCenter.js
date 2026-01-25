@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { httpsCallable } from 'firebase/functions';
 import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
 import { functions, db } from '../../../services/firebase';
-import { Mail, Send, Users, MessageSquare, Clock, CheckCircle, XCircle, ChevronDown } from 'lucide-react';
+import { Mail, Send, Users, MessageSquare, Clock, CheckCircle, XCircle, ChevronDown, Inbox, ExternalLink } from 'lucide-react';
 import PageHeader from '../../components/PageHeader/PageHeader';
 import Button from '../../../components/BoxedInputFields/Button';
 
@@ -34,17 +34,28 @@ const ROLE_OPTIONS = [
 
 const EmailCenter = () => {
   const { t } = useTranslation(['admin', 'common']);
-  const [activeTab, setActiveTab] = useState('compose');
+  const [activeTab, setActiveTab] = useState('inbox');
   const [emailType, setEmailType] = useState('general');
   const [formData, setFormData] = useState({});
   const [sending, setSending] = useState(false);
   const [emailLogs, setEmailLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+
+  const [inboxTickets, setInboxTickets] = useState([]);
+  const [loadingInbox, setLoadingInbox] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [outlookMessages, setOutlookMessages] = useState([]);
+  const [loadingOutlook, setLoadingOutlook] = useState(false);
+  const [selectedOutlookMessage, setSelectedOutlookMessage] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
     if (activeTab === 'history') {
       loadEmailLogs();
+    } else if (activeTab === 'inbox') {
+      loadSupportTickets();
+    } else if (activeTab === 'outlook') {
+      loadOutlookMessages();
     }
   }, [activeTab]);
 
@@ -134,11 +145,10 @@ const EmailCenter = () => {
                   setEmailType(key);
                   setFormData({});
                 }}
-                className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-all ${
-                  emailType === key
-                    ? 'bg-primary text-white border-primary'
-                    : 'bg-background border-border hover:border-primary/50'
-                }`}
+                className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-all ${emailType === key
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-background border-border hover:border-primary/50'
+                  }`}
               >
                 <Icon size={18} />
                 <span>{value.name}</span>
@@ -340,6 +350,256 @@ const EmailCenter = () => {
     );
   };
 
+  const loadSupportTickets = async () => {
+    setLoadingInbox(true);
+    try {
+      const ticketsRef = collection(db, 'support_tickets');
+      const q = query(ticketsRef, orderBy('createdAt', 'desc'), limit(50));
+      const snapshot = await getDocs(q);
+      const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setInboxTickets(tickets);
+    } catch (error) {
+      console.error('Error loading support tickets:', error);
+    } finally {
+      setLoadingInbox(false);
+    }
+  };
+
+  const handleReplyToTicket = (ticket) => {
+    setEmailType('support_response');
+    setFormData({
+      ticketId: ticket.id,
+      recipientEmail: ticket.email,
+      recipientName: ticket.name,
+      subject: `Re: ${ticket.subject}`,
+      originalMessage: ticket.message
+    });
+    setActiveTab('compose');
+    setSelectedTicket(null);
+  };
+
+  const renderInbox = () => {
+    if (selectedTicket) {
+      return (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setSelectedTicket(null)}
+              className="px-3 py-1 flex items-center gap-2 bg-transparent text-foreground hover:bg-muted border border-border"
+            >
+              <ChevronDown className="rotate-90" size={16} />
+              {t('common:back', 'Back')}
+            </Button>
+            <h3 className="text-xl font-semibold truncate">{selectedTicket.subject}</h3>
+          </div>
+
+          <div className="bg-card border border-border rounded-xl p-6">
+            <div className="flex justify-between items-start mb-6 pb-6 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                  {selectedTicket.name?.charAt(0).toUpperCase() || '?'}
+                </div>
+                <div>
+                  <p className="font-medium text-lg text-foreground">{selectedTicket.name}</p>
+                  <p className="text-sm text-muted-foreground">{selectedTicket.email}</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/30 px-3 py-1 rounded-full">
+                  <Clock size={14} />
+                  {selectedTicket.createdAt?.toDate?.()?.toLocaleString() || 'Unknown Date'}
+                </span>
+                <span className={`mt-2 text-xs font-medium px-2 py-0.5 rounded-full ${selectedTicket.status === 'new' ? 'bg-blue-100 text-blue-700' :
+                  selectedTicket.status === 'closed' ? 'bg-gray-100 text-gray-700' :
+                    'bg-green-100 text-green-700'
+                  }`}>
+                  {selectedTicket.status?.toUpperCase() || 'NEW'}
+                </span>
+              </div>
+            </div>
+
+            <div className="prose prose-sm max-w-none mb-8 text-foreground/90 whitespace-pre-wrap">
+              {selectedTicket.message}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+              <Button
+                onClick={() => handleReplyToTicket(selectedTicket)}
+                className="flex items-center gap-2"
+              >
+                <MessageSquare size={18} />
+                {t('admin:email.reply', 'Reply')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {loadingInbox ? (
+          <div className="text-center py-12 text-muted-foreground animate-pulse">{t('common:loading', 'Loading tickets...')}</div>
+        ) : inboxTickets.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+            <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mb-4">
+              <Inbox size={32} />
+            </div>
+            <p className="text-lg font-medium">{t('admin:email.noTickets', 'No support tickets found')}</p>
+            <p className="text-sm opacity-70 mt-1">{t('admin:email.noTicketsDesc', 'New support requests will appear here')}</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {inboxTickets.map((ticket) => (
+              <div
+                key={ticket.id}
+                onClick={() => setSelectedTicket(ticket)}
+                className="group p-4 border border-border rounded-xl hover:border-primary/50 hover:bg-muted/10 transition-all cursor-pointer bg-card"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${ticket.status === 'new' ? 'bg-blue-500' : 'bg-transparent border border-muted-foreground icon-scale'}`} />
+                    <span className="font-medium text-foreground group-hover:text-primary transition-colors">{ticket.subject}</span>
+                    <span className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full border border-border">
+                      {ticket.type || 'Support'}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {ticket.createdAt?.toDate?.()?.toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-end">
+                  <p className="text-sm text-muted-foreground line-clamp-2 flex-1 pr-4">
+                    {ticket.message}
+                  </p>
+                  <div className="text-xs font-medium text-muted-foreground bg-muted/20 px-2 py-1 rounded">
+                    {ticket.name}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const loadOutlookMessages = async () => {
+    setLoadingOutlook(true);
+    try {
+      const getAdminInbox = httpsCallable(functions, 'getAdminInbox');
+      const result = await getAdminInbox();
+      setOutlookMessages(result.data.messages || []);
+    } catch (error) {
+      console.error('Error loading Outlook messages:', error);
+      setMessage({ type: 'error', text: 'Failed to load Outlook messages' });
+    } finally {
+      setLoadingOutlook(false);
+    }
+  };
+
+  const renderOutlookInbox = () => {
+    if (selectedOutlookMessage) {
+      return (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setSelectedOutlookMessage(null)}
+              className="px-3 py-1 flex items-center gap-2 bg-transparent text-foreground hover:bg-muted border border-border"
+            >
+              <ChevronDown className="rotate-90" size={16} />
+              {t('common:back', 'Back')}
+            </Button>
+            <h3 className="text-xl font-semibold truncate">{selectedOutlookMessage.subject}</h3>
+          </div>
+
+          <div className="bg-card border border-border rounded-xl p-6">
+            <div className="flex justify-between items-start mb-6 pb-6 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
+                  {selectedOutlookMessage.from?.name?.charAt(0).toUpperCase() || '?'}
+                </div>
+                <div>
+                  <p className="font-medium text-lg text-foreground">{selectedOutlookMessage.from?.name || selectedOutlookMessage.from?.address}</p>
+                  <p className="text-sm text-muted-foreground">{selectedOutlookMessage.from?.address}</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/30 px-3 py-1 rounded-full">
+                  <Clock size={14} />
+                  {new Date(selectedOutlookMessage.receivedDateTime).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="prose prose-sm max-w-none mb-8 text-foreground/90 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: selectedOutlookMessage.body }} />
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+              {/* Reply functionality would rely on standard compose with pre-filled To address */}
+              <Button
+                onClick={() => {
+                  setEmailType('general');
+                  setFormData({
+                    to: selectedOutlookMessage.from?.address,
+                    subject: `Re: ${selectedOutlookMessage.subject}`,
+                    message: `\n\n----------------\nFrom: ${selectedOutlookMessage.from?.address}\nSent: ${new Date(selectedOutlookMessage.receivedDateTime).toLocaleString()}\nSubject: ${selectedOutlookMessage.subject}\n\n${selectedOutlookMessage.bodyPreview}`
+                  });
+                  setActiveTab('compose');
+                  setSelectedOutlookMessage(null);
+                }}
+                className="flex items-center gap-2"
+              >
+                <MessageSquare size={18} />
+                Reply
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {loadingOutlook ? (
+          <div className="text-center py-12 text-muted-foreground animate-pulse">Loading Outlook messages...</div>
+        ) : outlookMessages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+              <Mail size={32} className="text-blue-500" />
+            </div>
+            <p className="text-lg font-medium">No messages found</p>
+            <p className="text-sm opacity-70 mt-1">Your detailed Outlook inbox is empty.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {outlookMessages.map((msg) => (
+              <div
+                key={msg.id}
+                onClick={() => setSelectedOutlookMessage(msg)}
+                className={`group p-4 border border-border rounded-xl hover:border-blue-500/50 hover:bg-blue-50/10 transition-all cursor-pointer bg-card ${!msg.isRead ? 'border-l-4 border-l-blue-500' : ''}`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <span className="font-medium text-foreground group-hover:text-blue-600 transition-colors truncate">
+                      {msg.from?.name || msg.from?.address}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                    {new Date(msg.receivedDateTime).toLocaleDateString()}
+                  </span>
+                </div>
+                <h4 className="text-sm font-semibold mb-1 truncate">{msg.subject}</h4>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {msg.bodyPreview}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderHistory = () => (
     <div className="space-y-4">
       {loadingLogs ? (
@@ -394,12 +654,40 @@ const EmailCenter = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex gap-4 mb-6 border-b border-border">
             <button
-              onClick={() => setActiveTab('compose')}
-              className={`px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${
-                activeTab === 'compose'
-                  ? 'border-primary text-primary'
+              onClick={() => setActiveTab('inbox')}
+              className={`px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${activeTab === 'inbox'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <Inbox size={18} />
+                Inbox
+                {inboxTickets.filter(t => t.status === 'new').length > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">
+                    {inboxTickets.filter(t => t.status === 'new').length}
+                  </span>
+                )}
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('outlook')}
+              className={`px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${activeTab === 'outlook'
+                  ? 'border-[#0078D4] text-[#0078D4]'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <ExternalLink size={18} />
+                Outlook
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('compose')}
+              className={`px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${activeTab === 'compose'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Mail size={18} />
@@ -408,11 +696,10 @@ const EmailCenter = () => {
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${
-                activeTab === 'history'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
+              className={`px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${activeTab === 'history'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Clock size={18} />
@@ -422,7 +709,7 @@ const EmailCenter = () => {
           </div>
 
           <div className="bg-card border border-border rounded-xl p-6">
-            {activeTab === 'compose' ? renderComposeForm() : renderHistory()}
+            {activeTab === 'inbox' ? renderInbox() : activeTab === 'outlook' ? renderOutlookInbox() : activeTab === 'compose' ? renderComposeForm() : renderHistory()}
           </div>
         </div>
       </div>

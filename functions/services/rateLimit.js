@@ -312,7 +312,9 @@ exports.cleanupRateLimits = onSchedule({
 /**
  * Get rate limit status for current user
  */
-exports.getRateLimitStatus = onCall({ database: 'medishift', cors: true }, async (request) => {
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+
+exports.getRateLimitStatus = onCall(FUNCTION_CONFIG, async (request) => {
     if (!request.auth) {
         throw new HttpsError('unauthenticated', 'Must be authenticated');
     }

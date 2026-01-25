@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import styles from './workspaceSelector.module.css';
 
-const WorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorkspace, onOpenChange }) => {
+const WorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorkspace, onOpenChange, children }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const selectorRef = useRef(null);
@@ -11,7 +11,7 @@ const WorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorkspace, o
     const checkWidth = () => {
       setIsCompact(window.innerWidth < 768);
     };
-    
+
     checkWidth();
     window.addEventListener('resize', checkWidth);
     return () => window.removeEventListener('resize', checkWidth);
@@ -45,7 +45,7 @@ const WorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorkspace, o
 
   return (
     <div className={styles.workspaceSelector} ref={selectorRef}>
-      <button 
+      <button
         className={`${styles.selectorButton} ${isCompact ? styles.compact : ''}`}
         onClick={toggleDropdown}
       >
@@ -76,6 +76,7 @@ const WorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorkspace, o
               <span className={styles.workspaceName}>{workspace.name}</span>
             </button>
           ))}
+          {children}
         </div>
       )}
     </div>

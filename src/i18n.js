@@ -78,12 +78,12 @@ i18n
       transKeepBasicHtmlNodesFor: ['br', 'strong', 'i', 'p'],
     },
 
-    saveMissing: false,
+    saveMissing: true,
     parseMissingKeyHandler: (key) => {
-      return key;
+      return `[Missing ${key} translation]`;
     },
-    missingKeyHandler: (lng, ns, key, fallbackValue) => {
-      console.warn(`i18next::translator: missingKey ${lng} ${ns} ${key} ${key}`);
+    missingKeyHandler: (lng, ns, key) => {
+      console.log(`Missing ${ns}:${key} translation (${lng})`);
     },
     appendNamespaceToMissingKey: false,
     appendNamespaceToCIMode: false,

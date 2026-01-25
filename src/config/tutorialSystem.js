@@ -1,3 +1,5 @@
+export { LOCALSTORAGE_KEYS } from './keysDatabase';
+
 export {
     TUTORIAL_IDS,
     TUTORIAL_MODES,
@@ -5,8 +7,13 @@ export {
     ONBOARDING_TYPES,
     TARGET_AREAS,
     BUTTON_ACTIONS,
+    MESSAGE_TYPES,
     PROFILE_TAB_IDS,
+    FALLBACK_SIDEBAR_TOOLTIP_POSITION,
+    CENTERED_TOOLTIP_POSITION,
     TUTORIAL_STEP_DEFINITIONS,
+    TAB_ORDERS,
+    getTabOrder,
     getTutorialSteps,
     getStepById,
     getStepIndex,
@@ -66,13 +73,13 @@ export {
 export const getTutorialStepWithTranslation = (tutorialId, stepId, t) => {
     const { getStepById: getStep } = require('./tutorialConfig');
     const step = getStep(tutorialId, stepId);
-    
+
     if (!step) return null;
-    
+
     const translationKey = `tutorials.${tutorialId}.steps.${stepId}`;
     const title = t(`${translationKey}.title`, { ns: 'tutorial' });
     const content = t(`${translationKey}.content`, { ns: 'tutorial' });
-    
+
     return {
         ...step,
         title: title !== `${translationKey}.title` ? title : step.title,
@@ -83,12 +90,12 @@ export const getTutorialStepWithTranslation = (tutorialId, stepId, t) => {
 export const getTutorialStepsWithTranslations = (tutorialId, t) => {
     const { getTutorialSteps: getSteps } = require('./tutorialConfig');
     const steps = getSteps(tutorialId);
-    
+
     return steps.map(step => {
         const translationKey = `tutorials.${tutorialId}.steps.${step.id}`;
         const title = t(`${translationKey}.title`, { ns: 'tutorial' });
         const content = t(`${translationKey}.content`, { ns: 'tutorial' });
-        
+
         return {
             ...step,
             title: title !== `${translationKey}.title` ? title : undefined,

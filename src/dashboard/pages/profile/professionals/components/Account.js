@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { FiCreditCard, FiStar, FiCheck, FiZap, FiKey, FiUserX, FiSettings } from 'react-icons/fi';
@@ -6,6 +6,7 @@ import { auth } from '../../../../../services/firebase';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { useNotification } from '../../../../../contexts/NotificationContext';
+import { useTutorial } from '../../../../contexts/TutorialContext';
 
 import AccountDeletion from '../../components/AccountDeletion';
 import InputFieldHideUnhide from '../../../../../components/BoxedInputFields/InputFieldHideUnhide';
@@ -20,7 +21,7 @@ const styles = {
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium",
   sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  sectionsWrapper: "grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-[1400px] mx-auto",
+  sectionsWrapper: "account-sections-wrapper w-full max-w-[1400px] mx-auto",
   sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
   cardHeader: "flex items-center gap-3 mb-5 pb-4 border-b border-border/40",
   cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
@@ -49,6 +50,7 @@ const Account = ({
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
   const { currentUser } = useAuth();
   const { showNotification } = useNotification();
+  const { setAccessMode, accessLevelChoice } = useTutorial();
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -58,6 +60,14 @@ const Account = ({
   });
   const [passwordErrors, setPasswordErrors] = useState({});
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Only grant full access when accessing Account during tutorial
+  // Outside tutorial, Account is accessible without granting full access
+  useEffect(() => {
+    if (isTutorialActive && accessLevelChoice !== 'full' && setAccessMode) {
+      setAccessMode('full');
+    }
+  }, [isTutorialActive, accessLevelChoice, setAccessMode]);
 
   const currentSubscription = useMemo(() => {
     const subscription = formData?.platformSubscriptionPlan ||
@@ -170,6 +180,23 @@ const Account = ({
 
   return (
     <div className={styles.sectionContainer}>
+      <style>{`
+        .account-container {
+          container-type: inline-size;
+        }
+
+        .account-sections-wrapper {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
+        }
+
+        @container (max-width: 700px) {
+          .account-sections-wrapper {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
       <div className={styles.headerCard}>
         <div className="flex flex-col gap-1 flex-1">
           <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('account.title')}</h2>
@@ -177,37 +204,40 @@ const Account = ({
         </div>
       </div>
 
-      <div className={styles.sectionsWrapper}>
-        <div className={styles.sectionCard}>
-          <div className={styles.cardHeader}>
-            <div className={styles.cardIconWrapper}>
-              {isPremium ? (
-                <FiStar className="w-4 h-4" style={{ color: 'var(--premium-gold)' }} />
-              ) : (
-                <FiCreditCard className="w-4 h-4" style={styles.cardIconStyle} />
-              )}
+      <div className="account-container w-full max-w-[1400px] mx-auto">
+        <div className={styles.sectionsWrapper}>
+          <div className={styles.sectionCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper} style={{
+                backgroundColor: isPremium ? 'rgba(255, 215, 0, 0.15)' : 'rgba(37, 99, 235, 0.15)'
+              }}>
+                {isPremium ? (
+                  <FiStar className="w-4 h-4" style={{ color: 'var(--premium-gold)' }} />
+                ) : (
+                  <FiCreditCard className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
+                )}
+              </div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
+                  {t('subscription.title', 'Subscription')}
+                </h3>
+              </div>
+              <span className="px-3 py-1 text-xs font-semibold rounded-full" style={{
+                backgroundColor: isPremium ? 'rgba(255, 215, 0, 0.15)' : 'rgba(37, 99, 235, 0.15)',
+                color: isPremium ? 'var(--premium-gold)' : 'var(--primary-color)',
+                border: `1px solid ${isPremium ? 'rgba(255, 215, 0, 0.3)' : 'rgba(37, 99, 235, 0.3)'}`
+              }}>
+                {isPremium ? t('subscription.premium.title') : t('subscription.classic.title')}
+              </span>
             </div>
-            <div className={styles.cardTitle}>
-              <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
-                {t('subscription.title', 'Subscription')}
-              </h3>
-            </div>
-            <span className="px-3 py-1 text-xs font-semibold rounded-full" style={{
-              backgroundColor: isPremium ? 'rgba(255, 215, 0, 0.15)' : 'var(--primary-color-light)',
-              color: isPremium ? 'var(--premium-gold)' : 'var(--primary-color)',
-              border: `1px solid ${isPremium ? 'rgba(255, 215, 0, 0.3)' : 'var(--primary-color)'}`
-            }}>
-              {isPremium ? t('subscription.premium.title') : t('subscription.classic.title')}
-            </span>
-          </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-xl border-2" style={{ 
-              backgroundColor: isPremium ? 'rgba(255, 215, 0, 0.08)' : 'var(--muted)',
-              borderColor: isPremium ? 'rgba(255, 215, 0, 0.3)' : 'var(--border-color)'
+              backgroundColor: isPremium ? 'rgba(255, 215, 0, 0.08)' : 'rgba(37, 99, 235, 0.08)',
+              borderColor: isPremium ? 'rgba(255, 215, 0, 0.3)' : 'rgba(37, 99, 235, 0.3)'
             }}>
               <div>
-                <div className="text-2xl font-bold mb-1" style={{ color: isPremium ? 'var(--premium-gold)' : 'var(--text-color)' }}>
+                <div className="text-2xl font-bold mb-1" style={{ color: isPremium ? 'var(--premium-gold)' : 'var(--primary-color)' }}>
                   {isPremium ? t('subscription.premium.price') : t('subscription.classic.price')}
                 </div>
                 <div className="text-xs" style={{ color: 'var(--text-light-color)' }}>
@@ -229,14 +259,14 @@ const Account = ({
               ))}
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-col gap-3 pt-2 w-full">
               {!isPremium && (
                 <Button
                   type="button"
                   onClick={handleUpgradeToPremium}
                   disabled={isUpgrading}
                   style={{
-                    minWidth: '140px',
+                    width: '100%',
                     height: '42px',
                     fontSize: '14px',
                     fontWeight: '500',
@@ -253,7 +283,7 @@ const Account = ({
                 type="button"
                 variant="secondary"
                 style={{
-                  minWidth: '180px',
+                  width: '100%',
                   height: '42px',
                   fontSize: '14px',
                   fontWeight: '500'
@@ -404,6 +434,7 @@ const Account = ({
           </div>
 
           <AccountDeletion />
+          </div>
         </div>
       </div>
     </div>

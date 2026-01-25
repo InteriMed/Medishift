@@ -57,6 +57,7 @@ export const useProfileValidation = (formData, profileConfig, activeTab, isLoadi
 
         if (Array.isArray(fieldsOrRules)) {
             fieldsOrRules.forEach(checkField);
+            
         } else if (typeof fieldsOrRules === 'object') {
             Object.entries(fieldsOrRules).forEach(([key, rules]) => {
                 const list = get(data, `professionalDetails.${key}`) || get(data, key);

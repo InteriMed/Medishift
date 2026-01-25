@@ -203,6 +203,9 @@ const emailService = require('./api/emailService');
 module.exports.sendAdminEmail = emailService.sendAdminEmail;
 module.exports.sendSupportResponse = emailService.sendSupportResponse;
 module.exports.sendTeamInvitation = emailService.sendTeamInvitation;
+module.exports.sendTeamInvitation = emailService.sendTeamInvitation;
+module.exports.sendContactFormEmail = emailService.sendContactFormEmail;
+module.exports.getAdminInbox = emailService.getAdminInbox;
 
 // =========================================================================
 //  🔔 NOTIFICATION SERVICE - Global Email & SMS Notifications

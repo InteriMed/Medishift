@@ -3,7 +3,7 @@ import HeaderWorkspaceSelector from './WorkspaceSelector/WorkspaceSelector';
 import TutorialSelectionModal from '../modals/TutorialSelectionModal';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FiBell, FiUser, FiChevronDown, FiBriefcase, FiSettings, FiLogOut, FiX, FiMenu, FiArrowLeft, FiHelpCircle, FiRefreshCw, FiGlobe, FiCheck } from 'react-icons/fi';
+import { FiBell, FiUser, FiChevronDown, FiBriefcase, FiSettings, FiLogOut, FiX, FiMenu, FiArrowLeft, FiHelpCircle, FiRefreshCw, FiGlobe, FiCheck, FiSearch } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../../utils/cn';
 import { getPageConfig } from '../../config/pageConfig';
@@ -14,7 +14,7 @@ import { normalizePathname } from '../../utils/pathUtils';
 import useProfileData from '../../hooks/useProfileData';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
-import { TUTORIAL_IDS, isProfileTutorial, getProfileTutorialForType, ONBOARDING_TYPES } from '../../../config/tutorialSystem';
+import { TUTORIAL_IDS, getProfileTutorialForType, ONBOARDING_TYPES } from '../../../config/tutorialSystem';
 import { ServiceSearchBar } from '../../../service_tree';
 
 export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen = false, onBackButtonClick, showBackButton = false }) {
@@ -90,6 +90,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const notificationsRef = useRef(null);
   const profileMenuRef = useRef(null);
@@ -206,10 +207,10 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       return 'organization';
     } else if (path.includes('/settings')) {
       return 'settings';
-      } else if (path.includes('/profile')) {
-        // For profile page, use the comprehensive profile tabs tutorial
-        const onboardingType = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? ONBOARDING_TYPES.FACILITY : ONBOARDING_TYPES.PROFESSIONAL;
-        return getProfileTutorialForType(onboardingType);
+    } else if (path.includes('/profile')) {
+      // For profile page, use the comprehensive profile tabs tutorial
+      const onboardingType = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? ONBOARDING_TYPES.FACILITY : ONBOARDING_TYPES.PROFESSIONAL;
+      return getProfileTutorialForType(onboardingType);
     } else {
       // Default to dashboard tutorial for overview/dashboard pages
       return TUTORIAL_IDS.DASHBOARD;
@@ -223,13 +224,19 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       return;
     }
 
-    const isInOnboarding = showFirstTimeModal || isProfileTutorial(activeTutorial);
-
-    if (isInOnboarding) {
+    // Check if currently showing first time modal (actual onboarding in progress)
+    if (showFirstTimeModal) {
       restartOnboarding();
       return;
     }
 
+    // For profile pages, start the profile tutorial directly
+    if (location.pathname.includes('/profile')) {
+      restartOnboarding();
+      return;
+    }
+
+    // For other pages, show tutorial selection modal
     setShowTutorialSelectionModal(true);
   };
 
@@ -275,7 +282,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           onMobileMenuToggle && (
             <button
               onClick={onMobileMenuToggle}
-              className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-white/10 text-white transition-colors flex-shrink-0"
+              className="xl1200:hidden p-1.5 sm:p-2 rounded-lg hover:bg-white/10 text-white transition-colors flex-shrink-0"
               aria-label={t('common:header.toggleMenu', 'Toggle menu')}
             >
               {isMobileMenuOpen ? (
@@ -299,7 +306,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             </h1>
           </div>
         )}
-        
+
         {/* Workspace Selector */}
         {!isLoading && shouldShowWorkspaceSelector && (
           <div className="flex-shrink min-w-0">
@@ -309,7 +316,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
               onSelectWorkspace={switchWorkspace}
               onOpenChange={setWorkspaceSelectorOpen}
             >
-              {isProfessional && !hasFacilityMemberships && (
+              {isProfessional && (
                 <>
                   {workspaces && workspaces.length > 0 && (
                     <div className="my-1 h-px bg-border" />
@@ -345,7 +352,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                     <div className="my-1 h-px bg-border" />
                   )}
                   <button
-                    onClick={() => {}}
+                    onClick={() => { }}
                     className={cn(
                       "w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg transition-all",
                       "hover:bg-muted/50 text-primary"
@@ -376,20 +383,33 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
 
       {/* Right: Search, Notifications, Profile */}
       <div data-tutorial="header-right-actions" className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
-        {/* Search - Connected to Service Tree */}
-        <div className="relative" ref={searchRef}>
-          <ServiceSearchBar 
+        {/* Search - Desktop version */}
+        <div className="relative hidden xl1200:block" ref={searchRef}>
+          <ServiceSearchBar
             className="header-service-search"
             placeholder={t('common:header.search', 'Search...')}
           />
         </div>
 
-        {/* Notifications */}
-        <div className="relative" ref={notificationsRef}>
+        {/* Search - Icon button (1200px and below) */}
+        <button
+          onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+          className="xl1200:hidden relative text-white hover:opacity-80 transition-opacity flex-shrink-0 flex items-center justify-center"
+          style={{
+            height: 'var(--boxed-inputfield-height, 45px)',
+            width: 'var(--boxed-inputfield-height, 45px)'
+          }}
+          aria-label={t('common:header.search', 'Search')}
+        >
+          <FiSearch className="h-5 w-5" />
+        </button>
+
+        {/* Notifications - Hidden on mobile, moved to profile menu */}
+        <div className="relative hidden md:block" ref={notificationsRef}>
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
             className="relative text-white hover:opacity-80 transition-opacity flex-shrink-0 flex items-center justify-center"
-            style={{ 
+            style={{
               height: 'var(--boxed-inputfield-height, 45px)',
               width: 'var(--boxed-inputfield-height, 45px)'
             }}
@@ -439,17 +459,17 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         <button
           data-tutorial="onboarding-help-button"
           className={cn(
-            "relative text-white hover:opacity-80 transition-opacity flex-shrink-0 flex items-center justify-center",
+            "relative text-white hover:opacity-80 transition-opacity flex-shrink-0 flex items-center justify-center hidden md:flex",
             (isTutorialActive || showFirstTimeModal)
               ? "opacity-100"
               : "",
             isTutorialActive ? "px-3 gap-1.5 tutorial-button-active" : ""
           )}
-          style={{ 
+          style={{
             height: 'var(--boxed-inputfield-height, 45px)',
             width: isTutorialActive ? 'auto' : 'var(--boxed-inputfield-height, 45px)'
           }}
-          aria-label={isTutorialActive 
+          aria-label={isTutorialActive
             ? t('common:header.stopTutorial', 'Stop Tutorial')
             : t('common:header.startTutorial', 'Start Tutorial')
           }
@@ -466,12 +486,12 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           )}
         </button>
 
-        {/* Language Selector - Dropdown style like UserMenu */}
-        <div className="relative" ref={languageRef}>
+        {/* Language Selector - Dropdown style like UserMenu - Hidden on mobile */}
+        <div className="relative hidden md:block" ref={languageRef}>
           <button
             onClick={() => setLanguageOpen(!languageOpen)}
             className="flex items-center justify-center gap-1.5 text-white hover:opacity-80 transition-opacity px-3"
-            style={{ 
+            style={{
               height: 'var(--boxed-inputfield-height, 45px)'
             }}
           >
@@ -518,12 +538,12 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           <button
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
             className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity px-2"
-            style={{ 
+            style={{
               height: 'var(--boxed-inputfield-height, 45px)'
             }}
           >
-            <div 
-              className="rounded-lg flex items-center justify-center cursor-pointer transition-all flex-shrink-0"
+            <div
+              className="rounded-lg flex items-center justify-center cursor-pointer transition-all flex-shrink-0 relative"
               style={{
                 height: 'calc(var(--boxed-inputfield-height, 45px) - 8px)',
                 width: 'calc(var(--boxed-inputfield-height, 45px) - 8px)'
@@ -533,6 +553,10 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                 <img src={user.photoURL} alt={t('common:header.profileAlt', 'Profile')} className="h-full w-full rounded-lg object-cover" />
               ) : (
                 <FiUser className="h-4 w-4 text-white" />
+              )}
+              {/* Red dot for mobile when there are unread notifications */}
+              {unreadCount > 0 && (
+                <span className="md:hidden absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500 border-2 border-white animate-pulse" />
               )}
             </div>
             <FiChevronDown className={cn("w-3.5 h-3.5 text-white transition-transform hidden md:block", profileMenuOpen && "rotate-180")} />
@@ -546,6 +570,81 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                 <div className="text-xs text-muted-foreground truncate">{user?.email}</div>
               </div>
               <div className="p-1">
+                {/* Mobile-only: Notifications */}
+                <div className="md:hidden">
+                  <button
+                    onClick={() => { setNotificationsOpen(true); setProfileMenuOpen(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm text-black"
+                  >
+                    <FiBell className="w-4 h-4 text-black flex-shrink-0" />
+                    <span className="truncate flex-1 text-left">{typeof t('dashboard.header.notifications.title') === 'object' ? t('dashboard.header.notifications.title').title : t('dashboard.header.notifications.title', 'Notifications')}</span>
+                    {unreadCount > 0 && (
+                      <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+                  <div className="my-1 h-px bg-border" />
+                </div>
+
+                {/* Mobile-only: Tutorial */}
+                <button
+                  onClick={() => { handleTutorialButtonClick(); setProfileMenuOpen(false); }}
+                  className="md:hidden w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm text-black"
+                >
+                  <FiHelpCircle className="w-4 h-4 text-black flex-shrink-0" />
+                  <span className="truncate">
+                    {isTutorialActive
+                      ? (typeof t('common:header.stopTutorial') === 'object' ? t('common:header.stopTutorial').title : t('common:header.stopTutorial', 'Stop Tutorial'))
+                      : (typeof t('common:header.startTutorial') === 'object' ? t('common:header.startTutorial').title : t('common:header.startTutorial', 'Tutorial'))
+                    }
+                  </span>
+                </button>
+
+                {/* Mobile-only: Language Selector */}
+                <div className="md:hidden">
+                  <button
+                    onClick={() => setLanguageOpen(!languageOpen)}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm text-black"
+                  >
+                    <FiGlobe className="w-4 h-4 text-black flex-shrink-0" />
+                    <span className="truncate flex-1 text-left">{typeof t('common:header.language') === 'object' ? t('common:header.language').title : t('common:header.language', 'Language')}</span>
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">{i18n.language?.slice(0, 2) || 'EN'}</span>
+                  </button>
+
+                  {languageOpen && (
+                    <div className="ml-4 mt-1 mb-2 space-y-1">
+                      {[
+                        { code: 'en', name: 'English' },
+                        { code: 'fr', name: 'Français' },
+                        { code: 'de', name: 'Deutsch' }
+                      ].map((lang) => {
+                        const isActive = i18n.language === lang.code || i18n.language?.startsWith(lang.code);
+                        return (
+                          <button
+                            key={lang.code}
+                            onClick={() => {
+                              i18n.changeLanguage(lang.code);
+                              setLanguageOpen(false);
+                            }}
+                            className={cn(
+                              "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all",
+                              isActive
+                                ? "bg-muted/50"
+                                : "hover:bg-muted/30"
+                            )}
+                          >
+                            <span className="text-xs font-semibold uppercase w-6 text-muted-foreground">{lang.code}</span>
+                            <span className="flex-1 text-left text-foreground">{lang.name}</span>
+                            {isActive && <FiCheck className="w-3 h-3 text-primary flex-shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div className="my-1 h-px bg-border" />
+                </div>
+
                 <button onClick={() => { navigate('/dashboard/profile'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-sm text-black">
                   <FiUser className="w-4 h-4 text-black flex-shrink-0" /> <span className="truncate">{typeof t('dashboard.header.profile') === 'object' ? t('dashboard.header.profile').title : t('dashboard.header.profile', 'Profile')}</span>
                 </button>
@@ -568,6 +667,29 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           )}
         </div>
       </div>
+
+      {/* Mobile Search Overlay */}
+      {mobileSearchOpen && (
+        <div className="md:hidden fixed inset-0 bg-black/50 flex flex-col z-[15000]" onClick={() => setMobileSearchOpen(false)}>
+          <div className="bg-card p-4" style={{ backgroundColor: headerColor }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMobileSearchOpen(false)}
+                className="text-white hover:opacity-80 transition-opacity"
+                aria-label={t('common:close', 'Close')}
+              >
+                <FiArrowLeft className="h-5 w-5" />
+              </button>
+              <div className="flex-1">
+                <ServiceSearchBar
+                  className="header-service-search mobile-search-bar"
+                  placeholder={t('common:header.search', 'Search...')}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tutorial Selection Modal */}
       <TutorialSelectionModal

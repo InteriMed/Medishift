@@ -9,7 +9,6 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiUser,
-  FiBox,
   FiDollarSign,
   FiUsers
 } from 'react-icons/fi';
@@ -70,7 +69,7 @@ const REGULAR_SIDEBAR_ITEMS = [
   },
   {
     title: 'dashboard.sidebar.marketplace',
-    icon: FiBox,
+    icon: Briefcase,
     path: '/dashboard/marketplace',
     personalOnly: true
   },
@@ -151,6 +150,12 @@ const getAdminSidebarItems = (t) => [
     permission: PERMISSIONS.VIEW_AUDIT_LOGS
   },
   {
+    title: t('admin:sidebar.rolesPermissions', 'Roles & Permissions'),
+    icon: Shield,
+    path: '/dashboard/admin/system/roles-permissions',
+    permission: PERMISSIONS.VIEW_AUDIT_LOGS
+  },
+  {
     title: t('admin:sidebar.notifications', 'Notifications'),
     icon: Bell,
     path: '/dashboard/admin/system/notifications',
@@ -180,8 +185,20 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
   const { t } = useTranslation(['dashboard', 'admin']);
   const location = useLocation();
   const normalizedPathname = React.useMemo(() => normalizePathname(location.pathname), [location.pathname]);
-  const { isSidebarItemAccessible, forceUpdateElementPosition, isTutorialActive, activeTutorial, stepData, setShowAccessLevelModal, setAllowAccessLevelModalClose, accessLevelChoice } = useTutorial();
-  const { selectedWorkspace, completedTutorials = [], profileComplete, tutorialPassed } = useDashboard();
+  const {
+    isSidebarItemAccessible,
+    forceUpdateElementPosition,
+    isTutorialActive,
+    activeTutorial,
+    stepData,
+    setShowAccessLevelModal,
+    setAllowAccessLevelModalClose,
+    accessLevelChoice,
+    completedTutorials,
+    tabsProgress,
+    onboardingType: tutorialOnboardingType
+  } = useTutorial();
+  const { selectedWorkspace, profileComplete, tutorialPassed } = useDashboard();
   const { userProfile } = useAuth();
 
   const userRoles = userProfile?.roles || [];
@@ -199,7 +216,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
   const SIDEBAR_ORDER = ['overview', 'profile', 'messages', 'contracts', 'calendar', 'marketplace', 'payroll', 'organization', 'settings'];
 
   const getHighlightedItem = React.useMemo(() => {
-    // ONLY show highlight if tutorial is active
+    // Only highlight items when tutorial is active
     if (!isTutorialActive) {
       return null;
     }
@@ -213,7 +230,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
       return null;
     }
 
-    const isProfileTabsComplete = completedTutorials.includes(TUTORIAL_IDS.PROFILE_TABS) || completedTutorials.includes(TUTORIAL_IDS.FACILITY_PROFILE_TABS);
+    const isProfileTabsComplete = completedTutorials?.[TUTORIAL_IDS.PROFILE_TABS] === true || completedTutorials?.[TUTORIAL_IDS.FACILITY_PROFILE_TABS] === true;
     const isProfileComplete = profileComplete === true;
 
     if (!isProfileTabsComplete && !isProfileComplete) {
@@ -234,9 +251,9 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
             item === 'marketplace' ? TUTORIAL_IDS.MARKETPLACE :
               item === 'payroll' ? TUTORIAL_IDS.PAYROLL :
                 item === 'organization' ? TUTORIAL_IDS.ORGANIZATION :
-                  item === 'settings' ? TUTORIAL_IDS.SETTINGS : null;
+                  item === 'settings' ? TUTORIAL_IDS.ACCOUNT : null;
 
-      if (tutorialKey && !completedTutorials.includes(tutorialKey)) {
+      if (tutorialKey && completedTutorials?.[tutorialKey] !== true) {
         return item;
       }
     }
@@ -265,8 +282,9 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
   return (
     <aside
       className={cn(
-        "fixed left-0 top-16 h-[calc(100vh-4rem)] bg-sidebar transition-all duration-300 ease-in-out overflow-x-hidden",
-        collapsed ? "w-[70px]" : "w-64",
+        "fixed left-0 top-16 h-[calc(100vh-4rem)] bg-sidebar transition-all duration-300 ease-in-out overflow-x-hidden transform",
+        isOverlayMode ? "w-64" : (collapsed ? "w-[70px]" : "w-64"),
+        isOverlayMode ? (isOverlayExpanded ? "translate-x-0" : "-translate-x-full") : "translate-x-0",
         isMobile
           ? "z-[60] flex flex-col md:!hidden"
           : isOverlayMode
@@ -290,7 +308,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
           onClick={handleToggleClick}
           disabled={isTutorialActive}
           className={cn(
-            "w-full h-full rounded-md hover:bg-sidebar-accent text-sidebar-foreground/70 transition-colors flex items-center gap-2",
+            "w-full py-2 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/70 transition-colors flex items-center gap-2",
             collapsed ? "justify-center px-2" : "justify-start px-2",
             isTutorialActive && "opacity-50 cursor-not-allowed hover:bg-transparent"
           )}
@@ -355,17 +373,18 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
           const itemKey = item.path.split('/').pop();
           const shouldHighlight = getHighlightedItem === itemKey;
 
+          const isAdmin = !!(userProfile?.adminData && userProfile?.adminData.isActive !== false);
           const isAccessible = isAdminWorkspace
             ? (!item.permission || hasPermission(userRoles, item.permission))
-            : isSidebarItemAccessible(item.path);
+            : isAdmin || isSidebarItemAccessible(item.path);
 
           const isPersonalWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.PERSONAL;
           const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
 
           // Marketplace: Locked if profile not complete (tutorialPassed)
-          const isMarketplaceTeamLocked = itemKey === 'marketplace' && !isAccessible && isPersonalWorkspace;
+          const isMarketplaceTeamLocked = !isAdmin && itemKey === 'marketplace' && !isAccessible && isPersonalWorkspace;
           // Organization: Locked if profile not complete (tutorialPassed) 
-          const isOrganizationTeamLocked = itemKey === 'organization' && !isAccessible && isTeamWorkspace;
+          const isOrganizationTeamLocked = !isAdmin && itemKey === 'organization' && !isAccessible && isTeamWorkspace;
 
           if (!isAccessible && !isMarketplaceTeamLocked && !isOrganizationTeamLocked) {
             return (
@@ -457,15 +476,31 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
               key={item.path}
               to={workspaceAwarePath}
               onClick={(e) => {
-                const isCurrentlyOnProfile = location.pathname.includes('/profile');
-                const isClickingOtherTab = !item.path.includes('/profile');
-                const shouldShowAccessPopup = accessLevelChoice === 'team' || accessLevelChoice === 'loading';
+                const isAdmin = !!(userProfile?.adminData && userProfile?.adminData.isActive !== false);
+                if (isAdmin) {
+                  return;
+                }
 
-                if (isCurrentlyOnProfile && isClickingOtherTab && shouldShowAccessPopup) {
+                const isCurrentlyOnProfile = location.pathname.includes('/profile');
+                const isClickingMarketplace = item.path.includes('/marketplace');
+                const isTutorialMarketplaceTarget = isTutorialActive && stepData?.highlightSidebarItem === 'marketplace' && isClickingMarketplace;
+
+                const firstTabId = tutorialOnboardingType === 'facility' ? 'facilityCoreDetails' : 'personalDetails';
+                const isFirstTabComplete = tabsProgress?.[firstTabId] === true;
+
+                const shouldShowAccessPopup = (isTutorialActive && accessLevelChoice === null) ||
+                  (isTutorialActive && !isFirstTabComplete && accessLevelChoice !== 'full') ||
+                  (accessLevelChoice === 'team' && isClickingMarketplace);
+
+                if (shouldShowAccessPopup && !isTutorialMarketplaceTarget) {
                   e.preventDefault();
                   e.stopPropagation();
+
+                  // If personal details not complete, block closing the modal
+                  const allowClose = (accessLevelChoice === 'team' || accessLevelChoice === 'full') && isFirstTabComplete;
+
                   if (typeof setAllowAccessLevelModalClose === 'function') {
-                    setAllowAccessLevelModalClose(true);
+                    setAllowAccessLevelModalClose(allowClose);
                   }
                   if (typeof setShowAccessLevelModal === 'function') {
                     setShowAccessLevelModal(true);
@@ -498,7 +533,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                   "group relative flex gap-3 rounded-lg hover:bg-muted/50 transition-all cursor-pointer border-2 border-transparent",
                   collapsed ? "p-2 justify-center" : "p-3",
                   active && "bg-primary/5 border-primary/10",
-                  (isTutorialTarget || shouldHighlight) && "tutorial-highlight"
+                  isTutorialActive && (isTutorialTarget || shouldHighlight) && "tutorial-highlight"
                 );
               }}
             >

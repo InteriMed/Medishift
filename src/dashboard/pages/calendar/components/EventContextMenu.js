@@ -83,13 +83,14 @@ const EventContextMenu = ({
         <div
             ref={menuRef}
             className={cn(
-                "fixed z-40 min-w-[180px] rounded-lg shadow-xl",
+                "fixed z-[1000] min-w-[180px] rounded-lg shadow-xl",
                 "bg-card/95 backdrop-blur-md border border-border/60",
                 "py-2 animate-in fade-in zoom-in-95 duration-150"
             )}
             style={{
                 left: `${adjustedPosition.x}px`,
                 top: `${adjustedPosition.y}px`,
+                zIndex: 1000,
             }}
         >
             {/* Event Title Header */}

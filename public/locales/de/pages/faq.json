@@ -15,7 +15,8 @@
     "professionals": "Für Fachkräfte",
     "compliance": "Compliance & Vorschriften",
     "pricing": "Preise & Abrechnung",
-    "technical": "Technischer Support"
+    "technical": "Technischer Support",
+    "pharmacies": "For Facilities"
   },
   "contactCta": {
     "title": "Noch Fragen?",
@@ -140,6 +141,31 @@
           "answer": "Sie können unser technisches Support-Team per E-Mail unter support@medishift.com oder über das Kontaktformular auf unserer Website erreichen. Unser Team ist montags bis freitags von 9:00 bis 18:00 Uhr erreichbar."
         }
       }
+    },
+    "pharmacies": {
+      "name": "For Facilities",
+      "questions": {
+        "q1": {
+          "question": "How does InteriMed verify professionals?",
+          "answer": "We conduct a thorough verification of all professionals on our platform, including verification of diplomas, reference checks, and validation of professional registration. We ensure that all professionals meet Swiss regulatory requirements."
+        },
+        "q2": {
+          "question": "What types of positions can I post?",
+          "answer": "You can post temporary positions (from a single day to several weeks), part-time positions, and permanent positions. Our platform addresses various recruitment needs, from emergency coverage to long-term hires."
+        },
+        "q3": {
+          "question": "How quickly can I find staff for an urgent need?",
+          "answer": "Many facilities find qualified professionals within 24 hours for urgent needs. The exact timeframe depends on your location, specific requirements, and professionals available in your area."
+        },
+        "q4": {
+          "question": "What are the costs for healthcare facilities?",
+          "answer": "Facilities pay subscription fees based on their level of usage, plus a small transaction commission for each successful placement. Our pricing is transparent, with no hidden fees, and significantly lower than traditional recruitment agencies."
+        },
+        "q5": {
+          "question": "How can I define my staffing needs?",
+          "answer": "In your facility profile, you can easily create job postings by detailing your specific needs. Our interactive calendar allows you to plan your needs in advance or post urgent requests."
+        }
+      }
     }
   },
   "stillHaveQuestions": {
@@ -148,5 +174,13 @@
     "buttonText": "Support kontaktieren"
   },
   "title": "Title",
-  "noResults": "No Results"
+  "noResults": "No Results",
+  "hero": {
+    "badge": "Help Center",
+    "title": "Frequently Asked Questions"
+  },
+  "support": {
+    "title": "Need More Help?",
+    "description": "Our dedicated support team is available to assist you with any issues or inquiries you may have."
+  }
 }

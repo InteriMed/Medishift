@@ -247,7 +247,7 @@ const sendSupportResponse = onCall(
       if (ticketId) {
         const ticketRef = db.collection('supportTickets').doc(ticketId);
         const ticketDoc = await ticketRef.get();
-        
+
         if (ticketDoc.exists) {
           await ticketRef.update({
             status: 'responded',
@@ -371,10 +371,171 @@ const sendTeamInvitation = onCall(
   }
 );
 
+const sendContactFormEmail = onCall(
+  {
+    region: 'europe-west6',
+    secrets: [MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, MICROSOFT_TENANT_ID]
+  },
+  async (request) => {
+    const { data } = request;
+    const { name, email, phone, company, subject, message, type } = data;
+
+    if (!name || !email || !subject || !message) {
+      throw new HttpsError('invalid-argument', 'name, email, subject, and message are required');
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new HttpsError('invalid-argument', 'Invalid email address');
+    }
+
+    const inquiryTypes = {
+      general: 'General Inquiry',
+      professional: 'Professional Opportunities',
+      facility: 'Healthcare Facility',
+      partnership: 'Partnership Opportunities',
+      media: 'Media & Press'
+    };
+
+    const htmlBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #0066cc, #004999); padding: 24px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">New Contact Form Submission</h1>
+        </div>
+        <div style="padding: 32px; background: #ffffff;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; font-weight: bold; width: 140px; color: #666;">Inquiry Type:</td>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; color: #333;">${inquiryTypes[type] || 'General Inquiry'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; font-weight: bold; color: #666;">Name:</td>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; color: #333;">${name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; font-weight: bold; color: #666;">Email:</td>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; color: #333;"><a href="mailto:${email}" style="color: #0066cc;">${email}</a></td>
+            </tr>
+            ${phone ? `
+            <tr>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; font-weight: bold; color: #666;">Phone:</td>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; color: #333;">${phone}</td>
+            </tr>
+            ` : ''}
+            ${company ? `
+            <tr>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; font-weight: bold; color: #666;">Company:</td>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; color: #333;">${company}</td>
+            </tr>
+            ` : ''}
+            <tr>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; font-weight: bold; color: #666;">Subject:</td>
+              <td style="padding: 12px 0; border-bottom: 1px solid #e0e0e0; color: #333;">${subject}</td>
+            </tr>
+          </table>
+          
+          <div style="margin-top: 24px;">
+            <p style="color: #666; font-weight: bold; margin-bottom: 8px;">Message:</p>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #0066cc;">
+              ${message.replace(/\n/g, '<br>')}
+            </div>
+          </div>
+        </div>
+        <div style="background: #f8f9fa; padding: 16px; text-align: center; font-size: 12px; color: #666;">
+          <p style="margin: 0;">This message was sent from the MediShift Contact Form</p>
+          <p style="margin: 8px 0 0 0;">Reply directly to: <a href="mailto:${email}" style="color: #0066cc;">${email}</a></p>
+        </div>
+      </div>
+    `;
+
+    try {
+      await sendEmailViaMicrosoftGraph({
+        from: 'admin@medishift.ch',
+        to: 'admin@medishift.ch',
+        subject: `[Contact Form] ${subject}`,
+        htmlBody,
+        replyTo: email
+      });
+
+      await db.collection('contactSubmissions').add({
+        name,
+        email,
+        phone: phone || '',
+        company: company || '',
+        subject,
+        message,
+        type: type || 'general',
+        submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+        status: 'new'
+      });
+
+      logger.info('[Contact Form] Email sent to admin@medishift.ch', { from: email, subject });
+
+      return { success: true, message: 'Message sent successfully' };
+    } catch (error) {
+      logger.error('[Contact Form] Failed to send:', error);
+      throw new HttpsError('internal', 'Failed to send message. Please try again.');
+    }
+  }
+);
+
+const getAdminInbox = onCall(
+  {
+    region: 'europe-west6',
+    secrets: [MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, MICROSOFT_TENANT_ID]
+  },
+  async (request) => {
+    const { auth } = request;
+
+    if (!auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    const adminDoc = await db.collection('admins').doc(auth.uid).get();
+    if (!adminDoc.exists || adminDoc.data().isActive === false) {
+      throw new HttpsError('permission-denied', 'Only administrators can access the inbox');
+    }
+
+    try {
+      const accessToken = await getMicrosoftAccessToken();
+      const fromEmail = 'admin@medishift.ch';
+
+      // Fetch top 50 messages from Inbox, select specific fields for performance
+      const response = await axios.get(
+        `https://graph.microsoft.com/v1.0/users/${fromEmail}/mailFolders/Inbox/messages?$top=50&$select=id,subject,from,receivedDateTime,bodyPreview,isRead,body,toRecipients&$orderby=receivedDateTime desc`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const messages = response.data.value.map(msg => ({
+        id: msg.id,
+        subject: msg.subject,
+        from: msg.from?.emailAddress,
+        receivedDateTime: msg.receivedDateTime,
+        bodyPreview: msg.bodyPreview,
+        body: msg.body?.content,
+        isRead: msg.isRead,
+        toRecipients: msg.toRecipients?.map(r => r.emailAddress)
+      }));
+
+      return { success: true, messages };
+    } catch (error) {
+      logger.error('[Admin Inbox] Failed to fetch emails:', error.response?.data || error.message);
+      throw new HttpsError('internal', 'Failed to fetch emails from Outlook');
+    }
+  }
+);
+
 module.exports = {
   sendAdminEmail,
   sendSupportResponse,
   sendTeamInvitation,
-  sendEmailViaMicrosoftGraph
+  sendContactFormEmail,
+  sendEmailViaMicrosoftGraph,
+  getAdminInbox
 };
 

@@ -368,7 +368,7 @@ const useProfileData = () => {
         userId: currentUser.uid,
         createdAt: profileDoc.exists() ? profileDoc.data().createdAt : now,
         updatedAt: now,
-        tutorialAccessMode: 'loading',
+        tutorialAccessMode: null,
         currentStepIndex: 0,
         subscriptionTier: 'free',
         ...(userRole === 'professional' ? {

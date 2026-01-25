@@ -38,7 +38,7 @@ const Subscription = ({
       formData?.subscriptionTier ||
       formData?.subscription?.tier ||
       'classic';
-    
+
     return subscription === 'premium' ? 'premium' : 'classic';
   }, [formData]);
 
@@ -101,45 +101,51 @@ const Subscription = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Current Plan Card - Grey Div */}
-        <div className="bg-gray-100 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col h-full">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20">
+        {/* Current Plan Card - Enhanced Free/Classic Design */}
+        <div className={`rounded-xl border shadow-sm overflow-hidden flex flex-col h-full transition-all duration-300 ${isPremium
+            ? 'bg-gray-100 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'
+            : 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800/50 shadow-md'
+          }`}>
+          <div className={`p-6 border-b ${isPremium ? 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20' : 'border-emerald-200/50 dark:border-emerald-800/30 bg-white/50 dark:bg-emerald-900/10'}`}>
             <div className="flex items-center justify-between mb-4">
-              <div className={`p-2 rounded-lg ${isPremium ? 'bg-yellow-100 text-yellow-700' : 'bg-white text-gray-700 border shadow-sm'}`}>
+              <div className={`p-3 rounded-xl ${isPremium ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 border-2 border-emerald-200 dark:border-emerald-700 shadow-sm'}`}>
                 {isPremium ? <FiStar className="w-6 h-6" /> : <FiCreditCard className="w-6 h-6" />}
               </div>
               <div className="text-right">
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{t('subscription.currentPlan')}</div>
-                <div className={`text-lg font-bold ${isPremium ? 'text-yellow-700' : 'text-foreground'}`}>
+                <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${isPremium ? 'text-muted-foreground' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                  {t('subscription.currentPlan')}
+                </div>
+                <div className={`text-lg font-bold ${isPremium ? 'text-yellow-700 dark:text-yellow-500' : 'text-emerald-700 dark:text-emerald-300'}`}>
                   {isPremium ? t('subscription.premium.title') : t('subscription.classic.title')}
                 </div>
               </div>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-bold">
+              <span className={`text-3xl font-bold ${isPremium ? 'text-foreground' : 'text-emerald-700 dark:text-emerald-300'}`}>
                 {isPremium ? t('subscription.premium.price') : t('subscription.classic.price')}
               </span>
-              <span className="text-sm text-muted-foreground">{t('subscription.perMonth')}</span>
+              {!isPremium && <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">{t('subscription.perMonth')}</span>}
+              {isPremium && <span className="text-sm text-muted-foreground">{t('subscription.perMonth')}</span>}
             </div>
           </div>
-          
+
           <div className="p-6 flex-1">
-            <h4 className="font-medium mb-4 flex items-center gap-2">
-              <FiShield className="w-4 h-4 text-primary" />
+            <h4 className={`font-semibold mb-4 flex items-center gap-2 ${isPremium ? 'text-foreground' : 'text-emerald-700 dark:text-emerald-300'}`}>
+              <FiShield className={`w-4 h-4 ${isPremium ? 'text-primary' : 'text-emerald-600 dark:text-emerald-400'}`} />
               {t('subscription.includedFeatures')}
             </h4>
             <ul className="space-y-3">
               {(isPremium ? premiumFeatures : classicFeatures).map((feature, index) => (
-                <li key={index} className="flex items-start gap-3 text-sm text-muted-foreground">
-                  <FiCheck className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isPremium ? 'text-yellow-600' : 'text-green-600'}`} />
+                <li key={index} className={`flex items-start gap-3 text-sm ${isPremium ? 'text-muted-foreground' : 'text-emerald-800 dark:text-emerald-200'}`}>
+                  <FiCheck className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isPremium ? 'text-yellow-600' : 'text-emerald-600 dark:text-emerald-400'}`} />
                   <span>{feature}</span>
                 </li>
               ))}
             </ul>
           </div>
-          
-          <div className="p-4 bg-gray-200/50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 mt-auto">
-             <Button
+
+          <div className={`p-4 border-t mt-auto ${isPremium ? 'bg-gray-200/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700' : 'bg-emerald-100/50 dark:bg-emerald-900/20 border-emerald-200/50 dark:border-emerald-800/30'}`}>
+            <Button
               type="button"
               variant="outline"
               onClick={handleManageSubscription}
@@ -155,13 +161,13 @@ const Subscription = ({
         {!isPremium ? (
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl shadow-lg overflow-hidden flex flex-col h-full relative">
             <div className="absolute top-0 right-0 p-32 bg-yellow-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-            
+
             <div className="p-8 flex-1 relative z-10">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold uppercase tracking-wider mb-6 border border-yellow-500/20">
                 <FiStar className="w-3 h-3" />
                 Recommended
               </div>
-              
+
               <h3 className="text-2xl font-bold mb-2 text-white">{t('subscription.premium.title')}</h3>
               <p className="text-slate-300 mb-8 max-w-md">
                 {t('subscription.unlockPremiumFeatures')}
@@ -190,7 +196,7 @@ const Subscription = ({
                 type="button"
                 onClick={handleUpgradeToPremium}
                 disabled={isUpgrading}
-                className="w-full bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-bold border-0"
+                className="w-full bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-bold border-0 py-3"
               >
                 {isUpgrading ? t('subscription.upgrading') : t('subscription.upgradeToPremium')}
               </Button>

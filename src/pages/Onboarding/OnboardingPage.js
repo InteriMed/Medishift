@@ -102,7 +102,7 @@ const OnboardingPage = () => {
 
                     const forceRestart = query.get('restart') === 'true';
                     if (typeProgress.completed && !forceRestart) {
-                        navigate(`/${lang}/dashboard`);
+                        navigate(`/${lang}/dashboard/profile`);
                         return;
                     }
 
@@ -254,8 +254,19 @@ const OnboardingPage = () => {
                     ...(onboardingType === 'professional' ? { onboardingCompleted: true } : {}),
                     updatedAt: new Date()
                 });
+
+                const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+                const profileDocRef = doc(db, profileCollection, currentUser.uid);
+                const profileDoc = await getDoc(profileDocRef);
+                
+                if (profileDoc.exists()) {
+                    await updateDoc(profileDocRef, {
+                        shouldStartTutorial: true,
+                        updatedAt: new Date()
+                    });
+                }
             }
-            navigate(`/${lang}/dashboard`);
+            navigate(`/${lang}/dashboard/profile`);
         } catch (err) {
             console.error(err);
             setIsProcessing(false);
@@ -300,12 +311,12 @@ const OnboardingPage = () => {
                         <div key={s} className="flex items-center gap-2">
                             <div
                                 className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 
-                                    ${step >= s ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400'} 
+                                    ${step >= s ? 'bg-[var(--color-logo-1)] text-white shadow-lg' : 'bg-slate-100 text-slate-400'} 
                                 `}
                             >
                                 {step > s ? <FiCheck /> : s}
                             </div>
-                            {s < (role === 'chain' ? 3 : role === 'company' ? 5 : 4) && <div className={`w-12 h-1.5 rounded-full ${step > s ? 'bg-indigo-600' : 'bg-slate-100'}`} />}
+                            {s < (role === 'chain' ? 3 : role === 'company' ? 5 : 4) && <div className={`w-12 h-1.5 rounded-full ${step > s ? 'bg-[var(--color-logo-1)]' : 'bg-slate-100'}`} />}
                         </div>
                     ))}
                 </div>
@@ -365,9 +376,9 @@ const OnboardingPage = () => {
                                     <div
                                         key={r.id}
                                         onClick={() => setRole(r.id)}
-                                        className={`group p-6 rounded-[2.5rem] border-2 transition-all cursor-pointer flex items-center gap-8 ${role === r.id ? 'border-indigo-600 bg-indigo-50/50 shadow-xl' : 'border-slate-100 hover:border-indigo-300 bg-white shadow-sm'}`}
+                                        className={`group p-6 rounded-[2.5rem] border-2 transition-all cursor-pointer flex items-center gap-8 ${role === r.id ? 'border-[var(--color-logo-1)] bg-blue-50/50 shadow-xl' : 'border-slate-100 hover:border-blue-300 bg-white shadow-sm'}`}
                                     >
-                                        <div className={`w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center transition-all duration-500 shadow-sm ${role === r.id ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                                        <div className={`w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center transition-all duration-500 shadow-sm ${role === r.id ? 'bg-[var(--color-logo-1)] text-white' : 'bg-slate-50 text-slate-400'}`}>
                                             {React.cloneElement(r.icon, { className: "w-8 h-8" })}
                                         </div>
                                         <div className="flex-grow">
@@ -375,7 +386,7 @@ const OnboardingPage = () => {
                                             <p className="text-slate-500 font-medium text-sm leading-relaxed">{r.desc}</p>
                                         </div>
                                         <div
-                                            className={`flex-shrink-0 rounded-full border-2 flex items-center justify-center transition-all ${role === r.id ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-slate-200'}`}
+                                            className={`flex-shrink-0 rounded-full border-2 flex items-center justify-center transition-all ${role === r.id ? 'bg-[var(--color-logo-1)] border-[var(--color-logo-1)]' : 'bg-white border-slate-200'}`}
                                             style={{
                                                 width: '24px',
                                                 height: '24px',
@@ -424,7 +435,7 @@ const OnboardingPage = () => {
                                 <div className="space-y-6 flex flex-col justify-center text-left">
                                     {role === 'worker' && (
                                         <div
-                                            className={`p-6 px-8 rounded-2xl border transition-all flex items-center justify-between cursor-pointer group ${belongsToFacility ? 'border-indigo-600 bg-indigo-50/50 shadow-md' : 'border-slate-100 bg-white hover:border-indigo-200 shadow-sm'}`}
+                                            className={`p-6 px-8 rounded-2xl border transition-all flex items-center justify-between cursor-pointer group ${belongsToFacility ? 'border-[var(--color-logo-1)] bg-blue-50/50 shadow-md' : 'border-slate-100 bg-white hover:border-blue-200 shadow-sm'}`}
                                             onClick={(e) => {
                                                 if (!e.target.closest('.switch-wrapper')) {
                                                     setBelongsToFacility(!belongsToFacility);
@@ -433,7 +444,7 @@ const OnboardingPage = () => {
                                         >
                                             <div className="flex items-center gap-6">
                                                 <div 
-                                                    className={`flex-shrink-0 rounded-2xl flex items-center justify-center transition-all ${belongsToFacility ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}
+                                                    className={`flex-shrink-0 rounded-2xl flex items-center justify-center transition-all ${belongsToFacility ? 'bg-[var(--color-logo-1)] text-white shadow-lg shadow-blue-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}
                                                     style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
                                                 >
                                                     <FiHome className="w-7 h-7" />
@@ -453,7 +464,7 @@ const OnboardingPage = () => {
                                     )}
 
                                     <div
-                                        className={`p-6 px-8 rounded-2xl border transition-all flex items-center justify-between cursor-pointer group ${legalConsiderationsConfirmed ? 'border-indigo-600 bg-indigo-50/50 shadow-md' : 'border-slate-100 bg-white hover:border-indigo-200 shadow-sm'}`}
+                                        className={`p-6 px-8 rounded-2xl border transition-all flex items-center justify-between cursor-pointer group ${legalConsiderationsConfirmed ? 'border-[var(--color-logo-1)] bg-blue-50/50 shadow-md' : 'border-slate-100 bg-white hover:border-blue-200 shadow-sm'}`}
                                         onClick={(e) => {
                                             // Don't toggle if clicking on the switch or its children, or the link
                                             if (!e.target.closest('.switch-wrapper') && !e.target.closest('a')) {
@@ -463,7 +474,7 @@ const OnboardingPage = () => {
                                     >
                                         <div className="flex items-center gap-6">
                                             <div 
-                                                className={`flex-shrink-0 rounded-2xl flex items-center justify-center transition-all ${legalConsiderationsConfirmed ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}
+                                                className={`flex-shrink-0 rounded-2xl flex items-center justify-center transition-all ${legalConsiderationsConfirmed ? 'bg-[var(--color-logo-1)] text-white shadow-lg shadow-blue-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}
                                                 style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
                                             >
                                                 <FiShield className="w-7 h-7" />
@@ -832,7 +843,18 @@ const OnboardingPage = () => {
                                         onboardingCompleted: true,
                                         updatedAt: new Date()
                                     });
-                                    navigate(`/${lang}/dashboard`);
+
+                                    const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
+                                    const profileDocRef = doc(db, profileCollection, currentUser.uid);
+                                    const profileDoc = await getDoc(profileDocRef);
+                                    
+                                    if (profileDoc.exists()) {
+                                        await updateDoc(profileDocRef, {
+                                            shouldStartTutorial: true,
+                                            updatedAt: new Date()
+                                        });
+                                    }
+                                    navigate(`/${lang}/dashboard/profile`);
                                 } catch (err) {
                                     console.error('Error creating profile:', err);
                                     setIsCreatingProfile(false);

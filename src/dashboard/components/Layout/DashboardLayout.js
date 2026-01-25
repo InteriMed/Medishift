@@ -48,6 +48,10 @@ const DashboardLayout = ({ children }) => {
       height: 'calc(100vh - 4rem)',
       overflow: 'visible',
       transition: 'margin-left 0.3s ease',
+      marginLeft:
+        isSidebarOpen && window.innerWidth >= 1350
+          ? (isSidebarCollapsed ? '70px' : (maxWidthSidebarDashboard || '256px'))
+          : 0,
       margin: 0,
       padding: 0,
     },

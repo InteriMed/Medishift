@@ -1,4 +1,4 @@
-import { TUTORIAL_IDS, ACCESS_MODES, PROFILE_TAB_IDS } from './tutorialConfig';
+import { TUTORIAL_IDS, ACCESS_MODES, PROFILE_TAB_IDS, getTabOrder } from './tutorialConfig';
 import { isProfileTutorial } from './tutorialSequences';
 
 export const WORKSPACE_TYPES = {
@@ -8,11 +8,11 @@ export const WORKSPACE_TYPES = {
 };
 
 export const FEATURE_ACCESS_RULES = {
-    overview: { 
-        alwaysAccessible: true 
+    overview: {
+        alwaysAccessible: true
     },
-    dashboard: { 
-        alwaysAccessible: true 
+    dashboard: {
+        alwaysAccessible: true
     },
     profile: {
         accessibleWhen: [
@@ -74,28 +74,28 @@ export const TEAM_ACCESS_LOCKED_TABS = [
 ];
 
 export const PLATFORM_FEATURES = [
-    'messages', 
-    'contracts', 
-    'calendar', 
-    'marketplace', 
-    'organization', 
-    'settings', 
+    'messages',
+    'contracts',
+    'calendar',
+    'marketplace',
+    'organization',
+    'settings',
     'payroll'
 ];
 
 export const evaluateFeatureAccess = (featureName, context) => {
-    const { 
-        tutorialPassed, 
-        isTutorialActive, 
-        activeTutorial, 
-        currentStep, 
-        accessMode, 
+    const {
+        tutorialPassed,
+        isTutorialActive,
+        activeTutorial,
+        currentStep,
+        accessMode,
         workspaceType,
-        completedTutorials 
+        completedTutorials
     } = context;
 
     const rule = FEATURE_ACCESS_RULES[featureName];
-    
+
     if (!rule) {
         return true;
     }
@@ -123,7 +123,7 @@ export const evaluateFeatureAccess = (featureName, context) => {
 
     if (rule.requiresAccess) {
         if (rule.orTutorialPassed && tutorialPassed) return true;
-        
+
         if (!rule.requiresAccess.includes(accessMode)) {
             return false;
         }
@@ -132,7 +132,7 @@ export const evaluateFeatureAccess = (featureName, context) => {
             const restriction = rule.workspaceRestrictions[workspaceType];
             if (restriction === false) return false;
         }
-        
+
         return true;
     }
 
@@ -145,24 +145,31 @@ export const isSidebarItemAccessible = (itemPath, context) => {
 };
 
 export const isProfileTabAccessible = (tabId, context) => {
-    const { accessMode, isTutorialActive, maxAccessedProfileTab } = context;
-    
+    const { accessMode, isTutorialActive, maxAccessedProfileTab, highlightTab, onboardingType } = context;
+
     if (accessMode === ACCESS_MODES.TEAM && TEAM_ACCESS_LOCKED_TABS.includes(tabId)) {
         return false;
     }
 
-    if (isTutorialActive && maxAccessedProfileTab) {
-        const tabOrder = [
-            PROFILE_TAB_IDS.PERSONAL_DETAILS,
-            PROFILE_TAB_IDS.PROFESSIONAL_BACKGROUND,
-            PROFILE_TAB_IDS.BILLING_INFORMATION,
-            PROFILE_TAB_IDS.DOCUMENT_UPLOADS
-        ];
-        const currentMaxIndex = tabOrder.indexOf(maxAccessedProfileTab);
-        const targetIndex = tabOrder.indexOf(tabId);
-        
-        if (targetIndex > currentMaxIndex + 1) {
-            return false;
+    if (isTutorialActive) {
+        // If full access, the user can navigate anywhere; only tooltips are active
+        if (accessMode === ACCESS_MODES.FULL) {
+            return true;
+        }
+
+        // 1. Always accessible if explicitly highlighted by the tutorial
+        if (highlightTab && highlightTab === tabId) return true;
+
+        // 2. Progressive Mode: Otherwise respect maxAccessedProfileTab
+        if (maxAccessedProfileTab) {
+            const tabOrder = getTabOrder(onboardingType);
+            const currentMaxIndex = tabOrder.indexOf(maxAccessedProfileTab);
+            const targetIndex = tabOrder.indexOf(tabId);
+
+            if (targetIndex !== -1 && currentMaxIndex !== -1) {
+                // Allow anything current or below
+                return targetIndex <= currentMaxIndex;
+            }
         }
     }
 
@@ -171,28 +178,28 @@ export const isProfileTabAccessible = (tabId, context) => {
 
 export const shouldShowAccessLevelChoice = (context) => {
     const { isTutorialActive, activeTutorial, maxAccessedProfileTab, pendingTabId } = context;
-    
+
     if (!isTutorialActive) return false;
     if (!isProfileTutorial(activeTutorial)) return false;
-    
-    if (maxAccessedProfileTab === PROFILE_TAB_IDS.PERSONAL_DETAILS && 
+
+    if (maxAccessedProfileTab === PROFILE_TAB_IDS.PERSONAL_DETAILS &&
         pendingTabId === PROFILE_TAB_IDS.PROFESSIONAL_BACKGROUND) {
         return true;
     }
-    
+
     return false;
 };
 
 export const canNavigateDuringTutorial = (targetPath, context) => {
     const { isTutorialActive, showFirstTimeModal, tutorialPassed } = context;
-    
+
     if (tutorialPassed) return true;
     if (!isTutorialActive && !showFirstTimeModal) return true;
-    
+
     if (showFirstTimeModal) {
         return targetPath.includes('overview') || targetPath.includes('profile');
     }
-    
+
     return isSidebarItemAccessible(targetPath, context);
 };
 

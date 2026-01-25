@@ -21,7 +21,7 @@ const styles = {
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium",
   sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  sectionsWrapper: "grid grid-cols-1 gap-4 w-full max-w-[1400px] mx-auto",
+  sectionsWrapper: "facility-account-sections-wrapper w-full max-w-[1400px] mx-auto",
   sectionCard: "bg-card rounded-2xl border border-border/50 p-5 shadow-lg backdrop-blur-sm w-full",
   cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
   cardIconWrapper: "p-2 rounded-lg bg-primary/10 flex-shrink-0",
@@ -180,6 +180,18 @@ const Account = ({
 
   return (
     <div className={styles.sectionContainer}>
+      <style>{`
+        .facility-account-container {
+          container-type: inline-size;
+        }
+
+        .facility-account-sections-wrapper {
+          container-type: inline-size;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+      `}</style>
       <div className={styles.headerCard}>
         <div className="flex flex-col gap-1 flex-1">
           <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('account.title')}</h2>

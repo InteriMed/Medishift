@@ -25,16 +25,20 @@ const DEFAULT_BIO = "";
 // Tailwind styles
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex personal-details-header",
+  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex flex-col personal-details-header",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium",
   sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   subtitleRow: "flex items-end justify-between gap-4",
+  headerGrid: "grid grid-cols-1 gap-4 w-full",
+  headerTitleCol: "flex flex-col gap-1 items-start text-left",
+  headerCompletionCol: "flex items-center justify-center",
+  headerAutofillCol: "flex items-center justify-end",
   mandatoryFieldLegend: "text-xs",
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "personal-details-sections-wrapper flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
+  sectionsWrapper: "personal-details-sections-wrapper w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
   sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
@@ -418,31 +422,47 @@ const PersonalDetails = ({
           container-type: inline-size;
         }
         
-        .personal-details-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 1rem;
-        }
-        
-        .personal-details-actions {
+        .personal-details-header-grid {
+          display: grid;
+          gap: 1.5rem;
           width: 100%;
-          justify-content: space-between;
+          grid-template-columns: 1fr 1fr;
+          grid-template-areas: 
+            "title title"
+            "completion autofill";
+          align-items: center;
         }
 
-        @container (min-width: 700px) {
+        .header-title-row {
+          grid-area: title;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .header-completion-centered {
+          grid-area: completion;
+          display: flex;
+          justify-content: flex-start;
+          width: 100%;
+        }
+
+        .header-autofill-right {
+          grid-area: autofill;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .personal-details-sections-wrapper {
+          container-type: inline-size;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
+        }
+
+        @container (max-width: 700px) {
           .personal-details-sections-wrapper {
-            flex-direction: row;
-          }
-          
-          .personal-details-header {
-            flex-direction: row;
-            align-items: center;
-            gap: 0;
-          }
-          
-          .personal-details-actions {
-            width: auto;
-            justify-content: flex-end;
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
@@ -451,59 +471,66 @@ const PersonalDetails = ({
 
         {/* Title Card */}
         <div className={styles.headerCard}>
-          <div className="flex flex-col gap-1 flex-1">
-            <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('personalDetails.title')}</h2>
-            <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('personalDetails.subtitle', 'Please ensure your personal details are accurate and up to date.')}</p>
+          <div className="personal-details-header-grid">
+            <div className="header-title-row">
+              <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('personalDetails.title')}</h2>
+              <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('personalDetails.subtitle', 'Please ensure your personal details are accurate and up to date.')}</p>
+            </div>
+
+            {isTutorialActive && (
+              <>
+                <div className="header-completion-centered">
+                  {formData && completionPercentage !== undefined && (
+                    <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                      <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                      <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                        <div
+                          className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                          style={{ width: `${completionPercentage}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="header-autofill-right">
+                  <div className="relative" ref={autoFillButtonRef}>
+                    <button
+                      onClick={handleAutoFillClick}
+                      disabled={isUploading || isAnalyzing}
+                      className={cn(
+                        "group px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0",
+                        (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
+                        (stepData?.highlightUploadButton) && "tutorial-highlight"
+                      )}
+                      style={{ height: 'var(--boxed-inputfield-height)', backgroundColor: 'rgba(255, 191, 14, 1)' }}
+                      data-tutorial="profile-upload-button"
+                    >
+                      {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4 text-muted-foreground group-hover:text-black transition-colors" />}
+                      <span className="text-sm font-medium text-muted-foreground group-hover:text-black transition-colors">
+                        {isAnalyzing
+                          ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
+                          : t('dashboardProfile:documents.autofill', 'Auto Fill')
+                        }
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {isTutorialActive && (
-            <div className="personal-details-actions flex items-center gap-3">
-              <div className="relative" ref={autoFillButtonRef}>
-                <button
-                  onClick={handleAutoFillClick}
-                  disabled={isUploading || isAnalyzing}
-                  className={cn(
-                    "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0 text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
-                    (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
-                    (stepData?.highlightUploadButton) && "tutorial-highlight"
-                  )}
-                  style={{ height: 'var(--boxed-inputfield-height)' }}
-                  data-tutorial="profile-upload-button"
-                >
-                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4" />}
-                  <span className="text-sm font-medium">
-                    {isAnalyzing
-                      ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
-                      : t('dashboardProfile:documents.autofill', 'Auto Fill')
-                    }
-                  </span>
-                </button>
-              </div>
-              {uploadInputRef && (
-                <UploadFile
-                  ref={uploadInputRef}
-                  onChange={handleFileUpload}
-                  isLoading={isUploading}
-                  progress={uploadProgress}
-                  accept=".pdf,.doc,.docx,.jpg,.png"
-                  label=""
-                  className="hidden"
-                />
-              )}
-
-              {formData && completionPercentage !== undefined && (
-                <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                  <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                  <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                      style={{ width: `${completionPercentage}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
-                </div>
-              )}
-            </div>
+          {isTutorialActive && uploadInputRef && (
+            <UploadFile
+              ref={uploadInputRef}
+              onChange={handleFileUpload}
+              isLoading={isUploading}
+              progress={uploadProgress}
+              accept=".pdf,.doc,.docx,.jpg,.png"
+              label=""
+              className="hidden"
+            />
           )}
         </div>
 

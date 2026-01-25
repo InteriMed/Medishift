@@ -46,17 +46,21 @@
           "title": "Full Access Unlocked!",
           "content": "Congratulations! You've provided all required information. You now have full access to all platform features, including the marketplace and contract management."
         },
-        "account-tab": {
-          "title": "Step 5: Account Settings",
-          "content": "Review your account details. This is where you can manage your email and profile preferences."
-        },
-        "settings-tab": {
-          "title": "Step 6: Preferences",
-          "content": "Finally, configure your notification preferences and availability to ensure you get the right opportunities at the right time."
+        "marketplace-tab": {
+          "title": "Step 5: Marketplace Preferences",
+          "content": "Configure your marketplace visibility and notification preferences. This controls how recruiters can find you for long-term positions."
         },
         "profile-completion-info": {
-          "title": "Profile Complete!",
-          "content": "Congratulations! Your profile is now complete. You have access to all platform features. Let's continue to the next section."
+          "title": "Documents Complete!",
+          "content": "Great! Your documents have been uploaded. You now have full access to all platform features. Let's continue to the next section."
+        },
+        "account-tab": {
+          "title": "Profile Tutorial Finished!",
+          "content": "Great job! You've completed your profile setup. You now have full access to all platform features. Let's continue to the messages section to learn how to communicate with facilities."
+        },
+        "redirect-to-messages": {
+          "title": "Redirecting...",
+          "content": "You will now be redirected to the messages tutorial."
         }
       }
     },
@@ -227,7 +231,8 @@
     "previous": "Previous",
     "skip": "Skip",
     "finish": "Finish",
-    "restart": "Restart Tutorial"
+    "restart": "Restart Tutorial",
+    "startMessages": "Start Messages Tutorial"
   },
   "accessLevel": {
     "full": {

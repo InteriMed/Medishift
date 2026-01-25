@@ -5,7 +5,7 @@
     "tabs": [
       { "id": "facilityCoreDetails", "labelKey": "tabs.facilityCoreDetails" },
       { "id": "facilityLegalBilling", "labelKey": "tabs.facilityLegalBilling" },
-      { "id": "settings", "labelKey": "tabs.settings" },
+      { "id": "marketplace", "labelKey": "tabs.marketplacePreferences" },
       { "id": "account", "labelKey": "tabs.account" }
     ],
   
@@ -41,7 +41,7 @@
         { "name": "facilityIBAN", "type": "text", "required": true, "labelKey": "facilityDetails.facilityIBAN", "group": "bankingFacility", "infoKey": "facilityDetails.facilityIBANInfo", "validationRules": {"pattern": "^CH[0-9]{2}[0-9A-Za-z]{1,17}$|^CH[0-9]{2}\\s?([0-9A-Za-z]{4}\\s?){4}[0-9A-Za-z]{1}$", "patternErrorKey": "validation.invalidIbanSwiss"} },
         { "name": "facilityBankName", "type": "text", "required": true, "labelKey": "facilityDetails.facilityBankName", "group": "bankingFacility"}
       ],
-      "settings": [
+      "marketplace": [
         { "name": "contractSettings.autoRenewal", "type": "checkbox", "required": false, "labelKey": "settings.autoRenewal", "group": "contractSettings" },
         { "name": "contractSettings.requiresApproval", "type": "checkbox", "required": false, "labelKey": "settings.requiresApproval", "group": "contractSettings" }
       ]

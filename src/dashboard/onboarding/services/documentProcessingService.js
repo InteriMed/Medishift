@@ -110,24 +110,50 @@ export const processAndSaveFacility = async (
   setBillingProgress,
   setFacilityIdVerificationDetails,
   setFacilityBillVerificationDetails,
-  setUploadedDocuments
+  setUploadedDocuments,
+  profProfileData
 ) => {
-  const [idUpload, billUpload] = await Promise.all([
-    uploadDocument(documentFile, userId, 'responsible_person_id', documentType, setIdentityProgress, true, setUploadedDocuments),
-    uploadDocument(billingFile, userId, 'billing_document', null, setBillingProgress, true, setUploadedDocuments)
-  ]);
+  let idResult = null;
+  let idUpload = null;
 
-  const idDocumentType = documentType || 'identity';
-  const [idResult, billResult] = await Promise.all([
-    processDocumentWithAI(idUpload.downloadURL, idDocumentType, idUpload.storagePath, getMimeType(documentFile)),
-    processDocumentWithAI(billUpload.downloadURL, 'businessDocument', billUpload.storagePath, getMimeType(billingFile))
-  ]);
+  if (documentFile) {
+    idUpload = await uploadDocument(documentFile, userId, 'responsible_person_id', documentType, setIdentityProgress, true, setUploadedDocuments);
+    const idDocumentType = documentType || 'identity';
+    idResult = await processDocumentWithAI(idUpload.downloadURL, idDocumentType, idUpload.storagePath, getMimeType(documentFile));
+  } else if (profProfileData && profProfileData.verification?.verificationDocuments?.length > 0) {
+    // Use the first verified identity document from the professional profile
+    const existingDoc = profProfileData.verification.verificationDocuments.find(d =>
+      d.status === 'verified' && (d.type?.includes('identity') || d.type?.includes('passport') || d.type?.includes('permit'))
+    ) || profProfileData.verification.verificationDocuments[0];
 
-  if (!idResult.success || !billResult.success) {
+    idUpload = {
+      downloadURL: existingDoc.storageUrl,
+      storagePath: existingDoc.storagePath,
+      documentType: existingDoc.type,
+      fileName: existingDoc.fileName,
+      fileType: existingDoc.fileType,
+      fileSize: existingDoc.fileSize
+    };
+
+    idResult = {
+      success: true,
+      data: existingDoc.extractedData || { personalDetails: { identity: profProfileData.identity, address: profProfileData.contact?.residentialAddress, contact: profProfileData.contact } },
+      verificationDetails: existingDoc.documentInfo
+    };
+
+    console.log('[GLNVerification] Using existing verified identity from professional profile');
+  } else {
+    throw new Error('Identity document is required or user must be a verified professional.');
+  }
+
+  const billUpload = await uploadDocument(billingFile, userId, 'billing_document', null, setBillingProgress, true, setUploadedDocuments);
+  const billResult = await processDocumentWithAI(billUpload.downloadURL, 'businessDocument', billUpload.storagePath, getMimeType(billingFile));
+
+  if ((idResult && !idResult.success) || !billResult.success) {
     throw new Error('Failed to process one or more documents.');
   }
 
-  if (idResult.verificationDetails) {
+  if (idResult && idResult.verificationDetails) {
     setFacilityIdVerificationDetails(idResult.verificationDetails);
     console.log('[GLNVerification] ID Verification details:', idResult.verificationDetails);
   }

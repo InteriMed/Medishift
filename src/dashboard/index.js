@@ -121,32 +121,29 @@ const Dashboard = () => {
                 ))}
 
                 {/* Admin routes - accessible from admin workspace only */}
-                <Route
-                  path="admin/*"
-                  element={
-                    isAdminWorkspace ? (
+                {/* When workspace is 'admin', remaining path is already without 'admin/' prefix */}
+                {isAdminWorkspace && ADMIN_ROUTES.map(route => (
+                  <Route
+                    key={route.id}
+                    path={route.path}
+                    element={
                       <AdminRoute>
-                        <AdminLayout />
+                        <AdminLayout>
+                          <route.component />
+                        </AdminLayout>
                       </AdminRoute>
-                    ) : isWaitingForAdminWorkspace ? (
-                      <LoadingSpinner />
-                    ) : (
-                      <WorkspaceAwareNavigate to="/dashboard/overview" />
-                    )
-                  }
-                >
-                  <Route index element={<Navigate to="portal" replace />} />
-                  {ADMIN_ROUTES.map(route => (
-                    <Route
-                      key={route.id}
-                      path={route.path}
-                      element={<route.component />}
-                    />
-                  ))}
-                </Route>
+                    }
+                  />
+                ))}
 
                 {/* Catch-all for unknown paths */}
-                <Route path="*" element={<div>Path not found: {location.pathname}</div>} />
+                <Route path="*" element={
+                  isWaitingForAdminWorkspace ? (
+                    <LoadingSpinner />
+                  ) : (
+                    <div>Path not found: {location.pathname}</div>
+                  )
+                } />
               </Routes>
             )}
           </Suspense>

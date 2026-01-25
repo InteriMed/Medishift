@@ -69,9 +69,11 @@ const SidebarHighlighter = () => {
       link.style.position = '';
       link.style.zIndex = '';
       link.removeAttribute('data-tutorial-disabled');
+      link.classList.remove('tutorial-highlight');
     });
 
-    // Reset all profile tabs to normal state
+    // Reset profile tabs pointer events only - DO NOT remove tutorial-highlight class
+    // Profile tabs get their highlight class from React's className, not from SidebarHighlighter
     const allProfileTabs = document.querySelectorAll('[data-tab]');
     allProfileTabs.forEach(tab => {
       if (tab.dataset.originalPointerEvents !== undefined) {
@@ -80,6 +82,7 @@ const SidebarHighlighter = () => {
       } else {
         tab.style.pointerEvents = '';
       }
+      // DO NOT remove tutorial-highlight - it's managed by React component
     });
 
     setWaitingForInteraction(false);
@@ -149,7 +152,10 @@ const SidebarHighlighter = () => {
           navigate(navigationPath);
         }
 
-        // Do NOT automatically advance to next step - user must click Next button
+        // Advance to next step automatically since the user performed the correct action
+        if (nextStep) {
+          nextStep();
+        }
       }, 100);
     };
 
@@ -330,6 +336,21 @@ const SidebarHighlighter = () => {
       targetSelector = `[data-tab="${stepData.highlightTab}"]`;
       requiresInteraction = stepData.requiresInteraction !== undefined ? stepData.requiresInteraction : true;
       isProfileTab = true;
+
+      // Force immediate re-positioning for tab transitions
+      if (isPositioningRef.current === false) {
+        setTimeout(() => {
+          const el = document.querySelector(targetSelector);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              // Force update
+              isPositioningRef.current = false;
+              positionHighlightBox();
+            }
+          }
+        }, 50);
+      }
     }
     // Check if we should highlight the upload button
     else if (stepData.highlightUploadButton) {
@@ -581,8 +602,8 @@ const SidebarHighlighter = () => {
     return null;
   }
 
-  // Early return for elements that handle their own highlighting
-  if (isSidebarItem || isProfileTab || isInSidebar) {
+  // Early return for elements that handle their own highlighting (Profile Tabs)
+  if (isProfileTab) {
     return null;
   }
 
@@ -607,7 +628,7 @@ const SidebarHighlighter = () => {
       )}
       {shouldShowOverlay && (
         <div
-          className="tutorial-highlight"
+          className="tutorial-highlight fixed-overlay"
           style={{
             ...highlightBox,
             pointerEvents: requiresInteraction ? 'auto' : 'none',

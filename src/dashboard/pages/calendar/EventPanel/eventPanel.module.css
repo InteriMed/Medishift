@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 20001;
   overflow: hidden; /* Prevent scrolling underneath */
   backdrop-filter: blur(3px); /* Add subtle blur effect */
   padding: 20px; /* Add space around the panel */

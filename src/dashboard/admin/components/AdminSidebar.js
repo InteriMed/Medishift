@@ -148,6 +148,12 @@ const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
             permission: PERMISSIONS.VIEW_AUDIT_LOGS
         },
         {
+            title: t('admin:sidebar.rolesPermissions', 'Roles & Permissions'),
+            icon: Shield,
+            path: '/dashboard/admin/system/roles-permissions',
+            permission: PERMISSIONS.VIEW_AUDIT_LOGS
+        },
+        {
             title: t('admin:sidebar.notifications', 'Notifications'),
             icon: Bell,
             path: '/dashboard/admin/system/notifications',

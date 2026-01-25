@@ -17,6 +17,7 @@
       "flexible": "Flexible Work"
     },
     "title": "Your healthcare digital staffing platform",
+    "mainTitle": "The Future of Healthcare Staffing",
     "subtitle": {
       "first": "By healthcare professionals -",
       "last": " For healthcare professionals"
@@ -34,7 +35,12 @@
       "qualifiedStaff": "Qualified Staff"
     },
     "tagLine": "Tag Line",
-    "description": "Description"
+    "description": "Description",
+    "appAlt": "MediShift App Interface",
+    "verifiedBadge": "VERIFIED",
+    "verifiedProfile": "Verified Profile",
+    "contractBadge": "SECURE",
+    "digitalSignature": "Digital Signature"
   },
   "problem": {
     "title": "It's free",
@@ -89,7 +95,7 @@
       },
       "matchSign": {
         "title": "Match and sign",
-        "description": "We take care of matching you with the right opportunities. You are just a click of a button away"
+        "description": "We take care of the matching you with the right opportunities. You are just a click of a button away"
       },
       "marketPlace": {
         "title": "Market place",
@@ -139,9 +145,107 @@
   "finalCta": {
     "title": "Ready to transform your healthcare staffing experience?",
     "description": "Join InteriMed today and be part of the future of healthcare staffing in Switzerland",
+    "button": "Get Started Now",
     "buttons": {
       "pharmacy": "For healthcare facilities",
       "professional": "For healthcare professionals"
     }
+  },
+  "features": {
+    "title": "Why Choose",
+    "titleHighlight": "MediShift?",
+    "subtitle": "Discover the features that make us unique.",
+    "smartMatching": {
+      "title": "Smart Matching",
+      "description": "Our AI-driven algorithm connects you with the perfect match instantly."
+    },
+    "dataCompliance": {
+      "title": "Data Compliance",
+      "description": "Your data is secure and fully compliant with Swiss regulations."
+    },
+    "calendar": {
+      "title": "Smart Calendar",
+      "description": "Manage your schedule effortlessly with our intuitive calendar."
+    },
+    "zeroBureaucracy": {
+      "title": "Zero Bureaucracy",
+      "description": "We handle the paperwork so you can focus on what matters."
+    },
+    "unlimitedAccess": {
+      "title": "Unlimited Access",
+      "description": "Get full access to all features and profiles without limits."
+    }
+  },
+  "dualPersona": {
+    "title": "One Platform,",
+    "titleHighlight": "Two Solutions",
+    "subtitle": "Whether you are a facility or a professional, we have you covered.",
+    "facilities": {
+      "title": "For Facilities",
+      "description": "Find qualified staff quickly and efficiently."
+    },
+    "professionals": {
+      "title": "For Professionals",
+      "description": "Find flexible work that fits your schedule."
+    },
+    "card": {
+      "title": "Ready to get started?",
+      "description": "Join thousands of satisfied users today.",
+      "button": "Create Account"
+    }
+  },
+  "security": {
+    "badge": "Security First",
+    "title": "Swiss Quality &",
+    "titleHighlight": "Security",
+    "description": "We prioritize the security and privacy of your data above all else.",
+    "hosting": {
+      "title": "Swiss Hosting",
+      "description": "All data is hosted securely in Switzerland."
+    },
+    "compliance": {
+      "title": "Fully Compliant",
+      "description": "Adhering to all local and federal regulations."
+    },
+    "encryption": {
+      "title": "End-to-End Encryption",
+      "description": "Your data is encrypted at rest and in transit."
+    },
+    "development": {
+      "title": "Secure Development",
+      "description": "Built with security best practices from the ground up."
+    },
+    "badge1": "Secure",
+    "badge2": "Encrypted"
+  },
+  "whyChooseUs": {
+    "title": "Why Choose Us",
+    "subtitle": "The MediShift Advantage",
+    "description": "Experience the difference with our dedicated platform."
+  },
+  "pricing": {
+    "free": {
+      "item1": {
+        "title": "For Facilities",
+        "subtitle": "Facility",
+        "desc": "Efficient staffing solutions."
+      },
+      "item2": {
+        "title": "For Professionals",
+        "subtitle": "Professional",
+        "desc": "Flexible work opportunities."
+      },
+      "item3": {
+        "title": "Join Now",
+        "subtitle": "Free",
+        "desc": "Sign up for free today."
+      }
+    }
+  },
+  "trustedBy": {
+    "alt1": "SPS",
+    "alt2": "OneDoc",
+    "alt3": "Swiss Confederation",
+    "alt4": "Partner"
   }
 }

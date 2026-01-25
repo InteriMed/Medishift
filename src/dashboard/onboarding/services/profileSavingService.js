@@ -152,7 +152,7 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
 
   
   try {
-    const { doc, updateDoc, deleteField } = await import('firebase/firestore');
+    const { doc, getDoc, updateDoc, deleteField } = await import('firebase/firestore');
     const { db } = await import('../../../services/firebase');
 
     await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {
@@ -172,6 +172,23 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
 
   const updateUserProfile = httpsCallable(functions, 'updateUserProfile');
   await updateUserProfile(profileData);
+
+  try {
+    const { doc, getDoc, updateDoc } = await import('firebase/firestore');
+    const { db } = await import('../../../services/firebase');
+
+    const profileDocRef = doc(db, 'professionalProfiles', currentUser.uid);
+    const profileDoc = await getDoc(profileDocRef);
+    
+    if (profileDoc.exists()) {
+      await updateDoc(profileDocRef, {
+        shouldStartTutorial: true,
+        updatedAt: new Date()
+      });
+    }
+  } catch (error) {
+    console.warn('[GLNVerification] Failed to set tutorial flag:', error);
+  }
 
   try {
     const { doc, updateDoc, deleteField } = await import('firebase/firestore');
@@ -355,7 +372,7 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
 
   
   try {
-    const { doc, updateDoc, deleteField } = await import('firebase/firestore');
+    const { doc, getDoc, updateDoc, deleteField } = await import('firebase/firestore');
     const { db } = await import('../../../services/firebase');
 
     await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {
@@ -374,6 +391,24 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
   }
 
   const updateUserProfile = httpsCallable(functions, 'updateUserProfile');
+  await updateUserProfile(facilityData);
+
+  try {
+    const { doc, getDoc, updateDoc } = await import('firebase/firestore');
+    const { db } = await import('../../../services/firebase');
+
+    const profileDocRef = doc(db, 'facilityProfiles', currentUser.uid);
+    const profileDoc = await getDoc(profileDocRef);
+    
+    if (profileDoc.exists()) {
+      await updateDoc(profileDocRef, {
+        shouldStartTutorial: true,
+        updatedAt: new Date()
+      });
+    }
+  } catch (error) {
+    console.warn('[GLNVerification] Failed to set tutorial flag:', error);
+  }
   await updateUserProfile(facilityData);
 
   try {

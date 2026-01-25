@@ -34,13 +34,21 @@
           "title": "Étape 4 : Téléchargement de documents",
           "content": "Téléchargez vos documents professionnels tels que certificats, CV et lettres de recommandation."
         },
-        "account-tab": {
-          "title": "Étape 5 : Compte",
-          "content": "Vérifiez les paramètres de votre compte, y compris l'email, le mot de passe et les préférences de sécurité. Vous pouvez modifier ces paramètres à tout moment."
+        "marketplace-tab": {
+          "title": "Étape 5 : Préférences Marketplace",
+          "content": "Configurez votre visibilité sur le marketplace et vos préférences de notification. Cela contrôle comment les recruteurs peuvent vous trouver pour des postes à long terme."
         },
         "profile-completion-info": {
           "title": "Profil terminé !",
           "content": "Félicitations ! Votre profil est maintenant complet. Vous avez accès à toutes les fonctionnalités de la plateforme. Passons à la section suivante."
+        },
+        "account-tab": {
+          "title": "Tutoriel du profil terminé !",
+          "content": "Excellent travail ! Vous avez terminé la configuration de votre profil. Vous avez maintenant accès à toutes les fonctionnalités de la plateforme. Passons à la section messages pour apprendre à communiquer avec les établissements."
+        },
+        "redirect-to-messages": {
+          "title": "Redirection...",
+          "content": "Vous allez maintenant être redirigé vers le tutoriel de messagerie."
         }
       }
     }
@@ -52,7 +60,8 @@
     "previous": "Précédent",
     "skip": "Passer",
     "finish": "Terminer",
-    "restart": "Recommencer le tutoriel"
+    "restart": "Recommencer le tutoriel",
+    "startMessages": "Démarrer le tutoriel Messages"
   }
 }
 

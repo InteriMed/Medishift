@@ -9,6 +9,12 @@
     "subtitle": "Streamline your recruitment process with InteriMed, simplify your work and focus on patient care",
     "trustSnippet": "Launching in French-speaking Switzerland, starting with community pharmacies",
     "cta": "Get Started",
+    "ctaStart": "Start Hiring",
+    "ctaSolutions": "View Solutions",
+    "badge": "New Feature",
+    "appAlt": "Dashboard Preview",
+    "certifiedPartner": "Certified Partner",
+    "swissMade": "Swiss Made",
     "features": {
       "contracts": "Secure Contracts",
       "planning": "Easy Planning",
@@ -94,6 +100,62 @@
     "feature7": {
       "title": "Direct HR management",
       "description": "Your entire team can register on the platform, allowing you to efficiently manage their schedules and assignments"
+    },
+    "teamManagement": {
+      "title": "Team Management",
+      "description": "Manage your entire team in one place.",
+      "item1": "Easy onboarding",
+      "item2": "Role management"
+    },
+    "smartCalendar": {
+      "title": "Smart Calendar",
+      "description": "Visualize shifts and availability effortlessly.",
+      "item1": "Drag & drop scheduling",
+      "item2": "Real-time updates"
+    },
+    "groupManagement": {
+      "title": "Group Management",
+      "description": "Manage multiple locations or groups seamlessly.",
+      "item1": "Centralized control",
+      "item2": "Unified reporting"
+    }
+  },
+  "teamWorkspace": {
+    "title": "Your Team Workspace",
+    "subtitle": "A dedicated space for your facility's operations.",
+    "list": {
+      "item1": "Collaborative tools",
+      "item2": "Document sharing",
+      "item3": "Instant communication"
+    },
+    "workLife": {
+      "title": "Work-Life Balance",
+      "description": "Optimized schedules for satisfied staff."
+    },
+    "subletting": {
+      "title": "Staff Subletting",
+      "description": "Share resources with other facilities."
+    },
+    "staffingLevels": {
+      "title": "Staffing Levels",
+      "description": "Maintain optimal staffing at all times."
+    }
+  },
+  "vacancy": {
+    "title": "Vacancy Management",
+    "subtitle": "Fill open shifts instantly.",
+    "vacancyManagement": {
+      "title": "Efficient Management",
+      "description": "Track and fill vacancies in real-time."
+    },
+    "analytics": {
+      "title": "Advanced Analytics",
+      "description": "Insights to improve your staffing strategy."
+    },
+    "card": {
+      "title": "Fill a Vacancy Today",
+      "description": "Don't let shortages affect patient care.",
+      "button": "Post a Job"
     }
   },
   "cta": {
@@ -101,4 +163,4 @@
     "description": "Join InteriMed to solve your staffing challenges with our specialized platform",
     "button": "Sign up now"
   }
-} 
+}

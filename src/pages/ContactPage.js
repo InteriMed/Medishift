@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../services/firebase';
 import Button from '../components/BoxedInputFields/Button';
 import PersonnalizedInputField from '../components/BoxedInputFields/Personnalized-InputField';
 import TextareaField from '../components/BoxedInputFields/TextareaField';
@@ -91,6 +93,8 @@ const ContactPage = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const [submitError, setSubmitError] = useState('');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -99,11 +103,21 @@ const ContactPage = () => {
     }
 
     setFormSubmitting(true);
+    setSubmitError('');
 
-    setTimeout(() => {
-      setFormSubmitting(false);
+    try {
+      const sendContactFormEmail = httpsCallable(functions, 'sendContactFormEmail');
+      await sendContactFormEmail({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        subject: formData.subject,
+        message: formData.message,
+        type: formData.type
+      });
+
       setFormSubmitted(true);
-
       setFormData({
         name: '',
         email: '',
@@ -117,7 +131,12 @@ const ContactPage = () => {
       setTimeout(() => {
         setFormSubmitted(false);
       }, 5000);
-    }, 1500);
+    } catch (error) {
+      console.error('Contact form error:', error);
+      setSubmitError(t('contact.form.errors.submitFailed', 'Failed to send message. Please try again.'));
+    } finally {
+      setFormSubmitting(false);
+    }
   };
 
   return (
@@ -193,6 +212,18 @@ const ContactPage = () => {
                     <div>
                       <h3 className="text-green-800 font-bold text-lg mb-1">{t('contact.form.success.title')}</h3>
                       <p className="text-green-700">{t('contact.form.success.message')}</p>
+                    </div>
+                  </div>
+                )}
+
+                {submitError && (
+                  <div className="bg-red-50 border border-red-200 rounded-2xl p-6 mb-8 flex items-start gap-4">
+                    <div className="bg-red-100 p-2 rounded-full text-red-600 mt-1">
+                      <FaArrowRight className="rotate-[135deg]" size={12} />
+                    </div>
+                    <div>
+                      <h3 className="text-red-800 font-bold text-lg mb-1">{t('contact.form.errors.title', 'Error')}</h3>
+                      <p className="text-red-700">{submitError}</p>
                     </div>
                   </div>
                 )}

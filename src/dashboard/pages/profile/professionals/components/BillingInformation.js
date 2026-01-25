@@ -8,7 +8,9 @@ import { httpsCallable } from 'firebase/functions';
 
 import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSwitchField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
+
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
+import DateField from '../../../../../components/BoxedInputFields/DateField';
 import Button from '../../../../../components/BoxedInputFields/Button';
 import Dialog from '../../../../../components/Dialog/Dialog';
 import BankingAccessModal from '../../components/BankingAccessModal';
@@ -26,7 +28,7 @@ import { LOCALSTORAGE_KEYS } from '../../../../../config/keysDatabase';
 // Tailwind styles
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
+  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex flex-col billing-information-header",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium",
@@ -35,7 +37,7 @@ const styles = {
   mandatoryFieldLegend: "text-xs",
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   hiringMandatoryMark: "text-orange-500",
-  sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
+  sectionsWrapper: "billing-information-sections-wrapper w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
   sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full overflow-visible",
@@ -313,7 +315,11 @@ const BillingInformation = ({
 
   // Renders a single field based on its configuration
   const renderField = (fieldConfig, isSingleColumn = false) => {
-    const { name, type, required, labelKey, optionsKey, dependsOn, dependsOnValue, dependsOnValueExclude, maxYear, placeholder, ...restConfig } = fieldConfig;
+    const { name, type, required, labelKey, optionsKey, dependsOn, dependsOnValue, dependsOnValueExclude, maxYear, placeholder, hidden, ...restConfig } = fieldConfig;
+
+    if (hidden) {
+      return null;
+    }
 
     // Check dependency before rendering
     if (!checkDependency(fieldConfig)) {
@@ -350,27 +356,21 @@ const BillingInformation = ({
         const maxDateValue = maxYear
           ? new Date(maxYear, 11, 31).toISOString().split('T')[0]
           : new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0];
-        const dateValue = value ? (typeof value === 'string' ? value : new Date(value).toISOString().split('T')[0]) : '';
+
         return (
-          <div key={name}>
-            {finalLabel && (
-              <label className={`boxed-date-label ${error ? 'boxed-date-label--error' : ''}`}>
-                {finalLabel}
-              </label>
-            )}
-            <input
-              type="date"
-              value={dateValue}
-              onChange={(e) => wrappedOnInputChange(name, e.target.value || null)}
-              max={maxDateValue}
-              className={`w-full h-9 px-3 rounded-lg border bg-background text-xs text-left focus:outline-none focus:ring-2 focus:ring-ring transition-all ${error ? 'date-input-error' : ''}`}
-              style={{
-                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                borderColor: error ? 'var(--boxed-inputfield-error-color)' : 'hsl(var(--border) / 0.6)',
-                color: error ? 'var(--boxed-inputfield-error-color)' : 'inherit'
-              }}
-            />
-          </div>
+          <DateField
+            key={name}
+            label={finalLabel}
+            value={value}
+            onChange={(dateObj) => {
+              const dateStr = dateObj ? dateObj.toISOString().split('T')[0] : null;
+              wrappedOnInputChange(name, dateStr);
+            }}
+            max={maxDateValue}
+            error={error}
+            required={isActuallyRequired}
+            marginBottom={0}
+          />
         );
       case 'dropdown':
         const options = getDropdownOptions(optionsKey);
@@ -483,68 +483,120 @@ const BillingInformation = ({
 
   return (
     <div className={styles.sectionContainer} style={{ position: 'relative' }}>
-      <div className={styles.sectionContainer}>
-        <div className={styles.headerCard}>
-          <div className="flex flex-col gap-1 flex-1">
+      <style>{`
+        .billing-information-container {
+          container-type: inline-size;
+        }
+        
+        .billing-information-header-grid {
+          display: grid;
+          gap: 1.5rem;
+          width: 100%;
+          grid-template-columns: 1fr 1fr;
+          grid-template-areas: 
+            "title title"
+            "completion autofill";
+          align-items: center;
+        }
+
+        .header-title-row {
+          grid-area: title;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .header-completion-centered {
+          grid-area: completion;
+          display: flex;
+          justify-content: flex-start;
+          width: 100%;
+        }
+
+        .header-autofill-right {
+          grid-area: autofill;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .billing-information-sections-wrapper {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
+        }
+
+        @container (max-width: 700px) {
+          .billing-information-sections-wrapper {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+      <div className={styles.headerCard}>
+        <div className="billing-information-header-grid">
+          <div className="header-title-row">
             <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('billingInformation.title')}</h2>
             <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('billingInformation.subtitle', 'Provide your employment and billing details.')}</p>
           </div>
 
           {isTutorialActive && (
-            <div className="flex items-center gap-3">
-              <div className="relative" ref={autoFillButtonRef}>
-                <button
-                  onClick={handleAutoFillClick}
-                  disabled={isUploading || isAnalyzing}
-                  className={cn(
-                    "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0 text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
-                    (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
-                    (stepData?.highlightUploadButton) && "tutorial-highlight"
-                  )}
-                  style={{ height: 'var(--boxed-inputfield-height)' }}
-                  data-tutorial="profile-upload-button"
-                >
-                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4" />}
-                  <span className="text-sm font-medium">
-                    {isAnalyzing
-                      ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
-                      : t('dashboardProfile:documents.autofill', 'Auto Fill')
-                    }
-                  </span>
-                </button>
-              </div>
-              {uploadInputRef && (
-                <UploadFile
-                  ref={uploadInputRef}
-                  onChange={handleFileUpload}
-                  isLoading={isUploading}
-                  progress={uploadProgress}
-                  accept=".pdf,.doc,.docx,.jpg,.png"
-                  label=""
-                  className="hidden"
-                />
-              )}
-
-              {formData && completionPercentage !== undefined && (
-                <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                  <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                  <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                      style={{ width: `${completionPercentage}%` }}
-                    ></div>
+            <>
+              <div className="header-completion-centered">
+                {formData && completionPercentage !== undefined && (
+                  <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                    <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                    <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                        style={{ width: `${completionPercentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
                   </div>
-                  <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                )}
+              </div>
+
+              <div className="header-autofill-right">
+                <div className="relative" ref={autoFillButtonRef}>
+                  <button
+                    onClick={handleAutoFillClick}
+                    disabled={isUploading || isAnalyzing}
+                    className={cn(
+                      "group px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0",
+                      (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
+                      (stepData?.highlightUploadButton) && "tutorial-highlight"
+                    )}
+                    style={{ height: 'var(--boxed-inputfield-height)', backgroundColor: 'rgba(255, 191, 14, 1)' }}
+                    data-tutorial="profile-upload-button"
+                  >
+                    {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4 text-muted-foreground group-hover:text-black transition-colors" />}
+                    <span className="text-sm font-medium text-muted-foreground group-hover:text-black transition-colors">
+                      {isAnalyzing
+                        ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
+                        : t('dashboardProfile:documents.autofill', 'Auto Fill')
+                      }
+                    </span>
+                  </button>
                 </div>
-              )}
-            </div>
+              </div>
+            </>
           )}
         </div>
+        {isTutorialActive && uploadInputRef && (
+          <UploadFile
+            ref={uploadInputRef}
+            onChange={handleFileUpload}
+            isLoading={isUploading}
+            progress={uploadProgress}
+            accept=".pdf,.doc,.docx,.jpg,.png"
+            label=""
+            className="hidden"
+          />
+        )}
+      </div>
 
+      <div className="billing-information-container w-full max-w-[1400px] mx-auto">
         <div className={styles.sectionsWrapper}>
-          {/* Left Column */}
           <div className={styles.leftColumn}>
-            {/* Employment Eligibility Section */}
             {groupedFields.employmentEligibility && (
               <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 10 }}>
                 <div className={styles.grid}>
@@ -634,9 +686,7 @@ const BillingInformation = ({
             )}
           </div>
 
-          {/* Right Column */}
           <div className={styles.rightColumn}>
-            {/* Payroll Data Section */}
             {groupedFields.payrollData && (
               <div className={styles.sectionCard}>
                 <div className={styles.gridSingle}>
@@ -652,26 +702,26 @@ const BillingInformation = ({
             )}
           </div>
         </div>
-
-
-        <Dialog
-          isOpen={showHiringInfo}
-          onClose={() => setShowHiringInfo(false)}
-          title={t('billingInformation.hiringInfoTitle')}
-          actions={<Button onClick={() => setShowHiringInfo(false)} variant="primary">OK</Button>}
-        >
-          <p>{t('billingInformation.hiringInfoMessage')}</p>
-        </Dialog>
-
-        <BankingAccessModal
-          isOpen={showBankingAccessModal}
-          onClose={() => setShowBankingAccessModal(false)}
-          onSuccess={handleBankingAccessSuccess}
-          userEmail={getNestedValue(formData, 'contact.primaryEmail')}
-          userPhone={getNestedValue(formData, 'contact.primaryPhone')}
-          userPhonePrefix={getNestedValue(formData, 'contact.primaryPhonePrefix')}
-        />
       </div>
+
+
+      <Dialog
+        isOpen={showHiringInfo}
+        onClose={() => setShowHiringInfo(false)}
+        title={t('billingInformation.hiringInfoTitle')}
+        actions={<Button onClick={() => setShowHiringInfo(false)} variant="primary">OK</Button>}
+      >
+        <p>{t('billingInformation.hiringInfoMessage')}</p>
+      </Dialog>
+
+      <BankingAccessModal
+        isOpen={showBankingAccessModal}
+        onClose={() => setShowBankingAccessModal(false)}
+        onSuccess={handleBankingAccessSuccess}
+        userEmail={getNestedValue(formData, 'contact.primaryEmail')}
+        userPhone={getNestedValue(formData, 'contact.primaryPhone')}
+        userPhonePrefix={getNestedValue(formData, 'contact.primaryPhonePrefix')}
+      />
     </div>
   );
 };

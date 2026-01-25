@@ -54,7 +54,9 @@
         "inquiryTypeRequired": "Veuillez sélectionner un type de demande",
         "messageRequired": "Le message est requis",
         "subjectRequired": "Le sujet est requis",
-        "privacyPolicyRequired": "Vous devez accepter la Politique de confidentialité"
+        "privacyPolicyRequired": "Vous devez accepter la Politique de confidentialité",
+        "title": "Erreur",
+        "submitFailed": "Échec de l'envoi du message. Veuillez réessayer."
       }
     },
     "directContact": {
@@ -80,12 +82,17 @@
   },
   "social": {
     "title": "Suivez-nous",
-    "description": "Restez connecté avec InteriMed sur les réseaux sociaux pour les dernières mises à jour, des informations sur la santé et des opportunités professionnelles."
+    "description": "Restez connecté avec InteriMed sur les réseaux sociaux pour les dernières mises à jour, des informations sur la santé et des opportunités professionnelles.",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram"
   },
   "faq": {
     "title": "Encore des questions ?",
     "description": "Consultez notre section FAQ complète pour des réponses rapides aux questions fréquentes sur nos services, tarifs, et plus encore.",
-    "button": "Visitez la page FAQ"
+    "button": "Visitez la page FAQ",
+    "badge": "FAQs"
   },
   "map": {
     "title": "Notre emplacement"
@@ -97,5 +104,9 @@
     "inquiryTypeRequired": "Veuillez sélectionner un type de demande",
     "messageRequired": "Le message est requis",
     "privacyPolicyRequired": "Vous devez accepter la Politique de confidentialité"
+  },
+  "hero": {
+    "badge": "Get in Touch",
+    "title": "Contact Us"
   }
 }

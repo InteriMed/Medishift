@@ -33,7 +33,10 @@
     "phoneText": "Trouvez des missions qui vous correspondent",
     "cta": {
       "work": "Trouver un emploi",
-      "recruit": "Recruter maintenant"
+      "recruit": "Recruter maintenant",
+      "hire": "Looking for an Interim",
+      "find": "Looking for a Job",
+      "signup": "Sign Up"
     },
     "features": {
       "planning": "Planification facile",
@@ -45,7 +48,13 @@
       "rate": "Tarifs sur mesure",
       "efficiency": "Efficacité garantie",
       "qualifiedStaff": "Personnel qualifié"
-    }
+    },
+    "mainTitle": "The Future of Healthcare Staffing",
+    "appAlt": "MediShift App Interface",
+    "verifiedBadge": "VERIFIED",
+    "verifiedProfile": "Verified Profile",
+    "contractBadge": "SECURE",
+    "digitalSignature": "Digital Signature"
   },
   "problem": {
     "title": "C'est gratuit",
@@ -158,6 +167,104 @@
     "buttons": {
       "pharmacy": "Etablissements",
       "professional": "Professionnels"
+    },
+    "button": "Get Started Now"
+  },
+  "features": {
+    "title": "Why Choose",
+    "titleHighlight": "MediShift?",
+    "subtitle": "Discover the features that make us unique.",
+    "smartMatching": {
+      "title": "Smart Matching",
+      "description": "Our AI-driven algorithm connects you with the perfect match instantly."
+    },
+    "dataCompliance": {
+      "title": "Data Compliance",
+      "description": "Your data is secure and fully compliant with Swiss regulations."
+    },
+    "calendar": {
+      "title": "Smart Calendar",
+      "description": "Manage your schedule effortlessly with our intuitive calendar."
+    },
+    "zeroBureaucracy": {
+      "title": "Zero Bureaucracy",
+      "description": "We handle the paperwork so you can focus on what matters."
+    },
+    "unlimitedAccess": {
+      "title": "Unlimited Access",
+      "description": "Get full access to all features and profiles without limits."
     }
+  },
+  "dualPersona": {
+    "title": "One Platform,",
+    "titleHighlight": "Two Solutions",
+    "subtitle": "Whether you are a facility or a professional, we have you covered.",
+    "facilities": {
+      "title": "For Facilities",
+      "description": "Find qualified staff quickly and efficiently."
+    },
+    "professionals": {
+      "title": "For Professionals",
+      "description": "Find flexible work that fits your schedule."
+    },
+    "card": {
+      "title": "Ready to get started?",
+      "description": "Join thousands of satisfied users today.",
+      "button": "Create Account"
+    }
+  },
+  "security": {
+    "badge": "Security First",
+    "title": "Swiss Quality &",
+    "titleHighlight": "Security",
+    "description": "We prioritize the security and privacy of your data above all else.",
+    "hosting": {
+      "title": "Swiss Hosting",
+      "description": "All data is hosted securely in Switzerland."
+    },
+    "compliance": {
+      "title": "Fully Compliant",
+      "description": "Adhering to all local and federal regulations."
+    },
+    "encryption": {
+      "title": "End-to-End Encryption",
+      "description": "Your data is encrypted at rest and in transit."
+    },
+    "development": {
+      "title": "Secure Development",
+      "description": "Built with security best practices from the ground up."
+    },
+    "badge1": "Secure",
+    "badge2": "Encrypted"
+  },
+  "whyChooseUs": {
+    "title": "Why Choose Us",
+    "subtitle": "The MediShift Advantage",
+    "description": "Experience the difference with our dedicated platform."
+  },
+  "pricing": {
+    "free": {
+      "item1": {
+        "title": "For Facilities",
+        "subtitle": "Facility",
+        "desc": "Efficient staffing solutions."
+      },
+      "item2": {
+        "title": "For Professionals",
+        "subtitle": "Professional",
+        "desc": "Flexible work opportunities."
+      },
+      "item3": {
+        "title": "Join Now",
+        "subtitle": "Free",
+        "desc": "Sign up for free today."
+      }
+    }
+  },
+  "trustedBy": {
+    "alt1": "SPS",
+    "alt2": "OneDoc",
+    "alt3": "Swiss Confederation",
+    "alt4": "Partner"
   }
 }

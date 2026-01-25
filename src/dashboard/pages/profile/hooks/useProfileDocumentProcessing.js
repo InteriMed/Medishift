@@ -6,8 +6,10 @@ import { get, set, cloneDeep } from 'lodash';
 import { uploadFile } from '../../../../services/storageService';
 import { processDocumentWithAI, mergeExtractedData, getCachedExtractedData, saveCachedExtractedData } from '../../../../services/documentProcessingService';
 import { useDropdownOptions } from '../utils/DropdownListsImports';
+import { isTabCompleted } from '../utils/profileUtils';
+import { isProfileTutorial } from '../../../../config/tutorialSystem';
 
-export const useProfileDocumentProcessing = (formData, profileConfig, setFormData, updateProfileData, validateCurrentTabData, getNestedValue) => {
+export const useProfileDocumentProcessing = (formData, profileConfig, setFormData, updateProfileData, validateCurrentTabData, getNestedValue, isTutorialActive, activeTutorial, onTabCompleted, onProfileComplete) => {
     const { t } = useTranslation(['dashboardProfile', 'common']);
     const { currentUser } = useAuth();
     const { showNotification } = useNotification();
@@ -178,15 +180,30 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
             setFormData(updatedFormData);
 
             try {
-                await updateProfileData(updatedFormData);
+                const savedData = await updateProfileData(updatedFormData);
                 showNotification(t('dashboardProfile:documents.uploadSuccess', 'Document uploaded successfully'), 'success');
+
+                if (savedData && profileConfig) {
+                    const allTabsComplete = profileConfig.tabs.every(tab =>
+                        isTabCompleted(savedData, tab.id, profileConfig)
+                    );
+
+                    if (allTabsComplete && isTutorialActive && isProfileTutorial(activeTutorial)) {
+                        const isDocumentTabComplete = isTabCompleted(savedData, 'documentUploads', profileConfig);
+                        if (isDocumentTabComplete && onTabCompleted) {
+                            onTabCompleted('documentUploads', true);
+                        }
+                        if (onProfileComplete) {
+                            onProfileComplete();
+                        }
+                    }
+                }
 
                 setTimeout(() => {
                     handleCloseAutoFillDialog();
                     processAndFillProfile(fileMetadata);
                 }, 500);
             } catch (dbError) {
-                // Error saving document metadata to database
                 showNotification(t('dashboardProfile:documents.uploadSuccessButSaveError', 'Document uploaded but failed to save metadata. Please try again.'), 'warning');
             }
 
@@ -200,7 +217,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
             setFileUploadError(t('dashboardProfile:documents.uploadError', 'Error uploading document'));
             showNotification(t('dashboardProfile:documents.uploadError', 'Error uploading document'), 'error');
         }
-    }, [currentUser, isProfessional, formData, profileConfig, selectedDocumentType, selectedFile, showNotification, t, updateProfileData, processAndFillProfile, handleCloseAutoFillDialog, getNestedValue, setFormData]);
+    }, [currentUser, isProfessional, formData, profileConfig, selectedDocumentType, selectedFile, showNotification, t, updateProfileData, processAndFillProfile, handleCloseAutoFillDialog, getNestedValue, setFormData, isTutorialActive, activeTutorial, onTabCompleted, onProfileComplete]);
 
     const handleUploadButtonClick = useCallback(() => {
         if (uploadInputRef.current) {
@@ -232,7 +249,19 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
 
             validateCurrentTabData(updatedFormData);
 
-            await updateProfileData(updatedFormData);
+            const savedData = await updateProfileData(updatedFormData);
+
+            if (savedData && profileConfig) {
+                const allTabsComplete = profileConfig.tabs.every(tab =>
+                    isTabCompleted(savedData, tab.id, profileConfig)
+                );
+
+                if (allTabsComplete && isTutorialActive && isProfileTutorial(activeTutorial)) {
+                    if (onProfileComplete) {
+                        onProfileComplete();
+                    }
+                }
+            }
 
             showNotification(t('dashboardProfile:documents.autoFillSuccess', 'Profile auto-filled successfully!'), 'success');
             setShowAnalysisConfirmation(false);
@@ -243,7 +272,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
         } finally {
             setIsSubmitting(false);
         }
-    }, [extractedData, formData, updateProfileData, showNotification, t, setFormData, validateCurrentTabData]);
+    }, [extractedData, formData, updateProfileData, showNotification, t, setFormData, validateCurrentTabData, profileConfig, isTutorialActive, activeTutorial, onProfileComplete]);
 
     const handleFillEmptyFields = useCallback(() => {
         applyExtractedData();

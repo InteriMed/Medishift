@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useMobileView } from '../../../hooks/useMobileView';
@@ -14,7 +14,8 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiZap,
-  FiLock
+  FiLock,
+  FiAlertCircle
 } from 'react-icons/fi';
 import { useTutorial } from '../../../contexts/TutorialContext';
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -34,18 +35,38 @@ const ProfileHeader = ({
   highlightTabId,
   collapsed = false,
   onToggle,
-  onAutofill
+  onAutofill,
+  customMobileState
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showRestartPopup, setShowRestartPopup] = useState(false);
   const [showAccessLevelPopup, setShowAccessLevelPopup] = useState(false);
   const [showFacilityAccessPopup, setShowFacilityAccessPopup] = useState(false);
   const [pendingTabId, setPendingTabId] = useState(null);
-  const isMobile = useMobileView();
+  const [windowWidth, setWindowWidth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth;
+    }
+    return 1200;
+  });
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  const globalIsMobile = useMobileView();
+  const isMobile = customMobileState !== undefined ? customMobileState : globalIsMobile;
+  const isOneColumnLayout = customMobileState === true;
+  const showTextInHorizontal = isOneColumnLayout && windowWidth >= 700;
   const { t } = useTranslation(['dashboardProfile', 'tabs']);
   const { isTutorialActive, stepData, accessLevelChoice, restartOnboarding, setAccessMode, maxAccessedProfileTab, setShowAccessLevelModal, setAllowAccessLevelModalClose } = useTutorial();
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
 
+  const isAdmin = !!(userProfile?.adminData && userProfile?.adminData.isActive !== false);
   const glnVerified = currentUser?.GLN_certified === true || currentUser?.GLN_certified === 'ADMIN_OVERRIDE' || profile?.GLN_certified === true || profile?.GLN_certified === 'ADMIN_OVERRIDE';
 
   const isAutofillHighlighted = isTutorialActive && stepData?.highlightUploadButton;
@@ -53,16 +74,19 @@ const ProfileHeader = ({
   const tabs = config?.tabs || [];
 
   const isFacilityProfile = tabs.some(tab => ['facilityCoreDetails', 'facilityLegalBilling'].includes(tab.id));
-  const facilityTabs = ['facilityCoreDetails', 'facilityLegalBilling', 'settings'];
+  const facilityTabs = ['facilityCoreDetails', 'facilityLegalBilling', 'marketplace'];
 
-  const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads', 'facilityCoreDetails', 'facilityLegalBilling'];
+  const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads', 'marketplace', 'account', 'facilityCoreDetails', 'facilityLegalBilling'];
 
-  // Profile.js computes the correct highlightTabId (first incomplete accessible tab)
-  const computedHighlightTabId = highlightTabId;
-
-  const lockedTabsForTeam = ['professionalBackground', 'billingInformation', 'documentUploads'];
+  const lockedTabsOutsideTutorial = ['professionalBackground', 'billingInformation', 'documentUploads', 'marketplace'];
+  const lockedTabsDuringTutorial = ['marketplace', 'account'];
 
   const handleTabClick = (tabId) => {
+    if (isAdmin) {
+      onTabChange(tabId);
+      return;
+    }
+
     const popupShownKey = LOCALSTORAGE_KEYS.POPUP_SHOWN(`accessLevelPopup_${currentUser?.uid}_personalToProf`);
     const facilityPopupKey = LOCALSTORAGE_KEYS.POPUP_SHOWN(`facilityAccessPopup_${currentUser?.uid}`);
     const wasShown = localStorage.getItem(popupShownKey);
@@ -71,24 +95,22 @@ const ProfileHeader = ({
     if (isFacilityProfile && !facilityPopupShown && facilityTabs.includes(tabId)) {
       setPendingTabId(tabId);
       setShowFacilityAccessPopup(true);
+      if (isTutorialActive) setShowAccessLevelModal(true);
       return;
     }
 
     if (isTutorialActive && tabId === 'professionalBackground' && maxAccessedProfileTab === 'personalDetails') {
-      const isChoiceAlreadyMade = accessLevelChoice === 'loading' || accessLevelChoice === 'team' || accessLevelChoice === 'full';
+      const isChoiceAlreadyMade = accessLevelChoice === 'team' || accessLevelChoice === 'full';
 
       if (!wasShown && !isChoiceAlreadyMade) {
         setPendingTabId(tabId);
         setShowAccessLevelPopup(true);
+        setShowAccessLevelModal(true);
         return;
-      } else {
-        if (!isChoiceAlreadyMade) {
-          setAccessMode('loading');
-        }
       }
     }
 
-    if ((accessLevelChoice === 'team' || accessLevelChoice === 'loading') && !isTutorialActive && lockedTabsForTeam.includes(tabId)) {
+    if (accessLevelChoice !== 'full' && !isTutorialActive && lockedTabsOutsideTutorial.includes(tabId)) {
       setPendingTabId(tabId);
       setShowAccessLevelPopup(true);
       return;
@@ -111,6 +133,7 @@ const ProfileHeader = ({
 
     setPendingTabId(null);
     setShowAccessLevelPopup(false);
+    setShowAccessLevelModal(false);
   };
 
   const handleSelectTeamAccess = async () => {
@@ -118,6 +141,7 @@ const ProfileHeader = ({
       await setAccessMode('team');
     }
     setShowAccessLevelPopup(false);
+    setShowAccessLevelModal(false);
     setPendingTabId(null);
   };
 
@@ -125,6 +149,7 @@ const ProfileHeader = ({
     const facilityPopupKey = LOCALSTORAGE_KEYS.POPUP_SHOWN(`facilityAccessPopup_${currentUser?.uid}`);
     localStorage.setItem(facilityPopupKey, 'true');
     setShowFacilityAccessPopup(false);
+    setShowAccessLevelModal(false);
 
     if (pendingTabId && isTabAccessible(profile, pendingTabId, config)) {
       onTabChange(pendingTabId);
@@ -150,23 +175,32 @@ const ProfileHeader = ({
         return <FiUser className="w-5 h-5 shrink-0" />;
       case 'facilityLegalBilling':
         return <FiCreditCard className="w-5 h-5 shrink-0" />;
-      case 'settings':
+      case 'marketplace':
+        return <FiBriefcase className="w-5 h-5 shrink-0" />;
+      case 'account':
         return <FiSettings className="w-5 h-5 shrink-0" />;
       default:
         return <FiUser className="w-5 h-5 shrink-0" />;
     }
   };
 
+  const getSingleWordLabel = (labelKey) => {
+    const fullLabel = t(labelKey);
+    const firstWord = fullLabel.split(' ')[0];
+    return firstWord;
+  };
+
   const renderTabItem = (tab) => {
     const isActive = activeTab === tab.id;
     const isCompleted = isTabCompleted(profile, tab.id, config);
-    const isAccessible = isTabAccessible(profile, tab.id, config);
-    // Use computedHighlightTabId which properly clamps the highlight to accessible tabs
-    const isHighlighted = isTutorialActive && computedHighlightTabId === tab.id;
+    const baseAccessible = isTabAccessible(profile, tab.id, config);
+    const isAccessible = accessLevelChoice === 'full' || baseAccessible;
+    const isHighlighted = isTutorialActive && highlightTabId === tab.id;
 
-    const isLockedForTeam = accessLevelChoice === 'team' && lockedTabsForTeam.includes(tab.id);
-    const isLockedForIncompleteAccess = !isTutorialActive && accessLevelChoice !== 'full' && lockedTabsForTeam.includes(tab.id);
-    const shouldShowLocked = isLockedForTeam || isLockedForIncompleteAccess;
+    const isLockedForTeam = !isAdmin && accessLevelChoice === 'team' && lockedTabsOutsideTutorial.includes(tab.id);
+    const isLockedDuringTutorial = !isAdmin && isTutorialActive && accessLevelChoice !== 'full' && lockedTabsDuringTutorial.includes(tab.id);
+    const isLockedOutsideTutorial = !isAdmin && !isTutorialActive && accessLevelChoice !== 'full' && lockedTabsOutsideTutorial.includes(tab.id);
+    const shouldShowLocked = isLockedForTeam || isLockedDuringTutorial || isLockedOutsideTutorial;
 
     if (shouldShowLocked) {
       return (
@@ -175,37 +209,45 @@ const ProfileHeader = ({
           data-tab={tab.id}
           data-tutorial-locked="true"
           onClick={() => handleTabClick(tab.id)}
-          className={cn(
-            "group relative flex gap-3 rounded-lg border-2 border-transparent transition-all duration-200 outline-none",
-            collapsed ? "p-2 justify-center" : "p-3",
-            "text-muted-foreground/50 cursor-pointer select-none",
-            "bg-muted/10",
-            "hover:bg-muted/20 hover:border-muted/40",
-            isHighlighted && "tutorial-highlight"
-          )}
+        className={cn(
+          "group relative flex gap-3 rounded-lg border-2 border-transparent transition-all duration-200 outline-none",
+          isOneColumnLayout 
+            ? "p-2 flex-1 min-w-0"
+            : (collapsed ? "p-2 justify-center shrink-0" : "p-3 w-full"),
+          "text-muted-foreground/50 cursor-pointer select-none",
+          "bg-muted/10",
+          "hover:bg-muted/20 hover:border-muted/40",
+          isHighlighted && "tutorial-highlight"
+        )}
         >
           <div className={cn(
-            "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
-            "bg-muted/30"
+            isOneColumnLayout 
+              ? "w-full h-1 absolute bottom-0 left-0 right-0 rounded-b-lg bg-muted/30"
+              : "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg bg-muted/30"
           )} />
           <div className={cn(
             "w-full flex items-center justify-between",
-            collapsed ? "justify-center pl-0" : "pl-2"
+            isOneColumnLayout ? "justify-center gap-1.5 px-1" : (collapsed ? "justify-center pl-0" : "pl-2")
           )}>
             <div className={cn(
               "flex items-center",
-              collapsed ? "justify-center" : "gap-3"
+              isOneColumnLayout ? "justify-center gap-1.5" : (collapsed ? "justify-center" : "gap-3")
             )}>
               <div className="shrink-0 bg-muted/10 text-muted-foreground/50">
                 {getIconForTab(tab.id)}
               </div>
-              {!collapsed && (
+              {showTextInHorizontal && (
+                <span className="text-xs font-medium truncate text-muted-foreground/50">
+                  {getSingleWordLabel(tab.labelKey)}
+                </span>
+              )}
+              {!collapsed && !isOneColumnLayout && (
                 <span className="text-sm font-medium truncate text-muted-foreground/50">
                   {t(tab.labelKey, tab.id)}
                 </span>
               )}
             </div>
-            {!collapsed && (
+            {!collapsed && !isOneColumnLayout && (
               <FiLock className="w-4 h-4 text-muted-foreground/40" />
             )}
           </div>
@@ -220,36 +262,44 @@ const ProfileHeader = ({
           data-tab={tab.id}
           data-tutorial-disabled="true"
           onClick={() => onTabChange(tab.id)}
-          className={cn(
-            "group relative flex gap-3 rounded-lg border-2 border-transparent transition-all duration-200 outline-none tab-lock",
-            collapsed ? "p-2 justify-center" : "p-3",
-            "text-muted-foreground/40 cursor-pointer select-none",
-            "hover:bg-muted/20 hover:border-muted/30",
-            isHighlighted && "tutorial-highlight"
-          )}
+        className={cn(
+          "group relative flex gap-3 rounded-lg border-2 border-transparent transition-all duration-200 outline-none tab-lock",
+          isOneColumnLayout 
+            ? "p-2 flex-1 min-w-0"
+            : (collapsed ? "p-2 justify-center shrink-0" : "p-3 w-full"),
+          "text-muted-foreground/40 cursor-pointer select-none",
+          "hover:bg-muted/20 hover:border-muted/30",
+          isHighlighted && "tutorial-highlight"
+        )}
         >
           <div className={cn(
-            "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
-            "bg-muted/20"
+            isOneColumnLayout 
+              ? "w-full h-1 absolute bottom-0 left-0 right-0 rounded-b-lg bg-muted/20"
+              : "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg bg-muted/20"
           )} />
           <div className={cn(
             "w-full flex items-center justify-between",
-            collapsed ? "justify-center pl-0" : "pl-2"
+            isOneColumnLayout ? "justify-center gap-1.5 px-1" : (collapsed ? "justify-center pl-0" : "pl-2")
           )}>
             <div className={cn(
               "flex items-center",
-              collapsed ? "justify-center" : "gap-3"
+              isOneColumnLayout ? "justify-center gap-1.5" : (collapsed ? "justify-center" : "gap-3")
             )}>
               <div className="shrink-0 bg-muted/10 text-muted-foreground/40">
                 {getIconForTab(tab.id)}
               </div>
-              {!collapsed && (
+            {showTextInHorizontal && (
+              <span className="text-xs font-medium truncate text-muted-foreground/40">
+                {getSingleWordLabel(tab.labelKey)}
+              </span>
+            )}
+              {!collapsed && !isOneColumnLayout && (
                 <span className="text-sm font-medium truncate text-muted-foreground/40">
                   {t(tab.labelKey, tab.id)}
                 </span>
               )}
             </div>
-            {!collapsed && (
+            {!collapsed && !isOneColumnLayout && (
               <div className="ml-2 shrink-0">
                 <FiLock className="w-4 h-4 text-muted-foreground/30" />
               </div>
@@ -271,22 +321,26 @@ const ProfileHeader = ({
         onClick={() => handleTabClick(tab.id)}
         className={cn(
           "group relative flex gap-3 rounded-lg hover:bg-muted/50 transition-all cursor-pointer border-2 border-transparent",
-          collapsed ? "p-2 justify-center" : "p-3",
+          isOneColumnLayout 
+            ? "p-2 flex-1 min-w-0"
+            : (collapsed ? "p-2 justify-center shrink-0" : "p-3 w-full"),
           isActive && "bg-primary/5 border-primary/10",
           isHighlighted && "tutorial-highlight"
         )}
       >
         <div className={cn(
-          "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
+          isOneColumnLayout 
+            ? "w-full h-1 absolute bottom-0 left-0 right-0 rounded-b-lg"
+            : "w-1.5 h-full absolute left-0 top-0 bottom-0 rounded-l-lg",
           isActive && "bg-primary"
         )} />
         <div className={cn(
           "w-full flex items-center justify-between",
-          collapsed ? "justify-center pl-0" : "pl-2"
+          isOneColumnLayout ? (showTextInHorizontal ? "justify-center gap-1.5 px-1" : "justify-center") : (collapsed ? "justify-center pl-0" : "pl-2")
         )}>
           <div className={cn(
             "flex items-center",
-            collapsed ? "justify-center" : "gap-3"
+            isOneColumnLayout ? (showTextInHorizontal ? "justify-center gap-1.5" : "justify-center") : (collapsed ? "justify-center" : "gap-3")
           )}>
             <div className={cn(
               "transition-colors shrink-0",
@@ -294,7 +348,15 @@ const ProfileHeader = ({
             )}>
               {getIconForTab(tab.id)}
             </div>
-            {!collapsed && (
+            {showTextInHorizontal && (
+              <span className={cn(
+                "text-xs font-medium truncate",
+                isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+              )}>
+                {getSingleWordLabel(tab.labelKey)}
+              </span>
+            )}
+            {!collapsed && !isOneColumnLayout && (
               <span className={cn(
                 "text-sm font-medium truncate",
                 isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
@@ -303,9 +365,9 @@ const ProfileHeader = ({
               </span>
             )}
           </div>
-          {!collapsed && (
+          {!collapsed && !isOneColumnLayout && (
             <div className="ml-2 shrink-0">
-              {isCompleted ? (
+              {isCompleted && !(accessLevelChoice === 'full' && !isTutorialActive) ? (
                 <FiCheckCircle className="w-4 h-4 text-green-500/80" />
               ) : (
                 <FiCircle className={cn(
@@ -316,10 +378,10 @@ const ProfileHeader = ({
             </div>
           )}
         </div>
-        {collapsed && (
+        {(collapsed || isOneColumnLayout) && (
           <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-border">
             {t(tab.labelKey, tab.id)}
-            {isCompleted && (
+            {isCompleted && !(accessLevelChoice === 'full' && !isTutorialActive) && (
               <span className="ml-1 text-green-500">✓</span>
             )}
           </div>
@@ -332,7 +394,8 @@ const ProfileHeader = ({
     <div
       className={cn(
         "w-full h-fit bg-card rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out profile-sidebar-menu",
-        collapsed ? "p-2" : "p-4"
+        collapsed ? "p-2" : "p-4",
+        isOneColumnLayout && "p-3"
       )}
     >
       {onToggle && !isMobile && (
@@ -360,7 +423,10 @@ const ProfileHeader = ({
         </div>
       )}
 
-      <div className="flex flex-col gap-3 profile-sidebar-tabs">
+      <div className={cn(
+        "profile-sidebar-tabs",
+        isOneColumnLayout ? "flex flex-row gap-2 w-full" : "flex flex-col gap-3"
+      )}>
         {tabs.map(renderTabItem)}
       </div>
 
@@ -368,39 +434,53 @@ const ProfileHeader = ({
         <div className="mt-4 pt-4 border-t border-border relative profile-sidebar-autofill">
           {showMenu && (
             <div className={cn(
-              "absolute bottom-full left-0 w-full mb-2 bg-popover border border-border rounded-lg shadow-xl z-[200000] animate-in slide-in-from-bottom-2 duration-200",
-              collapsed && "left-full ml-2 w-48 bottom-0 mb-0"
-            )}>
-              <button
-                onClick={() => {
-                  onAutofill('current');
-                  setShowMenu(false);
-                }}
-                className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-muted transition-colors flex items-center gap-2 border-b border-border"
-              >
-                <FiZap className="w-3.5 h-3.5 text-amber-500" />
-                {t('dashboardProfile:common.fillCurrentTab')}
-              </button>
-              <button
-                onClick={() => {
-                  onAutofill('all');
-                  setShowMenu(false);
-                }}
-                className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-muted transition-colors flex items-center gap-2 text-amber-600"
-              >
-                <FiZap className="w-3.5 h-3.5" />
-                {t('dashboardProfile:common.fillAll')}
-              </button>
+              "absolute bottom-full left-0 w-full mb-2 bg-white border-2 border-[var(--red-2)] rounded-lg shadow-xl z-[200000] animate-in slide-in-from-bottom-2 duration-200 overflow-hidden",
+              collapsed && "left-full ml-2 w-64 bottom-0 mb-0"
+            )} style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
+              <div className="px-4 py-3 bg-white border-b-2 border-[var(--red-2)] text-[var(--red-4)] flex gap-3 items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[var(--red-2)]/20 flex items-center justify-center border-2 border-[var(--red-2)]">
+                    <FiZap className="w-4 h-4 text-[var(--red-4)]" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-sm text-[var(--red-4)]">{t('dashboardProfile:common.autofillOptions')}</h4>
+                </div>
+              </div>
+              <div className="px-4 py-3 flex items-center justify-between gap-3">
+                <button
+                  onClick={() => {
+                    onAutofill('current');
+                    setShowMenu(false);
+                  }}
+                  className="flex-1 text-left px-4 py-2.5 text-sm text-[var(--red-4)]/90 hover:bg-[var(--red-2)]/10 transition-colors flex items-center gap-2 rounded"
+                >
+                  <FiZap className="w-3.5 h-3.5 text-[var(--red-4)]" />
+                  {t('dashboardProfile:common.fillCurrentTab')}
+                </button>
+                <button
+                  onClick={() => {
+                    onAutofill('all');
+                    setShowMenu(false);
+                  }}
+                  className="flex-1 text-right px-4 py-2.5 text-sm font-semibold text-[var(--red-4)] hover:bg-[var(--red-2)]/10 transition-colors flex items-center justify-end gap-2 rounded"
+                >
+                  {t('dashboardProfile:common.fillAll')}
+                  <FiZap className="w-3.5 h-3.5 text-[var(--red-4)]" />
+                </button>
+              </div>
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
+                <div className="w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-[var(--red-2)]"></div>
+              </div>
             </div>
           )}
           <button
             onClick={() => setShowMenu(!showMenu)}
             data-tutorial="profile-upload-button"
             className={cn(
-              "w-full flex items-center justify-center gap-3 p-3 rounded-lg transition-all relative text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
+              "w-full flex items-center justify-center gap-3 p-3 rounded-lg transition-all relative text-muted-foreground hover:bg-muted/50 hover:text-foreground select-none",
               collapsed ? "px-2" : "px-3",
-              showMenu && "bg-muted/30",
-              isAutofillHighlighted && "tutorial-highlight"
+              showMenu && "bg-muted/30"
             )}
             title={t('dashboardProfile:common.autofillOptions')}
           >
@@ -449,7 +529,8 @@ ProfileHeader.propTypes = {
   highlightTabId: PropTypes.string,
   collapsed: PropTypes.bool,
   onToggle: PropTypes.func,
-  onAutofill: PropTypes.func
+  onAutofill: PropTypes.func,
+  customMobileState: PropTypes.bool
 };
 
 export default ProfileHeader;

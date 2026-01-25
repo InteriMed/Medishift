@@ -5,6 +5,9 @@
     "keywords": "Swiss healthcare blog, healthcare management resources, healthcare recruitment solutions, healthcare HR, healthcare industry trends"
   },
   "title": "Blog",
+  "hero": {
+    "badge": "Insights"
+  },
   "introduction": "Expert advice and resources for healthcare professionals and facility managers in Switzerland",
   "categories": {
     "title": "Browse by Category",
@@ -35,6 +38,16 @@
     }
   },
   "searchPlaceholder": "Search blog articles...",
+  "ctaTitle": "Improve your healthcare recruitment today",
+  "ctaSubtitle": "InteriMed connects healthcare facilities with qualified professionals for temporary work assignments.",
+  "cta": {
+    "title": "Improve your healthcare recruitment today",
+    "subtitle": "InteriMed connects healthcare facilities with qualified professionals for temporary work assignments.",
+    "facilities": "For Facilities",
+    "professionals": "For Professionals",
+    "percentage": "98%",
+    "percentageLabel": "Satisfaction Rate"
+  },
   "mockPosts": [
     {
       "title": "Understanding Swiss Healthcare Regulations for Temporary Staffing",

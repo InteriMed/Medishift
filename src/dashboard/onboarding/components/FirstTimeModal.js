@@ -692,20 +692,18 @@ const FirstTimeModal = () => {
       </div>
 
       <div className={`${styles.cardGrid} ${onboardingType === 'facility' ? 'md:grid-cols-2' : ''} ${role === 'chain' ? 'grid-cols-1' : ''}`}>
-        {/* Only show Worker option for professional onboarding */}
-        {onboardingType !== 'facility' && (
-          <div
-            onClick={() => handleRoleChange('worker')}
-            className={`${styles.selectionCard} ${role === 'worker' ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border'}`}
-            style={role === 'worker' ? { borderColor: 'var(--color-logo-1)', backgroundColor: 'rgba(37, 99, 235, 0.05)', boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.2)', transition: 'transform 0.3s, box-shadow 0.3s' } : {}}
-          >
-            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 text-white shadow-sm onboarding-icon-no-transition" style={{ backgroundColor: 'var(--color-logo-1)', transition: 'none', WebkitTransition: 'none', MozTransition: 'none', OTransition: 'none', transitionProperty: 'none', transitionDuration: '0s', transitionDelay: '0s' }}>
-              <FiBriefcase className="w-6 h-6" style={{ transition: 'none' }} />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Worker</h3>
-            <p className="text-sm text-muted-foreground">I want to work!</p>
+        {/* Worker option - disabled if facility onboarding */}
+        <div
+          onClick={() => onboardingType !== 'facility' && handleRoleChange('worker')}
+          className={`${styles.selectionCard} ${role === 'worker' ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border'} ${onboardingType === 'facility' ? 'opacity-50 grayscale pointer-events-none cursor-not-allowed' : ''}`}
+          style={role === 'worker' ? { borderColor: 'var(--color-logo-1)', backgroundColor: 'rgba(37, 99, 235, 0.05)', boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.2)', transition: 'transform 0.3s, box-shadow 0.3s' } : {}}
+        >
+          <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 text-white shadow-sm onboarding-icon-no-transition" style={{ backgroundColor: 'var(--color-logo-1)', transition: 'none', WebkitTransition: 'none', MozTransition: 'none', OTransition: 'none', transitionProperty: 'none', transitionDuration: '0s', transitionDelay: '0s' }}>
+            <FiBriefcase className="w-6 h-6" style={{ transition: 'none' }} />
           </div>
-        )}
+          <h3 className="text-lg font-semibold mb-2">Worker</h3>
+          <p className="text-sm text-muted-foreground">I want to work!</p>
+        </div>
 
         <div
           onClick={() => handleRoleChange('company')}

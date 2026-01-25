@@ -258,7 +258,7 @@ exports.updateUserProfile = onCallV2(
       if (Object.keys(profileFieldsToUpdate).length > 0) {
         const professionalProfileDoc = await db.collection('professionalProfiles').doc(userId).get();
         const facilityProfileDoc = await db.collection('facilityProfiles').doc(userId).get();
-        
+
         let profileCollection;
         if (professionalProfileDoc.exists()) {
           profileCollection = 'professionalProfiles';
@@ -505,7 +505,7 @@ const onPositionUpdate = onDocumentUpdated({
     const professionalProfileId = selectedApplication.professionalProfileId;
     const professionalUserId = selectedApplication.userId;
 
-    // Get facility admin user ID (use postedByUserId or first admin from facility)
+    // Get facility admins (ALL admins)
     const facilityDoc = await db.collection('facilityProfiles').doc(position.facilityProfileId).get();
     if (!facilityDoc.exists) {
       console.error(`Facility ${position.facilityProfileId} not found`);
@@ -513,57 +513,79 @@ const onPositionUpdate = onDocumentUpdated({
     }
 
     const facilityData = facilityDoc.data();
-    const adminEmployee = facilityData.employees?.find(emp => emp.roles?.includes('admin'));
-    const facilityAdminId = position.postedByUserId || adminEmployee?.user_uid || (facilityData.employees && facilityData.employees[0]?.user_uid);
+    const adminEmployees = facilityData.employees?.filter(emp => emp.roles?.includes('admin')) || [];
+    const facilityAdminIds = adminEmployees.map(emp => emp.user_uid);
 
-    if (!facilityAdminId || !professionalUserId) {
-      console.error(`Missing participant IDs: facilityAdminId=${facilityAdminId}, professionalUserId=${professionalUserId}`);
+    // Ensure we have at least one admin
+    if (facilityAdminIds.length === 0 && facilityData.admin) {
+      facilityAdminIds.push(...facilityData.admin);
+    }
+
+    // Default to postedByUserId if available and not already included
+    if (position.postedByUserId && !facilityAdminIds.includes(position.postedByUserId)) {
+      facilityAdminIds.push(position.postedByUserId);
+    }
+
+    if (facilityAdminIds.length === 0 || !professionalUserId) {
+      console.error(`Missing participant IDs: facilityAdminIds=${facilityAdminIds}, professionalUserId=${professionalUserId}`);
       return null;
     }
 
+    // Prepare participants list
+    const participantIds = [professionalUserId, ...facilityAdminIds];
+    const uniqueParticipantIds = [...new Set(participantIds)];
+
     // Get participant info for conversation
+    const participantInfo = [];
+
+    // 1. Professional Info
     const professionalUserDoc = await db.collection('users').doc(professionalUserId).get();
     const professionalUserData = professionalUserDoc.exists ? professionalUserDoc.data() : {};
+    participantInfo.push({
+      userId: professionalUserId,
+      displayName: professionalUserData.displayName || professionalUserData.firstName + ' ' + professionalUserData.lastName || 'Professional',
+      photoURL: professionalUserData.photoURL || '',
+      roleInConversation: 'professional'
+    });
 
-    const facilityUserDoc = await db.collection('users').doc(facilityAdminId).get();
-    const facilityUserData = facilityUserDoc.exists ? facilityUserDoc.data() : {};
+    // 2. Facility Admins Info
+    for (const adminId of facilityAdminIds) {
+      const adminUserDoc = await db.collection('users').doc(adminId).get();
+      if (adminUserDoc.exists) {
+        const adminData = adminUserDoc.data();
+        participantInfo.push({
+          userId: adminId,
+          displayName: adminData.displayName || adminData.firstName + ' ' + adminData.lastName || 'Facility Admin',
+          photoURL: adminData.photoURL || '',
+          roleInConversation: 'facility_representative'
+        });
+      }
+    }
 
     // Create conversation automatically
     const conversationData = {
-      participantIds: [professionalUserId, facilityAdminId],
-      participantInfo: [
-        {
-          userId: professionalUserId,
-          displayName: professionalUserData.displayName || professionalUserData.firstName + ' ' + professionalUserData.lastName || 'Professional',
-          photoURL: professionalUserData.photoURL || '',
-          roleInConversation: 'professional'
-        },
-        {
-          userId: facilityAdminId,
-          displayName: facilityUserData.displayName || facilityData.facilityName || 'Facility Representative',
-          photoURL: facilityUserData.photoURL || '',
-          roleInConversation: 'facility_representative'
-        }
-      ],
+      participantIds: uniqueParticipantIds,
+      participantInfo,
       positionId: positionId,
       facilityProfileId: position.facilityProfileId,
       professionalProfileId: professionalProfileId,
       contractId: null,
+      isTeamChat: uniqueParticipantIds.length > 2, // Mark as team chat if more than 2 participants
       lastMessage: {
         text: `Interview process started for position: ${position.jobTitle || 'Position'}`,
         senderId: 'system',
         timestamp: admin.firestore.FieldValue.serverTimestamp()
       },
       lastMessageTimestamp: admin.firestore.FieldValue.serverTimestamp(),
-      unreadCounts: {
-        [professionalUserId]: 1,
-        [facilityAdminId]: 0
-      },
+      unreadCounts: uniqueParticipantIds.reduce((acc, id) => {
+        acc[id] = id === professionalUserId ? 1 : 0; // Only mark unread for professional initially
+        return acc;
+      }, {}),
       isArchivedBy: [],
-      typingIndicator: {
-        [professionalUserId]: false,
-        [facilityAdminId]: false
-      },
+      typingIndicator: uniqueParticipantIds.reduce((acc, id) => {
+        acc[id] = false;
+        return acc;
+      }, {}),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
@@ -833,7 +855,7 @@ const seedDemoFacility = onCallV2(
 
     const userId = request.auth.uid;
     const adminDoc = await db.collection('admins').doc(userId).get();
-    
+
     if (!adminDoc.exists || adminDoc.data().isActive === false) {
       throw new HttpsError('permission-denied', 'Only admins can seed the demo facility');
     }
@@ -860,7 +882,7 @@ const removeDemoFacility = onCallV2(
 
     const userId = request.auth.uid;
     const adminDoc = await db.collection('admins').doc(userId).get();
-    
+
     if (!adminDoc.exists || adminDoc.data().isActive === false) {
       throw new HttpsError('permission-denied', 'Only admins can remove the demo facility');
     }

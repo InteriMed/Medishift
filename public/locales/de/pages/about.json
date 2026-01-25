@@ -1,90 +1,102 @@
 {
-    "h1meta": {
-        "title": "Über MediShift | Ihr Partner für Personalvermittlung im Gesundheitswesen",
-        "description": "Entdecken Sie, wie MediShift die Personalvermittlung im Gesundheitswesen in der Schweiz mit innovativen Lösungen für Einrichtungen und Fachkräfte revolutioniert.",
-        "keywords": "MediShift, Personalvermittlung Gesundheitswesen, temporäres medizinisches Personal, Schweizer Gesundheitsjobs, Personalvermittlungsplattform"
+  "h1meta": {
+    "title": "Über MediShift | Ihr Partner für Personalvermittlung im Gesundheitswesen",
+    "description": "Entdecken Sie, wie MediShift die Personalvermittlung im Gesundheitswesen in der Schweiz mit innovativen Lösungen für Einrichtungen und Fachkräfte revolutioniert.",
+    "keywords": "MediShift, Personalvermittlung Gesundheitswesen, temporäres medizinisches Personal, Schweizer Gesundheitsjobs, Personalvermittlungsplattform"
+  },
+  "hero": {
+    "title": "Über MediShift",
+    "features": {
+      "contracts": "Sicherer Zugang",
+      "planning": "Einfache Planung",
+      "qualifiedStaff": "Qualifiziertes Personal"
     },
-    "hero": {
-        "title": "Über MediShift",
-        "features": {
-            "contracts": "Sicherer Zugang",
-            "planning": "Einfache Planung",
-            "qualifiedStaff": "Qualifiziertes Personal"
+    "badge": "Our Story"
+  },
+  "missionVision": {
+    "title": "Unsere Mission & Vision",
+    "intro": "MediShift wurde mit einem klaren Ziel gegründet: Die Personalvermittlung im Gesundheitswesen in der Schweiz zu revolutionieren, indem eine Plattform geschaffen wird, die den spezifischen Bedürfnissen von Gesundheitseinrichtungen und Fachkräften gerecht wird.",
+    "experienceSection": {
+      "title": "Unsere Erfahrung",
+      "paragraph1": "Mit über 50 Jahren kombinierter Erfahrung im Gesundheitswesen versteht unser Team die einzigartigen Herausforderungen, mit denen Gesundheitseinrichtungen bei der Suche nach qualifiziertem Personal konfrontiert sind, sowie die Bedürfnisse von Gesundheitsfachkräften, die flexible Arbeitsmöglichkeiten suchen.",
+      "paragraph2": "Diese Expertise hat es uns ermöglicht, eine Plattform zu entwickeln, die den Rekrutierungsprozess vereinfacht und gleichzeitig die hohen Standards des Gesundheitssektors erfüllt."
+    },
+    "insightSection": {
+      "title": "Unsere Perspektive",
+      "paragraph1": "Wir glauben, dass die Zukunft der Arbeit im Gesundheitswesen zunehmend flexibler sein wird, mit wachsender Nachfrage nach Lösungen, die es Einrichtungen ermöglichen, sich schnell an veränderte Bedürfnisse anzupassen, und Fachkräften eine bessere Work-Life-Balance ermöglichen."
+    },
+    "commitmentSection": {
+      "title": "Unser Engagement",
+      "points": [
+        {
+          "title": "Qualität:",
+          "text": "Wir überprüfen rigoros die Qualifikationen und Erfahrungen aller Fachkräfte auf unserer Plattform."
+        },
+        {
+          "title": "Innovation:",
+          "text": "Wir investieren kontinuierlich in Technologie, um die Benutzererfahrung und Rekrutierungseffizienz zu verbessern."
+        },
+        {
+          "title": "Transparenz:",
+          "text": "Wir glauben an klare und ehrliche Kommunikation mit allen unseren Partnern."
         }
+      ]
     },
-    "missionVision": {
-        "title": "Unsere Mission & Vision",
-        "intro": "MediShift wurde mit einem klaren Ziel gegründet: Die Personalvermittlung im Gesundheitswesen in der Schweiz zu revolutionieren, indem eine Plattform geschaffen wird, die den spezifischen Bedürfnissen von Gesundheitseinrichtungen und Fachkräften gerecht wird.",
-        "experienceSection": {
-            "title": "Unsere Erfahrung",
-            "paragraph1": "Mit über 50 Jahren kombinierter Erfahrung im Gesundheitswesen versteht unser Team die einzigartigen Herausforderungen, mit denen Gesundheitseinrichtungen bei der Suche nach qualifiziertem Personal konfrontiert sind, sowie die Bedürfnisse von Gesundheitsfachkräften, die flexible Arbeitsmöglichkeiten suchen.",
-            "paragraph2": "Diese Expertise hat es uns ermöglicht, eine Plattform zu entwickeln, die den Rekrutierungsprozess vereinfacht und gleichzeitig die hohen Standards des Gesundheitssektors erfüllt."
-        },
-        "insightSection": {
-            "title": "Unsere Perspektive",
-            "paragraph1": "Wir glauben, dass die Zukunft der Arbeit im Gesundheitswesen zunehmend flexibler sein wird, mit wachsender Nachfrage nach Lösungen, die es Einrichtungen ermöglichen, sich schnell an veränderte Bedürfnisse anzupassen, und Fachkräften eine bessere Work-Life-Balance ermöglichen."
-        },
-        "commitmentSection": {
-            "title": "Unser Engagement",
-            "points": [
-                {
-                    "title": "Qualität:",
-                    "text": "Wir überprüfen rigoros die Qualifikationen und Erfahrungen aller Fachkräfte auf unserer Plattform."
-                },
-                {
-                    "title": "Innovation:",
-                    "text": "Wir investieren kontinuierlich in Technologie, um die Benutzererfahrung und Rekrutierungseffizienz zu verbessern."
-                },
-                {
-                    "title": "Transparenz:",
-                    "text": "Wir glauben an klare und ehrliche Kommunikation mit allen unseren Partnern."
-                }
-            ]
-        },
-        "conclusion": "Mit MediShift wählen Sie einen Partner, der die Nuancen des Schweizer Gesundheitssektors versteht und sich verpflichtet hat, hochwertige Rekrutierungslösungen anzubieten."
+    "conclusion": "Mit MediShift wählen Sie einen Partner, der die Nuancen des Schweizer Gesundheitssektors versteht und sich verpflichtet hat, hochwertige Rekrutierungslösungen anzubieten.",
+    "badge": "Our Purpose"
+  },
+  "story": {
+    "title": "Unsere Geschichte",
+    "paragraph1": "MediShift wurde von zwei Apothekern mit technischer Expertise und starken Branchenbeziehungen gegründet, die ihr Fachwissen nutzten, um eine massgeschneiderte Lösung für den Gesundheitssektor zu entwickeln.",
+    "paragraph2": "Nachdem sie persönlich die Herausforderungen erlebt hatten, qualifiziertes Personal zu finden und flexible Arbeit im Gesundheitswesen zu sichern, machten sie sich daran, eine Lösung zu schaffen, die sowohl Einrichtungen als auch Fachkräften zugutekommt.",
+    "paragraph3": "Beginnend mit dem Pharmaziesektor in der französischsprachigen Schweiz, strebt MediShift danach, die führende Plattform für temporäre Rekrutierung im Gesundheitssektor in der gesamten Schweiz und den Nachbarländern zu werden.",
+    "badge": "History",
+    "imageAlt": "InteriMed Founders"
+  },
+  "values": {
+    "title": "Unsere Werte",
+    "value1": {
+      "title": "Integrität",
+      "description": "Wir halten höchste ethische Standards in all unseren Interaktionen ein."
     },
-    "story": {
-        "title": "Unsere Geschichte",
-        "paragraph1": "MediShift wurde von zwei Apothekern mit technischer Expertise und starken Branchenbeziehungen gegründet, die ihr Fachwissen nutzten, um eine massgeschneiderte Lösung für den Gesundheitssektor zu entwickeln.",
-        "paragraph2": "Nachdem sie persönlich die Herausforderungen erlebt hatten, qualifiziertes Personal zu finden und flexible Arbeit im Gesundheitswesen zu sichern, machten sie sich daran, eine Lösung zu schaffen, die sowohl Einrichtungen als auch Fachkräften zugutekommt.",
-        "paragraph3": "Beginnend mit dem Pharmaziesektor in der französischsprachigen Schweiz, strebt MediShift danach, die führende Plattform für temporäre Rekrutierung im Gesundheitssektor in der gesamten Schweiz und den Nachbarländern zu werden."
+    "value2": {
+      "title": "Exzellenz",
+      "description": "Wir streben kontinuierlich danach, unsere Dienstleistungen zu verbessern und Erwartungen zu übertreffen."
     },
-    "values": {
-        "title": "Unsere Werte",
-        "value1": {
-            "title": "Integrität",
-            "description": "Wir halten höchste ethische Standards in all unseren Interaktionen ein."
-        },
-        "value2": {
-            "title": "Exzellenz",
-            "description": "Wir streben kontinuierlich danach, unsere Dienstleistungen zu verbessern und Erwartungen zu übertreffen."
-        },
-        "value3": {
-            "title": "Zusammenarbeit",
-            "description": "Wir arbeiten eng mit unseren Kunden zusammen, um ihre einzigartigen Bedürfnisse zu verstehen."
-        },
-        "value4": {
-            "title": "Respekt",
-            "description": "Wir schätzen Vielfalt und behandeln jeden Menschen mit Würde und Respekt."
-        },
-        "value5": {
-            "title": "Innovation",
-            "description": "Wir begrüssen neue Technologien und Ideen, um unsere Plattform kontinuierlich zu verbessern."
-        }
+    "value3": {
+      "title": "Zusammenarbeit",
+      "description": "Wir arbeiten eng mit unseren Kunden zusammen, um ihre einzigartigen Bedürfnisse zu verstehen."
     },
-    "h1team": {
-        "title": "Unser Team",
-        "subtitle": "Lernen Sie die Menschen kennen, die MediShift möglich machen",
-        "member1": {
-            "bio": "Apotheker und ehemaliger Apothekeninhaber mit 40 Jahren Erfahrung im Schweizer Gesundheitssektor."
-        },
-        "member2": {
-            "bio": "Pharmazeutischer Ingenieur mit 5 Jahren Erfahrung im Pharmaziesektor, Software- und Informatikingenieur."
-        }
+    "value4": {
+      "title": "Respekt",
+      "description": "Wir schätzen Vielfalt und behandeln jeden Menschen mit Würde und Respekt."
     },
-    "cta": {
-        "title": "Bereit, Ihren Ansatz zur Personalvermittlung im Gesundheitswesen zu transformieren?",
-        "forFacilities": "Für Gesundheitseinrichtungen",
-        "forProfessionals": "Für Gesundheitsfachkräfte"
+    "value5": {
+      "title": "Innovation",
+      "description": "Wir begrüssen neue Technologien und Ideen, um unsere Plattform kontinuierlich zu verbessern."
     }
+  },
+  "h1team": {
+    "title": "Unser Team",
+    "subtitle": "Lernen Sie die Menschen kennen, die MediShift möglich machen",
+    "member1": {
+      "bio": "Apotheker und ehemaliger Apothekeninhaber mit 40 Jahren Erfahrung im Schweizer Gesundheitssektor."
+    },
+    "member2": {
+      "bio": "Pharmazeutischer Ingenieur mit 5 Jahren Erfahrung im Pharmaziesektor, Software- und Informatikingenieur."
+    }
+  },
+  "cta": {
+    "title": "Bereit, Ihren Ansatz zur Personalvermittlung im Gesundheitswesen zu transformieren?",
+    "forFacilities": "Für Gesundheitseinrichtungen",
+    "forProfessionals": "Für Gesundheitsfachkräfte",
+    "description": "Join thousands of healthcare professionals and facilities already using InteriMed.",
+    "cardTitle": "Join the Network",
+    "cardSubtitle": "Connect with the best in the industry"
+  },
+  "meta": {
+    "title": "About InteriMed",
+    "description": "Discover how InteriMed is revolutionizing healthcare recruitment in Switzerland.",
+    "keywords": "about, interimed, healthcare, recruitment"
+  }
 }

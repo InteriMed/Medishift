@@ -45,7 +45,7 @@ const Contracts = () => {
 
     const getMockContracts = useCallback(() => {
         if (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.CONTRACTS) return [];
-        
+
         return [
             {
                 id: 'tutorial-geneva-hospital',
@@ -280,7 +280,7 @@ const Contracts = () => {
             isMobile && "overflow-y-hidden"
         )} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
             <div className={cn(
-                "flex-1 flex min-h-0 relative ml-4 my-4",
+                "flex-1 flex min-h-0 relative mx-4 my-4",
                 isMobile ? "p-0 overflow-hidden" : "gap-6 overflow-visible"
             )}>
                 <div className={cn(
@@ -308,11 +308,11 @@ const Contracts = () => {
                                     value={filters.searchTerm || ''}
                                     onChange={(e) => updateFilters({ searchTerm: e.target.value })}
                                     className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                                    style={{ 
-                                      color: 'var(--boxed-inputfield-color-text)', 
-                                      fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                      height: 'var(--boxed-inputfield-height)',
-                                      fontWeight: '500'
+                                    style={{
+                                        color: 'var(--boxed-inputfield-color-text)',
+                                        fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                        height: 'var(--boxed-inputfield-height)',
+                                        fontWeight: '500'
                                     }}
                                 />
                                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -340,8 +340,8 @@ const Contracts = () => {
                                         {statusOptions.map(option => (
                                             <button
                                                 key={option.value}
-                                                onClick={() => { 
-                                                    updateFilters({ status: option.value }); 
+                                                onClick={() => {
+                                                    updateFilters({ status: option.value });
                                                     if (option.value === 'all') {
                                                         setShowFiltersOverlay(false);
                                                     }
@@ -468,8 +468,8 @@ const Contracts = () => {
                             {statusOptions.map(option => (
                                 <button
                                     key={option.value}
-                                    onClick={() => { 
-                                        updateFilters({ status: option.value }); 
+                                    onClick={() => {
+                                        updateFilters({ status: option.value });
                                         if (option.value === 'all') {
                                             setShowFiltersOverlay(false);
                                         }

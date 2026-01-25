@@ -10,7 +10,7 @@ export const TUTORIAL_IDS = {
     MARKETPLACE: 'marketplace',
     PAYROLL: 'payroll',
     ORGANIZATION: 'organization',
-    SETTINGS: 'settings',
+    ACCOUNT: 'account',
     PROFILE: 'profile'
 };
 
@@ -40,7 +40,16 @@ export const TARGET_AREAS = {
 export const BUTTON_ACTIONS = {
     PAUSE_AND_FILL: 'pause_and_fill',
     START_MESSAGES_TUTORIAL: 'start_messages_tutorial',
-    NAVIGATE: 'navigate'
+    NAVIGATE: 'navigate',
+    NEXT_STEP: 'next_step'
+};
+
+export const MESSAGE_TYPES = {
+    DEFAULT: 'default',
+    INFO: 'info',
+    SUCCESS: 'success',
+    WARNING: 'warning',
+    ERROR: 'error'
 };
 
 export const PROFILE_TAB_IDS = {
@@ -49,10 +58,43 @@ export const PROFILE_TAB_IDS = {
     BILLING_INFORMATION: 'billingInformation',
     DOCUMENT_UPLOADS: 'documentUploads',
     SETTINGS: 'settings',
+    MARKETPLACE: 'marketplace',
     FACILITY_CORE_DETAILS: 'facilityCoreDetails',
     FACILITY_LEGAL_BILLING: 'facilityLegalBilling',
     ACCOUNT: 'account',
     DELETE_ACCOUNT: 'deleteAccount'
+};
+
+export const TAB_ORDERS = {
+    [ONBOARDING_TYPES.PROFESSIONAL]: [
+        PROFILE_TAB_IDS.PERSONAL_DETAILS,
+        PROFILE_TAB_IDS.PROFESSIONAL_BACKGROUND,
+        PROFILE_TAB_IDS.BILLING_INFORMATION,
+        PROFILE_TAB_IDS.DOCUMENT_UPLOADS,
+        PROFILE_TAB_IDS.MARKETPLACE,
+        PROFILE_TAB_IDS.ACCOUNT
+    ],
+    [ONBOARDING_TYPES.FACILITY]: [
+        PROFILE_TAB_IDS.FACILITY_CORE_DETAILS,
+        PROFILE_TAB_IDS.FACILITY_LEGAL_BILLING,
+        PROFILE_TAB_IDS.MARKETPLACE,
+        PROFILE_TAB_IDS.ACCOUNT
+    ]
+};
+
+export const getTabOrder = (onboardingType) => {
+    return TAB_ORDERS[onboardingType] || TAB_ORDERS[ONBOARDING_TYPES.PROFESSIONAL];
+};
+
+export const FALLBACK_SIDEBAR_TOOLTIP_POSITION = {
+    top: '150px',
+    left: 'calc(var(--sidebar-width, 250px) + 20px)'
+};
+
+export const CENTERED_TOOLTIP_POSITION = {
+    top: '40%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)'
 };
 
 const createDashboardPath = (feature, subPath = null) => {
@@ -69,6 +111,7 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             targetSelector: '[data-tutorial="onboarding-help-button"]',
             targetArea: TARGET_AREAS.HEADER,
             tooltipPosition: { top: '80px', right: '120px' },
+            navigationPath: createDashboardPath('overview'),
             requiresInteraction: false,
             visualPreview: { type: 'header_help' }
         },
@@ -76,13 +119,15 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             id: 'onboarding-intro',
             targetSelector: null,
             targetArea: TARGET_AREAS.CONTENT,
-            tooltipPosition: { top: '40%', left: '50%', transform: 'translate(-50%, -50%)' }
+            navigationPath: createDashboardPath('overview'),
+            tooltipPosition: CENTERED_TOOLTIP_POSITION
         },
         {
             id: 'expand-sidebar',
             targetSelector: 'aside[class*="fixed left-0"]',
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '50%', left: 'calc(250px + 20px)' },
+            navigationPath: createDashboardPath('overview'),
             expandSidebar: true,
             highlightSidebar: true,
             requiresInteraction: false
@@ -91,7 +136,8 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             id: 'navigate-to-profile',
             targetSelector: `a[href="/dashboard/profile"]`,
             targetArea: TARGET_AREAS.SIDEBAR,
-            tooltipPosition: { top: '150px', left: 'calc(250px + 20px)' },
+            tooltipPosition: FALLBACK_SIDEBAR_TOOLTIP_POSITION,
+            navigationPath: createDashboardPath('overview'),
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.PROFILE,
             makeOtherTabsInactive: true,
             requiresInteraction: false
@@ -106,9 +152,11 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightTab: PROFILE_TAB_IDS.PERSONAL_DETAILS,
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.PERSONAL_DETAILS),
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
             requiresInteraction: true,
             customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
-            visualPreview: { type: 'autofill_button' }
+            visualPreview: { type: 'autofill_button' },
+            hidePrevious: true
         },
         {
             id: 'professional-background-tab',
@@ -117,10 +165,12 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightTab: PROFILE_TAB_IDS.PROFESSIONAL_BACKGROUND,
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.PROFESSIONAL_BACKGROUND),
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
             requiresInteraction: true,
             requiresFullAccess: true,
             customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
-            visualPreview: { type: 'profile_tab', icon: 'briefcase', tabId: 'professionalBackground' }
+            visualPreview: { type: 'profile_tab', icon: 'briefcase', tabId: 'professionalBackground' },
+            hidePrevious: true
         },
         {
             id: 'billing-information-tab',
@@ -129,56 +179,58 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightTab: PROFILE_TAB_IDS.BILLING_INFORMATION,
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.BILLING_INFORMATION),
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
             requiresInteraction: true,
             customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
-            visualPreview: { type: 'profile_tab', icon: 'credit-card', tabId: 'billingInformation' }
+            visualPreview: { type: 'profile_tab', icon: 'credit-card', tabId: 'billingInformation' },
+            hidePrevious: true
         },
         {
             id: 'document-uploads-tab',
             targetSelector: `button[data-tab="${PROFILE_TAB_IDS.DOCUMENT_UPLOADS}"]`,
             targetArea: TARGET_AREAS.CONTENT,
             highlightTab: PROFILE_TAB_IDS.DOCUMENT_UPLOADS,
-            highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.DOCUMENT_UPLOADS),
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
             requiresInteraction: true,
             customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
-            visualPreview: { type: 'profile_tab', icon: 'file-text', tabId: 'documentUploads' }
+            visualPreview: { type: 'profile_tab', icon: 'file-text', tabId: 'documentUploads' },
+            hidePrevious: true
         },
         {
-            id: 'full-access-unlocked',
-            targetSelector: null,
+            id: 'marketplace-tab',
+            targetSelector: `button[data-tab="${PROFILE_TAB_IDS.MARKETPLACE}"]`,
             targetArea: TARGET_AREAS.CONTENT,
-            messageType: 'success',
-            tooltipPosition: { top: '40%', left: '50%', transform: 'translate(-50%, -50%)' },
-            requiresInteraction: false
+            highlightTab: PROFILE_TAB_IDS.MARKETPLACE,
+            navigationPath: createProfilePath(PROFILE_TAB_IDS.MARKETPLACE),
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
+            requiresInteraction: false,
+            visualPreview: { type: 'profile_tab', icon: 'briefcase', tabId: 'marketplace' },
+            actionButton: { textKey: 'buttons.iUnderstood' },
+            hidePrevious: true
+        },
+        {
+            id: 'click-account-tab',
+            targetSelector: `button[data-tab="${PROFILE_TAB_IDS.ACCOUNT}"]`,
+            targetArea: TARGET_AREAS.CONTENT,
+            highlightTab: PROFILE_TAB_IDS.ACCOUNT,
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
+            requiresInteraction: true,
+            hidePrevious: true,
+            showTooltip: false
         },
         {
             id: 'account-tab',
             targetSelector: `button[data-tab="${PROFILE_TAB_IDS.ACCOUNT}"]`,
             targetArea: TARGET_AREAS.CONTENT,
             highlightTab: PROFILE_TAB_IDS.ACCOUNT,
+            highlightSidebarItem: 'profile',
             navigationPath: createProfilePath(PROFILE_TAB_IDS.ACCOUNT),
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
             requiresInteraction: false,
-            visualPreview: { type: 'profile_tab', icon: 'user', tabId: 'account' }
-        },
-        {
-            id: 'settings-tab',
-            targetSelector: `button[data-tab="${PROFILE_TAB_IDS.SETTINGS}"]`,
-            targetArea: TARGET_AREAS.CONTENT,
-            highlightTab: PROFILE_TAB_IDS.SETTINGS,
-            navigationPath: createProfilePath(PROFILE_TAB_IDS.SETTINGS),
-            requiresInteraction: false,
-            visualPreview: { type: 'profile_tab', icon: 'settings', tabId: 'settings' }
-        },
-        {
-            id: 'profile-completion-info',
-            targetSelector: '.profileContainer',
-            targetArea: TARGET_AREAS.CONTENT,
-            tooltipPosition: { top: '150px', left: '50%' },
-            navigationPath: createProfilePath(PROFILE_TAB_IDS.SETTINGS),
-            highlightTab: PROFILE_TAB_IDS.SETTINGS,
-            actionButton: { textKey: 'buttons.continueToMessages', action: BUTTON_ACTIONS.START_MESSAGES_TUTORIAL },
-            visualPreview: { type: 'profile_tab', icon: 'settings', tabId: 'settings' }
+            messageType: MESSAGE_TYPES.SUCCESS,
+            actionButton: { textKey: 'buttons.finish' },
+            hidePrevious: true
         }
     ],
 
@@ -190,9 +242,11 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightTab: PROFILE_TAB_IDS.FACILITY_CORE_DETAILS,
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.FACILITY_CORE_DETAILS),
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
             requiresInteraction: true,
             customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
-            visualPreview: { type: 'autofill_button' }
+            visualPreview: { type: 'autofill_button' },
+            hidePrevious: true
         },
         {
             id: 'facility-legal-billing-tab',
@@ -201,23 +255,38 @@ export const TUTORIAL_STEP_DEFINITIONS = {
             highlightTab: PROFILE_TAB_IDS.FACILITY_LEGAL_BILLING,
             highlightUploadButton: true,
             navigationPath: createProfilePath(PROFILE_TAB_IDS.FACILITY_LEGAL_BILLING),
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
             requiresInteraction: true,
             customButtons: [{ textKey: 'buttons.iUnderstood', action: BUTTON_ACTIONS.PAUSE_AND_FILL, variant: 'primary' }],
-            visualPreview: { type: 'profile_tab', icon: 'credit-card', tabId: 'facilityLegalBilling' }
+            visualPreview: { type: 'profile_tab', icon: 'credit-card', tabId: 'facilityLegalBilling' },
+            hidePrevious: true
         },
         {
             id: 'facility-profile-completion-info',
-            targetSelector: '.profileContainer',
+            targetSelector: '[data-tab="facilityLegalBilling"]',
             targetArea: TARGET_AREAS.CONTENT,
-            tooltipPosition: { top: '150px', left: '50%' },
-            navigationPath: createProfilePath(PROFILE_TAB_IDS.SETTINGS),
-            highlightTab: PROFILE_TAB_IDS.SETTINGS,
+            messageType: MESSAGE_TYPES.SUCCESS,
+            tooltipPosition: { top: '150px', left: '50%', transform: 'translateX(-50%)' },
+            navigationPath: createProfilePath(PROFILE_TAB_IDS.FACILITY_LEGAL_BILLING),
+            highlightTab: PROFILE_TAB_IDS.FACILITY_LEGAL_BILLING,
+            requiresInteraction: false,
             actionButton: { textKey: 'buttons.continueToMessages', action: BUTTON_ACTIONS.START_MESSAGES_TUTORIAL },
-            visualPreview: { type: 'profile_tab', icon: 'settings', tabId: 'settings' }
+            hidePrevious: true
         }
     ],
 
     [TUTORIAL_IDS.MESSAGES]: [
+        {
+            id: 'redirect-to-messages',
+            targetSelector: null,
+            targetArea: TARGET_AREAS.CONTENT,
+            tooltipPosition: CENTERED_TOOLTIP_POSITION,
+            requiresInteraction: false,
+            messageType: MESSAGE_TYPES.INFO,
+            actionButton: { textKey: 'buttons.startMessages', action: BUTTON_ACTIONS.NEXT_STEP },
+            hidePrevious: true,
+            highlightSidebarItem: DASHBOARD_ROUTE_IDS.MESSAGES
+        },
         {
             id: 'messages-overview',
             targetSelector: `a[href="/dashboard/messages"]`,
@@ -378,7 +447,7 @@ export const TUTORIAL_STEP_DEFINITIONS = {
         }
     ],
 
-    [TUTORIAL_IDS.SETTINGS]: [
+    [TUTORIAL_IDS.ACCOUNT]: [
         {
             id: 'settings-overview',
             targetSelector: `a[href="/dashboard/settings"]`,
@@ -460,7 +529,10 @@ export default {
     ONBOARDING_TYPES,
     TARGET_AREAS,
     BUTTON_ACTIONS,
+    MESSAGE_TYPES,
     PROFILE_TAB_IDS,
+    FALLBACK_SIDEBAR_TOOLTIP_POSITION,
+    CENTERED_TOOLTIP_POSITION,
     TUTORIAL_STEP_DEFINITIONS,
     getTutorialSteps,
     getStepById,

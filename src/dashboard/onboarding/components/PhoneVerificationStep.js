@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
     RecaptchaVerifier,
-    PhoneAuthProvider
+    PhoneAuthProvider,
+    linkWithCredential
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../../services/firebase';
@@ -838,10 +839,51 @@ const PhoneVerificationStep = forwardRef(({
             showError(t('auth.errors.invalidCode', 'Please enter a valid 6-digit code.'));
             return Promise.resolve();
         }
+
+        if (!verificationId) {
+            showError(t('auth.errors.verificationExpired', 'Verification session expired. Please request a new code.'));
+            setInternalStep(1);
+            onStepChange(1);
+            return Promise.resolve();
+        }
+
         setIsLoading(true);
         try {
             const { cleanNumber, cleanPrefix, fullNumber: e164Number } = formatPhoneNumber(phoneNumber, phonePrefix);
             const fullPhoneNumber = `${cleanPrefix} ${cleanNumber}`;
+
+            const phoneCredential = PhoneAuthProvider.credential(verificationId, verificationCode);
+
+            if (currentUser) {
+                try {
+                    await linkWithCredential(auth.currentUser, phoneCredential);
+                } catch (linkError) {
+                    if (linkError.code === 'auth/credential-already-in-use' || 
+                        linkError.code === 'auth/provider-already-linked' ||
+                        linkError.code === 'auth/account-exists-with-different-credential') {
+                        showError(t('auth.errors.phoneAlreadyInUse', 'This phone number is already registered with another account. Please use a different phone number.'));
+                        setIsLoading(false);
+                        return;
+                    }
+                    
+                    if (linkError.code === 'auth/invalid-verification-code') {
+                        showError(t('auth.errors.invalidPhoneCode', 'Invalid verification code. Please check and try again.'));
+                        setIsLoading(false);
+                        return;
+                    }
+                    
+                    if (linkError.code === 'auth/code-expired') {
+                        showError(t('auth.errors.codeExpired', 'Verification code has expired. Please request a new code.'));
+                        setInternalStep(1);
+                        onStepChange(1);
+                        setIsLoading(false);
+                        return;
+                    }
+
+                    console.error('Phone linking error:', linkError);
+                    throw linkError;
+                }
+            }
 
             const verificationData = {
                 verified: true,
@@ -865,8 +907,16 @@ const PhoneVerificationStep = forwardRef(({
         } catch (error) {
             console.error('Error verifying code:', error);
             setIsVerified(false);
-            setInternalStep(2);
-            showError(t('auth.errors.invalidPhoneCode', 'Invalid verification code.'));
+            
+            if (error.code === 'auth/invalid-verification-code') {
+                showError(t('auth.errors.invalidPhoneCode', 'Invalid verification code. Please check and try again.'));
+            } else if (error.code === 'auth/code-expired') {
+                showError(t('auth.errors.codeExpired', 'Verification code has expired. Please request a new code.'));
+                setInternalStep(1);
+                onStepChange(1);
+            } else {
+                showError(t('auth.errors.verificationFailed', 'Verification failed. Please try again.'));
+            }
         } finally {
             setIsLoading(false);
         }

@@ -3,9 +3,10 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const notificationsFunctions = require('./notifications');
 const bagAdminFunctions = require('./BAG_Admin');
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
 
 // HTTP endpoint for contract operations (for integration with external systems)
-const contractAPI = onCall({ database: 'medishift', cors: true }, async (request) => {
+const contractAPI = onCall(FUNCTION_CONFIG, async (request) => {
   // Ensure user is authenticated
   if (!request.auth) {
     throw new HttpsError(
@@ -390,7 +391,7 @@ const contractAPI = onCall({ database: 'medishift', cors: true }, async (request
 
 // MESSAGE API FUNCTIONS
 
-const messagesAPI = onCall({ database: 'medishift', cors: true }, async (request) => {
+const messagesAPI = onCall(FUNCTION_CONFIG, async (request) => {
   // SECURITY CHECK: Verify user is authenticated
   if (!request.auth) {
     throw new HttpsError(
@@ -583,10 +584,140 @@ const messagesAPI = onCall({ database: 'medishift', cors: true }, async (request
       case 'createConversation': {
         // PHASE 1: Manual conversation creation is disabled
         // Conversations are automatically created when position status changes to 'interview'
+        // EXCEPTION: Internal team chats for facility admins
+        const { conversationType, facilityId, participants } = conversationData || {};
+
+        if (conversationType === 'internal_team' && facilityId) {
+           // SECURITY CHECK: Verify user is an admin of the facility
+           const facilityDoc = await admin.firestore().collection('facilityProfiles').doc(facilityId).get();
+
+           if (!facilityDoc.exists) {
+             throw new HttpsError('not-found', 'Facility not found');
+           }
+
+           const facilityData = facilityDoc.data();
+           if (!facilityData.admin || !facilityData.admin.includes(userId)) {
+             throw new HttpsError(
+               'permission-denied',
+               'You do not have permission to create detailed team chats for this facility'
+             );
+           }
+
+           // Prepare participant list (all selected admins)
+           const participantIds = [userId, ...(participants || [])];
+           const uniqueParticipantIds = [...new Set(participantIds)];
+
+           // Get user info for all participants
+           const participantInfo = [];
+           for (const uid of uniqueParticipantIds) {
+             const userDoc = await admin.firestore().collection('users').doc(uid).get();
+             if (userDoc.exists) {
+               const userData = userDoc.data();
+               participantInfo.push({
+                 userId: uid,
+                 displayName: userData.displayName || userData.firstName + ' ' + userData.lastName || 'User',
+                 photoURL: userData.photoURL || '',
+                 roleInConversation: 'facility_admin'
+               });
+             }
+           }
+
+           const newConversationData = {
+             participantIds: uniqueParticipantIds,
+             participantInfo,
+             facilityProfileId: facilityId,
+             type: 'internal_team',
+             lastMessage: {
+               text: 'Team chat created',
+               senderId: 'system',
+               timestamp: admin.firestore.FieldValue.serverTimestamp()
+             },
+             lastMessageTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+             unreadCounts: uniqueParticipantIds.reduce((acc, id) => {
+               acc[id] = 0;
+               return acc;
+             }, {}),
+             isArchivedBy: [],
+             typingIndicator: uniqueParticipantIds.reduce((acc, id) => {
+               acc[id] = false;
+               return acc;
+             }, {}),
+             createdAt: admin.firestore.FieldValue.serverTimestamp(),
+             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+             createdBy: userId
+           };
+
+           const conversationRef = await admin.firestore().collection('conversations').add(newConversationData);
+           return {
+             success: true,
+             conversationId: conversationRef.id
+           };
+        }
+
         throw new HttpsError(
           'permission-denied',
           'Manual conversation creation is not allowed. Conversations are automatically created during the interview process.'
         );
+      }
+
+      case 'addParticipant': {
+        const { participantId } = request.data;
+        if (!conversationId || !participantId) {
+          throw new HttpsError('invalid-argument', 'Conversation ID and Participant ID are required');
+        }
+
+        // SECURITY CHECK: Verify user is a participant
+        const conversationRef = admin.firestore().collection('conversations').doc(conversationId);
+        const conversationDoc = await conversationRef.get();
+
+        if (!conversationDoc.exists) {
+          throw new HttpsError('not-found', 'Conversation not found');
+        }
+
+        const conversationData = conversationDoc.data();
+        const isParticipant = conversationData.participantIds?.includes(userId) ||
+          conversationData.participants?.includes(userId);
+
+        if (!isParticipant) {
+          throw new HttpsError('permission-denied', 'You do not have permission to modify this conversation');
+        }
+
+        // Check if already a participant
+        if (conversationData.participantIds?.includes(participantId)) {
+          return { success: true, message: 'User is already a participant' };
+        }
+
+        // Get new participant info
+        const userDoc = await admin.firestore().collection('users').doc(participantId).get();
+        if (!userDoc.exists) {
+           throw new HttpsError('not-found', 'User not found');
+        }
+        const userData = userDoc.data();
+        const newParticipantInfo = {
+           userId: participantId,
+           displayName: userData.displayName || userData.firstName + ' ' + userData.lastName || 'User',
+           photoURL: userData.photoURL || '',
+           roleInConversation: 'facility_admin' // Presumed role for added participants
+        };
+
+        // Update conversation
+        await conversationRef.update({
+           participantIds: admin.firestore.FieldValue.arrayUnion(participantId),
+           participantInfo: admin.firestore.FieldValue.arrayUnion(newParticipantInfo),
+           [`unreadCounts.${participantId}`]: 0,
+           [`typingIndicator.${participantId}`]: false,
+           updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Add system message
+        await conversationRef.collection('messages').add({
+           senderId: 'system',
+           text: `${userData.displayName || 'A new user'} was added to the conversation.`,
+           timestamp: admin.firestore.FieldValue.serverTimestamp(),
+           status: 'sent'
+        });
+
+        return { success: true };
       }
 
       case 'markAsRead': {
@@ -660,7 +791,7 @@ const messagesAPI = onCall({ database: 'medishift', cors: true }, async (request
 
 // MARKETPLACE API FUNCTIONS
 
-const marketplaceAPI = onCall({ database: 'medishift', cors: true }, async (request) => {
+const marketplaceAPI = onCall(FUNCTION_CONFIG, async (request) => {
   // SECURITY CHECK: Verify user is authenticated
   if (!request.auth) {
     throw new HttpsError(

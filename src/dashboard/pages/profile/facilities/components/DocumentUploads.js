@@ -26,7 +26,7 @@ const styles = {
     mandatoryFieldLegend: "text-xs",
     mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     mandatoryMark: "text-destructive",
-    sectionsWrapper: "facility-uploads-wrapper flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
+    sectionsWrapper: "facility-uploads-wrapper w-full max-w-[1400px] mx-auto",
     leftColumn: "flex flex-col gap-6 flex-1",
     rightColumn: "flex flex-col gap-6 flex-1",
     sectionCard: "space-y-6 bg-card p-6 rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm w-full",
@@ -366,19 +366,20 @@ const DocumentUploads = ({
     return (
         <>
             <style>{`
+            .facility-uploads-container {
+                container-type: inline-size;
+            }
+
             .facility-uploads-wrapper {
-                 container-type: inline-size;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
             }
-             @container (min-width: 700px) {
-              .facility-uploads-wrapper {
-                flex-direction: row;
-              }
-            }
-            /* Fallback for browsers not supporting container queries or just media query */
-            @media (min-width: 1024px) {
-                 .facility-uploads-wrapper {
-                    flex-direction: row;
-                 }
+
+            @container (max-width: 700px) {
+                .facility-uploads-wrapper {
+                    grid-template-columns: 1fr;
+                }
             }
         `}</style>
             <div className={styles.sectionContainer}>
@@ -389,16 +390,18 @@ const DocumentUploads = ({
                     </div>
                 </div>
 
-                <div className={styles.sectionsWrapper}>
-                    <div className={styles.leftColumn}>
-                        {documentFieldsConfig.filter((_, index) => index % 2 === 0).map(fieldConfig => (
-                            <RenderDocumentCard key={fieldConfig.docType} fieldConfig={fieldConfig} />
-                        ))}
-                    </div>
-                    <div className={styles.rightColumn}>
-                        {documentFieldsConfig.filter((_, index) => index % 2 === 1).map(fieldConfig => (
-                            <RenderDocumentCard key={fieldConfig.docType} fieldConfig={fieldConfig} />
-                        ))}
+                <div className="facility-uploads-container w-full max-w-[1400px] mx-auto">
+                    <div className={styles.sectionsWrapper}>
+                        <div className={styles.leftColumn}>
+                            {documentFieldsConfig.filter((_, index) => index % 2 === 0).map(fieldConfig => (
+                                <RenderDocumentCard key={fieldConfig.docType} fieldConfig={fieldConfig} />
+                            ))}
+                        </div>
+                        <div className={styles.rightColumn}>
+                            {documentFieldsConfig.filter((_, index) => index % 2 === 1).map(fieldConfig => (
+                                <RenderDocumentCard key={fieldConfig.docType} fieldConfig={fieldConfig} />
+                            ))}
+                        </div>
                     </div>
                 </div>
 

@@ -1,90 +1,102 @@
 {
-    "h1meta": {
-        "title": "Chi è MediShift | Il Tuo Partner per il Reclutamento Sanitario",
-        "description": "Scopri come MediShift sta rivoluzionando il reclutamento sanitario in Svizzera con soluzioni innovative per strutture e professionisti.",
-        "keywords": "MediShift, reclutamento sanitario, personale medico temporaneo, lavori sanitari Svizzera, piattaforma reclutamento sanitario"
+  "h1meta": {
+    "title": "Chi è MediShift | Il Tuo Partner per il Reclutamento Sanitario",
+    "description": "Scopri come MediShift sta rivoluzionando il reclutamento sanitario in Svizzera con soluzioni innovative per strutture e professionisti.",
+    "keywords": "MediShift, reclutamento sanitario, personale medico temporaneo, lavori sanitari Svizzera, piattaforma reclutamento sanitario"
+  },
+  "hero": {
+    "title": "Chi è MediShift",
+    "features": {
+      "contracts": "Accesso Sicuro",
+      "planning": "Pianificazione Facile",
+      "qualifiedStaff": "Personale Qualificato"
     },
-    "hero": {
-        "title": "Chi è MediShift",
-        "features": {
-            "contracts": "Accesso Sicuro",
-            "planning": "Pianificazione Facile",
-            "qualifiedStaff": "Personale Qualificato"
+    "badge": "Our Story"
+  },
+  "missionVision": {
+    "title": "La Nostra Missione & Visione",
+    "intro": "MediShift è stata fondata con un obiettivo chiaro: rivoluzionare il reclutamento sanitario in Svizzera creando una piattaforma che risponde alle esigenze specifiche delle strutture sanitarie e dei professionisti.",
+    "experienceSection": {
+      "title": "La Nostra Esperienza",
+      "paragraph1": "Con oltre 50 anni di esperienza combinata nel settore sanitario, il nostro team comprende le sfide uniche che le strutture sanitarie affrontano nella ricerca di personale qualificato, così come le esigenze dei professionisti sanitari in cerca di opportunità di lavoro flessibili.",
+      "paragraph2": "Questa competenza ci ha permesso di sviluppare una piattaforma che semplifica il processo di reclutamento mantenendo gli alti standard richiesti nel settore sanitario."
+    },
+    "insightSection": {
+      "title": "La Nostra Visione",
+      "paragraph1": "Crediamo che il futuro del lavoro nel settore sanitario sarà sempre più flessibile, con una crescente domanda di soluzioni che permettano alle strutture di adattarsi rapidamente alle esigenze mutevoli e ai professionisti di trovare un migliore equilibrio tra lavoro e vita privata."
+    },
+    "commitmentSection": {
+      "title": "Il Nostro Impegno",
+      "points": [
+        {
+          "title": "Qualità:",
+          "text": "Verifichiamo rigorosamente le qualifiche e l'esperienza di tutti i professionisti sulla nostra piattaforma."
+        },
+        {
+          "title": "Innovazione:",
+          "text": "Investiamo continuamente in tecnologia per migliorare l'esperienza utente e l'efficienza del reclutamento."
+        },
+        {
+          "title": "Trasparenza:",
+          "text": "Crediamo in una comunicazione chiara e onesta con tutti i nostri partner."
         }
+      ]
     },
-    "missionVision": {
-        "title": "La Nostra Missione & Visione",
-        "intro": "MediShift è stata fondata con un obiettivo chiaro: rivoluzionare il reclutamento sanitario in Svizzera creando una piattaforma che risponde alle esigenze specifiche delle strutture sanitarie e dei professionisti.",
-        "experienceSection": {
-            "title": "La Nostra Esperienza",
-            "paragraph1": "Con oltre 50 anni di esperienza combinata nel settore sanitario, il nostro team comprende le sfide uniche che le strutture sanitarie affrontano nella ricerca di personale qualificato, così come le esigenze dei professionisti sanitari in cerca di opportunità di lavoro flessibili.",
-            "paragraph2": "Questa competenza ci ha permesso di sviluppare una piattaforma che semplifica il processo di reclutamento mantenendo gli alti standard richiesti nel settore sanitario."
-        },
-        "insightSection": {
-            "title": "La Nostra Visione",
-            "paragraph1": "Crediamo che il futuro del lavoro nel settore sanitario sarà sempre più flessibile, con una crescente domanda di soluzioni che permettano alle strutture di adattarsi rapidamente alle esigenze mutevoli e ai professionisti di trovare un migliore equilibrio tra lavoro e vita privata."
-        },
-        "commitmentSection": {
-            "title": "Il Nostro Impegno",
-            "points": [
-                {
-                    "title": "Qualità:",
-                    "text": "Verifichiamo rigorosamente le qualifiche e l'esperienza di tutti i professionisti sulla nostra piattaforma."
-                },
-                {
-                    "title": "Innovazione:",
-                    "text": "Investiamo continuamente in tecnologia per migliorare l'esperienza utente e l'efficienza del reclutamento."
-                },
-                {
-                    "title": "Trasparenza:",
-                    "text": "Crediamo in una comunicazione chiara e onesta con tutti i nostri partner."
-                }
-            ]
-        },
-        "conclusion": "Scegliendo MediShift, scegliete un partner che comprende le sfumature del settore sanitario svizzero e si impegna a fornire soluzioni di reclutamento di alta qualità."
+    "conclusion": "Scegliendo MediShift, scegliete un partner che comprende le sfumature del settore sanitario svizzero e si impegna a fornire soluzioni di reclutamento di alta qualità.",
+    "badge": "Our Purpose"
+  },
+  "story": {
+    "title": "La Nostra Storia",
+    "paragraph1": "MediShift è stata fondata da due farmacisti con competenze tecniche e forti relazioni nel settore, sfruttando la loro conoscenza del dominio per creare una soluzione su misura per il settore sanitario.",
+    "paragraph2": "Dopo aver sperimentato personalmente le sfide nel trovare personale qualificato e nel garantire lavoro flessibile nel settore sanitario, si sono proposti di creare una soluzione che avrebbe beneficiato sia le strutture che i professionisti.",
+    "paragraph3": "Partendo dal settore farmaceutico nella Svizzera francese, MediShift mira a diventare la piattaforma leader per il reclutamento temporaneo nel settore sanitario in tutta la Svizzera e nei paesi limitrofi.",
+    "badge": "History",
+    "imageAlt": "InteriMed Founders"
+  },
+  "values": {
+    "title": "I Nostri Valori",
+    "value1": {
+      "title": "Integrità",
+      "description": "Manteniamo i più alti standard etici in tutte le nostre interazioni."
     },
-    "story": {
-        "title": "La Nostra Storia",
-        "paragraph1": "MediShift è stata fondata da due farmacisti con competenze tecniche e forti relazioni nel settore, sfruttando la loro conoscenza del dominio per creare una soluzione su misura per il settore sanitario.",
-        "paragraph2": "Dopo aver sperimentato personalmente le sfide nel trovare personale qualificato e nel garantire lavoro flessibile nel settore sanitario, si sono proposti di creare una soluzione che avrebbe beneficiato sia le strutture che i professionisti.",
-        "paragraph3": "Partendo dal settore farmaceutico nella Svizzera francese, MediShift mira a diventare la piattaforma leader per il reclutamento temporaneo nel settore sanitario in tutta la Svizzera e nei paesi limitrofi."
+    "value2": {
+      "title": "Eccellenza",
+      "description": "Ci impegniamo continuamente a migliorare i nostri servizi e superare le aspettative."
     },
-    "values": {
-        "title": "I Nostri Valori",
-        "value1": {
-            "title": "Integrità",
-            "description": "Manteniamo i più alti standard etici in tutte le nostre interazioni."
-        },
-        "value2": {
-            "title": "Eccellenza",
-            "description": "Ci impegniamo continuamente a migliorare i nostri servizi e superare le aspettative."
-        },
-        "value3": {
-            "title": "Collaborazione",
-            "description": "Lavoriamo a stretto contatto con i nostri clienti per comprendere le loro esigenze uniche."
-        },
-        "value4": {
-            "title": "Rispetto",
-            "description": "Valorizziamo la diversità e trattiamo ogni individuo con dignità e rispetto."
-        },
-        "value5": {
-            "title": "Innovazione",
-            "description": "Accogliamo nuove tecnologie e idee per migliorare continuamente la nostra piattaforma."
-        }
+    "value3": {
+      "title": "Collaborazione",
+      "description": "Lavoriamo a stretto contatto con i nostri clienti per comprendere le loro esigenze uniche."
     },
-    "h1team": {
-        "title": "Il Nostro Team",
-        "subtitle": "Incontra le persone che rendono possibile MediShift",
-        "member1": {
-            "bio": "Farmacista ed ex proprietario di farmacia con 40 anni di esperienza nel settore sanitario svizzero."
-        },
-        "member2": {
-            "bio": "Ingegnere farmaceutico con 5 anni di esperienza nel settore farmaceutico, ingegnere software e informatico."
-        }
+    "value4": {
+      "title": "Rispetto",
+      "description": "Valorizziamo la diversità e trattiamo ogni individuo con dignità e rispetto."
     },
-    "cta": {
-        "title": "Pronto a trasformare il tuo approccio al reclutamento sanitario?",
-        "forFacilities": "Per Strutture Sanitarie",
-        "forProfessionals": "Per Professionisti Sanitari"
+    "value5": {
+      "title": "Innovazione",
+      "description": "Accogliamo nuove tecnologie e idee per migliorare continuamente la nostra piattaforma."
     }
+  },
+  "h1team": {
+    "title": "Il Nostro Team",
+    "subtitle": "Incontra le persone che rendono possibile MediShift",
+    "member1": {
+      "bio": "Farmacista ed ex proprietario di farmacia con 40 anni di esperienza nel settore sanitario svizzero."
+    },
+    "member2": {
+      "bio": "Ingegnere farmaceutico con 5 anni di esperienza nel settore farmaceutico, ingegnere software e informatico."
+    }
+  },
+  "cta": {
+    "title": "Pronto a trasformare il tuo approccio al reclutamento sanitario?",
+    "forFacilities": "Per Strutture Sanitarie",
+    "forProfessionals": "Per Professionisti Sanitari",
+    "description": "Join thousands of healthcare professionals and facilities already using InteriMed.",
+    "cardTitle": "Join the Network",
+    "cardSubtitle": "Connect with the best in the industry"
+  },
+  "meta": {
+    "title": "About InteriMed",
+    "description": "Discover how InteriMed is revolutionizing healthcare recruitment in Switzerland.",
+    "keywords": "about, interimed, healthcare, recruitment"
+  }
 }

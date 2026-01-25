@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
 import { CALENDAR_COLORS } from './utils/constants';
-import { getWeekDates, getMultipleWeeks } from './utils/dateHelpers';
+import { getMultipleWeeks } from './utils/dateHelpers';
 import { getUserTypeFromData, getUserIdFromData } from './utils/userHelpers';
-import { getEventsForCurrentWeek, filterEventsByCategories } from './utils/eventUtils';
+import { filterEventsByCategories } from './utils/eventUtils';
 import CalendarHeader from './components/CalendarHeader';
 import CalendarSidebar from './components/CalendarSidebar';
 import TimeHeaders from './components/TimeHeaders';
@@ -15,16 +14,13 @@ import EventPanel from './EventPanel/EventPanel';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useSidebar } from '../../contexts/SidebarContext';
 import { useTutorial } from '../../contexts/TutorialContext';
-import { TUTORIAL_IDS } from '../../../config/tutorialSystem';
 import { useCalendarState } from './hooks/useCalendarState';
-import { useEventOperations } from './hooks/useEventOperations';
-import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { useAutoSync } from './hooks/useAutoSync';
 import { useCalendarEvents } from './utils/eventDatabase';
 import { cn } from '../../../utils/cn';
-import { FiX, FiCalendar } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 import ResourceGrid from './components/ResourceGrid';
 import useProfileData from '../../hooks/useProfileData';
+import useCalendarStore from './hooks/useCalendarStore';
 
 import PropTypes from 'prop-types';
 
@@ -45,10 +41,8 @@ const Calendar = ({ userData }) => {
   const [showUpcomingEvents, setShowUpcomingEvents] = useState(true);
 
   const isTeamWorkspace = selectedWorkspace?.type === 'team';
-  
-  const { profileData, isLoading: isLoadingProfile, updateProfileData } = useProfileData();
 
-  const [contextMenu, setContextMenu] = useState(null);
+  const { profileData, isLoading: isLoadingProfile, updateProfileData } = useProfileData();
 
   const getWorkspaceContext = () => {
     if (!selectedWorkspace) {
@@ -61,23 +55,48 @@ const Calendar = ({ userData }) => {
 
   const workspaceContext = getWorkspaceContext();
 
+  // Initialize Store Context
+  useEffect(() => {
+    useCalendarStore.getState().setContext(userId, accountType, workspaceContext);
+  }, [userId, accountType, JSON.stringify(workspaceContext)]);
+
+  // Connect to Zustand Store
+  const events = useCalendarStore(state => state.events);
+  const setEvents = useCalendarStore(state => state.setEvents);
+  const selectedEvent = useCalendarStore(state => state.selectedEvent);
+  const selectedEventId = useCalendarStore(state => state.selectedEventId);
+  const showDeleteConfirmation = useCalendarStore(state => state.showDeleteConfirmation);
+  const eventToDelete = useCalendarStore(state => state.eventToDelete);
+  const contextMenu = useCalendarStore(state => state.showContextMenu ? { event: state.contextMenuEvent, position: state.contextMenuPosition } : null);
+
+  // Store actions
+  const handleEventClick = useCalendarStore(state => state.handleEventClick);
+  const handlePanelClose = useCalendarStore(state => state.handlePanelClose);
+  const handleEventSave = useCalendarStore(state => state.saveEvent);
+  const handleEventDelete = useCalendarStore(state => state.deleteEvent);
+  const setEventToDelete = useCalendarStore(state => state.showDeleteDialog);
+  const setShowDeleteConfirmation = (show) => !show && useCalendarStore.getState().hideDeleteDialog();
+  const setContextMenu = (val) => !val && useCalendarStore.getState().hideContextMenu();
+  const handleCreateEventClick = useCalendarStore(state => state.handleCreateEventClick);
+  const addToHistory = useCalendarStore(state => state.addToHistory);
+  const undo = useCalendarStore(state => state.undo);
+  const redo = useCalendarStore(state => state.redo);
+  const syncPendingChanges = useCalendarStore(state => state.syncPendingChanges);
+
+  // Calendar State Hook (kept separate effectively as UI state)
   const {
     currentDate, setCurrentDate, view, setView,
     categories, setCategories, isSidebarCollapsed, setIsSidebarCollapsed,
     showHeaderDateDropdown, setShowHeaderDateDropdown, dropdownPosition,
-    navigateDate: originalNavigateDate,
-    handleDayClick: originalHandleDayClick,
-    handleUpcomingEventClick: originalHandleUpcomingEventClick,
-    handleCategoryToggle,
-    handleHeaderDateClick, toggleSidebar
+    navigateDate, handleDayClick, handleUpcomingEventClick,
+    handleCategoryToggle, handleHeaderDateClick, toggleSidebar
   } = useCalendarState();
 
   // Track the actual visible week for MiniCalendar highlighting
-  // These are calculated from the horizontal scroll position of the grid
   const [visibleWeekStart, setVisibleWeekStart] = useState(() => {
     const start = new Date(currentDate);
     const day = start.getDay();
-    const diff = day === 0 ? -6 : 1 - day; // Monday
+    const diff = day === 0 ? -6 : 1 - day;
     start.setDate(start.getDate() + diff);
     start.setHours(0, 0, 0, 0);
     return start;
@@ -85,27 +104,18 @@ const Calendar = ({ userData }) => {
   const [visibleWeekEnd, setVisibleWeekEnd] = useState(() => {
     const end = new Date(currentDate);
     const day = end.getDay();
-    const diff = day === 0 ? 0 : 7 - day; // Sunday
+    const diff = day === 0 ? 0 : 7 - day;
     end.setDate(end.getDate() + diff);
     end.setHours(23, 59, 59, 999);
     return end;
   });
 
-  // Use original navigation handlers directly
-  const navigateDate = originalNavigateDate;
-  const handleDayClick = originalHandleDayClick;
-  const handleUpcomingEventClick = originalHandleUpcomingEventClick;
-
-  // Single week display mode (no horizontal scrolling buffer)
-  // Only render the current week to ensure stability and correct focus
   const numWeeks = 0;
   const [numDays, setNumDays] = useState(30);
   const prevNumDays = useRef(numDays);
-
-  const isLoadingMoreDays = useRef(false);
   const hasInitialScrolled = useRef(false);
 
-  // Scroll Compensation for day view only (week view uses fixed numWeeks)
+  // Scroll Compensation
   useLayoutEffect(() => {
     const gridScroll = scrollContainerRef.current;
     if (!gridScroll) return;
@@ -115,35 +125,27 @@ const Calendar = ({ userData }) => {
       const widthPerDay = gridScroll.clientWidth;
       gridScroll.scrollLeft += delta * widthPerDay;
     }
-
     prevNumDays.current = numDays;
   }, [numDays, view, scrollContainerRef]);
 
-
-
-  // Scroll to selected date when it changes (navigation, minicalendar click, etc.)
+  // Scroll to selected date
   useEffect(() => {
     const gridScroll = scrollContainerRef.current;
     if (!gridScroll || view !== 'week') return;
 
-    // Calculate which week contains currentDate
     const weekStart = new Date(currentDate);
     const day = weekStart.getDay();
-    const diff = day === 0 ? -6 : 1 - day; // Monday
+    const diff = day === 0 ? -6 : 1 - day;
     weekStart.setDate(weekStart.getDate() + diff);
     weekStart.setHours(0, 0, 0, 0);
 
-    // Generate all weeks in the grid
     const weeks = getMultipleWeeks(currentDate, numWeeks, numWeeks);
-
-    // Find which week index contains our target date
     let targetWeekIndex = -1;
     for (let i = 0; i < weeks.length; i++) {
       const wStart = new Date(weeks[i][0]);
       wStart.setHours(0, 0, 0, 0);
       const wEnd = new Date(weeks[i][6]);
       wEnd.setHours(23, 59, 59, 999);
-
       if (weekStart >= wStart && weekStart <= wEnd) {
         targetWeekIndex = i;
         break;
@@ -152,12 +154,9 @@ const Calendar = ({ userData }) => {
 
     if (targetWeekIndex === -1) return;
 
-    // Calculate scroll position to center the target week
-    const totalWeeks = weeks.length;
     const containerWidth = gridScroll.clientWidth;
     const targetScrollLeft = targetWeekIndex * containerWidth;
 
-    // Scroll to position (smooth on subsequent navigations, instant on first load)
     gridScroll.scrollTo({
       left: targetScrollLeft,
       behavior: hasInitialScrolled.current ? 'smooth' : 'auto'
@@ -168,7 +167,7 @@ const Calendar = ({ userData }) => {
     }
   }, [currentDate, view, numWeeks]);
 
-  // Track scroll position to update visible week for mini calendar highlighting
+  // Track scroll position
   useEffect(() => {
     const gridScroll = scrollContainerRef.current;
     if (!gridScroll || view !== 'week') return;
@@ -177,25 +176,18 @@ const Calendar = ({ userData }) => {
     const handleScrollUpdate = () => {
       const scrollLeft = gridScroll.scrollLeft;
       const containerWidth = gridScroll.clientWidth;
-
       if (containerWidth === 0) return;
 
-      // Calculate which week is currently visible (centered in viewport)
       const visibleWeekIndex = Math.round(scrollLeft / containerWidth);
-
-      // Generate all weeks
       const weeks = getMultipleWeeks(currentDate, numWeeks, numWeeks);
 
       if (visibleWeekIndex >= 0 && visibleWeekIndex < weeks.length) {
         const visibleWeek = weeks[visibleWeekIndex];
-
         const weekStart = new Date(visibleWeek[0]);
         weekStart.setHours(0, 0, 0, 0);
-
         const weekEnd = new Date(visibleWeek[6]);
         weekEnd.setHours(23, 59, 59, 999);
 
-        // Only update if the week actually changed
         const currentStartKey = `${visibleWeekStart.getFullYear()}-${visibleWeekStart.getMonth()}-${visibleWeekStart.getDate()}`;
         const newStartKey = `${weekStart.getFullYear()}-${weekStart.getMonth()}-${weekStart.getDate()}`;
 
@@ -206,357 +198,47 @@ const Calendar = ({ userData }) => {
       }
     };
 
-    // Debounce scroll updates
     const throttledScrollUpdate = () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(handleScrollUpdate, 150);
     };
 
     gridScroll.addEventListener('scroll', throttledScrollUpdate, { passive: true });
-
-    // Initial update
     handleScrollUpdate();
-
     return () => {
       gridScroll.removeEventListener('scroll', throttledScrollUpdate);
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };
   }, [scrollContainerRef, view, currentDate, numWeeks, visibleWeekStart]);
 
-  const { saveEventsToLocalStorage, setPendingChanges, pendingChanges } = useAutoSync(userId, accountType);
-
-  const {
-    events, setEvents, selectedEvent, setSelectedEvent, selectedEventId, setSelectedEventId,
-    history, currentHistoryIndex, validatedEvents,
-    showDeleteConfirmation, setShowDeleteConfirmation, eventToDelete, setEventToDelete,
-    originalEventPosition, setOriginalEventPosition,
-    handleEventSave, handleEventDelete, handlePanelClose, handleCreateEventClick,
-    addToHistory, undo, redo
-  } = useEventOperations(userId, accountType, workspaceContext, currentDate, setCurrentDate, CALENDAR_COLORS, saveEventsToLocalStorage, setPendingChanges);
-
-  /**
-   * Handle event click - opens event panel
-   */
-  const handleEventClick = useCallback((event, e) => {
-    // Close context menu if open
-    setContextMenu(null);
-
-    // Find full event data
-    const fullEvent = events.find(ev => ev.id === event.id) || event;
-
-    // Store original position for potential restoration
-    setOriginalEventPosition({
-      id: fullEvent.id,
-      start: new Date(fullEvent.start),
-      end: new Date(fullEvent.end),
-      title: fullEvent.title,
-      color: fullEvent.color,
-      color1: fullEvent.color1,
-      notes: fullEvent.notes,
-      location: fullEvent.location,
-      employees: fullEvent.employees,
-      ...fullEvent
-    });
-
-    // Open event panel
-    setSelectedEventId(event.id);
-    setSelectedEvent(fullEvent);
-  }, [events, setSelectedEvent, setSelectedEventId, setOriginalEventPosition]);
-
-  /**
-   * Handle event right-click - opens context menu
-   */
-  const handleEventRightClick = useCallback((e, event) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    setContextMenu({
-      event: event,
-      position: { x: e.clientX, y: e.clientY }
-    });
-  }, []);
-
-  /**
-   * Handle context menu close
-   */
-  const handleContextMenuClose = useCallback(() => {
-    setContextMenu(null);
-  }, []);
-
-  /**
-   * Handle event color change from context menu
-   */
-  const handleEventColorChange = useCallback((event, colorOption) => {
-    const updatedEvents = events.map(e => {
-      if (e.id === event.id) {
-        return {
-          ...e,
-          color: colorOption.color,
-          color1: colorOption.color1,
-          color2: colorOption.color2,
-          category: colorOption.name
-        };
-      }
-      return e;
-    });
-
-    setEvents(updatedEvents);
-    addToHistory(updatedEvents);
-  }, [events, setEvents, addToHistory]);
-
-  /**
-   * Handle event delete from context menu
-   */
-  const handleContextMenuDelete = useCallback((event) => {
-    setEventToDelete(event);
-    setShowDeleteConfirmation(true);
-  }, [setEventToDelete, setShowDeleteConfirmation]);
-
-  /**
-   * Handle grid event move (15-min increments, same day only)
-   */
-  const handleGridEventMove = useCallback((eventId, newStart, newEnd, isTemporary = false) => {
-    // Find the event
-    const eventIndex = events.findIndex(e => e.id === eventId);
-    if (eventIndex === -1) return;
-
-    const currentEvent = events[eventIndex];
-
-    // On first move (temporary), store the original position
-    // Check if we're starting a new drag (event is not currently being moved)
-    if (isTemporary && !currentEvent.isBeingMoved) {
-      setOriginalEventPosition({
-        id: currentEvent.id,
-        start: new Date(currentEvent.start),
-        end: new Date(currentEvent.end),
-        title: currentEvent.title,
-        color: currentEvent.color,
-        color1: currentEvent.color1,
-        notes: currentEvent.notes,
-        location: currentEvent.location,
-        employees: currentEvent.employees,
-        ...currentEvent
-      });
-    }
-
-    const updatedEvents = [...events];
-    updatedEvents[eventIndex] = {
-      ...updatedEvents[eventIndex],
-      start: newStart,
-      end: newEnd,
-      isBeingMoved: isTemporary
-    };
-
-    setEvents(updatedEvents);
-
-    // When drag completes (not temporary), open panel for confirmation
-    if (!isTemporary) {
-      const movedEvent = updatedEvents[eventIndex];
-
-      // Validate that the event is within valid time boundaries (00:00:01 to 23:59:59)
-      // Grid starts at 00:00:01 to prevent date shifts to previous day
-      const startOfDay = new Date(newStart);
-      startOfDay.setHours(0, 0, 1, 0);
-      const endOfDay = new Date(newStart);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      // Check if event is within valid day boundaries
-      const isValidPosition = newStart >= startOfDay && newStart <= endOfDay &&
-        newEnd >= startOfDay && newEnd <= endOfDay &&
-        newEnd > newStart;
-
-      if (!isValidPosition) {
-        // Event is outside valid boundaries, don't open panel
-        // Restore to original position if available
-        if (originalEventPosition && originalEventPosition.id === eventId) {
-          const restoredEvents = [...events];
-          const restoreIndex = restoredEvents.findIndex(e => e.id === eventId);
-          if (restoreIndex !== -1) {
-            restoredEvents[restoreIndex] = {
-              ...restoredEvents[restoreIndex],
-              start: new Date(originalEventPosition.start),
-              end: new Date(originalEventPosition.end),
-              isBeingMoved: false
-            };
-            setEvents(restoredEvents);
-          }
-        }
-        return;
-      }
-
-      // Open panel to confirm or cancel the move
-      setSelectedEvent(movedEvent);
-      setSelectedEventId(movedEvent.id);
-
-      // Don't auto-save - let user confirm via Save button
-      // If they cancel, handlePanelClose will restore originalEventPosition
-    }
-  }, [events, setEvents, setSelectedEvent, setSelectedEventId, setOriginalEventPosition, originalEventPosition]);
-
-  /**
-   * Handle grid event resize (15-min increments)
-   */
-  const handleGridEventResize = useCallback((eventId, newStart, newEnd, isTemporary = false) => {
-    // Find the event
-    const eventIndex = events.findIndex(e => e.id === eventId);
-    if (eventIndex === -1) return;
-
-    const currentEvent = events[eventIndex];
-
-    // On first resize (temporary), store the original position
-    if (isTemporary && !currentEvent.isBeingResized) {
-      setOriginalEventPosition({
-        id: currentEvent.id,
-        start: new Date(currentEvent.start),
-        end: new Date(currentEvent.end),
-        title: currentEvent.title,
-        color: currentEvent.color,
-        color1: currentEvent.color1,
-        notes: currentEvent.notes,
-        location: currentEvent.location,
-        employees: currentEvent.employees,
-        ...currentEvent
-      });
-    }
-
-    const updatedEvents = [...events];
-    updatedEvents[eventIndex] = {
-      ...updatedEvents[eventIndex],
-      start: newStart,
-      end: newEnd,
-      isBeingResized: isTemporary
-    };
-
-    setEvents(updatedEvents);
-
-    // When resize completes, open panel for confirmation
-    if (!isTemporary) {
-      const resizedEvent = updatedEvents[eventIndex];
-
-      // Open panel to confirm or cancel the resize
-      setSelectedEvent(resizedEvent);
-      setSelectedEventId(resizedEvent.id);
-
-      // Don't auto-save - let user confirm via Save button
-    }
-  }, [events, setEvents, setSelectedEvent, setSelectedEventId, setOriginalEventPosition]);
-
-  /**
-   * Handle grid event creation
-   */
-  const handleGridCreateEvent = useCallback((newEvent, openPanel = true) => {
-
-    // Add default color if not set
-    const eventWithDefaults = {
-      ...newEvent,
-      color: newEvent.color || CALENDAR_COLORS[0].color,
-      color1: newEvent.color1 || CALENDAR_COLORS[0].color1,
-      color2: CALENDAR_COLORS[0].color2,
-      category: CALENDAR_COLORS[0].name,
-      title: newEvent.title || '',
-      notes: '',
-      location: '',
-      employees: '',
-    };
-
-
-    // ALWAYS add to events array immediately so it's visible in the UI
-    const updatedEvents = [...events, eventWithDefaults];
-    setEvents(updatedEvents);
-    addToHistory(updatedEvents);
-
-    if (openPanel) {
-
-      // Store original position
-      setOriginalEventPosition({
-        ...eventWithDefaults,
-        start: new Date(eventWithDefaults.start),
-        end: new Date(eventWithDefaults.end)
-      });
-
-      // Open the panel
-      setSelectedEvent(eventWithDefaults);
-      setSelectedEventId(eventWithDefaults.id);
-
-    } else {
-    }
-  }, [events, setEvents, addToHistory, setSelectedEvent, setSelectedEventId, setOriginalEventPosition]);
-
-  const { handleKeyboardShortcuts } = useKeyboardShortcuts(
-    () => undo(events, setEvents),
-    () => redo(events, setEvents),
-    selectedEvent,
-    showDeleteConfirmation,
-    // onDeleteEvent wrapper
-    (event) => {
-      setEventToDelete(event);
-      setShowDeleteConfirmation(true);
-    },
-    // onPanelClose wrapper
-    () => handlePanelClose(events, setEvents)
-  );
-
-  const filteredEvents = filterEventsByCategories(events, categories, CALENDAR_COLORS);
+  // Periodic Auto-Sync
+  useEffect(() => {
+    const syncInterval = setInterval(() => {
+      syncPendingChanges();
+    }, 5 * 60 * 1000);
+    return () => clearInterval(syncInterval);
+  }, [syncPendingChanges]);
 
   const { events: calendarEvents } = useCalendarEvents(userId, accountType);
   const prevCalendarEventsRef = useRef(null);
 
+  // Merge Database Events with Local State
   useEffect(() => {
-    if (calendarEvents) {
-      const calendarEventsKey = JSON.stringify(calendarEvents.map(e => ({ id: e.id, start: e.start?.getTime(), end: e.end?.getTime() })));
-      const prevCalendarEventsKey = prevCalendarEventsRef.current ? 
-        JSON.stringify(prevCalendarEventsRef.current.map(e => ({ id: e.id, start: e.start?.getTime(), end: e.end?.getTime() }))) : null;
-      
-      if (calendarEventsKey === prevCalendarEventsKey) {
-        return;
-      }
-      
-      prevCalendarEventsRef.current = calendarEvents;
-      
-      const eventsWithDbFlag = calendarEvents.map(event => ({
-        ...event, fromDatabase: true, isValidated: true
-      }));
-      
-      setEvents(prevEvents => {
-        const tempEvents = prevEvents.filter(e => !e.fromDatabase);
-        
-        const activeEvents = prevEvents.filter(e => e.isBeingMoved || e.isBeingResized);
-        const activeEventIds = new Set(activeEvents.map(e => e.id));
-        
-        const dbEventsMap = new Map(eventsWithDbFlag.map(e => [e.id, e]));
-        
-        const mergedEvents = [];
-        
-        for (const dbEvent of eventsWithDbFlag) {
-          if (activeEventIds.has(dbEvent.id)) {
-            const activeEvent = activeEvents.find(e => e.id === dbEvent.id);
-            mergedEvents.push(activeEvent);
-          } else {
-            mergedEvents.push(dbEvent);
-          }
-        }
-        
-        for (const activeEvent of activeEvents) {
-          if (!dbEventsMap.has(activeEvent.id)) {
-            mergedEvents.push(activeEvent);
-          }
-        }
-        
-        mergedEvents.push(...tempEvents);
-        
-        const mergedEventsKey = JSON.stringify(mergedEvents.map(e => ({ id: e.id, start: e.start?.getTime(), end: e.end?.getTime() })));
-        const prevEventsKey = JSON.stringify(prevEvents.map(e => ({ id: e.id, start: e.start?.getTime(), end: e.end?.getTime() })));
-        const historyKey = history[currentHistoryIndex] ? 
-          JSON.stringify(history[currentHistoryIndex].map(e => ({ id: e.id, start: e.start?.getTime(), end: e.end?.getTime() }))) : null;
-        
-        if (mergedEventsKey !== prevEventsKey && mergedEventsKey !== historyKey) {
-          addToHistory(mergedEvents);
-        }
-        
-        return mergedEvents;
-      });
-    }
-  }, [calendarEvents, setEvents, addToHistory, history, currentHistoryIndex]);
+    if (!userId || !Array.isArray(calendarEvents)) return;
+    
+    const eventsWithDbFlag = calendarEvents.map(event => ({
+      ...event, fromDatabase: true, isValidated: true
+    }));
+
+    const currentEvents = useCalendarStore.getState().events;
+    const tempEvents = currentEvents.filter(e => !e.fromDatabase);
+
+    // Merge: DB events + Local Temp events
+    const merged = [...eventsWithDbFlag, ...tempEvents];
+
+    // Update store
+    setEvents(merged);
+  }, [calendarEvents, userId, setEvents]);
 
   // Auto-scroll to 8 AM
   useEffect(() => {
@@ -564,13 +246,11 @@ const Calendar = ({ userData }) => {
     if (timeSlots) timeSlots.scrollTop = (8 - 1) * 60;
   }, []);
 
-  // Sync header and grid horizontal scroll
+  // Sync scroll headers
   useEffect(() => {
     const headerScroll = headerScrollRef.current;
     const gridScroll = scrollContainerRef.current;
-
     if (!headerScroll || !gridScroll) return;
-
     let isSyncing = false;
 
     const syncFromGrid = () => {
@@ -580,7 +260,6 @@ const Calendar = ({ userData }) => {
         requestAnimationFrame(() => { isSyncing = false; });
       }
     };
-
     const syncFromHeader = () => {
       if (!isSyncing) {
         isSyncing = true;
@@ -588,54 +267,74 @@ const Calendar = ({ userData }) => {
         requestAnimationFrame(() => { isSyncing = false; });
       }
     };
-
     gridScroll.addEventListener('scroll', syncFromGrid);
     headerScroll.addEventListener('scroll', syncFromHeader);
-
     return () => {
       gridScroll.removeEventListener('scroll', syncFromGrid);
       headerScroll.removeEventListener('scroll', syncFromHeader);
     };
   }, []);
 
-
+  // Keyboard Shortcuts (Inline Adapter)
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyboardShortcuts);
-    return () => document.removeEventListener('keydown', handleKeyboardShortcuts);
-  }, [handleKeyboardShortcuts]);
-
-  // Debug: Log when selectedEvent changes
-  useEffect(() => {
-  }, [selectedEvent, selectedEventId]);
-
-  // Close context menu on outside click
-  useEffect(() => {
-    const handleGlobalClick = () => {
-      if (contextMenu) {
-        setContextMenu(null);
-      }
+    const handleKeys = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.ctrlKey && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if ((e.ctrlKey && e.shiftKey && e.key === 'Z') || (e.ctrlKey && e.key === 'y')) { e.preventDefault(); redo(); }
+      else if (e.key === 'Delete' && selectedEventId && !showDeleteConfirmation) { e.preventDefault(); useCalendarStore.getState().showDeleteDialog(selectedEvent); }
+      else if (e.key === 'Escape') { e.preventDefault(); handlePanelClose(); }
     };
+    document.addEventListener('keydown', handleKeys);
+    return () => document.removeEventListener('keydown', handleKeys);
+  }, [undo, redo, selectedEventId, showDeleteConfirmation, selectedEvent, handlePanelClose]);
 
-    document.addEventListener('click', handleGlobalClick);
-    return () => document.removeEventListener('click', handleGlobalClick);
-  }, [contextMenu]);
 
   const handleResetCategories = useCallback(() => {
     setCategories(prev => prev.map(c => ({ ...c, checked: true })));
   }, [setCategories]);
 
   const hasActiveFilters = categories.some(cat => !cat.checked);
+  const filteredEvents = filterEventsByCategories(events, categories, CALENDAR_COLORS);
+
+  // Simplified Grid Handlers passing to store
+  const handleGridCreateEvent = (event) => {
+    // Logic for new event creation on grid interact
+    useCalendarStore.getState().addEvent(event);
+    useCalendarStore.getState().setSelectedEvent(event);
+    useCalendarStore.getState().setOriginalEventPosition(event);
+  };
+
+  const handleGridEventMove = (id, start, end, isTemporary) => {
+    // Direct manipulation of store events for drag
+    // This requires a "updateEventPosition" action to be specific or usage of updateEventLocal
+    if (isTemporary) {
+      useCalendarStore.getState().setIsDragging(true);
+      useCalendarStore.getState().updateEventLocal(id, { start, end, isBeingMoved: true });
+    } else {
+      useCalendarStore.getState().setIsDragging(false);
+      // Open confirmation or verify
+      const event = events.find(e => e.id === id);
+      useCalendarStore.getState().showMoveDialog(event, useCalendarStore.getState().originalEventPosition, { start, end });
+      // Note: originalEventPosition logic might need to be set on DragStart
+      // For now, assuming direct update
+      useCalendarStore.getState().updateEventLocal(id, { start, end, isBeingMoved: false });
+      useCalendarStore.getState().markEventForSync(id);
+    }
+  };
+
+  const handleGridEventResize = (id, start, end, isTemporary) => {
+    useCalendarStore.getState().updateEventLocal(id, { start, end });
+    if (!isTemporary) useCalendarStore.getState().markEventForSync(id);
+  };
 
   return (
     <div className="h-full flex flex-col animate-in fade-in duration-500" style={{ overflow: 'visible' }}>
-      {/* Main Split Content */}
       <div className={cn(
-        "flex-1 flex relative min-h-0 ml-4 my-4",
+        "flex-1 flex relative min-h-0 mx-4 my-4",
         calendarMode === 'team' ? "p-0" : "gap-6"
       )} style={{ overflow: 'visible' }}>
         {calendarMode === 'team' && isTeamWorkspace ? (
           <div className="w-full h-full flex flex-col">
-            {/* Header for Team Mode */}
             <div className="shrink-0 w-full bg-white border-b border-border/60 shadow-sm px-6 py-3 min-h-16">
               <CalendarHeader
                 currentDate={currentDate}
@@ -679,7 +378,6 @@ const Calendar = ({ userData }) => {
           </div>
         ) : (
           <>
-            {/* Left: Sidebar - Only show if mini calendar or upcoming events are visible */}
             {(showMiniCalendar || showUpcomingEvents) && (
               <div className={cn(
                 "dashboard-sidebar-container",
@@ -713,14 +411,12 @@ const Calendar = ({ userData }) => {
               </div>
             )}
 
-            {/* Right: Main Calendar Grid */}
             <div className={cn(
               "dashboard-main-content",
               "dashboard-main-content-desktop",
               !(showMiniCalendar || showUpcomingEvents) && "flex-1"
             )}>
               <div className="dashboard-main-inner flex flex-col h-full">
-                {/* Calendar Header inside main content */}
                 <div className="shrink-0 w-full bg-white border-b border-border/60 px-6 py-3" style={{ minHeight: 'var(--boxed-inputfield-height)' }}>
                   <CalendarHeader
                     currentDate={currentDate}
@@ -748,158 +444,126 @@ const Calendar = ({ userData }) => {
                 </div>
 
                 <div className="flex-1 h-full flex flex-col calendar-grid overflow-hidden">
-                  {/* Time Headers */}
-                <div className="flex shrink-0">
-                  <div
-                    className="shrink-0 bg-background/95 backdrop-blur-sm z-10 flex items-end justify-center pb-2"
-                    style={{ width: '4rem', minHeight: '3rem' }}
-                  />
-                  <div
-                    className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                    ref={headerScrollRef}
-                    onScroll={(e) => {
-                      if (scrollContainerRef.current) {
-                        scrollContainerRef.current.scrollLeft = e.target.scrollLeft;
-                      }
-                    }}
-                  >
-                    <TimeHeaders
-                      currentDate={currentDate}
-                      referenceDate={currentDate}
-                      view={view}
-                      handleDayClick={handleDayClick}
-                      scrollContainerRef={headerScrollRef}
-                      numWeeks={numWeeks}
-                      numDays={numDays}
-                      setView={setView}
+                  <div className="flex shrink-0">
+                    <div
+                      className="shrink-0 bg-background/95 backdrop-blur-sm z-10 flex items-end justify-center pb-2"
+                      style={{ width: '4rem', minHeight: '3rem' }}
                     />
-                  </div>
-                </div>
-
-                {/* Scrollable Grid Area */}
-                <div className="flex-1 time-slots bg-muted/5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  <div className="relative min-h-full flex">
                     <div
-                      className="sticky shrink-0 bg-background/95 backdrop-blur-sm z-10"
-                      style={{ width: '4rem', height: '1440px', left: 0, top: 0, alignSelf: 'flex-start' }}
+                      className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                      ref={headerScrollRef}
                     >
-                      {Array.from({ length: 24 }, (_, i) => (
-                        <div key={i} className="h-[60px] text-[10px] text-muted-foreground text-right pr-4 relative">
-                          <span className="text-[10px] pb-1">
-                            {i < 10 ? `0${i}:00` : `${i}:00`}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                    <div
-                      className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                      style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
-                      ref={scrollContainerRef}
-                      onScroll={(e) => {
-                        if (headerScrollRef.current) {
-                          headerScrollRef.current.scrollLeft = e.target.scrollLeft;
-                        }
-                      }}
-                    >
-                      <TimeGrid
-                        view={view}
-                        events={filteredEvents}
-                        selectedEventId={selectedEventId}
+                      <TimeHeaders
                         currentDate={currentDate}
                         referenceDate={currentDate}
-                        getEventsForCurrentWeek={() => getEventsForCurrentWeek(events, getWeekDates(currentDate))}
-                        validatedEvents={validatedEvents}
-                        onEventClick={handleEventClick}
-                        onEventRightClick={handleEventRightClick}
-                        onEventMove={handleGridEventMove}
-                        onEventResize={handleGridEventResize}
-                        onCreateEvent={handleGridCreateEvent}
-                        scrollContainerRef={scrollContainerRef}
+                        view={view}
+                        handleDayClick={handleDayClick}
+                        scrollContainerRef={headerScrollRef}
                         numWeeks={numWeeks}
                         numDays={numDays}
+                        setView={setView}
                       />
+                    </div>
+                  </div>
+
+                  <div className="flex-1 time-slots bg-muted/5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    <div className="relative min-h-full flex">
+                      <div
+                        className="sticky shrink-0 bg-background/95 backdrop-blur-sm z-10"
+                        style={{ width: '4rem', height: '1440px', left: 0, top: 0, alignSelf: 'flex-start' }}
+                      >
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <div key={i} className="h-[60px] text-[10px] text-muted-foreground text-right pr-4 relative">
+                            <span className="text-[10px] pb-1">{i < 10 ? `0${i}:00` : `${i}:00`}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div
+                        className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                        style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
+                        ref={scrollContainerRef}
+                        onScroll={(e) => {
+                          if (headerScrollRef.current) {
+                            headerScrollRef.current.scrollLeft = e.target.scrollLeft;
+                          }
+                        }}
+                      >
+                        <TimeGrid
+                          view={view}
+                          events={filteredEvents}
+                          selectedEventId={selectedEventId}
+                          currentDate={currentDate}
+                          referenceDate={currentDate}
+                          getEventsForCurrentWeek={() => { }}
+                          validatedEvents={useCalendarStore.getState().validatedEvents}
+                          onEventClick={handleEventClick}
+                          onEventRightClick={(e, event) => useCalendarStore.getState().showContextMenuAt({ x: e.clientX, y: e.clientY }, event)}
+                          onEventMove={handleGridEventMove}
+                          onEventResize={handleGridEventResize}
+                          onCreateEvent={handleGridCreateEvent}
+                          scrollContainerRef={scrollContainerRef}
+                          numWeeks={numWeeks}
+                          numDays={numDays}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
           </>
         )}
       </div>
 
-      {/* Context Menu */}
       {contextMenu && (
         <EventContextMenu
           event={contextMenu.event}
           position={contextMenu.position}
-          onClose={handleContextMenuClose}
-          onDelete={handleContextMenuDelete}
-          onColorChange={handleEventColorChange}
+          onClose={() => setContextMenu(null)}
+          onDelete={() => useCalendarStore.getState().showDeleteDialog(contextMenu.event)}
+          onColorChange={(event, color) => useCalendarStore.getState().updateEventLocal(event.id, { color: color.color, category: color.name })}
           colorOptions={CALENDAR_COLORS}
         />
       )}
 
-      {/* Event Panel */}
       {selectedEvent && (
-        <>
-
-          <EventPanel
-            event={selectedEvent}
-            onClose={() => {
-              handlePanelClose(events, setEvents);
-            }}
-            onSave={handleEventSave}
-            onDelete={() => {
-              if (selectedEvent && selectedEvent.id) {
-                setEventToDelete(selectedEvent);
-                setShowDeleteConfirmation(true);
-              }
-            }}
-            colorOptions={CALENDAR_COLORS}
-            accountType={accountType}
-            userData={userData}
-            workspaceContext={workspaceContext}
-          />
-        </>
+        <EventPanel
+          event={selectedEvent}
+          onClose={handlePanelClose}
+          onSave={handleEventSave}
+          onDelete={() => setEventToDelete(selectedEvent)}
+          colorOptions={CALENDAR_COLORS}
+          accountType={accountType}
+          userData={userData}
+          workspaceContext={workspaceContext}
+        />
       )}
 
-      {/* Delete Confirmation Dialog */}
       {showDeleteConfirmation && eventToDelete && (
         <DeleteConfirmationDialog
           event={eventToDelete}
           currentDate={new Date(eventToDelete.start)}
-          onConfirm={(deleteType) => handleEventDelete(eventToDelete.id, deleteType, events, setEvents)}
-          onCancel={() => { setShowDeleteConfirmation(false); setEventToDelete(null); }}
+          onConfirm={(deleteType) => handleEventDelete(eventToDelete.id, deleteType)}
+          onCancel={() => setShowDeleteConfirmation(false)}
         />
       )}
 
-      {/* Filters Overlay */}
       {showFiltersOverlay && (
         <>
           <div
             className="fixed inset-0 bg-black/50 z-40"
             onClick={() => setShowFiltersOverlay(false)}
           />
-          <div className={cn(
-            "fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl shadow-2xl",
-            "animate-in slide-in-from-bottom duration-300"
-          )} style={{ height: '75vh' }}>
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300" style={{ height: '75vh' }}>
             <div className="p-4 border-b border-border flex items-center justify-between">
               <h3 className="text-lg font-semibold m-0">{t('calendar:categoryFilters')}</h3>
-              <button
-                onClick={() => setShowFiltersOverlay(false)}
-                className="p-2 hover:bg-muted rounded-lg transition-colors"
-              >
+              <button onClick={() => setShowFiltersOverlay(false)} className="p-2 hover:bg-muted rounded-lg transition-colors">
                 <FiX className="w-5 h-5" />
               </button>
             </div>
             <div className="overflow-y-auto p-4 space-y-2" style={{ height: 'calc(75vh - 73px)', scrollbarGutter: 'stable' }}>
               {categories.map((category, index) => (
-                <label
-                  key={index}
-                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
-                >
+                <label key={index} className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors">
                   <div className="relative flex items-center">
                     <input
                       type="checkbox"
@@ -912,13 +576,7 @@ const Calendar = ({ userData }) => {
                         borderWidth: '1px'
                       }}
                     />
-                    <svg
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                    >
+                    <svg className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -927,10 +585,7 @@ const Calendar = ({ userData }) => {
               ))}
               {hasActiveFilters && (
                 <button
-                  onClick={() => {
-                    handleResetCategories();
-                    setShowFiltersOverlay(false);
-                  }}
+                  onClick={() => { handleResetCategories(); setShowFiltersOverlay(false); }}
                   className="w-full h-10 rounded-lg border border-input bg-background text-sm font-medium hover:bg-muted transition-all mt-4"
                 >
                   {t('calendar:resetAll')}

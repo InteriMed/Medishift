@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDashboard } from '../contexts/DashboardContext';
-import { 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
-  onSnapshot, 
-  addDoc, 
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  addDoc,
   serverTimestamp,
   doc,
   getDoc,
@@ -28,18 +28,18 @@ const useMessagesData = (conversationId = null) => {
   const { t } = useTranslation();
   const { user, selectedWorkspace } = useDashboard();
   const { showError, showSuccess } = useNotification();
-  
+
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [messageContext, setMessageContext] = useState(MESSAGE_CONTEXTS.PERSONAL);
-  
+
   // Get user role in current workspace
   const getUserRole = useCallback(() => {
     if (!selectedWorkspace || !user) return null;
-    
+
     if (selectedWorkspace.type === WORKSPACE_TYPES.PERSONAL) {
       return 'personal';
     } else if (selectedWorkspace.type === WORKSPACE_TYPES.TEAM) {
@@ -53,7 +53,7 @@ const useMessagesData = (conversationId = null) => {
     if (!selectedWorkspace || selectedWorkspace.type !== WORKSPACE_TYPES.TEAM) {
       return false;
     }
-    
+
     const role = getUserRole();
     return role && role !== 'employee'; // Admins and managers can access facility messages
   }, [selectedWorkspace, getUserRole]);
@@ -65,14 +65,14 @@ const useMessagesData = (conversationId = null) => {
       setIsLoading(false);
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       let conversationsQuery;
       const conversationsRef = collection(db, 'conversations');
-      
+
       if (context === MESSAGE_CONTEXTS.PERSONAL) {
         // Personal messages: conversations where user is a participant
         conversationsQuery = query(
@@ -93,27 +93,27 @@ const useMessagesData = (conversationId = null) => {
         setIsLoading(false);
         return;
       }
-      
+
       // Set up real-time listener
       const unsubscribe = onSnapshot(
         conversationsQuery,
         async (snapshot) => {
           const conversationsList = [];
-          
+
           // Process each conversation document
           for (const docChange of snapshot.docChanges()) {
             if (docChange.type === 'added' || docChange.type === 'modified') {
               const conversationData = docChange.doc.data();
-              
+
               // Use the documented participantInfo structure
               let displayInfo = {};
-              
+
               if (context === MESSAGE_CONTEXTS.PERSONAL) {
                 // Find the other participant from participantInfo
                 const otherParticipant = conversationData.participantInfo?.find(
                   participant => participant.userId !== user.uid
                 );
-                
+
                 if (otherParticipant) {
                   displayInfo = {
                     displayName: otherParticipant.displayName,
@@ -127,8 +127,15 @@ const useMessagesData = (conversationId = null) => {
                 const professionalParticipant = conversationData.participantInfo?.find(
                   participant => participant.roleInConversation === 'professional'
                 );
-                
-                if (professionalParticipant) {
+
+                if (conversationData.type === 'internal_team' || conversationData.isTeamChat) {
+                  displayInfo = {
+                    displayName: 'Internal Team Chat',
+                    photoURL: null,
+                    role: 'internal_team',
+                    isTeamChat: true
+                  };
+                } else if (professionalParticipant) {
                   displayInfo = {
                     displayName: `${professionalParticipant.displayName} (Professional)`,
                     photoURL: professionalParticipant.photoURL,
@@ -144,7 +151,7 @@ const useMessagesData = (conversationId = null) => {
                   };
                 }
               }
-              
+
               conversationsList.push({
                 id: docChange.doc.id,
                 ...conversationData,
@@ -152,14 +159,14 @@ const useMessagesData = (conversationId = null) => {
               });
             }
           }
-          
+
           // Sort conversations by last message timestamp
           conversationsList.sort((a, b) => {
             const aTime = a.lastMessageTimestamp?.toDate?.() || new Date(0);
             const bTime = b.lastMessageTimestamp?.toDate?.() || new Date(0);
             return bTime - aTime;
           });
-          
+
           setConversations(conversationsList);
           setIsLoading(false);
         },
@@ -179,14 +186,14 @@ const useMessagesData = (conversationId = null) => {
       setIsLoading(false);
     }
   }, [user, selectedWorkspace, canAccessFacilityMessages, t, showError]);
-  
+
   // Load messages for active conversation - Updated to use subcollection structure
   const loadMessages = useCallback(async () => {
     if (!activeConversation || !user) {
       setMessages([]);
       return;
     }
-    
+
     try {
       // Messages are now a subcollection under conversations
       const messagesQuery = query(
@@ -227,24 +234,24 @@ const useMessagesData = (conversationId = null) => {
       loadConversations(defaultContext);
     }
   }, [user, selectedWorkspace]); // Removed loadConversations from dependency array
-  
+
   // Load messages when active conversation changes - Fixed infinite loop
   useEffect(() => {
     if (activeConversation) {
       loadMessages();
     }
   }, [activeConversation]); // Removed loadMessages from dependency array
-  
+
   // Send message - Updated to use subcollection structure
   const sendMessage = useCallback(async (content, context = messageContext) => {
     if (!activeConversation || !user) return;
-    
+
     try {
       // Get sender info from participantInfo
       const senderInfo = activeConversation.participantInfo?.find(
         participant => participant.userId === user.uid
       );
-      
+
       const messageData = {
         senderId: user.uid,
         text: content.trim(),
@@ -260,14 +267,14 @@ const useMessagesData = (conversationId = null) => {
 
       // Add message to subcollection
       const newMessage = await addDoc(
-        collection(db, 'conversations', activeConversation.id, 'messages'), 
+        collection(db, 'conversations', activeConversation.id, 'messages'),
         messageData
       );
-      
+
       // Update conversation's lastMessage and lastMessageTimestamp
       // This would typically be done by a Cloud Function, but for now we'll handle it client-side
       // In production, this should be handled by a Firestore trigger
-      
+
       return newMessage;
     } catch (err) {
       console.error('Error sending message:', err);
@@ -275,13 +282,13 @@ const useMessagesData = (conversationId = null) => {
       throw err;
     }
   }, [activeConversation, user, messageContext, t, showError]);
-  
+
   // Create new conversation - Updated to match documented structure
   const createConversation = useCallback(async (
-    participantIds, 
-    participantInfo, 
-    contractId = null, 
-    facilityProfileId = null, 
+    participantIds,
+    participantInfo,
+    contractId = null,
+    facilityProfileId = null,
     professionalProfileId = null
   ) => {
     if (!user) return;
@@ -313,7 +320,7 @@ const useMessagesData = (conversationId = null) => {
       };
 
       const newConversation = await addDoc(collection(db, 'conversations'), conversationData);
-      
+
       showSuccess(t('messages:conversationCreated', 'Conversation created successfully'));
       return newConversation;
     } catch (err) {
@@ -322,7 +329,7 @@ const useMessagesData = (conversationId = null) => {
       throw err;
     }
   }, [user, t, showError, showSuccess]);
-  
+
   // Set active conversation
   const setActiveConversationById = useCallback((id) => {
     const conversation = conversations.find(c => c.id === id);
@@ -337,13 +344,13 @@ const useMessagesData = (conversationId = null) => {
       showError(t('messages:noFacilityAccess', 'You do not have access to facility messages'));
       return;
     }
-    
+
     setMessageContext(context);
     setActiveConversation(null);
     setMessages([]);
     loadConversations(context);
   }, [canAccessFacilityMessages, loadConversations, t, showError]);
-  
+
   return {
     conversations,
     activeConversation,

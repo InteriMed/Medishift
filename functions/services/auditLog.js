@@ -176,7 +176,9 @@ const extractMetadata = (req, context = null) => {
 /**
  * Callable function to manually log audit events from frontend
  */
-exports.logAudit = onCall({ database: 'medishift', cors: true }, async (request) => {
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+
+exports.logAudit = onCall(FUNCTION_CONFIG, async (request) => {
     // Only allow authenticated users
     if (!request.auth) {
         throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -213,7 +215,7 @@ exports.logAudit = onCall({ database: 'medishift', cors: true }, async (request)
  * Query audit logs for a facility
  * Requires admin permission
  */
-exports.getAuditLogs = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.getAuditLogs = onCall(FUNCTION_CONFIG, async (request) => {
     if (!request.auth) {
         throw new HttpsError('unauthenticated', 'Must be authenticated');
     }

@@ -174,3 +174,6 @@ exports.cleanupFacilityRoles = onDocumentDeleted({
     }
 });
 
+exports.syncAdminRoles = exports.syncFacilityRoles;
+exports.cleanupRolesOnFacilityDelete = exports.cleanupFacilityRoles;
+

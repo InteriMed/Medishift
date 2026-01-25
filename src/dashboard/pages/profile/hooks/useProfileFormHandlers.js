@@ -21,7 +21,8 @@ export const useProfileFormHandlers = (
     isTutorialActive,
     activeTutorial,
     onTabCompleted,
-    setIsSubmitting
+    setIsSubmitting,
+    onProfileComplete
 ) => {
     const { t } = useTranslation(['validation', 'common', 'dashboardProfile']);
     const navigate = useNavigate();
@@ -79,6 +80,23 @@ export const useProfileFormHandlers = (
         setErrors(prevErrors => {
             const newErrors = { ...prevErrors };
             delete newErrors[arrayName];
+            return newErrors;
+        });
+    }, [setFormData, setErrors]);
+
+    const handleBatchChange = useCallback((updates) => {
+        setFormData(currentFormData => {
+            const newFormData = cloneDeep(currentFormData);
+            updates.forEach(({ name, value }) => {
+                set(newFormData, name, value);
+            });
+            return newFormData;
+        });
+        setErrors(prevErrors => {
+            const newErrors = cloneDeep(prevErrors);
+            updates.forEach(({ name }) => {
+                set(newErrors, name, undefined);
+            });
             return newErrors;
         });
     }, [setFormData, setErrors]);
@@ -202,6 +220,7 @@ export const useProfileFormHandlers = (
     return {
         handleInputChange,
         handleArrayChange,
+        handleBatchChange,
         getNestedValue,
         handleSave,
         handleSaveOnly,

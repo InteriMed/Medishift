@@ -17,18 +17,16 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
     const { user, selectedWorkspace } = useDashboard();
 
     const handleContinueOnboarding = async () => {
-        resetProfileTabAccess();
-        setMaxAccessedProfileTab('personalDetails');
-        
-        if (setAccessLevelChoice) {
-            await setAccessLevelChoice('loading');
+        const isOnProfilePage = location.pathname.includes('/profile');
+        const isOnProfileSubTab = isOnProfilePage && location.pathname.split('/profile/')[1];
+        const shouldPreserveTabProgress = isTutorialActive && isOnProfileSubTab;
+
+        if (!shouldPreserveTabProgress) {
+            resetProfileTabAccess();
+            setMaxAccessedProfileTab('personalDetails');
         }
         
-        // Check if already on profile page
-        const isOnProfilePage = location.pathname.includes('/profile');
-        
         if (!isOnProfilePage) {
-            // Navigate to profile if not already there
             const workspaceId = selectedWorkspace?.id || 'personal';
             navigate(`/dashboard/${workspaceId}/profile/personalDetails`);
         }
@@ -93,7 +91,7 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div 
                         onClick={handleSelectTeamAccess}
-                        className="border-2 border-border rounded-xl p-6 hover:border-blue-600 transition-colors flex flex-col cursor-pointer"
+                        className="group border-2 border-border rounded-xl p-6 hover:border-blue-600 transition-colors flex flex-col cursor-pointer"
                     >
                         <div className="mb-4">
                             <div className="flex items-center gap-3 mb-3">
@@ -127,7 +125,7 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
                             </li>
                         </ul>
                         <div className="mt-4 pt-4 border-t border-border">
-                            <div className="w-full px-4 py-2 rounded-lg border-2 border-blue-600 bg-transparent hover:bg-blue-600 text-blue-600 hover:text-white font-semibold transition-colors text-center">
+                            <div className="w-full px-4 py-2 rounded-lg border-2 border-blue-600 bg-transparent group-hover:bg-blue-600 text-blue-600 group-hover:text-white font-semibold transition-colors text-center">
                                 {t('accessLevelChoice.selectTeamAccess', 'Select Team Access')}
                             </div>
                         </div>
@@ -135,7 +133,7 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
 
                     <div 
                         onClick={glnVerified ? handleContinueOnboarding : handleBackToOnboarding}
-                        className={`border-2 border-border rounded-xl p-6 transition-colors flex flex-col ${glnVerified ? 'hover:border-green-600 cursor-pointer' : 'opacity-60 cursor-pointer'}`}
+                        className={`group border-2 border-border rounded-xl p-6 transition-colors flex flex-col ${glnVerified ? 'hover:border-green-600 cursor-pointer' : 'opacity-60 cursor-pointer'}`}
                     >
                         <div className="mb-4">
                             <div className="flex items-center gap-3 mb-3">
@@ -174,12 +172,12 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
                                     <p className="text-red-600 text-sm font-medium mb-3 text-center">
                                         {t('accessLevelChoice.glnRequired', 'GLN verification required for Full Access')}
                                     </p>
-                                    <div className="w-full px-4 py-2 rounded-lg border-2 border-red-600 bg-transparent text-red-600 hover:bg-red-600 hover:text-white font-semibold transition-colors text-center">
+                                    <div className="w-full px-4 py-2 rounded-lg border-2 border-red-600 bg-transparent text-red-600 group-hover:bg-red-600 group-hover:text-white font-semibold transition-colors text-center">
                                         {t('accessLevelChoice.backToOnboarding', 'Back to Onboarding')}
                                     </div>
                                 </div>
                             ) : (
-                                <div className="w-full px-4 py-2 rounded-lg border-2 border-green-600 bg-transparent text-green-600 hover:bg-green-600 hover:text-white font-semibold transition-colors text-center">
+                                <div className="w-full px-4 py-2 rounded-lg border-2 border-green-600 bg-transparent text-green-600 group-hover:bg-green-600 group-hover:text-white font-semibold transition-colors text-center">
                                     {t('accessLevelChoice.continueProfile', 'Continue Profile')}
                                 </div>
                             )}

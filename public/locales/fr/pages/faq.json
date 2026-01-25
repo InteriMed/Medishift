@@ -148,5 +148,13 @@
     "title": "Vous n'avez pas trouvé ce que vous cherchiez ?",
     "description": "Notre équipe d'assistance est prête à vous aider pour toute question supplémentaire.",
     "buttonText": "Contacter le Support"
+  },
+  "hero": {
+    "badge": "Help Center",
+    "title": "Frequently Asked Questions"
+  },
+  "support": {
+    "title": "Need More Help?",
+    "description": "Our dedicated support team is available to assist you with any issues or inquiries you may have."
   }
 }

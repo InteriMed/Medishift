@@ -9,7 +9,13 @@
     "subtitle": "Reprenez le contrôle de votre carrière et découvrez des missions adaptées à vos besoins",
     "trustSnippet": "Plateforme spécialisée pour les professionnels de la santé en Suisse",
     "tagLine": "Votre carrière, vos règles",
-    "cta": "Créer mon profil"
+    "cta": "Créer mon profil",
+    "ctaCreate": "Create Profile",
+    "ctaLearnMore": "Learn More",
+    "badge": "For Professionals",
+    "appAlt": "Mobile App",
+    "glnVerification": "GLN Verification",
+    "validated": "Validated"
   },
   "problem": {
     "title": "Vos défis, nos solutions",
@@ -144,11 +150,53 @@
     "feature7": {
       "title": "Paiements automatisés",
       "description": "Recevez vos paiements rapidement et sans tracas"
+    },
+    "glnVerification": {
+      "title": "GLN Verification",
+      "description": "Automatic verification of your credentials."
+    },
+    "smartCV": {
+      "title": "Smart CV",
+      "description": "Auto-generated CV highlighting your skills."
+    },
+    "fastTrack": {
+      "title": "Fast Track",
+      "description": "Skip the line with verified status."
     }
   },
   "cta": {
     "title": "Prenez le contrôle de votre carrière aujourd'hui",
     "description": "Rejoignez les milliers de professionnels de santé suisses qui ont transformé leur façon de travailler grâce à Interimed",
-    "button": "Commencer maintenant"
+    "button": "Commencer maintenant",
+    "item1": "Free to join",
+    "item2": "Access exclusive jobs",
+    "item3": "Grow your career",
+    "card": {
+      "title": "Status",
+      "status": "Active"
+    }
+  },
+  "quickApply": {
+    "title": "Quick Apply",
+    "description": "Apply to jobs in seconds."
+  },
+  "availability": {
+    "title": "Your Availability",
+    "description": "Work when you want, where you want.",
+    "flexibility": {
+      "title": "Total Flexibility",
+      "description": "Set your own schedule."
+    },
+    "messaging": {
+      "title": "Direct Messaging",
+      "description": "Chat directly with facilities."
+    },
+    "adminCard": {
+      "title": "Admin Dashboard",
+      "item1": "Schedule view",
+      "item2": "Payments",
+      "item3": "Contracts",
+      "item4": "Profile settings"
+    }
   }
 }

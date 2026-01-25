@@ -314,7 +314,7 @@ const EventPanel = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[20001] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto p-4" onClick={onClose} style={{ zIndex: 20001 }}>
       <div
         className="bg-card w-full rounded-2xl shadow-2xl flex flex-col border border-border animate-in zoom-in-95 duration-200 my-auto relative"
         style={{ maxWidth: formData.isRecurring ? '1400px' : '700px' }}

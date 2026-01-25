@@ -1,4 +1,4 @@
-export { TutorialProvider, useTutorial } from './TutorialProvider';
+export { TutorialProvider, useTutorial } from './TutorialContext';
 
 export {
     TUTORIAL_IDS,

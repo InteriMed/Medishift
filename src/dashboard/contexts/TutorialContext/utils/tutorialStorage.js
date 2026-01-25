@@ -1,6 +1,6 @@
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
-import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
+import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
 
 export const saveTutorialStep = async (profileCollection, userId, stepIndex) => {
     if (!userId || !profileCollection) return;

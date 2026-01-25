@@ -66,7 +66,7 @@ export const useTutorialNavigation = ({
         }
 
         // Other items follow tutorial advancement
-        const tutorialOrder = ['overview', 'profile', TUTORIAL_IDS.MESSAGES, TUTORIAL_IDS.CONTRACTS, TUTORIAL_IDS.CALENDAR, TUTORIAL_IDS.MARKETPLACE, TUTORIAL_IDS.PAYROLL, TUTORIAL_IDS.ORGANIZATION, TUTORIAL_IDS.SETTINGS];
+        const tutorialOrder = ['overview', 'profile', TUTORIAL_IDS.MESSAGES, TUTORIAL_IDS.CONTRACTS, TUTORIAL_IDS.CALENDAR, TUTORIAL_IDS.MARKETPLACE, TUTORIAL_IDS.PAYROLL, TUTORIAL_IDS.ORGANIZATION, TUTORIAL_IDS.ACCOUNT];
         const itemIndex = tutorialOrder.indexOf(itemName);
 
         if (itemIndex !== -1) {
@@ -132,6 +132,7 @@ export const useTutorialNavigation = ({
 
                     if (matchingStepIndex !== -1 &&
                         matchingStepIndex !== currentStep &&
+                        matchingStepIndex > currentStep &&
                         !isBusy &&
                         timeSinceLastSync > 500) {
                         syncTimestampRef.current[lastSyncKey] = now;

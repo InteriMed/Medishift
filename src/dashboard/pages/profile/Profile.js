@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cloneDeep } from 'lodash';
-import { FiUpload, FiFileText, FiZap } from 'react-icons/fi';
+import { FiUpload, FiFileText, FiZap, FiAlertCircle } from 'react-icons/fi';
 
 import { useAuth } from '../../../contexts/AuthContext';
 import { useNotification } from '../../../contexts/NotificationContext';
@@ -29,11 +29,11 @@ import ProfessionalDocumentUploads from './professionals/components/DocumentUplo
 import ProfessionalAccount from './professionals/components/Account';
 import ProfessionalSettings from './professionals/components/Settings';
 import FacilityDetails from './facilities/components/FacilityDetails';
+import FacilityBillingInformation from './facilities/components/BillingInformation';
 import FacilityAccount from './facilities/components/Account';
 import FacilitySettings from './facilities/components/Settings';
 import { cn } from '../../../utils/cn';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
-import { TUTORIAL_IDS, PROFILE_TAB_IDS } from '../../../config/tutorialConfig';
 
 import { useProfileTutorial } from './hooks/useProfileTutorial';
 import { useProfileConfig } from './hooks/useProfileConfig';
@@ -41,17 +41,32 @@ import { useProfileValidation } from './hooks/useProfileValidation';
 import { useProfileDocumentProcessing } from './hooks/useProfileDocumentProcessing';
 import { useProfileFormHandlers } from './hooks/useProfileFormHandlers';
 import { calculateProfileCompleteness, isTabCompleted, isTabAccessible } from './utils/profileUtils';
+import { useTutorial } from '../../contexts/TutorialContext';
+import { isProfileTabAccessible as checkTutorialProfileTabAccess, getTabOrder } from '../../../config/tutorialSystem';
 
 export { calculateProfileCompleteness, isTabCompleted, isTabAccessible };
 
 const Profile = () => {
     const { t } = useTranslation(['dashboardProfile', 'common', 'validation']);
-    const { currentUser } = useAuth();
+    const { currentUser, userProfile } = useAuth();
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const location = useLocation();
     const { setProfileCompletionStatus, selectedWorkspace } = useDashboard();
     const isMobile = useMobileView();
+    // Custom breakpoint for Profile page tabbed layout (1200px)
+    const [isTabbedLayout, setIsTabbedLayout] = useState(() => {
+        return typeof window !== 'undefined' ? window.innerWidth < 1200 : false;
+    });
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsTabbedLayout(window.innerWidth < 1200);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     const pageMobileContext = usePageMobile();
 
     const {
@@ -91,51 +106,56 @@ const Profile = () => {
         isLoadingData
     );
 
+    const { accessLevelChoice, onboardingType } = useTutorial();
     const tutorial = useProfileTutorial(formData);
-    const { isTutorialActive, activeTutorial, stepData, onTabCompleted, maxAccessedProfileTab, registerValidation } = tutorial;
+    const { isTutorialActive, activeTutorial, stepData, onTabCompleted, maxAccessedProfileTab, syncProfileInitialState } = tutorial;
 
-    // Register validation for tutorial
+    const hasSyncedInitialRef = useRef(false);
     useEffect(() => {
-        if (!registerValidation || !isTutorialActive) return;
+        if (isTutorialActive && accessLevelChoice !== 'full' && formData && profileConfig && !hasSyncedInitialRef.current) {
+            syncProfileInitialState(formData, profileConfig);
+            hasSyncedInitialRef.current = true;
+        }
+        if (!isTutorialActive) {
+            hasSyncedInitialRef.current = false;
+        }
+    }, [isTutorialActive, accessLevelChoice, formData, profileConfig, syncProfileInitialState]);
 
-        return registerValidation(TUTORIAL_IDS.PROFILE_TABS, () => {
-            // Check if current tab is completed
-            if (!activeTab || !formData) return false;
-            const isComplete = isTabCompleted(formData, activeTab, profileConfig);
-            return isComplete;
-        });
-    }, [registerValidation, isTutorialActive, activeTab, formData, isTabCompleted, profileConfig]);
+    // Tabs that require full access (locked for team/no access outside tutorial)
+    const lockedTabsOutsideTutorial = useMemo(() => ['professionalBackground', 'billingInformation', 'documentUploads', 'marketplace'], []);
 
-    // TUTORIAL-AWARE TAB ACCESSIBILITY (moved down to ensure tutorial is initialized)
+    // TUTORIAL-AWARE TAB ACCESSIBILITY
     const isTabAccessibleDuringTutorial = useCallback((data, tabId, config) => {
-        // Normal accessibility check
-        const normalAccessibility = isTabAccessible(data, tabId, config);
-
-        // During tutorial, also check against maxAccessedProfileTab
-        if (isTutorialActive && maxAccessedProfileTab) {
-            const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads', 'account', 'settings'];
-            const maxIndex = tabOrder.indexOf(maxAccessedProfileTab);
-            const requestedIndex = tabOrder.indexOf(tabId);
-
-            if (maxIndex === -1 || requestedIndex === -1) return normalAccessibility;
-
-            // If requested tab is completed, allow access to next tab (max + 1)
-            if (isTabCompleted(data, maxAccessedProfileTab, config)) {
-                return normalAccessibility && requestedIndex <= maxIndex + 1;
-            }
-
-            // Otherwise, only allow up to maxAccessedProfileTab
-            return normalAccessibility && requestedIndex <= maxIndex;
+        // 1. Outside Tutorial: Check access level locking
+        if (!isTutorialActive && accessLevelChoice !== 'full' && lockedTabsOutsideTutorial.includes(tabId)) {
+            return false;
         }
 
-        return normalAccessibility;
-    }, [isTutorialActive, maxAccessedProfileTab]);
+        // 2. Tutorial Mode: Centralized logic based on highlight system & progress
+        if (isTutorialActive) {
+            return checkTutorialProfileTabAccess(tabId, {
+                isTutorialActive,
+                maxAccessedProfileTab,
+                onboardingType,
+                accessMode: accessLevelChoice,
+                highlightTab: stepData?.highlightTab
+            });
+        }
+
+        // 3. Normal Mode Fallback:
+        if (tabId === 'account' || tabId === 'marketplace') {
+            return true;
+        }
+
+        return isTabAccessible(data, tabId, config);
+    }, [isTutorialActive, maxAccessedProfileTab, onboardingType, accessLevelChoice, stepData?.highlightTab, lockedTabsOutsideTutorial]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {
         handleInputChange,
         handleArrayChange,
+        handleBatchChange,
         getNestedValue,
         handleSave,
         handleSaveOnly,
@@ -234,31 +254,25 @@ const Profile = () => {
     }, [formData, initialProfileData]);
 
     useEffect(() => {
-        if (!profileConfig || !formData || isLoadingConfig || isLoadingData) return;
-
         const pathParts = location.pathname.split('/');
         const tabFromUrl = pathParts[pathParts.length - 1];
-        const validTabIds = profileConfig.tabs.map(t => t.id);
+        const validTabIds = profileConfig?.tabs?.map(t => t.id) || [];
 
         let targetTab = '';
 
-        // If tab from URL is valid and accessible, use it
         if (tabFromUrl && validTabIds.includes(tabFromUrl)) {
             const isAccessible = isTabAccessibleDuringTutorial(formData, tabFromUrl, profileConfig);
             if (isAccessible) {
                 targetTab = tabFromUrl;
             } else {
-                // Fallback to first accessible tab if URL tab is locked by tutorial
                 targetTab = validTabIds.find(id => isTabAccessibleDuringTutorial(formData, id, profileConfig)) || validTabIds[0];
                 showNotification(t('validation:completePreviousSteps'), 'warning');
             }
-        }
-        // Otherwise, if it's the root profile page or an invalid tab for this config, default to first accessible
-        else {
+        } else {
             targetTab = validTabIds.find(id => isTabAccessibleDuringTutorial(formData, id, profileConfig)) || validTabIds[0];
         }
 
-        if (targetTab !== activeTab) {
+        if (targetTab && targetTab !== activeTab) {
             setActiveTab(targetTab);
         }
 
@@ -268,6 +282,17 @@ const Profile = () => {
             navigate(buildDashboardUrl(`/profile/${targetTab}`, workspaceId), { replace: true });
         }
     }, [location.pathname, profileConfig, formData, isLoadingConfig, isLoadingData, activeTab, navigate, showNotification, t, selectedWorkspace, isTabAccessibleDuringTutorial]);
+
+    // Progressive Tutorial Logic: Auto-trigger completion check on tab activation or data change
+    useEffect(() => {
+        if (isTutorialActive && accessLevelChoice !== 'full' && activeTab && formData && profileConfig) {
+            const isComplete = isTabCompleted(formData, activeTab, profileConfig);
+            console.log(`[Profile] Progressive Check: ${activeTab} complete = ${isComplete}`);
+            if (isComplete) {
+                onTabCompleted(activeTab, true);
+            }
+        }
+    }, [activeTab, isTutorialActive, accessLevelChoice, formData, profileConfig, onTabCompleted]);
 
     useEffect(() => {
         const setPageMobileState = pageMobileContext?.setPageMobileState;
@@ -339,6 +364,7 @@ const Profile = () => {
             isSubmitting,
             onInputChange: handleInputChange,
             onArrayChange: handleArrayChange,
+            onBatchChange: handleBatchChange,
             onSaveAndContinue: handleSaveAndContinue,
             onSave: handleSaveOnly,
             onCancel: handleCancelClick,
@@ -364,11 +390,11 @@ const Profile = () => {
             case 'billingInformation': return <BillingInformation {...commonProps} t={t} stepData={stepData} />;
             case 'documentUploads': return <ProfessionalDocumentUploads {...commonProps} t={t} stepData={stepData} />;
             case 'facilityCoreDetails': return <FacilityDetails activeTab={activeTab} {...commonProps} t={t} stepData={stepData} />;
-            case 'facilityLegalBilling': return <FacilityDetails activeTab={activeTab} {...commonProps} t={t} stepData={stepData} />;
+            case 'facilityLegalBilling': return <FacilityBillingInformation {...commonProps} t={t} stepData={stepData} />;
             case 'account':
                 return isFacility ? <FacilityAccount {...commonProps} t={t} stepData={stepData} /> : <ProfessionalAccount {...commonProps} t={t} stepData={stepData} />;
             case 'subscription':
-            case 'settings':
+            case 'marketplace':
                 return isFacility ? <FacilitySettings {...commonProps} t={t} stepData={stepData} /> : <ProfessionalSettings {...commonProps} t={t} stepData={stepData} />;
             default: return <div>{t('common.selectTab')}</div>;
         }
@@ -410,32 +436,37 @@ const Profile = () => {
                     title={t('dashboardProfile:documents.autofill', 'Auto Fill')}
                     size="medium"
                     actions={
-                        <>
-                            <Button
-                                variant="secondary"
-                                onClick={handleCloseAutoFillDialog}
-                                disabled={isUploading}
-                            >
-                                {t('common.cancel')}
-                            </Button>
-                            {cachedData && (
+                        <div className="flex justify-between flex-nowrap gap-3 w-full">
+                            <div className="flex gap-3">
                                 <Button
-                                    variant="primary"
-                                    onClick={handleUseCachedData}
+                                    variant="secondary"
+                                    onClick={handleCloseAutoFillDialog}
                                     disabled={isUploading}
                                 >
-                                    {t('personalDetails.useExistingData', 'Use Existing Data')}
+                                    {t('common.cancel')}
                                 </Button>
-                            )}
-                            <Button
-                                variant="info"
-                                onClick={handleAutoFillProcess}
-                                isLoading={isUploading}
-                                disabled={isUploading}
-                            >
-                                {t('dashboardProfile:documents.autofill', 'Auto Fill')}
-                            </Button>
-                        </>
+                            </div>
+                            <div className="flex gap-3">
+                                {cachedData && (
+                                    <Button
+                                        variant="primary"
+                                        onClick={handleUseCachedData}
+                                        disabled={isUploading}
+                                    >
+                                        {t('personalDetails.useExistingData', 'Use Existing Data')}
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="success"
+                                    onClick={handleAutoFillProcess}
+                                    isLoading={isUploading}
+                                    disabled={isUploading}
+                                    data-tutorial="profile-upload-button"
+                                >
+                                    {t('dashboardProfile:documents.autofill', 'Auto Fill')}
+                                </Button>
+                            </div>
+                        </div>
                     }
                 >
                     <div className="space-y-4">
@@ -501,22 +532,26 @@ const Profile = () => {
                     onClose={cancelAnalysis}
                     title={t('dashboardProfile:documents.autoFillTitle', 'Auto Fill Profile?')}
                     actions={
-                        <>
-                            <Button
-                                variant="secondary"
-                                onClick={cancelAnalysis}
-                                disabled={isSubmittingDocument}
-                            >
-                                {t('common.cancel')}
-                            </Button>
-                            <Button
-                                variant="primary"
-                                onClick={handleFillEmptyFields}
-                                isLoading={isSubmittingDocument}
-                            >
-                                {t('dashboardProfile:documents.fillProfile', 'Fill Profile')}
-                            </Button>
-                        </>
+                        <div className="flex justify-between flex-nowrap gap-3 w-full">
+                            <div className="flex gap-3">
+                                <Button
+                                    variant="secondary"
+                                    onClick={cancelAnalysis}
+                                    disabled={isSubmittingDocument}
+                                >
+                                    {t('common.cancel')}
+                                </Button>
+                            </div>
+                            <div className="flex gap-3">
+                                <Button
+                                    variant="success"
+                                    onClick={handleFillEmptyFields}
+                                    isLoading={isSubmittingDocument}
+                                >
+                                    {t('dashboardProfile:documents.fillProfile', 'Fill Profile')}
+                                </Button>
+                            </div>
+                        </div>
                     }
                 >
                     <p className="mb-4">{t('dashboardProfile:documents.autoFillDescription', 'We have extracted information from your document. This will fill empty fields in your profile (Personal Details, Professional Background, etc.). Existing data will NOT be overwritten. Do you want to proceed?')}</p>
@@ -547,18 +582,16 @@ const Profile = () => {
                 </Dialog>
 
                 <div className={cn(
-                    "flex-1 flex min-h-0 relative ml-4 my-4 overflow-visible",
-                    isMobile ? "p-0" : "gap-6"
-                )}>
+                    "flex-1 flex min-h-0 relative mx-4 my-4",
+                    isTabbedLayout ? "flex-col p-0 gap-4" : "gap-6"
+                )} style={{ overflow: 'visible' }}>
                     <div
                         className={cn(
-                            "dashboard-sidebar-container",
-                            isMobile
-                                ? cn(
-                                    "dashboard-sidebar-container-mobile",
-                                    showSidebar ? "translate-x-0" : "-translate-x-full"
-                                )
+                            "transition-all duration-300 ease-in-out",
+                            isTabbedLayout
+                                ? "w-full z-10 sticky top-0"
                                 : cn(
+                                    "dashboard-sidebar-container",
                                     isProfileMenuCollapsed ? "w-[70px]" : "dashboard-sidebar-container-desktop"
                                 )
                         )}
@@ -574,40 +607,35 @@ const Profile = () => {
                                 isTabAccessible={(data, tabId, config) => isTabAccessibleDuringTutorial(data, tabId, config)}
                                 nextIncompleteSection={nextIncompleteTab}
                                 highlightTabId={(() => {
-                                    // During tutorial, highlight the first incomplete tab within accessible range
-                                    // This ensures the highlight moves as tabs are completed
-                                    if (isTutorialActive && maxAccessedProfileTab) {
-                                        const tabOrder = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads', 'account', 'settings'];
+                                    if (isTutorialActive && accessLevelChoice !== 'full' && maxAccessedProfileTab) {
+                                        const tabOrder = getTabOrder(onboardingType);
                                         const maxIdx = tabOrder.indexOf(maxAccessedProfileTab);
 
-                                        // Find first incomplete tab up to max accessible
                                         for (let i = 0; i <= maxIdx; i++) {
                                             const tab = tabOrder[i];
                                             if (!isTabCompleted(formData, tab, profileConfig)) {
-                                                console.log('[Profile] highlightTabId: first incomplete tab', tab);
                                                 return tab;
                                             }
                                         }
 
-                                        // All accessible tabs complete - highlight max accessible
                                         const result = tabOrder[maxIdx];
-                                        console.log('[Profile] highlightTabId: all complete, using max', result);
                                         return result;
                                     }
 
                                     return nextIncompleteTab;
                                 })()}
-                                collapsed={isProfileMenuCollapsed}
+                                collapsed={!isTabbedLayout && isProfileMenuCollapsed}
                                 onToggle={() => setIsProfileMenuCollapsed(!isProfileMenuCollapsed)}
                                 onAutofill={handleAutofill}
+                                customMobileState={isTabbedLayout}
                             />
                         )}
                     </div>
 
                     <div className={cn(
                         "dashboard-main-content h-full",
-                        isMobile && !showSidebar ? "translate-x-0 dashboard-main-content-mobile" : isMobile ? "translate-x-full dashboard-main-content-mobile" : ""
-                    )} style={{ scrollbarGutter: 'stable', overflowY: 'auto', overflowX: 'hidden' }}>
+                        isTabbedLayout ? "w-full overflow-visible" : ""
+                    )} style={{ scrollbarGutter: 'stable', overflowY: isTabbedLayout ? 'visible' : 'auto', overflowX: 'hidden' }}>
                         {renderLoadingOrError() || (
                             <div className="animate-in slide-in-from-bottom-2 duration-500 h-full">
                                 {currentTabComponent()}

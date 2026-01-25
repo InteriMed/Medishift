@@ -75,6 +75,12 @@
           }
         }
       },
+      "gln_verified": {
+        "title": "GLN Vérifié",
+        "desc": "Votre GLN {{gln}} a été reconnu à partir de votre profil professionnel.",
+        "facility_desc": "Votre compte est déjà certifié GLN. Vous pouvez poursuivre l'intégration.",
+        "status": "Identité Confirmée"
+      },
       "step2": {
         "title": "Sélectionnez Votre Rôle",
         "description": "Choisissez l'option qui décrit le mieux votre situation",
@@ -158,7 +164,21 @@
       "success": {
         "verified_title": "Compte Vérifié avec Succès !",
         "professional_redirect": "Votre profil professionnel est maintenant actif. Redirection pour compléter la configuration de votre profil...",
-        "facility_redirect": "Votre profil d'établissement est maintenant actif. Redirection pour compléter la configuration de votre profil..."
+        "facility_redirect": "Votre profil d'établissement est maintenant actif. Redirection pour compléter la configuration de votre profil...",
+        "dialog_title": "Profil Vérifié",
+        "professional_message": "Votre profil professionnel a été vérifié avec succès. Vous pouvez maintenant accéder à toutes les fonctionnalités de la plateforme.",
+        "facility_message": "Votre profil d'établissement a été vérifié avec succès. Vous pouvez maintenant accéder à toutes les fonctionnalités de la plateforme."
+      },
+      "gln_info": {
+        "title": "Où trouver votre GLN",
+        "facility_title": "Où trouver le GLN de votre établissement",
+        "where_to_find": "Où trouver votre GLN ?",
+        "where_to_find_facility": "Où trouver le GLN de votre établissement ?",
+        "registry_info": "Vous pouvez trouver votre numéro GLN dans le registre officiel suisse de la santé:",
+        "facility_registry_info": "Vous pouvez trouver le numéro GLN de votre établissement dans le registre officiel suisse des entreprises:",
+        "medreg_registry": "Registre Médical Suisse (MEDREG)",
+        "nareg_registry": "Registre Suisse des Pharmaciens (NAREG)",
+        "uid_registry": "Registre Suisse des Entreprises (UID/CHE)"
       },
       "phone": {
         "title": "Vérification Mobile",
@@ -180,6 +200,7 @@
         "back": "Retour",
         "nextStep": "Étape Suivante",
         "sendCode": "Envoyer le Code",
+        "sending": "Envoi...",
         "validate": "Valider",
         "contactAndFinish": "Contacter et Terminer",
         "verifying": "Vérification...",
@@ -253,6 +274,9 @@
       "resetProfileMessage": "Êtes-vous sûr de vouloir réinitialiser votre profil ?",
       "resetConfirm": "Réinitialiser le profil",
       "notifications": {
+        "title": "Notifications",
+        "markAllRead": "Tout marquer comme lu",
+        "noNotifications": "Aucune notification",
         "newEvent": {
           "title": "Nouvel événement",
           "message": "Réunion d'équipe à 15h",
@@ -296,7 +320,10 @@
       "clickHere": "Cliquez ici",
       "toContinue": "pour continuer plus tard",
       "keepGoing": "Continuer",
-      "stopNow": "Arrêter le tutoriel"
+      "stopNow": "Arrêter le tutoriel",
+      "setupRequiredTitle": "Configuration requise",
+      "cannotExit": "Les détails personnels sont obligatoires",
+      "setupRequiredDesc": "Après avoir complété vos détails personnels, vous pourrez choisir l'Accès Équipe pour accéder aux fonctionnalités d'équipe et RH de l'établissement."
     }
   },
   "userMenu": {

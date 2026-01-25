@@ -305,19 +305,22 @@ button:hover .arrow-animate,
 }
 
 @keyframes tutorialButtonPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 237, 135, 0.8);
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 83, 0.8);
   }
+
   50% {
-    box-shadow: 0 0 0 10px rgb(255, 237, 135, 0.1);
+    box-shadow: 0 0 0 10px rgb(255, 215, 83, 0);
   }
 }
 
 .tutorial-highlight {
   position: relative !important;
   border-radius: 0.75rem !important;
-  background-color: rgba(255, 237, 135, 0.226) !important;
-  border: 2px solid rgb(255, 237, 135) !important;
+  background-color: rgba(255, 215, 83, 0.3) !important;
+  border: 2px solid rgb(255, 215, 83) !important;
   animation: tutorialButtonPulse 2s ease-in-out 1s infinite !important;
   z-index: 5 !important;
   pointer-events: auto !important;
@@ -342,7 +345,7 @@ nav:has(.tutorial-highlight) {
   overflow-x: visible !important;
 }
 
-nav:has(.tutorial-highlight) > * {
+nav:has(.tutorial-highlight)>* {
   overflow-x: visible !important;
 }
 
@@ -351,9 +354,21 @@ div:has(.tutorial-highlight) {
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-8px); }
-  40%, 80% { transform: translateX(8px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-8px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(8px);
+  }
 }
 
 .animate-shake {
@@ -425,7 +440,7 @@ input[readonly].banking-masked::placeholder,
 }
 
 .dashboard-sidebar-container-desktop {
-  @apply w-full md:w-[320px] lg:w-[360px];
+  @apply w-[320px] lg:w-[360px];
   overflow: visible !important;
 }
 
@@ -495,7 +510,7 @@ input[readonly].banking-masked::placeholder,
   overflow: visible !important;
 }
 
-.profile-sidebar-tabs > * {
+.profile-sidebar-tabs>* {
   overflow: visible !important;
 }
 
@@ -507,7 +522,7 @@ input[readonly].banking-masked::placeholder,
   overflow: visible !important;
 }
 
-.calendar-sidebar-container > * {
+.calendar-sidebar-container>* {
   overflow: visible !important;
 }
 
@@ -521,7 +536,7 @@ input[readonly].banking-masked::placeholder,
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: hsl(var(--muted-foreground) / 0.3);
   }
@@ -542,8 +557,12 @@ input[readonly].banking-masked::placeholder,
 }
 
 @media (min-width: 1400px) {
-  header > div {
+  header>div {
     max-width: 1400px;
     margin: 0 auto;
   }
+}
+
+.tutorial-highlight.fixed-overlay {
+  position: fixed !important;
 }

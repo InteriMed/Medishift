@@ -1,9 +1,12 @@
 import { collection, getDocs, query, where, orderBy, Timestamp, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect, useCallback } from 'react';
-import { db, auth, functions } from '../../../../services/firebase';
-import { httpsCallable } from 'firebase/functions';
+import { db, auth, firebaseApp } from '../../../../services/firebase';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useTutorial } from '../../../contexts/TutorialContext';
 import { TUTORIAL_IDS } from '../../../../config/tutorialSystem';
+import { DEFAULT_VALUES } from '../../../../config/keysDatabase';
+
+const functions = getFunctions(firebaseApp, DEFAULT_VALUES.FIREBASE_REGION);
 
 const saveEventFunction = httpsCallable(functions, 'saveCalendarEvent');
 const saveRecurringEventsFunction = httpsCallable(functions, 'saveRecurringEvents');
@@ -145,14 +148,20 @@ export const fetchUserEvents = async (userId, accountType = "worker") => {
  * @returns {Promise<Object>} - Result object with success/error status
  */
 export const saveEvent = async (event, userId) => {
+  console.log('[eventDatabase] saveEvent called', { eventId: event.id, userId, eventTitle: event.title });
+  
   // First check permissions and authentication
+  console.log('[eventDatabase] Checking permissions');
   const hasPermission = await checkPermissions(userId);
   if (!hasPermission) {
+    console.error('[eventDatabase] Permission denied', { userId });
     return { success: false, error: 'Permission denied' };
   }
+  console.log('[eventDatabase] Permissions check passed');
 
   try {
     // Prepare event data for Firebase function
+    console.log('[eventDatabase] Preparing event data');
     const eventData = {
       userId: userId,
       title: event.title || 'Available',
@@ -175,21 +184,36 @@ export const saveEvent = async (event, userId) => {
       workAmount: event.workAmount || ''
     };
 
+    console.log('[eventDatabase] Calling saveCalendarEvent function', {
+      userId,
+      title: eventData.title,
+      start: eventData.start,
+      end: eventData.end
+    });
+
     // Use Firebase function for secure server-side validation and saving
     const result = await saveEventFunction(eventData);
+    console.log('[eventDatabase] saveCalendarEvent function returned', { success: result.data?.success, id: result.data?.id });
 
     if (result.data.success) {
+      console.log('[eventDatabase] Event saved successfully', { id: result.data.id });
       return {
         success: true,
         id: result.data.id
       };
     } else {
+      console.error('[eventDatabase] Event save failed', { error: result.data.error });
       return {
         success: false,
         error: result.data.error || 'Failed to save event'
       };
     }
   } catch (error) {
+    console.error('[eventDatabase] Error in saveEvent', {
+      error: error.message,
+      code: error.code,
+      stack: error.stack
+    });
     return {
       success: false,
       error: 'Failed to save event: ' + error.message
@@ -424,6 +448,15 @@ export const updateEvent = async (eventId, event, userId, accountType = 'worker'
     }
 
     const updateEventFunction = httpsCallable(functions, 'updateCalendarEvent');
+    
+    console.log('Calling updateCalendarEvent function', {
+      eventId,
+      userId,
+      accountType: mappedAccountType,
+      functionsRegion: DEFAULT_VALUES.FIREBASE_REGION,
+      expectedURL: `https://${DEFAULT_VALUES.FIREBASE_REGION}-${DEFAULT_VALUES.FIREBASE_PROJECT_ID}.cloudfunctions.net/updateCalendarEvent`
+    });
+    
     const result = await updateEventFunction({
       eventId,
       userId,
@@ -450,11 +483,26 @@ export const updateEvent = async (eventId, event, userId, accountType = 'worker'
 
     return result.data;
   } catch (error) {
-    // Check for specific error types
-    if (error.code === 'functions/not-found') {
+    console.error('updateCalendarEvent error:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      stack: error.stack
+    });
+
+    // Check for HTTP 404 errors (function not deployed or not found)
+    if (error.code === 'functions/not-found' || error.code === 'not-found' || 
+        error.code === '404' ||
+        (error.message && error.message.includes('404')) ||
+        (error.message && error.message.includes('Not Found'))) {
+      console.error('Function endpoint not found. This may indicate:');
+      console.error('1. Function is still deploying (wait 1-2 minutes)');
+      console.error('2. Function name mismatch');
+      console.error('3. Region mismatch');
+      console.error('Expected URL:', `https://${DEFAULT_VALUES.FIREBASE_REGION}-${DEFAULT_VALUES.FIREBASE_PROJECT_ID}.cloudfunctions.net/updateCalendarEvent`);
       return {
         success: false,
-        error: 'Event not found in database. It may have been deleted or moved.'
+        error: 'Function not available. The update function may still be deploying. Please try again in a few moments.'
       };
     }
 
@@ -550,10 +598,14 @@ export const deleteEvent = async (eventId, userId, accountType = 'worker', delet
  * @returns {Promise<Object>} - Result object with success/error status
  */
 export const saveRecurringEvents = async (baseEvent, userId) => {
+  console.log('[eventDatabase] saveRecurringEvents called', { eventId: baseEvent.id, userId });
   try {
+    console.log('[eventDatabase] Checking permissions for recurring events');
     await checkPermissions(userId);
+    console.log('[eventDatabase] Permissions check passed for recurring events');
 
     // Prepare recurring event data for Firebase function
+    console.log('[eventDatabase] Preparing recurring event data');
     const recurringData = {
       userId: userId,
       baseEvent: {
@@ -593,21 +645,41 @@ export const saveRecurringEvents = async (baseEvent, userId) => {
     };
 
     // Use Firebase function for secure server-side recurring event generation
+    console.log('[eventDatabase] Calling saveRecurringEvents function', {
+      userId: recurringData.userId,
+      baseEventId: recurringData.baseEvent.id,
+      repeatValue: recurringData.baseEvent.repeatValue
+    });
     const result = await saveRecurringEventsFunction(recurringData);
+    console.log('[eventDatabase] saveRecurringEvents function returned', {
+      success: result.data?.success,
+      recurrenceId: result.data?.recurrenceId,
+      count: result.data?.count
+    });
 
     if (result.data.success) {
+      console.log('[eventDatabase] Recurring events saved successfully', {
+        recurrenceId: result.data.recurrenceId,
+        count: result.data.count
+      });
       return {
         success: true,
         recurrenceId: result.data.recurrenceId,
         count: result.data.count
       };
     } else {
+      console.error('[eventDatabase] Recurring events save failed', { error: result.data.error });
       return {
         success: false,
         error: result.data.error || 'Failed to save recurring events'
       };
     }
   } catch (error) {
+    console.error('[eventDatabase] Error in saveRecurringEvents', {
+      error: error.message,
+      code: error.code,
+      stack: error.stack
+    });
     return {
       success: false,
       error: 'Failed to save recurring events: ' + error.message

@@ -95,6 +95,21 @@ const CONFIG = {
 };
 
 // ============================================================================
+// CENTRALIZED FUNCTION CONFIGURATION
+// ============================================================================
+
+const FUNCTION_CONFIG = {
+  region: CONFIG.REGION,
+  database: FIRESTORE_DATABASE_NAME,
+  cors: true
+};
+
+const FUNCTION_CONFIG_REQUEST = {
+  region: CONFIG.REGION,
+  cors: true
+};
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -144,6 +159,8 @@ module.exports = {
   ENV_VARS,
   DEFAULT_VALUES,
   CONFIG,
+  FUNCTION_CONFIG,
+  FUNCTION_CONFIG_REQUEST,
   getEnvVar,
   getCollectionName,
   getProjectId

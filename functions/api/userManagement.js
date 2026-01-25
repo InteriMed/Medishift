@@ -1,11 +1,12 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
 
 /**
  * Disables a user in Firebase Auth and updates their Firestore record with ban info.
  */
-exports.disableUser = onCall({ cors: true, database: 'medishift' }, async (request) => {
+exports.disableUser = onCall(FUNCTION_CONFIG, async (request) => {
     if (!request.auth) {
         throw new HttpsError('unauthenticated', 'You must be signed in to disable users');
     }

@@ -6,11 +6,15 @@
   },
   "title": "Contact Us",
   "subtitle": "We're here to help! Whether you have a question, feedback, or need support, please reach out.",
+  "hero": {
+    "badge": "Get in Touch",
+    "title": "Contact Us"
+  },
   "contact": {
     "title": "Contact Us",
     "hero": {
       "title": "Contact InteriMed",
-      "description": "We're here to help! Whether you have a question, feedback, or need support, please reach out. We recommend checking our comprehensive <a href='{{faqLink}}'>FAQ page</a> first, as you might find your answer there quickly. For other inquiries, please use the contact form below or reach out via email. Our team, based in Geneva, aims to respond within 1-2 business days."
+      "description": "We're here to help! Whether you have a question, feedback, or need support, please reach out."
     },
     "form": {
       "title": "Send us a message",
@@ -53,7 +57,9 @@
         "inquiryTypeRequired": "Please select an inquiry type",
         "messageRequired": "Message is required",
         "subjectRequired": "Subject is required",
-        "privacyPolicyRequired": "You must agree to the Privacy Policy"
+        "privacyPolicyRequired": "You must agree to the Privacy Policy",
+        "title": "Error",
+        "submitFailed": "Failed to send message. Please try again."
       }
     },
     "directContact": {
@@ -75,18 +81,23 @@
     "map": {
       "title": "Where to find us"
     },
-    "faqReminder": "Looking for quick answers to common questions about how InteriMed works, pricing, or compliance? Visit our detailed <a href='{{faqLink}}'>FAQ Page</a>!"
+    "faqReminder": "Looking for quick answers to common questions about how InteriMed works?"
   },
   "social": {
     "title": "Follow Us",
-    "description": "Stay connected with InteriMed on social media for the latest updates, healthcare insights, and professional opportunities."
+    "description": "Stay connected with InteriMed on social media for the latest updates.",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram"
   },
   "faq": {
+    "badge": "FAQs",
     "title": "Still Have Questions?",
-    "description": "Check out our comprehensive FAQ section for quick answers to common questions about our services, pricing, and more.",
+    "description": "Check out our comprehensive FAQ section for quick answers to common questions.",
     "button": "Visit FAQ Page"
   },
   "map": {
     "title": "Our Location"
   }
-} 
+}

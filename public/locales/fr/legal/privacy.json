@@ -16,6 +16,13 @@
               "(ci-après \"l'Agence\", \"nous\", \"notre\") s'engage à protéger la confidentialité et la sécurité des données personnelles des personnes qui nous contactent par le biais du formulaire de contact disponible sur notre site web. La présente Politique de Confidentialité vise à vous informer de manière transparente sur la manière dont nous collectons, utilisons, conservons et protégeons vos données personnelles dans ce contexte spécifique, conformément aux lois applicables en matière de protection des données.",
               "Il est essentiel de souligner que cette politique s'applique exclusivement aux données personnelles collectées via le formulaire de contact accessible à l'adresse. Elle ne couvre pas les données personnelles collectées par d'autres moyens (par exemple, candidatures envoyées directement par email, entretiens téléphoniques, données de navigation générales sur notre site web non liées directement à la soumission du formulaire, ou traitement des données des candidats dans le cadre de mandats de recrutement spécifiques, qui font l'objet d'avis de confidentialité distincts).",
               "Nos pratiques sont conformes à la législation suisse en vigueur, notamment la Loi fédérale sur la protection des données (nLPD).1 Compte tenu de notre localisation à Genève et de la nature de nos activités qui peuvent impliquer des interactions avec des personnes situées dans l'Espace Économique Européen (EEE), nous nous efforçons également de respecter les principes et exigences du Règlement Général sur la Protection des Données de l'Union Européenne (RGPD / GDPR) lorsque celui-ci est applicable.3 Cette double approche garantit un niveau élevé de protection pour vos données personnelles. La limitation claire du champ d'application de cette politique au seul formulaire de contact permet d'assurer une information précise et ciblée pour cette interaction spécifique, évitant toute confusion avec les traitements de données plus complexes gérés par l'Agence, tels que ceux relatifs aux dossiers de candidature."
+            ],
+            "section_number": "1",
+            "full_title": "1. Preamble / Introduction",
+            "short_title": "Preamble / Introduction",
+            "content": [
+              "InteriMed (hereinafter \"the Platform\", \"we\", \"us\", \"our\") is committed to protecting the privacy and security of the personal data of individuals who use our services. This Privacy Policy aims to transparently inform you about how we collect, use, store, and protect your personal data, in accordance with applicable data protection laws.",
+              "Our practices comply with current Swiss legislation, notably the Federal Act on Data Protection (nFADP). Given our location in Geneva and the nature of our activities, which may involve interactions with individuals located in the European Economic Area (EEA), we also strive to respect the principles and requirements of the European Union's General Data Protection Regulation (GDPR) where applicable. This dual approach ensures a high level of protection for your personal data."
             ]
           },
           {
@@ -38,6 +45,17 @@
               "[Adresse e-mail directe du DPD]",
               "Actuellement, compte tenu de la nature et du volume limité des données traitées exclusivement via ce formulaire de contact, la désignation formelle d'un Délégué à la Protection des Données (DPD) n'est pas requise au regard de la nLPD et du RGPD.5 Le traitement des informations via ce formulaire (principalement noms, coordonnées et contenu des messages) ne constitue généralement pas une activité à haut risque ou à grande échelle justifiant une telle désignation obligatoire pour une entreprise de notre taille dans ce contexte précis.2 Cela n'affecte en rien notre engagement envers la protection de vos données. Pour toute question ou exercice de vos droits, veuillez utiliser les coordonnées générales de contact mentionnées ci-dessus.7",
               "La mise à disposition de coordonnées claires et directes est essentielle pour assurer la transparence et vous permettre d'exercer facilement vos droits en matière de protection des données.2"
+            ],
+            "section_number": "2",
+            "full_title": "2. Identity and Contact Details of the Data Controller",
+            "short_title": "Identity and Contact Details of the Data Controller",
+            "content": [
+              "The data controller for your personal data is:",
+              "InteriMed",
+              "Geneva, Switzerland",
+              "For any questions regarding the protection of your personal data or to exercise your rights, you can contact us at:",
+              "Email: privacy@interimed.ai",
+              "Currently, the formal designation of a Data Protection Officer (DPO) is not required under the nFADP and GDPR for our specific context. This in no way affects our commitment to protecting your data."
             ]
           },
           {
@@ -53,6 +71,18 @@
               "Le contenu de votre message / votre requête",
               "Il est important de noter que si vous choisissez d'inclure volontairement d'autres informations personnelles dans le champ de texte libre de votre message, ces informations seront également collectées et traitées par nos services afin de pouvoir répondre à votre demande.8",
               "Nous vous prions de ne pas inclure de données personnelles sensibles dans le formulaire de contact, sauf si cela est strictement nécessaire et pertinent pour votre demande spécifique. Les données sensibles comprennent, selon la nLPD et le RGPD, des informations sur les opinions politiques, les convictions religieuses ou philosophiques, l'appartenance syndicale, la santé, la vie sexuelle ou l'orientation sexuelle, ainsi que les données génétiques ou biométriques permettant de vous identifier de manière unique.2 La soumission de telles données via ce formulaire général n'est pas encouragée, car il n'est pas spécifiquement conçu pour leur traitement sécurisé et cela nécessiterait des mesures de protection et de consentement renforcées. En limitant les données partagées au strict nécessaire, vous contribuez à la minimisation des données et à la réduction des risques."
+            ],
+            "section_number": "3",
+            "full_title": "3. Personal Data Collected",
+            "short_title": "Personal Data Collected",
+            "content": [
+              "We collect the following categories of personal data:",
+              "Identity Data: Full name, date of birth, gender, nationality.",
+              "Contact Data: Email address, phone number, residential address.",
+              "Professional Data: CVs, diplomas, work certificates, professional licenses (GLN/MedReg), employment history.",
+              "Financial Data: IBAN, AVS number, billing information.",
+              "Technical Data: IP address, login data, browser type, usage patterns.",
+              "We kindly ask you not to include sensitive personal data unless it is strictly necessary for your professional profile. Sensitive data includes information about religious beliefs, health, or criminal records, which require enhanced protection."
             ]
           },
           {
@@ -66,6 +96,18 @@
               "Gestion Précontractuelle : Si votre demande concerne nos services de placement ou de location de services (par exemple, une entreprise souhaitant collaborer avec nous), utiliser vos données pour gérer les échanges précontractuels et assurer le suivi nécessaire.",
               "Tenue de Registres Internes : Conserver une trace de nos communications à des fins administratives internes, pour assurer le suivi de la qualité de nos services et pour répondre à d'éventuelles obligations légales de documentation.",
               "Nous tenons à souligner que les données collectées par le biais de ce formulaire de contact ne seront pas utilisées à des fins de marketing direct ou de prospection commerciale non sollicitée, à moins que vous n'ayez donné votre consentement explicite et séparé pour de telles communications (par exemple, en vous inscrivant volontairement à notre newsletter via un mécanisme distinct). Ce respect strict de la finalité initiale de votre prise de contact est conforme aux principes fondamentaux de la nLPD et du RGPD 2 et permet de distinguer clairement ce traitement de celui, plus approfondi, des données de candidats dans le cadre de nos mandats de recrutement."
+            ],
+            "section_number": "4",
+            "full_title": "4. Purposes of Processing",
+            "short_title": "Purposes of Processing",
+            "content": [
+              "Your personal data is used for the following purposes:",
+              "Service Provision: Facilitating connections between healthcare facilities and professionals.",
+              "Profile Management: Creating and maintaining your professional or facility profile.",
+              "Contract Management: Facilitating the creation and signing of assignment contracts.",
+              "Compliance: Verifying professional qualifications and meeting legal obligations (e.g., LSE compliance).",
+              "Communication: Responding to inquiries and providing platform updates.",
+              "Security: Protecting the platform and users against fraud and unauthorized access."
             ]
           },
           {
@@ -78,6 +120,16 @@
               "Nos Intérêts Légitimes (Art. 31 al. 1 nLPD ; Art. 6(1)(f) RGPD) : Nous avons un intérêt légitime à traiter vos données pour pouvoir répondre efficacement à votre sollicitation, assurer une communication fluide et professionnelle, et conserver des archives de nos échanges pour une bonne administration interne. Cet intérêt est considéré comme prépondérant par rapport à vos propres intérêts ou libertés et droits fondamentaux, étant donné que vous initiez le contact et avez une attente raisonnable de recevoir une réponse. Le traitement est limité à ce qui est nécessaire pour atteindre ces objectifs légitimes.5",
               "L'Exécution de Mesures Précontractuelles (Art. 31 al. 2 let. a nLPD ; Art. 6(1)(b) RGPD) : Si votre demande via le formulaire de contact constitue une démarche en vue d'établir une relation contractuelle avec notre Agence (par exemple, une demande d'information sur nos services de recrutement par une entreprise cliente potentielle), le traitement de vos données est nécessaire à l'exécution de ces mesures précontractuelles prises à votre demande.",
               "L'utilisation de ces différentes bases juridiques, le cas échéant, assure une justification solide et conforme pour le traitement de vos données dans le cadre spécifique du formulaire de contact, même dans l'hypothèse où le consentement initial serait retiré."
+            ],
+            "section_number": "5",
+            "full_title": "5. Legal Bases for Processing",
+            "short_title": "Legal Bases for Processing",
+            "content": [
+              "The processing of your data is based on:",
+              "Contract Performance: Necessary to provide the services defined in our Terms of Service.",
+              "Legal Obligation: Required by Swiss law (e.g., labor laws, tax regulations).",
+              "Legitimate Interests: Improving our services and ensuring platform security.",
+              "Consent: When you explicitly agree to specific processing (e.g., newsletter subscription)."
             ]
           },
           {
@@ -90,6 +142,15 @@
               "Correspondance Commerciale et Obligations Légales : Si votre prise de contact et les échanges qui s'ensuivent constituent une correspondance commerciale (par exemple, échanges avec un client potentiel, discussions précontractuelles), les données pertinentes peuvent être conservées conformément aux obligations légales suisses en matière de conservation des documents commerciaux. En particulier, l'article 958f du Code des Obligations suisse impose une durée de conservation de dix (10) ans pour les livres et pièces comptables, ce qui peut inclure certaines correspondances commerciales.7",
               "Absence de Nécessité : Dans tous les cas, dès que vos données personnelles ne sont plus nécessaires pour les finalités décrites à la section 4 et qu'aucune obligation légale ou intérêt légitime prépondérant ne justifie une conservation plus longue, elles seront supprimées de manière sécurisée ou anonymisées.8",
               "Cette approche différenciée de la durée de conservation assure que nous ne conservons pas vos données plus longtemps que nécessaire, tout en respectant nos obligations légales."
+            ],
+            "section_number": "6",
+            "full_title": "6. Data Retention Period",
+            "short_title": "Data Retention Period",
+            "content": [
+              "We retain your data only as long as necessary:",
+              "Active Accounts: For the duration of your registration on the platform.",
+              "Legal Obligations: Business records and contracts are retained for 10 years as required by the Swiss Code of Obligations (Art. 958f).",
+              "Inactive Data: Non-essential data is deleted or anonymized after account closure, subject to legal retention requirements."
             ]
           },
           {
@@ -104,6 +165,14 @@
               "Transferts Internationaux de Données : Il est possible que les données personnelles collectées via ce formulaire soient traitées ou stockées par nos prestataires de services dans des pays situés en dehors de la Suisse ou de l'Espace Économique Européen (EEE), notamment lors de l'utilisation de solutions cloud courantes.Si un transfert a lieu vers un pays dont la législation assure un niveau de protection des données jugé adéquat par le Conseil fédéral suisse (conformément à la liste publiée dans l'Annexe 1 de l'Ordonnance sur la protection des données - OPDo) et/ou par la Commission Européenne, aucune garantie supplémentaire n'est requise.15 Les pays de l'EEE, le Royaume-Uni (sous conditions), le Canada (pour les organisations sous LPRPDE), entre autres, sont généralement considérés comme adéquats.17",
               "Si un transfert a lieu vers un pays ne disposant pas d'un niveau de protection adéquat (par exemple, les États-Unis, selon les prestataires et le cadre légal en vigueur), nous nous assurons que des garanties appropriées sont mises en place pour protéger vos données. Ces garanties consistent principalement en l'utilisation de Clauses Contractuelles Types (CCT) approuvées ou reconnues par le Préposé Fédéral à la Protection des Données et à la Transparence (PFPDT) et/ou par la Commission Européenne.15 Si nécessaire, des mesures supplémentaires techniques ou organisationnelles peuvent être implémentées suite à une évaluation de l'impact du transfert, afin d'assurer un niveau de protection équivalent à celui garanti en Suisse et dans l'EEE.",
               "Nous nous engageons à assurer la protection de vos données personnelles, quel que soit le lieu de leur traitement."
+            ],
+            "section_number": "7",
+            "full_title": "7. Data Sharing and International Transfers",
+            "short_title": "Data Sharing and International Transfers",
+            "content": [
+              "Internal Access: Limited to authorized staff on a need-to-know basis.",
+              "Service Providers: We use trusted partners for hosting, payments, and e-signatures. They are contractually bound to protect your data.",
+              "International Transfers: Data is primarily stored in Switzerland. If transferred abroad, we ensure an adequate level of protection through adequacy decisions or Standard Contractual Clauses (SCCs)."
             ]
           },
           {
@@ -131,6 +200,14 @@
               "CH - 3003 Berne",
               "Site web : https://www.edoeb.admin.ch",
               "Si vous résidez dans l'EEE, vous pouvez également contacter l'autorité de protection des données de votre pays de résidence."
+            ],
+            "section_number": "8",
+            "full_title": "8. Your Rights",
+            "short_title": "Your Rights",
+            "content": [
+              "You have the right to access, rectify, or erase your data. You may also object to processing, request data portability, or withdraw consent at any time.",
+              "To exercise your rights, contact us at privacy@interimed.ai.",
+              "You also have the right to lodge a complaint with the Federal Data Protection and Information Commissioner (FDPIC)."
             ]
           },
           {
@@ -146,6 +223,12 @@
               "Des accords de confidentialité avec notre personnel et nos prestataires de services.",
               "Des examens réguliers de nos pratiques de sécurité et la mise à jour des mesures en fonction de l'évolution des menaces et des technologies.",
               "Cependant, il est important de reconnaître qu'aucune transmission de données sur Internet ou méthode de stockage électronique n'est totalement infaillible. Bien que nous nous efforcions d'utiliser des moyens commercialement acceptables pour protéger vos données personnelles, nous ne pouvons garantir leur sécurité absolue.8 En soumettant vos informations via le formulaire de contact, vous reconnaissez les risques inhérents à la communication en ligne."
+            ],
+            "section_number": "9",
+            "full_title": "9. Data Security",
+            "short_title": "Data Security",
+            "content": [
+              "We implement robust technical and organizational measures, including encryption (HTTPS/TLS) and strict access controls, to protect your data against unauthorized access or loss."
             ]
           },
           {
@@ -179,7 +262,8 @@
           }
         ],
         "document_title": "Document_title",
-        "last_updated_full_text": "Last_updated_full_text"
+        "last_updated_full_text": "Last_updated_full_text",
+        "date_of_last_update": "January 22, 2026"
       }
     }
   },

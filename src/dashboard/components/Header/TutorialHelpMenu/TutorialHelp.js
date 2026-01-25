@@ -8,12 +8,12 @@ import styles from './TutorialHelp.module.css';
  * A help button to be placed in the header that allows users to access the tutorial at any time
  */
 const TutorialHelp = () => {
-  const { startTutorial } = useTutorial();
-  
+  const { setShowTutorialSelectionModal } = useTutorial();
+
   return (
-    <button 
+    <button
       className={styles.helpButton}
-      onClick={() => startTutorial('dashboard')}
+      onClick={() => setShowTutorialSelectionModal(true)}
       title="Start tutorial"
       aria-label="Start tutorial"
     >

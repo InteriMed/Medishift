@@ -63,16 +63,26 @@ const ConversationItem = ({ conversation, isSelected, onClick }) => {
           ? "bg-primary/10"
           : "bg-muted/30"
       )}>
-        {conversation.photoURL ? (
-          <img
-            src={conversation.photoURL}
-            alt={displayName}
-            className="w-full h-full object-cover"
-          />
+        {conversation.isTeamChat || conversation.type === 'internal_team' ? (
+          <div className="grid grid-cols-2 gap-0.5 w-full h-full p-1">
+            {conversation.participantInfo?.slice(0, 4).map((p, i) => (
+              <div key={i} className="bg-primary/20 rounded-full flex items-center justify-center text-[6px] font-bold overflow-hidden">
+                {p.photoURL ? <img src={p.photoURL} alt="" className="w-full h-full object-cover" /> : p.displayName?.charAt(0)}
+              </div>
+            ))}
+          </div>
         ) : (
-          <span className="text-lg font-bold" style={{ color: isSelected ? 'var(--primary-color)' : 'var(--text-light-color)' }}>
-            {displayName.charAt(0).toUpperCase()}
-          </span>
+          conversation.photoURL ? (
+            <img
+              src={conversation.photoURL}
+              alt={displayName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-lg font-bold" style={{ color: isSelected ? 'var(--primary-color)' : 'var(--text-light-color)' }}>
+              {displayName.charAt(0).toUpperCase()}
+            </span>
+          )
         )}
       </div>
 

@@ -27,7 +27,7 @@ const styles = {
   mandatoryFieldLegend: "text-xs",
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   mandatoryMark: "text-destructive",
-  sectionsWrapper: "grid grid-cols-1 lg:grid-cols-2 gap-4 w-full max-w-[1400px] mx-auto",
+  sectionsWrapper: "settings-sections-wrapper w-full max-w-[1400px] mx-auto",
   sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
   cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
   cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
@@ -74,12 +74,12 @@ const Settings = ({
 
   const isPremium = currentSubscription === 'premium';
 
-  const fieldsToRender = useMemo(() => config?.fields?.settings || [], [config]);
+  const fieldsToRender = useMemo(() => config?.fields?.marketplace || [], [config]);
 
   useAutoSave({
     formData,
     config,
-    activeTab: 'settings',
+    activeTab: 'marketplace',
     onInputChange,
     onSave,
     getNestedValue,
@@ -208,16 +208,31 @@ const Settings = ({
           const isBankingAccess = name === 'banking.access';
           const requiresPremium = isBankingAccess;
           const isDisabled = requiresPremium && !isPremium;
+          const descriptionKey = fieldConfig.descriptionKey;
           
           return (
             <div key={name} className="relative">
               <Switch
-                label={label}
+                label={
+                  name === 'isActiveOnMarketplace'
+                    ? (
+                      <span className="inline-flex items-center gap-2" style={{ color: 'var(--logo-1)' }}>
+                        <span>{label}</span>
+                        <FiInfo className="w-3.5 h-3.5" />
+                      </span>
+                    )
+                    : label
+                }
                 checked={!!value}
                 onChange={(newValue) => onInputChange(name, newValue)}
                 marginBottom="0"
                 disabled={isDisabled}
               />
+              {descriptionKey && (
+                <p className="mt-2 text-xs" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                  {t(descriptionKey)}
+                </p>
+              )}
               {requiresPremium && !isPremium && (
                 <div className="mt-2 p-3 rounded-lg border-2 flex items-center gap-2" style={{ borderColor: '#D4AF37', backgroundColor: 'rgba(212, 175, 55, 0.05)' }}>
                   <FiZap className="w-4 h-4 flex-shrink-0" style={{ color: '#D4AF37' }} />
@@ -306,6 +321,23 @@ const Settings = ({
 
   return (
     <div className={styles.sectionContainer}>
+      <style>{`
+        .settings-container {
+          container-type: inline-size;
+        }
+
+        .settings-sections-wrapper {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+        }
+
+        @container (max-width: 700px) {
+          .settings-sections-wrapper {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
       <div className={styles.headerCard}>
         <div className="flex flex-col gap-1 flex-1">
           <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('settings.title')}</h2>
@@ -313,21 +345,21 @@ const Settings = ({
         </div>
       </div>
 
-      <div className={styles.sectionsWrapper}>
-        {/* Platform Settings */}
-        {platformSettingsWithoutNotes.length > 0 && (
-          <div className={styles.sectionCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardIconWrapper}><FiSettings className="w-4 h-4" style={styles.cardIconStyle} /></div>
-              <div className={styles.cardTitle}>
-                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.platformSettingsTitle')}</h3>
+      <div className="settings-container w-full max-w-[1400px] mx-auto">
+        <div className={styles.sectionsWrapper}>
+          {platformSettingsWithoutNotes.length > 0 && (
+            <div className={styles.sectionCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardIconWrapper}><FiSettings className="w-4 h-4" style={styles.cardIconStyle} /></div>
+                <div className={styles.cardTitle}>
+                  <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.platformSettingsTitle')}</h3>
+                </div>
+              </div>
+              <div className={styles.grid}>
+                {platformSettingsWithoutNotes.map(renderField)}
               </div>
             </div>
-            <div className={styles.grid}>
-              {platformSettingsWithoutNotes.map(renderField)}
-            </div>
-          </div>
-        )}
+          )}
 
         {/* Privacy Settings */}
         {groupedFields.privacy && (
@@ -389,20 +421,20 @@ const Settings = ({
           </div>
         )}
 
-        {/* Notes Section */}
-        {notesField && (
-          <div className={styles.sectionCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardIconWrapper}><FiInfo className="w-4 h-4" style={styles.cardIconStyle} /></div>
-              <div className={styles.cardTitle}>
-                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilityNotes')}</h3>
+          {notesField && (
+            <div className={styles.sectionCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardIconWrapper}><FiInfo className="w-4 h-4" style={styles.cardIconStyle} /></div>
+                <div className={styles.cardTitle}>
+                  <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilityNotes')}</h3>
+                </div>
+              </div>
+              <div className={styles.grid}>
+                {renderField(notesField)}
               </div>
             </div>
-            <div className={styles.grid}>
-              {renderField(notesField)}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -412,7 +444,7 @@ Settings.propTypes = {
   formData: PropTypes.object.isRequired,
   config: PropTypes.shape({
     fields: PropTypes.shape({
-      settings: PropTypes.array
+      marketplace: PropTypes.array
     })
   }).isRequired,
   errors: PropTypes.object.isRequired,

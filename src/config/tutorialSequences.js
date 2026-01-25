@@ -32,10 +32,10 @@ export const TUTORIAL_SEQUENCES = {
             { 
                 id: TUTORIAL_IDS.MARKETPLACE, 
                 skippable: true,
-                nextTutorial: TUTORIAL_IDS.SETTINGS
+                nextTutorial: TUTORIAL_IDS.ACCOUNT
             },
             { 
-                id: TUTORIAL_IDS.SETTINGS, 
+                id: TUTORIAL_IDS.ACCOUNT, 
                 skippable: true,
                 nextTutorial: null
             }
@@ -80,10 +80,10 @@ export const TUTORIAL_SEQUENCES = {
             { 
                 id: TUTORIAL_IDS.ORGANIZATION, 
                 skippable: true,
-                nextTutorial: TUTORIAL_IDS.SETTINGS
+                nextTutorial: TUTORIAL_IDS.ACCOUNT
             },
             { 
-                id: TUTORIAL_IDS.SETTINGS, 
+                id: TUTORIAL_IDS.ACCOUNT, 
                 skippable: true,
                 nextTutorial: null
             }

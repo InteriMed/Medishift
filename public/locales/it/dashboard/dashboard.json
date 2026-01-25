@@ -65,6 +65,9 @@
       "resetProfileMessage": "Sei sicuro di voler reimpostare il tuo profilo?",
       "resetConfirm": "Reimposta profilo",
       "notifications": {
+        "title": "Notifiche",
+        "markAllRead": "Segna tutte come lette",
+        "noNotifications": "Nessuna notifica",
         "newEvent": {
           "title": "Nuovo evento",
           "message": "Riunione di team alle 15:00",
@@ -201,7 +204,21 @@
       "success": {
         "verified_title": "Account Verificato con Successo!",
         "professional_redirect": "Il tuo profilo professionale è ora attivo. Reindirizzamento per completare la configurazione del profilo...",
-        "facility_redirect": "Il tuo profilo struttura è ora attivo. Reindirizzamento per completare la configurazione del profilo..."
+        "facility_redirect": "Il tuo profilo struttura è ora attivo. Reindirizzamento per completare la configurazione del profilo...",
+        "dialog_title": "Profilo Verificato",
+        "professional_message": "Il tuo profilo professionale è stato verificato con successo. Ora puoi accedere a tutte le funzionalità della piattaforma.",
+        "facility_message": "Il tuo profilo struttura è stato verificato con successo. Ora puoi accedere a tutte le funzionalità della piattaforma."
+      },
+      "gln_info": {
+        "title": "Dove trovare il tuo GLN",
+        "facility_title": "Dove trovare il GLN della tua struttura",
+        "where_to_find": "Dove trovare il tuo GLN?",
+        "where_to_find_facility": "Dove trovare il GLN della tua struttura?",
+        "registry_info": "Puoi trovare il tuo numero GLN nel registro ufficiale svizzero della sanità:",
+        "facility_registry_info": "Puoi trovare il numero GLN della tua struttura nel registro ufficiale svizzero delle imprese:",
+        "medreg_registry": "Registro Medico Svizzero (MEDREG)",
+        "nareg_registry": "Registro Svizzero dei Farmacisti (NAREG)",
+        "uid_registry": "Registro Svizzero delle Imprese (UID/CHE)"
       },
       "phone": {
         "title": "Verifica Mobile",

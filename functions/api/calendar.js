@@ -9,6 +9,9 @@ const cors = require('cors')({ origin: true });
 // Import centralized database instance configured for medishift
 const db = require('../database/db');
 
+// Import centralized configuration
+const { FUNCTION_CONFIG, FUNCTION_CONFIG_REQUEST } = require('../config/keysDatabase');
+
 /**
  * EVENT PERMISSION HELPERS
  */
@@ -347,7 +350,7 @@ async function acceptEmployeeRequestAndCreatePostings(requestId, requestType, ac
   }
 }
 
-exports.acceptEmployeeRequest = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.acceptEmployeeRequest = onCall(FUNCTION_CONFIG, async (request) => {
   const data = request.data;
   const context = { auth: request.auth };
 
@@ -480,7 +483,7 @@ async function canViewEvent(eventDoc, userId) {
 /**
  * Save a calendar event (availability)
  */
-exports.saveCalendarEvent = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.saveCalendarEvent = onCall(FUNCTION_CONFIG, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -766,7 +769,7 @@ exports.saveCalendarEvent = onCall({ database: 'medishift', cors: true }, async 
 /**
  * Update a calendar event
  */
-exports.updateCalendarEvent = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.updateCalendarEvent = onCall(FUNCTION_CONFIG, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -796,9 +799,15 @@ exports.updateCalendarEvent = onCall({ database: 'medishift', cors: true }, asyn
       throw new HttpsError('invalid-argument', 'Event ID is required');
     }
 
-    const collectionName = accountType === 'manager' ? 'jobs-listing' : 'events';
-    const eventRef = db.collection(collectionName).doc(eventId);
-    const eventDoc = await eventRef.get();
+    let collectionName = accountType === 'manager' ? 'jobs-listing' : 'events';
+    let eventRef = db.collection(collectionName).doc(eventId);
+    let eventDoc = await eventRef.get();
+
+    if (!eventDoc.exists && accountType !== 'manager') {
+      collectionName = 'availability';
+      eventRef = db.collection(collectionName).doc(eventId);
+      eventDoc = await eventRef.get();
+    }
 
     if (!eventDoc.exists) {
       throw new HttpsError('not-found', 'Event not found');
@@ -887,6 +896,18 @@ exports.updateCalendarEvent = onCall({ database: 'medishift', cors: true }, asyn
         );
         updateData.permissions = updatedPermissions;
       }
+    } else if (collectionName === 'availability') {
+      if (canton !== undefined) updateData.locationCountry = canton;
+      if (area !== undefined) updateData.LocationArea = area;
+      if (languages !== undefined) updateData.languages = languages;
+      if (experience !== undefined) updateData.experience = experience;
+      if (software !== undefined) updateData.software = software;
+      if (certifications !== undefined) updateData.certifications = certifications;
+      if (workAmount !== undefined) updateData.workAmount = workAmount;
+      if (isAvailability !== undefined) updateData.isAvailability = isAvailability;
+      if (isValidated !== undefined) updateData.isValidated = isValidated;
+      if (notes !== undefined) updateData.notes = notes;
+      if (location !== undefined) updateData.location = location;
     }
 
     // Validate date order if both dates are being updated
@@ -928,7 +949,7 @@ exports.updateCalendarEvent = onCall({ database: 'medishift', cors: true }, asyn
 /**
  * Delete a calendar event
  */
-exports.deleteCalendarEvent = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.deleteCalendarEvent = onCall(FUNCTION_CONFIG, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -1096,7 +1117,7 @@ exports.deleteCalendarEvent = onCall({ database: 'medishift', cors: true }, asyn
 /**
  * Save recurring calendar events
  */
-exports.saveRecurringEvents = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.saveRecurringEvents = onCall(FUNCTION_CONFIG, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -1604,7 +1625,7 @@ function generateRecurringDates(startDate, repeatValue, endRepeatValue, endRepea
 }
 
 // Legacy calendar sync endpoint (keep for backward compatibility)
-exports.calendarSync = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.calendarSync = onCall(FUNCTION_CONFIG, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };
@@ -1667,7 +1688,7 @@ exports.calendarSync = onCall({ database: 'medishift', cors: true }, async (requ
 });
 
 // HTTP version for external services
-exports.calendarWebhook = onRequest({ region: 'europe-west6', cors: true }, (req, res) => {
+exports.calendarWebhook = onRequest(FUNCTION_CONFIG_REQUEST, (req, res) => {
   return cors(req, res, async () => {
     try {
       // Only allow POST method
@@ -1719,7 +1740,7 @@ async function verifyApiKey(apiKey) {
  * Check for conflicts and create event (comprehensive validation)
  * Updated to use onRequest with CORS for better compatibility
  */
-exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true }, async (req, res) => {
+exports.checkAndCreateEventHTTP = onRequest(FUNCTION_CONFIG_REQUEST, async (req, res) => {
   // Enable CORS
   cors(req, res, async () => {
     try {
@@ -1959,7 +1980,7 @@ exports.checkAndCreateEventHTTP = onRequest({ region: 'europe-west6', cors: true
  * Check for conflicts and create event (comprehensive validation)
  * @deprecated - Use checkAndCreateEventHTTP instead for better CORS support
  */
-exports.checkAndCreateEvent = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.checkAndCreateEvent = onCall(FUNCTION_CONFIG, async (request) => {
   // V2 compatibility shim
   const data = request.data;
   const context = { auth: request.auth };

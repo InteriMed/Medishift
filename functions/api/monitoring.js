@@ -8,7 +8,9 @@ const admin = require('firebase-admin');
 /**
  * Log client-side error to Firestore and Firebase Error Reporting
  */
-exports.logClientError = onCall({ database: 'medishift', cors: true }, async (request) => {
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+
+exports.logClientError = onCall(FUNCTION_CONFIG, async (request) => {
   try {
     // Extract error information
     const { error, errorInfo, metadata } = request.data;

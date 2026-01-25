@@ -5,7 +5,9 @@ const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
 
 // Export user data
-exports.exportData = onCall({ database: 'medishift', cors: true }, async (request) => {
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+
+exports.exportData = onCall(FUNCTION_CONFIG, async (request) => {
   // Ensure user is authenticated
   if (!request.auth) {
     throw new HttpsError(
@@ -98,7 +100,7 @@ exports.exportData = onCall({ database: 'medishift', cors: true }, async (reques
 });
 
 // Import data
-exports.importData = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.importData = onCall(FUNCTION_CONFIG, async (request) => {
   // Ensure user is authenticated
   if (!request.auth) {
     throw new HttpsError(

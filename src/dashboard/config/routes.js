@@ -11,6 +11,7 @@ const Profile = lazy(() => import('../pages/profile/Profile'));
 const Marketplace = lazy(() => import('../pages/marketplace/Marketplace'));
 const PayrollDashboard = lazy(() => import('../pages/payroll/PayrollDashboard'));
 const OrganizationDashboard = lazy(() => import('../pages/organization/OrganizationDashboard'));
+const PricingPage = lazy(() => import('../pages/pricing/PricingPage'));
 
 // Admin pages
 const ExecutiveDashboard = lazy(() => import('../admin/pages/ExecutiveDashboard'));
@@ -23,6 +24,7 @@ const AccountsReceivable = lazy(() => import('../admin/pages/finance/AccountsRec
 const BalanceSheet = lazy(() => import('../admin/pages/finance/BalanceSheet'));
 const AuditLogs = lazy(() => import('../admin/pages/system/AuditLogs'));
 const NotificationsCenter = lazy(() => import('../admin/pages/system/NotificationsCenter'));
+const RolesAndPermissions = lazy(() => import('../admin/pages/system/RolesAndPermissions'));
 const PayrollExport = lazy(() => import('../admin/pages/payroll/PayrollExport'));
 const EmployeeManagement = lazy(() => import('../admin/pages/management/EmployeeManagement'));
 const LinkedInJobScraper = lazy(() => import('../admin/pages/operations/LinkedInJobScraper'));
@@ -75,6 +77,14 @@ export const SHARED_ROUTES = [
     access: ACCESS_TYPES.ALL,
     label: 'Profile',
     icon: 'User',
+  },
+  {
+    id: 'pricing',
+    path: 'pricing',
+    component: PricingPage,
+    access: ACCESS_TYPES.ALL,
+    label: 'Pricing',
+    icon: 'DollarSign',
   },
 ];
 
@@ -227,6 +237,15 @@ export const ADMIN_ROUTES = [
     permission: PERMISSIONS.VIEW_AUDIT_LOGS,
     label: 'Audit Logs',
     icon: 'AlertCircle',
+  },
+  {
+    id: 'admin-roles-permissions',
+    path: 'system/roles-permissions',
+    component: RolesAndPermissions,
+    access: ACCESS_TYPES.ADMIN,
+    permission: PERMISSIONS.VIEW_AUDIT_LOGS,
+    label: 'Roles & Permissions',
+    icon: 'Shield',
   },
   {
     id: 'admin-notifications',

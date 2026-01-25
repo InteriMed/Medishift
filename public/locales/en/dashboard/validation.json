@@ -22,5 +22,6 @@
   "profileSaved": "Profile saved successfully!",
   "minItemsRequired": "At least one item is required",
   "errorFixFieldsBeforeContinuing": "Please fix the errors before continuing",
-  "completePreviousSteps": "Please complete the previous steps before accessing this tab"
+  "completePreviousSteps": "Please complete the previous steps before accessing this tab",
+  "workPermitDocumentRequired": "Work permit document is required. Please upload it in the Documents tab."
 }

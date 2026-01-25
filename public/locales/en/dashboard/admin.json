@@ -326,5 +326,22 @@
       "geneva": "Geneva",
       "cancel": "Cancel"
     }
+  },
+  "email": {
+    "title": "Email Center",
+    "subtitle": "Send emails, respond to support requests, and manage team invitations",
+    "compose": "Compose",
+    "history": "History",
+    "inbox": "Inbox",
+    "outlook": "Outlook",
+    "reply": "Reply",
+    "noTickets": "No Support Tickets",
+    "noTicketsDesc": "New support requests will appear here",
+    "selectRole": "Select a role...",
+    "noEmailsYet": "No emails sent yet"
+  },
+  "emailCenter": {
+    "title": "Email Center",
+    "subtitle": "Send emails, respond to support requests, and manage team invitations"
   }
 }

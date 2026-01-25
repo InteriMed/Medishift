@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer');
 
 // Import centralized database instance configured for medishift
 const db = require('../database/db');
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
 
 const INVITATION_EXPIRY_DAYS = 30;
 
@@ -14,7 +15,7 @@ function generateDeterministicToken(facilityId, roleId, workerId) {
   return crypto.createHash('sha256').update(input).digest('hex').substring(0, 32);
 }
 
-exports.generateFacilityRoleInvitation = onCall({ cors: true, database: 'medishift' }, async (request) => {
+exports.generateFacilityRoleInvitation = onCall(FUNCTION_CONFIG, async (request) => {
   try {
     if (!db) {
       throw new Error('Firestore database not initialized');
@@ -155,7 +156,7 @@ exports.generateFacilityRoleInvitation = onCall({ cors: true, database: 'medishi
   }
 });
 
-exports.getInvitationDetails = onCall({ cors: true, database: 'medishift' }, async (request) => {
+exports.getInvitationDetails = onCall(FUNCTION_CONFIG, async (request) => {
   const data = request.data;
 
   try {
@@ -215,7 +216,7 @@ exports.getInvitationDetails = onCall({ cors: true, database: 'medishift' }, asy
   }
 });
 
-exports.acceptFacilityInvitation = onCall({ cors: true, database: 'medishift' }, async (request) => {
+exports.acceptFacilityInvitation = onCall(FUNCTION_CONFIG, async (request) => {
   const data = request.data;
   const context = { auth: request.auth };
 
@@ -399,7 +400,7 @@ exports.acceptFacilityInvitation = onCall({ cors: true, database: 'medishift' },
  * Invites a new admin employee by email
  * Sends an email with an invitation link/code
  */
-exports.inviteAdminEmployee = onCall({ cors: true, region: 'europe-west6', database: 'medishift' }, async (request) => {
+exports.inviteAdminEmployee = onCall(FUNCTION_CONFIG, async (request) => {
   logger.info("inviteAdminEmployee called", { structuredData: true });
 
   if (!request.auth) {
@@ -541,7 +542,7 @@ exports.inviteAdminEmployee = onCall({ cors: true, region: 'europe-west6', datab
   }
 });
 
-exports.acceptAdminInvitation = onCall({ cors: true, region: 'europe-west6', database: 'medishift' }, async (request) => {
+exports.acceptAdminInvitation = onCall(FUNCTION_CONFIG, async (request) => {
   logger.info("acceptAdminInvitation called", { structuredData: true });
 
   if (!request.auth) {
@@ -642,7 +643,7 @@ exports.acceptAdminInvitation = onCall({ cors: true, region: 'europe-west6', dat
   }
 });
 
-exports.getAdminInvitationDetails = onCall({ cors: true, region: 'europe-west6', database: 'medishift' }, async (request) => {
+exports.getAdminInvitationDetails = onCall(FUNCTION_CONFIG, async (request) => {
   const { invitationToken } = request.data;
 
   if (!invitationToken) {

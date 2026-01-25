@@ -183,7 +183,7 @@ function InputFieldHideUnhide({ label, placeholder, value, onChange, marginTop, 
                         onClick={togglePasswordVisibility}
                         style={{
                             color: internalError ? 'var(--red-3)' : 'inherit',
-                            right: '15px'
+                            right: '30px'
                         }}
                         tabIndex={-1}
                     >

@@ -55,6 +55,9 @@
       },
       "search": "Search...",
       "notifications": {
+        "title": "Notifications",
+        "markAllRead": "Mark all as read",
+        "noNotifications": "No notifications",
         "newEvent": {
           "title": "New Event",
           "message": "Team meeting at 3 PM",
@@ -142,6 +145,12 @@
           }
         }
       },
+      "gln_verified": {
+        "title": "GLN Verified",
+        "desc": "Your GLN {{gln}} has been recognized from your professional profile.",
+        "facility_desc": "Your account is already GLN certified. You can proceed with the onboarding.",
+        "status": "Identity Confirmed"
+      },
       "step2": {
         "title": "Select Your Role",
         "description": "Choose the option that best describes your situation",
@@ -224,7 +233,21 @@
       "success": {
         "verified_title": "Account Successfully Verified!",
         "professional_redirect": "Your professional profile is now active. Redirecting to complete your profile setup...",
-        "facility_redirect": "Your facility profile is now active. Redirecting to complete your profile setup..."
+        "facility_redirect": "Your facility profile is now active. Redirecting to complete your profile setup...",
+        "dialog_title": "Profile Verified",
+        "professional_message": "Your professional profile has been successfully verified. You can now access all platform features.",
+        "facility_message": "Your facility profile has been successfully verified. You can now access all platform features."
+      },
+      "gln_info": {
+        "title": "Where to find your GLN",
+        "facility_title": "Where to find your Facility GLN",
+        "where_to_find": "Where to find your GLN?",
+        "where_to_find_facility": "Where to find your facility GLN?",
+        "registry_info": "You can find your GLN number in the official Swiss health registry:",
+        "facility_registry_info": "You can find your facility GLN number in the official Swiss business registry:",
+        "medreg_registry": "Swiss Medical Registry (MEDREG)",
+        "nareg_registry": "Swiss Pharmacist Registry (NAREG)",
+        "uid_registry": "Swiss Business Registry (UID/CHE)"
       },
       "phone": {
         "title": "Mobile Verification",
@@ -296,7 +319,10 @@
       "clickHere": "Click here",
       "toContinue": "to continue later",
       "keepGoing": "Keep Going",
-      "stopNow": "Stop Tutorial"
+      "stopNow": "Stop Tutorial",
+      "setupRequiredTitle": "Setup Required",
+      "cannotExit": "Personal details are compulsory",
+      "setupRequiredDesc": "After completing your personal details, you will be able to choose Team Access to access facility team and HR features."
     }
   },
   "userMenu": {

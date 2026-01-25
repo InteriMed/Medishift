@@ -79,8 +79,6 @@ const useAutoSave = ({
       if (isValid && isTutorialActive && activeTab) {
         onTabCompleted(activeTab, true);
       }
-    } else if (isValid && isTutorialActive && activeTab) {
-      onTabCompleted(activeTab, true);
     }
   }, [validateCurrentTabData, onTabCompleted, isTutorialActive, activeTab]);
 

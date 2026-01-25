@@ -6,13 +6,14 @@ import { Header } from '../components/Header/Header';
 import { cn } from '../../utils/cn';
 import { useSidebar } from '../contexts/SidebarContext';
 import { usePageMobile } from '../contexts/PageMobileContext';
+import { getSidebarLayout } from '../utils/sidebarLayout';
 import './DashboardLayout.css';
 
 export function DashboardLayout({ children }) {
     const location = useLocation();
     const { isMainSidebarCollapsed, setIsMainSidebarCollapsed } = useSidebar();
     const { showBackButton, onBackButtonClick } = usePageMobile();
-    
+
     const isAdminRoute = location.pathname.includes('/dashboard/admin');
     const [viewportWidth, setViewportWidth] = useState(() => {
         return typeof window !== 'undefined' ? window.innerWidth : 1200;
@@ -25,6 +26,11 @@ export function DashboardLayout({ children }) {
 
     const isMobileMode = viewportWidth < 768;
     const isOverlayMode = viewportWidth >= 768 && viewportWidth < 1200;
+    const { isDockedSidebarMode } = getSidebarLayout({
+        viewportWidth,
+        isAdminRoute,
+        isCollapsed: isSidebarCollapsed
+    });
 
     useEffect(() => {
         const handleResize = () => {
@@ -51,6 +57,7 @@ export function DashboardLayout({ children }) {
             }
         }
     }, [isSidebarCollapsed, isMainSidebarCollapsed, setIsMainSidebarCollapsed, isOverlayMode]);
+
 
     const toggleSidebar = () => {
         setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -120,11 +127,11 @@ export function DashboardLayout({ children }) {
                 <div 
                     className={cn(
                         "flex-1 flex flex-col",
-                        !isAdminRoute && !isMobileMode && (isSidebarCollapsed ? "md:ml-[70px]" : "md:ml-64"),
-                        !isAdminRoute && isMobileMode && "ml-0 w-full"
+                        isDockedSidebarMode && (isSidebarCollapsed ? "md:ml-[70px]" : "md:ml-64"),
+                        (!isDockedSidebarMode || isMobileMode) && "ml-0 w-full"
                     )}
                     style={{
-                        transition: !isAdminRoute && !isMobileMode 
+                        transition: isDockedSidebarMode
                             ? 'margin-left 300ms cubic-bezier(0.4, 0, 0.2, 1)' 
                             : 'none',
                         height: '100vh',

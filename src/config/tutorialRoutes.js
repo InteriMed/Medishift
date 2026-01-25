@@ -36,7 +36,7 @@ export const TUTORIAL_TO_ROUTE_MAP = {
     [TUTORIAL_IDS.MARKETPLACE]: DASHBOARD_ROUTE_IDS.MARKETPLACE,
     [TUTORIAL_IDS.PAYROLL]: DASHBOARD_ROUTE_IDS.PAYROLL,
     [TUTORIAL_IDS.ORGANIZATION]: DASHBOARD_ROUTE_IDS.ORGANIZATION,
-    [TUTORIAL_IDS.SETTINGS]: 'settings',
+    [TUTORIAL_IDS.ACCOUNT]: 'settings',
     [TUTORIAL_IDS.PROFILE]: DASHBOARD_ROUTE_IDS.PROFILE
 };
 
@@ -84,7 +84,7 @@ export const getPathForTutorial = (tutorialId) => {
 
 export const normalizePathForComparison = (path) => {
     let normalized = path.replace(/^\/(en|fr|de|it)\//, '/');
-    normalized = normalized.replace(/\/dashboard\/[^\/]+\/profile/, '/dashboard/profile');
+    normalized = normalized.replace(/\/dashboard\/(personal|team|admin)\//, '/dashboard/');
     return normalized;
 };
 

@@ -58,7 +58,7 @@ const OrganizationHeader = ({
           <button
             onClick={onToggle}
             className={cn(
-              "w-full h-10 rounded-md hover:bg-muted/50 text-muted-foreground/70 transition-colors flex items-center gap-2",
+              "w-full py-2 rounded-md hover:bg-muted/50 text-muted-foreground/70 transition-colors flex items-center gap-2",
               collapsed ? "justify-center px-2" : "justify-start px-2"
             )}
             title={collapsed ? "Expand" : "Collapse"}

@@ -10,7 +10,8 @@
       "contracts": "Accès sécurisé",
       "planning": "Planification facile",
       "qualifiedStaff": "Personnel qualifié"
-    }
+    },
+    "badge": "Our Story"
   },
   "missionVision": {
     "title": "Notre Mission et Vision",
@@ -41,13 +42,16 @@
         }
       ]
     },
-    "conclusion": "En choisissant InteriMed, vous optez pour un partenaire qui comprend les nuances du secteur de la santé suisse et qui s'engage à fournir des solutions de recrutement de haute qualité."
+    "conclusion": "En choisissant InteriMed, vous optez pour un partenaire qui comprend les nuances du secteur de la santé suisse et qui s'engage à fournir des solutions de recrutement de haute qualité.",
+    "badge": "Our Purpose"
   },
   "story": {
     "title": "Notre Histoire",
     "paragraph1": "InteriMed a été fondée par deux pharmaciens possédant une expertise technique et de solides relations dans l'industrie, tirant parti de leurs connaissances du domaine pour créer une solution sur mesure pour le secteur de la santé.",
     "paragraph2": "Après avoir personnellement expérimenté les défis liés à la recherche de personnel qualifié et à la sécurisation d'un travail flexible dans le domaine de la santé, ils ont entrepris de créer une solution qui profiterait à la fois aux établissements et aux professionnels.",
-    "paragraph3": "En commençant par le secteur pharmaceutique en Suisse romande, InteriMed ambitionne de devenir la plateforme leader du recrutement temporaire dans le secteur de la santé en Suisse et dans les pays voisins."
+    "paragraph3": "En commençant par le secteur pharmaceutique en Suisse romande, InteriMed ambitionne de devenir la plateforme leader du recrutement temporaire dans le secteur de la santé en Suisse et dans les pays voisins.",
+    "badge": "History",
+    "imageAlt": "InteriMed Founders"
   },
   "values": {
     "title": "Nos Valeurs",
@@ -85,6 +89,14 @@
   "cta": {
     "title": "Passez au digital",
     "forFacilities": "Pour les Établissements de Santé",
-    "forProfessionals": "Pour les Professionnels de la Santé"
+    "forProfessionals": "Pour les Professionnels de la Santé",
+    "description": "Join thousands of healthcare professionals and facilities already using InteriMed.",
+    "cardTitle": "Join the Network",
+    "cardSubtitle": "Connect with the best in the industry"
+  },
+  "meta": {
+    "title": "About InteriMed",
+    "description": "Discover how InteriMed is revolutionizing healthcare recruitment in Switzerland.",
+    "keywords": "about, interimed, healthcare, recruitment"
   }
 }

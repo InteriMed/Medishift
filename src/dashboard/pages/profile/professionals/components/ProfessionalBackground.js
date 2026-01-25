@@ -26,7 +26,7 @@ import { cn } from '../../../../../utils/cn';
 // Tailwind styles
 const styles = {
    sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-   headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
+   headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex flex-col professional-background-header",
    sectionTitle: "text-2xl font-semibold mb-0",
    sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
    sectionSubtitle: "text-sm font-medium",
@@ -35,7 +35,7 @@ const styles = {
    mandatoryFieldLegend: "text-xs",
    mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
    mandatoryMark: "text-destructive",
-   sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
+   sectionsWrapper: "professional-background-sections-wrapper w-full max-w-[1400px] mx-auto",
    leftColumn: "flex flex-col gap-6 flex-1",
    rightColumn: "flex flex-col gap-6 flex-1",
    sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
@@ -363,7 +363,7 @@ const ProfessionalBackground = ({
                   max={maxDateValue}
                   required={commonProps.required}
                   error={commonProps.error}
-                  onErrorReset={() => { }}
+                  onErrorReset={() => {}}
                   marginBottom={0}
                />
             );
@@ -582,18 +582,18 @@ const ProfessionalBackground = ({
 
    const checkItemHasNestedError = useCallback((errors, sectionPath, index) => {
       if (!errors || typeof errors !== 'object') return false;
-
+      
       const itemErrorPath = `${sectionPath}.${index}`;
       const directError = get(errors, itemErrorPath);
-
+      
       if (directError) {
          if (typeof directError === 'string') return true;
          if (typeof directError === 'object' && Object.keys(directError).length > 0) return true;
       }
-
+      
       const errorKeys = Object.keys(errors);
       const itemErrorPrefix = `${itemErrorPath}.`;
-
+      
       for (const key of errorKeys) {
          if (key.startsWith(itemErrorPrefix)) {
             return true;
@@ -607,7 +607,7 @@ const ProfessionalBackground = ({
             }
          }
       }
-
+      
       return false;
    }, []);
 
@@ -643,181 +643,235 @@ const ProfessionalBackground = ({
                   fontSize: '0.75rem',
                   margin: 0,
                   fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                  color: 'hsl(var(--muted-foreground))'
-               }}>
-                  {t(mainSectionRule.descriptionKey, t('professionalBackground.subtitle'))}
-               </p>
-            </div>
+                     color: 'hsl(var(--muted-foreground))'
+                  }}>
+                     {t(mainSectionRule.descriptionKey, t('professionalBackground.subtitle'))}
+                  </p>
+               </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0 }}>
-               {currentList.length > 0 && currentList.map((item, index) => {
-                  const itemHasError = checkItemHasNestedError(errors, mainSectionPath, index);
+               <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0 }}>
+                  {currentList.length > 0 && currentList.map((item, index) => {
+                     const itemHasError = checkItemHasNestedError(errors, mainSectionPath, index);
+                     
 
-
-                  return (
-                     <React.Fragment key={`${sectionKey}-${index}`}>
-                        <div style={{
-                           padding: '0.5rem',
-                           margin: '2px 0',
-                           display: 'flex',
-                           justifyContent: 'space-between',
-                           alignItems: 'center',
-                           borderRadius: '8px',
-                           borderWidth: '1px',
-                           borderStyle: 'dotted',
-                           borderColor: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--border) / 0.6)',
-                           backgroundColor: itemHasError ? 'hsl(var(--destructive) / 0.03)' : 'transparent'
-                        }}>
-                           <div className={styles.itemContent}>
-                              <div className="text-sm font-medium" style={{
-                                 color: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
-                                 fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                 display: 'flex',
-                                 flexDirection: 'column',
-                                 justifyContent: 'center'
-                              }}>
-                                 <strong style={{ color: itemHasError ? 'hsl(var(--destructive))' : 'inherit' }}>{item.title || item.degree || item.jobTitle || 'Item'}</strong>
-                                 {itemHasError && (
-                                    <span className="text-[10px] uppercase tracking-wider font-bold text-destructive leading-tight">
-                                       {t('validation:incomplete', 'Incomplete')}
-                                    </span>
-                                 )}
+                     return (
+                        <React.Fragment key={`${sectionKey}-${index}`}>
+                           <div style={{
+                              padding: '0.5rem',
+                              margin: '2px 0',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              borderRadius: '8px',
+                              borderWidth: '1px',
+                              borderStyle: 'dotted',
+                              borderColor: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--border) / 0.6)',
+                              backgroundColor: itemHasError ? 'hsl(var(--destructive) / 0.03)' : 'transparent'
+                           }}>
+                              <div className={styles.itemContent}>
+                                 <div className="text-sm font-medium" style={{
+                                    color: itemHasError ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
+                                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center'
+                                 }}>
+                                    <strong style={{ color: itemHasError ? 'hsl(var(--destructive))' : 'inherit' }}>{item.title || item.degree || item.jobTitle || 'Item'}</strong>
+                                    {itemHasError && (
+                                       <span className="text-[10px] uppercase tracking-wider font-bold text-destructive leading-tight">
+                                          {t('validation:incomplete', 'Incomplete')}
+                                       </span>
+                                    )}
+                                 </div>
+                                 <div className="text-xs" style={{
+                                    color: itemHasError ? 'hsl(var(--destructive) / 0.7)' : 'hsl(var(--muted-foreground))',
+                                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
+                                 }}>
+                                    {item.institution || item.employer}
+                                 </div>
                               </div>
-                              <div className="text-xs" style={{
-                                 color: itemHasError ? 'hsl(var(--destructive) / 0.7)' : 'hsl(var(--muted-foreground))',
-                                 fontFamily: 'var(--font-family-text, Roboto, sans-serif)'
-                              }}>
-                                 {item.institution || item.employer}
+                              <div className={styles.itemActions} style={{ display: 'flex', gap: '0.75rem' }}>
+                                 <button
+                                    onClick={() => handleShowView(sectionKey, index)}
+                                    className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
+                                    title={t('common.view', 'View')}
+                                    aria-label={t('common.view', 'View')}
+                                    style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
+                                 >
+                                    <FiEye className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
+                                 </button>
+                                 <button
+                                    onClick={() => handleShowEditForm(sectionKey, index)}
+                                    className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
+                                    title={t('common.edit')}
+                                    aria-label={t('common.edit')}
+                                    style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
+                                 >
+                                    <FiEdit className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
+                                 </button>
+                                 <button
+                                    onClick={() => handleDeleteItem(sectionKey, index)}
+                                    className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-destructive")}
+                                    title={t('common.delete')}
+                                    aria-label={t('common.delete')}
+                                    style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
+                                 >
+                                    <FiTrash2 className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
+                                 </button>
                               </div>
                            </div>
-                           <div className={styles.itemActions} style={{ display: 'flex', gap: '0.75rem' }}>
-                              <button
-                                 onClick={() => handleShowView(sectionKey, index)}
-                                 className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
-                                 title={t('common.view', 'View')}
-                                 aria-label={t('common.view', 'View')}
-                                 style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
-                              >
-                                 <FiEye className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
-                              </button>
-                              <button
-                                 onClick={() => handleShowEditForm(sectionKey, index)}
-                                 className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-primary")}
-                                 title={t('common.edit')}
-                                 aria-label={t('common.edit')}
-                                 style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
-                              >
-                                 <FiEdit className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
-                              </button>
-                              <button
-                                 onClick={() => handleDeleteItem(sectionKey, index)}
-                                 className={classNames("flex items-center justify-center w-8 h-8 transition-colors", itemHasError ? "text-destructive hover:text-destructive/80" : "text-muted-foreground hover:text-destructive")}
-                                 title={t('common.delete')}
-                                 aria-label={t('common.delete')}
-                                 style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}}
-                              >
-                                 <FiTrash2 className="w-4 h-4" style={itemHasError ? { color: 'hsl(var(--destructive))' } : {}} />
-                              </button>
-                           </div>
-                        </div>
-                        {index < currentList.length - 1 && !itemHasError && (
-                           <div style={{ height: '1px', backgroundColor: 'hsl(var(--border) / 0.3)', margin: '0.25rem 0' }} />
-                        )}
-                     </React.Fragment>
-                  );
-               })}
+                           {index < currentList.length - 1 && !itemHasError && (
+                              <div style={{ height: '1px', backgroundColor: 'hsl(var(--border) / 0.3)', margin: '0.25rem 0' }} />
+                           )}
+                        </React.Fragment>
+                     );
+                  })}
 
-               {currentList.length === 0 && (
-                  <p className={styles.emptyStateText} style={{ textAlign: 'center', color: 'gray', padding: '2rem' }}>{t(`professionalBackground.no${sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1)}`, 'No entries added yet.')}</p>
-               )}
+                  {currentList.length === 0 && (
+                     <p className={styles.emptyStateText} style={{ textAlign: 'center', color: 'gray', padding: '2rem' }}>{t(`professionalBackground.no${sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1)}`, 'No entries added yet.')}</p>
+                  )}
 
-               {typeof sectionErrors === 'string' && !currentList.length && <p className={styles.errorText}>{sectionErrors}</p>}
+                  {typeof sectionErrors === 'string' && !currentList.length && <p className={styles.errorText}>{sectionErrors}</p>}
 
-               <div style={{ display: 'flex', justifyContent: 'center', marginTop: 0, padding: 0 }}>
-                  <button
-                     onClick={() => handleShowAddForm(sectionKey)}
-                     className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
-                     title={t('common:add', 'Add')}
-                     aria-label={t('common:add', 'Add')}
-                  >
-                     <FiPlus className="w-4 h-4" />
-                  </button>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: 0, padding: 0 }}>
+                     <button
+                        onClick={() => handleShowAddForm(sectionKey)}
+                        className="flex items-center justify-center w-8 h-8 text-muted-foreground hover:text-primary transition-colors"
+                        title={t('common:add', 'Add')}
+                        aria-label={t('common:add', 'Add')}
+                     >
+                        <FiPlus className="w-4 h-4" />
+                     </button>
+                  </div>
                </div>
             </div>
-         </div>
       );
    };
 
    // --- Main Component Render ---
    return (
       <div className={styles.sectionContainer}>
+         <style>{`
+            .professional-background-container {
+               container-type: inline-size;
+            }
+            
+            .professional-background-header-grid {
+               display: grid;
+               gap: 1.5rem;
+               width: 100%;
+               grid-template-columns: 1fr 1fr;
+               grid-template-areas: 
+                  "title title"
+                  "completion autofill";
+               align-items: center;
+            }
+
+            .header-title-row {
+               grid-area: title;
+               display: flex;
+               flex-direction: column;
+               gap: 0.25rem;
+            }
+
+            .header-completion-centered {
+               grid-area: completion;
+               display: flex;
+               justify-content: flex-start;
+               width: 100%;
+            }
+
+            .header-autofill-right {
+               grid-area: autofill;
+               display: flex;
+               justify-content: flex-end;
+            }
+
+            .professional-background-sections-wrapper {
+               display: grid;
+               grid-template-columns: 1fr 1fr;
+               gap: 1.5rem;
+            }
+
+            @container (max-width: 700px) {
+               .professional-background-sections-wrapper {
+                  grid-template-columns: 1fr;
+               }
+            }
+         `}</style>
          <div className={styles.headerCard}>
-            <div className="flex flex-col gap-1 flex-1">
-               <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('professionalBackground.title')}</h2>
-               <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('professionalBackground.subtitle')}</p>
-            </div>
-
-            {isTutorialActive && (
-               <div className="flex items-center gap-3">
-                  <div className="relative" ref={autoFillButtonRef}>
-                     <button
-                        onClick={handleAutoFillClick}
-                        disabled={isUploading || isAnalyzing}
-                        className={cn(
-                           "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0 text-muted-foreground hover:bg-muted/50 hover:text-black select-none",
-                           (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
-                           (stepData?.highlightUploadButton) && "tutorial-highlight"
-                        )}
-                        style={{ height: 'var(--boxed-inputfield-height)' }}
-                        data-tutorial="profile-upload-button"
-                     >
-                        {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4" />}
-                        <span className="text-sm font-medium">
-                           {isAnalyzing
-                              ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
-                              : t('dashboardProfile:documents.autofill', 'Auto Fill')
-                           }
-                        </span>
-                     </button>
-                  </div>
-                  {uploadInputRef && (
-                     <UploadFile
-                        ref={uploadInputRef}
-                        onChange={handleFileUpload}
-                        isLoading={isUploading}
-                        progress={uploadProgress}
-                        accept=".pdf,.doc,.docx,.jpg,.png"
-                        label=""
-                        className="hidden"
-                     />
-                  )}
-
-                  {formData && completionPercentage !== undefined && (
-                     <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                        <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                        <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                           <div
-                              className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                              style={{ width: `${completionPercentage}%` }}
-                           ></div>
-                        </div>
-                        <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
-                     </div>
-                  )}
+            <div className="professional-background-header-grid">
+               <div className="header-title-row">
+                  <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('professionalBackground.title')}</h2>
+                  <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('professionalBackground.subtitle')}</p>
                </div>
+
+               {isTutorialActive && (
+                  <>
+                     <div className="header-completion-centered">
+                        {formData && completionPercentage !== undefined && (
+                           <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                              <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                              <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                                 <div
+                                    className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                                    style={{ width: `${completionPercentage}%` }}
+                                 ></div>
+                              </div>
+                              <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                           </div>
+                        )}
+                     </div>
+
+                     <div className="header-autofill-right">
+                        <div className="relative" ref={autoFillButtonRef}>
+                           <button
+                              onClick={handleAutoFillClick}
+                              disabled={isUploading || isAnalyzing}
+                              className={cn(
+                                 "group px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0",
+                                 (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
+                                 (stepData?.highlightUploadButton) && "tutorial-highlight"
+                              )}
+                              style={{ height: 'var(--boxed-inputfield-height)', backgroundColor: 'rgba(255, 191, 14, 1)' }}
+                              data-tutorial="profile-upload-button"
+                           >
+                              {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4 text-muted-foreground group-hover:text-black transition-colors" />}
+                              <span className="text-sm font-medium text-muted-foreground group-hover:text-black transition-colors">
+                                 {isAnalyzing
+                                    ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
+                                    : t('dashboardProfile:documents.autofill', 'Auto Fill')
+                                 }
+                              </span>
+                           </button>
+                        </div>
+                     </div>
+                  </>
+               )}
+            </div>
+            {isTutorialActive && uploadInputRef && (
+               <UploadFile
+                  ref={uploadInputRef}
+                  onChange={handleFileUpload}
+                  isLoading={isUploading}
+                  progress={uploadProgress}
+                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  label=""
+                  className="hidden"
+               />
             )}
          </div>
 
          {/* Dynamically render each section based on config items */}
-         <div className={styles.sectionsWrapper}>
-            {/* Left Column: Education and Qualifications */}
-            <div className={styles.leftColumn}>
-               {Object.keys(sectionConfig).filter(sectionKey => sectionKey === 'education' || sectionKey === 'qualifications').map(sectionKey => renderListSection(sectionKey))}
-            </div>
+         <div className="professional-background-container w-full max-w-[1400px] mx-auto">
+            <div className={styles.sectionsWrapper}>
+               <div className={styles.leftColumn}>
+                  {Object.keys(sectionConfig).filter(sectionKey => sectionKey === 'education' || sectionKey === 'qualifications').map(sectionKey => renderListSection(sectionKey))}
+               </div>
 
-            {/* Right Column: Work Experience */}
-            <div className={styles.rightColumn}>
-               {Object.keys(sectionConfig).filter(sectionKey => sectionKey === 'workExperience').map(sectionKey => renderListSection(sectionKey))}
+               <div className={styles.rightColumn}>
+                  {Object.keys(sectionConfig).filter(sectionKey => sectionKey === 'workExperience').map(sectionKey => renderListSection(sectionKey))}
+               </div>
             </div>
          </div>
 

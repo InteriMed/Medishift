@@ -1,112 +1,160 @@
 {
-    "meta": {
-        "title": "Karrieremöglichkeiten für Gesundheitsfachkräfte | MediShift",
-        "description": "Finden Sie flexible Positionen im Gesundheitswesen in der Schweiz. Verbinden Sie sich direkt mit Gesundheitseinrichtungen, die qualifizierte Fachkräfte wie Sie suchen",
-        "keywords": "Gesundheitsjobs, Apothekerstellen, Apothekenassistent Jobs, flexible Gesundheitsarbeit, Schweizer Gesundheitskarrieren"
+  "meta": {
+    "title": "Karrieremöglichkeiten für Gesundheitsfachkräfte | MediShift",
+    "description": "Finden Sie flexible Positionen im Gesundheitswesen in der Schweiz. Verbinden Sie sich direkt mit Gesundheitseinrichtungen, die qualifizierte Fachkräfte wie Sie suchen",
+    "keywords": "Gesundheitsjobs, Apothekerstellen, Apothekenassistent Jobs, flexible Gesundheitsarbeit, Schweizer Gesundheitskarrieren"
+  },
+  "hero": {
+    "title": "Weniger arbeiten, mehr verdienen, Sie entscheiden",
+    "subtitle": "Verbinden Sie sich direkt mit Gesundheitseinrichtungen, die qualifizierte Fachkräfte wie Sie suchen",
+    "trustSnippet": "MediShift entwickelt eine spezialisierte Plattform für Gesundheitsfachkräfte in der ganzen Schweiz",
+    "cta": "Profil erstellen",
+    "ctaCreate": "Create Profile",
+    "ctaLearnMore": "Learn More",
+    "badge": "For Professionals",
+    "appAlt": "Mobile App",
+    "glnVerification": "GLN Verification",
+    "validated": "Validated"
+  },
+  "problem": {
+    "title": "Wir verstehen die Herausforderungen des Gesundheitswesens",
+    "description": "Wir verstehen die täglichen Herausforderungen, denen Sie als Gesundheitsfachkraft gegenüberstehen. Unsere Plattform bietet konkrete Lösungen zur Überwindung dieser Hindernisse.",
+    "problem1": {
+      "title": "Mangelnde Flexibilität",
+      "description": "Traditionelle Gesundheitsrollen haben oft starre Zeitpläne, die persönliche und familiäre Verpflichtungen nicht berücksichtigen"
     },
-    "hero": {
-        "title": "Weniger arbeiten, mehr verdienen, Sie entscheiden",
-        "subtitle": "Verbinden Sie sich direkt mit Gesundheitseinrichtungen, die qualifizierte Fachkräfte wie Sie suchen",
-        "trustSnippet": "MediShift entwickelt eine spezialisierte Plattform für Gesundheitsfachkräfte in der ganzen Schweiz",
-        "cta": "Profil erstellen"
+    "problem2": {
+      "title": "Begrenzter Zugang zu Möglichkeiten",
+      "description": "Die richtigen Möglichkeiten zu finden kann eine Herausforderung sein, da Sie für potenzielle Arbeitgeber nicht sichtbar sind"
     },
-    "problem": {
-        "title": "Wir verstehen die Herausforderungen des Gesundheitswesens",
-        "description": "Wir verstehen die täglichen Herausforderungen, denen Sie als Gesundheitsfachkraft gegenüberstehen. Unsere Plattform bietet konkrete Lösungen zur Überwindung dieser Hindernisse.",
-        "problem1": {
-            "title": "Mangelnde Flexibilität",
-            "description": "Traditionelle Gesundheitsrollen haben oft starre Zeitpläne, die persönliche und familiäre Verpflichtungen nicht berücksichtigen"
-        },
-        "problem2": {
-            "title": "Begrenzter Zugang zu Möglichkeiten",
-            "description": "Die richtigen Möglichkeiten zu finden kann eine Herausforderung sein, da Sie für potenzielle Arbeitgeber nicht sichtbar sind"
-        },
-        "problem3": {
-            "title": "Komplexe Verwaltungsaufgaben",
-            "description": "Einstellungsverfahren sind langsam und zeitaufwendig. Verwaltungsaufgaben können frustrierend sein"
-        }
-    },
-    "howItWorks": {
-        "title": "So funktioniert es für Fachkräfte",
-        "step1": {
-            "title": "Erstellen Sie Ihr persönliches Profil",
-            "description": "Erstellen Sie Ihr berufliches Profil mit Ihren Qualifikationen, Erfahrungen und Präferenzen"
-        },
-        "step2": {
-            "title": "Legen Sie Ihre Verfügbarkeit fest, wir kümmern uns um den Rest",
-            "description": "Geben Sie an, wann Sie verfügbar sind, wir bieten Ihnen die passenden Matches"
-        },
-        "step3": {
-            "title": "Überprüfen Sie Ihren vorgeschlagenen Zeitplan, los geht's",
-            "description": "Bestätigen Sie das Match und erhalten Sie die endgültige Zusage vom Einstellungsteam"
-        },
-        "step4": {
-            "title": "Durchsuchen Sie Möglichkeiten auf dem Marktplatz",
-            "description": "Alternativ können Sie offene Stellen direkt auf dem Marktplatz erkunden und direkt Kontakt aufnehmen, wenn Sie die richtige finden"
-        },
-        "step5": {
-            "title": "Arbeiten und bezahlt werden, nicht mehr, nicht weniger",
-            "description": "Erbringen Sie Ihre Dienste und tun Sie, was Sie am besten können - Patienten helfen. Wir kümmern uns um den Rest"
-        }
-    },
-    "benefits": {
-        "title": "Vorteile für Gesundheitsfachkräfte",
-        "subtitle": "MediShift wurde speziell entwickelt, um die einzigartigen Herausforderungen des Schweizer Gesundheitsmarktes anzugehen:",
-        "benefit1": {
-            "title": "Zentralisieren Sie Ihr Profil",
-            "description": "Erstellen und verwalten Sie ein professionelles Profil mit allem an einem Ort. Wir senden Ihre Informationen direkt an die Recruiter"
-        },
-        "benefit2": {
-            "title": "Behalten Sie die Kontrolle über Ihren Zeitplan",
-            "description": "Passen Sie Ihren Zeitplan an Ihre Bedürfnisse und Präferenzen an, nicht umgekehrt"
-        },
-        "benefit3": {
-            "title": "Automatisches Matching",
-            "description": "Erhalten Sie automatische Job-Matches mit Push-Benachrichtigungen. Kein Suchen mehr, kein Bewerben mehr, kein Warten mehr"
-        },
-        "benefit4": {
-            "title": "Alle Möglichkeiten an einem Ort",
-            "description": "Durchsuchen Sie den Stellenmarkt mit erweiterten Suchfiltern, um Möglichkeiten in Ihrer Nähe zu erkunden"
-        },
-        "benefit5": {
-            "title": "Zentralisierte Verwaltung",
-            "description": "Organisieren Sie alle Ihre Dokumente, Verträge und Lohnabrechnungsinformationen an einem Ort, auf die Sie jederzeit und überall zugreifen können"
-        }
-    },
-    "features": {
-        "title": "Funktionen für Fachkräfte",
-        "feature1": {
-            "title": "Interaktiver Kalender",
-            "description": "Legen Sie Ihre Verfügbarkeit über einen interaktiven Kalender fest. Entscheiden Sie, wo und wann Sie arbeiten möchten"
-        },
-        "feature2": {
-            "title": "Intelligentes Matching",
-            "description": "Erhalten Sie automatische Job-Matches mit Push-Benachrichtigungen für neue Möglichkeiten. Kein Suchen, kein Bewerben, kein Warten mehr"
-        },
-        "feature3": {
-            "title": "Alle Möglichkeiten an einem Ort",
-            "description": "Durchsuchen Sie den Stellenmarkt mit erweiterten Suchfiltern, um Möglichkeiten in Ihrer Nähe zu erkunden"
-        },
-        "feature4": {
-            "title": "Zentralisierte Verwaltung",
-            "description": "Organisieren Sie alle Ihre Dokumente, Verträge und Lohnabrechnungsinformationen an einem Ort, auf die Sie jederzeit und überall zugreifen können"
-        },
-        "feature5": {
-            "title": "Bewerbungsmanagement-Copilot",
-            "description": "Wir kümmern uns um Ihre Dokumente während des Bewerbungsprozesses, vom Moment der Bewerbung bis zum Erhalt der Stelle"
-        },
-        "feature6": {
-            "title": "Sichere Nachrichten",
-            "description": "Kommunizieren Sie mit Ihrem zukünftigen/aktuellen Arbeitgeber über unsere sichere Plattform für die Details der Stelle"
-        },
-        "feature7": {
-            "title": "Automatisierte Lohnabrechnung",
-            "description": "Wir kümmern uns um die Verwaltung, Verträge und Lohnabrechnung, alles an einem Ort"
-        }
-    },
-    "cta": {
-        "title": "Bereit, Ihre Gesundheitskarriere voranzutreiben?",
-        "description": "Werden Sie Teil unserer Gemeinschaft von Gesundheitsfachkräften, die erfüllende Möglichkeiten in der Schweiz finden",
-        "button": "Jetzt registrieren"
+    "problem3": {
+      "title": "Komplexe Verwaltungsaufgaben",
+      "description": "Einstellungsverfahren sind langsam und zeitaufwendig. Verwaltungsaufgaben können frustrierend sein"
     }
+  },
+  "howItWorks": {
+    "title": "So funktioniert es für Fachkräfte",
+    "step1": {
+      "title": "Erstellen Sie Ihr persönliches Profil",
+      "description": "Erstellen Sie Ihr berufliches Profil mit Ihren Qualifikationen, Erfahrungen und Präferenzen"
+    },
+    "step2": {
+      "title": "Legen Sie Ihre Verfügbarkeit fest, wir kümmern uns um den Rest",
+      "description": "Geben Sie an, wann Sie verfügbar sind, wir bieten Ihnen die passenden Matches"
+    },
+    "step3": {
+      "title": "Überprüfen Sie Ihren vorgeschlagenen Zeitplan, los geht's",
+      "description": "Bestätigen Sie das Match und erhalten Sie die endgültige Zusage vom Einstellungsteam"
+    },
+    "step4": {
+      "title": "Durchsuchen Sie Möglichkeiten auf dem Marktplatz",
+      "description": "Alternativ können Sie offene Stellen direkt auf dem Marktplatz erkunden und direkt Kontakt aufnehmen, wenn Sie die richtige finden"
+    },
+    "step5": {
+      "title": "Arbeiten und bezahlt werden, nicht mehr, nicht weniger",
+      "description": "Erbringen Sie Ihre Dienste und tun Sie, was Sie am besten können - Patienten helfen. Wir kümmern uns um den Rest"
+    }
+  },
+  "benefits": {
+    "title": "Vorteile für Gesundheitsfachkräfte",
+    "subtitle": "MediShift wurde speziell entwickelt, um die einzigartigen Herausforderungen des Schweizer Gesundheitsmarktes anzugehen:",
+    "benefit1": {
+      "title": "Zentralisieren Sie Ihr Profil",
+      "description": "Erstellen und verwalten Sie ein professionelles Profil mit allem an einem Ort. Wir senden Ihre Informationen direkt an die Recruiter"
+    },
+    "benefit2": {
+      "title": "Behalten Sie die Kontrolle über Ihren Zeitplan",
+      "description": "Passen Sie Ihren Zeitplan an Ihre Bedürfnisse und Präferenzen an, nicht umgekehrt"
+    },
+    "benefit3": {
+      "title": "Automatisches Matching",
+      "description": "Erhalten Sie automatische Job-Matches mit Push-Benachrichtigungen. Kein Suchen mehr, kein Bewerben mehr, kein Warten mehr"
+    },
+    "benefit4": {
+      "title": "Alle Möglichkeiten an einem Ort",
+      "description": "Durchsuchen Sie den Stellenmarkt mit erweiterten Suchfiltern, um Möglichkeiten in Ihrer Nähe zu erkunden"
+    },
+    "benefit5": {
+      "title": "Zentralisierte Verwaltung",
+      "description": "Organisieren Sie alle Ihre Dokumente, Verträge und Lohnabrechnungsinformationen an einem Ort, auf die Sie jederzeit und überall zugreifen können"
+    }
+  },
+  "features": {
+    "title": "Funktionen für Fachkräfte",
+    "feature1": {
+      "title": "Interaktiver Kalender",
+      "description": "Legen Sie Ihre Verfügbarkeit über einen interaktiven Kalender fest. Entscheiden Sie, wo und wann Sie arbeiten möchten"
+    },
+    "feature2": {
+      "title": "Intelligentes Matching",
+      "description": "Erhalten Sie automatische Job-Matches mit Push-Benachrichtigungen für neue Möglichkeiten. Kein Suchen, kein Bewerben, kein Warten mehr"
+    },
+    "feature3": {
+      "title": "Alle Möglichkeiten an einem Ort",
+      "description": "Durchsuchen Sie den Stellenmarkt mit erweiterten Suchfiltern, um Möglichkeiten in Ihrer Nähe zu erkunden"
+    },
+    "feature4": {
+      "title": "Zentralisierte Verwaltung",
+      "description": "Organisieren Sie alle Ihre Dokumente, Verträge und Lohnabrechnungsinformationen an einem Ort, auf die Sie jederzeit und überall zugreifen können"
+    },
+    "feature5": {
+      "title": "Bewerbungsmanagement-Copilot",
+      "description": "Wir kümmern uns um Ihre Dokumente während des Bewerbungsprozesses, vom Moment der Bewerbung bis zum Erhalt der Stelle"
+    },
+    "feature6": {
+      "title": "Sichere Nachrichten",
+      "description": "Kommunizieren Sie mit Ihrem zukünftigen/aktuellen Arbeitgeber über unsere sichere Plattform für die Details der Stelle"
+    },
+    "feature7": {
+      "title": "Automatisierte Lohnabrechnung",
+      "description": "Wir kümmern uns um die Verwaltung, Verträge und Lohnabrechnung, alles an einem Ort"
+    },
+    "glnVerification": {
+      "title": "GLN Verification",
+      "description": "Automatic verification of your credentials."
+    },
+    "smartCV": {
+      "title": "Smart CV",
+      "description": "Auto-generated CV highlighting your skills."
+    },
+    "fastTrack": {
+      "title": "Fast Track",
+      "description": "Skip the line with verified status."
+    }
+  },
+  "cta": {
+    "title": "Bereit, Ihre Gesundheitskarriere voranzutreiben?",
+    "description": "Werden Sie Teil unserer Gemeinschaft von Gesundheitsfachkräften, die erfüllende Möglichkeiten in der Schweiz finden",
+    "button": "Jetzt registrieren",
+    "item1": "Free to join",
+    "item2": "Access exclusive jobs",
+    "item3": "Grow your career",
+    "card": {
+      "title": "Status",
+      "status": "Active"
+    }
+  },
+  "quickApply": {
+    "title": "Quick Apply",
+    "description": "Apply to jobs in seconds."
+  },
+  "availability": {
+    "title": "Your Availability",
+    "description": "Work when you want, where you want.",
+    "flexibility": {
+      "title": "Total Flexibility",
+      "description": "Set your own schedule."
+    },
+    "messaging": {
+      "title": "Direct Messaging",
+      "description": "Chat directly with facilities."
+    },
+    "adminCard": {
+      "title": "Admin Dashboard",
+      "item1": "Schedule view",
+      "item2": "Payments",
+      "item3": "Contracts",
+      "item4": "Profile settings"
+    }
+  }
 }

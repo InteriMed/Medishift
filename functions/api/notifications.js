@@ -3,7 +3,9 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 
 // List notifications for the current user
-const listNotifications = onCall({ database: 'medishift', cors: true }, async (request) => {
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+
+const listNotifications = onCall(FUNCTION_CONFIG, async (request) => {
   // Ensure user is authenticated
   if (!request.auth) {
     throw new HttpsError(
@@ -46,7 +48,7 @@ const listNotifications = onCall({ database: 'medishift', cors: true }, async (r
 });
 
 // Mark a notification as read
-const markNotificationAsRead = onCall({ database: 'medishift', cors: true }, async (request) => {
+const markNotificationAsRead = onCall(FUNCTION_CONFIG, async (request) => {
   // Ensure user is authenticated
   if (!request.auth) {
     throw new HttpsError(
@@ -111,7 +113,7 @@ const markNotificationAsRead = onCall({ database: 'medishift', cors: true }, asy
 });
 
 // Mark all notifications as read
-const markAllNotificationsAsRead = onCall({ database: 'medishift', cors: true }, async (request) => {
+const markAllNotificationsAsRead = onCall(FUNCTION_CONFIG, async (request) => {
   // Ensure user is authenticated
   if (!request.auth) {
     throw new HttpsError(

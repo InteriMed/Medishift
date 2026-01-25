@@ -7,7 +7,8 @@ import {
     normalizePathForComparison,
     isProfilePath,
     PLATFORM_FEATURES,
-    WORKSPACE_TYPES
+    WORKSPACE_TYPES,
+    evaluateFeatureAccess
 } from '../../../../config/tutorialSystem';
 
 export const useTutorialRules = ({
@@ -32,38 +33,19 @@ export const useTutorialRules = ({
     // Check if a sidebar item is accessible
     const isSidebarItemAccessible = useCallback((itemPath) => {
         const itemName = itemPath.split('/').pop();
-        const isFacilityWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
 
-        if (itemName === 'overview' || itemName === TUTORIAL_IDS.DASHBOARD) {
-            return true;
-        }
+        // Prepare context for evaluation - map hook props to expected context keys
+        const context = {
+            tutorialPassed,
+            isTutorialActive,
+            activeTutorial,
+            currentStep,
+            accessMode: access, // Rename 'access' to 'accessMode'
+            workspaceType: selectedWorkspace?.type,
+            completedTutorials
+        };
 
-        if (itemName === 'profile') {
-            return isProfileTutorial(activeTutorial) ||
-                (activeTutorial === TUTORIAL_IDS.DASHBOARD && currentStep >= 2) ||
-                !isTutorialActive ||
-                tutorialPassed;
-        }
-
-        if (PLATFORM_FEATURES.includes(itemName)) {
-            // Marketplace: Only accessible with full profile completion
-            if (itemName === TUTORIAL_IDS.MARKETPLACE) {
-                return tutorialPassed;
-            }
-
-            // Organization: Only accessible in facility workspace with full access
-            if (itemName === TUTORIAL_IDS.ORGANIZATION || itemName === TUTORIAL_IDS.PAYROLL) {
-                if (!isFacilityWorkspace) return false;
-                return access === 'full' || tutorialPassed;
-            }
-
-            // Other features
-            if (access === 'full' || tutorialPassed) return true;
-
-            return false;
-        }
-
-        return true;
+        return evaluateFeatureAccess(itemName, context);
     }, [tutorialPassed, isTutorialActive, activeTutorial, currentStep, completedTutorials, access, selectedWorkspace]);
 
     // Check if user is on the correct page for the current step

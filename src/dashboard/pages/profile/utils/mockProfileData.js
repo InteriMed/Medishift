@@ -75,7 +75,7 @@ export const mockProfileData = {
     billingInformation: {
         employmentEligibility: {
             workPermit: {
-                type: 'swiss_citizen',
+                type: 'notApplicable',
                 expiryDate: null,
                 permitNumber: '',
                 issuingCanton: ''
@@ -97,14 +97,13 @@ export const mockProfileData = {
         }
     },
 
-    settings: {
+    marketplace: {
         platformSettings: {
             detailedAvailability: {
-                availabilityType: ['full_time', 'on_call'],
-                maxHoursPerWeek: 42,
-                noticePeriodShortTerm: '24h',
+                availabilityType: ['all', 'part_time', 'full_time', 'on_call'],
+                maxHoursPerWeek: 50,
+                noticePeriodDays: 0,
                 onCallPreferences: ['weekends', 'holidays'],
-                longTermContractEarliestStartDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                 notes: 'Available for emergency coverage on short notice.'
             },
             defaultMarketplaceRadius: 50,
@@ -116,8 +115,7 @@ export const mockProfileData = {
         isActiveOnMarketplace: true,
         notificationPreferences: {
             email: true,
-            push: true,
-            sms: false,
+            sms: true,
             marketplaceUpdates: true,
             scheduleChanges: true,
             contractUpdates: true

@@ -60,13 +60,10 @@
     "not_looking": "Not Looking Right Now"
   },
   "availabilityTypes": {
+    "all": "All",
     "full_time": "Full Time",
     "part_time": "Part Time",
-    "flexible": "Flexible",
-    "on_call": "On Call",
-    "weekend_only": "Weekend Only",
-    "evening_only": "Evening Only",
-    "night_shift": "Night Shift"
+    "on_call": "On Call"
   },
   "contractTypes": {
     "permanent": "Permanent (Unbefristet)",

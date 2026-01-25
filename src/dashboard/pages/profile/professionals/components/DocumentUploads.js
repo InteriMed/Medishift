@@ -25,7 +25,7 @@ const styles = {
     mandatoryFieldLegend: "text-xs",
     mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     mandatoryMark: "text-destructive",
-    sectionsWrapper: "flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto",
+    sectionsWrapper: "document-uploads-sections-wrapper w-full max-w-[1400px] mx-auto",
     leftColumn: "flex flex-col gap-6 flex-1",
     rightColumn: "flex flex-col gap-6 flex-1",
     sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
@@ -78,6 +78,7 @@ const DocumentUploads = ({
     isSubmitting,
     onInputChange,
     onArrayChange,
+    onBatchChange,
     onSaveAndContinue,
     onSave,
     onCancel,
@@ -139,13 +140,18 @@ const DocumentUploads = ({
                         name: 'workPermitUrl',
                         labelKey: 'documents.idCard',
                         descriptionKey: 'documents.idCardDescription',
-                        required: true
+                        required: true,
+                        dependsOn: null,
+                        dependsOnValue: null
                     };
                 } else {
                     return {
                         ...field,
                         labelKey: 'documents.workPermit',
-                        descriptionKey: 'documents.workPermitDescription'
+                        descriptionKey: 'documents.workPermitDescription',
+                        required: true,
+                        dependsOn: null,
+                        dependsOnValue: null
                     };
                 }
             }
@@ -258,13 +264,20 @@ const DocumentUploads = ({
             } else {
                 const currentDocs = getNestedValue(formData, 'verification.verificationDocuments') || [];
                 const filteredDocs = currentDocs.filter(doc => doc.type !== docType);
-                onArrayChange('verification.verificationDocuments', [...filteredDocs, fileMetadata]);
-                onInputChange(fieldName, downloadURL);
+                if (onBatchChange) {
+                    onBatchChange([
+                        { name: 'verification.verificationDocuments', value: [...filteredDocs, fileMetadata] },
+                        { name: fieldName, value: downloadURL }
+                    ]);
+                } else {
+                    onArrayChange('verification.verificationDocuments', [...filteredDocs, fileMetadata]);
+                    onInputChange(fieldName, downloadURL);
+                }
             }
         } catch (error) {
             // Error uploading document
         }
-    }, [upload, formData, getNestedValue, onInputChange, onArrayChange, normalizeDocumentName]);
+    }, [upload, formData, getNestedValue, onInputChange, onArrayChange, onBatchChange, normalizeDocumentName]);
 
     const handleRemoveDocument = useCallback((fieldConfig, indexOrUrlToRemove) => {
         const { name: fieldName, isMultiple, docType } = fieldConfig;
@@ -580,9 +593,9 @@ const DocumentUploads = ({
                 </div>
                 <div className={styles.sectionContent}>
                     {currentFiles.length > 0 && (
-                        <div className="document-entries-wrapper" style={{
-                            display: 'flex',
-                            flexDirection: 'column',
+                        <div className="document-entries-wrapper" style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
                             gap: 0,
                             padding: '0.75rem',
                             backgroundColor: 'hsl(var(--muted) / 0.3)',
@@ -720,7 +733,7 @@ const DocumentUploads = ({
                                             options={getReferenceLetterOptions}
                                             value={selectedReferenceValue}
                                             onChange={(value) => setSelectedReferenceValue(value)}
-                                            placeholder={t('documents.selectReferencePlaceholder', 'Select work experience or education...')}
+                                            placeholder={t('documents.selectReferencePlaceholder', 'Select an experience from the list or other')}
                                             required={true}
                                         />
                                     </div>
@@ -771,8 +784,6 @@ const DocumentUploads = ({
                         )}
                     </div>
 
-                    {/* Error message text suppressed as per user request */}
-                    {/* {error && currentFiles.length === 0 && <p className={styles.errorText} style={{ marginTop: '0.5rem' }}>{error}</p>} */}
                     {uploadState.type === docType && uploadState.error && <p className={styles.errorText} style={{ marginTop: '0.5rem' }}>{uploadState.error}</p>}
                 </div>
             </div>
@@ -792,6 +803,23 @@ const DocumentUploads = ({
 
     return (
         <div className={styles.sectionContainer}>
+            <style>{`
+                .document-uploads-container {
+                    container-type: inline-size;
+                }
+
+                .document-uploads-sections-wrapper {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1.5rem;
+                }
+
+                @container (max-width: 700px) {
+                    .document-uploads-sections-wrapper {
+                        grid-template-columns: 1fr;
+                    }
+                }
+            `}</style>
             <div className={styles.headerCard}>
                 <div className="flex flex-col gap-1 flex-1">
                     <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('documents.title')}</h2>
@@ -799,30 +827,32 @@ const DocumentUploads = ({
                 </div>
 
                 {formData && completionPercentage !== undefined && (
-                    <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                        <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                        <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                            <div
-                                className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                                style={{ width: `${completionPercentage}%` }}
-                            ></div>
-                        </div>
-                        <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
-                    </div>
-                )}
+                            <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                                <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                                <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                                        style={{ width: `${completionPercentage}%` }}
+                                    ></div>
+                                </div>
+                                <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                            </div>
+                        )}
             </div>
 
-            <div className={styles.sectionsWrapper}>
-                <div className={styles.leftColumn}>
-                    {documentFieldsConfig.filter((_, index) => index % 2 === 0).map(fieldConfig => (
-                        <RenderDocumentCard key={fieldConfig.docType} fieldConfig={fieldConfig} />
-                    ))}
-                </div>
+            <div className="document-uploads-container w-full max-w-[1400px] mx-auto">
+                <div className={styles.sectionsWrapper}>
+                    <div className={styles.leftColumn}>
+                        {documentFieldsConfig.filter((_, index) => index % 2 === 0).map(fieldConfig => (
+                            <RenderDocumentCard key={fieldConfig.docType} fieldConfig={fieldConfig} />
+                        ))}
+                    </div>
 
-                <div className={styles.rightColumn}>
-                    {documentFieldsConfig.filter((_, index) => index % 2 === 1).map(fieldConfig => (
-                        <RenderDocumentCard key={fieldConfig.docType} fieldConfig={fieldConfig} />
-                    ))}
+                    <div className={styles.rightColumn}>
+                        {documentFieldsConfig.filter((_, index) => index % 2 === 1).map(fieldConfig => (
+                            <RenderDocumentCard key={fieldConfig.docType} fieldConfig={fieldConfig} />
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -850,6 +880,7 @@ DocumentUploads.propTypes = {
     isSubmitting: PropTypes.bool.isRequired,
     onInputChange: PropTypes.func.isRequired,
     onArrayChange: PropTypes.func.isRequired,
+    onBatchChange: PropTypes.func,
     onSaveAndContinue: PropTypes.func.isRequired,
     onSave: PropTypes.func,
     onCancel: PropTypes.func.isRequired,

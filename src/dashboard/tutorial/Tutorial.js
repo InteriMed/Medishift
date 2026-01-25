@@ -6,6 +6,7 @@ import HighlightTooltip from '../onboarding/components/HighlightTooltip';
 import AccessLevelChoicePopup from '../pages/profile/components/AccessLevelChoicePopup';
 import StopTutorialConfirmModal from '../components/modals/StopTutorialConfirmModal';
 import { useTranslation } from 'react-i18next';
+import { TUTORIAL_IDS } from '../../config/tutorialSystem';
 
 
 // Temporary empty styles object until Tailwind classes are implemented
@@ -36,13 +37,14 @@ const Tutorial = () => {
     setShowAccessLevelModal,
     setShowStopTutorialConfirm,
     setAccessMode,
+    accessLevelChoice,
     allowAccessLevelModalClose,
     resetProfileTabAccess,
     tutorialSteps
   } = useTutorial();
 
   const { profileComplete, tutorialPassed, user } = useDashboard();
-  
+
   const glnVerified = user?.GLN_certified === true || user?.GLN_certified === 'ADMIN_OVERRIDE';
   const [hasRendered, setHasRendered] = useState(false);
 
@@ -108,17 +110,24 @@ const Tutorial = () => {
 
   // ALWAYS render AccessLevelChoicePopup (even when tutorial is not active)
   // because it can be triggered from sidebar/profile independently
+  const shouldShowTeamCloseTooltip = isTutorialActive && accessLevelChoice === 'team';
+  const displayTutorialFeature = shouldShowTeamCloseTooltip ? TUTORIAL_IDS.DASHBOARD : activeTutorial;
+  const displayTutorialStep = shouldShowTeamCloseTooltip ? 0 : currentStep;
+  const displayPrevStep = shouldShowTeamCloseTooltip ? async () => {} : prevStep;
+  const displayNextStep = shouldShowTeamCloseTooltip ? async () => { await stopTutorial({ forceStop: true, showAccessPopupForProfile: false }); } : nextStep;
+  const displayCompleteTutorial = shouldShowTeamCloseTooltip ? async () => { await stopTutorial({ forceStop: true, showAccessPopupForProfile: false }); } : completeTutorial;
+
   return (
     <>
       {shouldRenderTutorial && (
         <div style={containerStyle} className={styles.tutorialContainer}>
           {isTutorialActive && !showAccessLevelModal && (
             <HighlightTooltip
-              tutorialStep={currentStep}
-              tutorialFeature={activeTutorial}
-              prevStep={prevStep}
-              nextStep={nextStep}
-              completeTutorial={completeTutorial}
+              tutorialStep={displayTutorialStep}
+              tutorialFeature={displayTutorialFeature}
+              prevStep={displayPrevStep}
+              nextStep={displayNextStep}
+              completeTutorial={displayCompleteTutorial}
             />
           )}
         </div>
@@ -132,7 +141,7 @@ const Tutorial = () => {
           setAccessMode('team');
         }}
         onContinueOnboarding={() => {
-          setAccessMode('loading');
+          setAccessMode('full');
         }}
         glnVerified={glnVerified}
         allowClose={allowAccessLevelModalClose !== undefined ? allowAccessLevelModalClose : false}

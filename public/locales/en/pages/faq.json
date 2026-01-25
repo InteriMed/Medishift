@@ -6,10 +6,15 @@
   },
   "title": "FAQ",
   "subtitle": "Frequently Asked Questions",
+  "hero": {
+    "badge": "Help Center",
+    "title": "Frequently Asked Questions"
+  },
   "allCategories": "All Categories",
   "introduction": "Find answers to common questions about our healthcare recruitment platform.",
   "searchPlaceholder": "Search questions...",
   "searchResults": "Search results for",
+  "noResults": "No results found",
   "categoryLabels": {
     "general": "General",
     "pharmacies": "For Facilities",
@@ -22,6 +27,10 @@
     "title": "Still have questions?",
     "description": "Our support team is ready to help you with any additional questions.",
     "button": "Contact Support"
+  },
+  "support": {
+    "title": "Need More Help?",
+    "description": "Our dedicated support team is available to assist you with any issues or inquiries you may have."
   },
   "categories": {
     "general": {
@@ -147,6 +156,5 @@
     "title": "Couldn't find what you were looking for?",
     "description": "Our support team is ready to help you with any additional questions.",
     "buttonText": "Contact Support"
-  },
-  "noResults": "No results found"
+  }
 }

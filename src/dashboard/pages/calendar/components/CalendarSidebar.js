@@ -41,16 +41,12 @@ const CalendarSidebar = ({
       )}
 
       {showUpcomingEvents && (
-        <div className="flex-1 flex flex-col min-h-0 bg-card backdrop-blur-sm rounded-2xl border border-border/50 shadow-lg" style={{ overflow: 'visible' }}>
-          <div className="flex flex-col items-center px-6 py-3 border-b border-border">
-            <h4 className="text-xl font-bold m-0 text-center" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-              {t('calendar:upcomingEvents')}
-            </h4>
-          </div>
+        <div className="flex-1 flex flex-col min-h-0 bg-card p-6 backdrop-blur-sm rounded-2xl border border-border/50 shadow-lg" style={{ overflow: 'visible' }}>
+          <h3 className="text-lg font-bold text-foreground mb-6">{t('calendar:upcomingEvents')}</h3>
 
-          <div className="flex-1 overflow-y-auto space-y-1">
-            {events && events.length > 0 ? (
-              events
+          {events && events.length > 0 && events.filter(e => new Date(e.start) > new Date()).length > 0 ? (
+            <div className="flex-1 overflow-y-auto space-y-4 -mr-1 pr-1 custom-scrollbar">
+              {events
                 .filter(event => new Date(event.start) > new Date())
                 .sort((a, b) => new Date(a.start) - new Date(b.start))
                 .slice(0, 5)
@@ -91,17 +87,15 @@ const CalendarSidebar = ({
                       <FiChevronRight className="w-4 h-4 text-muted-foreground" />
                     </div>
                   </div>
-                ))
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 ring-4 ring-background">
-                  <FiClock className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
-                </div>
-                <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('calendar:noUpcomingEvents')}</h2>
-                <p className="mb-6" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>{t('calendar:checkBackLater')}</p>
-              </div>
-            )}
-          </div>
+                ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground bg-muted/10 rounded-lg border border-dashed border-border flex-1 flex flex-col items-center justify-center">
+              <FiClock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm font-medium">{t('calendar:noUpcomingEvents')}</p>
+              <p className="text-xs mt-1 px-4">{t('calendar:checkBackLater')}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

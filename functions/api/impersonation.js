@@ -2,6 +2,7 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const { logAuditEvent, AUDIT_EVENT_TYPES } = require('../services/auditLog');
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
 
 const IMPERSONATION_SESSION_EXPIRY_MINUTES = 30;
 const IMPERSONATION_COOKIE_NAME = 'medishift_impersonation_session';
@@ -44,7 +45,7 @@ const extractMetadata = (req) => {
   return metadata;
 };
 
-exports.startImpersonation = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.startImpersonation = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'You must be signed in to impersonate users');
   }
@@ -146,7 +147,7 @@ exports.startImpersonation = onCall({ database: 'medishift', cors: true }, async
   }
 });
 
-exports.stopImpersonation = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.stopImpersonation = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'You must be signed in');
   }
@@ -214,7 +215,7 @@ exports.stopImpersonation = onCall({ database: 'medishift', cors: true }, async 
   }
 });
 
-exports.getImpersonationSession = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.getImpersonationSession = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'You must be signed in');
   }
@@ -288,7 +289,7 @@ exports.getImpersonationSession = onCall({ database: 'medishift', cors: true }, 
   }
 });
 
-exports.validateImpersonationSession = onCall({ database: 'medishift', cors: true }, async (request) => {
+exports.validateImpersonationSession = onCall(FUNCTION_CONFIG, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'You must be signed in');
   }

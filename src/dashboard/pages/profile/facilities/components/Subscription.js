@@ -82,8 +82,16 @@ const Subscription = ({
     t('subscription.features.facility.premium.advancedReporting')
   ];
 
-  const PlanCard = ({ title, price, features, type, icon: Icon, isCurrent, onUpgrade, colorClass, borderColorClass, bgClass, iconColorClass }) => (
-    <div className={`relative flex flex-col h-full bg-card rounded-2xl border transition-all duration-300 hover:shadow-lg ${isCurrent ? `ring-2 ring-offset-2 ${borderColorClass}` : 'border-border/50 hover:border-border'} ${isCurrent ? 'shadow-md' : ''}`}>
+  const PlanCard = ({ title, price, features, type, icon: Icon, isCurrent, onUpgrade, colorClass, borderColorClass, bgClass, iconColorClass }) => {
+    const isFreePlan = type === 'basic';
+    return (
+    <div className={`relative flex flex-col h-full rounded-2xl border transition-all duration-300 hover:shadow-lg ${
+      isCurrent ? `ring-2 ring-offset-2 ${borderColorClass}` : 'border-border/50 hover:border-border'
+    } ${isCurrent ? 'shadow-md' : ''} ${
+      isFreePlan && !isCurrent 
+        ? 'bg-gradient-to-br from-emerald-50/50 to-green-50/50 dark:from-emerald-950/20 dark:to-green-950/20 border-emerald-200/50 dark:border-emerald-800/30' 
+        : 'bg-card'
+    }`}>
       {isCurrent && (
         <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-white ${bgClass} shadow-sm`}>
           {t('subscription.currentPlan')}
@@ -91,24 +99,26 @@ const Subscription = ({
       )}
       
       <div className="p-6 flex-1 flex flex-col">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${iconColorClass} bg-opacity-10`}>
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${iconColorClass} bg-opacity-10 ${
+          isFreePlan ? 'border-2 border-emerald-200 dark:border-emerald-700' : ''
+        }`}>
           <Icon className={`w-6 h-6 ${colorClass}`} />
         </div>
         
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
+        <h3 className={`text-xl font-bold mb-2 ${isFreePlan ? 'text-emerald-700 dark:text-emerald-300' : ''}`}>{title}</h3>
         
         <div className="mb-6">
-          <span className="text-3xl font-bold">{price}</span>
-          <span className="text-muted-foreground text-sm ml-1">{t('subscription.perMonth')}</span>
+          <span className={`text-3xl font-bold ${isFreePlan ? 'text-emerald-700 dark:text-emerald-300' : ''}`}>{price}</span>
+          <span className={`text-sm ml-1 ${isFreePlan ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>{t('subscription.perMonth')}</span>
         </div>
 
         <div className="space-y-4 mb-8 flex-1">
           {features.map((feature, index) => (
             <div key={index} className="flex items-start gap-3">
-              <div className={`mt-1 rounded-full p-0.5 ${colorClass} bg-opacity-10`}>
+              <div className={`mt-1 rounded-full p-0.5 ${colorClass} bg-opacity-10 ${isFreePlan ? 'border border-emerald-200 dark:border-emerald-700' : ''}`}>
                 <FiCheck className={`w-3 h-3 ${colorClass}`} />
               </div>
-              <span className="text-sm text-muted-foreground leading-tight">{feature}</span>
+              <span className={`text-sm leading-tight ${isFreePlan ? 'text-emerald-800 dark:text-emerald-200' : 'text-muted-foreground'}`}>{feature}</span>
             </div>
           ))}
         </div>
@@ -123,7 +133,7 @@ const Subscription = ({
               type="button"
               onClick={() => onUpgrade(type)}
               disabled={isUpgrading}
-              className={`w-full py-2.5 font-medium transition-colors ${
+              className={`w-full py-3 font-medium transition-colors ${
                 type === 'premium' 
                   ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-0' 
                   : ''
@@ -136,7 +146,8 @@ const Subscription = ({
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 space-y-8">
@@ -147,29 +158,53 @@ const Subscription = ({
         </p>
       </div>
 
-      {/* Grey Div for Current Subscription Management */}
-      <div className="bg-gray-100 dark:bg-gray-800/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+      {/* Enhanced Current Subscription Management - Improved Free/Basic Design */}
+      <div className={`rounded-xl p-6 border flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm transition-all duration-300 ${
+        currentSubscription === 'basic' 
+          ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800/50 shadow-md'
+          : 'bg-gray-100 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'
+      }`}>
         <div className="flex items-center gap-5">
-          <div className={`p-4 rounded-full bg-background border shadow-sm`}>
+          <div className={`p-4 rounded-xl bg-background border shadow-sm ${
+            currentSubscription === 'basic' 
+              ? 'border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30' 
+              : ''
+          }`}>
              {currentSubscription === 'premium' ? <FiStar className="w-8 h-8 text-yellow-500" /> :
               currentSubscription === 'standard' ? <FiUsers className="w-8 h-8 text-blue-500" /> :
-              <FiCreditCard className="w-8 h-8 text-emerald-500" />}
+              <FiCreditCard className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />}
           </div>
           <div>
-            <h3 className="text-xl font-bold text-foreground mb-1">{t('subscription.currentPlan')}</h3>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="font-medium text-foreground capitalize">{t(`subscription.facility.${currentSubscription}.title`)}</span>
+            <h3 className={`text-xl font-bold mb-1 ${
+              currentSubscription === 'basic' 
+                ? 'text-emerald-700 dark:text-emerald-300' 
+                : 'text-foreground'
+            }`}>
+              {t('subscription.currentPlan')}
+            </h3>
+            <div className={`flex items-center gap-2 ${
+              currentSubscription === 'basic' 
+                ? 'text-emerald-700 dark:text-emerald-300' 
+                : 'text-muted-foreground'
+            }`}>
+              <span className={`font-medium capitalize ${
+                currentSubscription === 'basic' 
+                  ? 'text-emerald-800 dark:text-emerald-200' 
+                  : 'text-foreground'
+              }`}>
+                {t(`subscription.facility.${currentSubscription}.title`)}
+              </span>
               <span>•</span>
               <span>{t(`subscription.facility.${currentSubscription}.price`)}/{t('subscription.perMonth')}</span>
             </div>
           </div>
         </div>
-        <div className="flex gap-3 w-full sm:w-auto">
+        <div className="w-full sm:w-auto">
            <Button
               type="button"
               variant="outline"
               onClick={handleManageSubscription}
-              className="w-full sm:w-auto bg-background hover:bg-muted border-gray-300 dark:border-gray-600"
+              className="w-full bg-background hover:bg-muted border-gray-300 dark:border-gray-600"
            >
              <FiSettings className="w-4 h-4 mr-2" />
              {t('subscription.manageSubscription')}

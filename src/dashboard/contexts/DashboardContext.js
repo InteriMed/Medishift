@@ -669,13 +669,15 @@ export const DashboardProvider = ({ children }) => {
     // If URL requests admin workspace but adminData hasn't loaded yet, wait
     const urlParamsEarly = new URLSearchParams(location.search);
     const requestedWorkspace = urlParamsEarly.get('workspace');
-    if (requestedWorkspace === 'admin' && !user.adminData && !adminDataRef.current) {
+    const pathContainsAdmin = location.pathname.includes('/admin');
+    if ((requestedWorkspace === 'admin' || pathContainsAdmin) && !user.adminData && !adminDataRef.current) {
       return;
     }
 
     // Ensure user has adminData from ref if not already present
-    if (!user.adminData && adminDataRef.current) {
-      user.adminData = adminDataRef.current;
+    const userWithAdmin = { ...user };
+    if (!userWithAdmin.adminData && adminDataRef.current) {
+      userWithAdmin.adminData = adminDataRef.current;
     }
 
     // AGGRESSIVE BYPASS: If on profile path with workspace segment, just set workspace and return
@@ -685,7 +687,7 @@ export const DashboardProvider = ({ children }) => {
     if (dashboardIndex !== -1 && segments.length > dashboardIndex + 1) {
       const workspaceId = segments[dashboardIndex + 1];
       
-      const availableWs = getAvailableWorkspaces(user);
+      const availableWs = getAvailableWorkspaces(userWithAdmin);
       const wsFromUrl = availableWs.find(w => w.id === workspaceId);
       
       if (wsFromUrl) {
@@ -710,11 +712,11 @@ export const DashboardProvider = ({ children }) => {
     }
 
     const currentUserHash = JSON.stringify({
-      uid: user.uid,
-      role: user.role,
-      roles: user.roles,
-      adminData: user.adminData ? { roles: user.adminData.roles, isActive: user.adminData.isActive } : null,
-      facilityMemberships: user.facilityMemberships?.map(m => m.facilityProfileId).sort()
+      uid: userWithAdmin.uid,
+      role: userWithAdmin.role,
+      roles: userWithAdmin.roles,
+      adminData: userWithAdmin.adminData ? { roles: userWithAdmin.adminData.roles, isActive: userWithAdmin.adminData.isActive } : null,
+      facilityMemberships: userWithAdmin.facilityMemberships?.map(m => m.facilityProfileId).sort()
     });
 
     // If critical user data hasn't changed, skip initialization
@@ -727,7 +729,7 @@ export const DashboardProvider = ({ children }) => {
 
 
     // Get available workspaces based on user roles
-    const availableWorkspaces = getAvailableWorkspaces(user);
+    const availableWorkspaces = getAvailableWorkspaces(userWithAdmin);
 
 
     // Only update workspaces state if it actually changed to prevent downstream re-renders
@@ -753,10 +755,10 @@ export const DashboardProvider = ({ children }) => {
       }
       
       if (!workspaceFromUrl && workspaceIdFromUrl === 'personal') {
-        if (typeof user.hasProfessionalProfile === 'undefined') {
+        if (typeof userWithAdmin.hasProfessionalProfile === 'undefined') {
           return;
         }
-        if (user.hasProfessionalProfile === false) {
+        if (userWithAdmin.hasProfessionalProfile === false) {
           return;
         }
       }
@@ -835,7 +837,7 @@ export const DashboardProvider = ({ children }) => {
       // Wait for user data to fully load so the requested workspace appears in available list
       if (workspaceIdFromUrl && !workspaceFromUrl) {
         // Check if we're waiting for professional profile data
-        if (workspaceIdFromUrl === 'personal' && typeof user.hasProfessionalProfile === 'undefined') {
+        if (workspaceIdFromUrl === 'personal' && typeof userWithAdmin.hasProfessionalProfile === 'undefined') {
           return;
         }
         // If workspace is explicitly requested but not available, don't auto-select
@@ -847,10 +849,10 @@ export const DashboardProvider = ({ children }) => {
 
       // Prioritize based on user's primary role field
       const primaryWorkspace = availableWorkspaces.find(w => {
-        const isFacilityRole = (user.roles || []).some(r => r.facility_uid);
+        const isFacilityRole = (userWithAdmin.roles || []).some(r => r.facility_uid);
         if (isFacilityRole) {
           return w.type === WORKSPACE_TYPES.TEAM;
-        } else if (user._professionalProfileExists || user.hasProfessionalProfile) {
+        } else if (userWithAdmin._professionalProfileExists || userWithAdmin.hasProfessionalProfile) {
           return w.type === WORKSPACE_TYPES.PERSONAL;
         }
         return false;
@@ -863,16 +865,22 @@ export const DashboardProvider = ({ children }) => {
       setSelectedWorkspace(null);
       clearWorkspaceCookie();
 
+      // ADMIN BYPASS: Admins should never be redirected to onboarding
+      const userIsAdmin = isAdminSync(userWithAdmin);
+      if (userIsAdmin) {
+        return;
+      }
+
       // STRICT: If no workspaces available, user must complete onboarding
       // Check onboarding status to determine which type
-      const onboardingProgress = user.onboardingProgress || {};
+      const onboardingProgress = userWithAdmin.onboardingProgress || {};
       const professionalCompleted = onboardingProgress.professional?.completed === true;
       const facilityCompleted = onboardingProgress.facility?.completed === true;
-      const onboardingCompleted = professionalCompleted || facilityCompleted || user.onboardingCompleted === true;
+      const onboardingCompleted = professionalCompleted || facilityCompleted || userWithAdmin.onboardingCompleted === true;
 
       if (!onboardingCompleted && location.pathname.includes('/dashboard')) {
         const lang = window.location.pathname.split('/')[1] || 'fr';
-        const onboardingType = (user.roles || []).some(r => r.facility_uid) ? 'facility' : 'professional';
+        const onboardingType = (userWithAdmin.roles || []).some(r => r.facility_uid) ? 'facility' : 'professional';
         navigate(`/${lang}/onboarding?type=${onboardingType}`, { replace: true });
         return;
       }

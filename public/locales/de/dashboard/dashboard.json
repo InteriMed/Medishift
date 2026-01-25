@@ -65,6 +65,9 @@
       "resetProfileMessage": "Sind Sie sicher, dass Sie Ihr Profil zurücksetzen möchten?",
       "resetConfirm": "Profil zurücksetzen",
       "notifications": {
+        "title": "Benachrichtigungen",
+        "markAllRead": "Alle als gelesen markieren",
+        "noNotifications": "Keine Benachrichtigungen",
         "newEvent": {
           "title": "Neues Ereignis",
           "message": "Teammeeting um 15 Uhr",
@@ -201,7 +204,21 @@
       "success": {
         "verified_title": "Konto erfolgreich verifiziert!",
         "professional_redirect": "Ihr berufliches Profil ist jetzt aktiv. Weiterleitung zur Vervollständigung Ihres Profils...",
-        "facility_redirect": "Ihr Einrichtungsprofil ist jetzt aktiv. Weiterleitung zur Vervollständigung Ihres Profils..."
+        "facility_redirect": "Ihr Einrichtungsprofil ist jetzt aktiv. Weiterleitung zur Vervollständigung Ihres Profils...",
+        "dialog_title": "Profil Verifiziert",
+        "professional_message": "Ihr berufliches Profil wurde erfolgreich verifiziert. Sie können jetzt auf alle Plattformfunktionen zugreifen.",
+        "facility_message": "Ihr Einrichtungsprofil wurde erfolgreich verifiziert. Sie können jetzt auf alle Plattformfunktionen zugreifen."
+      },
+      "gln_info": {
+        "title": "Wo finden Sie Ihre GLN",
+        "facility_title": "Wo finden Sie die GLN Ihrer Einrichtung",
+        "where_to_find": "Wo finden Sie Ihre GLN?",
+        "where_to_find_facility": "Wo finden Sie die GLN Ihrer Einrichtung?",
+        "registry_info": "Sie finden Ihre GLN-Nummer im offiziellen Schweizer Gesundheitsregister:",
+        "facility_registry_info": "Sie finden die GLN-Nummer Ihrer Einrichtung im offiziellen Schweizer Unternehmensregister:",
+        "medreg_registry": "Schweizer Medizinisches Register (MEDREG)",
+        "nareg_registry": "Schweizer Apothekerregister (NAREG)",
+        "uid_registry": "Schweizer Unternehmensregister (UID/CHE)"
       },
       "phone": {
         "title": "Mobile Verifizierung",
@@ -273,7 +290,10 @@
       "clickHere": "Klicken Sie hier",
       "toContinue": "um später fortzufahren",
       "keepGoing": "Weitermachen",
-      "stopNow": "Tutorial stoppen"
+      "stopNow": "Tutorial stoppen",
+      "setupRequiredTitle": "Einrichtung erforderlich",
+      "cannotExit": "Persönliche Angaben sind erforderlich",
+      "setupRequiredDesc": "Nach Vervollständigung Ihrer persönlichen Angaben können Sie den Team-Zugang wählen, um auf Team- und HR-Funktionen der Einrichtung zuzugreifen."
     }
   },
   "userMenu": {

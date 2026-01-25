@@ -2,7 +2,13 @@
   "common": {
     "cancel": "Annuler",
     "autofillOptions": "Options de remplissage automatique",
-    "betaFill": "Remplissage Beta"
+    "betaFill": "Remplissage Beta",
+    "uploaded": "Téléchargé",
+    "view": "Voir",
+    "delete": "Supprimer",
+    "fillCurrentTab": "Remplir l'onglet actuel",
+    "fillAll": "Tout remplir",
+    "autofillTabSuccess": "Onglet actuel rempli avec des données de test (Beta)"
   },
   "facilityAccessChoice": {
     "title": "Choisissez votre accès établissement",
@@ -54,6 +60,8 @@
     "jobPreferences": "Préférences",
     "documentUploads": "Documents",
     "settings": "Paramètres",
+    "marketplacePreferences": "Marketplace",
+    "account": "Compte",
     "accountManagement": "Gestion du compte",
     "deleteAccount": "Supprimer le compte"
   },
@@ -462,7 +470,8 @@
     "education": "Formation",
     "selectEducationPlaceholder": "Sélectionnez une formation",
     "selectQualificationPlaceholder": "Sélectionnez une qualification",
-    "selectReferencePlaceholder": "Sélectionnez une référence"
+    "selectReferencePlaceholder": "Sélectionnez une référence",
+    "replaceWorkPermitButton": "Remplacer le permis de travail"
   },
   "onboarding": {
     "title": "Intégration",
@@ -477,6 +486,7 @@
     "nextSection": "Section suivante",
     "previousSection": "Section précédente"
   },
+  "profession": "Profession",
   "userRole": "Professionnel de santé",
   "subscription": {
     "status": "Statut",
@@ -520,5 +530,32 @@
     "message": "Pour débloquer toutes les fonctionnalités (travailler indépendamment, faire des remplacements, accéder à toutes les sections du profil), vous devez terminer le tutoriel complet.",
     "note": "Votre progression actuelle sera sauvegardée. Vous pourrez continuer là où vous vous êtes arrêté.",
     "button": "Redémarrer le tutoriel"
+  },
+  "settings": {
+    "title": "Paramètres & Préférences",
+    "subtitle": "Personnalisez votre expérience sur la plateforme, gérez les notifications et contrôlez les paramètres de votre compte.",
+    "platformSettingsTitle": "Paramètres de la plateforme",
+    "availabilitySettingsTitle": "Paramètres de disponibilité",
+    "notificationPreferencesTitle": "Préférences de notification",
+    "privacySettingsTitle": "Paramètres de confidentialité",
+    "marketplaceSettingsTitle": "Paramètres du marketplace",
+    "activeOnMarketplace": "Visible sur le Marketplace",
+    "activeOnMarketplaceDescription": "Activez cette option pour être visible par les recruteurs pour des postes à long terme uniquement. Cela n'affecte pas votre disponibilité pour les remplacements à court terme.",
+    "availabilityType": "Type de disponibilité",
+    "maxHoursPerWeek": "Heures maximum par semaine",
+    "noticePeriodDays": "Délai de préavis (jours)",
+    "earliestStartDate": "Date de début au plus tôt",
+    "availabilityNotes": "Notes de disponibilité",
+    "emailNotifications": "Notifications par e-mail",
+    "pushNotifications": "Notifications push",
+    "smsNotifications": "Notifications SMS",
+    "marketplaceNotifications": "Mises à jour du marketplace",
+    "scheduleNotifications": "Changements de planning",
+    "contractNotifications": "Mises à jour des contrats"
+  },
+  "account": {
+    "title": "Compte & Abonnement",
+    "subtitle": "Gérez votre abonnement, mot de passe et paramètres de compte.",
+    "passwordManagement": "Gestion du mot de passe"
   }
 }

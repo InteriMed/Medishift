@@ -4,6 +4,7 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 const config = require('../config');
+const { FUNCTION_CONFIG } = require('../config/keysDatabase');
 
 const db = getFirestore();
 
@@ -243,7 +244,7 @@ function calculateNextRun(scheduleData) {
 }
 
 exports.createScraperSchedule = onCall(
-  { region: config.region, database: 'medishift', cors: true },
+  FUNCTION_CONFIG,
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'You must be signed in');
@@ -303,7 +304,7 @@ exports.createScraperSchedule = onCall(
 );
 
 exports.updateScraperSchedule = onCall(
-  { region: config.region, database: 'medishift', cors: true },
+  FUNCTION_CONFIG,
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'You must be signed in');
@@ -355,7 +356,7 @@ exports.updateScraperSchedule = onCall(
 );
 
 exports.deleteScraperSchedule = onCall(
-  { region: config.region, database: 'medishift', cors: true },
+  FUNCTION_CONFIG,
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'You must be signed in');
@@ -384,7 +385,7 @@ exports.deleteScraperSchedule = onCall(
 );
 
 exports.getScraperSchedules = onCall(
-  { region: config.region, database: 'medishift', cors: true },
+  FUNCTION_CONFIG,
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'You must be signed in');
@@ -412,7 +413,7 @@ exports.getScraperSchedules = onCall(
 );
 
 exports.getScraperStatus = onCall(
-  { region: config.region, database: 'medishift', cors: true },
+  FUNCTION_CONFIG,
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'You must be signed in');

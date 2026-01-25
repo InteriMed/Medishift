@@ -88,5 +88,18 @@
   "shareThisPost": "Condividi Questo Post",
   "aboutAuthor": "Sull'Autore",
   "relatedPosts": "Post Correlati",
-  "ctaDescription": "Cta Description"
+  "ctaDescription": "Cta Description",
+  "hero": {
+    "badge": "Insights"
+  },
+  "ctaTitle": "Improve your healthcare recruitment today",
+  "ctaSubtitle": "InteriMed connects healthcare facilities with qualified professionals for temporary work assignments.",
+  "cta": {
+    "title": "Improve your healthcare recruitment today",
+    "subtitle": "InteriMed connects healthcare facilities with qualified professionals for temporary work assignments.",
+    "facilities": "For Facilities",
+    "professionals": "For Professionals",
+    "percentage": "98%",
+    "percentageLabel": "Satisfaction Rate"
+  }
 }

@@ -6,10 +6,15 @@ import { TUTORIAL_IDS } from '../../../config/tutorialSystem';
 const SIDEBAR_ORDER = ['profile', 'messages', 'contracts', 'calendar', 'marketplace', 'payroll', 'organization', 'settings'];
 
 const SidebarHighlight = ({ highlightSidebarItem }) => {
-  const { isTutorialActive, activeTutorial, stepData } = useTutorial();
-  const { completedTutorials = [], profileComplete, tutorialPassed } = useDashboard();
+  const { isTutorialActive, activeTutorial, stepData, completedTutorials } = useTutorial();
+  const { profileComplete, tutorialPassed } = useDashboard();
 
   const getNextSidebarItem = () => {
+    // Only highlight items when tutorial is active
+    if (!isTutorialActive) {
+      return null;
+    }
+
     if (highlightSidebarItem) {
       return highlightSidebarItem;
     }
@@ -18,7 +23,7 @@ const SidebarHighlight = ({ highlightSidebarItem }) => {
       return null;
     }
 
-    const isProfileTabsComplete = completedTutorials.includes(TUTORIAL_IDS.PROFILE_TABS) || completedTutorials.includes(TUTORIAL_IDS.FACILITY_PROFILE_TABS);
+    const isProfileTabsComplete = completedTutorials?.[TUTORIAL_IDS.PROFILE_TABS] === true || completedTutorials?.[TUTORIAL_IDS.FACILITY_PROFILE_TABS] === true;
     const isProfileComplete = profileComplete === true;
 
     if (!isProfileTabsComplete && !isProfileComplete) {
@@ -39,9 +44,9 @@ const SidebarHighlight = ({ highlightSidebarItem }) => {
             item === 'marketplace' ? TUTORIAL_IDS.MARKETPLACE :
               item === 'payroll' ? TUTORIAL_IDS.PAYROLL :
                 item === 'organization' ? TUTORIAL_IDS.ORGANIZATION :
-                  item === 'settings' ? TUTORIAL_IDS.SETTINGS : null;
+                  item === 'settings' ? TUTORIAL_IDS.ACCOUNT : null;
 
-      if (tutorialKey && !completedTutorials.includes(tutorialKey)) {
+      if (tutorialKey && completedTutorials?.[tutorialKey] !== true) {
         return item;
       }
     }

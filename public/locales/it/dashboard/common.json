@@ -15,6 +15,11 @@
     "startTutorial": "Inizia tutorial",
     "changeLanguage": "Cambia lingua",
     "profileAlt": "Profilo"
+  },
+  "buttons": {
+    "continue": "Continua",
+    "autoFill": "Compilazione automatica",
+    "ok": "OK"
   }
 }
 

@@ -19,12 +19,12 @@
       "labelKey": "tabs.documentUploads"
     },
     {
-      "id": "account",
-      "labelKey": "tabs.account"
+      "id": "marketplace",
+      "labelKey": "tabs.marketplacePreferences"
     },
     {
-      "id": "settings",
-      "labelKey": "tabs.settings"
+      "id": "account",
+      "labelKey": "tabs.account"
     }
   ],
   "fields": {
@@ -214,10 +214,10 @@
         "labelKey": "billingInformation.permitExpiryDate",
         "dependsOn": "employmentEligibility.workPermit.type",
         "dependsOnValue": [
-          "permit_b",
-          "permit_c",
-          "permit_l",
-          "permit_g",
+          "B",
+          "C",
+          "L",
+          "G",
           "other"
         ],
         "group": "employmentEligibility"
@@ -229,10 +229,10 @@
         "labelKey": "billingInformation.permitNumber",
         "dependsOn": "employmentEligibility.workPermit.type",
         "dependsOnValue": [
-          "permit_b",
-          "permit_c",
-          "permit_l",
-          "permit_g",
+          "B",
+          "C",
+          "L",
+          "G",
           "other"
         ],
         "group": "employmentEligibility"
@@ -245,10 +245,10 @@
         "labelKey": "billingInformation.issuingCanton",
         "dependsOn": "employmentEligibility.workPermit.type",
         "dependsOnValue": [
-          "permit_b",
-          "permit_c",
-          "permit_l",
-          "permit_g",
+          "B",
+          "C",
+          "L",
+          "G",
           "other"
         ],
         "group": "employmentEligibility"
@@ -328,6 +328,8 @@
         "docType": "workPermit",
         "name": "workPermitUrl",
         "required": true,
+        "dependsOn": null,
+        "dependsOnValue": null,
         "isMultiple": false,
         "labelKey": "documents.swissIdWorkPermit",
         "descriptionKey": "documents.swissIdWorkPermitDescription",
@@ -381,23 +383,26 @@
         "accept": ".pdf,.doc,.docx,.jpg,.png,.jpeg"
       }
     ],
-    "settings": [
+    "marketplace": [
       {
         "name": "platformSettings.detailedAvailability.availabilityType",
         "type": "dropdown",
         "optionsKey": "availabilityTypes",
         "required": false,
+        "isMultiple": true,
+        "defaultValue": ["all", "part_time", "full_time", "on_call"],
         "labelKey": "settings.availabilityType",
         "group": "platformSettings"
       },
       {
-        "name": "platformSettings.detailedAvailability.minHoursPerWeek",
+        "name": "platformSettings.detailedAvailability.maxHoursPerWeek",
         "type": "number",
         "required": false,
-        "labelKey": "settings.minHoursPerWeek",
+        "labelKey": "settings.maxHoursPerWeek",
         "group": "platformSettings",
         "min": 1,
-        "max": 60
+        "max": 50,
+        "defaultValue": 50
       },
       {
         "name": "platformSettings.detailedAvailability.noticePeriodDays",
@@ -406,14 +411,8 @@
         "labelKey": "settings.noticePeriodDays",
         "group": "platformSettings",
         "min": 0,
-        "max": 365
-      },
-      {
-        "name": "platformSettings.detailedAvailability.earliestStartDate",
-        "type": "date",
-        "required": false,
-        "labelKey": "settings.earliestStartDate",
-        "group": "platformSettings"
+        "max": 365,
+        "defaultValue": 0
       },
       {
         "name": "platformSettings.detailedAvailability.notes",
@@ -428,49 +427,49 @@
         "type": "checkbox",
         "required": false,
         "labelKey": "settings.activeOnMarketplace",
-        "group": "marketplace"
+        "descriptionKey": "settings.activeOnMarketplaceDescription",
+        "group": "marketplace",
+        "defaultValue": true
       },
       {
         "name": "notificationPreferences.email",
         "type": "checkbox",
         "required": false,
         "labelKey": "settings.emailNotifications",
-        "group": "notifications"
-      },
-      {
-        "name": "notificationPreferences.push",
-        "type": "checkbox",
-        "required": false,
-        "labelKey": "settings.pushNotifications",
-        "group": "notifications"
+        "group": "notifications",
+        "defaultValue": true
       },
       {
         "name": "notificationPreferences.sms",
         "type": "checkbox",
         "required": false,
         "labelKey": "settings.smsNotifications",
-        "group": "notifications"
+        "group": "notifications",
+        "defaultValue": true
       },
       {
         "name": "notificationPreferences.marketplaceUpdates",
         "type": "checkbox",
         "required": false,
         "labelKey": "settings.marketplaceNotifications",
-        "group": "notifications"
+        "group": "notifications",
+        "defaultValue": true
       },
       {
         "name": "notificationPreferences.scheduleChanges",
         "type": "checkbox",
         "required": false,
         "labelKey": "settings.scheduleNotifications",
-        "group": "notifications"
+        "group": "notifications",
+        "defaultValue": true
       },
       {
         "name": "notificationPreferences.contractUpdates",
         "type": "checkbox",
         "required": false,
         "labelKey": "settings.contractNotifications",
-        "group": "notifications"
+        "group": "notifications",
+        "defaultValue": true
       }
     ],
     "subscription": []
