@@ -39,7 +39,7 @@ const WeekDaySelector = ({ selectedDays, onChange }) => {
               : "bg-background text-foreground"
           )}
         >
-          {dayName}
+          {dayName.charAt(0)}
         </button>
       ))}
     </div>

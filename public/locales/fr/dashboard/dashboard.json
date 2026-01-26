@@ -4,7 +4,7 @@
       "overview": "Aperçu",
       "profile": "Profil",
       "contracts": "Contrats",
-      "messages": "Messages",
+      "communication": "Communication",
       "calendar": "Calendrier",
       "marketplace": "Marché",
       "settings": "Paramètres",
@@ -51,7 +51,7 @@
         "professionalLegalText3": "Selon le Code des Obligations (Art. 321a), vous devez obtenir l'approbation écrite de votre employeur principal pour travailler pour un concurrent.",
         "professionalLegalText4": "La loi exige 11 heures consécutives de repos entre les quarts (peut être réduit à 8 heures une fois par semaine).",
         "agreementStatus": "Statut de l'Accord",
-        "areYouEmployed": "Êtes-vous actuellement employé par un établissement ?",
+        "areYouEmployed": "Êtes-vous actuellement employé",
         "areYouEmployedDescription": "Activer si vous travaillez pour une organisation",
         "termsAcceptance": "Conditions et Considérations Légales",
         "termsAcceptanceDescription": "Je comprends et reconnais les considérations légales et les conditions d'utilisation",
@@ -60,7 +60,7 @@
         "note": "En continuant, vous reconnaissez avoir lu et compris les considérations légales applicables à votre rôle.",
         "restrictedServices": {
           "title": "Créer un Profil pour les Services Internes de l'Établissement Uniquement",
-          "description": "Ce compte ne peut être utilisé que pour accéder aux services internes de l'établissement. La vérification du compte doit être complétée pour accéder à tous les services.",
+          "description": "Vous devrez terminer la vérification d'intégration plus tard pour accéder aux services du marché",
           "modal": {
             "title": "Services Restreints - Accès Interne à l'Établissement Uniquement",
             "intro": "En créant votre profil avec un accès interne à l'établissement uniquement, vous n'aurez __NOT__ accès aux services suivants :",
@@ -91,7 +91,7 @@
         "facility": "Établissement",
         "facilityDescription": "Je représente une entreprise ou un établissement à la recherche de professionnels",
         "organization": "Organisation",
-        "organizationDescription": "Je représente une chaîne de pharmacies ou une organisation"
+        "organizationDescription": "Je représente une chaîne d'établissements ou une organisation"
       },
       "step3": {
         "chain": {
@@ -240,6 +240,10 @@
         "title": "Messages",
         "subtitle": "Communiquez avec les établissements et professionnels"
       },
+      "announcements": {
+        "title": "Annonces",
+        "subtitle": "Voir et gérer les annonces de l'établissement"
+      },
       "calendar": {
         "title": "Calendrier",
         "subtitle": "Gérez votre emploi du temps et vos rendez-vous"
@@ -297,15 +301,16 @@
       }
     },
     "navigation": {
-      "overview": "Overview",
+      "overview": "Aperçu",
+      "communication": "Communication",
       "messages": "Messages",
-      "contracts": "Contracts",
-      "calendar": "Calendar",
-      "profile": "Profile",
-      "marketplace": "Marketplace",
-      "payroll": "Payroll",
-      "organization": "Organization",
-      "settings": "Settings"
+      "contracts": "Contrats",
+      "calendar": "Calendrier",
+      "profile": "Profil",
+      "marketplace": "Marché",
+      "payroll": "Paie",
+      "organization": "Organisation",
+      "settings": "Paramètres"
     },
     "tutorial": {
       "selectionTitle": "Choisir le mode du tutoriel",

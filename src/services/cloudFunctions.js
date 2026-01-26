@@ -172,4 +172,23 @@ export const gesRegAPI = async (gln) => {
       error: error.message
     };
   }
+};
+
+// Commercial Registry Search API function
+export const commercialRegistrySearchAPI = async (criteria) => {
+  try {
+    const callCommercialRegistrySearchAPI = httpsCallable(functions, 'commercialRegistrySearchAPI');
+
+    const result = await callCommercialRegistrySearchAPI({
+      criteria
+    });
+
+    return result.data;
+  } catch (error) {
+    console.error('Commercial Registry Search API Error:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
 }; 

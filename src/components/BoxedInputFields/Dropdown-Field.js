@@ -127,14 +127,20 @@ const SimpleDropdown = ({
 
         <div
           className={`boxed-dropdown-selected ${error ? 'boxed-dropdown-selected--error' : ''} ${!selectedOption ? 'boxed-dropdown-placeholder' : ''}`}
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
         >
           {selectedOption ? selectedOption.label : (isOpen ? placeholder : '')}
         </div>
 
         <div
           className={`boxed-dropdown-arrow ${error ? 'boxed-dropdown-arrow--error' : ''}`}
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
         >
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -142,7 +148,10 @@ const SimpleDropdown = ({
         </div>
 
         {isOpen && (
-          <div className="boxed-dropdown-options">
+          <div 
+            className="boxed-dropdown-options boxed-inputfield-options--visible"
+            onClick={(e) => e.stopPropagation()}
+          >
             {searchable && (
               <div className="boxed-dropdown-search-container">
                 <input

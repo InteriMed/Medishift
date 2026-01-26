@@ -390,7 +390,12 @@
         "optionsKey": "availabilityTypes",
         "required": false,
         "isMultiple": true,
-        "defaultValue": ["all", "part_time", "full_time", "on_call"],
+        "defaultValue": [
+          "all",
+          "part_time",
+          "full_time",
+          "on_call"
+        ],
         "labelKey": "settings.availabilityType",
         "group": "platformSettings"
       },
@@ -659,4 +664,3 @@
     "qualificationTypes": "locales:dropdowns.qualificationTypes"
   }
 }
-

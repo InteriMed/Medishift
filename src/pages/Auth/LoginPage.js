@@ -16,6 +16,7 @@ import { ShieldAlert, X } from 'lucide-react';
 import { auth, firebaseApp, db, loginWithGoogle, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useNotification } from '../../contexts/NotificationContext';
+import PasswordResetModal from '../../components/PasswordResetModal/PasswordResetModal';
 import '../../styles/auth.css';
 
 function Login() {
@@ -30,10 +31,8 @@ function Login() {
     password: '',
     rememberMe: false
   });
-  const [modalError, setModalError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
+  const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
 
   // Ban state
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
@@ -80,7 +79,6 @@ function Login() {
 
     if (!validateForm()) return;
 
-    setModalError('');
     setIsLoading(true);
 
     try {
@@ -296,24 +294,6 @@ function Login() {
     }
   };
 
-  const handlePasswordReset = async () => {
-    if (!resetEmail.trim()) {
-      setModalError(t('auth.errors.emailRequired'));
-      showError(t('auth.errors.emailRequired'));
-      return;
-    }
-
-    try {
-      await sendPasswordResetEmail(auth, resetEmail);
-      setModalError('');
-      showError(t('auth.passwordReset.emailSent'));
-      setIsModalOpen(false);
-    } catch (error) {
-      // Password reset error
-      setModalError(t('auth.errors.resetFailed'));
-      showError(t('auth.errors.resetFailed'));
-    }
-  };
 
   return (
     <div className="auth-page-container bg-swiss-cross">
@@ -359,7 +339,7 @@ function Login() {
               </p>
               <button
                 type="button"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => setIsPasswordResetModalOpen(true)}
                 style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline', color: 'inherit', fontSize: 'var(--font-size-small)' }}
               >
                 {t('auth.login.resetPasswordLink')}
@@ -418,50 +398,11 @@ function Login() {
         </div>
       </div>
 
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            setIsModalOpen(false);
-            setModalError('');
-          }
-        }}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>{t('auth.login.passwordReset.title')}</h2>
-            </div>
-            <div className="modal-body">
-              <InputField
-                label={t('auth.login.email')}
-                type="email"
-                value={resetEmail}
-                onChange={(e) => {
-                  setResetEmail(e.target.value);
-                  if (modalError) setModalError('');
-                }}
-                placeholder="name@example.com"
-                required
-                error={modalError}
-              />
-              {modalError && (
-                <div className="error-message">
-                  {modalError}
-                </div>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button onClick={handlePasswordReset} className="auth-button primary-button">
-                {t('auth.login.passwordReset.sendEmail')}
-              </button>
-              <button onClick={() => {
-                setIsModalOpen(false);
-                setModalError('');
-              }} className="auth-button secondary-button">
-                {t('auth.login.passwordReset.backToLogin')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PasswordResetModal
+        isOpen={isPasswordResetModalOpen}
+        onClose={() => setIsPasswordResetModalOpen(false)}
+        userEmail={formData.email}
+      />
 
       {/* Ban Information Popup */}
       {isBanModalOpen && (

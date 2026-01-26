@@ -103,7 +103,6 @@ const AdminDashboard = () => {
       <PageHeader
         title={t('admin:dashboard.title', 'Admin Dashboard')}
         subtitle={t('admin:dashboard.subtitle', 'Overview of platform metrics and pending actions')}
-        variant="default"
       />
       
       <div className="flex-1 overflow-y-auto p-6 space-y-6">

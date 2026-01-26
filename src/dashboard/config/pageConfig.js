@@ -1,9 +1,9 @@
 import {
   FiCalendar,
   FiMessageSquare,
-  FiFileText,
   FiUser,
-  FiBox
+  FiBox,
+  FiBell
 } from 'react-icons/fi';
 
 export const pageConfig = {
@@ -17,10 +17,10 @@ export const pageConfig = {
     titleKey: 'dashboard.header.messages.title',
     subtitleKey: 'dashboard.header.messages.subtitle'
   },
-  '/dashboard/contracts': {
-    icon: FiFileText,
-    titleKey: 'dashboard.header.contracts.title',
-    subtitleKey: 'dashboard.header.contracts.subtitle'
+  '/dashboard/announcements': {
+    icon: FiBell,
+    titleKey: 'dashboard.header.announcements.title',
+    subtitleKey: 'dashboard.header.announcements.subtitle'
   },
   '/dashboard/profile': {
     icon: FiUser,

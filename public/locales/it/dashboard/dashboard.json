@@ -4,7 +4,7 @@
       "overview": "Panoramica",
       "profile": "Profilo",
       "contracts": "Contratti",
-      "messages": "Messaggi",
+      "communication": "Comunicazione",
       "calendar": "Calendario",
       "marketplace": "Marketplace",
       "payroll": "Buste Paga",
@@ -29,6 +29,10 @@
       "messages": {
         "title": "Messaggi",
         "subtitle": "Comunica con strutture e professionisti"
+      },
+      "announcements": {
+        "title": "Annunci",
+        "subtitle": "Visualizza e gestisci gli annunci della struttura"
       },
       "contracts": {
         "title": "Contratti",
@@ -132,7 +136,7 @@
         "facility": "Struttura",
         "facilityDescription": "Rappresento un'azienda o una struttura in cerca di professionisti",
         "organization": "Organizzazione",
-        "organizationDescription": "Rappresento una catena di farmacie o un'organizzazione"
+        "organizationDescription": "Rappresento una catena di stabilimenti o un'organizzazione"
       },
       "step3": {
         "chain": {
@@ -266,7 +270,7 @@
     },
     "navigation": {
       "overview": "Overview",
-      "messages": "Messages",
+      "communication": "Comunicazione",
       "contracts": "Contracts",
       "calendar": "Calendar",
       "profile": "Profile",

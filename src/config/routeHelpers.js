@@ -86,6 +86,7 @@ export const DASHBOARD_ROUTE_IDS = {
   PROFILE: 'profile',
   CALENDAR: 'calendar',
   MESSAGES: 'messages',
+  ANNOUNCEMENTS: 'announcements',
   CONTRACTS: 'contracts',
   MARKETPLACE: 'marketplace',
   PAYROLL: 'payroll',

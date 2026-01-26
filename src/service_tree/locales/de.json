@@ -8,7 +8,12 @@
     "common": "Allgemein",
     "account": "Konto",
     "documents": "Dokumente",
-    "api": "Verifizierung"
+    "api": "Verifizierung",
+    "catalog": "Katalog",
+    "organization": "Organisation",
+    "support": "Support",
+    "services": "Dienstleistungen",
+    "announcements": "Ankündigungen"
   },
   "calendar": {
     "getEvents": "Termine anzeigen",
@@ -91,6 +96,68 @@
     "healthRegistryLookupDesc": "Gesundheitsfachkraft im Register nachschlagen",
     "companySearch": "Unternehmen suchen",
     "companySearchDesc": "Gesundheitseinrichtung nach GLN finden"
+  },
+  "catalog": {
+    "searchOrganizations": "Organisationen suchen",
+    "searchOrganizationsDesc": "Organisationen, Ketten und Gruppen finden",
+    "getOrganization": "Organisation anzeigen",
+    "getOrganizationDesc": "Organisationsdetails und Informationen anzeigen",
+    "getOrganizationFacilities": "Einrichtungen anzeigen",
+    "getOrganizationFacilitiesDesc": "Alle Einrichtungen einer Organisation auflisten",
+    "searchProfessionals": "Fachkräfte suchen",
+    "searchProfessionalsDesc": "Gesundheitsfachkräfte und Mitarbeiter finden",
+    "getProfessional": "Fachkraft anzeigen",
+    "getProfessionalDesc": "Profil und Details der Fachkraft anzeigen",
+    "searchFacilities": "Einrichtungen suchen",
+    "searchFacilitiesDesc": "Apotheken, Kliniken und Gesundheitseinrichtungen finden",
+    "getFacility": "Einrichtung anzeigen",
+    "getFacilityDesc": "Profil und Details der Einrichtung anzeigen",
+    "searchAll": "Alles suchen",
+    "searchAllDesc": "In Organisationen, Fachkräften und Einrichtungen suchen"
+  },
+  "organization": {
+    "viewEmployees": "Mitarbeiter anzeigen",
+    "viewEmployeesDesc": "Mitarbeiter und Verzeichnis der Organisation anzeigen",
+    "viewOrganigram": "Organigramm anzeigen",
+    "viewOrganigramDesc": "Organisationsstruktur und Hierarchie anzeigen",
+    "viewHiring": "Einstellungsprozesse anzeigen",
+    "viewHiringDesc": "Einstellungsprozesse und Stellenangebote anzeigen",
+    "viewContracts": "Verträge anzeigen",
+    "viewContractsDesc": "Verträge und Vereinbarungen der Organisation anzeigen",
+    "viewPayroll": "Lohnabrechnung anzeigen",
+    "viewPayrollDesc": "Konsolidierte Lohnabrechnung und Zahlungen anzeigen",
+    "viewPolicyLibrary": "Richtlinienbibliothek anzeigen",
+    "viewPolicyLibraryDesc": "Richtlinien und Dokumente der Organisation anzeigen",
+    "uploadPolicy": "Richtlinie hochladen",
+    "uploadPolicyDesc": "Neues Richtliniendokument in die Bibliothek hochladen",
+    "viewProfile": "Organisationsprofil anzeigen",
+    "viewProfileDesc": "Organisationsprofil und Einstellungen anzeigen"
+  },
+  "support": {
+    "createTicket": "Support-Ticket erstellen",
+    "createTicketDesc": "Ein neues Support-Ticket für Hilfe erstellen",
+    "listTickets": "Meine Tickets anzeigen",
+    "listTicketsDesc": "Alle Ihre Support-Tickets anzeigen",
+    "getTicket": "Ticket anzeigen",
+    "getTicketDesc": "Details eines Support-Tickets anzeigen",
+    "addResponse": "Auf Ticket antworten",
+    "addResponseDesc": "Eine Antwort zu einem Support-Ticket hinzufügen"
+  },
+  "services": {
+    "createRequest": "Service-Anfrage erstellen",
+    "createRequestDesc": "Einen Service anfordern (Personal, Schulung, Beratung, etc.)",
+    "listRequests": "Service-Anfragen anzeigen",
+    "listRequestsDesc": "Alle Service-Anfragen anzeigen",
+    "getRequest": "Service-Anfrage anzeigen",
+    "getRequestDesc": "Details einer Service-Anfrage anzeigen",
+    "listAvailableServices": "Verfügbare Services auflisten",
+    "listAvailableServicesDesc": "Alle verfügbaren Services anzeigen, die Sie anfordern können"
+  },
+  "announcements": {
+    "createAnnouncement": "Ankündigung erstellen",
+    "createAnnouncementDesc": "Eine neue Ankündigung mit optionalem Sondage erstellen",
+    "votePoll": "Im Sondage abstimmen",
+    "votePollDesc": "Auf einen Sondage in einer Ankündigung abstimmen"
   },
   "search": {
     "placeholder": "Aktionen suchen...",

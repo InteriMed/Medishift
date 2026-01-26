@@ -25,7 +25,9 @@ const ResourceGrid = ({
     isLoadingProfile = false,
     scrollContainerRef,
     headerScrollRef,
-    nightView = false
+    nightView = false,
+    openAddRoleModal = false,
+    onAddRoleModalClose = null
 }) => {
     const { t } = useTranslation(['calendar', 'dashboard', 'dashboardProfile']);
     const navigate = useNavigate();
@@ -34,18 +36,27 @@ const ResourceGrid = ({
     const [editingRole, setEditingRole] = useState(null);
     const [teamMembers, setTeamMembers] = useState([]);
 
+    useEffect(() => {
+        if (openAddRoleModal) {
+            setEditingRole(null);
+            setShowAddRoleModal(true);
+        }
+    }, [openAddRoleModal]);
+
+    const handleModalClose = () => {
+        setShowAddRoleModal(false);
+        setEditingRole(null);
+        if (onAddRoleModalClose) {
+            onAddRoleModalClose();
+        }
+    };
+
     // Generate dates based on view and night view mode
     const dates = useMemo(() => {
         if (nightView) {
-            // Night view: show half previous day + half next day for each date
+            // Night view: show 1 column per date (starting at 12 PM)
             const baseDates = view === 'day' ? [currentDate] : getWeekDates(currentDate);
-            return baseDates.flatMap(date => {
-                const prevDay = new Date(date);
-                prevDay.setDate(prevDay.getDate() - 1);
-                const nextDay = new Date(date);
-                nextDay.setDate(nextDay.getDate() + 1);
-                return [{ date: prevDay, isHalf: true, side: 'second' }, { date: nextDay, isHalf: true, side: 'first' }];
-            });
+            return baseDates.map(date => ({ date, isHalf: false }));
         }
         if (view === 'day') {
             return [{ date: currentDate, isHalf: false }];
@@ -147,29 +158,29 @@ const ResourceGrid = ({
     useEffect(() => {
         const fetchTeamMembers = async () => {
             if (!selectedWorkspace?.facilityId) return;
-            
+
             try {
                 const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
                 const facilitySnap = await getDoc(facilityRef);
-                
+
                 if (facilitySnap.exists()) {
                     const facilityData = facilitySnap.data();
                     const employeesList = facilityData.employees || [];
                     const admins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
                     const employees = employeesList.filter(emp => emp.rights !== 'admin').map(emp => emp.uid);
                     const allMemberIds = [...new Set([...admins, ...employees])];
-                    
+
                     const memberPromises = allMemberIds.map(async (userId) => {
                         try {
                             const professionalProfileRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
                             const professionalProfileSnap = await getDoc(professionalProfileRef);
-                            
+
                             if (professionalProfileSnap.exists()) {
                                 const professionalData = professionalProfileSnap.data();
                                 const identity = professionalData.identity || {};
                                 const firstName = identity.legalFirstName || identity.firstName || '';
                                 const lastName = identity.legalLastName || identity.lastName || '';
-                                
+
                                 return {
                                     uid: userId,
                                     id: userId,
@@ -180,7 +191,7 @@ const ResourceGrid = ({
                             } else {
                                 const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
                                 const userSnap = await getDoc(userRef);
-                                
+
                                 if (userSnap.exists()) {
                                     const userData = userSnap.data();
                                     return {
@@ -197,7 +208,7 @@ const ResourceGrid = ({
                         }
                         return null;
                     });
-                    
+
                     const members = (await Promise.all(memberPromises)).filter(m => m !== null);
                     setTeamMembers(members);
                 }
@@ -205,7 +216,7 @@ const ResourceGrid = ({
                 // Error fetching team members
             }
         };
-        
+
         fetchTeamMembers();
     }, [selectedWorkspace?.facilityId]);
 
@@ -225,17 +236,17 @@ const ResourceGrid = ({
 
     const getWorkerName = (workerId) => {
         if (!workerId || workerId === 'placeholder') return null;
-        
+
         const teamMember = teamMembers.find(m => m.uid === workerId || m.id === workerId);
         if (teamMember) {
             return `${teamMember.firstName} ${teamMember.lastName}`.trim();
         }
-        
+
         const employee = employees?.find(e => e.id === workerId);
         if (employee) {
             return `${employee.firstName} ${employee.lastName}`.trim();
         }
-        
+
         return null;
     };
 
@@ -268,17 +279,8 @@ const ResourceGrid = ({
     return (
         <>
             {/* Facility Roles Sidebar - Sticky */}
-            <div className="sticky left-0 z-20 bg-background/95 backdrop-blur-sm border-r border-border" style={{ width: '14rem', top: 0 }}>
+            <div className="sticky left-0 z-20 bg-background/95 backdrop-blur-sm border-r border-b border-border" style={{ width: '14rem', top: 0 }}>
                 <div className="h-full flex flex-col">
-                    <div className="shrink-0 h-12 border-b border-border flex items-center justify-center gap-2 px-4 bg-muted/30">
-                        <button
-                            className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                            onClick={() => navigate('/dashboard/organization?tab=organigram')}
-                        >
-                            <FiSettings className="w-4 h-4" />
-                            {t('dashboardProfile:operations.facilityRolesTitle')}
-                        </button>
-                    </div>
                     <div className="flex-1 overflow-y-auto">
                         {shouldShowLoading ? (
                             <div className="flex items-center justify-center h-full min-h-[200px]">
@@ -286,18 +288,6 @@ const ResourceGrid = ({
                             </div>
                         ) : shouldShowEmptyState ? (
                             <div className="p-4 text-center">
-                                <p className="text-xs text-muted-foreground mb-2">
-                                    {t('dashboardProfile:operations.noWorkerRequirements')}
-                                </p>
-                                <button
-                                    onClick={() => {
-                                        setEditingRole(null);
-                                        setShowAddRoleModal(true);
-                                    }}
-                                    className="text-xs text-primary hover:underline"
-                                >
-                                    {t('dashboardProfile:operations.addWorkerRequirement')}
-                                </button>
                             </div>
                         ) : (
                             <>
@@ -319,8 +309,8 @@ const ResourceGrid = ({
                                         <div className="pl-2 overflow-hidden flex-1 min-w-0">
                                             <div className="font-medium text-xs truncate text-foreground">
                                                 {role.worker?.workerId && role.worker.workerId !== 'placeholder'
-                                                  ? getWorkerName(role.worker.workerId) || 'Unknown Worker'
-                                                  : role.worker?.placeholderName || getWorkerTypeLabel(role.workerType, role.workerTypeOther)}
+                                                    ? getWorkerName(role.worker.workerId) || 'Unknown Worker'
+                                                    : role.worker?.placeholderName || getWorkerTypeLabel(role.workerType, role.workerTypeOther)}
                                             </div>
                                             <div
                                                 className="text-[10px] truncate font-medium mt-0.5"
@@ -343,16 +333,6 @@ const ResourceGrid = ({
                                         </button>
                                     </div>
                                 ))}
-                                <button
-                                    onClick={() => {
-                                        setEditingRole(null);
-                                        setShowAddRoleModal(true);
-                                    }}
-                                    className="h-12 border-t border-border flex items-center justify-center gap-2 px-3 bg-muted/30 w-full hover:bg-muted/50 transition-colors text-xs font-semibold text-muted-foreground hover:text-foreground"
-                                >
-                                    <FiPlus className="w-3 h-3" />
-                                    {t('dashboardProfile:operations.addWorkerRequirement')}
-                                </button>
                             </>
                         )}
                     </div>
@@ -362,255 +342,280 @@ const ResourceGrid = ({
             {/* Main Grid Content - Scrollable */}
             <div className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }} ref={scrollContainerRef} onScroll={(e) => { if (headerScrollRef?.current) { headerScrollRef.current.scrollLeft = e.target.scrollLeft; } }}>
                 <div className="relative" style={{ minHeight: '400px', minWidth: `${dates.length * 200}px` }}>
-                {shouldShowLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    </div>
-                ) : shouldShowEmptyState ? (
-                    <div className="flex items-center justify-center h-full p-4">
-                        <div className="text-center">
-                            <p className="text-sm text-muted-foreground mb-4">
-                                {t('dashboardProfile:operations.noWorkerRequirements')}
-                            </p>
-                            <button
-                                onClick={() => {
-                                    setEditingRole(null);
-                                    setShowAddRoleModal(true);
-                                }}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-                            >
-                                <FiPlus className="w-4 h-4" />
-                                {t('dashboardProfile:operations.addWorkerRequirement')}
-                            </button>
+                    {shouldShowLoading ? (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         </div>
-                    </div>
-                ) : (
-                    <>
-                        {/* Day Headers with Morning/Afternoon Labels */}
-                        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border" style={{ height: '80px' }}>
-                            <div className="flex h-full">
-                                {dates.map((dateInfo, dateIndex) => {
-                                    const date = dateInfo.date || dateInfo;
-                                    const isHalf = dateInfo.isHalf;
-                                    const side = dateInfo.side;
-                                    const isToday = isSameDay(date, new Date());
-                                    const dayWidth = 100 / dates.length;
-                                    const leftPercent = dateIndex * dayWidth;
+                    ) : shouldShowEmptyState ? (
+                        <div className="flex items-center justify-center h-full p-4">
+                            <div className="text-center">
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    {t('dashboardProfile:operations.noWorkerRequirements')}
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Day Headers with Morning/Afternoon Labels */}
+                            <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border" style={{ height: '80px' }}>
+                                <div className="flex h-full">
+                                    <div className="shrink-0 border-r border-border" style={{ width: '14rem' }} />
+                                    <div className="flex-1 relative">
+                                        {dates.map((dateInfo, dateIndex) => {
+                                            const date = dateInfo.date || dateInfo;
+                                            const isHalf = dateInfo.isHalf;
+                                            const side = dateInfo.side;
+                                            const isToday = isSameDay(date, new Date());
+                                            const dayWidth = 100 / dates.length;
+                                            const leftPercent = dateIndex * dayWidth;
 
-                                    return (
-                                        <div
-                                            key={`${date.toISOString()}-${dateIndex}`}
-                                            className="absolute border-r border-border"
-                                            style={{
-                                                left: `${leftPercent}%`,
-                                                width: `${dayWidth}%`,
-                                                height: '100%'
-                                            }}
-                                        >
-                                            <div className={cn(
-                                                "h-12 flex flex-col items-center justify-center border-b border-border",
-                                                isToday && "bg-primary/5"
-                                            )}>
-                                                <span className={cn(
-                                                    "text-xs font-medium uppercase tracking-wider",
-                                                    isToday ? "text-primary" : "text-muted-foreground"
+                                            return (
+                                                <div
+                                                    key={`${date.toISOString()}-${dateIndex}`}
+                                                    className="absolute border-r border-border"
+                                                    style={{
+                                                        left: `${leftPercent}%`,
+                                                        width: `${dayWidth}%`,
+                                                        height: '100%'
+                                                    }}
+                                                >
+                                                <div className={cn(
+                                                    "h-12 flex flex-col items-center justify-center border-b border-border",
+                                                    isToday && "bg-primary/5"
                                                 )}>
-                                                    {date.toLocaleDateString(undefined, { weekday: 'short' })}
-                                                </span>
-                                                <span className={cn(
-                                                    "text-sm font-semibold mt-0.5 w-7 h-7 flex items-center justify-center rounded-full",
-                                                    isToday ? "bg-primary text-primary-foreground" : "text-foreground"
-                                                )}>
-                                                    {date.getDate()}
-                                                </span>
+                                                    <span className={cn(
+                                                        "text-xs font-medium uppercase tracking-wider",
+                                                        isToday ? "text-primary" : "text-muted-foreground"
+                                                    )}>
+                                                        {date.toLocaleDateString(undefined, { weekday: 'short' })}
+                                                    </span>
+                                                    <span className={cn(
+                                                        "text-sm font-semibold mt-0.5 w-7 h-7 flex items-center justify-center rounded-full",
+                                                        isToday ? "bg-primary text-primary-foreground" : "text-foreground"
+                                                    )}>
+                                                        {date.getDate()}
+                                                    </span>
+                                                </div>
+                                                <div className="h-8 flex">
+                                                    {nightView ? (
+                                                        <>
+                                                            <div className="flex-1 border-r border-border flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
+                                                                {t('calendar:pm', 'PM')}
+                                                            </div>
+                                                            <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
+                                                                {t('calendar:am', 'AM')}
+                                                            </div>
+                                                        </>
+                                                    ) : !isHalf ? (
+                                                        <>
+                                                            <div className="flex-1 border-r border-border flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
+                                                                {t('calendar:morning', 'Morning')}
+                                                            </div>
+                                                            <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
+                                                                {t('calendar:afternoon', 'Afternoon')}
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
+                                                            {side === 'first' ? t('calendar:morning', 'Morning') : t('calendar:afternoon', 'Afternoon')}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="h-8 flex">
+                                        );
+                                    })}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Grid Rows */}
+                            {expandedFacilityRoles.map((role, roleIndex) => (
+                                <div key={role.uniqueKey} className="border-b border-border" style={{ height: '60px' }}>
+                                    {dates.map((dateInfo, dateIndex) => {
+                                        const date = dateInfo.date || dateInfo;
+                                        const isHalf = dateInfo.isHalf || false;
+                                        const side = dateInfo.side;
+                                        const roleEvents = events.filter(e => {
+                                            const eventStart = new Date(e.start);
+                                            const eventEnd = new Date(e.end);
+
+                                            if (nightView) {
+                                                // Shift window: 12 PM Today to 12 PM Tomorrow
+                                                const shiftStart = new Date(date);
+                                                shiftStart.setHours(12, 0, 0, 0);
+                                                const shiftEnd = new Date(date);
+                                                shiftEnd.setDate(shiftEnd.getDate() + 1);
+                                                shiftEnd.setHours(12, 0, 0, 0);
+
+                                                if (!(eventStart < shiftEnd && eventEnd > shiftStart)) return false;
+                                            } else {
+                                                if (!isSameDay(eventStart, date)) return false;
+                                            }
+
+                                            if (role.worker) {
+                                                if (role.worker.workerId && role.worker.workerId !== 'placeholder') {
+                                                    return (e.workerId === role.worker.workerId || e.employeeId === role.worker.workerId);
+                                                } else if (role.worker.placeholderName) {
+                                                    return (e.workerName === role.worker.placeholderName || e.employeeName === role.worker.placeholderName);
+                                                }
+                                            }
+
+                                            const eventRole = e.workerRole || e.employeeRole;
+                                            const eventWorkerType = e.workerType;
+                                            return (eventRole === role.workerType ||
+                                                eventWorkerType === role.workerType ||
+                                                (role.workerType === 'other' && eventRole === role.workerTypeOther));
+                                        });
+                                        const isToday = isSameDay(date, new Date());
+                                        const dayWidth = 100 / dates.length;
+                                        const leftPercent = dateIndex * dayWidth;
+
+                                        // Filter events by time period (morning/afternoon or PM/AM)
+                                        const periodEvents = roleEvents.filter(event => {
+                                            if (nightView) {
+                                                // Split into PM (12:00-00:00) and AM (00:00-12:00)
+                                                // This is used for morning/afternoon sub-columns if we still want them
+                                                // But ResourceGrid rows are 60px high, so maybe they are just lists?
+                                                // Actually, the current JSX (lines 535-575) splits into two flex-1 divs.
+                                                return true;
+                                            }
+                                            if (isHalf) {
+                                                const eventHour = new Date(event.start).getHours();
+                                                if (side === 'first') {
+                                                    return eventHour < 12; // Morning (0-11)
+                                                } else {
+                                                    return eventHour >= 12; // Afternoon (12-23)
+                                                }
+                                            }
+                                            return true; // Show all events if not half day
+                                        });
+
+                                        return (
+                                            <div
+                                                key={`${date.toISOString()}-${dateIndex}`}
+                                                className={cn(
+                                                    "absolute border-r border-border p-1 flex relative group hover:bg-muted/30 transition-colors",
+                                                    isToday && "bg-primary/5 hover:bg-primary/10"
+                                                )}
+                                                style={{
+                                                    left: `${leftPercent}%`,
+                                                    width: `${dayWidth}%`,
+                                                    height: '100%'
+                                                }}
+                                                onClick={() => {
+                                                    const start = new Date(date);
+                                                    if (isHalf && side === 'first') {
+                                                        start.setHours(0, 0, 0, 0);
+                                                    } else if (isHalf && side === 'second') {
+                                                        start.setHours(12, 0, 0, 0);
+                                                    } else {
+                                                        start.setHours(9, 0, 0, 0);
+                                                    }
+                                                    const end = new Date(start);
+                                                    if (isHalf) {
+                                                        end.setHours(start.getHours() + 12, 0, 0, 0);
+                                                    } else {
+                                                        end.setHours(17, 0, 0, 0);
+                                                    }
+                                                    const newEvent = {
+                                                        id: `temp-${Date.now()}`,
+                                                        start,
+                                                        end,
+                                                        workerType: role.workerType,
+                                                        workerRole: role.workerType === 'other' ? role.workerTypeOther : role.workerType,
+                                                        workerId: role.worker?.workerId || null,
+                                                        workerName: role.worker?.placeholderName || null,
+                                                        title: role.worker?.workerId && role.worker.workerId !== 'placeholder'
+                                                            ? getWorkerName(role.worker.workerId) || 'Unknown'
+                                                            : role.worker?.placeholderName || getWorkerTypeLabel(role.workerType, role.workerTypeOther),
+                                                        color: role.color,
+                                                        color1: role.color1 || role.color
+                                                    };
+                                                    onCreateEvent(newEvent, true);
+                                                }}
+                                            >
                                                 {!isHalf ? (
                                                     <>
-                                                        <div className="flex-1 border-r border-border flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
-                                                            {t('calendar:morning', 'Morning')}
+                                                        <div className="flex-1 border-r border-border p-0.5 flex flex-col gap-0.5">
+                                                            {periodEvents.filter(e => {
+                                                                const h = new Date(e.start).getHours();
+                                                                return nightView ? (h >= 12) : (h < 12);
+                                                            }).map(event => (
+                                                                <div
+                                                                    key={event.id}
+                                                                    className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
+                                                                    style={{
+                                                                        backgroundColor: event.color1 || role.color || '#e2e8f0',
+                                                                        borderColor: event.color || role.color || '#cbd5e1',
+                                                                        color: '#1e293b'
+                                                                    }}
+                                                                    onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
+                                                                >
+                                                                    <div className="font-medium truncate">{event.title || 'Assignment'}</div>
+                                                                    <div className="text-[9px] opacity-80">
+                                                                        {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                        <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
-                                                            {t('calendar:afternoon', 'Afternoon')}
+                                                        <div className="flex-1 p-0.5 flex flex-col gap-0.5">
+                                                            {periodEvents.filter(e => {
+                                                                const h = new Date(e.start).getHours();
+                                                                return nightView ? (h < 12) : (h >= 12);
+                                                            }).map(event => (
+                                                                <div
+                                                                    key={event.id}
+                                                                    className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
+                                                                    style={{
+                                                                        backgroundColor: event.color1 || role.color || '#e2e8f0',
+                                                                        borderColor: event.color || role.color || '#cbd5e1',
+                                                                        color: '#1e293b'
+                                                                    }}
+                                                                    onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
+                                                                >
+                                                                    <div className="font-medium truncate">{event.title || 'Assignment'}</div>
+                                                                    <div className="text-[9px] opacity-80">
+                                                                        {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     </>
                                                 ) : (
-                                                    <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
-                                                        {side === 'first' ? t('calendar:morning', 'Morning') : t('calendar:afternoon', 'Afternoon')}
+                                                    <div className="w-full p-0.5 flex flex-col gap-0.5">
+                                                        {periodEvents.map(event => (
+                                                            <div
+                                                                key={event.id}
+                                                                className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
+                                                                style={{
+                                                                    backgroundColor: event.color1 || role.color || '#e2e8f0',
+                                                                    borderColor: event.color || role.color || '#cbd5e1',
+                                                                    color: '#1e293b'
+                                                                }}
+                                                                onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
+                                                            >
+                                                                <div className="font-medium truncate">{event.title || 'Assignment'}</div>
+                                                                <div className="text-[9px] opacity-80">
+                                                                    {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 )}
                                             </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Grid Rows */}
-                        {expandedFacilityRoles.map((role, roleIndex) => (
-                            <div key={role.uniqueKey} className="border-b border-border" style={{ height: '60px' }}>
-                                {dates.map((dateInfo, dateIndex) => {
-                                    const date = dateInfo.date || dateInfo;
-                                    const isHalf = dateInfo.isHalf || false;
-                                    const side = dateInfo.side;
-                                    const roleEvents = events.filter(e => {
-                                        const eventDate = new Date(e.start);
-                                        if (!isSameDay(eventDate, date)) return false;
-                                    
-                                    if (role.worker) {
-                                        if (role.worker.workerId && role.worker.workerId !== 'placeholder') {
-                                            return (e.workerId === role.worker.workerId || e.employeeId === role.worker.workerId);
-                                        } else if (role.worker.placeholderName) {
-                                            return (e.workerName === role.worker.placeholderName || e.employeeName === role.worker.placeholderName);
-                                        }
-                                    }
-                                    
-                                    const eventRole = e.workerRole || e.employeeRole;
-                                    const eventWorkerType = e.workerType;
-                                    return (eventRole === role.workerType ||
-                                        eventWorkerType === role.workerType ||
-                                        (role.workerType === 'other' && eventRole === role.workerTypeOther));
-                                });
-                                    const isToday = isSameDay(date, new Date());
-                                    const dayWidth = 100 / dates.length;
-                                    const leftPercent = dateIndex * dayWidth;
-
-                                    // Filter events by time period (morning/afternoon)
-                                    const periodEvents = roleEvents.filter(event => {
-                                        if (isHalf) {
-                                            const eventHour = new Date(event.start).getHours();
-                                            if (side === 'first') {
-                                                return eventHour < 12; // Morning (0-11)
-                                            } else {
-                                                return eventHour >= 12; // Afternoon (12-23)
-                                            }
-                                        }
-                                        return true; // Show all events if not half day
-                                    });
-
-                                    return (
-                                        <div
-                                            key={`${date.toISOString()}-${dateIndex}`}
-                                            className={cn(
-                                                "absolute border-r border-border p-1 flex relative group hover:bg-muted/30 transition-colors",
-                                                isToday && "bg-primary/5 hover:bg-primary/10"
-                                            )}
-                                            style={{
-                                                left: `${leftPercent}%`,
-                                                width: `${dayWidth}%`,
-                                                height: '100%'
-                                            }}
-                                            onClick={() => {
-                                                const start = new Date(date);
-                                                if (isHalf && side === 'first') {
-                                                    start.setHours(0, 0, 0, 0);
-                                                } else if (isHalf && side === 'second') {
-                                                    start.setHours(12, 0, 0, 0);
-                                                } else {
-                                                    start.setHours(9, 0, 0, 0);
-                                                }
-                                                const end = new Date(start);
-                                                if (isHalf) {
-                                                    end.setHours(start.getHours() + 12, 0, 0, 0);
-                                                } else {
-                                                    end.setHours(17, 0, 0, 0);
-                                                }
-                                                const newEvent = {
-                                                    id: `temp-${Date.now()}`,
-                                                    start,
-                                                    end,
-                                                    workerType: role.workerType,
-                                                    workerRole: role.workerType === 'other' ? role.workerTypeOther : role.workerType,
-                                                    workerId: role.worker?.workerId || null,
-                                                    workerName: role.worker?.placeholderName || null,
-                                                    title: role.worker?.workerId && role.worker.workerId !== 'placeholder'
-                                                      ? getWorkerName(role.worker.workerId) || 'Unknown'
-                                                      : role.worker?.placeholderName || getWorkerTypeLabel(role.workerType, role.workerTypeOther),
-                                                    color: role.color,
-                                                    color1: role.color1 || role.color
-                                                };
-                                                onCreateEvent(newEvent, true);
-                                            }}
-                                        >
-                                            {!isHalf ? (
-                                                <>
-                                                    <div className="flex-1 border-r border-border p-0.5 flex flex-col gap-0.5">
-                                                        {periodEvents.filter(e => new Date(e.start).getHours() < 12).map(event => (
-                                                            <div
-                                                                key={event.id}
-                                                                className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
-                                                                style={{
-                                                                    backgroundColor: event.color1 || role.color || '#e2e8f0',
-                                                                    borderColor: event.color || role.color || '#cbd5e1',
-                                                                    color: '#1e293b'
-                                                                }}
-                                                                onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
-                                                            >
-                                                                <div className="font-medium truncate">{event.title || 'Assignment'}</div>
-                                                                <div className="text-[9px] opacity-80">
-                                                                    {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    <div className="flex-1 p-0.5 flex flex-col gap-0.5">
-                                                        {periodEvents.filter(e => new Date(e.start).getHours() >= 12).map(event => (
-                                                            <div
-                                                                key={event.id}
-                                                                className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
-                                                                style={{
-                                                                    backgroundColor: event.color1 || role.color || '#e2e8f0',
-                                                                    borderColor: event.color || role.color || '#cbd5e1',
-                                                                    color: '#1e293b'
-                                                                }}
-                                                                onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
-                                                            >
-                                                                <div className="font-medium truncate">{event.title || 'Assignment'}</div>
-                                                                <div className="text-[9px] opacity-80">
-                                                                    {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <div className="w-full p-0.5 flex flex-col gap-0.5">
-                                                    {periodEvents.map(event => (
-                                                        <div
-                                                            key={event.id}
-                                                            className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
-                                                            style={{
-                                                                backgroundColor: event.color1 || role.color || '#e2e8f0',
-                                                                borderColor: event.color || role.color || '#cbd5e1',
-                                                                color: '#1e293b'
-                                                            }}
-                                                            onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
-                                                        >
-                                                            <div className="font-medium truncate">{event.title || 'Assignment'}</div>
-                                                            <div className="text-[9px] opacity-80">
-                                                                {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ))}
-                    </>
-                )}
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </>
+                    )}
                 </div>
             </div>
 
             {/* Add/Edit Facility Role Modal */}
             <AddFacilityRoleModal
                 isOpen={showAddRoleModal}
-                onClose={() => {
-                    setShowAddRoleModal(false);
-                    setEditingRole(null);
-                }}
+                onClose={handleModalClose}
                 profileData={profileData}
                 onSave={handleSaveRole}
                 onDelete={handleDeleteRole}

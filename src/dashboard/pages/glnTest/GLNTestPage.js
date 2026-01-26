@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { healthRegistryAPI, companySearchAPI, companyDetailsAPI, gesRegAPI } from '../../../services/cloudFunctions';
+import { healthRegistryAPI, companySearchAPI, companyDetailsAPI, gesRegAPI, commercialRegistrySearchAPI } from '../../../services/cloudFunctions';
 import Button from '../../../components/BoxedInputFields/Button';
 import PersonnalizedInputField from '../../../components/BoxedInputFields/Personnalized-InputField';
 import './GLNTestPage.css';
 
 const GLNTestPage = () => {
   const [gln, setGln] = useState('7601001676183');
-  const [registry, setRegistry] = useState('all'); // all, medReg, facilities, gesReg
+  const [registry, setRegistry] = useState('all'); // all, medReg, facilities, gesReg, commercialRegistry
   const [loading, setLoading] = useState(false);
   const [professionalResult, setProfessionalResult] = useState(null);
   const [companyResult, setCompanyResult] = useState(null);
   const [companyDetails, setCompanyDetails] = useState(null);
   const [gesRegResult, setGesRegResult] = useState(null);
+  const [commercialRegistryResult, setCommercialRegistryResult] = useState(null);
   const [error, setError] = useState(null);
 
   const extractMedRegData = (entry) => {
@@ -59,6 +60,24 @@ const GLNTestPage = () => {
     };
   };
 
+  const extractCommercialRegistryData = (result) => {
+    if (!result?.data) return null;
+    if (result.data.results && result.data.results.length > 0) {
+      const entry = result.data.results[0];
+      return {
+        name: entry.name || '',
+        uid: entry.uid || '',
+        seat: entry.seat || '',
+        legalForm: entry.legalForm || '',
+        legalFormCode: entry.legalFormCode || '',
+        chNum: entry.chNum || '',
+        idCantonal: entry.idCantonal || '',
+        status: entry.status || false
+      };
+    }
+    return null;
+  };
+
   const handleExtract = async () => {
     if (!gln || gln.trim().length === 0) {
       setError('Please enter a GLN number');
@@ -76,6 +95,7 @@ const GLNTestPage = () => {
       setCompanyDetails(null);
     }
     if (registry === 'all' || registry === 'gesReg') setGesRegResult(null);
+    if (registry === 'all' || registry === 'commercialRegistry') setCommercialRegistryResult(null);
 
     const promises = [];
 
@@ -133,6 +153,21 @@ const GLNTestPage = () => {
       );
     }
 
+    // 4. Commercial Registry
+    if (registry === 'all' || registry === 'commercialRegistry') {
+      promises.push(
+        commercialRegistrySearchAPI(glnString)
+          .then(res => {
+            setCommercialRegistryResult(res);
+            return { type: 'commercialRegistry', success: true };
+          })
+          .catch(err => {
+            console.error('Commercial Registry Error:', err);
+            setCommercialRegistryResult({ success: false, error: err.message });
+          })
+      );
+    }
+
     await Promise.allSettled(promises);
     setLoading(false);
   };
@@ -142,17 +177,17 @@ const GLNTestPage = () => {
       <div className="gln-test-container">
         <h1 className="gln-test-title">GLN Extraction Test</h1>
         <p className="gln-test-description">
-          Search specific registries: MedReg (Professionals), Facilities (Companies), or GesReg (Health Professions).
+          Search specific registries: MedReg (Professionals), Facilities (Companies), GesReg (Health Professions), or Commercial Registry (Organizations).
         </p>
 
         <div className="gln-test-input-section">
           <div style={{ display: 'flex', gap: '1rem', width: '100%', alignItems: 'flex-end' }}>
             <div style={{ flex: 1 }}>
               <PersonnalizedInputField
-                label="GLN Number"
+                label={registry === 'commercialRegistry' ? "Commercial Registry Number (UID/CHE)" : "GLN Number"}
                 value={gln}
                 onChange={(e) => setGln(e.target.value)}
-                placeholder="Enter 13-digit GLN number"
+                placeholder={registry === 'commercialRegistry' ? "CHE-106.029.451" : "Enter 13-digit GLN number"}
                 disabled={loading}
               />
             </div>
@@ -168,6 +203,7 @@ const GLNTestPage = () => {
                 <option value="medReg">MedReg (Medical Professionals)</option>
                 <option value="facilities">Facilities (Company Registry)</option>
                 <option value="gesReg">GesReg (Health Professions)</option>
+                <option value="commercialRegistry">Commercial Registry (Organizations)</option>
               </select>
             </div>
           </div>
@@ -235,6 +271,22 @@ const GLNTestPage = () => {
               )}
               <div className="gln-test-json-container">
                 <pre className="gln-test-json">{JSON.stringify(gesRegResult, null, 2)}</pre>
+              </div>
+            </div>
+          )}
+
+          {/* Commercial Registry Results */}
+          {commercialRegistryResult && (
+            <div className="gln-test-result-section">
+              <h2 className="gln-test-result-title">4. Commercial Registry Result</h2>
+              {commercialRegistryResult.success && (
+                <div className="bg-blue-50 p-4 border rounded mb-4 text-sm">
+                  <strong>Extracted Commercial Registry Data:</strong>
+                  <pre>{JSON.stringify(extractCommercialRegistryData(commercialRegistryResult), null, 2)}</pre>
+                </div>
+              )}
+              <div className="gln-test-json-container">
+                <pre className="gln-test-json">{JSON.stringify(commercialRegistryResult, null, 2)}</pre>
               </div>
             </div>
           )}

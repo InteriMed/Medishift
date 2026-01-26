@@ -85,7 +85,7 @@ const StopTutorialConfirmModal = ({
                             <FiUser style={{ color: 'var(--muted-foreground, #64748b)' }} size={18} />
                         </div>
                         <span className="font-medium text-sm" style={{ color: 'var(--foreground, #1e293b)' }}>
-                            {t('tabs:personalDetails', 'Personal Details')}
+                            {t('tabs:personalDetails', 'Personal')}
                         </span>
                     </div>
                 </div>

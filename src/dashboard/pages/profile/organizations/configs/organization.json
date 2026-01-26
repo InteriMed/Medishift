@@ -1,0 +1,319 @@
+{
+  "profileType": "organization",
+  "profileTypeNameKey": "profileTypes.organization",
+  "tabs": [
+    {
+      "id": "organizationCoreDetails",
+      "labelKey": "tabs.organizationCoreDetails"
+    },
+    {
+      "id": "organizationLegalBilling",
+      "labelKey": "tabs.organizationLegalBilling"
+    },
+    {
+      "id": "organizationVerification",
+      "labelKey": "tabs.organizationVerification"
+    },
+    {
+      "id": "account",
+      "labelKey": "tabs.account"
+    }
+  ],
+  "fields": {
+    "organizationCoreDetails": [
+      {
+        "name": "organizationName",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.organizationName",
+        "placeholderKey": "organizationDetails.organizationNamePlaceholder",
+        "validationRules": {
+          "minLength": 3
+        },
+        "group": "general"
+      },
+      {
+        "name": "additionalName",
+        "type": "text",
+        "required": false,
+        "labelKey": "organizationDetails.additionalName",
+        "placeholderKey": "organizationDetails.additionalNamePlaceholder",
+        "group": "general"
+      },
+      {
+        "name": "organizationType",
+        "type": "dropdown",
+        "optionsKey": "organizationTypes",
+        "required": true,
+        "labelKey": "organizationDetails.organizationType",
+        "placeholderKey": "organizationDetails.selectOrganizationType",
+        "group": "general"
+      },
+      {
+        "name": "organizationDetails.name",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.name",
+        "group": "general"
+      },
+      {
+        "name": "organizationDetails.additionalName",
+        "type": "text",
+        "required": false,
+        "labelKey": "organizationDetails.additionalName",
+        "group": "general"
+      },
+      {
+        "name": "organizationDetails.organizationType",
+        "type": "dropdown",
+        "optionsKey": "organizationTypes",
+        "required": false,
+        "labelKey": "organizationDetails.organizationType",
+        "group": "general"
+      },
+      {
+        "name": "organizationDetails.registeredSince",
+        "type": "date",
+        "required": false,
+        "labelKey": "organizationDetails.registeredSince",
+        "group": "general"
+      },
+      {
+        "name": "organizationDetails.headquartersAddress.street",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.street",
+        "placeholderKey": "organizationDetails.streetPlaceholder",
+        "group": "address"
+      },
+      {
+        "name": "organizationDetails.headquartersAddress.number",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.houseNumber",
+        "placeholderKey": "organizationDetails.houseNumberPlaceholder",
+        "group": "address"
+      },
+      {
+        "name": "organizationDetails.headquartersAddress.city",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.city",
+        "placeholderKey": "organizationDetails.cityPlaceholder",
+        "group": "address"
+      },
+      {
+        "name": "organizationDetails.headquartersAddress.postalCode",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.postalCode",
+        "placeholderKey": "organizationDetails.postalPlaceholder",
+        "validationRules": {
+          "pattern": "^[0-9]{4}$",
+          "patternErrorKey": "validation.invalidPostalCodeSwiss"
+        },
+        "group": "address"
+      },
+      {
+        "name": "organizationDetails.headquartersAddress.canton",
+        "type": "dropdown",
+        "optionsKey": "cantons",
+        "required": true,
+        "labelKey": "organizationDetails.canton",
+        "placeholderKey": "organizationDetails.selectCanton",
+        "group": "address"
+      },
+      {
+        "name": "organizationDetails.headquartersAddress.country",
+        "type": "dropdown",
+        "optionsKey": "countries",
+        "required": true,
+        "labelKey": "organizationDetails.country",
+        "placeholderKey": "organizationDetails.selectCountry",
+        "group": "address"
+      },
+      {
+        "name": "organizationDetails.glnCompany",
+        "type": "text",
+        "required": false,
+        "labelKey": "organizationDetails.glnCompany",
+        "placeholderKey": "organizationDetails.glnCompanyPlaceholder",
+        "group": "general"
+      },
+      {
+        "name": "contact.primaryEmail",
+        "type": "email",
+        "required": true,
+        "labelKey": "organizationDetails.primaryEmail",
+        "placeholderKey": "organizationDetails.primaryEmailPlaceholder",
+        "validationRules": {
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+          "patternErrorKey": "validation.invalidEmail"
+        },
+        "group": "contact"
+      },
+      {
+        "name": "contact.primaryPhonePrefix",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.primaryPhonePrefix",
+        "placeholderKey": "organizationDetails.primaryPhonePrefixPlaceholder",
+        "group": "contact"
+      },
+      {
+        "name": "contact.primaryPhone",
+        "type": "tel",
+        "required": true,
+        "labelKey": "organizationDetails.primaryPhone",
+        "placeholderKey": "organizationDetails.primaryPhonePlaceholder",
+        "validationRules": {
+          "pattern": "^\\+?[0-9\\s-()]{7,20}$",
+          "patternErrorKey": "validation.invalidPhoneNumber"
+        },
+        "group": "contact"
+      }
+    ],
+    "organizationLegalBilling": [
+      {
+        "name": "identityLegal.legalCompanyName",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.legalCompanyName",
+        "validationRules": {
+          "minLength": 3
+        },
+        "group": "legal"
+      },
+      {
+        "name": "identityLegal.uidNumber",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.uidNumber",
+        "placeholderKey": "organizationDetails.uidNumberPlaceholder",
+        "infoKey": "organizationDetails.uidNumberInfoSwiss",
+        "validationRules": {
+          "pattern": "^CHE-[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}(\\sMWST)?$",
+          "patternErrorKey": "validation.invalidUIDNumberSwiss"
+        },
+        "group": "legal"
+      },
+      {
+        "name": "identityLegal.commercialRegisterNumber",
+        "type": "text",
+        "required": false,
+        "labelKey": "organizationDetails.commercialRegisterNumber",
+        "placeholderKey": "organizationDetails.commercialRegisterNumberPlaceholder",
+        "group": "legal"
+      },
+      {
+        "name": "billingInformation.legalName",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.billingLegalName",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.uidNumber",
+        "type": "text",
+        "required": false,
+        "labelKey": "organizationDetails.billingUidNumber",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.billingAddress.street",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.billingStreet",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.billingAddress.number",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.billingHouseNumber",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.billingAddress.city",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.billingCity",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.billingAddress.postalCode",
+        "type": "text",
+        "required": true,
+        "labelKey": "organizationDetails.billingPostalCode",
+        "validationRules": {
+          "pattern": "^[0-9]{4}$",
+          "patternErrorKey": "validation.invalidPostalCodeSwiss"
+        },
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.billingAddress.canton",
+        "type": "dropdown",
+        "optionsKey": "cantons",
+        "required": true,
+        "labelKey": "organizationDetails.billingCanton",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.billingAddress.country",
+        "type": "dropdown",
+        "optionsKey": "countries",
+        "required": true,
+        "labelKey": "organizationDetails.billingCountry",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.invoiceEmail",
+        "type": "email",
+        "required": true,
+        "labelKey": "organizationDetails.invoiceEmail",
+        "validationRules": {
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+          "patternErrorKey": "validation.invalidEmail"
+        },
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.invoiceNumber",
+        "type": "text",
+        "required": false,
+        "labelKey": "organizationDetails.invoiceNumber",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.invoiceDate",
+        "type": "date",
+        "required": false,
+        "labelKey": "organizationDetails.invoiceDate",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.internalRef",
+        "type": "text",
+        "required": false,
+        "labelKey": "organizationDetails.internalRef",
+        "group": "billing"
+      },
+      {
+        "name": "billingInformation.verificationStatus",
+        "type": "dropdown",
+        "optionsKey": "verificationStatuses",
+        "required": false,
+        "labelKey": "organizationDetails.verificationStatus",
+        "group": "billing"
+      }
+    ]
+  },
+  "dropdownOptions": {
+    "organizationTypes": "locales:dropdowns.organizationTypes",
+    "cantons": "locales:dropdowns.cantons",
+    "countries": "locales:dropdowns.countries",
+    "verificationStatuses": "locales:dropdowns.verificationStatuses"
+  }
+}
+

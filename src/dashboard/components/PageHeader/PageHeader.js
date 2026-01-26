@@ -6,37 +6,35 @@ const PageHeader = React.forwardRef(({
   title, 
   subtitle, 
   actions,
-  className,
-  variant = 'default'
+  className
 }, ref) => {
   return (
     <div 
       ref={ref}
       className={cn(
-        "shrink-0 px-6 sm:px-8 py-8 border-b border-border/60 transition-all duration-300",
-        variant === 'default' && "bg-gradient-to-r from-card/50 via-card/30 to-transparent",
-        variant === 'solid' && "bg-card/50",
-        variant === 'minimal' && "bg-transparent",
+        "shrink-0 py-4 border-b border-border bg-card/30",
         className
       )}
     >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 tracking-tight">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              {subtitle}
-            </p>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-semibold text-foreground mb-3">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {subtitle}
+              </p>
+            )}
+          </div>
+          
+          {actions && (
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 self-start sm:self-center">
+              {actions}
+            </div>
           )}
         </div>
-        
-        {actions && (
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 self-start sm:self-center">
-            {actions}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -48,8 +46,7 @@ PageHeader.propTypes = {
   title: PropTypes.string.isRequired,
   subtitle: PropTypes.string,
   actions: PropTypes.node,
-  className: PropTypes.string,
-  variant: PropTypes.oneOf(['default', 'solid', 'minimal'])
+  className: PropTypes.string
 };
 
 export default PageHeader;

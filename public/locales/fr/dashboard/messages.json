@@ -5,7 +5,10 @@
     "facility": "Messages de l'établissement",
     "facilityDesc": "Messages liés aux opérations de l'établissement",
     "conversations": "Conversations",
+    "messages": "Messages",
     "threads": "Communication",
+    "announcements": "Annonces",
+    "announcementsLocked": "Les annonces sont uniquement disponibles pour les membres d'un établissement",
     "threadsLocked": "La communication est uniquement disponible pour les membres d'un établissement"
   },
   "noConversations": "Aucune conversation",
@@ -103,5 +106,90 @@
   },
   "conversationCreated": "Conversation créée",
   "errorCreatingConversation": "Erreur lors de la création de la conversation",
-  "noFacilityAccess": "Aucun accès à l'établissement"
+  "noFacilityAccess": "Aucun accès à l'établissement",
+  "startNewCommunication": {
+    "button": "Démarrer une nouvelle communication"
+  },
+  "createAnnouncement": "Créer une annonce",
+  "createAnnouncementButton": "Créer une annonce",
+  "announcementTitle": "Titre de l'annonce",
+  "announcementTitlePlaceholder": "Entrez le titre de l'annonce",
+  "announcementContent": "Contenu de l'annonce",
+  "announcementContentPlaceholder": "Entrez le contenu de l'annonce",
+  "pollOptions": "Options du sondage",
+  "pollInfoTitle": "Informations sur le sondage",
+  "pollInfo": "Ajoutez un sondage à votre annonce pour recueillir des commentaires",
+  "includePoll": "Inclure un sondage",
+  "pollQuestion": "Question du sondage",
+  "pollQuestionPlaceholder": "Entrez votre question de sondage...",
+  "pollOptionsLabel": "Options du sondage",
+  "pollOptionPlaceholder": "Option {{index}}",
+  "addOption": "Ajouter une option",
+  "pollItemType": "Type d'élément",
+  "pollItemType.shortAnswer": "Réponse courte",
+  "pollItemType.longAnswer": "Réponse longue",
+  "pollItemType.multipleChoice": "Choix multiple",
+  "pollItemType.multipleChoiceGrid": "Grille de choix multiple",
+  "pollItemType.date": "Date",
+  "pollItemType.time": "Heure",
+  "announcementUrgency": "Urgence",
+  "urgency.danger": "Danger",
+  "urgency.warning": "Avertissement",
+  "urgency.info": "Information",
+  "urgency.validation": "Validation",
+  "urgency.critical": "Critique",
+  "urgency.important": "Important",
+  "urgency.informational": "Informatif",
+  "urgency.actionRequired": "Action requise",
+  "announcementRoles": "Rôles cibles",
+  "category": "Catégorie",
+  "category.none": "Aucune catégorie",
+  "category.createNew": "+ Créer une nouvelle catégorie",
+  "category.namePlaceholder": "Nom de la catégorie...",
+  "pollPreview": "Aperçu",
+  "pollShortAnswerPlaceholder": "Réponse courte...",
+  "pollLongAnswerPlaceholder": "Réponse longue...",
+  "roles": {
+    "all": "Tous les rôles",
+    "admin": "Administrateur",
+    "pharmacist": "Pharmacien",
+    "pharmacyTechnician": "Technicien en pharmacie",
+    "intern": "Stagiaire",
+    "scheduler": "Planificateur",
+    "recruiter": "Recruteur",
+    "employee": "Employé"
+  },
+  "view": {
+    "grid": "Vue grille",
+    "list": "Vue liste"
+  },
+  "sortBy": "Trier par",
+  "sort": {
+    "date": "Date",
+    "title": "Titre",
+    "urgency": "Urgence"
+  },
+  "filters": {
+    "all": "Toutes les annonces",
+    "unread": "Non lues",
+    "unresponded": "Sans réponse",
+    "status": "Statut",
+    "apply": "Appliquer les filtres"
+  },
+  "announcements": {
+    "title": "Annonces",
+    "description": "Parcourez et recherchez des annonces dans votre espace de travail."
+  },
+  "searchPlaceholder": "Rechercher des annonces...",
+  "management": {
+    "title": "Gestion des discussions",
+    "description": "Gérez et modérez toutes les discussions de votre établissement."
+  },
+  "tabs": {
+    "messages": "Messages",
+    "announcements": "Annonces",
+    "management": "Gestion des discussions"
+  },
+  "announcementPublishDate": "Date de publication",
+  "announcementDisplayUntil": "Afficher jusqu'au"
 }

@@ -137,12 +137,14 @@ const SideMenu = ({
             "flex items-center",
             isOneColumnLayout ? (showTextInHorizontal ? "justify-center gap-1.5" : "justify-center") : (collapsed ? "justify-center" : "gap-3")
           )}>
-            <div className={cn(
-              "transition-colors shrink-0",
-              isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-            )}>
-              {getIconForTab(tab.id)}
-            </div>
+            {!(showTextInHorizontal || isOneColumnLayout) && (
+              <div className={cn(
+                "transition-colors shrink-0",
+                isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+              )}>
+                {getIconForTab(tab.id)}
+              </div>
+            )}
             {showTextInHorizontal && (
               <span className={cn(
                 "text-xs font-medium truncate",
@@ -156,7 +158,7 @@ const SideMenu = ({
                 "text-sm font-medium truncate",
                 isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
               )}>
-                {t(tab.labelKey, tab.id)}
+                {getSingleWordLabel(tab.labelKey)}
               </span>
             )}
           </div>

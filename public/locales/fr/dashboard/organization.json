@@ -7,6 +7,7 @@
     "openingHours": "Heures d'ouverture",
     "facilityRoles": "Rôles de l'établissement",
     "employees": "Employés",
+    "contracts": "Contrats",
     "profile": "Profil"
   },
   "sections": {
@@ -107,6 +108,26 @@
     "homeBranch": "Home Branch",
     "remove": "Remove"
   },
+  "hiring": {
+    "create": "Créer",
+    "form": {
+      "jobTitle": "Titre du poste",
+      "jobTitlePlaceholder": "Entrez le titre du poste",
+      "jobType": "Type d'emploi",
+      "jobTypeGeneral": "Général",
+      "jobTypePharmacist": "Pharmacien",
+      "jobTypeTechnician": "Technicien",
+      "jobTypeIntern": "Stagiaire",
+      "startTime": "Heure de début",
+      "endTime": "Heure de fin",
+      "location": "Lieu",
+      "locationPlaceholder": "Entrez le lieu (optionnel)",
+      "description": "Description",
+      "descriptionPlaceholder": "Entrez la description du poste (optionnel)",
+      "compensation": "Rémunération",
+      "compensationPlaceholder": "Entrez la rémunération (optionnel)"
+    }
+  },
   "hr": {
     "requestApproved": "Request Approved",
     "errorApproving": "Error Approving",
@@ -149,6 +170,8 @@
     "fireError": "Fire Error",
     "hqTitle": "Siège social",
     "admins": "Admins",
+    "localAdmins": "Administrateurs locaux",
+    "employees": "Employés",
     "unassigned": "Unassigned",
     "title": "Title",
     "description": "Description",
@@ -174,5 +197,137 @@
     "title": "Répertoire des employés",
     "searchPlaceholder": "Rechercher des employés...",
     "emptyState": "Aucun employé trouvé"
+  },
+  "policy": {
+    "title": "Bibliothèque de politiques standardisées",
+    "subtitle": "Gérez et distribuez des politiques à tous les établissements instantanément.",
+    "uploadNew": "Télécharger une politique",
+    "uploadFirst": "Téléchargez votre première politique",
+    "empty": {
+      "title": "Aucune politique trouvée",
+      "description": "Aucune politique disponible pour le moment"
+    },
+    "uploadTitle": "Télécharger une nouvelle politique",
+    "policyName": "Nom de la politique",
+    "policyNamePlaceholder": "Entrez le nom de la politique",
+    "description": "Description",
+    "descriptionPlaceholder": "Entrez la description de la politique (optionnel)",
+    "file": "Fichier de politique",
+    "selectFile": "Cliquez pour sélectionner un fichier ou glissez-déposez",
+    "fileTypes": "Documents PDF ou Word uniquement, max 10MB",
+    "upload": "Télécharger la politique",
+    "active": "Active",
+    "review": "En révision",
+    "daysAgo": "Il y a {{count}} jours",
+    "weeksAgo": "Il y a {{count}} semaine",
+    "monthsAgo": "Il y a {{count}} mois",
+    "internalPolicy": "Politique interne",
+    "interim": "Intérimaire",
+    "createCommunication": "Créer une communication",
+    "options": "Options de politique",
+    "switchesInfoTitle": "Options de politique",
+    "infoInternal": "Politique interne : Visible uniquement par les membres de l'organisation",
+    "infoInterim": "Intérimaire : Politiques temporaires",
+    "infoCommunication": "Créer une communication : Notifier les parties concernées lors du téléchargement",
+    "info": {
+      "title": "Bibliothèque de politiques",
+      "description": "Parcourez et recherchez des politiques dans la bibliothèque."
+    },
+    "searchPlaceholder": "Rechercher des politiques...",
+    "noMatches": "Aucune politique ne correspond à votre recherche",
+    "noMatches.description": "Essayez d'ajuster vos filtres pour voir plus de résultats",
+    "sortBy": "Trier par",
+    "sort": {
+      "date": "Date",
+      "name": "Nom"
+    },
+    "filter": {
+      "status": "Statut",
+      "all": "Tous",
+      "apply": "Appliquer les filtres"
+    },
+    "view": {
+      "grid": "Vue en grille",
+      "list": "Vue en liste"
+    },
+    "viewDetails": "Voir les détails",
+    "details": "Détails de la politique",
+    "noDescription": "Aucune description fournie",
+    "uploadedAt": "Téléchargé",
+    "fileName": "Nom du fichier",
+    "fileSize": "Taille du fichier",
+    "status": {
+      "active": "Actif",
+      "review": "En révision",
+      "archived": "Archivé",
+      "draft": "Brouillon"
+    },
+    "types": {
+      "internal": "Politique interne",
+      "shortTerm": "Modèle de contrat à court terme",
+      "longTerm": "Modèle de contrat à long terme",
+      "hr": "Politique RH",
+      "safety": "Sécurité et conformité",
+      "operational": "Procédure opérationnelle",
+      "training": "Matériel de formation",
+      "legal": "Document juridique",
+      "other": "Autre"
+    },
+    "roles": {
+      "all": "Tous les rôles",
+      "pharmacist": "Pharmacien",
+      "pharmacyTechnician": "Technicien en pharmacie",
+      "intern": "Stagiaire",
+      "admin": "Administrateur",
+      "scheduler": "Planificateur",
+      "recruiter": "Recruteur",
+      "employee": "Employé"
+    },
+    "priority": {
+      "high": "Élevé",
+      "medium": "Moyen",
+      "low": "Faible"
+    },
+    "filter": {
+      "status": "Statut",
+      "type": "Type",
+      "role": "Rôle",
+      "facility": "Établissement",
+      "priority": "Priorité",
+      "all": "Tous",
+      "allFacilities": "Tous les établissements",
+      "apply": "Appliquer les filtres"
+    },
+    "form": {
+      "status": "Statut",
+      "type": "Type",
+      "priority": "Priorité",
+      "effectiveDate": "Date d'entrée en vigueur",
+      "expiryDate": "Date d'expiration (optionnel)",
+      "tags": "Tags (séparés par des virgules)",
+      "tagsPlaceholder": "ex. RH, Sécurité, Conformité",
+      "applicableRoles": "Rôles applicables",
+      "applicableFacilities": "Établissements applicables",
+      "allRolesNote": "Laisser vide pour appliquer à tous les rôles",
+      "allFacilitiesNote": "Laisser vide pour appliquer à tous les établissements",
+      "requiresAcknowledgment": "Nécessite un accusé de réception",
+      "immediate": "Immédiat",
+      "noExpiry": "Pas d'expiration"
+    }
+  },
+  "confirm": {
+    "deletePolicy": "Êtes-vous sûr de vouloir supprimer cette politique ?"
+  },
+  "errors": {
+    "fetchPoliciesFailed": "Échec du chargement des politiques",
+    "fileTooLarge": "La taille du fichier doit être inférieure à 10MB",
+    "invalidFileType": "Seuls les documents PDF et Word sont autorisés",
+    "missingFields": "Veuillez remplir tous les champs requis",
+    "uploadFailed": "Échec du téléchargement de la politique",
+    "deleteFailed": "Échec de la suppression de la politique"
+  },
+  "success": {
+    "policyUploaded": "Politique téléchargée avec succès",
+    "policyDeleted": "Politique supprimée avec succès"
   }
 }

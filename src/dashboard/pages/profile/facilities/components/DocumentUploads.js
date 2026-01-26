@@ -16,7 +16,7 @@ import { uploadFile } from '../../../../../services/storageService';
 import useAutoSave from '../../../../hooks/useAutoSave';
 
 const styles = {
-    sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+    sectionContainer: "flex flex-col gap-6 p-0 w-full max-w-[1400px] mx-auto",
     headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex items-center",
     sectionTitle: "text-2xl font-semibold mb-2",
     sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
@@ -362,11 +362,8 @@ const DocumentUploads = ({
     return (
         <>
             <style>{`
-            .facility-uploads-container {
-                container-type: inline-size;
-            }
-
             .facility-uploads-wrapper {
+                container-type: inline-size;
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 1.5rem;
@@ -379,8 +376,7 @@ const DocumentUploads = ({
             }
         `}</style>
             <div className={styles.sectionContainer}>
-                <div className="facility-uploads-container w-full max-w-[1400px] mx-auto">
-                    <div className={styles.sectionsWrapper}>
+                <div className={styles.sectionsWrapper}>
                         <div className={styles.leftColumn}>
                             {documentFieldsConfig.filter((_, index) => index % 2 === 0).map(fieldConfig => (
                                 <RenderDocumentCard key={fieldConfig.docType} fieldConfig={fieldConfig} />

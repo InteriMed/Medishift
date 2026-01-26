@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     FiMessageSquare,
-    FiBarChart2, // Closest to pinned icon
+    FiBarChart2,
     FiHeart,
     FiPlus,
     FiHome,
     FiX,
-    FiSearch,
-    FiSliders,
-    FiChevronLeft
+    FiBell
 } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import { topicService } from '../../../../services/topicService';
+import { CommunicationToolbar } from './components/CommunicationToolbar';
 import { TopicDetail } from './TopicDetail';
 import ThreadsList from '../components/ThreadsList';
 import ConversationView from '../components/ConversationView';
@@ -21,7 +20,6 @@ import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner
 import EmptyState from '../../../components/EmptyState/EmptyState';
 import { cn } from '../../../../utils/cn';
 import { useMobileView } from '../../../hooks/useMobileView';
-import '../../../../components/BoxedInputFields/styles/boxedInputFields.css';
 
 const categoryLabels = {
     feedback: 'Feedback',
@@ -32,22 +30,13 @@ const categoryLabels = {
     general: 'General',
 };
 
-const categoryIcons = {
-    feedback: FiMessageSquare,
-    bug_report: FiMessageSquare,
-    feature_request: FiMessageSquare,
-    support: FiMessageSquare,
-    question: FiMessageSquare,
-    general: FiMessageSquare,
-};
-
 export const Communication = ({
     canAccessThreads,
     threads,
     isLoadingThreads,
     onSelectThread,
     selectedThread,
-    onSwitchToConversations
+    onSwitchToConversations // Callback to switch back to conversations tab
 }) => {
     const { t } = useTranslation(['messages']);
     const { user, selectedWorkspace } = useDashboard();
@@ -62,8 +51,6 @@ export const Communication = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [selectedTopicId, setSelectedTopicId] = useState(null);
-    const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
-    const filterDropdownRef = useRef(null);
 
     // Create Topic State
     const [isCreateTopicOpen, setIsCreateTopicOpen] = useState(false);
@@ -74,6 +61,7 @@ export const Communication = ({
     });
     const [isCreating, setIsCreating] = useState(false);
 
+    // Load topics...
     const loadTopics = useCallback(async () => {
         try {
             setIsLoading(true);
@@ -99,22 +87,6 @@ export const Communication = ({
     useEffect(() => {
         loadTopics();
     }, [loadTopics]);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
-                setShowFiltersOverlay(false);
-            }
-        };
-
-        if (showFiltersOverlay) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showFiltersOverlay]);
 
     const handleCreateTopic = async () => {
         if (!createFormData.title.trim() || !createFormData.content.trim()) {
@@ -156,245 +128,198 @@ export const Communication = ({
         return currentTopics;
     }, [topics, myTopics, activeTab, selectedCategory, searchQuery]);
 
-    const handleSelectTopic = (topicId) => {
-        setSelectedTopicId(topicId);
-        onSelectThread(null); // Clear selected thread when selecting a topic
-    };
-
-    const handleSelectThreadInternal = (thread) => {
-        onSelectThread(thread);
-        setSelectedTopicId(null); // Clear selected topic when selecting a thread
-    };
-
-    const renderSidebar = () => (
-        <div className={cn(
-            "w-full md:w-80 border-r border-border flex flex-col bg-background h-full",
-            isMobile && (selectedTopicId || selectedThread) ? "hidden" : "flex"
-        )}>
-            {/* Top Tabs */}
-            <div className="shrink-0 px-4 pt-4">
-                <div className="grid grid-cols-2 gap-2 mb-3 border-b border-border w-full">
-                    <button
-                        onClick={onSwitchToConversations}
-                        className="w-full px-4 py-2 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        <div className="flex items-center justify-center gap-2">
-                            <FiMessageSquare className="w-4 h-4" />
-                            <span>{t('messages:tabs.conversations', 'Conversations')}</span>
-                        </div>
-                    </button>
-                    <button
-                        className="w-full px-4 py-2 text-sm font-medium border-b-2 border-primary text-primary transition-colors"
-                    >
-                        <div className="flex items-center justify-center gap-2">
-                            <FiHome className="w-4 h-4" />
-                            <span>{t('messages:tabs.threads', 'Communication')}</span>
-                        </div>
-                    </button>
+    const renderTopTabs = () => (
+        <div className="grid grid-cols-2 gap-2 mb-3 border-b border-border w-full max-w-md px-4 mt-4">
+            <button
+                onClick={onSwitchToConversations}
+                className="w-full px-4 py-2 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors"
+            >
+                <div className="flex items-center justify-center gap-2">
+                    <FiMessageSquare className="w-4 h-4" />
+                    <span>{t('messages:tabs.messages', 'Messages')}</span>
                 </div>
-            </div>
-
-            {/* View Mode Toggle (Topics vs Threads) */}
-            <div className="px-4 pb-2 border-b border-border/40 mb-2">
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => {
-                            setViewMode('topics');
-                            setSelectedTopicId(null);
-                            onSelectThread(null);
-                        }}
-                        className={cn(
-                            "flex-1 py-1 text-xs font-medium rounded-md transition-colors",
-                            viewMode === 'topics' ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                        )}
-                    >
-                        Topics
-                    </button>
-                    {canAccessThreads && (
-                        <button
-                            onClick={() => {
-                                setViewMode('threads');
-                                setSelectedTopicId(null);
-                                onSelectThread(null);
-                            }}
-                            className={cn(
-                                "flex-1 py-1 text-xs font-medium rounded-md transition-colors",
-                                viewMode === 'threads' ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                            )}
-                        >
-                            Threads
-                        </button>
-                    )}
+            </button>
+            <button
+                className="w-full px-4 py-2 text-sm font-medium border-b-2 border-primary text-primary transition-colors"
+            >
+                <div className="flex items-center justify-center gap-2">
+                    <FiBell className="w-4 h-4" />
+                    <span>{t('messages:tabs.announcements', 'Announcements')}</span>
                 </div>
-            </div>
-
-            {/* Search and Filters */}
-            <div className="px-4 pb-3">
-                <div className="relative" ref={filterDropdownRef}>
-                    <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                    <input
-                        type="text"
-                        placeholder={viewMode === 'topics' ? "Search topics..." : "Search threads..."}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-10 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 transition-all hover:border-muted-foreground/30"
-                        style={{ height: 'var(--boxed-inputfield-height)' }}
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                        <button
-                            onClick={() => setShowFiltersOverlay(!showFiltersOverlay)}
-                            className={cn(
-                                "p-1.5 rounded-full transition-colors relative",
-                                selectedCategory !== 'all' ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
-                            )}
-                        >
-                            <FiSliders className="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    {showFiltersOverlay && viewMode === 'topics' && (
-                        <div className="boxed-dropdown-options" style={{ overflowX: 'hidden', overflowY: 'auto' }}>
-                            <button
-                                onClick={() => { setSelectedCategory('all'); setShowFiltersOverlay(false); }}
-                                className={cn("boxed-dropdown-option", selectedCategory === 'all' && "boxed-dropdown-option--selected")}
-                            >
-                                All Categories
-                            </button>
-                            {topicService.getCategories().map(cat => (
-                                <button
-                                    key={cat}
-                                    onClick={() => { setSelectedCategory(cat); setShowFiltersOverlay(false); }}
-                                    className={cn("boxed-dropdown-option", selectedCategory === cat && "boxed-dropdown-option--selected")}
-                                >
-                                    {categoryLabels[cat] || cat}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Create Button (Only for Topics for now, or unified) */}
-            <div className="px-4 pb-2">
-                <button
-                    onClick={() => setIsCreateTopicOpen(true)}
-                    className="w-full px-4 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-sm"
-                    style={{ height: 'var(--boxed-inputfield-height)' }}
-                >
-                    <FiPlus className="w-4 h-4" />
-                    {viewMode === 'topics' ? "New Topic" : "New Thread"}
-                </button>
-            </div>
-
-            {/* List */}
-            <div className="flex-1 overflow-y-auto">
-                {viewMode === 'topics' ? (
-                    isLoading ? (
-                        <div className="flex justify-center p-8"><LoadingSpinner /></div>
-                    ) : filteredTopics.length === 0 ? (
-                        <div className="p-8 text-center text-muted-foreground text-sm">No topics found</div>
-                    ) : (
-                        <div className="space-y-0.5">
-                            {filteredTopics.map(topic => (
-                                <button
-                                    key={topic.id}
-                                    onClick={() => handleSelectTopic(topic.id)}
-                                    className={cn(
-                                        "w-full text-left px-4 py-3 border-b border-border/40 transition-colors hover:bg-muted/30",
-                                        selectedTopicId === topic.id && "bg-primary/5 border-l-4 border-l-primary"
-                                    )}
-                                >
-                                    <div className="font-semibold text-sm truncate mb-0.5">{topic.title}</div>
-                                    <div className="text-xs text-muted-foreground line-clamp-1">{topic.content}</div>
-                                    <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground">
-                                        <span className="bg-secondary px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">
-                                            {categoryLabels[topic.category] || topic.category}
-                                        </span>
-                                        <span>{new Date(topic.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    )
-                ) : (
-                    isLoadingThreads ? (
-                        <div className="flex justify-center p-8"><LoadingSpinner /></div>
-                    ) : (
-                        <ThreadsList
-                            threads={threads}
-                            selectedThreadId={selectedThread?.id}
-                            onSelectThread={handleSelectThreadInternal}
-                            currentUserId={user?.uid}
-                        />
-                    )
-                )}
-            </div>
+            </button>
         </div>
     );
 
-    const renderMainContent = () => {
-        if (selectedTopicId) {
-            return (
-                <div className="flex-1 flex flex-col min-w-0 bg-background h-full relative">
-                    {/* Back Button for Mobile */}
-                    {isMobile && (
-                        <div className="p-4 border-b border-border flex items-center">
-                            <button onClick={() => setSelectedTopicId(null)} className="p-2 hover:bg-muted rounded-full">
-                                <FiChevronLeft className="w-5 h-5" />
-                            </button>
-                            <span className="ml-2 font-semibold">Back to Topics</span>
-                        </div>
-                    )}
-                    <TopicDetail
-                        topicId={selectedTopicId}
-                        onBack={() => setSelectedTopicId(null)}
-                    />
-                </div>
-            );
-        }
-
-        if (selectedThread) {
-            return (
-                <div className="flex-1 flex flex-col min-w-0 bg-background h-full relative">
-                    {/* Back Button for Mobile is handled by ConversationView? Actually Messages.js has a complex system. Let's keep it simple. */}
-                    {isMobile && (
-                        <div className="p-4 border-b border-border flex items-center">
-                            <button onClick={() => onSelectThread(null)} className="p-2 hover:bg-muted rounded-full">
-                                <FiChevronLeft className="w-5 h-5" />
-                            </button>
-                            <span className="ml-2 font-semibold">Back to Threads</span>
-                        </div>
-                    )}
-                    <ConversationView
-                        conversation={selectedThread}
-                        currentUser={user}
-                        messageContext='personal'
-                        workspaceContext={selectedWorkspace}
-                    />
-                </div>
-            );
-        }
-
+    if (selectedTopicId) {
         return (
-            <div className={cn(
-                "flex-1 flex flex-col min-w-0 bg-muted/5",
-                isMobile && "hidden"
-            )}>
-                <EmptyState
-                    title={viewMode === 'topics' ? "Select a topic" : "Select a thread"}
-                    description={viewMode === 'topics' ? "Choose a discussion to view and participate" : "Choose a conversation to view messages"}
-                    icon={FiHome}
-                />
-            </div>
+            <TopicDetail
+                topicId={selectedTopicId}
+                onBack={() => setSelectedTopicId(null)}
+            />
         );
-    };
+    }
 
     return (
-        <div className="flex h-full bg-background relative overflow-hidden">
-            {renderSidebar()}
-            {renderMainContent()}
+        <div className="flex flex-col h-full bg-background relative overflow-hidden">
+            {/* View Mode Switcher + Top Tabs for context */}
+            {/* If Thread View: Sidebar has tabs. If Topic View: Top bar has tabs? */}
+            {/* Let's unify: Always show Top Tabs at top of page/sidebar for consistency */}
 
-            {/* Create Topic Modal */}
+            {viewMode === 'threads' && canAccessThreads ? (
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Sidebar List */}
+                    <div className={cn(
+                        "w-full md:w-80 border-r border-border flex flex-col bg-background",
+                        isMobile && selectedThread ? "hidden" : "flex"
+                    )}>
+                        {/* Top Tabs inside Sidebar for Threads view to match Messages.js Sidebar feel */}
+                        <div className="shrink-0">{renderTopTabs()}</div>
+
+                        {/* View Mode Toggle */}
+                        <div className="px-4 pb-2 border-b border-border/40 mb-2">
+                            <div className="flex gap-2">
+                                <button onClick={() => setViewMode('topics')} className="flex-1 py-1 text-xs font-medium text-muted-foreground hover:text-foreground">Topics</button>
+                                <button className="flex-1 py-1 text-xs font-medium bg-primary/10 text-primary rounded-md">Threads</button>
+                            </div>
+                        </div>
+
+                        {isLoadingThreads ? (
+                            <LoadingSpinner />
+                        ) : (
+                            <ThreadsList
+                                threads={threads}
+                                selectedThreadId={selectedThread?.id}
+                                onSelectThread={onSelectThread}
+                                currentUserId={user?.uid}
+                            />
+                        )}
+                    </div>
+
+                    {/* Main Content */}
+                    <div className={cn(
+                        "flex-1 bg-muted/5 flex flex-col min-w-0",
+                        isMobile && !selectedThread ? "hidden" : "flex"
+                    )}>
+                        {selectedThread ? (
+                            <ConversationView
+                                conversation={selectedThread}
+                                currentUser={user}
+                                messageContext='personal'
+                                workspaceContext={selectedWorkspace}
+                            />
+                        ) : (
+                            <EmptyState
+                                title="Select a thread"
+                                description="Choose a conversation to view messages"
+                                icon={FiHome}
+                            />
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <>
+                    {/* Topic View Header with Tabs */}
+                    <div className="bg-background/95 backdrop-blur-md z-10 border-b border-border/40">
+                        <div className="container mx-auto max-w-7xl">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                                {renderTopTabs()}
+
+                                {/* View Mode Toggle (Topics vs Threads) */}
+                                {canAccessThreads && (
+                                    <div className="flex gap-2 px-4 pb-2 md:pb-0">
+                                        <button className="px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-lg transition-colors">Topics</button>
+                                        <button onClick={() => setViewMode('threads')} className="px-4 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors">
+                                            Threads
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <CommunicationToolbar
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        selectedCategory={selectedCategory}
+                        setSelectedCategory={setSelectedCategory}
+                        categories={topicService.getCategories()}
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        onCreateTopic={() => setIsCreateTopicOpen(true)}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        canAccessThreads={canAccessThreads}
+                    />
+
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-muted/5">
+                        <div className="max-w-[1400px] mx-auto space-y-4 mt-4">
+                            {isLoading ? (
+                                <LoadingSpinner />
+                            ) : filteredTopics.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-20 text-center">
+                                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                                        <FiMessageSquare className="w-8 h-8 text-muted-foreground/50" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-foreground mb-2">No topics found</h3>
+                                    <p className="text-muted-foreground mb-6">get started by creating a new topic.</p>
+                                    <button
+                                        onClick={() => setIsCreateTopicOpen(true)}
+                                        className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
+                                    >
+                                        <FiPlus className="w-5 h-5" />
+                                        Create Topic
+                                    </button>
+                                </div>
+                            ) : (
+                                filteredTopics.map(topic => (
+                                    <div
+                                        key={topic.id}
+                                        onClick={() => setSelectedTopicId(topic.id)}
+                                        className="group bg-card hover:bg-card/80 border border-border/50 hover:border-primary/20 rounded-2xl p-6 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                                    >
+                                        <div className="flex items-start justify-between gap-4 mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-bold border border-border">
+                                                    {(topic.user_username || topic.user_email || 'A').charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div className="font-semibold text-foreground flex items-center gap-2">
+                                                        {topic.user_username || 'Anonymous'}
+                                                        {topic.is_pinned && (
+                                                            <span className="bg-yellow-500/10 text-yellow-600 text-[10px] px-2 py-0.5 rounded-full border border-yellow-500/20 flex items-center gap-1">
+                                                                <FiBarChart2 className="w-3 h-3 rotate-90" /> Pinned
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {topic.created_at ? new Date(topic.created_at).toLocaleDateString() : 'Just now'} · {categoryLabels[topic.category] || topic.category}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">{topic.title}</h3>
+                                        <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed mb-4">{topic.content}</p>
+
+                                        <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
+                                            <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/50", topic.upvotes > 0 && "text-rose-500 bg-rose-500/10")}>
+                                                <FiHeart className={cn("w-3.5 h-3.5", topic.upvotes > 0 && "fill-current")} />
+                                                <span>{topic.upvotes || 0}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/50">
+                                                <FiMessageSquare className="w-3.5 h-3.5" />
+                                                <span>{topic.replies?.length || 0} replies</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* Create Topic Modal - Simple Overlay */}
             {isCreateTopicOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
                     <div

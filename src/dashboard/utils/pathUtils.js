@@ -35,9 +35,26 @@ export const normalizePathname = (pathname) => {
 
 /**
  * Build a dashboard URL with workspace ID in the path
+ * Accepts relative paths (with or without leading slash)
+ * Handles query strings properly
+ * Examples:
+ *   buildDashboardUrl('profile', 'personal') -> '/dashboard/personal/profile'
+ *   buildDashboardUrl('/profile', 'personal') -> '/dashboard/personal/profile'
+ *   buildDashboardUrl('/dashboard/personal/profile', 'admin') -> '/dashboard/admin/profile'
+ *   buildDashboardUrl('profile?tab=personalDetails', 'personal') -> '/dashboard/personal/profile?tab=personalDetails'
  */
 export const buildDashboardUrl = (path, workspaceId) => {
-  const cleanPath = path.startsWith('/dashboard') ? path.replace('/dashboard', '') : path;
+  if (!path) {
+    const wsId = workspaceId || 'personal';
+    return `/dashboard/${wsId}`;
+  }
+  
+  const queryIndex = path.indexOf('?');
+  const queryString = queryIndex !== -1 ? path.substring(queryIndex) : '';
+  const pathWithoutQuery = queryIndex !== -1 ? path.substring(0, queryIndex) : path;
+  
+  let cleanPath = pathWithoutQuery.startsWith('/dashboard') ? pathWithoutQuery.replace('/dashboard', '') : pathWithoutQuery;
+  cleanPath = cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath;
   const parts = cleanPath.split('/').filter(Boolean);
 
   // If the first part is already a workspace ID, remove it to re-add later
@@ -50,7 +67,7 @@ export const buildDashboardUrl = (path, workspaceId) => {
   const subPath = finalPathParts.join('/');
 
   const wsId = workspaceId || 'personal';
-  return `/dashboard/${wsId}${subPath ? `/${subPath}` : ''}`;
+  return `/dashboard/${wsId}${subPath ? `/${subPath}` : ''}${queryString}`;
 };
 
 /**
@@ -167,4 +184,49 @@ export const getWorkspaceTypeFromPath = (pathname) => {
     return WORKSPACE_TYPES.TEAM;
   }
   return WORKSPACE_TYPES.PERSONAL;
+};
+
+/**
+ * Extract relative path from a dashboard URL (removes workspace ID and /dashboard prefix)
+ * Example: /dashboard/personal/profile/settings -> profile/settings
+ */
+export const getRelativePathFromUrl = (pathname) => {
+  if (!pathname) return '';
+  
+  let segments = pathname.split('/').filter(Boolean);
+  
+  const dashboardIndex = segments.indexOf('dashboard');
+  if (dashboardIndex === -1) return '';
+  
+  if (segments.length <= dashboardIndex + 1) return '';
+  
+  const workspaceId = segments[dashboardIndex + 1];
+  const isKnownWorkspace = workspaceId === 'personal' || 
+    workspaceId === 'admin' || 
+    workspaceId.length > 15;
+  
+  if (!isKnownWorkspace) return '';
+  
+  const remainingParts = segments.slice(dashboardIndex + 2);
+  return remainingParts.join('/');
+};
+
+/**
+ * Build a relative URL path (without /dashboard prefix)
+ * This is used for route definitions and navigation within the same workspace
+ */
+export const buildRelativeUrl = (path) => {
+  if (!path) return '';
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  return cleanPath.startsWith('dashboard/') ? cleanPath.replace('dashboard/', '') : cleanPath;
+};
+
+/**
+ * Get the base path for organization/facility routes based on workspace type
+ * Returns 'organization' for organization workspace, 'facility' for facility workspace
+ */
+export const getOrganizationBasePath = (workspace) => {
+  if (!workspace) return 'facility';
+  const isOrganizationWorkspace = workspace.type === 'organization';
+  return isOrganizationWorkspace ? 'organization' : 'facility';
 };

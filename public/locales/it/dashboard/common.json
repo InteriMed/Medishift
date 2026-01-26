@@ -14,7 +14,9 @@
     "notifications": "Notifiche",
     "startTutorial": "Inizia tutorial",
     "changeLanguage": "Cambia lingua",
-    "profileAlt": "Profilo"
+    "profileAlt": "Profilo",
+    "help": "Aiuto",
+    "support": "Supporto"
   },
   "buttons": {
     "continue": "Continua",

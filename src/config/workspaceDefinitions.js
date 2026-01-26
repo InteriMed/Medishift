@@ -244,6 +244,78 @@ export const hasOrganizationAccessSync = (userData, organizationId = null) => {
   return roles.some(r => r.organization_uid);
 };
 
+/**
+ * Check if user is an Organization Admin (sync version)
+ * Only checks user roles - does not fetch organization document
+ * For full verification including internalTeam.admins, use async version
+ * 
+ * @param {Object} userData - User data object (must include roles array)
+ * @param {string} organizationId - Organization ID to check
+ * @returns {boolean}
+ */
+export const isOrganizationAdminSync = (userData, organizationId) => {
+  if (!userData || !organizationId) return false;
+  
+  // ADMIN BYPASS: Platform admins have unrestricted access
+  if (isAdminSync(userData)) {
+    return true;
+  }
+  
+  const roles = userData.roles || [];
+  
+  // Check if user has organization_uid and org_admin role
+  return roles.some(r => 
+    r.organization_uid === organizationId && 
+    (r.roles || []).includes('org_admin')
+  );
+};
+
+/**
+ * Check if user is an Organization Admin (async version)
+ * Fetches organization document to verify admin status
+ * Checks both user roles AND organization.internalTeam.admins
+ * 
+ * @param {string} userId - Firebase Auth UID
+ * @param {string} organizationId - Organization ID to check
+ * @returns {Promise<boolean>}
+ */
+export const isOrganizationAdmin = async (userId, organizationId) => {
+  if (!userId || !organizationId) return false;
+  
+  try {
+    // Check if user is platform admin first
+    const userIsAdmin = await isAdmin(userId);
+    if (userIsAdmin) return true;
+    
+    // Fetch organization document
+    const orgDoc = await getDoc(doc(db, COLLECTIONS.ORGANIZATIONS, organizationId));
+    if (!orgDoc.exists()) return false;
+    
+    const orgData = orgDoc.data();
+    
+    // Check internalTeam.admins array
+    const internalTeamAdmins = orgData.internalTeam?.admins || [];
+    if (internalTeamAdmins.includes(userId)) {
+      return true;
+    }
+    
+    // Also check user's roles array for org_admin
+    const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, userId));
+    if (!userDoc.exists()) return false;
+    
+    const userData = userDoc.data();
+    const roles = userData.roles || [];
+    
+    return roles.some(r => 
+      r.organization_uid === organizationId && 
+      (r.roles || []).includes('org_admin')
+    );
+  } catch (error) {
+    console.error('Error checking organization admin:', error);
+    return false;
+  }
+};
+
 // ============================================================================
 // CONSTANTS
 // ============================================================================
@@ -292,18 +364,32 @@ export const getAvailableWorkspaces = (userData) => {
       });
     }
     
-    // 3. ORGANIZATION WORKSPACES - for each organization in roles array
+    // 3. ORGANIZATION WORKSPACES - ONLY for organization admins
+    // Organization workspaces are separate from facility workspaces
+    // Only users with 'org_admin' role in the organization can access organization workspace
+    // This is verified by checking:
+    // - User's roles array contains 'org_admin' for this organization_uid
+    // - OR user is a platform admin (has unrestricted access)
+    // Note: Full verification also checks organizations/{orgId}.internalTeam.admins
+    //       but this sync function only checks user roles for performance
     const organizationId = roleEntry.organization_uid;
     if (organizationId) {
-      workspaces.push({
-        id: organizationId,
-        name: 'Organization Workspace',
-        type: 'organization',
-        organizationId: organizationId,
-        roles: roleEntry.roles || [],
-        rights: roleEntry.rights || [],
-        description: 'Manage organization facilities and teams'
-      });
+      const userRoles = roleEntry.roles || [];
+      const isOrgAdmin = userRoles.includes('org_admin') || isUserAdmin;
+      
+      // Only add organization workspace if user is an organization admin
+      // Facility workspaces remain separate and accessible to all facility members
+      if (isOrgAdmin) {
+        workspaces.push({
+          id: organizationId,
+          name: 'Organization Workspace',
+          type: 'organization',
+          organizationId: organizationId,
+          roles: userRoles,
+          rights: roleEntry.rights || [],
+          description: 'Manage organization facilities and teams'
+        });
+      }
     }
   });
 

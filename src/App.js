@@ -24,6 +24,7 @@ import './styles/notifications.css';
 // import './styles/global.css';
 import './styles/variables.css';
 import DashboardRoot from './dashboard/DashboardRoot';
+import CentralizedRoute from './dashboard/components/CentralizedRoute';
 import { testFirestoreConnection } from './utils/testFirestoreConnection';
 import { resetFirestoreCache } from './utils/resetFirestoreCache';
 import Footer from './components/Footer/Footer';
@@ -85,6 +86,36 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
 }
 
 // App content with language handling
+// Helper component for dashboard routing and redirects
+const DashboardGuard = () => {
+  const location = useLocation();
+  const segments = location.pathname.split('/').filter(Boolean);
+  const dashboardIndex = segments.indexOf('dashboard');
+
+  // Handle /dashboard with no trailing slash or subpath
+  if (segments.length === dashboardIndex + 1) {
+    return <CentralizedRoute />;
+  }
+
+  const firstSegmentAfterDashboard = segments[dashboardIndex + 1];
+
+  // Known workspace types/patterns
+  const isWorkspaceId = firstSegmentAfterDashboard === 'personal' ||
+    firstSegmentAfterDashboard === 'admin' ||
+    firstSegmentAfterDashboard === 'marketplace' ||
+    firstSegmentAfterDashboard.length > 15; // Firestore IDs are ~20 chars
+
+  // If it's a valid workspace URL, allow Outlet to render children
+  if (isWorkspaceId) {
+    return <Outlet />;
+  }
+
+  // If it's a legacy URL (e.g., /dashboard/profile/...), check if user has workspaces
+  // If no workspaces available, redirect to onboarding via CentralizedRoute
+  return <CentralizedRoute />;
+};
+
+// App content with language handling
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -96,36 +127,6 @@ function AppContent() {
 
   // Dashboard access flag
   const DASHBOARD_DISABLED = false;
-
-  // Helper component for dashboard routing and redirects
-  const DashboardGuard = () => {
-    const segments = location.pathname.split('/').filter(Boolean);
-    const dashboardIndex = segments.indexOf('dashboard');
-
-    // Handle /dashboard with no trailing slash or subpath
-    if (segments.length === dashboardIndex + 1) {
-      return <Navigate to="/dashboard/personal/overview" replace />;
-    }
-
-    const firstSegmentAfterDashboard = segments[dashboardIndex + 1];
-
-    // Known workspace types/patterns
-    const isWorkspaceId = firstSegmentAfterDashboard === 'personal' ||
-      firstSegmentAfterDashboard === 'admin' ||
-      firstSegmentAfterDashboard === 'marketplace' ||
-      firstSegmentAfterDashboard.length > 15; // Firestore IDs are ~20 chars
-
-    // If it's a valid workspace URL, allow Outlet to render children
-    if (isWorkspaceId) {
-      return <Outlet />;
-    }
-
-    // If it's a legacy URL (e.g., /dashboard/profile/...), redirect to personal workspace
-    // Preserve language prefix if present
-    const langPrefix = dashboardIndex > 0 ? `/${segments[0]}` : '';
-    const subPath = segments.slice(dashboardIndex + 1).join('/');
-    return <Navigate to={`${langPrefix}/dashboard/personal/${subPath}${location.search}${location.hash}`} replace />;
-  };
 
   const DEFAULT_LANGUAGE = DEFAULT_LANG;
 
@@ -161,16 +162,9 @@ function AppContent() {
       const userPreferredLang = navigator.language.split('-')[0] || DEFAULT_LANGUAGE;
       const lang = SUPPORTED_LANGUAGES.includes(userPreferredLang) ? userPreferredLang : DEFAULT_LANGUAGE;
 
-      // Set language in i18n
+      // Set language in i18n but follow user instruction to remove rerouting/redirection
       i18n.changeLanguage(lang);
-
-      // Redirect to same path but with language prefix
-      // IMPORTANT: Preserve search (query params) and hash to prevent losing workspace state
-      const search = location.search;
-      const hash = location.hash;
-      const newPath = path === '/' ? `/${lang}${search}${hash}` : `/${lang}${path}${search}${hash}`;
-
-      navigate(newPath, { replace: true });
+      console.log(`[LanguageSetup] Using language "${lang}" without URL redirection`);
     } else {
       // Language is in URL, just set it in i18n
       i18n.changeLanguage(langFromUrl);

@@ -40,10 +40,11 @@ const DashboardAccessGuard = ({ children }) => {
   const hasAccess = isAdmin || hasFacilityProfile || hasProfessionalProfile || onboardingCompleted;
 
   if (!hasAccess) {
-    const lang = window.location.pathname.split('/')[1] || 'fr';
-    const onboardingType = (user.roles || []).some(r => r.facility_uid) ? 'facility' : 'professional';
-    return <Navigate to={`/${lang}/onboarding?type=${onboardingType}`} replace />;
+    // Rerouting removed as per user request to avoid automatic redirects
+    console.warn('[DashboardAccessGuard] User lacks formal access but automatic rerouting is disabled');
   }
+
+  return children;
 
   return children;
 };

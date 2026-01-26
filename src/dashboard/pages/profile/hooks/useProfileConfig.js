@@ -37,6 +37,12 @@ export const useProfileConfig = (initialProfileData) => {
                         } catch (err) {
                             throw err;
                         }
+                    } else if (role === 'organization') {
+                        try {
+                            configModule = await import(`../organizations/configs/organization.json`);
+                        } catch (err) {
+                            throw err;
+                        }
                     } else {
                         throw new Error(`Unknown role: ${role}`);
                     }

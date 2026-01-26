@@ -18,7 +18,8 @@
     "profileAlt": "Profil",
     "stopTutorial": "Stop Tutorial",
     "goBack": "Go back",
-    "help": "Aide"
+    "help": "Aide",
+    "support": "Support"
   },
   "auth": {
     "login": {
@@ -88,5 +89,9 @@
   "email": "Email",
   "continue": "Continue",
   "close": "Fermer",
-  "refresh": "Actualiser"
+  "refresh": "Actualiser",
+  "contract": "Contrat",
+  "message": "Message",
+  "calendar": "Calendrier",
+  "profile": "Profil"
 }

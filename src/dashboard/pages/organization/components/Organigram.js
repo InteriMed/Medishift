@@ -5,7 +5,7 @@ import { db, auth } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { FiUsers, FiShield, FiUser, FiX, FiBriefcase, FiCalendar, FiMail, FiPhone, FiTrendingUp, FiFileText, FiClock, FiExternalLink, FiAlertCircle, FiCheckCircle, FiUserX, FiSearch } from 'react-icons/fi';
+import { FiUsers, FiShield, FiUser, FiX, FiBriefcase, FiCalendar, FiMail, FiPhone, FiTrendingUp, FiFileText, FiClock, FiExternalLink, FiAlertCircle, FiCheckCircle, FiUserX, FiSearch, FiPlus } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { CALENDAR_COLORS } from '../../calendar/utils/constants';
 import { cn } from '../../../../utils/cn';
@@ -13,6 +13,7 @@ import EmployeeCard from './EmployeeCard';
 import Button from '../../../../components/BoxedInputFields/Button';
 import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import Dialog from '../../../../components/Dialog/Dialog';
+import CreateFacilityRoleModal from './CreateFacilityRoleModal';
 
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full",
@@ -53,6 +54,7 @@ const Organigram = ({ formData }) => {
   const [fireEmployeeConfirmText, setFireEmployeeConfirmText] = useState('');
   const [isFiringEmployee, setIsFiringEmployee] = useState(false);
   const [employeeToFire, setEmployeeToFire] = useState(null);
+  const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
 
   const fetchTeamMembers = useCallback(async () => {
     if (!selectedWorkspace?.facilityId) return;
@@ -565,28 +567,51 @@ const Organigram = ({ formData }) => {
     );
   }
 
+  const isFacilityContext = !!selectedWorkspace?.facilityId;
+  const organigramTitle = isFacilityContext 
+    ? t('organization:organigram.roles', 'Roles')
+    : t('organization:organigram.title', 'Organizational Chart');
+
   return (
     <div className={cn(styles.sectionContainer, "relative")}>
-      <div className={styles.headerCard}>
+      <div className={cn("bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full mb-4 px-6 py-3")}>
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>
-              {t('organization:organigram.title', 'Organizational Chart')}
-            </h2>
-            <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)', marginTop: '4px' }}>
-              {t('organization:organigram.description', 'View your team organized by hierarchy. Click on any employee to see details.')}
-            </p>
-          </div>
+          <h3 className="text-base font-semibold text-foreground">
+            {organigramTitle}
+          </h3>
+          {isFacilityContext && (
+            <Button
+              onClick={() => setShowCreateRoleModal(true)}
+              variant="primary"
+              className="flex items-center gap-2"
+            >
+              <FiPlus className="w-4 h-4" />
+              {t('organization:facilityRoles.createRole', 'Create Role')}
+            </Button>
+          )}
         </div>
-        <div className="relative max-w-md">
-          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <input
-            type="text"
-            placeholder={t('organization:directory.searchPlaceholder', 'Search employees...')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
-          />
+        <div className="pt-3 border-t border-border mb-4">
+          <p className="text-sm text-muted-foreground">
+            {t('organization:organigram.description', 'View your team organized by hierarchy. Click on any employee to see details.')}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 w-full">
+          <div className="relative flex-1 min-w-[200px]">
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('organization:directory.searchPlaceholder', 'Search employees...')}
+              className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+              style={{
+                height: 'var(--boxed-inputfield-height)',
+                fontWeight: '500',
+                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                color: 'var(--boxed-inputfield-color-text)'
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -813,6 +838,14 @@ const Organigram = ({ formData }) => {
           />
         </div>
       </Dialog>
+
+      <CreateFacilityRoleModal
+        isOpen={showCreateRoleModal}
+        onClose={() => setShowCreateRoleModal(false)}
+        onRoleCreated={() => {
+          fetchTeamMembers();
+        }}
+      />
     </div>
   );
 };

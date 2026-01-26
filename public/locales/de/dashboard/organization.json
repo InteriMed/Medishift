@@ -3,6 +3,7 @@
   "subtitle": "Verwalten Sie Ihre Apothekenkette",
   "noOrg": "Organisation erstellen oder beitreten",
   "tabs": {
+    "contracts": "Verträge",
     "profile": "Profil"
   },
   "sections": {

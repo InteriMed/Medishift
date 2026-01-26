@@ -29,7 +29,9 @@
     "stopTutorial": "Stop Tutorial",
     "goBack": "Go back",
     "changeLanguage": "Change Language",
-    "profileAlt": "Profile"
+    "profileAlt": "Profile",
+    "help": "Help",
+    "support": "Support"
   },
   "footer": {
     "newsletter": {
@@ -75,6 +77,16 @@
   "phone": "Phone",
   "email": "Email",
   "continue": "Continue",
+  "save": "Save",
+  "saving": "Saving...",
+  "delete": "Delete",
+  "edit": "Edit",
+  "deleteConfirmation": {
+    "title": "Delete Facility Role",
+    "message": "Are you sure you want to delete this facility role? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
   "auth": {
     "login": {
       "button": "Log In"

@@ -1,5 +1,7 @@
 {
     "title": "Contrats",
+    "subtitle": "Consultez et gérez vos contrats",
+    "new": "Nouveau",
     "errorTitle": "Erreur lors du chargement des contrats",
     "errorMessage": "Une erreur s'est produite lors du chargement de vos contrats. Veuillez réessayer.",
     "retry": "Réessayer",
@@ -25,7 +27,29 @@
     "noContracts": "Pas encore de contrats",
     "startApplying": "Commencez par postuler à des postes",
     "createContract": "Créer un contrat",
-    "noMatches": "Aucun résultat trouvé",
+    "noMatches": "Aucun contrat ne correspond à votre recherche",
+    "noMatches.description": "Essayez d'ajuster vos filtres pour voir plus de résultats",
+    "empty": {
+        "title": "Aucun contrat trouvé",
+        "description": "Aucun contrat disponible pour le moment"
+    },
+    "info": {
+        "title": "Contrats",
+        "description": "Parcourez et recherchez des contrats."
+    },
+    "sortBy": "Trier par",
+    "sort": {
+        "date": "Date",
+        "name": "Nom"
+    },
+    "filter": {
+        "status": "Statut",
+        "apply": "Appliquer les filtres"
+    },
+    "view": {
+        "grid": "Vue en grille",
+        "list": "Vue en liste"
+    },
     "adjustFilters": "Essayez d'ajuster vos filtres",
     "selectContract": "Sélectionnez un contrat",
     "selectContractDesc": "Sélectionnez un contrat dans la liste à gauche pour voir ses détails complets",
@@ -64,5 +88,13 @@
         "noticePeriod": "Délai de préavis",
         "workingHours": "Heures de travail",
         "benefits": "Avantages"
+    },
+    "create": "Créer",
+    "form": {
+        "title": "Titre",
+        "titlePlaceholder": "Entrez le titre du contrat",
+        "status": "Statut",
+        "description": "Description",
+        "descriptionPlaceholder": "Entrez la description du contrat"
     }
 }

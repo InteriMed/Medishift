@@ -50,11 +50,14 @@ const CalendarHeader = ({
 
   return (
     <div className={cn(
-      "flex flex-col md:flex-row items-center justify-between gap-4 w-full",
+      "flex flex-col md:flex-row items-center justify-between gap-4 w-full relative",
       isTopBarMode && "h-full"
     )}>
       {/* Left: Standardized Controls (Date Title + Filters) */}
-      <div className="flex items-center gap-3 flex-1">
+      <div className={cn(
+        "flex items-center gap-3",
+        isTeamWorkspace ? "flex-1 min-w-0 pr-[140px] md:pr-[160px]" : "flex-1"
+      )}>
         {/* Mini Calendar Toggle */}
         <button
           className={cn(
@@ -103,15 +106,14 @@ const CalendarHeader = ({
           <div className="h-6 w-px bg-border/50 hidden md:block" />
 
           {/* View Toggle - Show in both calendar and team modes */}
-          <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+          <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
             <button
               className={cn(
                 "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
                 view === 'day'
-                  ? "bg-background text-foreground shadow-sm border-2"
+                  ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
               )}
-              style={view === 'day' ? { borderColor: 'var(--color-logo-1)' } : {}}
               onClick={() => {
                 setView('day');
               }}
@@ -122,10 +124,9 @@ const CalendarHeader = ({
               className={cn(
                 "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
                 view === 'week'
-                  ? "bg-background text-foreground shadow-sm border-2"
+                  ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
               )}
-              style={view === 'week' ? { borderColor: 'var(--color-logo-1)' } : {}}
               onClick={() => setView('week')}
             >
               {t('calendar:weekView')}
@@ -134,15 +135,15 @@ const CalendarHeader = ({
         </>
       </div>
 
-      {/* Center: Calendar/Team Toggle - Show for team workspaces (visible in night mode too) */}
+      {/* Center: Calendar/Team Toggle - Only show for team workspaces */}
       {isTeamWorkspace && (
-        <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input absolute left-1/2 -translate-x-1/2" style={{ height: 'var(--boxed-inputfield-height)' }}>
+        <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input absolute left-1/2 -translate-x-1/2 z-10 shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
           <button
             className={cn(
-              "px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 border-2",
+              "px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
               calendarMode === 'calendar'
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-transparent"
+                ? "bg-background text-foreground shadow-sm border-2"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
             )}
             style={calendarMode === 'calendar' ? { borderColor: 'var(--color-logo-1)' } : {}}
             onClick={() => setCalendarMode('calendar')}
@@ -151,10 +152,10 @@ const CalendarHeader = ({
           </button>
           <button
             className={cn(
-              "px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 border-2",
+              "px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
               calendarMode === 'team'
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-transparent"
+                ? "bg-background text-foreground shadow-sm border-2"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
             )}
             style={calendarMode === 'team' ? { borderColor: 'var(--color-logo-1)' } : {}}
             onClick={() => setCalendarMode('team')}
@@ -165,7 +166,10 @@ const CalendarHeader = ({
       )}
 
       {/* Right: Filters & Actions */}
-      <div className="flex items-center gap-2 flex-1 justify-end">
+      <div className={cn(
+        "flex items-center gap-2 justify-end",
+        isTeamWorkspace ? "flex-1 min-w-0 pl-[140px] md:pl-[160px]" : "flex-1"
+      )}>
         {/* Night View Button - Show in both calendar and team modes */}
         <button
           className={cn(
@@ -252,12 +256,13 @@ const CalendarHeader = ({
 
         {/* Create Event Button */}
         <button
-          className="flex items-center justify-center rounded-xl transition-all bg-primary text-primary-foreground hover:bg-primary/90"
-          style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
+          className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
+          style={{ height: 'var(--boxed-inputfield-height)' }}
           onClick={handleCreateEventClick}
-          title={t('calendar:newAppointment')}
+          title={t('calendar:createEvent', 'Create Event')}
         >
           <FiPlus className="w-4 h-4" />
+          {t('calendar:createEvent', 'Create Event')}
         </button>
       </div>
     </div>

@@ -4,7 +4,7 @@
       "overview": "Übersicht",
       "profile": "Profil",
       "contracts": "Verträge",
-      "messages": "Nachrichten",
+      "communication": "Kommunikation",
       "calendar": "Kalender",
       "marketplace": "Marktplatz",
       "payroll": "Lohnabrechnung",
@@ -29,6 +29,10 @@
       "messages": {
         "title": "Nachrichten",
         "subtitle": "Kommunizieren Sie mit Einrichtungen und Fachkräften"
+      },
+      "announcements": {
+        "title": "Ankündigungen",
+        "subtitle": "Ankündigungen der Einrichtung anzeigen und verwalten"
       },
       "contracts": {
         "title": "Verträge",
@@ -132,7 +136,7 @@
         "facility": "Einrichtung",
         "facilityDescription": "Ich vertrete ein Unternehmen oder eine Einrichtung, die Fachkräfte sucht",
         "organization": "Organisation",
-        "organizationDescription": "Ich vertrete eine Apothekenkette oder Organisation"
+        "organizationDescription": "Ich vertrete eine Kette von Einrichtungen oder Organisation"
       },
       "step3": {
         "chain": {
@@ -266,7 +270,7 @@
     },
     "navigation": {
       "overview": "Overview",
-      "messages": "Messages",
+      "communication": "Kommunikation",
       "contracts": "Contracts",
       "calendar": "Calendar",
       "profile": "Profile",

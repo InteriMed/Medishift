@@ -15,7 +15,7 @@ import {
   WORKSPACE_TYPES
 } from '../../utils/sessionAuth';
 import { COLLECTIONS, isAdminSync } from '../../config/workspaceDefinitions';
-import { buildDashboardUrl, getDefaultRouteForWorkspace } from '../utils/pathUtils';
+import { buildDashboardUrl, getDefaultRouteForWorkspace, getRelativePathFromUrl, getWorkspaceIdForUrl } from '../utils/pathUtils';
 import Dialog from '../../components/Dialog/Dialog';
 import Button from '../../components/BoxedInputFields/Button';
 import { getCookieKey, COOKIE_CONFIG, FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
@@ -323,7 +323,7 @@ export const DashboardProvider = ({ children }) => {
             hasFacilityProfile: (userData.roles || []).some(r => r.facility_uid),
             adminData: adminData
           };
-          
+
           console.log('[DashboardContext] User data loaded:', {
             uid: userWithId.uid,
             roles: userWithId.roles,
@@ -361,7 +361,7 @@ export const DashboardProvider = ({ children }) => {
         if (docSnapshot.exists()) {
           const userData = docSnapshot.data();
           const userWithId = { ...userData, uid: docSnapshot.id };
-          
+
           let currentAdminData = adminDataRef.current;
           if (!currentAdminData) {
             try {
@@ -380,7 +380,7 @@ export const DashboardProvider = ({ children }) => {
               console.error('[DashboardContext] Error loading admin data in snapshot:', adminErr);
             }
           }
-          
+
           setUser(prev => ({
             ...userWithId,
             // Preserve computed profile flags - use prev if available, otherwise keep from Firestore
@@ -529,38 +529,16 @@ export const DashboardProvider = ({ children }) => {
       setSelectedWorkspace(workspace);
       setWorkspaceCookie(workspace);
 
-      // Handle workspace navigation based on type changes
-      const typeChanged = selectedWorkspace && selectedWorkspace.type !== workspace.type;
-
-      if (typeChanged) {
-        // If switching workspace types, navigate to appropriate default page and reload
-        let targetUrl;
-        if (workspace.type === WORKSPACE_TYPES.ADMIN) {
-          targetUrl = `/dashboard/admin/portal`;
-        } else if (workspace.type === WORKSPACE_TYPES.TEAM) {
-          targetUrl = `/dashboard/${workspace.facilityId}/overview`;
-        } else if (workspace.type === WORKSPACE_TYPES.PERSONAL) {
-          targetUrl = `/dashboard/personal/overview`;
-        } else {
-          targetUrl = `/dashboard/personal/overview`;
-        }
-
-        // Use window.location to ensure full reload with new workspace context
-        window.location.href = targetUrl;
+      const newWorkspaceId = getWorkspaceIdForUrl(workspace);
+      const relativePath = getRelativePathFromUrl(location.pathname);
+      
+      if (relativePath) {
+        const newPath = buildDashboardUrl(relativePath, newWorkspaceId);
+        navigate(newPath, { replace: true });
       } else {
-        // Same workspace type, just update the URL path if needed
-        const currentPath = location.pathname;
-        const segments = currentPath.split('/').filter(Boolean);
-        const dashboardIndex = segments.indexOf('dashboard');
-
-        if (dashboardIndex !== -1 && segments.length > dashboardIndex + 1) {
-          const currentWorkspaceId = segments[dashboardIndex + 1];
-          if (currentWorkspaceId !== workspace.id) {
-            segments[dashboardIndex + 1] = workspace.id;
-            const targetUrl = '/' + segments.join('/');
-            navigate(targetUrl, { replace: true });
-          }
-        }
+        const defaultRoute = getDefaultRouteForWorkspace(workspace.type);
+        const defaultPath = buildDashboardUrl(defaultRoute, newWorkspaceId);
+        navigate(defaultPath, { replace: true });
       }
 
     } catch (error) {
@@ -725,9 +703,9 @@ export const DashboardProvider = ({ children }) => {
 
     // Get available workspaces based on user roles
     const availableWorkspaces = getAvailableWorkspaces(userWithAdmin);
-    
+
     const isUserAdmin = isAdminSync(userWithAdmin);
-    
+
     console.log('[DashboardContext] Workspace initialization:', {
       isUserAdmin,
       userRoles: userWithAdmin.roles,
@@ -830,13 +808,11 @@ export const DashboardProvider = ({ children }) => {
       }
     }
 
-    // AUTO-SELECT ADMIN WORKSPACE: If user is admin and no workspace selected, auto-select admin workspace
     const adminWorkspace = availableWorkspaces.find(w => w.type === WORKSPACE_TYPES.ADMIN);
     if (adminWorkspace && !selectedWorkspace && isUserAdmin) {
-      console.log('[DashboardContext] Auto-selecting admin workspace for admin user');
+      console.log('[DashboardContext] Auto-selecting admin workspace for admin user (no redirect)');
       setSelectedWorkspace(adminWorkspace);
       setWorkspaceCookie(adminWorkspace);
-      navigate(`/dashboard/admin/portal`, { replace: true });
       return;
     }
 
@@ -853,14 +829,12 @@ export const DashboardProvider = ({ children }) => {
         return;
       }
 
-      // AUTO-SELECT ADMIN WORKSPACE: If user is admin, prioritize admin workspace
       if (isUserAdmin) {
         const adminWorkspace = availableWorkspaces.find(w => w.type === WORKSPACE_TYPES.ADMIN);
         if (adminWorkspace) {
-          console.log('[DashboardContext] Auto-selecting admin workspace for admin user');
+          console.log('[DashboardContext] Auto-selecting admin workspace for admin user (no redirect)');
           setSelectedWorkspace(adminWorkspace);
           setWorkspaceCookie(adminWorkspace);
-          navigate(`/dashboard/admin/portal`, { replace: true });
           return;
         }
       }
@@ -899,18 +873,14 @@ export const DashboardProvider = ({ children }) => {
       const onboardingCompleted = professionalCompleted || facilityCompleted || userWithAdmin.onboardingCompleted === true;
 
       if (!onboardingCompleted && location.pathname.includes('/dashboard')) {
-        const lang = window.location.pathname.split('/')[1] || 'fr';
-        const onboardingType = (userWithAdmin.roles || []).some(r => r.facility_uid) ? 'facility' : 'professional';
-        navigate(`/${lang}/onboarding?type=${onboardingType}`, { replace: true });
+        console.warn('[DashboardContext] No workspaces available and onboarding incomplete, but automatic rerouting is disabled');
         return;
       }
 
       // Remove workspace from URL search params if no workspaces available (it's now in the path)
       const searchParams = new URLSearchParams(location.search);
       if (searchParams.has('workspace')) {
-        searchParams.delete('workspace');
-        const newUrl = searchParams.toString() ? `${location.pathname}?${searchParams.toString()}` : location.pathname;
-        navigate(newUrl, { replace: true });
+        console.log('[DashboardContext] Legacy workspace query param detected, but automatic cleanup redirection is disabled');
       }
     }
   }, [user, switchWorkspace, selectedWorkspace, location, navigate]);

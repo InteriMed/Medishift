@@ -210,11 +210,11 @@ const Dialog = ({
               {children}
             </div>
 
-            {actions && (
-              <div className={cn("flex justify-end", position ? "mt-6 gap-2" : "mt-8 gap-3 pr-8")}>
-                {actions}
-              </div>
-            )}
+          {actions && (
+            <div className={cn("flex justify-between items-center", position ? "mt-6 gap-2" : "mt-8 gap-3 pr-8")}>
+              {actions}
+            </div>
+          )}
           </div>
         </div>
       </div>,
@@ -303,7 +303,7 @@ const Dialog = ({
           </div>
 
           {actions && (
-            <div className="mt-8 flex justify-end gap-3 pr-8">
+            <div className="mt-8 flex justify-between items-center gap-3 pr-8">
               {actions}
             </div>
           )}

@@ -15,7 +15,7 @@ import { uploadFile } from '../../../../../services/storageService';
 import useAutoSave from '../../../../hooks/useAutoSave';
 
 const styles = {
-    sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+    sectionContainer: "flex flex-col gap-6 p-0 w-full max-w-[1400px] mx-auto",
     headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
     sectionTitle: "text-2xl font-semibold mb-0",
     sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
@@ -816,11 +816,8 @@ const DocumentUploads = ({
     return (
         <div className={styles.sectionContainer}>
             <style>{`
-                .document-uploads-container {
-                    container-type: inline-size;
-                }
-
                 .document-uploads-sections-wrapper {
+                    container-type: inline-size;
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 1.5rem;
@@ -832,7 +829,6 @@ const DocumentUploads = ({
                     }
                 }
             `}</style>
-            <div className="document-uploads-container w-full max-w-[1400px] mx-auto">
                 {formData && completionPercentage !== undefined && (
                     <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input mb-6" style={{ height: 'var(--boxed-inputfield-height)' }}>
                         <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
@@ -859,8 +855,6 @@ const DocumentUploads = ({
                     </div>
                 </div>
             </div>
-
-        </div>
     );
 };
 

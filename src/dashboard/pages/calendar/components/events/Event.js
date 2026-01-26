@@ -99,7 +99,7 @@ const Event = ({
       data-event-id={id}
       className={cn(
         "absolute rounded-md transition-shadow select-none overflow-hidden group",
-        "z-1 cursor-grab hover:z-2",
+        "cursor-grab",
         isSelected && "ring-2 ring-offset-1 ring-primary",
         isOverlapping && "opacity-90",
         isDraft && "opacity-70 border-dashed"
@@ -109,6 +109,7 @@ const Event = ({
         backgroundColor: bgColor,
         borderLeft: `3px solid ${borderColor}`,
         boxShadow: isHovered ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+        zIndex: isSelected ? 30 : (isHovered ? 20 : 10),
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -120,10 +121,11 @@ const Event = ({
       {(!isMultiDay || isFirstDay) && (
         <div
           className={cn(
-            "absolute top-0 left-0 right-0 h-2 cursor-ns-resize z-2",
+            "absolute top-0 left-0 right-0 h-2 cursor-ns-resize",
             "bg-transparent hover:bg-white/30 transition-colors",
             isHovered ? "opacity-100" : "opacity-0"
           )}
+          style={{ zIndex: 40 }}
           onMouseDown={(e) => {
             e.stopPropagation();
             handleMouseDown(e, 'resize-top');
@@ -177,10 +179,11 @@ const Event = ({
       {(!isMultiDay || isLastDay) && (
         <div
           className={cn(
-            "absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize z-2",
+            "absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize",
             "bg-transparent hover:bg-white/30 transition-colors",
             isHovered ? "opacity-100" : "opacity-0"
           )}
+          style={{ zIndex: 40 }}
           onMouseDown={(e) => {
             e.stopPropagation();
             handleMouseDown(e, 'resize-bottom');

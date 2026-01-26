@@ -8,7 +8,12 @@
     "common": "Generale",
     "account": "Account",
     "documents": "Documenti",
-    "api": "Verifica"
+    "api": "Verifica",
+    "catalog": "Catalogo",
+    "organization": "Organizzazione",
+    "support": "Supporto",
+    "services": "Servizi",
+    "announcements": "Annunci"
   },
   "calendar": {
     "getEvents": "Visualizza eventi",
@@ -92,12 +97,76 @@
     "companySearch": "Cerca azienda",
     "companySearchDesc": "Trova una struttura sanitaria per GLN"
   },
+  "catalog": {
+    "searchOrganizations": "Cerca organizzazioni",
+    "searchOrganizationsDesc": "Trova organizzazioni, catene e gruppi",
+    "getOrganization": "Visualizza organizzazione",
+    "getOrganizationDesc": "Visualizza dettagli e informazioni dell'organizzazione",
+    "getOrganizationFacilities": "Visualizza strutture",
+    "getOrganizationFacilitiesDesc": "Elenca tutte le strutture di un'organizzazione",
+    "searchProfessionals": "Cerca professionisti",
+    "searchProfessionalsDesc": "Trova professionisti sanitari e lavoratori",
+    "getProfessional": "Visualizza professionista",
+    "getProfessionalDesc": "Visualizza profilo e dettagli del professionista",
+    "searchFacilities": "Cerca strutture",
+    "searchFacilitiesDesc": "Trova farmacie, cliniche e strutture sanitarie",
+    "getFacility": "Visualizza struttura",
+    "getFacilityDesc": "Visualizza profilo e dettagli della struttura",
+    "searchAll": "Cerca tutto",
+    "searchAllDesc": "Cerca tra organizzazioni, professionisti e strutture"
+  },
+  "organization": {
+    "viewEmployees": "Visualizza dipendenti",
+    "viewEmployeesDesc": "Visualizza dipendenti e directory dell'organizzazione",
+    "viewOrganigram": "Visualizza organigramma",
+    "viewOrganigramDesc": "Visualizza struttura e gerarchia dell'organizzazione",
+    "viewHiring": "Visualizza processi di assunzione",
+    "viewHiringDesc": "Visualizza processi di assunzione e opportunità di lavoro",
+    "viewContracts": "Visualizza contratti",
+    "viewContractsDesc": "Visualizza contratti e accordi dell'organizzazione",
+    "viewPayroll": "Visualizza stipendi",
+    "viewPayrollDesc": "Visualizza stipendi consolidati e pagamenti",
+    "viewPolicyLibrary": "Visualizza biblioteca politiche",
+    "viewPolicyLibraryDesc": "Visualizza politiche e documenti dell'organizzazione",
+    "uploadPolicy": "Carica politica",
+    "uploadPolicyDesc": "Carica un nuovo documento di politica nella biblioteca",
+    "viewProfile": "Visualizza profilo organizzazione",
+    "viewProfileDesc": "Visualizza profilo e impostazioni dell'organizzazione"
+  },
+  "support": {
+    "createTicket": "Crea ticket di supporto",
+    "createTicketDesc": "Crea un nuovo ticket di supporto per assistenza",
+    "listTickets": "Visualizza i miei ticket",
+    "listTicketsDesc": "Visualizza tutti i tuoi ticket di supporto",
+    "getTicket": "Visualizza ticket",
+    "getTicketDesc": "Visualizza dettagli di un ticket di supporto",
+    "addResponse": "Rispondi al ticket",
+    "addResponseDesc": "Aggiungi una risposta a un ticket di supporto"
+  },
+  "services": {
+    "createRequest": "Crea richiesta di servizio",
+    "createRequestDesc": "Richiedi un servizio (personale, formazione, consulenza, ecc.)",
+    "listRequests": "Visualizza richieste di servizio",
+    "listRequestsDesc": "Visualizza tutte le richieste di servizio",
+    "getRequest": "Visualizza richiesta di servizio",
+    "getRequestDesc": "Visualizza dettagli di una richiesta di servizio",
+    "listAvailableServices": "Elenca servizi disponibili",
+    "listAvailableServicesDesc": "Visualizza tutti i servizi disponibili che puoi richiedere"
+  },
+  "announcements": {
+    "createAnnouncement": "Crea annuncio",
+    "createAnnouncementDesc": "Crea un nuovo annuncio con sondaggio opzionale",
+    "votePoll": "Vota nel sondaggio",
+    "votePollDesc": "Vota su un sondaggio in un annuncio"
+  },
   "search": {
     "placeholder": "Cerca azioni...",
     "noResults": "Nessuna azione trovata",
+    "noActionsInCategory": "Nessuna azione in questa categoria",
     "suggestions": "Suggerimenti",
     "recentActions": "Recenti",
     "allActions": "Tutte le azioni",
+    "actions": "Azioni",
     "categories": "Categorie"
   }
 }

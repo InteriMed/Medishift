@@ -60,6 +60,7 @@ const useProfileData = () => {
   const getProfileCollectionName = useCallback((role) => {
     if (role === 'facility' || role === 'company') return FIRESTORE_COLLECTIONS.FACILITY_PROFILES;
     if (role === 'professional') return FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES;
+    if (role === 'organization') return FIRESTORE_COLLECTIONS.ORGANIZATIONS;
     return FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES; // Default or throw error
   }, []);
 
@@ -67,6 +68,7 @@ const useProfileData = () => {
   const getDefaultProfileType = useCallback((role) => {
     if (role === 'facility' || role === 'company') return 'pharmacy'; // Default facility type
     if (role === 'professional') return 'doctor'; // Default professional type
+    if (role === 'organization') return 'organization'; // Default organization type
     return 'default';
   }, []);
 
@@ -100,6 +102,8 @@ const useProfileData = () => {
       if (selectedWorkspace) {
         if (selectedWorkspace.type === WORKSPACE_TYPES.TEAM) {
           userRole = 'facility';
+        } else if (selectedWorkspace.type === 'organization') {
+          userRole = 'organization';
         } else if (selectedWorkspace.type === WORKSPACE_TYPES.PERSONAL || selectedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
           userRole = 'professional';
         }

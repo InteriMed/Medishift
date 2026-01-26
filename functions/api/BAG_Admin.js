@@ -529,12 +529,81 @@ const gesRegAPI = onCall(FUNCTION_CONFIG, async (request) => {
   }
 });
 
+const commercialRegistrySearchAPI = onCall(FUNCTION_CONFIG, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError(
+      'unauthenticated',
+      'You must be logged in to use this API'
+    );
+  }
+
+  const { criteria } = request.data;
+
+  if (!criteria) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Commercial registry number (UID/CHE) is required'
+    );
+  }
+
+  try {
+    const requestBody = {
+      criteria: criteria,
+      seats: null,
+      legalForms: null,
+      searchInReport: false,
+      alsoSearchIns: [],
+      endIndex: 10,
+      favoritesUids: [],
+      fullTextSearch: '',
+      fullTextSearchSectionLimit: null,
+      language: 'FR',
+      legalForms: null,
+      maxResultNumber: 10,
+      responseType: 'INTERNET_SMALL',
+      searchInDeleted: false,
+      searchInHistoric: false,
+      searchInReport: false,
+      seats: null,
+      sortType: 'DEFAULT',
+      startIndex: 0
+    };
+
+    const response = await fetch('https://app2.ge.ch/ecohrcinternet/api/public/companies/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Commercial registry search API returned status ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return {
+      success: true,
+      data: result
+    };
+  } catch (error) {
+    logger.error('Error in commercial registry search API:', error);
+    throw new HttpsError(
+      'internal',
+      error.message || 'Failed to query commercial registry'
+    );
+  }
+});
+
 module.exports = {
   healthRegistryAPI,
   companySearchAPI,
   companyDetailsAPI,
   verifyProfileAPI,
   uidAPI,
-  gesRegAPI
+  gesRegAPI,
+  commercialRegistrySearchAPI
 };
 

@@ -1,11 +1,11 @@
 {
-  "personalDetails": "Personal Details",
-  "professionalBackground": "Professional Background",
-  "billingInformation": "Billing Information",
-  "documentUploads": "Document Uploads",
-  "facilityCoreDetails": "Facility Details",
-  "facilityLegalBilling": "Legal & Billing",
-  "marketplacePreferences": "Marketplace Preferences",
+  "personalDetails": "Personal",
+  "professionalBackground": "Professional",
+  "billingInformation": "Billing",
+  "documentUploads": "Documents",
+  "facilityCoreDetails": "Facility",
+  "facilityLegalBilling": "Legal",
+  "marketplacePreferences": "Marketplace",
   "settings": "Settings",
   "account": "Account"
 }

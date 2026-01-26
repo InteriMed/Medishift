@@ -312,21 +312,21 @@ const ExecutiveDashboard = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px' }}>
-        <div style={{ color: 'var(--text-light-color)' }}>Loading dashboard...</div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 'var(--spacing-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-      <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-xxxlarge)', fontWeight: 'var(--font-weight-large)', color: 'var(--text-color)', marginBottom: 0 }}>
+    <div className="flex flex-col gap-6 p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-foreground mb-0">
           {t('admin:executive.title', 'Executive Dashboard')}
         </h1>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--spacing-lg)' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <MetricCard
           title={t('admin:executive.liveShifts', 'Live Shifts')}
           value={metrics.liveShifts}
@@ -350,12 +350,12 @@ const ExecutiveDashboard = () => {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 'var(--spacing-lg)' }}>
-        <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-lg)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--grey-2)' }}>
-          <h2 style={{ fontSize: 'var(--font-size-large)', fontWeight: 'var(--font-weight-medium)', marginBottom: 'var(--spacing-md)' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow">
+          <h2 className="text-lg font-semibold mb-4 text-foreground">
             {t('admin:executive.financialPulse', 'Financial Pulse (MTD)')}
           </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+          <div className="flex flex-col gap-4">
             <FinancialMetric
               label={t('admin:executive.gmv', 'GMV')}
               value={`CHF ${metrics.gmv.toLocaleString('de-CH')}`}
@@ -373,21 +373,21 @@ const ExecutiveDashboard = () => {
             />
           </div>
           {sparklineData.length > 0 && (
-            <div style={{ marginTop: 'var(--spacing-md)' }}>
+            <div className="mt-4">
               <ResponsiveContainer width="100%" height={100}>
                 <LineChart data={sparklineData}>
-                  <Line type="monotone" dataKey="revenue" stroke="var(--primary-color)" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           )}
         </div>
 
-        <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-lg)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--grey-2)' }}>
-          <h2 style={{ fontSize: 'var(--font-size-large)', fontWeight: 'var(--font-weight-medium)', marginBottom: 'var(--spacing-md)' }}>
+        <div className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow">
+          <h2 className="text-lg font-semibold mb-4 text-foreground">
             {t('admin:executive.growth', 'Growth Metrics')}
           </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+          <div className="flex flex-col gap-4">
             <GrowthMetric
               label={t('admin:executive.newFacilities', 'New Facilities')}
               value={metrics.newFacilities}
@@ -411,53 +411,50 @@ const ExecutiveDashboard = () => {
 };
 
 const MetricCard = ({ title, value, icon: Icon, color, urgent, trend }) => {
-  const colorStyles = {
-    green: { backgroundColor: 'var(--green-1)', color: 'var(--green-4)' },
-    red: { backgroundColor: 'var(--red-1)', color: 'var(--red-4)' },
-    yellow: { backgroundColor: 'var(--yellow-1)', color: 'var(--yellow-4)' },
-    blue: { backgroundColor: 'var(--blue-1)', color: 'var(--blue-4)' }
+  const colorClasses = {
+    green: 'bg-green-50 text-green-600',
+    red: 'bg-red-50 text-red-600',
+    yellow: 'bg-yellow-50 text-yellow-600',
+    blue: 'bg-blue-50 text-blue-600'
   };
 
   return (
     <div
-      className="metric-card"
-      style={{
-        ...(urgent && { boxShadow: '0 0 0 2px var(--red-3)' })
-      }}
+      className={`bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow ${urgent ? 'ring-2 ring-red-300' : ''}`}
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="metric-icon-container" style={colorStyles[color]}>
+        <div className={`p-3 rounded-xl ${colorClasses[color] || colorClasses.blue}`}>
           <Icon size={24} />
         </div>
         {trend && trend.length > 0 && (
-          <div style={{ width: '80px', height: '40px' }}>
-            <Sparkline data={trend.map(d => d.revenue)} color="var(--primary-color)" />
+          <div className="w-20 h-10">
+            <Sparkline data={trend.map(d => d.revenue)} color="hsl(var(--primary))" />
           </div>
         )}
       </div>
-      <h3 className="metric-title">{title}</h3>
-      <p className="metric-value">{value}</p>
+      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-1">{title}</h3>
+      <p className="text-2xl font-bold text-foreground">{value}</p>
     </div>
   );
 };
 
 const FinancialMetric = ({ label, value, icon: Icon }) => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--spacing-md)', backgroundColor: 'var(--grey-1)', borderRadius: 'var(--border-radius-sm)' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
-      <Icon size={20} style={{ color: 'var(--text-light-color)' }} />
-      <span style={{ fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-medium)' }}>{label}</span>
+  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+    <div className="flex items-center gap-4">
+      <Icon size={20} className="text-muted-foreground" />
+      <span className="font-medium text-sm text-foreground">{label}</span>
     </div>
-    <span style={{ fontWeight: 'var(--font-weight-large)', fontSize: 'var(--font-size-large)' }}>{value}</span>
+    <span className="font-semibold text-lg text-foreground">{value}</span>
   </div>
 );
 
 const GrowthMetric = ({ label, value, icon: Icon }) => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--spacing-md)', backgroundColor: 'var(--grey-1)', borderRadius: 'var(--border-radius-sm)' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
-      <Icon size={20} style={{ color: 'var(--text-light-color)' }} />
-      <span style={{ fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-medium)' }}>{label}</span>
+  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+    <div className="flex items-center gap-4">
+      <Icon size={20} className="text-muted-foreground" />
+      <span className="font-medium text-sm text-foreground">{label}</span>
     </div>
-    <span style={{ fontWeight: 'var(--font-weight-large)', fontSize: 'var(--font-size-large)' }}>{value}</span>
+    <span className="font-semibold text-lg text-foreground">{value}</span>
   </div>
 );
 

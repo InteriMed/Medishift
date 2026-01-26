@@ -136,7 +136,10 @@ const EmployeeCard = ({ employee, hrMetrics, onClose, viewerIsAdmin, onFireEmplo
                 <h1 className="text-lg font-semibold text-foreground">{fullName}</h1>
                 <StatusBadge status={currentStatus} />
               </div>
-              <p className="text-muted-foreground font-medium">{jobTitle} • {t('organization:employee.homeBranch', 'Plainpalais')}</p> {/* Mock Home Branch */}
+              <p className="text-muted-foreground font-medium">
+                {jobTitle}
+                {!selectedWorkspace?.facilityId && ` • ${t('organization:employee.homeBranch', 'Plainpalais')}`}
+              </p>
 
               <div className="flex items-center gap-2 mt-3 flex-wrap">
                 <button 

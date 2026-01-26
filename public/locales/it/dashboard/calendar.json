@@ -107,5 +107,6 @@
   "selectDays": "Seleziona Giorni",
   "editSelectedDays": "Modifica Giorni Selezionati",
   "editAllFuture": "Modifica Tutti i Futuri",
-  "editAllOccurrences": "Modifica Tutte le Occorrenze"
+  "editAllOccurrences": "Modifica Tutte le Occorrenze",
+  "addWorker": "Aggiungi Lavoratore"
 }

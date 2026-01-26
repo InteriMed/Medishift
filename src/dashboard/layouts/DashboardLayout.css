@@ -29,3 +29,8 @@
   width: 100%;
   overflow: visible;
 }
+
+.dashboard-layout-content main[data-dashboard="true"]>div.dashboard-scrollable-content {
+  overflow-y: auto !important;
+  scrollbar-gutter: stable;
+}

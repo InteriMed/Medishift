@@ -21,6 +21,7 @@
     padding: var(--spacing-xl, 32px);
     max-width: 600px;
     width: 100%;
+    height: 90vh;
     max-height: 90vh;
     overflow: hidden;
     display: flex;
@@ -29,6 +30,10 @@
     animation: fadeInSlideUp 0.3s ease-out;
     position: relative;
     transition: max-width 0.3s ease-in-out, width 0.3s ease-in-out;
+}
+
+.modal-content.narrow {
+    max-width: 400px;
 }
 
 .modal-content.large {
@@ -174,7 +179,7 @@
 
 .modal-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     flex-wrap: nowrap;
     gap: 0;
@@ -317,7 +322,7 @@
     .modal-footer {
         flex-direction: row;
         flex-wrap: nowrap;
-        justify-content: flex-end;
+        justify-content: space-between;
         gap: 0;
         overflow: hidden;
         min-width: 0;

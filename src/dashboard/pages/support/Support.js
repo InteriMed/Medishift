@@ -4,7 +4,6 @@ import {
     FiBarChart2,
     FiHeart,
     FiPlus,
-    FiHome,
     FiX
 } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
@@ -13,12 +12,8 @@ import { useNotification } from '../../../contexts/NotificationContext';
 import { topicService } from '../../../services/topicService';
 import { SupportToolbar } from './components/SupportToolbar';
 import { TopicDetail } from './TopicDetail';
-import ThreadsList from '../messages/components/ThreadsList';
-import ConversationView from '../messages/components/ConversationView';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
-import EmptyState from '../../components/EmptyState/EmptyState';
 import { cn } from '../../../utils/cn';
-import { useMobileView } from '../../hooks/useMobileView';
 
 const categoryLabels = {
     feedback: 'Feedback',
@@ -29,22 +24,12 @@ const categoryLabels = {
     general: 'General',
 };
 
-export const Support = ({
-    canAccessThreads,
-    threads,
-    isLoadingThreads,
-    onSelectThread,
-    selectedThread,
-}) => {
+export const Support = () => {
     const { t } = useTranslation(['messages']);
-    const { user, selectedWorkspace } = useDashboard();
+    const { user } = useDashboard();
     const { showError, showSuccess } = useNotification();
-    const isMobile = useMobileView();
 
-    const [viewMode, setViewMode] = useState('topics');
-    const [activeTab, setActiveTab] = useState('community');
     const [topics, setTopics] = useState([]);
-    const [myTopics, setMyTopics] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -61,16 +46,9 @@ export const Support = ({
     const loadTopics = useCallback(async () => {
         try {
             setIsLoading(true);
-            if (activeTab === 'community') {
-                const data = await topicService.listTopics(
-                    selectedCategory !== 'all' ? selectedCategory : undefined
-                );
+            if (user?.uid) {
+                const data = await topicService.listMyTopics(user.uid);
                 setTopics(data);
-            } else {
-                if (user?.uid) {
-                    const data = await topicService.listMyTopics(user.uid);
-                    setMyTopics(data);
-                }
             }
         } catch (error) {
             console.error('Error loading topics:', error);
@@ -78,11 +56,27 @@ export const Support = ({
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, selectedCategory, user, showError]);
+    }, [user, showError]);
 
     useEffect(() => {
         loadTopics();
     }, [loadTopics]);
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('action') === 'create') {
+            setIsCreateTopicOpen(true);
+        }
+
+        const handleOpenModal = (event) => {
+            if (event.detail?.type === 'createTicket' || event.detail?.action === 'create') {
+                setIsCreateTopicOpen(true);
+            }
+        };
+
+        window.addEventListener('openModal', handleOpenModal);
+        return () => window.removeEventListener('openModal', handleOpenModal);
+    }, []);
 
     const handleCreateTopic = async () => {
         if (!createFormData.title.trim() || !createFormData.content.trim()) {
@@ -106,7 +100,7 @@ export const Support = ({
     };
 
     const filteredTopics = useMemo(() => {
-        let currentTopics = activeTab === 'community' ? topics : myTopics;
+        let currentTopics = topics;
 
         if (selectedCategory !== 'all') {
             currentTopics = currentTopics.filter(t => t.category === selectedCategory);
@@ -122,7 +116,7 @@ export const Support = ({
         }
 
         return currentTopics;
-    }, [topics, myTopics, activeTab, selectedCategory, searchQuery]);
+    }, [topics, selectedCategory, searchQuery]);
 
     if (selectedTopicId) {
         return (
@@ -136,84 +130,17 @@ export const Support = ({
     return (
         <div className="flex flex-col h-full bg-background relative overflow-hidden">
             <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col">
-                {viewMode === 'threads' && canAccessThreads ? (
-                    <div className="flex-1 flex overflow-hidden">
-                        <div className={cn(
-                            "w-full md:w-80 border-r border-border flex flex-col bg-background",
-                            isMobile && selectedThread ? "hidden" : "flex"
-                        )}>
-                            <div className="px-4 pb-2 border-b border-border/40 mb-2">
-                                <div className="flex gap-2">
-                                    <button onClick={() => setViewMode('topics')} className="flex-1 py-1 text-xs font-medium text-muted-foreground hover:text-foreground">Topics</button>
-                                    <button className="flex-1 py-1 text-xs font-medium bg-primary/10 text-primary rounded-md">Threads</button>
-                                </div>
-                            </div>
+                <SupportToolbar
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                    categories={topicService.getCategories()}
+                    onCreateTopic={() => setIsCreateTopicOpen(true)}
+                />
 
-                            {isLoadingThreads ? (
-                                <LoadingSpinner />
-                            ) : (
-                                <ThreadsList
-                                    threads={threads}
-                                    selectedThreadId={selectedThread?.id}
-                                    onSelectThread={onSelectThread}
-                                    currentUserId={user?.uid}
-                                />
-                            )}
-                        </div>
-
-                        <div className={cn(
-                            "flex-1 bg-muted/5 flex flex-col min-w-0",
-                            isMobile && !selectedThread ? "hidden" : "flex"
-                        )}>
-                            {selectedThread ? (
-                                <ConversationView
-                                    conversation={selectedThread}
-                                    currentUser={user}
-                                    messageContext='personal'
-                                    workspaceContext={selectedWorkspace}
-                                />
-                            ) : (
-                                <EmptyState
-                                    title="Select a thread"
-                                    description="Choose a conversation to view messages"
-                                    icon={FiHome}
-                                />
-                            )}
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <div className="bg-background/95 backdrop-blur-md z-10 border-b border-border/40">
-                            <div className="container mx-auto max-w-[1400px]">
-                                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                                    {canAccessThreads && (
-                                        <div className="flex gap-2 px-4 pb-2 md:pb-0">
-                                            <button className="px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-lg transition-colors">Topics</button>
-                                            <button onClick={() => setViewMode('threads')} className="px-4 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors">
-                                                Threads
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        <SupportToolbar
-                            searchQuery={searchQuery}
-                            setSearchQuery={setSearchQuery}
-                            selectedCategory={selectedCategory}
-                            setSelectedCategory={setSelectedCategory}
-                            categories={topicService.getCategories()}
-                            activeTab={activeTab}
-                            setActiveTab={setActiveTab}
-                            onCreateTopic={() => setIsCreateTopicOpen(true)}
-                            viewMode={viewMode}
-                            setViewMode={setViewMode}
-                            canAccessThreads={canAccessThreads}
-                        />
-
-                        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-muted/5">
-                            <div className="max-w-[1400px] mx-auto space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-muted/5">
+                    <div className="max-w-[1400px] mx-auto space-y-4 mt-4">
                                 {isLoading ? (
                                     <LoadingSpinner />
                                 ) : filteredTopics.length === 0 ? (
@@ -275,10 +202,8 @@ export const Support = ({
                                         </div>
                                     ))
                                 )}
-                            </div>
-                        </div>
-                    </>
-                )}
+                    </div>
+                </div>
 
                 {isCreateTopicOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">

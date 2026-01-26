@@ -5,6 +5,7 @@ export { default as ProfessionalsPage } from './ProfessionalsPage';
 export { default as FAQPage } from './FAQPage';
 export { default as ContactPage } from './ContactPage';
 export { default as BlogPage } from './BlogPage';
+export { default as SupportPage } from './Support';
 export { default as PrivacyPolicyPage } from './PrivacyPolicyPage';
 export { default as TermsOfServicePage } from './TermsOfServicePage';
 export { default as SitemapPage } from './SitemapPage';

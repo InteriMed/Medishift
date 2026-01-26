@@ -17,12 +17,34 @@
         "totalAmount": "Total Amount",
         "allTime": "All time"
     },
+    "tabs": {
+        "team": "Team",
+        "medishift": "Medishift",
+        "all": "All"
+    },
+    "info": {
+        "title": "Payroll Management",
+        "description": "Track and manage all payments and salaries."
+    },
+    "searchPlaceholder": "Search by worker name or role...",
+    "sortBy": "Sort by",
+    "sort": {
+        "date": "Date",
+        "name": "Name",
+        "amount": "Amount"
+    },
+    "view": {
+        "grid": "Grid view",
+        "list": "List view"
+    },
     "filter": {
         "all": "All",
         "pending": "Pending",
         "sent": "Sent",
         "confirmed": "Confirmed",
-        "paid": "Paid"
+        "paid": "Paid",
+        "status": "Status",
+        "apply": "Apply Filters"
     },
     "table": {
         "worker": "Worker",
@@ -61,8 +83,8 @@
         "pharmacist": "Pharmacist"
     },
     "empty": {
-        "title": "No payroll requests yet",
-        "description": "When you confirm shifts with workers, payroll requests will appear here."
+        "title": "No payroll requests found",
+        "description": "No payroll requests available at the moment"
     },
     "pilot": {
         "title": "Pilot Program Active",

@@ -14,6 +14,7 @@ import {
 import ContactFormPopup from '../../components/ContactFormPopup/ContactFormPopup';
 import ProfessionalGLNVerification from '../../dashboard/onboarding/components/ProfessionalGLNVerification';
 import FacilityGLNVerification from '../../dashboard/onboarding/components/FacilityGLNVerification';
+import CommercialRegistryVerification from '../../dashboard/onboarding/components/CommercialRegistryVerification';
 import PhoneVerificationStep from '../../dashboard/onboarding/components/PhoneVerificationStep';
 import SimpleDropdown from '../../components/BoxedInputFields/Dropdown-Field';
 import PersonnalizedInputField from '../../components/BoxedInputFields/Personnalized-InputField';
@@ -24,8 +25,7 @@ import { useDropdownOptions } from '../../dashboard/pages/profile/utils/Dropdown
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import BarsLoader from '../../components/LoadingAnimations/BarsLoader';
 import Dialog from '../../components/Dialog/Dialog';
-
-import '../../styles/auth.css';
+import styles from './OnboardingPage.module.css';
 
 const OnboardingPage = () => {
     const navigate = useNavigate();
@@ -156,9 +156,9 @@ const OnboardingPage = () => {
     };
 
     const handleNext = async () => {
-        if (step === 3 && role !== 'chain') {
+        if (step === 3) {
             if (phoneVerified) {
-                const maxStep = role === 'chain' ? 3 : (role === 'company' ? 5 : 4);
+                const maxStep = (role === 'company' || role === 'chain') ? 5 : 4;
                 if (step < maxStep) {
                     transitionToStep(step + 1);
                     await saveProgress({ step: step + 1, role, belongsToFacility, phoneVerified, phoneData, legalConsiderationsConfirmed });
@@ -192,7 +192,7 @@ const OnboardingPage = () => {
             }
         }
 
-        const maxStep = role === 'chain' ? 3 : (role === 'company' ? 5 : 4);
+        const maxStep = (role === 'company' || role === 'chain') ? 5 : 4;
         if (step < maxStep) {
             transitionToStep(step + 1);
             await saveProgress({ step: step + 1, role, belongsToFacility, phoneVerified, phoneData, legalConsiderationsConfirmed });
@@ -230,13 +230,13 @@ const OnboardingPage = () => {
 
     const handleBack = async () => {
         if (step > 1) {
-            if (step === 4 && role !== 'chain' && phoneVerified) {
+            if (step === 4 && phoneVerified) {
                 setPhoneInternalStep(3);
                 transitionToStep(3);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }
-            if (step === 3 && role !== 'chain' && phoneInternalStep === 2) {
+            if (step === 3 && phoneInternalStep === 2) {
                 setPhoneInternalStep(1);
                 return;
             }
@@ -372,9 +372,7 @@ const OnboardingPage = () => {
         if (step === 1) return !!role;
         if (step === 2) return legalConsiderationsConfirmed;
         if (step === 3) {
-            if (role === 'chain') return chainMessage.trim() && chainPhoneNumber && chainPhonePrefix;
             if (phoneVerified) return true;
-
             const isValid = phoneInternalStep === 1 ? isPhoneValid : true;
             return isValid;
         }
@@ -382,12 +380,12 @@ const OnboardingPage = () => {
     };
 
     return (
-        <div className="auth-container py-12 px-4 text-center relative">
+        <div className={styles.container}>
             {isCreatingProfile && (
-                <div className="fixed inset-0 bg-white/95 backdrop-blur-md z-[100000] flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-4">
+                <div className={styles.loadingOverlay}>
+                    <div className={styles.loadingContent}>
                         <BarsLoader size="medium" color="primary" />
-                        <p className="text-base font-medium text-slate-700 animate-pulse">
+                        <p className={styles.loadingText}>
                             Creating your profile...
                         </p>
                     </div>
@@ -396,7 +394,7 @@ const OnboardingPage = () => {
             
             <button
                 onClick={() => setShowContactForm(true)}
-                className="fixed top-4 right-4 z-50 p-3 rounded-full bg-[var(--color-logo-1)] text-white shadow-lg hover:bg-[var(--color-logo-1)]/90 transition-all hover:scale-110 flex items-center justify-center"
+                className={styles.helpButton}
                 aria-label={t('common:header.help', 'Help')}
                 title={t('common:header.help', 'Help')}
             >
@@ -408,9 +406,8 @@ const OnboardingPage = () => {
                 onClose={() => setShowContactForm(false)}
             />
 
-            <div className={`auth-content mx-auto bg-white rounded-[3.5rem] shadow-2xl p-6 md:p-14 relative overflow-hidden ${(step === 2 || step === 4) ? 'wide' : ''}`}>
-                {/* Step Indicator Header */}
-                <div className="flex justify-center items-center gap-4 mb-10">
+            <div className={`${styles.content} ${(step === 2 || step === 4) ? styles.contentWide : ''} ${(step === 1 || step === 3) ? styles.contentNarrow : ''}`}>
+                <div className={styles.stepIndicator}>
                     {[1, 2, 3, 4, 5].filter(s => {
                         if (role === 'chain') return s <= 3;
                         if (role === 'company') return s <= 5;
@@ -418,64 +415,34 @@ const OnboardingPage = () => {
                     }).map(s => (
                         <div key={s} className="flex items-center gap-2">
                             <div
-                                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 
-                                    ${step >= s ? 'bg-[var(--color-logo-1)] text-white shadow-lg' : 'bg-slate-100 text-slate-400'} 
-                                `}
+                                className={`${styles.stepCircle} ${step >= s ? styles.stepCircleActive : styles.stepCircleInactive}`}
                             >
                                 {step > s ? <FiCheck /> : s}
                             </div>
-                            {s < (role === 'chain' ? 3 : role === 'company' ? 5 : 4) && <div className={`w-12 h-1.5 rounded-full ${step > s ? 'bg-[var(--color-logo-1)]' : 'bg-slate-100'}`} />}
+                            {s < (role === 'chain' ? 3 : role === 'company' ? 5 : 4) && (
+                                <div className={`${styles.stepConnector} ${step > s ? styles.stepConnectorActive : styles.stepConnectorInactive}`} />
+                            )}
                         </div>
                     ))}
                 </div>
 
-                <div className={`flex-grow transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'} relative`}>
+                <div className={`${styles.stepContent} ${isTransitioning ? styles.stepContentTransitioning : styles.stepContentVisible}`}>
                     {isVerifying && (
-                        <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            backdropFilter: 'blur(4px)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 50,
-                            borderRadius: '1.5rem',
-                            gap: '1.5rem'
-                        }}>
-                            <div style={{
-                                width: '60px',
-                                height: '60px',
-                                border: '5px solid #e5e7eb',
-                                borderTop: '5px solid hsl(221, 83%, 53%)',
-                                borderRadius: '50%',
-                                animation: 'spin 1s linear infinite'
-                            }} />
-                            <p style={{ fontSize: '1rem', fontWeight: 600, color: 'hsl(221, 83%, 53%)' }}>
+                        <div className={styles.verifyingOverlay}>
+                            <div className={styles.verifyingSpinner} />
+                            <p className={styles.verifyingText}>
                                 Verifying...
                             </p>
-                            <style>
-                                {`
-                                    @keyframes spin {
-                                        0% { transform: rotate(0deg); }
-                                        100% { transform: rotate(360deg); }
-                                    }
-                                `}
-                            </style>
                         </div>
                     )}
                     {step === 1 && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className="text-center mb-10">
-                                <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">{t('dashboard.onboarding.step2.title')}</h1>
-                                <p className="text-slate-500 text-lg">{t('dashboard.onboarding.step2.description')}</p>
+                            <header className={styles.header}>
+                                <h1 className={styles.title}>{t('dashboard.onboarding.step2.title')}</h1>
+                                <p className={styles.description}>{t('dashboard.onboarding.step2.description')}</p>
                             </header>
 
-                            <div className="max-w-3xl mx-auto space-y-6">
+                            <div className={styles.roleGrid}>
                                 {[
                                     { id: 'worker', title: t('dashboard.onboarding.step2.professional'), desc: t('dashboard.onboarding.step2.professionalDescription'), icon: <FiBriefcase /> },
                                     { id: 'company', title: t('dashboard.onboarding.step2.facility'), desc: t('dashboard.onboarding.step2.facilityDescription'), icon: <FiHome /> },
@@ -484,17 +451,17 @@ const OnboardingPage = () => {
                                     <div
                                         key={r.id}
                                         onClick={() => setRole(r.id)}
-                                        className={`group p-6 rounded-[2.5rem] border-2 transition-all cursor-pointer flex items-center gap-8 ${role === r.id ? 'border-[var(--color-logo-1)] bg-blue-50/50 shadow-xl' : 'border-slate-100 hover:border-blue-300 bg-white shadow-sm'}`}
+                                        className={`${styles.roleCard} ${role === r.id ? styles.roleCardSelected : styles.roleCardUnselected}`}
                                     >
-                                        <div className={`w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center transition-all duration-500 shadow-sm ${role === r.id ? 'bg-[var(--color-logo-1)] text-white' : 'bg-slate-50 text-slate-400'}`}>
+                                        <div className={`${styles.roleIcon} ${role === r.id ? styles.roleIconSelected : styles.roleIconUnselected}`}>
                                             {React.cloneElement(r.icon, { className: "w-8 h-8" })}
                                         </div>
-                                        <div className="flex-grow">
-                                            <h3 className="text-xl font-black text-slate-900">{r.title}</h3>
-                                            <p className="text-slate-500 font-medium text-sm leading-relaxed">{r.desc}</p>
+                                        <div className={styles.roleContent}>
+                                            <h3 className={styles.roleTitle}>{r.title}</h3>
+                                            <p className={styles.roleDescription}>{r.desc}</p>
                                         </div>
                                         <div
-                                            className={`flex-shrink-0 rounded-full border-2 flex items-center justify-center transition-all ${role === r.id ? 'bg-[var(--color-logo-1)] border-[var(--color-logo-1)]' : 'bg-white border-slate-200'}`}
+                                            className={`${styles.roleCheckbox} ${role === r.id ? styles.roleCheckboxSelected : styles.roleCheckboxUnselected}`}
                                             style={{
                                                 width: '24px',
                                                 height: '24px',
@@ -506,7 +473,7 @@ const OnboardingPage = () => {
                                                 boxSizing: 'border-box'
                                             }}
                                         >
-                                            {role === r.id && <FiCheck className="text-white w-4 h-4" />}
+                                            {role === r.id && <FiCheck className="text-primary-foreground w-4 h-4" />}
                                         </div>
                                     </div>
                                 ))}
@@ -516,50 +483,53 @@ const OnboardingPage = () => {
 
                     {step === 2 && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className="text-center mb-8">
-                                <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">{t('dashboard.onboarding.step1.title')}</h1>
+                            <header className={styles.header}>
+                                <h1 className={styles.title}>{t('dashboard.onboarding.step1.title')}</h1>
                             </header>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
-                                <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-sm leading-relaxed h-full">
+                            <div className={styles.legalGrid}>
+                                <div className={styles.legalInfoCard}>
                                     {belongsToFacility ? (
                                         <div className="space-y-4 animate-in fade-in duration-300">
-                                            <p className="text-xl font-black text-slate-900 border-b border-slate-200 pb-3">{t('dashboard.onboarding.step1.facilityLegalNotice')}</p>
-                                            <p className="text-slate-700">{t('dashboard.onboarding.step1.facilityLegalText1')}</p>
-                                            <p className="text-slate-700">{t('dashboard.onboarding.step1.facilityLegalText2')}</p>
-                                            <p className="text-slate-700">{t('dashboard.onboarding.step1.facilityLegalText3')}</p>
+                                            <p className={styles.legalInfoTitle}>{t('dashboard.onboarding.step1.facilityLegalNotice')}</p>
+                                            <div className={styles.legalInfoText}>
+                                                <p>{t('dashboard.onboarding.step1.facilityLegalText1')}</p>
+                                                <p>{t('dashboard.onboarding.step1.facilityLegalText2')}</p>
+                                                <p>{t('dashboard.onboarding.step1.facilityLegalText3')}</p>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="space-y-4 animate-in fade-in duration-300">
-                                            <p className="text-xl font-black text-slate-900 border-b border-slate-200 pb-3">{t('dashboard.onboarding.step1.professionalLegalNotice')}</p>
-                                            <p className="text-slate-700">{t('dashboard.onboarding.step1.professionalLegalText1')}</p>
-                                            <p className="text-slate-700">{t('dashboard.onboarding.step1.professionalLegalText2')}</p>
-                                            <p className="text-slate-700">{t('dashboard.onboarding.step1.professionalLegalText3')}</p>
-                                            <p className="text-slate-700">{t('dashboard.onboarding.step1.professionalLegalText4')}</p>
+                                            <p className={styles.legalInfoTitle}>{t('dashboard.onboarding.step1.professionalLegalNotice')}</p>
+                                            <div className={styles.legalInfoText}>
+                                                <p>{t('dashboard.onboarding.step1.professionalLegalText1')}</p>
+                                                <p>{t('dashboard.onboarding.step1.professionalLegalText2')}</p>
+                                                <p>{t('dashboard.onboarding.step1.professionalLegalText3')}</p>
+                                                <p>{t('dashboard.onboarding.step1.professionalLegalText4')}</p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="space-y-6 flex flex-col justify-center text-left">
+                                <div className={styles.legalOptions}>
                                     {role === 'worker' && (
                                         <div
-                                            className={`p-6 px-8 rounded-2xl border transition-all flex items-center justify-between cursor-pointer group ${belongsToFacility ? 'border-[var(--color-logo-1)] bg-blue-50/50 shadow-md' : 'border-slate-100 bg-white hover:border-blue-200 shadow-sm'}`}
+                                            className={`${styles.legalOptionCard} ${belongsToFacility ? styles.legalOptionCardSelected : styles.legalOptionCardUnselected}`}
                                             onClick={(e) => {
                                                 if (!e.target.closest('.switch-wrapper')) {
                                                     setBelongsToFacility(!belongsToFacility);
                                                 }
                                             }}
                                         >
-                                            <div className="flex items-center gap-6">
+                                            <div className={styles.legalOptionContent}>
                                                 <div 
-                                                    className={`flex-shrink-0 rounded-2xl flex items-center justify-center transition-all ${belongsToFacility ? 'bg-[var(--color-logo-1)] text-white shadow-lg shadow-blue-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}
-                                                    style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
+                                                    className={`${styles.legalOptionIcon} ${belongsToFacility ? styles.legalOptionIconSelected : styles.legalOptionIconUnselected}`}
                                                 >
                                                     <FiHome className="w-7 h-7" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-bold text-slate-900 text-lg">{t('dashboard.onboarding.step1.areYouEmployed')}</h3>
-                                                    <p className="text-slate-500 text-sm">{t('dashboard.onboarding.step1.areYouEmployedDescription')}</p>
+                                                    <h3 className={styles.legalOptionTitle}>{t('dashboard.onboarding.step1.areYouEmployed')}</h3>
+                                                    <p className={styles.legalOptionDescription}>{t('dashboard.onboarding.step1.areYouEmployedDescription')}</p>
                                                 </div>
                                             </div>
                                             <Switch
@@ -572,30 +542,28 @@ const OnboardingPage = () => {
                                     )}
 
                                     <div
-                                        className={`p-6 px-8 rounded-2xl border transition-all flex items-center justify-between cursor-pointer group ${legalConsiderationsConfirmed ? 'border-[var(--color-logo-1)] bg-blue-50/50 shadow-md' : 'border-slate-100 bg-white hover:border-blue-200 shadow-sm'}`}
+                                        className={`${styles.legalOptionCard} ${legalConsiderationsConfirmed ? styles.legalOptionCardSelected : styles.legalOptionCardUnselected}`}
                                         onClick={(e) => {
-                                            // Don't toggle if clicking on the switch or its children, or the link
                                             if (!e.target.closest('.switch-wrapper') && !e.target.closest('a')) {
                                                 setLegalConsiderationsConfirmed(!legalConsiderationsConfirmed);
                                             }
                                         }}
                                     >
-                                        <div className="flex items-center gap-6">
+                                        <div className={styles.legalOptionContent}>
                                             <div 
-                                                className={`flex-shrink-0 rounded-2xl flex items-center justify-center transition-all ${legalConsiderationsConfirmed ? 'bg-[var(--color-logo-1)] text-white shadow-lg shadow-blue-200' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}
-                                                style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
+                                                className={`${styles.legalOptionIcon} ${legalConsiderationsConfirmed ? styles.legalOptionIconSelected : styles.legalOptionIconUnselected}`}
                                             >
                                                 <FiShield className="w-7 h-7" />
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-slate-900 text-lg">{t('dashboard.onboarding.step1.termsAcceptance')}</h3>
-                                                <p className="text-slate-500 text-sm text-left">
+                                                <h3 className={styles.legalOptionTitle}>{t('dashboard.onboarding.step1.termsAcceptance')}</h3>
+                                                <p className={styles.legalOptionDescription}>
                                                     {t('dashboard.onboarding.step1.termsAcceptanceText')}{' '}
                                                     <a 
                                                         href={`/${lang}/terms-of-service`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
-                                                        className="text-indigo-600 hover:text-indigo-700 underline font-medium"
+                                                        className="text-primary hover:text-primary/80 underline font-medium"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
                                                         {t('dashboard.onboarding.step1.termsOfService')}
@@ -611,23 +579,23 @@ const OnboardingPage = () => {
                                         />
                                     </div>
 
-                                    <div className="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-100 text-slate-500 text-xs leading-relaxed italic">
+                                    <div className={styles.legalNote}>
                                         {t('dashboard.onboarding.step1.note')}
                                     </div>
 
                                     {belongsToFacility && role === 'worker' && (
                                         <div 
-                                            className="mt-6 p-6 rounded-2xl border-2 border-red-300 bg-red-50 cursor-pointer hover:bg-red-100 transition-colors"
+                                            className={styles.restrictedServicesCard}
                                             onClick={() => setShowRestrictedServicesModal(true)}
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className="flex-1">
-                                                    <h4 className="font-bold text-red-600 mb-2">{t('dashboard.onboarding.step1.restrictedServices.title')}</h4>
-                                                    <p className="text-sm text-red-800">
+                                                    <h4 className={styles.restrictedServicesTitle}>{t('dashboard.onboarding.step1.restrictedServices.title')}</h4>
+                                                    <p className={styles.restrictedServicesDescription}>
                                                         {t('dashboard.onboarding.step1.restrictedServices.description')}
                                                     </p>
                                                 </div>
-                                                <FiArrowRight className="w-6 h-6 text-red-600 flex-shrink-0" />
+                                                <FiArrowRight className="w-6 h-6 text-destructive flex-shrink-0" />
                                             </div>
                                         </div>
                                     )}
@@ -636,9 +604,8 @@ const OnboardingPage = () => {
                         </div>
                     )}
 
-                    {step === 3 && role !== 'chain' && (
-                        <div className="max-w-2xl mx-auto">
-                            <PhoneVerificationStep
+                    {step === 3 && (
+                        <PhoneVerificationStep
                                 ref={phoneVerificationRef}
                                 onComplete={async (data) => {
                                     const wasAlreadyVerified = phoneVerified;
@@ -677,69 +644,33 @@ const OnboardingPage = () => {
                                 initialPhoneNumber={currentUser?.phoneNumber}
                                 isVerified={phoneVerified}
                             />
-                        </div>
                     )}
 
-                    {step === 3 && role === 'chain' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-3xl mx-auto">
-                            <header className="text-center mb-8">
-                                <h2 className="text-4xl font-black text-slate-900 tracking-tight">{t('dashboard.onboarding.step3.chain.title')}</h2>
-                                <p className="text-slate-500 text-lg">{t('dashboard.onboarding.step3.chain.description')}</p>
-                            </header>
-
-                            <div className="space-y-6 bg-slate-50 p-10 rounded-[3rem] border border-slate-100 shadow-sm text-left">
-                                <div className="flex gap-4 items-end">
-                                    <div className="w-1/2">
-                                        <SimpleDropdown label={t('dashboard.onboarding.step3.chain.phonePrefix')} options={phonePrefixOptions} value={chainPhonePrefix} onChange={setChainPhonePrefix} required />
-                                    </div>
-                                    <div className="flex-1">
-                                        <PersonnalizedInputField label={t('dashboard.onboarding.step3.chain.phoneNumber')} type="tel" value={chainPhoneNumber} onChange={(e) => setChainPhoneNumber(e.target.value)} placeholder={t('dashboard.onboarding.step3.chain.phoneNumberPlaceholder')} required />
-                                    </div>
-                                </div>
-                                <div className="space-y-3">
-                                    <label className="text-sm font-black text-slate-700 uppercase tracking-widest ml-1">{t('dashboard.onboarding.step3.chain.messageToSupport')}</label>
-                                    <textarea
-                                        value={chainMessage}
-                                        onChange={(e) => setChainMessage(e.target.value)}
-                                        placeholder={t('dashboard.onboarding.step3.chain.messagePlaceholder')}
-                                        className="w-full h-40 p-6 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-600 focus:bg-white transition-all outline-none text-slate-700 shadow-inner"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 4 && (
+                    {step === 4 && role !== 'chain' && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className="text-center mb-8">
-                                <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">{t('dashboard.onboarding.step4.title')}</h1>
+                            <header className={styles.header}>
+                                <h1 className={styles.title}>{t('dashboard.onboarding.step4.title')}</h1>
                             </header>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
-                                {/* Left Column - Info */}
-                                <div className="space-y-6 h-full flex flex-col">
-                                    <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-sm leading-relaxed flex-grow">
-                                        <div className="space-y-4 animate-in fade-in duration-300 text-left">
-                                            <p className="text-xl font-black text-slate-900 border-b border-slate-200 pb-3">
-                                                {t('dashboard.onboarding.professional_gln.title')}
-                                            </p>
-                                            {role === 'company' ? (
-                                                <div className="space-y-3 mt-4 text-slate-700">
-                                                    <p>{t('dashboard.onboarding.step4.company_description')}</p>
-                                                </div>
-                                            ) : role === 'worker' ? (
-                                                <div className="space-y-3 mt-4 text-slate-700">
-                                                    <p>
-                                                        {t('dashboard.onboarding.professional_gln.text_new')}
-                                                    </p>
-                                                </div>
-                                            ) : null}
-                                        </div>
+                            <div className={styles.verificationGrid}>
+                                <div className={styles.verificationInfoCard}>
+                                    <div className="space-y-4 animate-in fade-in duration-300 text-left">
+                                        <p className={styles.verificationInfoTitle}>
+                                            {t('dashboard.onboarding.professional_gln.title')}
+                                        </p>
+                                        {role === 'company' ? (
+                                            <div className={styles.verificationInfoText}>
+                                                <p>{t('dashboard.onboarding.step4.company_description')}</p>
+                                            </div>
+                                        ) : role === 'worker' ? (
+                                            <div className={styles.verificationInfoText}>
+                                                <p>{t('dashboard.onboarding.professional_gln.text_new')}</p>
+                                            </div>
+                                        ) : null}
                                     </div>
                                 </div>
 
-                                {/* Right Column - Verification Flow */}
-                                <div className="space-y-6 flex flex-col justify-start text-left pb-2">
+                                <div className={styles.verificationForm}>
                                     <div className="pt-2">
                                         <ProfessionalGLNVerification
                                             ref={glnVerificationRef}
@@ -757,31 +688,63 @@ const OnboardingPage = () => {
                         </div>
                     )}
 
-                    {step === 5 && role === 'company' && (
+                    {step === 4 && role === 'chain' && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className="text-center mb-8">
-                                <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">{t('dashboard.onboarding.step5.title')}</h1>
+                            <header className={styles.header}>
+                                <h1 className={styles.title}>{t('dashboard.onboarding.step4.title')}</h1>
                             </header>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
-                                {/* Left Column - Info */}
-                                <div className="space-y-6 h-full flex flex-col">
-                                    <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-sm leading-relaxed flex-grow">
-                                        <div className="space-y-4 animate-in fade-in duration-300 text-left">
-                                            <p className="text-xl font-black text-slate-900 border-b border-slate-200 pb-3">
-                                                {t('dashboard.onboarding.company_gln.title')}
-                                            </p>
-                                            <p className="text-slate-700 font-medium">{t('dashboard.onboarding.step5.description')}</p>
-                                            <div className="space-y-3 mt-4 text-slate-700">
-                                                <p>{t('dashboard.onboarding.company_gln.text1')}</p>
-                                                <p>{t('dashboard.onboarding.company_gln.text2')}</p>
-                                            </div>
+                            <div className={styles.verificationGrid}>
+                                <div className={styles.verificationInfoCard}>
+                                    <div className="space-y-4 animate-in fade-in duration-300 text-left">
+                                        <p className={styles.verificationInfoTitle}>
+                                            {t('dashboard.onboarding.professional_gln.title')}
+                                        </p>
+                                        <div className={styles.verificationInfoText}>
+                                            <p>{t('dashboard.onboarding.step4.company_description')}</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Right Column - GLN Input */}
-                                <div className="space-y-6 flex flex-col justify-start text-left pb-2">
+                                <div className={styles.verificationForm}>
+                                    <div className="pt-2">
+                                        <ProfessionalGLNVerification
+                                            ref={glnVerificationRef}
+                                            hideInfo={true}
+                                            onComplete={async () => {
+                                                await saveProgress({ step: 5, role, belongsToFacility, phoneVerified, phoneData, legalConsiderationsConfirmed });
+                                                transitionToStep(5);
+                                            }}
+                                            onReadyChange={(isReady) => { /* Optional */ }}
+                                            onProcessingChange={(processing) => setIsVerifying(processing)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 5 && role === 'company' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <header className={styles.header}>
+                                <h1 className={styles.title}>{t('dashboard.onboarding.step5.title')}</h1>
+                            </header>
+
+                            <div className={styles.verificationGrid}>
+                                <div className={styles.verificationInfoCard}>
+                                    <div className="space-y-4 animate-in fade-in duration-300 text-left">
+                                        <p className={styles.verificationInfoTitle}>
+                                            {t('dashboard.onboarding.company_gln.title')}
+                                        </p>
+                                        <p className="text-foreground font-medium">{t('dashboard.onboarding.step5.description')}</p>
+                                        <div className={styles.verificationInfoText}>
+                                            <p>{t('dashboard.onboarding.company_gln.text1')}</p>
+                                            <p>{t('dashboard.onboarding.company_gln.text2')}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={styles.verificationForm}>
                                     <div className="pt-2">
                                         <FacilityGLNVerification
                                             ref={glnVerificationRef}
@@ -796,14 +759,49 @@ const OnboardingPage = () => {
                             </div>
                         </div>
                     )}
+
+                    {step === 5 && role === 'chain' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <header className={styles.header}>
+                                <h1 className={styles.title}>{t('dashboard.onboarding.step5.title')}</h1>
+                            </header>
+
+                            <div className={styles.verificationGrid}>
+                                <div className={styles.verificationInfoCard}>
+                                    <div className="space-y-4 animate-in fade-in duration-300 text-left">
+                                        <p className={styles.verificationInfoTitle}>
+                                            {t('dashboard.onboarding.commercial_registry.title', 'Commercial Registry Verification')}
+                                        </p>
+                                        <p className="text-foreground font-medium">{t('dashboard.onboarding.commercial_registry.description', 'Please provide your commercial registry number to verify your organization.')}</p>
+                                        <div className={styles.verificationInfoText}>
+                                            <p>{t('dashboard.onboarding.commercial_registry.text1', 'Please provide your commercial registry number (UID/CHE) to verify your organization.')}</p>
+                                            <p>{t('dashboard.onboarding.commercial_registry.text2', 'This number can be found in the Geneva commercial registry.')}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={styles.verificationForm}>
+                                    <div className="pt-2">
+                                        <CommercialRegistryVerification
+                                            ref={glnVerificationRef}
+                                            mode="organizationInfo"
+                                            hideInfo={true}
+                                            onComplete={handleComplete}
+                                            onReadyChange={(isReady) => { /* Optional */ }}
+                                            onProcessingChange={(processing) => setIsVerifying(processing)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* Action Footer */}
-                <footer className="mt-8 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-0 transition-opacity duration-300" style={{ opacity: isTransitioning ? 0 : 1 }}>
+                <footer className={`${styles.footer} ${isTransitioning ? styles.footerHidden : ''}`}>
                     <Button
                         onClick={handleBack}
                         variant="secondary"
-                        className={`w-full sm:!w-[180px] h-14 rounded-2xl font-black transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : ''}`}
+                        className={`w-full sm:!w-[180px] h-14 rounded-xl font-semibold transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : ''}`}
                     >
                         <div className="flex items-center justify-center gap-2">
                             <FiArrowLeft className="w-5 h-5" /> {t('dashboard.onboarding.buttons.back')}
@@ -811,12 +809,12 @@ const OnboardingPage = () => {
                     </Button>
 
                     <div className="flex items-center w-full sm:w-auto">
-                        {step === 3 && role !== 'chain' ? (
+                        {step === 3 ? (
                             <Button
                                 id={phoneInternalStep === 1 ? 'send-code-button' : undefined}
                                 onClick={handleNext}
                                 disabled={!canProceed() || isProcessing || isPhoneLoading}
-                                className="w-full sm:!w-[200px] h-14 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2"
+                                className="w-full sm:!w-[200px] h-14 rounded-xl font-semibold shadow-md flex items-center justify-center gap-2"
                             >
                                 {phoneVerified ? (
                                     <>
@@ -853,18 +851,6 @@ const OnboardingPage = () => {
                                     </>
                                 )}
                             </Button>
-                        ) : step === 3 && role === 'chain' ? (
-                            <Button
-                                onClick={() => {
-                                    const mailto = `mailto:support@medishift.ch?subject=Organization Request: ${currentUser?.email}&body=${encodeURIComponent(chainMessage + '\n\nPhone: ' + chainPhonePrefix + ' ' + chainPhoneNumber)}`;
-                                    window.location.href = mailto;
-                                    handleComplete();
-                                }}
-                                disabled={!canProceed()}
-                                className="w-full sm:!w-[200px] h-14 rounded-2xl font-black shadow-lg"
-                            >
-                                {t('dashboard.onboarding.buttons.contactAndFinish')}
-                            </Button>
                         ) : (step === 4 || step === 5) ? (
                             <Button
                                 onClick={() => {
@@ -874,7 +860,7 @@ const OnboardingPage = () => {
                                     }
                                 }}
                                 disabled={isProcessing}
-                                className="w-full sm:!w-[240px] h-14 rounded-2xl font-black shadow-lg flex items-center justify-center gap-3"
+                                className="w-full sm:!w-[240px] h-14 rounded-xl font-semibold shadow-md flex items-center justify-center gap-3"
                             >
                                 {isVerifying ? <FiLoader className="animate-spin" /> : <FiCheck />}
                                 {isVerifying ? t('dashboard.onboarding.buttons.verifying') : (step === 5 ? t('dashboard.onboarding.buttons.completeAccount') : t('dashboard.onboarding.buttons.nextStep'))}
@@ -883,7 +869,7 @@ const OnboardingPage = () => {
                             <Button
                                 onClick={handleNext}
                                 disabled={!canProceed() || isProcessing}
-                                className="w-full sm:!w-[180px] h-14 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2"
+                                className="w-full sm:!w-[180px] h-14 rounded-xl font-semibold shadow-md flex items-center justify-center gap-2"
                             >
                                 <span>{t('dashboard.onboarding.buttons.nextStep')}</span>
                                 <FiArrowRight className="w-5 h-5" />
@@ -905,7 +891,7 @@ const OnboardingPage = () => {
                             variant="secondary"
                             onClick={() => setShowRestrictedServicesModal(false)}
                             disabled={isCreatingProfile}
-                            className="!w-auto rounded-2xl font-black"
+                            className="!w-auto rounded-xl font-semibold"
                         >
                             {t('dashboard.onboarding.step1.restrictedServices.modal.cancel')}
                         </Button>
@@ -971,7 +957,7 @@ const OnboardingPage = () => {
                             }}
                             disabled={isProcessing || isCreatingProfile}
                             variant="danger"
-                            className="!w-auto rounded-2xl font-black"
+                            className="!w-auto rounded-xl font-semibold"
                         >
                             {isProcessing || isCreatingProfile ? <FiLoader className="animate-spin mr-2" /> : null}
                             {t('dashboard.onboarding.step1.restrictedServices.modal.createProfile')}
@@ -980,7 +966,7 @@ const OnboardingPage = () => {
                 }
             >
                 <div className={`space-y-6 ${isCreatingProfile ? 'pointer-events-none opacity-50' : ''}`}>
-                    <p className="text-slate-600 leading-relaxed">
+                    <p className="text-foreground leading-relaxed">
                         {(() => {
                             const introText = t('dashboard.onboarding.step1.restrictedServices.modal.intro');
                             const parts = introText.split('__NOT__');
@@ -996,22 +982,22 @@ const OnboardingPage = () => {
                         })()}
                     </p>
                     
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
-                        <ul className="space-y-3 text-slate-700">
+                    <div className="bg-destructive/10 border-l-4 border-destructive p-4 rounded-r-lg">
+                        <ul className="space-y-3 text-foreground">
                             <li className="flex items-start gap-2">
-                                <span className="text-red-600 font-bold mt-0.5">•</span>
+                                <span className="text-destructive font-bold mt-0.5">•</span>
                                 <div>
                                     {t('dashboard.onboarding.step1.restrictedServices.modal.interimServices')}
                                 </div>
                             </li>
                             <li className="flex items-start gap-2">
-                                <span className="text-red-600 font-bold mt-0.5">•</span>
+                                <span className="text-destructive font-bold mt-0.5">•</span>
                                 <div>
                                     {t('dashboard.onboarding.step1.restrictedServices.modal.jobPostulations')}
                                 </div>
                             </li>
                             <li className="flex items-start gap-2">
-                                <span className="text-red-600 font-bold mt-0.5">•</span>
+                                <span className="text-destructive font-bold mt-0.5">•</span>
                                 <div>
                                     {t('dashboard.onboarding.step1.restrictedServices.modal.marketplaceAccess')}
                                 </div>
@@ -1019,13 +1005,13 @@ const OnboardingPage = () => {
                         </ul>
                     </div>
 
-                    <div className="border-t border-slate-200 pt-4">
-                        <p className="text-slate-700 font-semibold mb-3">
+                    <div className="border-t border-border pt-4">
+                        <p className="text-foreground font-semibold mb-3">
                             {t('dashboard.onboarding.step1.restrictedServices.modal.willHaveAccess')}
                         </p>
-                        <ul className="space-y-2 text-slate-600 ml-4">
+                        <ul className="space-y-2 text-muted-foreground ml-4">
                             <li className="flex items-start gap-2">
-                                <span className="text-green-600 mt-1.5">•</span>
+                                <span className="text-green-600 dark:text-green-500 mt-1.5">•</span>
                                 <span>{t('dashboard.onboarding.step1.restrictedServices.modal.facilityInternal')}</span>
                             </li>
                             <li className="flex items-start gap-2">
@@ -1039,8 +1025,8 @@ const OnboardingPage = () => {
                         </ul>
                     </div>
 
-                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                        <p className="text-slate-600 text-sm leading-relaxed">
+                    <div className="bg-muted/50 border border-border rounded-lg p-4">
+                        <p className="text-muted-foreground text-sm leading-relaxed">
                             {t('dashboard.onboarding.step1.restrictedServices.modal.note')}
                         </p>
                     </div>

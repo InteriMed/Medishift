@@ -46,9 +46,10 @@ import GlobalDirectory from './components/GlobalDirectory';
 import PolicyLibrary from './components/PolicyLibrary';
 import PayrollDashboard from '../payroll/PayrollDashboard';
 import Profile from '../profile/Profile';
+import Contracts from '../contracts/Contracts';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import HiringProcesses from './components/HiringProcesses';
-import TeamsManagement from './components/TeamsManagement';
+import TeamOrganigram from './components/TeamOrganigram';
 
 
 const OrganizationDashboard = () => {
@@ -66,19 +67,33 @@ const OrganizationDashboard = () => {
 
     const [selectedFacilityId, setSelectedFacilityId] = useState('all');
     const [facilitySearchQuery, setFacilitySearchQuery] = useState('');
-    const [employeesSubTab, setEmployeesSubTab] = useState('employees');
+    const [employeesSubTab, setEmployeesSubTab] = useState(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('subTab') || 'employees';
+    });
+
+    const getBasePath = useCallback(() => {
+        const isOrganizationWorkspace = selectedWorkspace?.type === 'organization';
+        return isOrganizationWorkspace ? 'organization' : 'facility';
+    }, [selectedWorkspace]);
+
+    const basePath = getBasePath();
+    const isOrganizationWorkspace = selectedWorkspace?.type === 'organization';
+    const pageTitle = isOrganizationWorkspace 
+        ? t('organization:title', 'Organization')
+        : t('organization:facilityTitle', 'Facility');
 
     const tabs = [
-        { id: 'organigram', path: 'organigram', label: t('organization:tabs.organigram', 'Organigram'), icon: FiGitBranch },
-        { id: 'directory', path: 'employees', label: t('organization:tabs.employees', 'Employees'), icon: FiUserPlus },
+        { id: 'directory', path: 'team', label: t('organization:tabs.team', 'Team'), icon: FiUserPlus },
+        { id: 'contracts', path: 'contracts', label: t('organization:tabs.contracts', 'Contracts'), icon: FiFileText },
         { id: 'payroll', path: 'payroll', label: t('organization:tabs.consolidatedPayroll', 'Consolidated Payroll'), icon: FiCreditCard },
         { id: 'policy', path: 'policy', label: t('organization:tabs.policyLibrary', 'Policy Library'), icon: FiFileText },
         { id: 'profile', path: 'profile', label: t('organization:tabs.profile', 'Profile'), icon: FiUser },
     ];
 
     const tabPathToId = {
-        'organigram': 'organigram',
-        'employees': 'directory',
+        'team': 'directory',
+        'contracts': 'contracts',
         'payroll': 'payroll',
         'policy': 'policy',
         'profile': 'profile'
@@ -86,10 +101,10 @@ const OrganizationDashboard = () => {
 
     const getActiveTabFromPath = useCallback(() => {
         const pathParts = location.pathname.split('/').filter(Boolean);
-        const organizationIndex = pathParts.findIndex(part => part === 'organization');
+        const basePathIndex = pathParts.findIndex(part => part === 'organization' || part === 'facility');
         
-        if (organizationIndex >= 0 && organizationIndex < pathParts.length - 1) {
-            const tabPath = pathParts[organizationIndex + 1];
+        if (basePathIndex >= 0 && basePathIndex < pathParts.length - 1) {
+            const tabPath = pathParts[basePathIndex + 1];
             return tabPathToId[tabPath] || 'directory';
         }
         
@@ -100,16 +115,22 @@ const OrganizationDashboard = () => {
 
     useEffect(() => {
         const pathParts = location.pathname.split('/').filter(Boolean);
-        const organizationIndex = pathParts.findIndex(part => part === 'organization');
+        const basePathIndex = pathParts.findIndex(part => part === 'organization' || part === 'facility');
         
-        if (organizationIndex >= 0 && organizationIndex < pathParts.length - 1) {
-            const tabPath = pathParts[organizationIndex + 1];
+        if (basePathIndex >= 0 && basePathIndex < pathParts.length - 1) {
+            const tabPath = pathParts[basePathIndex + 1];
             if (tabPath === 'spend') {
                 const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                navigate(buildDashboardUrl('/organization/employees', workspaceId), { replace: true });
+                navigate(buildDashboardUrl(`/${basePath}/team`, workspaceId), { replace: true });
             }
         }
-    }, [location.pathname, navigate, selectedWorkspace]);
+
+        const urlParams = new URLSearchParams(location.search);
+        const subTabParam = urlParams.get('subTab');
+        if (subTabParam && ['employees', 'organigram', 'hiring'].includes(subTabParam)) {
+            setEmployeesSubTab(subTabParam);
+        }
+    }, [location.pathname, location.search, navigate, selectedWorkspace, basePath]);
 
     // Fetch organization data
     const fetchOrganization = useCallback(async () => {
@@ -355,7 +376,7 @@ const OrganizationDashboard = () => {
             <div className="shrink-0 py-4 border-b border-border bg-card/30">
                 <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
                     <h1 className="text-xl font-semibold text-foreground mb-3">
-                        {t('organization:title', 'Organization')}
+                        {pageTitle}
                     </h1>
                     <div className="flex gap-1 sm:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
                         {tabs.map((tab) => {
@@ -364,7 +385,7 @@ const OrganizationDashboard = () => {
                             return (
                                 <button
                                     key={tab.id}
-                                    onClick={() => navigate(buildDashboardUrl(`/organization/${tab.path}`, workspaceId))}
+                                    onClick={() => navigate(buildDashboardUrl(`/${basePath}/${tab.path}`, workspaceId))}
                                     className={cn(
                                         "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0",
                                         "touch-manipulation active:scale-95",
@@ -401,111 +422,20 @@ const OrganizationDashboard = () => {
                     ) : (
                         <>
                             {activeTab === 'organigram' && (
-                                <div className="space-y-6">
-                                    <div className="bg-card border border-border rounded-xl p-4">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-base font-semibold text-foreground">
-                                                {t('organization:sections.info', 'Organization Info')}
-                                            </h3>
-                                            {isOrgAdmin && (
-                                                <button className="text-sm text-primary hover:text-primary/80 flex items-center gap-1">
-                                                    <FiSettings className="w-4 h-4" />
-                                                    {t('common:settings', 'Settings')}
-                                                </button>
-                                            )}
-                                        </div>
-
-                                        {memberFacilities.length > 0 && (
-                                            <div className="mb-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium text-muted-foreground mb-2">
-                                                            {t('organization:labels.searchFacility', 'Search Facility')}
-                                                        </label>
-                                                        <div className="flex gap-2">
-                                                            <input
-                                                                type="text"
-                                                                value={facilitySearchQuery}
-                                                                onChange={(e) => setFacilitySearchQuery(e.target.value)}
-                                                                onKeyPress={(e) => e.key === 'Enter' && handleFacilitySearch()}
-                                                                placeholder={t('organization:labels.searchFacilityPlaceholder', 'Search by name...')}
-                                                                className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                                            />
-                                                            <button
-                                                                onClick={handleFacilitySearch}
-                                                                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
-                                                                title={t('common:search', 'Search')}
-                                                            >
-                                                                <FiSearch className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <SimpleDropdown
-                                                            label={t('organization:labels.selectFacility', 'Select Facility')}
-                                                            options={[
-                                                                { value: 'all', label: t('organization:labels.allFacilities', 'All') },
-                                                                ...allFacilities.map(facility => ({
-                                                                    value: facility.id,
-                                                                    label: facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')
-                                                                }))
-                                                            ]}
-                                                            value={selectedFacilityId}
-                                                            onChange={setSelectedFacilityId}
-                                                            placeholder={t('organization:labels.selectFacility', 'Select Facility')}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium text-muted-foreground mb-2">
-                                                            {t('organization:labels.facilities', 'Facilities')}
-                                                        </label>
-                                                        <div className="px-3 py-2 text-sm border border-border rounded-lg bg-muted/30">
-                                                            <p className="font-medium">{memberFacilities.length}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="pt-3 border-t border-border">
-                                            <div className="flex flex-wrap gap-2">
-                                                {organization.settings?.sharedStaffPool && (
-                                                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-transparent text-green-700 border border-green-700">
-                                                        <FiCheck className="w-3 h-3" />
-                                                        {t('organization:settings.sharedStaff', 'Shared Staff Pool')}
-                                                    </span>
-                                                )}
-                                                {organization.settings?.crossFacilityScheduling && (
-                                                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-transparent text-blue-700 border border-blue-700">
-                                                        <FiCheck className="w-3 h-3" />
-                                                        {t('organization:settings.crossScheduling', 'Cross-Facility Scheduling')}
-                                                    </span>
-                                                )}
-                                                {organization.settings?.consolidatedBilling && (
-                                                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-transparent text-purple-700 border border-purple-700">
-                                                        <FiCheck className="w-3 h-3" />
-                                                        {t('organization:settings.consolidatedBilling', 'Consolidated Billing')}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <OrganigramView 
-                                        organization={organization} 
-                                        memberFacilities={memberFacilities}
-                                        selectedFacilityId={selectedFacilityId}
-                                    />
-                                </div>
+                                <OrganigramView 
+                                    organization={organization} 
+                                    memberFacilities={memberFacilities}
+                                    selectedFacilityId={selectedFacilityId}
+                                />
                             )}
 
                             {activeTab === 'directory' && (
                                 <div className="space-y-6">
-                                    <div className="border-b border-border">
-                                        <div className="flex gap-1 sm:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
+                                    <div className="shrink-0">
+                                        <div className="flex gap-2 border-b border-border overflow-x-auto max-w-[1400px] mx-auto px-6">
                                             {[
                                                 { id: 'employees', label: t('organization:subTabs.employees', 'Employees'), icon: FiUserPlus },
-                                                { id: 'teams', label: t('organization:subTabs.teams', 'Teams'), icon: FiUsers },
+                                                { id: 'organigram', label: t('organization:tabs.organigram', 'Organigram'), icon: FiGitBranch },
                                                 { id: 'hiring', label: t('organization:subTabs.hiring', 'Hiring Processes'), icon: FiBriefcase }
                                             ].map((subTab) => {
                                                 const SubIcon = subTab.icon;
@@ -514,16 +444,15 @@ const OrganizationDashboard = () => {
                                                         key={subTab.id}
                                                         onClick={() => setEmployeesSubTab(subTab.id)}
                                                         className={cn(
-                                                            "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0",
-                                                            "touch-manipulation active:scale-95",
+                                                            "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
                                                             employeesSubTab === subTab.id
-                                                                ? "border-primary text-primary bg-primary/5"
-                                                                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                                                ? "border-primary text-primary"
+                                                                : "border-transparent text-muted-foreground hover:text-foreground"
                                                         )}
                                                         title={subTab.label}
                                                     >
                                                         <SubIcon className="w-4 h-4 shrink-0" />
-                                                        <span className="text-xs sm:text-sm min-w-0">{subTab.label}</span>
+                                                        <span>{subTab.label}</span>
                                                     </button>
                                                 );
                                             })}
@@ -537,23 +466,21 @@ const OrganizationDashboard = () => {
                                         />
                                     )}
 
+                                    {employeesSubTab === 'organigram' && (
+                                        <TeamOrganigram />
+                                    )}
+
                                     {employeesSubTab === 'hiring' && (
                                         <HiringProcesses 
                                             organization={organization}
                                             memberFacilities={memberFacilities}
                                         />
                                     )}
-
-                                    {employeesSubTab === 'teams' && (
-                                        <TeamsManagement 
-                                            organization={organization}
-                                            memberFacilities={memberFacilities}
-                                        />
-                                    )}
                                 </div>
                             )}
+                            {activeTab === 'contracts' && <Contracts hideHeader={true} hideStats={true} />}
                             {activeTab === 'payroll' && <PayrollDashboard hideHeader={true} hideStats={true} />}
-                            {activeTab === 'policy' && <PolicyLibrary />}
+                            {activeTab === 'policy' && <PolicyLibrary hideHeader={true} hideStats={false} />}
                             {activeTab === 'profile' && <Profile />}
                         </>
                     )}

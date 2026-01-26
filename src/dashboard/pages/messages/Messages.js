@@ -14,7 +14,7 @@ import EmptyState from '../../components/EmptyState/EmptyState';
 import { useNotification } from '../../../contexts/NotificationContext';
 import messagesService from '../../../services/messagesService';
 import { cn } from '../../../utils/cn';
-import { FiMessageSquare, FiSearch, FiX, FiSliders, FiHome, FiPlus, FiUser, FiSend } from 'react-icons/fi';
+import { FiMessageSquare, FiSearch, FiX, FiSliders, FiHome, FiPlus, FiUser, FiSend, FiBell } from 'react-icons/fi';
 import StartNewCommunicationModal from './components/StartNewCommunicationModal';
 import '../../../components/BoxedInputFields/styles/boxedInputFields.css';
 
@@ -510,7 +510,7 @@ const Messages = () => {
                 >
                   <div className="flex items-center justify-center gap-2">
                     <FiMessageSquare className="w-4 h-4" />
-                    <span>{t('messages:tabs.conversations', 'Conversations')}</span>
+                    <span>{t('messages:tabs.messages', 'Messages')}</span>
                   </div>
                 </button>
                 <button
@@ -530,11 +530,11 @@ const Messages = () => {
                       ? "border-transparent text-muted-foreground hover:text-foreground"
                       : "border-transparent text-muted-foreground/50"
                   )}
-                  title={!canAccessThreads ? t('messages:tabs.threadsLocked', 'Threads are only available for facility members') : undefined}
+                  title={!canAccessThreads ? t('messages:tabs.announcementsLocked', 'Announcements are only available for facility members') : undefined}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <FiHome className="w-4 h-4" />
-                    <span>{t('messages:tabs.threads', 'Communication')}</span>
+                    <FiBell className="w-4 h-4" />
+                    <span>{t('messages:tabs.announcements', 'Announcements')}</span>
                   </div>
                 </button>
               </div>
@@ -545,7 +545,7 @@ const Messages = () => {
                 <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
                 <input
                   type="text"
-                  placeholder={t('messages:searchPlaceholder')}
+                  placeholder="Search"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-9 pr-20 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
@@ -586,7 +586,7 @@ const Messages = () => {
                       )}
                       style={{ width: '100%', textAlign: 'left' }}
                     >
-                      {t('messages:filters.all', 'All Messages')}
+                      {t('messages:filters.all', 'All')}
                     </button>
                     <button
                       onClick={() => { setFilterType('unread'); setShowFiltersOverlay(false); }}

@@ -107,5 +107,6 @@
   "selectDays": "Tage auswählen",
   "editSelectedDays": "Ausgewählte Tage bearbeiten",
   "editAllFuture": "Alle zukünftigen bearbeiten",
-  "editAllOccurrences": "Alle Vorkommen bearbeiten"
+  "editAllOccurrences": "Alle Vorkommen bearbeiten",
+  "addWorker": "Mitarbeiter hinzufügen"
 }

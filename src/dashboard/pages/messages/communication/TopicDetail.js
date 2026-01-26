@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     FiArrowLeft,
-    FiHeart,
+    FiChevronUp,
     FiMessageSquare,
     FiSend,
     FiShield,
@@ -135,12 +135,10 @@ export const TopicDetail = ({ topicId, onBack }) => {
         return (
             <div className={cn("space-y-6", level > 0 && "mt-6")}>
                 {replies.map(reply => (
-                    <div key={reply.id} className="relative">
+                    <div key={reply.id} className={cn("group relative", level > 0 && "ml-6")}>
                         {level > 0 && (
                             <div className="absolute -left-6 top-0 bottom-0 w-px bg-border group-last:bottom-auto group-last:h-10" />
                         )}
-
-                        <div className={cn("group relative", level > 0 && "ml-6")}>
                             <div className="flex gap-4">
                                 <div className="flex-shrink-0 relative">
                                     <div className="w-10 h-10 rounded-full bg-secondary/80 border border-white/5 flex items-center justify-center font-bold text-sm text-foreground shadow-sm">
@@ -175,10 +173,10 @@ export const TopicDetail = ({ topicId, onBack }) => {
                                             onClick={(e) => { e.stopPropagation(); handleUpvoteReply(reply.id); }}
                                             className={cn(
                                                 "flex items-center gap-1.5 text-xs transition-colors p-1 -ml-1 rounded-md hover:bg-muted",
-                                                (reply.upvoters || []).includes(user?.uid) ? "text-rose-500" : "text-muted-foreground hover:text-foreground"
+                                                (reply.upvoters || []).includes(user?.uid) ? "text-primary" : "text-muted-foreground hover:text-foreground"
                                             )}
                                         >
-                                            <FiHeart className={cn("w-3.5 h-3.5", (reply.upvoters || []).includes(user?.uid) ? "fill-current" : "")} />
+                                            <FiChevronUp className={cn("w-3.5 h-3.5", (reply.upvoters || []).includes(user?.uid) ? "fill-current" : "")} />
                                             <span>{reply.upvotes || 0}</span>
                                         </button>
                                         <button
@@ -228,7 +226,6 @@ export const TopicDetail = ({ topicId, onBack }) => {
                                     )}
                                 </div>
                             </div>
-                        </div>
                     </div>
                 ))}
             </div>
@@ -298,12 +295,12 @@ export const TopicDetail = ({ topicId, onBack }) => {
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-full border transition-all text-sm font-medium",
                                 (topic.upvoters || []).includes(user?.uid)
-                                    ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
+                                    ? "bg-primary/10 border-primary/20 text-primary"
                                     : "bg-background border-border hover:bg-muted text-muted-foreground"
                             )}
                         >
-                            <FiHeart className={cn("w-4 h-4", (topic.upvoters || []).includes(user?.uid) ? "fill-current" : "")} />
-                            <span>{topic.upvotes || 'Like'}</span>
+                            <FiChevronUp className={cn("w-4 h-4", (topic.upvoters || []).includes(user?.uid) ? "fill-current" : "")} />
+                            <span>{topic.upvotes || 'Upvote'}</span>
                         </button>
                         <button
                             onClick={() => {
@@ -342,7 +339,7 @@ export const TopicDetail = ({ topicId, onBack }) => {
                                     setReplyData(prev => ({ ...prev, [topic.id]: e.target.value }));
                                 }}
                                 rows={1}
-                                className="w-full bg-muted/30 border border-input hover:bg-muted/50 focus:bg-background focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all rounded-xl placeholder:text-muted-foreground/50 resize-none min-h-[56px] py-4 px-5 text-sm outline-none"
+                                className="w-full bg-white border border-input hover:bg-white focus:bg-white focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all rounded-xl placeholder:text-muted-foreground/50 resize-none min-h-[56px] py-4 px-5 text-sm outline-none"
                                 style={{ fontFamily: 'var(--font-family-text)' }}
                             />
                             <div className={cn(

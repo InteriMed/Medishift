@@ -15,6 +15,7 @@ export function DashboardLayout({ children }) {
     const { showBackButton, onBackButtonClick } = usePageMobile();
 
     const isAdminRoute = location.pathname.includes('/dashboard/admin');
+    const isCalendarRoute = location.pathname.includes('/dashboard/calendar');
     const [viewportWidth, setViewportWidth] = useState(() => {
         return typeof window !== 'undefined' ? window.innerWidth : 1200;
     });
@@ -172,11 +173,22 @@ export function DashboardLayout({ children }) {
                             overflow: 'visible',
                             marginTop: '3.5rem',
                             padding: 0,
-                            width: '100%'
+                            width: '100%',
+                            marginRight: !isCalendarRoute ? '1rem' : 0
                         }} 
                         data-dashboard="true"
                     >
-                        <div className="h-full w-full overflow-visible" style={{ position: 'relative', zIndex: 0 }}>
+                        <div 
+                            className={cn(
+                                "h-full w-full",
+                                !isCalendarRoute && "dashboard-scrollable-content"
+                            )}
+                            style={{ 
+                                position: 'relative', 
+                                zIndex: 0,
+                                height: '100%'
+                            }}
+                        >
                             {children}
                         </div>
                     </main>

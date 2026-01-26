@@ -1034,7 +1034,7 @@ ${chainMessage}
           </div>
         </div>
       )}
-      <div className={`${styles.modal} ${isTwoColumnLayout ? 'large' : ''}`} onClick={(e) => e.stopPropagation()}>
+      <div className={`${styles.modal} ${isTwoColumnLayout ? 'large' : ''} ${(displayStep === 1 || displayStep === 3) ? 'narrow' : ''}`} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className={styles.modalHeader}>
           <div className="flex items-center space-x-3">

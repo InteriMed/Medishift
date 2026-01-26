@@ -16,7 +16,9 @@
     "changeLanguage": "Sprache ändern",
     "profileAlt": "Profil",
     "stopTutorial": "Stop Tutorial",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "help": "Hilfe",
+    "support": "Support"
   },
   "auth": {
     "login": {

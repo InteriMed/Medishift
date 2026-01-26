@@ -638,6 +638,8 @@
     "title": "Opérations",
     "subtitle": "Configurez les horaires d'ouverture et les exigences de personnel pour votre établissement.",
     "openingHoursTitle": "Horaires d'ouverture",
+    "openingTime": "Heure d'ouverture",
+    "closingTime": "Heure de fermeture",
     "monday": "Lundi",
     "tuesday": "Mardi",
     "wednesday": "Mercredi",
@@ -646,6 +648,9 @@
     "saturday": "Samedi",
     "sunday": "Dimanche",
     "open": "Ouvert",
-    "closed": "Fermé"
+    "closed": "Fermé",
+    "facilityRolesTitle": "Rôles de l'établissement",
+    "noWorkerRequirements": "Aucune exigence de travailleur",
+    "addWorkerRequirement": "Ajouter une exigence de travailleur"
   }
 }

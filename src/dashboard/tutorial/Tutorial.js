@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTutorial } from '../contexts/TutorialContext';
 import { useDashboard } from '../contexts/DashboardContext';
 import HighlightTooltip from '../onboarding/components/HighlightTooltip';
@@ -21,6 +21,7 @@ const styles = {};
 const Tutorial = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { i18n } = useTranslation();
   const {
     isTutorialActive,
@@ -88,6 +89,39 @@ const Tutorial = () => {
     isActiveRef.current = isTutorialActive;
     showModalRef.current = showFirstTimeModal;
   }, [isTutorialActive, showFirstTimeModal]);
+
+  useEffect(() => {
+    const modalParam = searchParams.get('modal');
+    
+    if (modalParam === 'accessLevel' && !showAccessLevelModal) {
+      setShowAccessLevelModal(true);
+    } else if (modalParam === 'tutorialSelection' && !showTutorialSelectionModal) {
+      setShowTutorialSelectionModal(true);
+    } else if (modalParam === 'stopTutorial' && !showStopTutorialConfirm) {
+      setShowStopTutorialConfirm(true);
+    }
+  }, [searchParams, showAccessLevelModal, showTutorialSelectionModal, showStopTutorialConfirm, setShowAccessLevelModal, setShowTutorialSelectionModal, setShowStopTutorialConfirm]);
+
+  const handleCloseAccessLevelModal = () => {
+    setShowAccessLevelModal(false);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('modal');
+    setSearchParams(newParams, { replace: true });
+  };
+
+  const handleCloseTutorialSelectionModal = () => {
+    setShowTutorialSelectionModal(false);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('modal');
+    setSearchParams(newParams, { replace: true });
+  };
+
+  const handleCloseStopTutorialConfirm = () => {
+    setShowStopTutorialConfirm(false);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('modal');
+    setSearchParams(newParams, { replace: true });
+  };
 
   // Removed dangerous unmount cleanup to prevent state flickering
 
@@ -172,9 +206,7 @@ const Tutorial = () => {
       )}
       <AccessLevelChoicePopup
         isOpen={showAccessLevelModal}
-        onClose={() => {
-          setShowAccessLevelModal(false);
-        }}
+        onClose={handleCloseAccessLevelModal}
         onSelectTeamAccess={() => {
           setAccessMode('team');
         }}
@@ -186,14 +218,14 @@ const Tutorial = () => {
       />
       <StopTutorialConfirmModal
         isOpen={showStopTutorialConfirm}
-        onClose={() => setShowStopTutorialConfirm(false)}
+        onClose={handleCloseStopTutorialConfirm}
         onConfirm={() => {
           stopTutorial({ forceStop: true, showAccessPopupForProfile: true });
         }}
       />
       <TutorialSelectionModal
         isOpen={showTutorialSelectionModal}
-        onClose={() => setShowTutorialSelectionModal(false)}
+        onClose={handleCloseTutorialSelectionModal}
         onStartAll={startAllTutorials}
         onStartCurrent={handleStartCurrentTutorial}
         currentPageName={getCurrentPageName()}

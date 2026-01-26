@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useDashboard } from '../contexts/DashboardContext';
 import { buildDashboardUrl, getDefaultRouteForWorkspace, getWorkspaceIdForUrl } from '../utils/pathUtils';
 
@@ -20,6 +20,11 @@ export const WorkspaceAwareNavigate = ({ to, fallbackTo = null }) => {
 
 export const WorkspaceDefaultRedirect = () => {
   const { selectedWorkspace } = useDashboard();
+  const location = useLocation();
+
+  if (location.pathname.includes('/profile')) {
+    return null;
+  }
 
   if (!selectedWorkspace) {
     return <Navigate to="/dashboard/personal/overview" replace />;

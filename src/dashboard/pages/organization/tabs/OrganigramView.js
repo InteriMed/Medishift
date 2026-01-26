@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
@@ -9,6 +10,7 @@ import EmployeePopup from '../components/EmployeePopup';
 
 const OrganigramView = ({ organization, memberFacilities = [], selectedFacilityId = 'all' }) => {
     const { t } = useTranslation(['organization']);
+    const [searchParams, setSearchParams] = useSearchParams();
     const [facilityEmployees, setFacilityEmployees] = useState({});
     const [loadingEmployees, setLoadingEmployees] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -99,6 +101,43 @@ const OrganigramView = ({ organization, memberFacilities = [], selectedFacilityI
         fetchEmployeesForFacilities();
     }, [fetchEmployeesForFacilities]);
 
+    useEffect(() => {
+        const modalParam = searchParams.get('modal');
+        const employeeId = searchParams.get('employeeId');
+        
+        if (modalParam === 'employee' && employeeId && Object.keys(facilityEmployees).length > 0) {
+            let foundEmployee = null;
+            for (const facilityId in facilityEmployees) {
+                foundEmployee = facilityEmployees[facilityId].find(emp => emp.id === employeeId);
+                if (foundEmployee) break;
+            }
+            if (foundEmployee && !isPopupOpen) {
+                setSelectedEmployee(foundEmployee);
+                setIsPopupOpen(true);
+            }
+        }
+    }, [searchParams, facilityEmployees, isPopupOpen]);
+
+    const handleOpenEmployeePopup = useCallback((employee) => {
+        setSelectedEmployee(employee);
+        setIsPopupOpen(true);
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('modal', 'employee');
+        if (employee?.id) {
+            newParams.set('employeeId', employee.id);
+        }
+        setSearchParams(newParams, { replace: true });
+    }, [searchParams, setSearchParams]);
+
+    const handleCloseEmployeePopup = useCallback(() => {
+        setIsPopupOpen(false);
+        setSelectedEmployee(null);
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('modal');
+        newParams.delete('employeeId');
+        setSearchParams(newParams, { replace: true });
+    }, [searchParams, setSearchParams]);
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="bg-card border border-border rounded-xl p-6">
@@ -153,10 +192,7 @@ const OrganigramView = ({ organization, memberFacilities = [], selectedFacilityI
                                                                 <div 
                                                                     key={adminId} 
                                                                     className="flex items-center gap-2 p-2 bg-muted/10 rounded border border-border/50 text-sm cursor-pointer hover:bg-muted/20 transition-colors"
-                                                                    onClick={() => {
-                                                                        setSelectedEmployee(adminEmployee);
-                                                                        setIsPopupOpen(true);
-                                                                    }}
+                                                                    onClick={() => handleOpenEmployeePopup(adminEmployee)}
                                                                 >
                                                                     {adminEmployee.photoURL ? (
                                                                         <img 
@@ -202,10 +238,7 @@ const OrganigramView = ({ organization, memberFacilities = [], selectedFacilityI
                                                                 <div 
                                                                     key={employee.id} 
                                                                     className="flex items-center gap-2 p-2 bg-muted/10 rounded border border-border/50 text-sm cursor-pointer hover:bg-muted/20 transition-colors"
-                                                                    onClick={() => {
-                                                                        setSelectedEmployee(employee);
-                                                                        setIsPopupOpen(true);
-                                                                    }}
+                                                                    onClick={() => handleOpenEmployeePopup(employee)}
                                                                 >
                                                                     {employee.photoURL ? (
                                                                         <img 
@@ -251,10 +284,7 @@ const OrganigramView = ({ organization, memberFacilities = [], selectedFacilityI
             <EmployeePopup
                 employee={selectedEmployee}
                 isOpen={isPopupOpen}
-                onClose={() => {
-                    setIsPopupOpen(false);
-                    setSelectedEmployee(null);
-                }}
+                onClose={handleCloseEmployeePopup}
             />
         </div>
     );

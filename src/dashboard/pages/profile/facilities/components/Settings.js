@@ -16,7 +16,7 @@ import useAutoSave from '../../../../hooks/useAutoSave';
 import OpeningHours from './OpeningHours';
 
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-0 w-full max-w-[1400px] mx-auto",
   headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex items-center",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
@@ -38,7 +38,7 @@ const styles = {
   cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   cardDescription: "text-xs mt-1",
   cardDescriptionStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "grid grid-cols-1 gap-6 overflow-visible",
+  grid: "grid grid-cols-1 md:grid-cols-2 gap-6 overflow-visible",
   gridSingle: "grid grid-cols-1 gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "md:col-span-2",
@@ -179,24 +179,14 @@ const Settings = ({
           />
         );
       case 'checkbox':
-        if (fieldConfig.group === 'contractSettings') {
-          return wrapInput(
-            <Switch
-              key={name}
-              label={label}
-              checked={!!value}
-              onChange={(newValue) => onInputChange(name, newValue)}
-              marginBottom="0"
-            />
-          );
-        }
+      case 'switch':
         return wrapInput(
-          <CheckboxField
+          <Switch
             key={name}
-            {...commonProps}
             label={label}
             checked={!!value}
-            onChange={(e) => onInputChange(name, e.target.checked)}
+            onChange={(newValue) => onInputChange(name, newValue)}
+            marginBottom="0"
           />
         );
       case 'textarea':
@@ -262,38 +252,33 @@ const Settings = ({
         }
       `}</style>
       <div className={styles.sectionsWrapper}>
-        <div className={styles.leftColumn}>
-          {groupedFields.contractSettings && (
-            <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 10 }}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiFileText className="w-4 h-4" style={styles.cardIconStyle} /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.contractSettingsTitle')}</h3>
-                  </div>
-                </div>
-                {groupedFields.contractSettings.map(renderField)}
+        {groupedFields.contractSettings && (
+          <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 10 }}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiFileText className="w-4 h-4" style={styles.cardIconStyle} /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.contractSettingsTitle')}</h3>
               </div>
             </div>
-          )}
+            <div className={styles.grid}>
+              {groupedFields.contractSettings.map(renderField)}
+            </div>
+          </div>
+        )}
 
-          {groupedFields.operationalSettings && (
-            <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 9 }}>
-              <div className={styles.grid}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" style={styles.cardIconStyle} /></div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.operationalSettingsTitle')}</h3>
-                  </div>
-                </div>
-                {groupedFields.operationalSettings.map(renderField)}
+        {groupedFields.operationalSettings && (
+          <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 9 }}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" style={styles.cardIconStyle} /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.operationalSettingsTitle')}</h3>
               </div>
             </div>
-          )}
-        </div>
-
-        <div className={styles.rightColumn}>
-        </div>
+            <div className={styles.grid}>
+              {groupedFields.operationalSettings.map(renderField)}
+            </div>
+          </div>
+        )}
       </div>
 
       <OpeningHours

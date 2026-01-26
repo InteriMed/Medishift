@@ -165,6 +165,7 @@ const CustomDateInput = ({
         "border border-input rounded-md px-3 py-2", // Match inputClasses padding
         className
       )}
+      style={{ height: '38px' }}
       onClick={handleContainerClick}
       ref={containerRef}
     >

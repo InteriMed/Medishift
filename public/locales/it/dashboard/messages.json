@@ -5,7 +5,10 @@
     "facility": "Messaggi Struttura",
     "facilityDesc": "Messaggi relativi alle operazioni della struttura",
     "conversations": "Conversazioni",
+    "messages": "Messaggi",
     "threads": "Comunicazione",
+    "announcements": "Annunci",
+    "announcementsLocked": "Gli annunci sono disponibili solo per i membri di una struttura",
     "threadsLocked": "La comunicazione è disponibile solo per i membri di una struttura"
   },
   "noConversations": "Nessuna Conversazione",

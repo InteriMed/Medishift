@@ -26,6 +26,7 @@ const TimeGrid = ({
   onEventResize,
   onCreateEvent,
   scrollContainerRef: externalScrollContainerRef,
+  verticalScrollRef: externalVerticalScrollRef,
   numWeeks = 7,
   numDays = 30,
   referenceDate: propReferenceDate,
@@ -33,7 +34,9 @@ const TimeGrid = ({
 }) => {
   const gridRef = useRef(null);
   const internalScrollContainerRef = useRef(null);
+  const internalVerticalScrollRef = useRef(null);
   const scrollContainerRef = externalScrollContainerRef || internalScrollContainerRef;
+  const verticalScrollRef = externalVerticalScrollRef || internalVerticalScrollRef;
 
   // Drag-to-create state
   const [isCreating, setIsCreating] = useState(false);
@@ -48,25 +51,14 @@ const TimeGrid = ({
   let allDays;
 
   if (nightView) {
-    // Night view: show previous day + next day for each date
+    // Night view: 1 column per shift starting on reference date
     if (view === 'day') {
-      const prevDay = new Date(referenceDate);
-      prevDay.setDate(prevDay.getDate() - 1);
-      const nextDay = new Date(referenceDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      allDays = [prevDay, nextDay];
+      allDays = [new Date(referenceDate)];
     } else {
       const weeksBefore = numWeeks;
       const weeksAfter = numWeeks;
       const weeks = getMultipleWeeks(referenceDate, weeksBefore, weeksAfter);
-      const baseDays = weeks.flat();
-      allDays = baseDays.flatMap(date => {
-        const prevDay = new Date(date);
-        prevDay.setDate(prevDay.getDate() - 1);
-        const nextDay = new Date(date);
-        nextDay.setDate(nextDay.getDate() + 1);
-        return [prevDay, nextDay];
-      });
+      allDays = weeks.flat();
     }
   } else if (view === 'day') {
     // Day view: generate days centered around current date
@@ -113,57 +105,36 @@ const TimeGrid = ({
    */
   const getTimeFromY = useCallback((y, referenceDate, snapToHour = false) => {
     if (nightView) {
-      // Night view: first 12 hours (12:00-00:00) = previous day, next 12 hours (00:00-12:00) = next day
+      // Night view: 0-12h = referenceDate PM (12:00-00:00), 12-24h = next day AM (00:00-12:00)
       const hoursFromTop = y / PIXELS_PER_HOUR;
-      const isPreviousDay = hoursFromTop < 12;
-      
+      const isAftMidnight = hoursFromTop >= 12;
+
       let targetDate, hours, minutes, seconds;
-      
-      if (isPreviousDay) {
-        // Previous day: 12:00-00:00 (hours 12-23)
+
+      if (!isAftMidnight) {
+        // PM: 12:00-24:00 Today
         targetDate = new Date(referenceDate);
-        targetDate.setDate(targetDate.getDate() - 1);
-        const normalizedDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0, 0);
-        
-        if (snapToHour) {
-          hours = Math.max(12, Math.min(23, 12 + Math.floor(hoursFromTop)));
-          minutes = 0;
-          seconds = 0;
-        } else {
-          hours = Math.max(12, Math.min(23, 12 + Math.floor(hoursFromTop)));
-          const minutesDecimal = (hoursFromTop - Math.floor(hoursFromTop)) * 60;
-          minutes = Math.round(minutesDecimal / MINUTES_INCREMENT) * MINUTES_INCREMENT;
-          seconds = 0;
-        }
-        
-        const date = new Date(normalizedDate);
-        date.setHours(hours, minutes, seconds, 0);
-        return date;
+        hours = 12 + Math.floor(hoursFromTop);
       } else {
-        // Next day: 00:00-12:00 (hours 0-11)
+        // AM: 00:00-12:00 Tomorrow
         targetDate = new Date(referenceDate);
         targetDate.setDate(targetDate.getDate() + 1);
-        const normalizedDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0, 0);
-        
-        const adjustedHours = hoursFromTop - 12;
-        
-        if (snapToHour) {
-          hours = Math.max(0, Math.min(11, Math.floor(adjustedHours)));
-          minutes = 0;
-          seconds = 0;
-        } else {
-          hours = Math.max(0, Math.min(11, Math.floor(adjustedHours)));
-          const minutesDecimal = (adjustedHours - Math.floor(adjustedHours)) * 60;
-          minutes = Math.round(minutesDecimal / MINUTES_INCREMENT) * MINUTES_INCREMENT;
-          seconds = 0;
-        }
-        
-        const date = new Date(normalizedDate);
-        date.setHours(hours, minutes, seconds, 0);
-        return date;
+        hours = Math.floor(hoursFromTop - 12);
       }
+
+      if (snapToHour) {
+        minutes = 0;
+        seconds = 0;
+      } else {
+        const minutesDecimal = (hoursFromTop - Math.floor(hoursFromTop)) * 60;
+        minutes = Math.round(minutesDecimal / MINUTES_INCREMENT) * MINUTES_INCREMENT;
+        seconds = 0;
+      }
+
+      const date = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), hours, minutes, seconds, 0);
+      return date;
     }
-    
+
     // Normal view: 00:00-24:00
     const normalizedDate = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate(), 0, 0, 0, 0);
 
@@ -526,58 +497,13 @@ const TimeGrid = ({
     document.addEventListener('mouseup', handleMouseUp);
   }, [snapToInterval, onEventMove, onEventResize, onEventClick, getDayFromX]);
 
-  // Handle true infinite scrolling loop with date shift (Vertical Timeline Progression)
+  // Auto-scroll to 8 AM on mount
   useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    let isInternalShift = false;
-
-    const handleScroll = () => {
-      if (isInternalShift) return;
-
-      const { scrollTop } = scrollContainer;
-      const cycleHeight = 1440; // 24 hours in pixels
-
-      // If we scroll into the "Tomorrow" zone (beyond Segment 1)
-      if (scrollTop >= cycleHeight * 2) {
-        isInternalShift = true;
-        const nextDate = new Date(currentDate);
-        nextDate.setDate(nextDate.getDate() + 1);
-
-        // Shift scroll back to maintain position relative to midnight
-        scrollContainer.scrollTop -= cycleHeight;
-
-        // Update store state to advance time
-        import('../hooks/useCalendarStore').then(m => m.default.getState().setCurrentDate(nextDate));
-
-        setTimeout(() => { isInternalShift = false; }, 50);
-      }
-      // If we scroll into the "Yesterday" zone (below Segment 1)
-      else if (scrollTop < cycleHeight) {
-        isInternalShift = true;
-        const prevDate = new Date(currentDate);
-        prevDate.setDate(prevDate.getDate() - 1);
-
-        // Shift scroll forward
-        scrollContainer.scrollTop += cycleHeight;
-
-        // Update store state to go back in time
-        import('../hooks/useCalendarStore').then(m => m.default.getState().setCurrentDate(prevDate));
-
-        setTimeout(() => { isInternalShift = false; }, 50);
-      }
-    };
-
-    scrollContainer.addEventListener('scroll', handleScroll);
-
-    // Initial centering if at 0 (start at 8 AM of Today)
-    if (scrollContainer.scrollTop === 0) {
-      scrollContainer.scrollTop = 1440 + (8 * 60);
+    const scrollContainer = verticalScrollRef.current;
+    if (scrollContainer && scrollContainer.scrollTop === 0) {
+      scrollContainer.scrollTop = (8 - 1) * 60; // Better centering at 7:00-8:00
     }
-
-    return () => scrollContainer.removeEventListener('scroll', handleScroll);
-  }, [scrollContainerRef, currentDate]);
+  }, [verticalScrollRef]);
 
   /**
    * Handle grid mouse down - for drag-to-create
@@ -788,24 +714,16 @@ const TimeGrid = ({
 
           const eventStart = new Date(event.start);
           const eventEnd = new Date(event.end);
-          
+
           if (nightView) {
-            // Night view: check if event falls in the time range for this day
-            // For even indices (0, 2, 4...): previous day 12:00-00:00
-            // For odd indices (1, 3, 5...): next day 00:00-12:00
-            const isPreviousDay = i % 2 === 0;
-            const dayStart = new Date(date);
-            const dayEnd = new Date(date);
-            
-            if (isPreviousDay) {
-              dayStart.setHours(12, 0, 0, 0);
-              dayEnd.setHours(23, 59, 59, 999);
-            } else {
-              dayStart.setHours(0, 0, 0, 0);
-              dayEnd.setHours(11, 59, 59, 999);
-            }
-            
-            return eventStart < dayEnd && eventEnd > dayStart;
+            // Night view shift window: reference date 12:00 PM to next day 12:00 PM
+            const shiftStart = new Date(date);
+            shiftStart.setHours(12, 0, 0, 0);
+            const shiftEnd = new Date(date);
+            shiftEnd.setDate(shiftEnd.getDate() + 1);
+            shiftEnd.setHours(12, 0, 0, 0);
+
+            return eventStart < shiftEnd && eventEnd > shiftStart;
           } else {
             const dayStart = new Date(date);
             dayStart.setHours(0, 0, 0, 0);
@@ -823,14 +741,22 @@ const TimeGrid = ({
       // Also handle active (moving/resizing) events
       activeEvents.forEach(event => {
         const eventDate = new Date(event.start);
+        const eventHours = eventDate.getHours();
+
+        let targetDate = new Date(eventDate);
+        if (nightView && eventHours < 12) {
+          // If AM, it belongs to the shift starting the previous day
+          targetDate.setDate(targetDate.getDate() - 1);
+        }
+
         let dayIndex = allDays.findIndex(d =>
-          d.getDate() === eventDate.getDate() &&
-          d.getMonth() === eventDate.getMonth() &&
-          d.getFullYear() === eventDate.getFullYear()
+          d.getDate() === targetDate.getDate() &&
+          d.getMonth() === targetDate.getMonth() &&
+          d.getFullYear() === targetDate.getFullYear()
         );
 
         if (dayIndex < 0) {
-          const daysDiff = Math.floor((eventDate - rangeStart) / (1000 * 60 * 60 * 24));
+          const daysDiff = Math.floor((targetDate - rangeStart) / (1000 * 60 * 60 * 24));
           dayIndex = Math.max(0, Math.min(allDays.length - 1, daysDiff));
         }
 
@@ -849,10 +775,17 @@ const TimeGrid = ({
     // Add draft event if creating
     if (draftEvent) {
       const draftDate = new Date(draftEvent.start);
+      const draftHours = draftDate.getHours();
+
+      let targetDate = new Date(draftDate);
+      if (nightView && draftHours < 12) {
+        targetDate.setDate(targetDate.getDate() - 1);
+      }
+
       let dayIndex = allDays.findIndex(d =>
-        d.getDate() === draftDate.getDate() &&
-        d.getMonth() === draftDate.getMonth() &&
-        d.getFullYear() === draftDate.getFullYear()
+        d.getDate() === targetDate.getDate() &&
+        d.getMonth() === targetDate.getMonth() &&
+        d.getFullYear() === targetDate.getFullYear()
       );
       if (dayIndex === -1) dayIndex = 0;
 
@@ -881,62 +814,36 @@ const TimeGrid = ({
       const segments = [];
 
       if (nightView) {
-        // Night view: show previous day (12:00-00:00) and next day (00:00-12:00)
-        const isPreviousDay = event.dayIndex % 2 === 0;
-        
-        if (isPreviousDay) {
-          // Previous day: 12:00-00:00 (maps to Y: 0-720px)
-          const targetDayStart = new Date(columnDate);
-          targetDayStart.setHours(12, 0, 0, 0);
-          const targetDayEnd = new Date(columnDate);
-          targetDayEnd.setDate(targetDayEnd.getDate() + 1);
-          targetDayEnd.setHours(0, 0, 0, 0);
-          
-          const visibleStart = eventStart > targetDayStart ? eventStart : targetDayStart;
-          const visibleEnd = eventEnd < targetDayEnd ? eventEnd : targetDayEnd;
-          
-          if (visibleStart < visibleEnd) {
-            const startHours = visibleStart.getHours() + (visibleStart.getMinutes() / 60);
-            const endHours = visibleEnd.getHours() + (visibleEnd.getMinutes() / 60);
-            
-            // Map 12:00-24:00 to 0-720px
-            const top = (startHours - 12) * 60;
-            const durationHours = endHours - startHours;
-            const height = Math.max(durationHours * 60, 15);
-            
-            segments.push({ top, height, offset: 0 });
-          }
-        } else {
-          // Next day: 00:00-12:00 (maps to Y: 720-1440px)
-          const targetDayStart = new Date(columnDate);
-          targetDayStart.setHours(0, 0, 0, 0);
-          const targetDayEnd = new Date(columnDate);
-          targetDayEnd.setHours(12, 0, 0, 0);
-          
-          const visibleStart = eventStart > targetDayStart ? eventStart : targetDayStart;
-          const visibleEnd = eventEnd < targetDayEnd ? eventEnd : targetDayEnd;
-          
-          if (visibleStart < visibleEnd) {
-            const startHours = visibleStart.getHours() + (visibleStart.getMinutes() / 60);
-            const endHours = visibleEnd.getHours() + (visibleEnd.getMinutes() / 60);
-            
-            // Map 00:00-12:00 to 720-1440px
-            const top = 720 + (startHours * 60);
-            const durationHours = endHours - startHours;
-            const height = Math.max(durationHours * 60, 15);
-            
-            segments.push({ top, height, offset: 0 });
-          }
+        // Shift starts at 12:00 PM on columnDate and ends at 12:00 PM on columnDate + 1
+        const shiftStart = new Date(columnDate);
+        shiftStart.setHours(12, 0, 0, 0);
+        const shiftEnd = new Date(columnDate);
+        shiftEnd.setDate(shiftEnd.getDate() + 1);
+        shiftEnd.setHours(12, 0, 0, 0);
+
+        const visibleStart = eventStart > shiftStart ? eventStart : shiftStart;
+        const visibleEnd = eventEnd < shiftEnd ? eventEnd : shiftEnd;
+
+        if (visibleStart < visibleEnd) {
+          const startMs = visibleStart.getTime();
+          const shiftStartMs = shiftStart.getTime();
+          const endMs = visibleEnd.getTime();
+
+          // Map milliseconds past shift start to vertical pixels
+          // 24 hours = 1440 pixels
+          const pixelsFromTop = (startMs - shiftStartMs) / (1000 * 60 * 60) * 60;
+          const height = Math.max((endMs - startMs) / (1000 * 60 * 60) * 60, 15);
+
+          segments.push({ top: pixelsFromTop, height, offset: 0 });
         }
       } else {
-        // Normal view: We check Yesterday (-1), Today (0), Tomorrow (+1) relative to this column's day
-        [-1, 0, 1].forEach(offset => {
-          const segmentBaseY = (offset + 1) * 1440; // Yes=-1 -> 0, Tod=0 -> 1440, Tom=1 -> 2880
+        // Normal view: Only render offset 0 (Today)
+        const offset = 0;
+        const segmentBaseY = 0;
 
-          // Find portion of event in this target day
-          const targetDayStart = new Date(columnDate);
-          targetDayStart.setDate(targetDayStart.getDate() + offset);
-          targetDayStart.setHours(0, 0, 0, 0);
+        // Find portion of event in this target day
+        const targetDayStart = new Date(columnDate);
+        targetDayStart.setHours(0, 0, 0, 0);
 
         const targetDayEnd = new Date(targetDayStart);
         targetDayEnd.setHours(23, 59, 59, 999);
@@ -952,7 +859,6 @@ const TimeGrid = ({
 
           segments.push({ top, height, offset });
         }
-      });
       }
 
       // Horizontal layout
@@ -1013,7 +919,7 @@ const TimeGrid = ({
       className="relative flex-1 bg-transparent select-none min-w-max"
       ref={gridRef}
       style={{
-        height: nightView ? '1440px' : '4320px',
+        height: '1440px',
         width: view === 'day' ? `${allDays.length * 100}%` : `${(allDays.length / 7) * 100}%`,
         minWidth: view === 'day' ? `${allDays.length * 100}%` : `${(allDays.length / 7) * 100}%`
       }}
@@ -1021,7 +927,7 @@ const TimeGrid = ({
       onDoubleClick={handleGridDoubleClick}
     >
       {/* Background Grid Lines (Horizontal for Time) */}
-      {Array.from({ length: nightView ? 24 : 72 }, (_, index) => (
+      {Array.from({ length: nightView ? 23 : 24 }, (_, index) => (
         <div
           key={index}
           className="h-[60px] w-full border-b border-border flex items-start"
@@ -1051,7 +957,7 @@ const TimeGrid = ({
       )}
 
       {/* Events Layer - MUST have pointer-events enabled for interactions */}
-      <div className="absolute inset-0 top-0 left-0 w-full h-full">
+      <div className="absolute inset-0 top-0 left-0 w-full h-full" style={{ zIndex: 5 }}>
         <div className="relative w-full h-full">
           {renderEvents()}
         </div>

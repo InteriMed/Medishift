@@ -32,7 +32,9 @@ export const LOCALSTORAGE_KEYS = {
   AUTOFILL_CACHE: (userId) => `autofill_cache_${userId}`,
   PROFILE_DRAFT: (activeTab) => `profile_${activeTab}_draft`,
   DOCUMENT_PROCESSING_CACHE: (userId) => `document_processing_cache_${userId}`,
-  POPUP_SHOWN: (popupId) => `popup_shown_${popupId}`
+  POPUP_SHOWN: (popupId) => `popup_shown_${popupId}`,
+  WORKSPACE_COLORS: 'workspace_colors',
+  USER_PREFERENCES: (userId) => `user_preferences_${userId}`
 };
 
 // ============================================================================

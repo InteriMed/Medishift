@@ -8,7 +8,12 @@
     "common": "Général",
     "account": "Compte",
     "documents": "Documents",
-    "api": "Vérification"
+    "api": "Vérification",
+    "catalog": "Catalogue",
+    "organization": "Organisation",
+    "support": "Support",
+    "services": "Services",
+    "announcements": "Annonces"
   },
   "calendar": {
     "getEvents": "Voir les événements",
@@ -91,6 +96,68 @@
     "healthRegistryLookupDesc": "Rechercher un professionnel de santé dans le registre",
     "companySearch": "Rechercher une entreprise",
     "companySearchDesc": "Trouver un établissement de santé par GLN"
+  },
+  "catalog": {
+    "searchOrganizations": "Rechercher des organisations",
+    "searchOrganizationsDesc": "Trouver des organisations, chaînes et groupes",
+    "getOrganization": "Voir l'organisation",
+    "getOrganizationDesc": "Consulter les détails et informations de l'organisation",
+    "getOrganizationFacilities": "Voir les établissements",
+    "getOrganizationFacilitiesDesc": "Lister tous les établissements d'une organisation",
+    "searchProfessionals": "Rechercher des professionnels",
+    "searchProfessionalsDesc": "Trouver des professionnels de santé et travailleurs",
+    "getProfessional": "Voir le professionnel",
+    "getProfessionalDesc": "Consulter le profil et les détails du professionnel",
+    "searchFacilities": "Rechercher des établissements",
+    "searchFacilitiesDesc": "Trouver des pharmacies, cliniques et établissements de santé",
+    "getFacility": "Voir l'établissement",
+    "getFacilityDesc": "Consulter le profil et les détails de l'établissement",
+    "searchAll": "Rechercher tout",
+    "searchAllDesc": "Rechercher dans les organisations, professionnels et établissements"
+  },
+  "organization": {
+    "viewEmployees": "Voir les employés",
+    "viewEmployeesDesc": "Voir les employés et l'annuaire de l'organisation",
+    "viewOrganigram": "Voir l'organigramme",
+    "viewOrganigramDesc": "Voir la structure et la hiérarchie de l'organisation",
+    "viewHiring": "Voir les processus de recrutement",
+    "viewHiringDesc": "Voir les processus de recrutement et les opportunités d'emploi",
+    "viewContracts": "Voir les contrats",
+    "viewContractsDesc": "Voir les contrats et accords de l'organisation",
+    "viewPayroll": "Voir la paie",
+    "viewPayrollDesc": "Voir la paie consolidée et les paiements",
+    "viewPolicyLibrary": "Voir la bibliothèque de politiques",
+    "viewPolicyLibraryDesc": "Voir les politiques et documents de l'organisation",
+    "uploadPolicy": "Télécharger une politique",
+    "uploadPolicyDesc": "Télécharger un nouveau document de politique dans la bibliothèque",
+    "viewProfile": "Voir le profil de l'organisation",
+    "viewProfileDesc": "Voir le profil et les paramètres de l'organisation"
+  },
+  "support": {
+    "createTicket": "Créer un ticket de support",
+    "createTicketDesc": "Créer un nouveau ticket de support pour obtenir de l'aide",
+    "listTickets": "Voir mes tickets",
+    "listTicketsDesc": "Voir tous vos tickets de support",
+    "getTicket": "Voir le ticket",
+    "getTicketDesc": "Voir les détails d'un ticket de support",
+    "addResponse": "Répondre au ticket",
+    "addResponseDesc": "Ajouter une réponse à un ticket de support"
+  },
+  "services": {
+    "createRequest": "Créer une demande de service",
+    "createRequestDesc": "Demander un service (dotation, formation, conseil, etc.)",
+    "listRequests": "Voir les demandes de service",
+    "listRequestsDesc": "Voir toutes les demandes de service",
+    "getRequest": "Voir la demande de service",
+    "getRequestDesc": "Voir les détails d'une demande de service",
+    "listAvailableServices": "Lister les services disponibles",
+    "listAvailableServicesDesc": "Voir tous les services disponibles que vous pouvez demander"
+  },
+  "announcements": {
+    "createAnnouncement": "Créer une annonce",
+    "createAnnouncementDesc": "Créer une nouvelle annonce avec sondage optionnel",
+    "votePoll": "Voter au sondage",
+    "votePollDesc": "Voter sur un sondage dans une annonce"
   },
   "search": {
     "placeholder": "Rechercher des actions...",

@@ -1,5 +1,7 @@
 {
     "title": "Contracts",
+    "subtitle": "View and manage your contracts",
+    "new": "New",
     "errorTitle": "Error Loading Contracts",
     "errorMessage": "There was an error loading your contracts. Please try again.",
     "retry": "Retry",
@@ -25,7 +27,29 @@
     "noContracts": "No contracts yet",
     "startApplying": "Start by applying for positions",
     "createContract": "Create Contract",
-    "noMatches": "No matches found",
+    "noMatches": "No contracts match your search",
+    "noMatches.description": "Try adjusting your filters to see more results",
+    "empty": {
+        "title": "No contracts found",
+        "description": "No contracts available at the moment"
+    },
+    "info": {
+        "title": "Contracts",
+        "description": "Browse and search for contracts."
+    },
+    "sortBy": "Sort by",
+    "sort": {
+        "date": "Date",
+        "name": "Name"
+    },
+    "filter": {
+        "status": "Status",
+        "apply": "Apply Filters"
+    },
+    "view": {
+        "grid": "Grid view",
+        "list": "List view"
+    },
     "adjustFilters": "Try adjusting your filters",
     "selectContract": "Select a Contract",
     "selectContractDesc": "Select a contract from the list on the left to view its full details",
@@ -64,5 +88,13 @@
         "noticePeriod": "Notice Period",
         "workingHours": "Working Hours",
         "benefits": "Benefits"
+    },
+    "create": "Create",
+    "form": {
+        "title": "Title",
+        "titlePlaceholder": "Enter contract title",
+        "status": "Status",
+        "description": "Description",
+        "descriptionPlaceholder": "Enter contract description"
     }
 }

@@ -8,11 +8,11 @@ import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../utils/pathUtils';
 import {
-    FiX, FiFileText, FiMessageSquare, FiCalendar, FiUser,
-    FiBriefcase, FiClock, FiDollarSign, FiMapPin, FiMail,
-    FiCheckCircle, FiAlertCircle
+    FiFileText, FiMessageSquare, FiCalendar, FiUser,
+    FiMapPin, FiMail
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
+import Dialog from '../../../../components/Dialog/Dialog';
 
 const EmployeePopup = ({ employee, isOpen, onClose }) => {
     const { t } = useTranslation(['organization', 'common']);
@@ -105,7 +105,7 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
 
     if (!isOpen || !employee) return null;
 
-    const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || 'Unknown';
+    const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || t('organization:employee.unknown', 'Unknown');
     const initials = `${employee.firstName?.[0] || ''}${employee.lastName?.[0] || ''}`.toUpperCase() || '?';
 
     const tabs = [
@@ -116,76 +116,56 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
     ];
 
     return (
-        <div 
-            className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm" 
-            onClick={onClose}
+        <Dialog
+            isOpen={isOpen}
+            onClose={onClose}
+            title={fullName}
+            size="xlarge"
+            closeOnBackdropClick={true}
         >
-            <div
-                className="bg-card rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b border-border">
-                    <div className="flex items-start gap-4">
-                        <div className="shrink-0">
-                            {employee.photoURL ? (
-                                <img 
-                                    src={employee.photoURL} 
-                                    alt={fullName}
-                                    className="w-20 h-20 rounded-xl object-cover border-4 border-card"
-                                />
-                            ) : (
-                                <div className="w-20 h-20 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-2xl border-4 border-card">
-                                    {initials}
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-4">
-                                <div>
-                                    <h2 className="text-2xl font-bold text-foreground">{fullName}</h2>
-                                    <p className="text-muted-foreground mt-1">{employee.email}</p>
-                                    {employee.facilityName && (
-                                        <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
-                                            <FiMapPin className="w-4 h-4" />
-                                            <span>{employee.facilityName}</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <button
-                                    onClick={onClose}
-                                    className="p-2 rounded-full hover:bg-black/5 transition-colors shrink-0"
-                                    title={t('common:close', 'Close')}
-                                >
-                                    <FiX className="w-5 h-5" />
-                                </button>
+            <div className="space-y-6">
+                <div className="flex items-start gap-4 pb-4 border-b border-slate-200">
+                    <div className="shrink-0">
+                        {employee.photoURL ? (
+                            <img 
+                                src={employee.photoURL} 
+                                alt={fullName}
+                                className="w-20 h-20 rounded-xl object-cover border-4 border-slate-200"
+                            />
+                        ) : (
+                            <div className="w-20 h-20 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-2xl border-4 border-slate-200">
+                                {initials}
                             </div>
-                        </div>
+                        )}
                     </div>
-
-                    <div className="flex items-center gap-2 mt-6 flex-wrap">
-                        {tabs.map((tab) => {
-                            const Icon = tab.icon;
-                            const isActive = activeTab === tab.id;
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={tab.action}
-                                    className={cn(
-                                        "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors",
-                                        isActive
-                                            ? "bg-primary text-primary-foreground"
-                                            : "bg-card border border-border text-foreground hover:bg-muted"
-                                    )}
-                                >
-                                    <Icon className="w-4 h-4" />
-                                    <span>{tab.label}</span>
-                                </button>
-                            );
-                        })}
+                    <div className="flex-1 min-w-0">
+                        <p className="text-slate-600 mt-1">{employee.email}</p>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                <div className="flex items-center gap-2 flex-wrap pb-4 border-b border-slate-200">
+                    {tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={tab.action}
+                                className={cn(
+                                    "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors",
+                                    isActive
+                                        ? "bg-primary text-white"
+                                        : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200"
+                                )}
+                            >
+                                <Icon className="w-4 h-4" />
+                                <span>{tab.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
                     {loading ? (
                         <div className="flex items-center justify-center py-16">
                             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -194,42 +174,42 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
                         <>
                             {activeTab === 'contract' && (
                                 <div className="space-y-6">
-                                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                                    <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                                         <FiFileText className="w-5 h-5 text-primary" />
                                         {t('organization:employee.contractDetails', 'Contract Details')}
                                     </h3>
                                     {contract ? (
-                                        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 space-y-4">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                    <label className="text-xs font-medium text-slate-500 block mb-1">
                                                         {t('organization:employee.jobTitle', 'Job Title')}
                                                     </label>
-                                                    <p className="font-semibold text-foreground">
+                                                    <p className="font-semibold text-slate-900">
                                                         {contract.terms?.jobTitle || employee.roles?.[0] || 'N/A'}
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                    <label className="text-xs font-medium text-slate-500 block mb-1">
                                                         {t('organization:employee.contractType', 'Contract Type')}
                                                     </label>
-                                                    <p className="font-semibold text-foreground">
+                                                    <p className="font-semibold text-slate-900">
                                                         {contract.terms?.contractType || 'N/A'}
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                    <label className="text-xs font-medium text-slate-500 block mb-1">
                                                         {t('organization:employee.workPercentage', 'Work Percentage')}
                                                     </label>
-                                                    <p className="font-semibold text-foreground">
+                                                    <p className="font-semibold text-slate-900">
                                                         {contract.terms?.workPercentage ? `${contract.terms.workPercentage}%` : 'N/A'}
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                    <label className="text-xs font-medium text-slate-500 block mb-1">
                                                         {t('organization:employee.startDate', 'Start Date')}
                                                     </label>
-                                                    <p className="font-semibold text-foreground">
+                                                    <p className="font-semibold text-slate-900">
                                                         {contract.terms?.startDate 
                                                             ? new Date(contract.terms.startDate?.toDate?.() || contract.terms.startDate).toLocaleDateString()
                                                             : employee.hireDate 
@@ -239,20 +219,20 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
                                                 </div>
                                                 {contract.terms?.endDate && (
                                                     <div>
-                                                        <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                        <label className="text-xs font-medium text-slate-500 block mb-1">
                                                             {t('organization:employee.endDate', 'End Date')}
                                                         </label>
-                                                        <p className="font-semibold text-foreground">
+                                                        <p className="font-semibold text-slate-900">
                                                             {new Date(contract.terms.endDate?.toDate?.() || contract.terms.endDate).toLocaleDateString()}
                                                         </p>
                                                     </div>
                                                 )}
                                                 {contract.terms?.salary && (
                                                     <div>
-                                                        <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                        <label className="text-xs font-medium text-slate-500 block mb-1">
                                                             {t('organization:employee.salary', 'Salary')}
                                                         </label>
-                                                        <p className="font-semibold text-foreground">
+                                                        <p className="font-semibold text-slate-900">
                                                             {contract.terms.salary.amount 
                                                                 ? `${contract.terms.salary.amount} ${contract.terms.salary.currency || 'CHF'}`
                                                                 : 'N/A'}
@@ -261,9 +241,9 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
                                                 )}
                                             </div>
                                             {contract.statusLifecycle?.currentStatus && (
-                                                <div className="pt-4 border-t border-border">
+                                                <div className="pt-4 border-t border-slate-200">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-medium text-muted-foreground">
+                                                        <span className="text-xs font-medium text-slate-500">
                                                             {t('organization:employee.status', 'Status')}:
                                                         </span>
                                                         <span className={cn(
@@ -279,9 +259,9 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="bg-card border border-border rounded-xl p-8 text-center">
-                                            <FiFileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                                            <p className="text-muted-foreground">
+                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
+                                            <FiFileText className="w-12 h-12 mx-auto mb-4 text-slate-400 opacity-50" />
+                                            <p className="text-slate-600">
                                                 {t('organization:employee.noContract', 'No contract information available')}
                                             </p>
                                         </div>
@@ -291,52 +271,52 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
 
                             {activeTab === 'profile' && (
                                 <div className="space-y-6">
-                                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                                    <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                                         <FiUser className="w-5 h-5 text-primary" />
                                         {t('organization:employee.profile', 'Profile Information')}
                                     </h3>
                                     {profileData ? (
-                                        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 space-y-4">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                    <label className="text-xs font-medium text-slate-500 block mb-1">
                                                         {t('organization:employee.firstName', 'First Name')}
                                                     </label>
-                                                    <p className="font-semibold text-foreground">
+                                                    <p className="font-semibold text-slate-900">
                                                         {profileData.firstName || profileData.identity?.firstName || employee.firstName || 'N/A'}
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                    <label className="text-xs font-medium text-slate-500 block mb-1">
                                                         {t('organization:employee.lastName', 'Last Name')}
                                                     </label>
-                                                    <p className="font-semibold text-foreground">
+                                                    <p className="font-semibold text-slate-900">
                                                         {profileData.lastName || profileData.identity?.lastName || employee.lastName || 'N/A'}
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                    <label className="text-xs font-medium text-slate-500 block mb-1">
                                                         {t('common:email', 'Email')}
                                                     </label>
-                                                    <p className="font-semibold text-foreground flex items-center gap-2">
+                                                    <p className="font-semibold text-slate-900 flex items-center gap-2">
                                                         {employee.email || profileData.email || 'N/A'}
-                                                        {employee.email && <FiMail className="w-4 h-4 text-muted-foreground" />}
+                                                        {employee.email && <FiMail className="w-4 h-4 text-slate-500" />}
                                                     </p>
                                                 </div>
                                                 {profileData.phoneNumber && (
                                                     <div>
-                                                        <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                                        <label className="text-xs font-medium text-slate-500 block mb-1">
                                                             {t('common:phone', 'Phone')}
                                                         </label>
-                                                        <p className="font-semibold text-foreground">
+                                                        <p className="font-semibold text-slate-900">
                                                             {profileData.phoneNumber}
                                                         </p>
                                                     </div>
                                                 )}
                                             </div>
                                             {employee.roles && employee.roles.length > 0 && (
-                                                <div className="pt-4 border-t border-border">
-                                                    <label className="text-xs font-medium text-muted-foreground block mb-2">
+                                                <div className="pt-4 border-t border-slate-200">
+                                                    <label className="text-xs font-medium text-slate-500 block mb-2">
                                                         {t('organization:employee.roles', 'Roles')}
                                                     </label>
                                                     <div className="flex flex-wrap gap-2">
@@ -352,20 +332,20 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
                                                 </div>
                                             )}
                                             {profileData.profileDisplay?.bio && (
-                                                <div className="pt-4 border-t border-border">
-                                                    <label className="text-xs font-medium text-muted-foreground block mb-2">
+                                                <div className="pt-4 border-t border-slate-200">
+                                                    <label className="text-xs font-medium text-slate-500 block mb-2">
                                                         {t('organization:employee.bio', 'Bio')}
                                                     </label>
-                                                    <p className="text-foreground leading-relaxed">
+                                                    <p className="text-slate-900 leading-relaxed">
                                                         {profileData.profileDisplay.bio}
                                                     </p>
                                                 </div>
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="bg-card border border-border rounded-xl p-8 text-center">
-                                            <FiUser className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                                            <p className="text-muted-foreground">
+                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
+                                            <FiUser className="w-12 h-12 mx-auto mb-4 text-slate-400 opacity-50" />
+                                            <p className="text-slate-600">
                                                 {t('organization:employee.noProfile', 'No profile information available')}
                                             </p>
                                         </div>
@@ -374,16 +354,16 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
                             )}
 
                             {(activeTab === 'message' || activeTab === 'calendar') && (
-                                <div className="bg-card border border-border rounded-xl p-8 text-center">
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
                                     <div className="flex flex-col items-center gap-4">
                                         {activeTab === 'message' ? (
                                             <>
                                                 <FiMessageSquare className="w-16 h-16 text-primary opacity-50" />
                                                 <div>
-                                                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                                                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
                                                         {t('organization:employee.redirectingToMessages', 'Redirecting to Messages...')}
                                                     </h3>
-                                                    <p className="text-muted-foreground">
+                                                    <p className="text-slate-600">
                                                         {t('organization:employee.redirectingToMessagesDesc', 'You will be redirected to the messages page to start a conversation.')}
                                                     </p>
                                                 </div>
@@ -392,10 +372,10 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
                                             <>
                                                 <FiCalendar className="w-16 h-16 text-primary opacity-50" />
                                                 <div>
-                                                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                                                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
                                                         {t('organization:employee.redirectingToCalendar', 'Redirecting to Calendar...')}
                                                     </h3>
-                                                    <p className="text-muted-foreground">
+                                                    <p className="text-slate-600">
                                                         {t('organization:employee.redirectingToCalendarDesc', 'You will be redirected to the calendar page to view schedules.')}
                                                     </p>
                                                 </div>
@@ -408,7 +388,7 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
                     )}
                 </div>
             </div>
-        </div>
+        </Dialog>
     );
 };
 

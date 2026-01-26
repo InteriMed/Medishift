@@ -297,12 +297,12 @@ export const TUTORIAL_STEP_DEFINITIONS = {
         },
         {
             id: 'messages-overview',
-            targetSelector: `a[href="/dashboard/messages"]`,
+            targetSelector: `a[href*="/dashboard/messages"]`,
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '210px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.MESSAGES,
             actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('messages') },
-            visualPreview: { type: 'sidebar_item', icon: 'message-square', textKey: 'dashboard.sidebar.messages' }
+            visualPreview: { type: 'sidebar_item', icon: 'message-square', textKey: 'dashboard.sidebar.communication' }
         },
         {
             id: 'messages-conversations',
@@ -326,12 +326,12 @@ export const TUTORIAL_STEP_DEFINITIONS = {
     [TUTORIAL_IDS.CONTRACTS]: [
         {
             id: 'contracts-overview',
-            targetSelector: `a[href="/dashboard/contracts"]`,
-            targetArea: TARGET_AREAS.SIDEBAR,
+            targetSelector: `a[href*="/dashboard/organization/contracts"]`,
+            targetArea: TARGET_AREAS.CONTENT,
             tooltipPosition: { top: '180px', left: 'calc(250px + 20px)' },
-            highlightSidebarItem: DASHBOARD_ROUTE_IDS.CONTRACTS,
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('contracts') },
-            visualPreview: { type: 'sidebar_item', icon: 'file-text', textKey: 'dashboard.sidebar.contracts' }
+            highlightSidebarItem: DASHBOARD_ROUTE_IDS.ORGANIZATION,
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('organization', 'contracts') },
+            visualPreview: { type: 'tab', icon: 'file-text', textKey: 'organization:tabs.contracts' }
         },
         {
             id: 'contracts-list',
@@ -535,6 +535,7 @@ export const DASHBOARD_PATHS = {
     OVERVIEW: '/dashboard/overview',
     PROFILE: '/dashboard/profile',
     MESSAGES: '/dashboard/messages',
+    ANNOUNCEMENTS: '/dashboard/announcements',
     CONTRACTS: '/dashboard/contracts',
     CALENDAR: '/dashboard/calendar',
     MARKETPLACE: '/dashboard/marketplace',

@@ -17,7 +17,7 @@ import { useDropdownOptions } from '../../utils/DropdownListsImports';
 import useAutoSave from '../../../../hooks/useAutoSave';
 
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-0 w-full max-w-[1400px] mx-auto",
   headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
@@ -37,7 +37,7 @@ const styles = {
   cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   cardDescription: "text-xs mt-1",
   cardDescriptionStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "flex flex-col gap-6",
+  grid: "grid grid-cols-1 md:grid-cols-2 gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "col-span-full",
   infoCard: "bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800 p-4 w-full max-w-[1400px] mx-auto",
@@ -66,7 +66,7 @@ const Settings = ({
       formData?.subscriptionTier ||
       formData?.subscription?.tier ||
       'classic';
-    
+
     return subscription === 'premium' ? 'premium' : 'classic';
   }, [formData]);
 
@@ -178,7 +178,7 @@ const Settings = ({
             max={maxDateValue}
             required={commonProps.required}
             error={commonProps.error}
-            onErrorReset={() => {}}
+            onErrorReset={() => { }}
           />
         );
       case 'dropdown':
@@ -199,64 +199,52 @@ const Settings = ({
           />
         );
       case 'checkbox':
-        // Use Switch for notification group AND marketplace group (requested by user)
-        if (fieldConfig.group === 'notifications' || fieldConfig.group === 'marketplace') {
-          const isBankingAccess = name === 'banking.access';
-          const requiresPremium = isBankingAccess;
-          const isDisabled = requiresPremium && !isPremium;
-          const descriptionKey = fieldConfig.descriptionKey;
-          
-          return (
-            <div key={name} className="relative">
-              <Switch
-                label={
-                  name === 'isActiveOnMarketplace'
-                    ? (
-                      <span className="inline-flex items-center gap-2" style={{ color: 'var(--logo-1)' }}>
-                        <span>{label}</span>
-                        <FiInfo className="w-3.5 h-3.5" />
-                      </span>
-                    )
-                    : label
-                }
-                checked={!!value}
-                onChange={(newValue) => onInputChange(name, newValue)}
-                marginBottom="0"
-                disabled={isDisabled}
-              />
-              {descriptionKey && (
-                <p className="mt-2 text-xs" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-                  {t(descriptionKey)}
-                </p>
-              )}
-              {requiresPremium && !isPremium && (
-                <div className="mt-2 p-3 rounded-lg border-2 flex items-center gap-2" style={{ borderColor: '#D4AF37', backgroundColor: 'rgba(212, 175, 55, 0.05)' }}>
-                  <FiZap className="w-4 h-4 flex-shrink-0" style={{ color: '#D4AF37' }} />
-                  <span className="text-sm font-medium" style={{ color: '#D4AF37' }}>
-                    {t('settings.premiumFeatureRequired')}
-                  </span>
-                </div>
-              )}
-              {requiresPremium && isPremium && (
-                <div className="mt-2 p-2 rounded-lg border flex items-center gap-2" style={{ borderColor: '#D4AF37', backgroundColor: 'rgba(212, 175, 55, 0.05)' }}>
-                  <FiStar className="w-3 h-3 flex-shrink-0" style={{ color: '#D4AF37' }} />
-                  <span className="text-xs font-medium" style={{ color: '#D4AF37' }}>
-                    {t('settings.premiumFeature')}
-                  </span>
-                </div>
-              )}
-            </div>
-          );
-        }
-        // Pass label without mandatory mark styling for checkbox itself
+      case 'switch':
+        const isBankingAccess = name === 'banking.access';
+        const requiresPremium = isBankingAccess;
+        const isDisabled = requiresPremium && !isPremium;
+        const descriptionKey = fieldConfig.descriptionKey;
+
         return (
-          <CheckboxField
-            key={name}
-            {...commonProps}
-            label={label}
-            checked={!!value}
-            onChange={(e) => onInputChange(name, e.target.checked)}
-          />
+          <div key={name} className="relative">
+            <Switch
+              label={
+                name === 'isActiveOnMarketplace'
+                  ? (
+                    <span className="inline-flex items-center gap-2" style={{ color: 'var(--logo-1)' }}>
+                      <span>{label}</span>
+                      <FiInfo className="w-3.5 h-3.5" />
+                    </span>
+                  )
+                  : label
+              }
+              checked={!!value}
+              onChange={(newValue) => onInputChange(name, newValue)}
+              marginBottom="0"
+              disabled={isDisabled}
+            />
+            {descriptionKey && (
+              <p className="mt-2 text-xs" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                {t(descriptionKey)}
+              </p>
+            )}
+            {requiresPremium && !isPremium && (
+              <div className="mt-2 p-3 rounded-lg border-2 flex items-center gap-2" style={{ borderColor: '#D4AF37', backgroundColor: 'rgba(212, 175, 55, 0.05)' }}>
+                <FiZap className="w-4 h-4 flex-shrink-0" style={{ color: '#D4AF37' }} />
+                <span className="text-sm font-medium" style={{ color: '#D4AF37' }}>
+                  {t('settings.premiumFeatureRequired')}
+                </span>
+              </div>
+            )}
+            {requiresPremium && isPremium && (
+              <div className="mt-2 p-2 rounded-lg border flex items-center gap-2" style={{ borderColor: '#D4AF37', backgroundColor: 'rgba(212, 175, 55, 0.05)' }}>
+                <FiStar className="w-3 h-3 flex-shrink-0" style={{ color: '#D4AF37' }} />
+                <span className="text-xs font-medium" style={{ color: '#D4AF37' }}>
+                  {t('settings.premiumFeature')}
+                </span>
+              </div>
+            )}
+          </div>
         );
       case 'textarea':
         return (
@@ -318,14 +306,11 @@ const Settings = ({
   return (
     <div className={styles.sectionContainer}>
       <style>{`
-        .settings-container {
-          container-type: inline-size;
-        }
-
         .settings-sections-wrapper {
+          container-type: inline-size;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1rem;
+          gap: 1.5rem;
         }
 
         @container (max-width: 700px) {
@@ -334,8 +319,7 @@ const Settings = ({
           }
         }
       `}</style>
-      <div className="settings-container w-full max-w-[1400px] mx-auto">
-        <div className={styles.sectionsWrapper}>
+      <div className={styles.sectionsWrapper}>
           {platformSettingsWithoutNotes.length > 0 && (
             <div className={styles.sectionCard}>
               <div className={styles.cardHeader}>
@@ -350,65 +334,65 @@ const Settings = ({
             </div>
           )}
 
-        {/* Privacy Settings */}
-        {groupedFields.privacy && (
-          <div className={styles.sectionCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardIconWrapper}><FiShield className="w-4 h-4" style={styles.cardIconStyle} /></div>
-              <div className={styles.cardTitle}>
-                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.privacySettingsTitle')}</h3>
+          {/* Privacy Settings */}
+          {groupedFields.privacy && (
+            <div className={styles.sectionCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardIconWrapper}><FiShield className="w-4 h-4" style={styles.cardIconStyle} /></div>
+                <div className={styles.cardTitle}>
+                  <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.privacySettingsTitle')}</h3>
+                </div>
+              </div>
+              <div className={styles.grid}>
+                {groupedFields.privacy.map(renderField)}
               </div>
             </div>
-            <div className={styles.grid}>
-              {groupedFields.privacy.map(renderField)}
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Notification Preferences */}
-        {groupedFields.notifications && (
-          <div className={styles.sectionCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardIconWrapper}><FiBell className="w-4 h-4" style={styles.cardIconStyle} /></div>
-              <div className={styles.cardTitle}>
-                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.notificationPreferencesTitle')}</h3>
+          {/* Notification Preferences */}
+          {groupedFields.notifications && (
+            <div className={styles.sectionCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardIconWrapper}><FiBell className="w-4 h-4" style={styles.cardIconStyle} /></div>
+                <div className={styles.cardTitle}>
+                  <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.notificationPreferencesTitle')}</h3>
+                </div>
+              </div>
+              <div className={styles.grid}>
+                {groupedFields.notifications.map(renderField)}
               </div>
             </div>
-            <div className={styles.grid}>
-              {groupedFields.notifications.map(renderField)}
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Marketplace Settings */}
-        {groupedFields.marketplace && (
-          <div className={styles.sectionCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardIconWrapper}><FiGlobe className="w-4 h-4" style={styles.cardIconStyle} /></div>
-              <div className={styles.cardTitle}>
-                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.marketplaceSettingsTitle')}</h3>
+          {/* Marketplace Settings */}
+          {groupedFields.marketplace && (
+            <div className={styles.sectionCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardIconWrapper}><FiGlobe className="w-4 h-4" style={styles.cardIconStyle} /></div>
+                <div className={styles.cardTitle}>
+                  <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.marketplaceSettingsTitle')}</h3>
+                </div>
+              </div>
+              <div className={styles.grid}>
+                {groupedFields.marketplace.map(renderField)}
               </div>
             </div>
-            <div className={styles.grid}>
-              {groupedFields.marketplace.map(renderField)}
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Availability Settings */}
-        {groupedFields.availability && (
-          <div className={styles.sectionCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" style={styles.cardIconStyle} /></div>
-              <div className={styles.cardTitle}>
-                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilitySettingsTitle')}</h3>
+          {/* Availability Settings */}
+          {groupedFields.availability && (
+            <div className={styles.sectionCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" style={styles.cardIconStyle} /></div>
+                <div className={styles.cardTitle}>
+                  <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.availabilitySettingsTitle')}</h3>
+                </div>
+              </div>
+              <div className={styles.grid}>
+                {groupedFields.availability.map(renderField)}
               </div>
             </div>
-            <div className={styles.grid}>
-              {groupedFields.availability.map(renderField)}
-            </div>
-          </div>
-        )}
+          )}
 
           {notesField && (
             <div className={styles.sectionCard}>
@@ -425,7 +409,6 @@ const Settings = ({
           )}
         </div>
       </div>
-    </div>
   );
 };
 

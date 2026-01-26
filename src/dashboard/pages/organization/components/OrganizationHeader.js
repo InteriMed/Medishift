@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useMobileView } from '../../../hooks/useMobileView';
@@ -16,8 +16,30 @@ const OrganizationHeader = ({
   collapsed = false,
   onToggle
 }) => {
+  const [windowWidth, setWindowWidth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth;
+    }
+    return 1200;
+  });
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const isMobile = useMobileView();
+  const isReducedWidth = windowWidth < 700;
   const { t } = useTranslation(['organization', 'tabs']);
+
+  const getSingleWordLabel = (labelKey) => {
+    const fullLabel = t(labelKey);
+    const firstWord = fullLabel.split(' ')[0];
+    return firstWord;
+  };
 
   const facilitySubTabs = [
     { id: 'organigram', labelKey: 'organization:tabs.organigram', icon: FiUsers },
@@ -102,18 +124,20 @@ const OrganizationHeader = ({
                   "flex items-center min-w-0",
                   collapsed ? "justify-center" : "gap-3"
                 )}>
-                  <div className={cn(
-                    "transition-colors shrink-0",
-                    isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                  )}>
-                    {getIconForTab(tab.id)}
-                  </div>
+                  {!isReducedWidth && (
+                    <div className={cn(
+                      "transition-colors shrink-0",
+                      isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                    )}>
+                      {getIconForTab(tab.id)}
+                    </div>
+                  )}
                   {!collapsed && (
                     <span className={cn(
                       "text-sm font-medium truncate",
                       isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                     )}>
-                      {t(tab.labelKey, tab.id)}
+                      {getSingleWordLabel(tab.labelKey)}
                     </span>
                   )}
                 </div>

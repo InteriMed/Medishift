@@ -5,6 +5,7 @@ import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
+import { useDashboard } from '../../../contexts/DashboardContext';
 import {
     FiBriefcase,
     FiX,
@@ -18,6 +19,11 @@ import {
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
+import DateField from '../../../../components/BoxedInputFields/DateField';
+import Dialog from '../../../../components/Dialog/Dialog';
+import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
+import InputFieldParagraph from '../../../../components/BoxedInputFields/TextareaField';
+import { useMarketplaceData } from '../../../hooks/useMarketplaceData';
 
 const HiringProcesses = ({ organization, memberFacilities = [] }) => {
     const { t } = useTranslation(['organization', 'common']);
@@ -30,6 +36,8 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [facilityFilter, setFacilityFilter] = useState('all');
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
     const [sortBy, setSortBy] = useState('created');
     const [showSortMenu, setShowSortMenu] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState(null);
@@ -39,6 +47,20 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
     const [candidateShowSortMenu, setCandidateShowSortMenu] = useState(false);
     const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
     const [justExpanded, setJustExpanded] = useState(false);
+    const [isCreatePositionModalOpen, setIsCreatePositionModalOpen] = useState(false);
+    const [positionFormData, setPositionFormData] = useState({
+        jobTitle: '',
+        jobType: 'general',
+        startTime: '',
+        endTime: '',
+        location: '',
+        description: '',
+        compensation: ''
+    });
+    const [isCreatingPosition, setIsCreatingPosition] = useState(false);
+
+    const { selectedWorkspace } = useDashboard();
+    const { createPosition } = useMarketplaceData();
 
     const loadPositions = useCallback(async () => {
         if (!organization || memberFacilities.length === 0) {
@@ -196,6 +218,22 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
             filtered = filtered.filter(pos => pos.status === statusFilter);
         }
 
+        if (fromDate) {
+            const fromDateObj = new Date(fromDate);
+            filtered = filtered.filter(pos => {
+                const createdDate = pos.created?.toDate?.() || pos.created || new Date(0);
+                return createdDate >= fromDateObj;
+            });
+        }
+
+        if (toDate) {
+            const toDateObj = new Date(toDate);
+            filtered = filtered.filter(pos => {
+                const createdDate = pos.created?.toDate?.() || pos.created || new Date(0);
+                return createdDate <= toDateObj;
+            });
+        }
+
         const sorted = [...filtered].sort((a, b) => {
             switch (sortBy) {
                 case 'created':
@@ -216,7 +254,7 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
         });
 
         return sorted;
-    }, [positions, searchQuery, facilityFilter, statusFilter, sortBy, memberFacilities, applications]);
+    }, [positions, searchQuery, facilityFilter, statusFilter, fromDate, toDate, sortBy, memberFacilities, applications]);
 
     const sortedCandidates = useMemo(() => {
         const sorted = [...positionCandidates].sort((a, b) => {
@@ -238,11 +276,69 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
         return sorted;
     }, [positionCandidates, candidateSortBy]);
 
-    const hasActiveFilters = facilityFilter !== 'all' || statusFilter !== 'all';
+    const hasActiveFilters = facilityFilter !== 'all' || statusFilter !== 'all' || fromDate || toDate;
 
     const clearFilters = () => {
         setFacilityFilter('all');
         setStatusFilter('all');
+        setFromDate('');
+        setToDate('');
+    };
+
+    const handleCreatePosition = async () => {
+        if (!positionFormData.jobTitle.trim() || !positionFormData.startTime || !positionFormData.endTime) {
+            showNotification(t('organization:hiring.errors.missingFields', 'Please fill in all required fields'), 'error');
+            return;
+        }
+
+        const startDate = new Date(positionFormData.startTime);
+        const endDate = new Date(positionFormData.endTime);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            showNotification(t('organization:hiring.errors.invalidDate', 'Invalid date format'), 'error');
+            return;
+        }
+
+        if (startDate >= endDate) {
+            showNotification(t('organization:hiring.errors.endBeforeStart', 'End time must be after start time'), 'error');
+            return;
+        }
+
+        setIsCreatingPosition(true);
+        try {
+            const facilityProfileId = selectedWorkspace?.facilityId;
+            if (!facilityProfileId) {
+                throw new Error('No facility selected');
+            }
+
+            await createPosition({
+                facilityProfileId,
+                jobTitle: positionFormData.jobTitle.trim(),
+                jobType: positionFormData.jobType,
+                startTime: startDate.toISOString(),
+                endTime: endDate.toISOString(),
+                location: positionFormData.location ? { address: positionFormData.location } : {},
+                description: positionFormData.description.trim(),
+                compensation: positionFormData.compensation ? { amount: positionFormData.compensation } : {}
+            });
+
+            setIsCreatePositionModalOpen(false);
+            setPositionFormData({
+                jobTitle: '',
+                jobType: 'general',
+                startTime: '',
+                endTime: '',
+                location: '',
+                description: '',
+                compensation: ''
+            });
+            loadPositions();
+        } catch (error) {
+            console.error('Error creating position:', error);
+            showNotification(error.message || t('organization:hiring.errors.createFailed', 'Failed to create position'), 'error');
+        } finally {
+            setIsCreatingPosition(false);
+        }
     };
 
     const sortOptions = [
@@ -284,7 +380,7 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
         );
     }
 
-    const activeFilterCount = (facilityFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0);
+    const activeFilterCount = (facilityFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (fromDate ? 1 : 0) + (toDate ? 1 : 0);
 
     return (
         <div className="space-y-6">
@@ -298,7 +394,11 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
                             {t('organization:hiring.subtitle', 'Manage job postings and review candidates')}
                         </p>
                     </div>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                    <button 
+                        onClick={() => setIsCreatePositionModalOpen(true)}
+                        className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0" 
+                        style={{ height: 'var(--boxed-inputfield-height)' }}
+                    >
                         <FiPlus className="w-4 h-4" />
                         {t('organization:hiring.createPosition', 'Create Position')}
                     </button>
@@ -319,6 +419,28 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
                                 fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
                                 color: 'var(--boxed-inputfield-color-text)'
                             }}
+                        />
+                    </div>
+
+                    {/* Date From */}
+                    <div className="relative shrink-0 w-[218px]">
+                        <DateField
+                            label="From"
+                            value={fromDate ? new Date(fromDate) : null}
+                            onChange={(date) => setFromDate(date ? date.toISOString().split('T')[0] : '')}
+                            marginBottom="0"
+                            showClearButton={true}
+                        />
+                    </div>
+
+                    {/* Date To */}
+                    <div className="relative shrink-0 w-[218px]">
+                        <DateField
+                            label="To"
+                            value={toDate ? new Date(toDate) : null}
+                            onChange={(date) => setToDate(date ? date.toISOString().split('T')[0] : '')}
+                            marginBottom="0"
+                            showClearButton={true}
                         />
                     </div>
 
@@ -641,6 +763,148 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
                     </div>
                 </div>
             )}
+
+            <Dialog
+                isOpen={isCreatePositionModalOpen}
+                onClose={() => {
+                    if (!isCreatingPosition) {
+                        setIsCreatePositionModalOpen(false);
+                        setPositionFormData({
+                            jobTitle: '',
+                            jobType: 'general',
+                            startTime: '',
+                            endTime: '',
+                            location: '',
+                            description: '',
+                            compensation: ''
+                        });
+                    }
+                }}
+                title={t('organization:hiring.createPosition', 'Create Position')}
+                size="medium"
+                closeOnBackdropClick={!isCreatingPosition}
+                actions={
+                    <>
+                        <button
+                            onClick={() => {
+                                if (!isCreatingPosition) {
+                                    setIsCreatePositionModalOpen(false);
+                                    setPositionFormData({
+                                        jobTitle: '',
+                                        jobType: 'general',
+                                        startTime: '',
+                                        endTime: '',
+                                        location: '',
+                                        description: '',
+                                        compensation: ''
+                                    });
+                                }
+                            }}
+                            disabled={isCreatingPosition}
+                            className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {t('common:cancel', 'Cancel')}
+                        </button>
+                        <button
+                            onClick={handleCreatePosition}
+                            disabled={!positionFormData.jobTitle.trim() || !positionFormData.startTime || !positionFormData.endTime || isCreatingPosition}
+                            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isCreatingPosition
+                                ? t('common:creating', 'Creating...')
+                                : t('organization:hiring.create', 'Create Position')}
+                        </button>
+                    </>
+                }
+            >
+                <div className="space-y-4">
+                    <div className="mt-4">
+                        <InputField
+                            label={t('organization:hiring.form.jobTitle', 'Job Title')}
+                            value={positionFormData.jobTitle}
+                            onChange={(e) => setPositionFormData({ ...positionFormData, jobTitle: e.target.value })}
+                            placeholder={t('organization:hiring.form.jobTitlePlaceholder', 'Enter job title')}
+                            required
+                            disabled={isCreatingPosition}
+                            name="jobTitle"
+                        />
+                    </div>
+
+                    <div>
+                        <SimpleDropdown
+                            label={t('organization:hiring.form.jobType', 'Job Type')}
+                            options={[
+                                { value: 'general', label: t('organization:hiring.form.jobTypeGeneral', 'General') },
+                                { value: 'pharmacist', label: t('organization:hiring.form.jobTypePharmacist', 'Pharmacist') },
+                                { value: 'technician', label: t('organization:hiring.form.jobTypeTechnician', 'Technician') },
+                                { value: 'intern', label: t('organization:hiring.form.jobTypeIntern', 'Intern') }
+                            ]}
+                            value={positionFormData.jobType}
+                            onChange={(value) => setPositionFormData({ ...positionFormData, jobType: value })}
+                            disabled={isCreatingPosition}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                                {t('organization:hiring.form.startTime', 'Start Time')} *
+                            </label>
+                            <input
+                                type="datetime-local"
+                                value={positionFormData.startTime}
+                                onChange={(e) => setPositionFormData({ ...positionFormData, startTime: e.target.value })}
+                                disabled={isCreatingPosition}
+                                className="w-full h-10 rounded-md border border-input bg-background/50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                                {t('organization:hiring.form.endTime', 'End Time')} *
+                            </label>
+                            <input
+                                type="datetime-local"
+                                value={positionFormData.endTime}
+                                onChange={(e) => setPositionFormData({ ...positionFormData, endTime: e.target.value })}
+                                disabled={isCreatingPosition}
+                                className="w-full h-10 rounded-md border border-input bg-background/50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <InputField
+                            label={t('organization:hiring.form.location', 'Location')}
+                            value={positionFormData.location}
+                            onChange={(e) => setPositionFormData({ ...positionFormData, location: e.target.value })}
+                            placeholder={t('organization:hiring.form.locationPlaceholder', 'Enter location (optional)')}
+                            disabled={isCreatingPosition}
+                            name="location"
+                        />
+                    </div>
+
+                    <InputFieldParagraph
+                        label={t('organization:hiring.form.description', 'Description')}
+                        value={positionFormData.description}
+                        onChange={(e) => setPositionFormData({ ...positionFormData, description: e.target.value })}
+                        placeholder={t('organization:hiring.form.descriptionPlaceholder', 'Enter job description (optional)')}
+                        rows={3}
+                        disabled={isCreatingPosition}
+                        name="description"
+                    />
+
+                    <div>
+                        <InputField
+                            label={t('organization:hiring.form.compensation', 'Compensation')}
+                            value={positionFormData.compensation}
+                            onChange={(e) => setPositionFormData({ ...positionFormData, compensation: e.target.value })}
+                            placeholder={t('organization:hiring.form.compensationPlaceholder', 'Enter compensation (optional)')}
+                            disabled={isCreatingPosition}
+                            name="compensation"
+                        />
+                    </div>
+                </div>
+            </Dialog>
         </div>
     );
 };

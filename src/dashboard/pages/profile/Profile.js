@@ -29,6 +29,10 @@ import FacilityDetails from './facilities/components/FacilityDetails';
 import FacilityBillingInformation from './facilities/components/BillingInformation';
 import FacilityAccount from './facilities/components/Account';
 import FacilitySettings from './facilities/components/Settings';
+import OrganizationDetails from './organizations/components/OrganizationDetails';
+import OrganizationBillingInformation from './organizations/components/OrganizationBillingInformation';
+import OrganizationVerification from './organizations/components/OrganizationVerification';
+import OrganizationAccount from './organizations/components/Account';
 import { cn } from '../../../utils/cn';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 import { hasFacilityAccessSync, isAdminSync } from '../../../config/workspaceDefinitions';
@@ -60,6 +64,12 @@ const Profile = () => {
     const [activeTab, setActiveTab] = useState('');
     const [subscriptionStatus, setSubscriptionStatus] = useState('free');
     const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [windowWidth, setWindowWidth] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return window.innerWidth;
+        }
+        return 1200;
+    });
     const originalData = useRef(null);
     const autoFillButtonRef = useRef(null);
 
@@ -82,6 +92,14 @@ const Profile = () => {
         }
     }, [formData, profileConfig, activeTab]);
 
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const { errors, setErrors, validateCurrentTabData } = useProfileValidation(
         formData,
         profileConfig,
@@ -93,7 +111,7 @@ const Profile = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const isInOrganizationContext = location.pathname.includes('/organization');
+    const isInOrganizationContext = location.pathname.includes('/organization') || location.pathname.includes('/facility');
 
     const {
         handleInputChange,
@@ -122,7 +140,7 @@ const Profile = () => {
 
     const handleTabChange = useCallback((tabId) => {
         if (tabId === activeTab) return;
-        
+
         if (isFormModified) {
             handleSave({ navigateToNextTab: false }).then((saveSuccess) => {
                 if (saveSuccess) {
@@ -209,7 +227,7 @@ const Profile = () => {
 
     useEffect(() => {
         if (!profileConfig || !formData || isLoadingConfig || isLoadingData) return;
-        
+
         const searchParams = new URLSearchParams(location.search);
         const tabFromUrl = searchParams.get('tab');
         const validTabIds = profileConfig.tabs.map(t => t.id);
@@ -219,10 +237,10 @@ const Profile = () => {
         } else if (!tabFromUrl && activeTab) {
             const pathParts = location.pathname.split('/').filter(Boolean);
             const profileIndex = pathParts.findIndex(part => part === 'profile');
-            const tabFromPath = profileIndex >= 0 && profileIndex < pathParts.length - 1 
-                ? pathParts[profileIndex + 1] 
+            const tabFromPath = profileIndex >= 0 && profileIndex < pathParts.length - 1
+                ? pathParts[profileIndex + 1]
                 : null;
-            
+
             if (tabFromPath && validTabIds.includes(tabFromPath) && tabFromPath !== activeTab) {
                 setActiveTab(tabFromPath);
             }
@@ -273,7 +291,7 @@ const Profile = () => {
         if (profileError) return <div className="p-8 text-center text-red-500">{t('errors.loadingProfile')}: {profileError.message}</div>;
         if (!profileConfig && !isLoading && initialProfileData) return <div className="p-8 text-center text-red-500">{t('errors.loadingConfig')}</div>;
         const isAdmin = isAdminSync(userProfile);
-        const validRoles = ['professional', 'facility', 'company'];
+        const validRoles = ['professional', 'facility', 'company', 'organization'];
         if (initialProfileData && initialProfileData.role && !validRoles.includes(initialProfileData.role) && !isAdmin) {
             return <div className="p-8 text-center text-red-500">{t('errors.accessDenied')}</div>;
         }
@@ -306,6 +324,7 @@ const Profile = () => {
         };
 
         const isFacility = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
+        const isOrganization = selectedWorkspace?.type === 'organization' || initialProfileData?.role === 'organization';
 
         switch (activeTab) {
             case 'personalDetails': return <PersonalDetails {...commonProps} onTriggerUpload={handleUploadButtonClick} t={t} />;
@@ -314,7 +333,11 @@ const Profile = () => {
             case 'documentUploads': return <ProfessionalDocumentUploads {...commonProps} t={t} />;
             case 'facilityCoreDetails': return <FacilityDetails activeTab={activeTab} {...commonProps} t={t} />;
             case 'facilityLegalBilling': return <FacilityBillingInformation {...commonProps} t={t} />;
+            case 'organizationCoreDetails': return <OrganizationDetails activeTab={activeTab} {...commonProps} t={t} />;
+            case 'organizationLegalBilling': return <OrganizationBillingInformation {...commonProps} t={t} />;
+            case 'organizationVerification': return <OrganizationVerification {...commonProps} t={t} />;
             case 'account':
+                if (isOrganization) return <OrganizationAccount {...commonProps} t={t} />;
                 return isFacility ? <FacilityAccount {...commonProps} t={t} /> : <ProfessionalAccount {...commonProps} t={t} />;
             case 'subscription':
             case 'marketplace':
@@ -371,6 +394,12 @@ const Profile = () => {
                 return <FiUser className="w-4 h-4 shrink-0" />;
         }
     }, []);
+
+    const getSingleWordLabel = useCallback((labelKey) => {
+        const fullLabel = t(labelKey);
+        const firstWord = fullLabel.split(' ')[0];
+        return firstWord;
+    }, [t]);
 
     const getTabTitle = useCallback((tabId) => {
         if (!profileConfig) return '';
@@ -498,27 +527,27 @@ const Profile = () => {
                                             const isTabCompletedValue = isTabCompleted(formData, tab.id, profileConfig);
                                             const isActive = activeTab === tab.id;
                                             const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                                            
+
                                             return (
                                                 <button
                                                     key={tab.id}
                                                     onClick={async () => {
                                                         if (tab.id === activeTab) return;
-                                                        
+
                                                         if (isFormModified) {
                                                             const saveSuccess = await handleSave({ navigateToNextTab: false });
                                                             if (saveSuccess) {
                                                                 setActiveTab(tab.id);
-                                                                const profilePath = isInOrganizationContext 
-                                                                    ? `/organization/profile`
-                                                                    : `/profile`;
+                                                                const profilePath = isInOrganizationContext
+                                                                    ? 'organization/profile'
+                                                                    : 'profile';
                                                                 navigate(buildDashboardUrl(`${profilePath}?tab=${tab.id}`, workspaceId));
                                                             }
                                                         } else {
                                                             setActiveTab(tab.id);
-                                                            const profilePath = isInOrganizationContext 
-                                                                ? `/organization/profile`
-                                                                : `/profile`;
+                                                            const profilePath = isInOrganizationContext
+                                                                ? 'organization/profile'
+                                                                : 'profile';
                                                             navigate(buildDashboardUrl(`${profilePath}?tab=${tab.id}`, workspaceId));
                                                         }
                                                     }}
@@ -529,8 +558,8 @@ const Profile = () => {
                                                             : "border-transparent text-muted-foreground hover:text-foreground"
                                                     )}
                                                 >
-                                                    {getIconForTab(tab.id)}
-                                                    <span>{t(tab.labelKey, tab.id)}</span>
+                                                    {windowWidth >= 700 && getIconForTab(tab.id)}
+                                                    <span>{getSingleWordLabel(tab.labelKey)}</span>
                                                     {isTabCompletedValue && (
                                                         <span className="text-green-500">✓</span>
                                                     )}
@@ -621,27 +650,27 @@ const Profile = () => {
                                             const isTabCompletedValue = isTabCompleted(formData, tab.id, profileConfig);
                                             const isActive = activeTab === tab.id;
                                             const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                                            
+
                                             return (
                                                 <button
                                                     key={tab.id}
                                                     onClick={async () => {
                                                         if (tab.id === activeTab) return;
-                                                        
+
                                                         if (isFormModified) {
                                                             const saveSuccess = await handleSave({ navigateToNextTab: false });
                                                             if (saveSuccess) {
                                                                 setActiveTab(tab.id);
-                                                                const profilePath = isInOrganizationContext 
-                                                                    ? `/organization/profile`
-                                                                    : `/profile`;
+                                                                const profilePath = isInOrganizationContext
+                                                                    ? 'organization/profile'
+                                                                    : 'profile';
                                                                 navigate(buildDashboardUrl(`${profilePath}?tab=${tab.id}`, workspaceId));
                                                             }
                                                         } else {
                                                             setActiveTab(tab.id);
-                                                            const profilePath = isInOrganizationContext 
-                                                                ? `/organization/profile`
-                                                                : `/profile`;
+                                                            const profilePath = isInOrganizationContext
+                                                                ? 'organization/profile'
+                                                                : 'profile';
                                                             navigate(buildDashboardUrl(`${profilePath}?tab=${tab.id}`, workspaceId));
                                                         }
                                                     }}
@@ -652,8 +681,8 @@ const Profile = () => {
                                                             : "border-transparent text-muted-foreground hover:text-foreground"
                                                     )}
                                                 >
-                                                    {getIconForTab(tab.id)}
-                                                    <span>{t(tab.labelKey, tab.id)}</span>
+                                                    {windowWidth >= 700 && getIconForTab(tab.id)}
+                                                    <span>{getSingleWordLabel(tab.labelKey)}</span>
                                                     {isTabCompletedValue && (
                                                         <span className="text-green-500">✓</span>
                                                     )}

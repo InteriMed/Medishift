@@ -144,6 +144,12 @@
     "grid": "Grid",
     "list": "List"
   },
+  "sortBy": "Sort by",
+  "sort": {
+    "relevance": "Relevance",
+    "date": "Date",
+    "title": "Title"
+  },
   "info": {
     "title": "Marketplace Info",
     "description": "Browse and search for available positions in the marketplace."

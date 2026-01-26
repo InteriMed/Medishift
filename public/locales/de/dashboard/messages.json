@@ -5,7 +5,10 @@
     "facility": "Einrichtungs-Nachrichten",
     "facilityDesc": "Nachrichten zum Einrichtungsbetrieb",
     "conversations": "Konversationen",
+    "messages": "Nachrichten",
     "threads": "Kommunikation",
+    "announcements": "Ankündigungen",
+    "announcementsLocked": "Ankündigungen sind nur für Einrichtungsmitglieder verfügbar",
     "threadsLocked": "Kommunikation ist nur für Einrichtungsmitglieder verfügbar"
   },
   "noConversations": "Keine Konversationen",

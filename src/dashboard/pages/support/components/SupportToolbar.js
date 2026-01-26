@@ -5,8 +5,6 @@ import {
     FiMessageCircle,
     FiHelpCircle,
     FiShield,
-    FiGlobe,
-    FiUser,
     FiSliders,
 } from 'react-icons/fi';
 import { useMobileView } from '../../../hooks/useMobileView';
@@ -37,12 +35,7 @@ export const SupportToolbar = ({
     selectedCategory,
     setSelectedCategory,
     categories,
-    activeTab,
-    setActiveTab,
     onCreateTopic,
-    viewMode,
-    setViewMode,
-    canAccessThreads
 }) => {
     const isMobile = useMobileView();
     const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
@@ -65,117 +58,100 @@ export const SupportToolbar = ({
     }, [showFiltersOverlay]);
 
     return (
-        <div className="flex flex-col gap-4 p-4 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-            <div className="flex items-center justify-between gap-4">
-                <div className="flex bg-muted/20 p-1 rounded-xl">
-                    <button
-                        onClick={() => setActiveTab('community')}
-                        className={cn(
-                            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                            activeTab === 'community'
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                        )}
-                    >
-                        <FiGlobe className="w-4 h-4" />
-                        {!isMobile && <span>Community</span>}
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('my-topics')}
-                        className={cn(
-                            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                            activeTab === 'my-topics'
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                        )}
-                    >
-                        <FiUser className="w-4 h-4" />
-                        {!isMobile && <span>My Topics</span>}
-                    </button>
+        <div className="max-w-[1400px] mx-auto w-full p-6">
+            <div className="bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full">
+                <div className="flex items-center justify-between mb-4 px-6 pt-6">
+                    <h3 className="text-base font-semibold text-foreground">
+                        Support Topics
+                    </h3>
                 </div>
+                <div className="pt-3 border-t border-border mb-4 px-6">
+                    <p className="text-sm text-muted-foreground">
+                        Browse and search for topics in the support community.
+                    </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 w-full px-6 pb-6">
+                    <div className="relative flex-1 min-w-[200px]">
+                        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search topics..."
+                            className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                            style={{
+                                height: 'var(--boxed-inputfield-height)',
+                                fontWeight: '500',
+                                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                color: 'var(--boxed-inputfield-color-text)'
+                            }}
+                        />
+                    </div>
 
-                <div className="flex items-center gap-2">
+                    <div className="relative shrink-0" ref={filterDropdownRef}>
+                        <button
+                            onClick={() => setShowFiltersOverlay(!showFiltersOverlay)}
+                            className={cn(
+                                "px-4 rounded-xl border-2 transition-all flex items-center gap-2 shrink-0",
+                                selectedCategory !== 'all' || showFiltersOverlay
+                                    ? "bg-primary/10 border-primary/20 text-primary"
+                                    : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                            )}
+                            style={{ height: 'var(--boxed-inputfield-height)' }}
+                            title="Filter by Category"
+                        >
+                            <FiSliders className="w-4 h-4" />
+                            <span className="text-sm font-medium">
+                                {selectedCategory !== 'all' ? categoryLabels[selectedCategory] : 'Filter'}
+                            </span>
+                        </button>
+
+                        {showFiltersOverlay && (
+                            <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-popover shadow-lg p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                <div className="text-xs font-semibold text-muted-foreground px-2 py-1.5 mb-1">
+                                    Categories
+                                </div>
+                                <button
+                                    onClick={() => { setSelectedCategory('all'); setShowFiltersOverlay(false); }}
+                                    className={cn(
+                                        "w-full text-left px-2 py-1.5 rounded-lg text-sm transition-colors flex items-center gap-2",
+                                        selectedCategory === 'all'
+                                            ? "bg-primary/10 text-primary font-medium"
+                                            : "text-foreground hover:bg-muted"
+                                    )}
+                                >
+                                    <span>All Categories</span>
+                                </button>
+                                {categories.map((cat) => {
+                                    const Icon = categoryIcons[cat] || FiMessageCircle;
+                                    return (
+                                        <button
+                                            key={cat}
+                                            onClick={() => { setSelectedCategory(cat); setShowFiltersOverlay(false); }}
+                                            className={cn(
+                                                "w-full text-left px-2 py-1.5 rounded-lg text-sm transition-colors flex items-center gap-2",
+                                                selectedCategory === cat
+                                                    ? "bg-primary/10 text-primary font-medium"
+                                                    : "text-foreground hover:bg-muted"
+                                            )}
+                                        >
+                                            <Icon className="w-3.5 h-3.5 opacity-70" />
+                                            <span>{categoryLabels[cat] || cat}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
                     <button
                         onClick={onCreateTopic}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
+                        className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
                         style={{ height: 'var(--boxed-inputfield-height)' }}
                     >
                         <FiPlus className="w-4 h-4" />
-                        <span className="hidden sm:inline">New Topic</span>
+                        <span>New Topic</span>
                     </button>
-                </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-                <div className="relative flex-1 group">
-                    <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    <input
-                        type="text"
-                        placeholder="Search topics..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 rounded-xl border border-input bg-background/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                        style={{
-                            height: 'var(--boxed-inputfield-height)',
-                            fontFamily: 'var(--font-family-text)'
-                        }}
-                    />
-                </div>
-
-                <div className="relative" ref={filterDropdownRef}>
-                    <button
-                        onClick={() => setShowFiltersOverlay(!showFiltersOverlay)}
-                        className={cn(
-                            "p-2 rounded-xl border border-input transition-colors flex items-center gap-2",
-                            selectedCategory !== 'all' || showFiltersOverlay
-                                ? "bg-primary/10 border-primary/20 text-primary"
-                                : "bg-background/50 text-muted-foreground hover:bg-muted"
-                        )}
-                        style={{ height: 'var(--boxed-inputfield-height)' }}
-                        title="Filter by Category"
-                    >
-                        <FiSliders className="w-4 h-4" />
-                        <span className="hidden sm:inline text-sm font-medium">
-                            {selectedCategory !== 'all' ? categoryLabels[selectedCategory] : 'Filter'}
-                        </span>
-                    </button>
-
-                    {showFiltersOverlay && (
-                        <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-popover shadow-lg p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
-                            <div className="text-xs font-semibold text-muted-foreground px-2 py-1.5 mb-1">
-                                Categories
-                            </div>
-                            <button
-                                onClick={() => { setSelectedCategory('all'); setShowFiltersOverlay(false); }}
-                                className={cn(
-                                    "w-full text-left px-2 py-1.5 rounded-lg text-sm transition-colors flex items-center gap-2",
-                                    selectedCategory === 'all'
-                                        ? "bg-primary/10 text-primary font-medium"
-                                        : "text-foreground hover:bg-muted"
-                                )}
-                            >
-                                <span>All Categories</span>
-                            </button>
-                            {categories.map((cat) => {
-                                const Icon = categoryIcons[cat] || FiMessageCircle;
-                                return (
-                                    <button
-                                        key={cat}
-                                        onClick={() => { setSelectedCategory(cat); setShowFiltersOverlay(false); }}
-                                        className={cn(
-                                            "w-full text-left px-2 py-1.5 rounded-lg text-sm transition-colors flex items-center gap-2",
-                                            selectedCategory === cat
-                                                ? "bg-primary/10 text-primary font-medium"
-                                                : "text-foreground hover:bg-muted"
-                                        )}
-                                    >
-                                        <Icon className="w-3.5 h-3.5 opacity-70" />
-                                        <span>{categoryLabels[cat] || cat}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

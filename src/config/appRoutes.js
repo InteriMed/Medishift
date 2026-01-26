@@ -12,6 +12,7 @@ import {
   FAQPage,
   ContactPage,
   BlogPage,
+  SupportPage,
   PrivacyPolicyPage,
   TermsOfServicePage,
   SitemapPage,
@@ -102,6 +103,13 @@ export const PUBLIC_ROUTES = [
     type: ROUTE_TYPES.PUBLIC,
     label: 'Blog Post',
     hidden: true
+  },
+  {
+    id: 'support',
+    path: 'support',
+    component: SupportPage,
+    type: ROUTE_TYPES.PUBLIC,
+    label: 'Support'
   },
   {
     id: 'privacy-policy',

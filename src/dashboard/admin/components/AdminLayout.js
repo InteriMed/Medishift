@@ -14,7 +14,9 @@ const AdminLayout = ({ children }) => {
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Page Content */}
                 <div className="flex-1 overflow-y-auto">
-                    {children || <Outlet />}
+                    <div className="max-w-[1400px] mx-auto w-full h-full">
+                        {children || <Outlet />}
+                    </div>
                 </div>
             </div>
         </div>

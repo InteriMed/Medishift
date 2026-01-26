@@ -27,7 +27,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { cn } from '../../../utils/cn';
-import { normalizePathname, buildDashboardUrl } from '../../utils/pathUtils';
+import { normalizePathname, buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../utils/pathUtils';
 import { useDashboard } from '../../contexts/DashboardContext';
 import {
   isProfessionalSync,
@@ -46,14 +46,9 @@ const REGULAR_SIDEBAR_ITEMS = [
     path: '/dashboard/overview'
   },
   {
-    title: 'dashboard.sidebar.messages',
+    title: 'dashboard.sidebar.communication',
     icon: FiMessageSquare,
     path: '/dashboard/messages'
-  },
-  {
-    title: 'dashboard.sidebar.contracts',
-    icon: FiFileText,
-    path: '/dashboard/contracts'
   },
   {
     title: 'dashboard.sidebar.calendar',
@@ -76,7 +71,8 @@ const REGULAR_SIDEBAR_ITEMS = [
     title: 'dashboard.sidebar.organization',
     icon: FiUsers,
     path: '/dashboard/organization',
-    facilityOnly: true
+    facilityOnly: true,
+    dynamicPath: true
   }
 ];
 
@@ -251,12 +247,21 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
         collapsed ? "py-1 px-1.5" : "py-1 px-2"
       )}>
         {(isAdminWorkspace ? getAdminSidebarItems(t).filter(item => !item.permission || hasRight(item.permission)) : REGULAR_SIDEBAR_ITEMS).map((item) => {
-          const itemPath = item.path.startsWith('/dashboard') ? item.path.replace('/dashboard', '') : item.path;
-          // Don't inject workspace for global shared routes
+          let itemPath = item.path.startsWith('/dashboard') ? item.path.replace('/dashboard', '') : item.path;
+          itemPath = itemPath.startsWith('/') ? itemPath.substring(1) : itemPath;
+          
+          let dynamicTitle = item.title;
+          if (item.dynamicPath && selectedWorkspace) {
+            const basePath = getOrganizationBasePath(selectedWorkspace);
+            itemPath = itemPath.replace('organization', basePath);
+            dynamicTitle = basePath === 'facility' ? 'dashboard.sidebar.facility' : 'dashboard.sidebar.organization';
+          }
+          
           const isGlobalRoute = ['marketplace'].some(route => itemPath.includes(route));
 
-          const workspaceAwarePath = selectedWorkspace?.id && !isGlobalRoute
-            ? buildDashboardUrl(itemPath, selectedWorkspace.id)
+          const workspaceId = selectedWorkspace ? getWorkspaceIdForUrl(selectedWorkspace) : null;
+          const workspaceAwarePath = workspaceId && !isGlobalRoute
+            ? buildDashboardUrl(itemPath, workspaceId)
             : item.path;
 
           const currentItemKey = item.path.split('/').pop();
@@ -285,7 +290,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                 key={item.path}
                 item={{
                   ...item,
-                  title: t(item.title, item.title.split('.').pop())
+                  title: t(dynamicTitle, dynamicTitle.split('.').pop())
                 }}
                 collapsed={collapsed}
                 isMobile={window.innerWidth < 768}
@@ -339,7 +344,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                             "text-sm font-normal truncate",
                             active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                           )}>
-                            {t(item.title, item.title.split('.').pop())}
+                            {t(dynamicTitle, dynamicTitle.split('.').pop())}
                           </span>
                         )}
                       </div>
@@ -350,7 +355,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                     </div>
                     {collapsed && (
                       <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-border/50">
-                        {t(item.title, item.title.split('.').pop())}
+                        {t(dynamicTitle, dynamicTitle.split('.').pop())}
                       </div>
                     )}
                   </>

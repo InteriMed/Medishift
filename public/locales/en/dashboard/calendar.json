@@ -107,5 +107,7 @@
   "selectDays": "Select Days",
   "editSelectedDays": "Edit Selected Days",
   "editAllFuture": "Edit All Future",
-  "editAllOccurrences": "Edit All Occurrences"
+  "editAllOccurrences": "Edit All Occurrences",
+  "delete": "Delete",
+  "addWorker": "Add Worker"
 }

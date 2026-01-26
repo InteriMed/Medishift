@@ -1,19 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import { FiCheck } from 'react-icons/fi';
 import { HexColorPicker } from 'react-colorful';
-import { CALENDAR_COLORS } from '../../pages/calendar/utils/constants';
 import { cn } from '../../../utils/cn';
+
+const PRESET_COLORS = [
+  { id: 'logo-1', name: 'Logo 1', color: '#2563eb', color1: '#2563eb' },
+  { id: 'logo-2', name: 'Logo 2', color: '#0f172a', color1: '#0f172a' },
+  { id: 'green', name: 'Green', color: '#16a34a', color1: '#16a34a' },
+  { id: 'purple', name: 'Purple', color: '#9333ea', color1: '#9333ea' },
+  { id: 'pink', name: 'Pink', color: '#db2777', color1: '#db2777' }
+];
 
 const ColorPicker = ({ 
   color, 
   color1, 
   onChange, 
-  size = 32,
+  size = 20,
   className = ''
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [customColor, setCustomColor] = useState(color || CALENDAR_COLORS[0].color);
-  const [brightness, setBrightness] = useState(100);
+  const [customColor, setCustomColor] = useState(color || PRESET_COLORS[0].color);
+  const [displayColor, setDisplayColor] = useState(color || PRESET_COLORS[0].color);
   const pickerRef = useRef(null);
   const buttonRef = useRef(null);
   const popupRef = useRef(null);
@@ -22,9 +29,9 @@ const ColorPicker = ({
   const positionTimeoutRef = useRef(null);
 
   useEffect(() => {
-    if (color) {
-      setCustomColor(color);
-    }
+    const currentColor = color || PRESET_COLORS[0].color;
+    setCustomColor(currentColor);
+    setDisplayColor(currentColor);
   }, [color]);
 
   useEffect(() => {
@@ -50,16 +57,16 @@ const ColorPicker = ({
     if (isOpen && buttonRef.current) {
       const calculatePosition = () => {
         const buttonRect = buttonRef.current.getBoundingClientRect();
-        const popupHeight = 450;
-        const popupWidth = 320;
+        const popupHeight = 280;
+        const popupWidth = 224;
         const spaceBelow = window.innerHeight - buttonRect.bottom;
         const spaceAbove = buttonRect.top;
         
-        let top = buttonRect.bottom + window.scrollY + 8;
-        let left = buttonRect.left + window.scrollX + (buttonRect.width / 2) - (popupWidth / 2);
+        let top = buttonRect.bottom + window.scrollY + 6;
+        let left = buttonRect.right + window.scrollX - popupWidth;
         
         if (spaceBelow < popupHeight && spaceAbove > spaceBelow) {
-          top = buttonRect.top + window.scrollY - popupHeight - 8;
+          top = buttonRect.top + window.scrollY - popupHeight - 6;
         }
         
         if (left < 8) left = 8;
@@ -77,28 +84,30 @@ const ColorPicker = ({
       setShowPopup(false);
       calculatePosition();
       
+      const handleResize = () => {
+        calculatePosition();
+      };
+      
+      window.addEventListener('resize', handleResize);
+      window.addEventListener('scroll', calculatePosition, true);
+      
       return () => {
         if (positionTimeoutRef.current) {
           clearTimeout(positionTimeoutRef.current);
         }
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('scroll', calculatePosition, true);
       };
     } else {
       setShowPopup(false);
     }
   }, [isOpen]);
 
-  const adjustBrightness = (hex, percent) => {
-    const num = parseInt(hex.replace('#', ''), 16);
-    const r = Math.min(255, Math.floor((num >> 16) * (percent / 100)));
-    const g = Math.min(255, Math.floor(((num >> 8) & 0x00FF) * (percent / 100)));
-    const b = Math.min(255, Math.floor((num & 0x0000FF) * (percent / 100)));
-    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-  };
-
   const handlePresetColorClick = (colorOption) => {
     const newColor = colorOption.color;
     const newColor1 = colorOption.color1;
     setCustomColor(newColor);
+    setDisplayColor(newColor);
     onChange(newColor, newColor1);
     setIsOpen(false);
     setShowPopup(false);
@@ -106,18 +115,11 @@ const ColorPicker = ({
 
   const handleColorChange = (newColor) => {
     setCustomColor(newColor);
-    const adjustedColor1 = adjustBrightness(newColor, brightness);
-    onChange(newColor, adjustedColor1);
+    setDisplayColor(newColor);
+    onChange(newColor, newColor);
   };
 
-  const handleBrightnessChange = (e) => {
-    const newBrightness = parseInt(e.target.value);
-    setBrightness(newBrightness);
-    const adjustedColor1 = adjustBrightness(customColor, newBrightness);
-    onChange(customColor, adjustedColor1);
-  };
-
-  const displayColor = color1 || color || CALENDAR_COLORS[0].color1;
+  const buttonDisplayColor = color1 || color || PRESET_COLORS[0].color1;
 
   return (
     <>
@@ -134,13 +136,13 @@ const ColorPicker = ({
               setIsOpen(true);
             }
           }}
-          className="rounded-full border-2 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2"
+          className="rounded-md transition-all hover:bg-white/5 flex items-center justify-center"
           style={{
             width: `${size}px`,
             height: `${size}px`,
-            backgroundColor: displayColor,
-            borderColor: 'rgba(37, 99, 235, 0.3)',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            border: '2px solid var(--boxed-inputfield-border-color, #e2e8f0)',
+            backgroundColor: buttonDisplayColor,
+            borderRadius: 'var(--boxed-inputfield-radius, 12px)'
           }}
           aria-label="Select color"
         />
@@ -149,40 +151,21 @@ const ColorPicker = ({
       {isOpen && showPopup && (
         <div 
           ref={popupRef}
-          className="fixed p-4 bg-white rounded-xl shadow-2xl border border-border"
+          className="fixed bg-card rounded-lg border border-border/50 shadow-lg animate-in fade-in zoom-in-95 duration-150 overflow-hidden"
           style={{ 
-            width: '320px',
+            width: '224px',
             top: `${popupPosition.top}px`,
             left: `${popupPosition.left}px`,
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            zIndex: 'var(--z-index-popup-above-tutorial, 200000)'
+            zIndex: 200001,
+            backgroundColor: 'var(--background-div-color, #ffffff)'
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-foreground">Select Color</h4>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsOpen(false);
-                setShowPopup(false);
-              }}
-              className="p-1 hover:bg-muted rounded transition-colors"
-              aria-label="Close"
-            >
-              <FiX className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-2">
-                Preset Colors
-              </label>
-              <div className="flex gap-2 flex-wrap">
-                {CALENDAR_COLORS.map((colorOption) => {
+          <div className="p-1">
+            <div className="px-3 py-2 mb-1">
+              <div className="text-xs font-medium text-muted-foreground mb-2">Preset Colors</div>
+              <div className="flex gap-1.5 flex-wrap">
+                {PRESET_COLORS.map((colorOption) => {
                   const isSelected = color === colorOption.color;
                   return (
                     <button
@@ -193,70 +176,52 @@ const ColorPicker = ({
                         handlePresetColorClick(colorOption);
                       }}
                       className={cn(
-                        "w-8 h-8 rounded-full border-2 transition-all hover:scale-110",
-                        isSelected ? '' : 'border-transparent'
+                        "w-6 h-6 rounded-md border-2 transition-all",
+                        isSelected ? 'border-primary' : 'border-transparent hover:border-border'
                       )}
                       style={{
-                        backgroundColor: colorOption.color1 || colorOption.color,
-                        borderColor: isSelected ? 'var(--color-logo-1)' : 'transparent',
-                        boxShadow: isSelected ? '0 0 0 2px var(--color-logo-1), 0 0 0 4px rgba(37, 99, 235, 0.1)' : 'none'
+                        backgroundColor: colorOption.color1 || colorOption.color
                       }}
                       title={colorOption.name}
                       aria-label={colorOption.name}
-                    />
+                    >
+                      {isSelected && <FiCheck className="w-3 h-3 text-white m-auto" strokeWidth={2} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />}
+                    </button>
                   );
                 })}
               </div>
             </div>
-
-            <div className="border-t border-border pt-4">
-              <label className="block text-xs font-medium text-muted-foreground mb-2">
-                Custom Color
-              </label>
-              <div className="space-y-3">
+            <div className="border-t border-border/50 pt-2 px-3 pb-2">
+              <div className="text-xs font-medium text-muted-foreground mb-2">Custom Color</div>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={displayColor || color || PRESET_COLORS[0].color}
+                  onChange={(e) => {
+                    const newColor = e.target.value;
+                    setDisplayColor(newColor);
+                    if (/^#[0-9A-F]{6}$/i.test(newColor)) {
+                      handleColorChange(newColor);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const newColor = e.target.value;
+                    if (!/^#[0-9A-F]{6}$/i.test(newColor)) {
+                      const validColor = color || PRESET_COLORS[0].color;
+                      setDisplayColor(validColor);
+                      setCustomColor(validColor);
+                    }
+                  }}
+                  className="w-full px-2 py-1 text-xs border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary mb-2 text-foreground"
+                  placeholder="#000000"
+                  onClick={(e) => e.stopPropagation()}
+                />
                 <div className="flex justify-center">
                   <HexColorPicker
                     color={customColor}
                     onChange={handleColorChange}
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', height: '120px' }}
                   />
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    value={customColor}
-                    onChange={(e) => {
-                      const newColor = e.target.value;
-                      if (/^#[0-9A-F]{6}$/i.test(newColor)) {
-                        handleColorChange(newColor);
-                      }
-                    }}
-                    className="flex-1 px-2 py-1 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="#000000"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-2">
-                    Brightness: {brightness}%
-                  </label>
-                  <input
-                    type="range"
-                    min="20"
-                    max="100"
-                    value={brightness}
-                    onChange={handleBrightnessChange}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, ${adjustBrightness(customColor, 20)} 0%, ${adjustBrightness(customColor, 100)} 100%)`
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    Preview: <span style={{ color: adjustBrightness(customColor, brightness) }}>●</span>
-                  </div>
                 </div>
               </div>
             </div>

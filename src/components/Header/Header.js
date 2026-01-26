@@ -50,6 +50,7 @@ const Header = () => {
       { to: 'contact', label: t('common.contact') },
       { to: 'blog', label: t('common.blog') },
       { to: 'faq', label: t('common.faq') },
+      { to: 'support', label: t('common.support', 'Support') },
     ];
 
     return (
@@ -61,7 +62,14 @@ const Header = () => {
             className={({ isActive }) =>
               `${baseClass} ${!mobile && isActive ? 'text-slate-900 bg-slate-50' : ''}`
             }
-            onClick={() => {
+            onClick={(e) => {
+              if (link.to === 'support') {
+                e.stopPropagation();
+                navigate(`/${lang}/${getLocalizedRoute(link.to, lang)}`);
+                setIsMenuOpen(false);
+                window.scrollTo(0, 0);
+                return;
+              }
               setIsMenuOpen(false);
               window.scrollTo(0, 0);
             }}

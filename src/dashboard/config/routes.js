@@ -1,18 +1,22 @@
 import { lazy } from 'react';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
 import { RIGHTS as PERMISSIONS } from '../admin/utils/rbac';
+import { buildDashboardUrl } from '../utils/pathUtils';
 
 // Lazy-loaded components
 const PersonalDashboard = lazy(() => import('../pages/personalDashboard/PersonalDashboard'));
 const Calendar = lazy(() => import('../pages/calendar/Calendar'));
-const Messages = lazy(() => import('../pages/messages/Messages'));
-const Contracts = lazy(() => import('../pages/contracts/Contracts'));
+const MessagesPage = lazy(() => import('../pages/messages/MessagesPage'));
+const AnnouncementsPage = lazy(() => import('../pages/messages/AnnouncementsPage'));
+const InternalTicketPage = lazy(() => import('../pages/messages/InternalTicketPage'));
+const ReportingPage = lazy(() => import('../pages/messages/ReportingPage'));
 const Profile = lazy(() => import('../pages/profile/Profile'));
 const Marketplace = lazy(() => import('../pages/marketplace/Marketplace'));
 const PayrollDashboard = lazy(() => import('../pages/payroll/PayrollDashboard'));
 const OrganizationDashboard = lazy(() => import('../pages/organization/OrganizationDashboard'));
 const PricingPage = lazy(() => import('../pages/pricing/PricingPage'));
 const SupportPage = lazy(() => import('../pages/support/SupportPage'));
+const ServicesPage = lazy(() => import('../pages/services/ServicesPage'));
 
 // Admin pages
 const ExecutiveDashboard = lazy(() => import('../admin/pages/ExecutiveDashboard'));
@@ -104,6 +108,14 @@ export const SHARED_ROUTES = [
     label: 'Support',
     icon: 'HelpCircle',
   },
+  {
+    id: 'services',
+    path: 'services',
+    component: ServicesPage,
+    access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
+    label: 'Services',
+    icon: 'Briefcase',
+  },
 ];
 
 export const PROFESSIONAL_ROUTES = [
@@ -119,19 +131,37 @@ export const PROFESSIONAL_ROUTES = [
   {
     id: 'messages',
     path: 'messages/*',
-    component: Messages,
+    component: MessagesPage,
     access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
     label: 'Messages',
     icon: 'MessageSquare',
     passUserData: true,
   },
   {
-    id: 'contracts',
-    path: 'contracts/*',
-    component: Contracts,
+    id: 'announcements',
+    path: 'announcements/*',
+    component: AnnouncementsPage,
     access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
-    label: 'Contracts',
-    icon: 'FileText',
+    label: 'Announcements',
+    icon: 'Bell',
+    passUserData: true,
+  },
+  {
+    id: 'internal-ticket',
+    path: 'internal-ticket/*',
+    component: InternalTicketPage,
+    access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
+    label: 'Internal Ticket',
+    icon: 'Ticket',
+    passUserData: true,
+  },
+  {
+    id: 'reporting',
+    path: 'reporting/*',
+    component: ReportingPage,
+    access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
+    label: 'Reporting',
+    icon: 'Shield',
     passUserData: true,
   },
 ];
@@ -152,6 +182,15 @@ export const FACILITY_ROUTES = [
     access: ACCESS_TYPES.FACILITY,
     label: 'Organization',
     icon: 'Building2',
+  },
+  {
+    id: 'facility',
+    path: 'facility/*',
+    component: OrganizationDashboard,
+    access: ACCESS_TYPES.FACILITY,
+    label: 'Facility',
+    icon: 'Building2',
+    hidden: true,
   },
 ];
 
@@ -377,23 +416,21 @@ export const getRouteByPath = (path) => {
 };
 
 /**
- * Build full URL for a route
+ * Build full URL for a route using centralized path utilities
+ * Uses workspace-aware path-based routing
  */
 export const buildRouteUrl = (routeId, workspaceId, params = {}) => {
   const route = getRouteById(routeId);
-  if (!route) return '/dashboard/overview';
-
-  const isAdminRoute = ADMIN_ROUTES.some(r => r.id === routeId);
-  const basePath = isAdminRoute ? `/dashboard/admin/${route.path}` : `/dashboard/${route.path}`;
-  const cleanPath = basePath.replace('/*', '');
-
-  const searchParams = new URLSearchParams(params);
-  if (workspaceId) {
-    searchParams.set('workspace', workspaceId);
+  if (!route) {
+    return buildDashboardUrl('overview', workspaceId || 'personal');
   }
 
+  const cleanPath = route.path.replace('/*', '');
+  const baseUrl = buildDashboardUrl(cleanPath, workspaceId);
+
+  const searchParams = new URLSearchParams(params);
   const queryString = searchParams.toString();
-  return `${cleanPath}${queryString ? `?${queryString}` : ''}`;
+  return `${baseUrl}${queryString ? `?${queryString}` : ''}`;
 };
 
 export const DASHBOARD_ROUTE_IDS = {
@@ -401,7 +438,9 @@ export const DASHBOARD_ROUTE_IDS = {
   PROFILE: 'profile',
   CALENDAR: 'calendar',
   MESSAGES: 'messages',
-  CONTRACTS: 'contracts',
+  ANNOUNCEMENTS: 'announcements',
+  INTERNAL_TICKET: 'internal-ticket',
+  REPORTING: 'reporting',
   MARKETPLACE: 'marketplace',
   PAYROLL: 'payroll',
   ORGANIZATION: 'organization',

@@ -8,7 +8,12 @@
     "common": "General",
     "account": "Account",
     "documents": "Documents",
-    "api": "Verification"
+    "api": "Verification",
+    "catalog": "Catalog",
+    "organization": "Organization",
+    "support": "Support",
+    "services": "Services",
+    "announcements": "Announcements"
   },
   "calendar": {
     "getEvents": "View calendar events",
@@ -91,6 +96,68 @@
     "healthRegistryLookupDesc": "Look up a healthcare professional in the registry",
     "companySearch": "Search company",
     "companySearchDesc": "Find a healthcare facility by GLN"
+  },
+  "catalog": {
+    "searchOrganizations": "Search organizations",
+    "searchOrganizationsDesc": "Find organizations, chains, and groups",
+    "getOrganization": "View organization",
+    "getOrganizationDesc": "View organization details and information",
+    "getOrganizationFacilities": "View organization facilities",
+    "getOrganizationFacilitiesDesc": "List all facilities in an organization",
+    "searchProfessionals": "Search professionals",
+    "searchProfessionalsDesc": "Find healthcare professionals and workers",
+    "getProfessional": "View professional",
+    "getProfessionalDesc": "View professional profile and details",
+    "searchFacilities": "Search facilities",
+    "searchFacilitiesDesc": "Find pharmacies, clinics, and healthcare facilities",
+    "getFacility": "View facility",
+    "getFacilityDesc": "View facility profile and details",
+    "searchAll": "Search all",
+    "searchAllDesc": "Search across organizations, professionals, and facilities"
+  },
+  "organization": {
+    "viewEmployees": "View employees",
+    "viewEmployeesDesc": "View organization employees and directory",
+    "viewOrganigram": "View organigram",
+    "viewOrganigramDesc": "View organizational structure and hierarchy",
+    "viewHiring": "View hiring processes",
+    "viewHiringDesc": "View hiring processes and job opportunities",
+    "viewContracts": "View contracts",
+    "viewContractsDesc": "View organization contracts and agreements",
+    "viewPayroll": "View payroll",
+    "viewPayrollDesc": "View consolidated payroll and payments",
+    "viewPolicyLibrary": "View policy library",
+    "viewPolicyLibraryDesc": "View organization policies and documents",
+    "uploadPolicy": "Upload policy",
+    "uploadPolicyDesc": "Upload a new policy document to the library",
+    "viewProfile": "View organization profile",
+    "viewProfileDesc": "View organization profile and settings"
+  },
+  "support": {
+    "createTicket": "Create support ticket",
+    "createTicketDesc": "Create a new support ticket for assistance",
+    "listTickets": "View my tickets",
+    "listTicketsDesc": "View all your support tickets",
+    "getTicket": "View ticket",
+    "getTicketDesc": "View details of a support ticket",
+    "addResponse": "Reply to ticket",
+    "addResponseDesc": "Add a response to a support ticket"
+  },
+  "services": {
+    "createRequest": "Create service request",
+    "createRequestDesc": "Request a service (staffing, training, consulting, etc.)",
+    "listRequests": "View service requests",
+    "listRequestsDesc": "View all service requests",
+    "getRequest": "View service request",
+    "getRequestDesc": "View details of a service request",
+    "listAvailableServices": "List available services",
+    "listAvailableServicesDesc": "View all available services you can request"
+  },
+  "announcements": {
+    "createAnnouncement": "Create announcement",
+    "createAnnouncementDesc": "Create a new announcement with optional poll",
+    "votePoll": "Vote in poll",
+    "votePollDesc": "Vote on a poll in an announcement"
   },
   "search": {
     "placeholder": "Search actions...",

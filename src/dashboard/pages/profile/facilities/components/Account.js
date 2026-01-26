@@ -15,7 +15,7 @@ import useAutoSave from '../../../../hooks/useAutoSave';
 const GOLDEN_COLOR = '#FFD700';
 
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-0 w-full max-w-[1400px] mx-auto",
   sectionsWrapper: "account-sections-wrapper w-full max-w-[1400px] mx-auto",
   sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative",
   cardHeader: "flex items-center gap-3 mb-5 pb-4 border-b border-border/40",
@@ -162,11 +162,8 @@ const Account = ({
   return (
     <div className={styles.sectionContainer}>
       <style>{`
-        .account-container {
-          container-type: inline-size;
-        }
-
         .account-sections-wrapper {
+          container-type: inline-size;
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 1.5rem;
@@ -178,8 +175,7 @@ const Account = ({
           }
         }
       `}</style>
-      <div className="account-container w-full max-w-[1400px] mx-auto">
-        <div className={styles.sectionsWrapper}>
+      <div className={styles.sectionsWrapper}>
           <div className={styles.sectionCard}>
             <div className={styles.cardHeader}>
               <div className={styles.cardIconWrapper} style={{
@@ -410,7 +406,6 @@ const Account = ({
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

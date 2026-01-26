@@ -21,7 +21,6 @@ import { cn } from '../../../../../utils/cn';
 
 // Tailwind styles
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
   headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex flex-col personal-details-header",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
@@ -34,22 +33,7 @@ const styles = {
   headerAutofillCol: "flex items-center justify-end",
   mandatoryFieldLegend: "text-xs",
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  mandatoryMark: "text-destructive",
-  sectionsWrapper: "personal-details-sections-wrapper w-full max-w-[1400px] mx-auto",
-  leftColumn: "flex flex-col gap-6 flex-1",
-  rightColumn: "flex flex-col gap-6 flex-1",
-  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative",
-  cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
-  cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
-  cardIconStyle: { color: 'var(--primary-color)' },
-  cardTitle: "flex-1 min-w-0",
-  cardTitleH3: "m-0 text-sm font-semibold truncate",
-  cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "grid grid-cols-1 gap-6",
-  gridSingle: "grid grid-cols-1 gap-6",
-  fieldWrapper: "space-y-2",
-  fullWidth: "md:col-span-2",
-  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto"
+  mandatoryMark: "text-destructive"
 };
 
 const PersonalDetails = ({
@@ -380,7 +364,7 @@ const PersonalDetails = ({
     const emailField = fields.find(f => f.name === 'contact.primaryEmail');
 
     return (
-      <div className={styles.gridSingle}>
+      <div className="grid grid-cols-1 gap-6">
         {phonePrefixField && renderField(phonePrefixField, 'contact')}
         {phoneField && renderField(phoneField, 'contact')}
         {emailField && renderField(emailField, 'contact')}
@@ -409,81 +393,27 @@ const PersonalDetails = ({
 
   return (
     <>
-      <style>{`
-        .personal-details-container {
-          container-type: inline-size;
-        }
-
-        .personal-details-sections-wrapper {
-          container-type: inline-size;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1.5rem;
-        }
-
-        @container (max-width: 700px) {
-          .personal-details-sections-wrapper {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-      <div className={`${styles.sectionContainer} personal-details-container`}>
-        <div className={styles.sectionsWrapper}>
-          {/* Left Column */}
-          <div className={styles.leftColumn}>
-            {groupedFields.filter(group => group.key === 'identity' || group.key === 'contact').map((group, index) => (
-              <div key={group.key} className={styles.sectionCard} style={{ zIndex: 20 - index }}>
-                {group.key === 'contact' ? (
-                  <div className={styles.gridSingle}>
-                    <div className={styles.cardHeader}>
-                      <div className={styles.cardIconWrapper}>
-                        {getGroupIcon(group.key)}
-                      </div>
-                      <div className={styles.cardTitle}>
-                        <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{getGroupTitle(group.key)}</h3>
-                      </div>
-                    </div>
-                    {renderContactFields(group.fields)}
-                  </div>
-                ) : (
-                  <div className={styles.grid}>
-                    <div className={styles.cardHeader}>
-                      <div className={styles.cardIconWrapper}>
-                        {getGroupIcon(group.key)}
-                      </div>
-                      <div className={styles.cardTitle}>
-                        <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{getGroupTitle(group.key)}</h3>
-                      </div>
-                    </div>
-                    {group.fields.map(field => renderField(field, group.key))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Right Column */}
-          <div className={styles.rightColumn}>
-            {groupedFields.filter(group => group.key === 'address').map((group, index) => (
-              <div key={group.key} className={styles.sectionCard} style={{ zIndex: 20 - index }}>
-                <div className={styles.grid}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}>
-                      {getGroupIcon(group.key)}
-                    </div>
-                    <div className={styles.cardTitle}>
-                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{getGroupTitle(group.key)}</h3>
-                    </div>
-                  </div>
-                  {group.fields.map(field => renderField(field, group.key))}
+      <div className="profile-sections-wrapper">
+          {groupedFields.map((group) => (
+            <div key={group.key} className="profile-section-card">
+              <div className="profile-card-header">
+                <div className="profile-card-icon-wrapper">
+                  {getGroupIcon(group.key)}
+                </div>
+                <div className="profile-card-title">
+                  <h3 className="profile-card-title-h3">{getGroupTitle(group.key)}</h3>
                 </div>
               </div>
-            ))}
-
-          </div>
+              {group.key === 'contact' ? (
+                renderContactFields(group.fields)
+              ) : (
+                <div className="profile-field-grid">
+                  {group.fields.map(field => renderField(field, group.key))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
-
-      </div>
 
       {showPicturePopup && (
         <div

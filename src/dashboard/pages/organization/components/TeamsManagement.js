@@ -17,6 +17,7 @@ import {
     FiGrid
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
+import EmployeePopup from './EmployeePopup';
 
 const TeamsManagement = ({ organization, memberFacilities = [] }) => {
     const { t } = useTranslation(['organization', 'common']);
@@ -28,6 +29,8 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeView, setActiveView] = useState('overview');
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
 
     const loadTeamData = useCallback(async () => {
         if (!organization || memberFacilities.length === 0) {
@@ -283,7 +286,14 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {team.members.slice(0, 5).map((member) => (
-                                        <div key={member.id} className="flex items-center gap-2 px-2 py-1 bg-muted/30 rounded-lg">
+                                        <div 
+                                            key={member.id} 
+                                            className="flex items-center gap-2 px-2 py-1 bg-muted/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                                            onClick={() => {
+                                                setSelectedEmployee(member);
+                                                setIsPopupOpen(true);
+                                            }}
+                                        >
                                             {member.photoURL ? (
                                                 <img 
                                                     src={member.photoURL} 
@@ -340,7 +350,14 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {team.members.map((member) => (
-                                        <div key={member.id} className="flex items-center gap-2 px-2 py-1 bg-muted/30 rounded-lg">
+                                        <div 
+                                            key={member.id} 
+                                            className="flex items-center gap-2 px-2 py-1 bg-muted/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                                            onClick={() => {
+                                                setSelectedEmployee(member);
+                                                setIsPopupOpen(true);
+                                            }}
+                                        >
                                             {member.photoURL ? (
                                                 <img 
                                                     src={member.photoURL} 
@@ -372,7 +389,14 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                 {activeView === 'members' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {filteredMembers.map((member) => (
-                            <div key={member.id} className="border border-border rounded-lg p-4 hover:bg-muted/10 transition-colors">
+                            <div 
+                                key={member.id} 
+                                className="border border-border rounded-lg p-4 hover:bg-muted/10 transition-colors cursor-pointer"
+                                onClick={() => {
+                                    setSelectedEmployee(member);
+                                    setIsPopupOpen(true);
+                                }}
+                            >
                                 <div className="flex items-center gap-3">
                                     {member.photoURL ? (
                                         <img 
@@ -411,6 +435,15 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                     </div>
                 )}
             </div>
+
+            <EmployeePopup
+                employee={selectedEmployee}
+                isOpen={isPopupOpen}
+                onClose={() => {
+                    setIsPopupOpen(false);
+                    setSelectedEmployee(null);
+                }}
+            />
         </div>
     );
 };

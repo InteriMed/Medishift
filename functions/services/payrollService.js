@@ -13,6 +13,7 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 const config = require('../config');
+const db = require('../database/db');
 
 // Email transporter (will be initialized with environment variables)
 let transporter = null;
@@ -339,7 +340,6 @@ const createPayrollRequest = onCall(
         } = request.data;
 
         const pharmacyUid = request.auth.uid;
-        const db = admin.firestore();
 
         try {
             // Get pharmacy profile
@@ -433,7 +433,6 @@ const getPayrollRequests = onCall(
 
         const { status, limit = 50, facilityId } = request.data || {};
         const pharmacyUid = facilityId || request.auth.uid;
-        const db = admin.firestore();
 
         logger.info(`Fetching payroll requests for pharmacy: ${pharmacyUid}`, {
             requestedBy: request.auth.uid,
@@ -442,16 +441,75 @@ const getPayrollRequests = onCall(
         });
 
         try {
-            let query = db.collection('payroll_requests')
+            let baseQuery = db.collection('payroll_requests')
                 .where('pharmacyUid', '==', pharmacyUid);
 
             if (status) {
-                query = query.where('status', '==', status);
+                baseQuery = baseQuery.where('status', '==', status);
             }
 
-            query = query.orderBy('createdAt', 'desc').limit(limit);
+            let query = baseQuery.orderBy('createdAt', 'desc').limit(limit);
+            let snapshot;
 
-            const snapshot = await query.get();
+            try {
+                snapshot = await query.get();
+            } catch (queryError) {
+                const errorCode = queryError.code || queryError.status || String(queryError.message || queryError).match(/code:\s*(\d+)/)?.[1];
+                const errorMessage = String(queryError.message || queryError);
+                
+                if (errorCode === 5 || 
+                    errorCode === 'NOT_FOUND' || 
+                    errorCode === 'FAILED_PRECONDITION' ||
+                    errorMessage?.includes('NOT_FOUND') || 
+                    errorMessage?.includes('index') ||
+                    errorMessage?.includes('no index') ||
+                    errorMessage?.includes('index not found') ||
+                    errorMessage?.includes('FAILED_PRECONDITION')) {
+                    logger.info('Payroll requests index not found, trying without orderBy', {
+                        pharmacyUid,
+                        error: errorMessage,
+                        code: errorCode
+                    });
+                    
+                    try {
+                        snapshot = await baseQuery.limit(limit).get();
+                        const requests = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            requests.push({
+                                id: doc.id,
+                                ...data,
+                                createdAt: data.createdAt?.toDate?.() || data.createdAt,
+                                updatedAt: data.updatedAt?.toDate?.() || data.updatedAt
+                            });
+                        });
+                        
+                        requests.sort((a, b) => {
+                            const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+                            const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+                            return bDate - aDate;
+                        });
+                        
+                        return {
+                            success: true,
+                            requests: requests.slice(0, limit),
+                            count: requests.length
+                        };
+                    } catch (fallbackError) {
+                        logger.info('Payroll requests collection may not exist yet, returning empty array', {
+                            pharmacyUid,
+                            error: String(fallbackError.message || fallbackError)
+                        });
+                        return {
+                            success: true,
+                            requests: [],
+                            count: 0
+                        };
+                    }
+                }
+                throw queryError;
+            }
+
             const requests = [];
 
             snapshot.forEach(doc => {
@@ -471,10 +529,21 @@ const getPayrollRequests = onCall(
             };
 
         } catch (error) {
-            if (error.code === 5 || error.message?.includes('NOT_FOUND') || error.message?.includes('index')) {
+            const errorCode = error.code || error.status || String(error.message || error).match(/code:\s*(\d+)/)?.[1];
+            const errorMessage = String(error.message || error);
+            
+            if (errorCode === 5 || 
+                errorCode === 'NOT_FOUND' || 
+                errorCode === 'FAILED_PRECONDITION' ||
+                errorMessage?.includes('NOT_FOUND') || 
+                errorMessage?.includes('index') ||
+                errorMessage?.includes('no index') ||
+                errorMessage?.includes('index not found') ||
+                errorMessage?.includes('FAILED_PRECONDITION')) {
                 logger.info('Payroll requests collection or index not found yet, returning empty array', {
                     pharmacyUid,
-                    error: error.message
+                    error: errorMessage,
+                    code: errorCode
                 });
                 return {
                     success: true,
@@ -483,8 +552,12 @@ const getPayrollRequests = onCall(
                 };
             }
             
-            logger.error('Failed to get payroll requests', { error: error.message, code: error.code });
-            throw new HttpsError('internal', error.message);
+            logger.error('Failed to get payroll requests', { 
+                error: errorMessage, 
+                code: errorCode,
+                stack: error.stack 
+            });
+            throw new HttpsError('internal', `Failed to fetch payroll requests: ${errorMessage}`);
         }
     }
 );

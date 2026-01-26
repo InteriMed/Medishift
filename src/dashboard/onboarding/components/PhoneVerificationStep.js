@@ -922,20 +922,21 @@ const PhoneVerificationStep = forwardRef(({
         }
     };
 
-    // Unified reCAPTCHA container management to prevent flickering
+    const iconColor = 'var(--color-logo-1)';
+    
     return (
-        <div className="space-y-8 py-4">
+        <div className="space-y-6">
             {internalStep === 1 ? (
-                <div className="max-w-md mx-auto">
-                    <header className="text-center mb-10">
-                        <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                            <FiMessageSquare className="w-8 h-8" />
+                <div className="space-y-6">
+                    <div className="text-center space-y-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-sm onboarding-icon-no-transition" style={{ backgroundColor: iconColor, transition: 'none', WebkitTransition: 'none', MozTransition: 'none', OTransition: 'none', transitionProperty: 'none', transitionDuration: '0s', transitionDelay: '0s' }}>
+                            <FiMessageSquare className="w-6 h-6" style={{ transition: 'none' }} />
                         </div>
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Mobile Verification</h2>
-                        <p className="text-slate-500 text-base mt-2">Enter your phone number to receive a secure identity code.</p>
-                    </header>
+                        <h2 className="text-2xl font-bold">Mobile Verification</h2>
+                        <p className="text-muted-foreground text-sm max-w-md mx-auto">Enter your phone number to receive a secure identity code.</p>
+                    </div>
 
-                    <div className="flex gap-4 items-end bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-inner">
+                    <div className="flex gap-4 items-end">
                         <div className="w-1/2 text-left">
                             <SimpleDropdown
                                 label={t('dashboardProfile:personalDetails.phonePrefix', 'Prefix')}
@@ -956,48 +957,45 @@ const PhoneVerificationStep = forwardRef(({
                             />
                         </div>
                     </div>
-
                 </div>
             ) : internalStep === 2 ? (
-                <div className="max-w-md mx-auto">
-                    <header className="text-center mb-10">
-                        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                            <FiCheck className="w-8 h-8" />
+                <div className="space-y-6">
+                    <div className="text-center space-y-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-sm onboarding-icon-no-transition" style={{ backgroundColor: iconColor, transition: 'none', WebkitTransition: 'none', MozTransition: 'none', OTransition: 'none', transitionProperty: 'none', transitionDuration: '0s', transitionDelay: '0s' }}>
+                            <FiCheck className="w-6 h-6" style={{ transition: 'none' }} />
                         </div>
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Secured Code</h2>
-                        <p className="text-slate-500 text-base mt-2">We sent a verification code to {phonePrefix} {phoneNumber}.</p>
-                    </header>
+                        <h2 className="text-2xl font-bold">Secured Code</h2>
+                        <p className="text-muted-foreground text-sm max-w-md mx-auto">We sent a verification code to {phonePrefix} {phoneNumber}.</p>
+                    </div>
 
                     <div className="space-y-6">
-                        <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 shadow-inner">
-                            <PersonnalizedInputField
-                                label={t('auth.verificationCode', 'Verification Code')}
-                                value={verificationCode}
-                                onChange={(e) => setVerificationCode(e.target.value)}
-                                placeholder="······"
-                                maxLength={6}
-                                required
-                                className="text-center text-4xl tracking-widest font-black text-indigo-600 bg-transparent"
-                            />
-                        </div>
+                        <PersonnalizedInputField
+                            label={t('auth.verificationCode', 'Verification Code')}
+                            value={verificationCode}
+                            onChange={(e) => setVerificationCode(e.target.value)}
+                            placeholder="······"
+                            maxLength={6}
+                            required
+                            className="text-center text-4xl tracking-widest font-black"
+                        />
 
                         <div className="flex flex-col items-center gap-4">
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={handleSendCode}
                                     disabled={isLoading || countdown > 0}
-                                    className={`flex items-center gap-2 text-sm font-bold transition-all ${countdown > 0 ? 'text-slate-400 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-700'}`}
+                                    className={`flex items-center gap-2 text-sm font-bold transition-all ${countdown > 0 ? 'text-muted-foreground cursor-not-allowed' : 'text-primary hover:text-primary/80'}`}
                                 >
                                     <FiRefreshCw className={`${isLoading ? 'animate-spin' : ''} ${countdown > 0 ? '' : 'hover:rotate-180 transition-transform duration-500'}`} />
                                     {countdown > 0 ? `Resend in ${countdown}s` : `Send code again`}
                                 </button>
-                                <span className="text-slate-200">|</span>
+                                <span className="text-muted-foreground">|</span>
                                 <button
                                     onClick={() => {
                                         setInternalStep(1);
                                         onStepChange(1);
                                     }}
-                                    className="text-sm font-bold text-slate-500 hover:text-slate-800"
+                                    className="text-sm font-bold text-muted-foreground hover:text-foreground"
                                 >
                                     Change number
                                 </button>
@@ -1006,17 +1004,17 @@ const PhoneVerificationStep = forwardRef(({
                     </div>
                 </div>
             ) : (
-                <div className="animate-in fade-in zoom-in-95 duration-500 max-w-md mx-auto">
-                    <header className="text-center mb-10">
-                        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                            <FiCheck className="w-8 h-8" />
+                <div className="space-y-6">
+                    <div className="text-center space-y-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-sm onboarding-icon-no-transition" style={{ backgroundColor: iconColor, transition: 'none', WebkitTransition: 'none', MozTransition: 'none', OTransition: 'none', transitionProperty: 'none', transitionDuration: '0s', transitionDelay: '0s' }}>
+                            <FiCheck className="w-6 h-6" style={{ transition: 'none' }} />
                         </div>
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Phone Verified</h2>
-                        <p className="text-slate-500 text-base mt-2">Your phone number {phonePrefix} {phoneNumber} has been successfully verified.</p>
-                    </header>
+                        <h2 className="text-2xl font-bold">Phone Verified</h2>
+                        <p className="text-muted-foreground text-sm max-w-md mx-auto">Your phone number {phonePrefix} {phoneNumber} has been successfully verified.</p>
+                    </div>
 
-                    <div className="bg-green-50 p-8 rounded-3xl border border-green-200 shadow-inner text-center">
-                        <div className="flex items-center justify-center gap-3 text-green-700">
+                    <div className="bg-muted/50 p-6 rounded-xl border border-border text-center">
+                        <div className="flex items-center justify-center gap-3 text-foreground">
                             <FiCheck className="w-6 h-6" />
                             <span className="text-lg font-bold">Verification Complete</span>
                         </div>

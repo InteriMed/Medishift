@@ -35,8 +35,6 @@ function Signup() {
   // State management
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -208,10 +206,8 @@ function Signup() {
 
         // Create user document in Firestore with onboarding flags
         const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, user.uid);
-        const displayName = [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email.split('@')[0];
+        const displayName = formData.email.split('@')[0];
         const userData = {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
           email: formData.email,
           displayName: displayName,
           createdAt: serverTimestamp(),
@@ -266,15 +262,13 @@ function Signup() {
 
         // Proceed with account creation after email verification
         const user = temporaryUser; // Use the temporarily stored user
-        const displayName = [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email.split('@')[0];
+        const displayName = formData.email.split('@')[0];
         await updateProfile(user, {
           displayName: displayName
         });
 
         // Create user document in Firestore
         await setDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, user.uid), {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           displayName: displayName,
@@ -348,7 +342,7 @@ function Signup() {
 
         const user = userCredential.user;
 
-        const displayName = [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email.split('@')[0];
+        const displayName = formData.email.split('@')[0];
         await updateProfile(user, {
           displayName: displayName
         });
@@ -356,8 +350,6 @@ function Signup() {
         await linkWithCredential(user, phoneCredential);
 
         await setDoc(doc(db, 'users', user.uid), {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           displayName: displayName,
@@ -469,7 +461,7 @@ function Signup() {
       const user = userCredential.user;
 
       // Update the user's display name
-      const displayName = [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email.split('@')[0];
+      const displayName = formData.email.split('@')[0];
       await updateProfile(user, {
         displayName: displayName
       });
@@ -634,29 +626,6 @@ function Signup() {
             <p className="auth-subtitle">{t('auth.signup.subtitle')}</p>
 
             <form className="auth-form" onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-              <div className="form-row">
-                <div className="form-group">
-                  <InputField
-                    label={t('auth.signup.firstName')}
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    placeholder={t('auth.signup.firstNamePlaceholder')}
-                    error={errors.firstName}
-                  />
-                </div>
-                <div className="form-group">
-                  <InputField
-                    label={t('auth.signup.lastName')}
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    placeholder={t('auth.signup.lastNamePlaceholder')}
-                    error={errors.lastName}
-                  />
-                </div>
-              </div>
-
               <div className="form-group">
                 <InputField
                   label={t('auth.signup.email') + ' *'}
@@ -920,7 +889,7 @@ function Signup() {
             <h1 className="auth-title">{t('auth.signup.accountCreated')}</h1>
             <p className="auth-subtitle">
               {t('auth.signup.welcomeMessage')}
-              {formData.firstName || formData.email.split('@')[0]}!
+              {formData.email.split('@')[0]}!
             </p>
 
             <div className="auth-form">

@@ -71,6 +71,7 @@ exports.companySearchAPI = bagAdminFunctions.companySearchAPI;
 exports.companyDetailsAPI = bagAdminFunctions.companyDetailsAPI;
 exports.verifyProfileAPI = bagAdminFunctions.verifyProfileAPI;
 exports.gesRegAPI = bagAdminFunctions.gesRegAPI;
+exports.commercialRegistrySearchAPI = bagAdminFunctions.commercialRegistrySearchAPI;
 
 // DOCUMENT PROCESSING - Export from api/processDocument.js
 exports.processDocument = documentProcessing.processDocument;

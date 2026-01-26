@@ -25,7 +25,7 @@ import { cn } from '../../../../../utils/cn';
 
 // Tailwind styles
 const styles = {
-   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+   sectionContainer: "flex flex-col gap-6 p-0 w-full max-w-[1400px] mx-auto",
    headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex flex-col professional-background-header",
    sectionTitle: "text-2xl font-semibold mb-0",
    sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
@@ -795,8 +795,7 @@ const ProfessionalBackground = ({
             }
          `}</style>
          {/* Dynamically render each section based on config items */}
-         <div className="professional-background-container w-full max-w-[1400px] mx-auto">
-            <div className={styles.sectionsWrapper}>
+         <div className={styles.sectionsWrapper}>
                <div className={styles.leftColumn}>
                   {Object.keys(sectionConfig).filter(sectionKey => sectionKey === 'education' || sectionKey === 'qualifications').map(sectionKey => renderListSection(sectionKey))}
                </div>
@@ -829,7 +828,6 @@ const ProfessionalBackground = ({
                   </div>
                </div>
             </div>
-         </div>
 
          {renderDialog()}
       </div>

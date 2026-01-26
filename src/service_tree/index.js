@@ -1,4 +1,9 @@
-export { actions, categories } from './actionIndex';
+export { 
+  actions, 
+  categories, 
+  getActionsByWorkspace, 
+  getActionParameters 
+} from './actionIndex';
 export { 
   searchActions, 
   getActionsByCategory, 

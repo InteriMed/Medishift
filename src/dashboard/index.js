@@ -10,6 +10,7 @@ import ProtectedRoute from './admin/components/ProtectedRoute';
 import AdminLayout from './admin/components/AdminLayout';
 import { WORKSPACE_TYPES } from '../utils/sessionAuth';
 import { WorkspaceDefaultRedirect } from './components/WorkspaceAwareNavigate';
+import { buildDashboardUrl } from './utils/pathUtils';
 import {
   SHARED_ROUTES,
   PROFESSIONAL_ROUTES,
@@ -64,12 +65,13 @@ const Dashboard = () => {
                       userData={userData}
                     />
                   ) : (
-                    <WorkspaceDefaultRedirect />
+                    // WorkspaceDefaultRedirect removed as it causes automatic rerouting
+                    null
                   )
                 } />
 
                 {/* Shared routes */}
-                {SHARED_ROUTES.filter(r => !(isAdminWorkspace && r.id === 'profile')).map(route => (
+                {SHARED_ROUTES.map(route => (
                   <Route
                     key={route.id}
                     path={route.path}
@@ -128,7 +130,6 @@ const Dashboard = () => {
                   />
                 ))}
 
-                {/* Catch-all for unknown paths */}
                 <Route path="*" element={
                   isWaitingForAdminWorkspace ? (
                     <LoadingSpinner />

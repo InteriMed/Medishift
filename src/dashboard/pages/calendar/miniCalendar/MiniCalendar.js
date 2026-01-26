@@ -30,6 +30,20 @@ const MiniCalendar = ({
         background-color: var(--color-logo-2) !important;
         color: white !important;
       }
+      @keyframes slideDownFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-8px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      .minicalendar-dropdown {
+        animation: slideDownFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: top;
+      }
     `;
     document.head.appendChild(style);
     return () => {
@@ -230,13 +244,18 @@ const MiniCalendar = ({
             ref={monthDropdownRef}>
             <span className="capitalize">{formatMonth()}</span>
             {showMonthDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-36 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-30 py-1">
+              <div className="minicalendar-dropdown absolute top-full left-0 mt-1 w-36 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto z-30 py-1" style={{ borderColor: '#e2e8f0' }}>
                 {monthOptions.map(m => (
-                  <div key={m.value} className={cn("px-3 py-2 hover:bg-muted cursor-pointer flex justify-between items-center", calendarDate.getMonth() === m.value && "bg-primary/10 text-primary")}
-                    style={{ fontSize: 'var(--font-size-medium)', fontWeight: calendarDate.getMonth() === m.value ? 'var(--font-weight-medium)' : 'var(--font-weight-normal)' }}
+                  <div key={m.value} className={cn("px-3 py-2 cursor-pointer flex justify-between items-center transition-all", calendarDate.getMonth() === m.value ? "bg-[var(--color-logo-1-light)] text-[var(--color-logo-1)]" : "hover:bg-[var(--grey-1)]")}
+                    style={{ 
+                      fontSize: 'var(--font-size-small)', 
+                      fontFamily: 'var(--font-family-text)',
+                      fontWeight: calendarDate.getMonth() === m.value ? 'var(--font-weight-medium)' : 'var(--font-weight-normal)',
+                      color: calendarDate.getMonth() === m.value ? 'var(--color-logo-1)' : 'var(--text-color)'
+                    }}
                     onClick={(e) => { e.stopPropagation(); handleMonthChange(m.value); }}>
-                    {m.label}
-                    {calendarDate.getMonth() === m.value && <FiCheck size={14} />}
+                    <span>{m.label}</span>
+                    {calendarDate.getMonth() === m.value && <span style={{ color: 'var(--color-logo-1)', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-small)' }}>✓</span>}
                   </div>
                 ))}
               </div>
@@ -247,13 +266,18 @@ const MiniCalendar = ({
             ref={yearDropdownRef}>
             <span>{formatYear()}</span>
             {showYearDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-24 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-30 py-1">
+              <div className="minicalendar-dropdown absolute top-full left-0 mt-1 w-24 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto z-30 py-1" style={{ borderColor: '#e2e8f0' }}>
                 {yearOptions.map(y => (
-                  <div key={y.value} className={cn("px-3 py-2 hover:bg-muted cursor-pointer flex justify-between items-center", calendarDate.getFullYear() === y.value && "bg-primary/10 text-primary")}
-                    style={{ fontSize: 'var(--font-size-medium)', fontWeight: calendarDate.getFullYear() === y.value ? 'var(--font-weight-medium)' : 'var(--font-weight-normal)' }}
+                  <div key={y.value} className={cn("px-3 py-2 cursor-pointer flex justify-between items-center transition-all", calendarDate.getFullYear() === y.value ? "bg-[var(--color-logo-1-light)] text-[var(--color-logo-1)]" : "hover:bg-[var(--grey-1)]")}
+                    style={{ 
+                      fontSize: 'var(--font-size-small)', 
+                      fontFamily: 'var(--font-family-text)',
+                      fontWeight: calendarDate.getFullYear() === y.value ? 'var(--font-weight-medium)' : 'var(--font-weight-normal)',
+                      color: calendarDate.getFullYear() === y.value ? 'var(--color-logo-1)' : 'var(--text-color)'
+                    }}
                     onClick={(e) => { e.stopPropagation(); handleYearChange(y.value); }}>
-                    {y.label}
-                    {calendarDate.getFullYear() === y.value && <FiCheck size={14} />}
+                    <span>{y.label}</span>
+                    {calendarDate.getFullYear() === y.value && <span style={{ color: 'var(--color-logo-1)', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-small)' }}>✓</span>}
                   </div>
                 ))}
               </div>
@@ -297,7 +321,7 @@ const MiniCalendar = ({
               key={index}
               onClick={() => handleDayClick(date)}
               className={cn(
-                "relative flex items-center justify-center cursor-pointer transition-all h-7",
+                "relative flex items-center justify-center cursor-pointer h-7",
                 // Width: Highlighted items fill the cell
                 isHighlight ? "w-full" : "w-7 mx-auto rounded-lg",
                 // Rounding

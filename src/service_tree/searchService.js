@@ -59,7 +59,7 @@ const resolveCategoryLabel = (categoryId, lang) => {
 };
 
 export const searchActions = (query, lang = 'en', options = {}) => {
-  const { limit = 10, category = null, minScore = 5 } = options;
+  const { limit = 10, category = null, minScore = 5, workspace = null } = options;
 
   if (!query || query.trim().length < 2) {
     return [];
@@ -75,8 +75,15 @@ export const searchActions = (query, lang = 'en', options = {}) => {
   }
 
   let filteredActions = actions;
+  
+  if (workspace) {
+    filteredActions = filteredActions.filter(action => 
+      !action.workspace || action.workspace.includes(workspace)
+    );
+  }
+  
   if (category) {
-    filteredActions = actions.filter(action => action.category === category);
+    filteredActions = filteredActions.filter(action => action.category === category);
   }
 
   const results = filteredActions
@@ -100,10 +107,16 @@ export const searchActions = (query, lang = 'en', options = {}) => {
   return results;
 };
 
-export const getActionsByCategory = (lang = 'en', categoryId = null) => {
-  const categoryActions = categoryId 
+export const getActionsByCategory = (lang = 'en', categoryId = null, workspace = null) => {
+  let categoryActions = categoryId 
     ? actions.filter(action => action.category === categoryId)
     : actions;
+  
+  if (workspace) {
+    categoryActions = categoryActions.filter(action => 
+      !action.workspace || action.workspace.includes(workspace)
+    );
+  }
 
   return categoryActions.map(action => ({
     ...action,
@@ -136,23 +149,30 @@ export const getActionById = (actionId, lang = 'en') => {
 };
 
 export const getSuggestedActions = (lang = 'en', context = {}) => {
-  const { route, recentActions = [] } = context;
+  const { route, recentActions = [], workspace = null } = context;
   
   let suggestions = [];
+  let filteredActions = actions;
+  
+  if (workspace) {
+    filteredActions = filteredActions.filter(action => 
+      !action.workspace || action.workspace.includes(workspace)
+    );
+  }
 
   if (route) {
-    suggestions = actions
+    suggestions = filteredActions
       .filter(action => action.route && route.startsWith(action.route.split('/').slice(0, 3).join('/')))
       .slice(0, 5);
   }
 
   if (suggestions.length < 5 && recentActions.length > 0) {
     const recentCategories = [...new Set(recentActions.map(id => {
-      const action = actions.find(a => a.id === id);
+      const action = filteredActions.find(a => a.id === id);
       return action?.category;
     }).filter(Boolean))];
 
-    const relatedActions = actions
+    const relatedActions = filteredActions
       .filter(action => 
         recentCategories.includes(action.category) && 
         !recentActions.includes(action.id) &&

@@ -14,7 +14,7 @@ import useAutoSave from '../../../../hooks/useAutoSave';
 
 // Tailwind styles (copied from PersonalDetails.js to ensure consistency)
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
+  sectionContainer: "flex flex-col gap-6 p-0 w-full max-w-[1400px] mx-auto",
   headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex items-center",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
@@ -27,14 +27,14 @@ const styles = {
   sectionsWrapper: "facility-details-sections-wrapper w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
-  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full",
-  cardHeader: "flex items-center gap-4 mb-0",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative",
+  cardHeader: "flex items-center gap-3 mb-5 pb-4 border-b border-border/40",
+  cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
-  cardTitle: "flex-1",
-  cardTitleH3: "m-0",
+  cardTitle: "flex-1 min-w-0",
+  cardTitleH3: "m-0 text-base font-semibold truncate",
   cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "grid grid-cols-1 gap-6",
+  grid: "grid grid-cols-1 md:grid-cols-2 gap-6",
   fieldWrapper: "space-y-2",
   fullWidth: "md:col-span-2",
   formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto"
@@ -265,13 +265,13 @@ const FacilityDetails = ({
 
   const getGroupIcon = (groupKey) => {
     switch (groupKey) {
-      case 'general': return <FiHome />;
-      case 'address': return <FiMapPin />;
-      case 'legal': return <FiBriefcase />;
-      case 'legalRep': return <FiUser />;
-      case 'billing': return <FiFileText />;
-      case 'bankingFacility': return <FiCreditCard />;
-      default: return <FiInfo />;
+      case 'general': return <FiHome className="w-4 h-4" style={styles.cardIconStyle} />;
+      case 'address': return <FiMapPin className="w-4 h-4" style={styles.cardIconStyle} />;
+      case 'legal': return <FiBriefcase className="w-4 h-4" style={styles.cardIconStyle} />;
+      case 'legalRep': return <FiUser className="w-4 h-4" style={styles.cardIconStyle} />;
+      case 'billing': return <FiFileText className="w-4 h-4" style={styles.cardIconStyle} />;
+      case 'bankingFacility': return <FiCreditCard className="w-4 h-4" style={styles.cardIconStyle} />;
+      default: return <FiInfo className="w-4 h-4" style={styles.cardIconStyle} />;
     }
   };
 
@@ -287,10 +287,6 @@ const FacilityDetails = ({
   return (
     <>
       <style>{`
-        .facility-details-container {
-          container-type: inline-size;
-        }
-
         .facility-details-sections-wrapper {
           container-type: inline-size;
           display: grid;
@@ -304,46 +300,24 @@ const FacilityDetails = ({
           }
         }
       `}</style>
-      <div className={`${styles.sectionContainer} facility-details-container`}>
+      <div className={styles.sectionContainer}>
         <div className={styles.sectionsWrapper}>
-          {/* Logic to split groups into columns - simplistic approach: odd/even or specific groups */}
-          <div className={styles.leftColumn}>
-            {groupedFields.filter((_, i) => i % 2 === 0).map((group) => (
-              <div key={group.key} className={styles.sectionCard}>
-                <div className={styles.grid}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}>
-                      {getGroupIcon(group.key)}
-                    </div>
-                    <div className={styles.cardTitle}>
-                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{getGroupTitle(group.key)}</h3>
-                    </div>
-                  </div>
-                  {group.fields.map(field => renderField(field))}
+          {groupedFields.map((group) => (
+            <div key={group.key} className={styles.sectionCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardIconWrapper}>
+                  {getGroupIcon(group.key)}
+                </div>
+                <div className={styles.cardTitle}>
+                  <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{getGroupTitle(group.key)}</h3>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className={styles.rightColumn}>
-            {groupedFields.filter((_, i) => i % 2 !== 0).map((group) => (
-              <div key={group.key} className={styles.sectionCard}>
-                <div className={styles.grid}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}>
-                      {getGroupIcon(group.key)}
-                    </div>
-                    <div className={styles.cardTitle}>
-                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{getGroupTitle(group.key)}</h3>
-                    </div>
-                  </div>
-                  {group.fields.map(field => renderField(field))}
-                </div>
+              <div className={styles.grid}>
+                {group.fields.map(field => renderField(field))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-
       </div>
     </>
   );

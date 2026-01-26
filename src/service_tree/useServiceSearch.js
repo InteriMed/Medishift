@@ -13,6 +13,7 @@ export const useServiceSearch = (options = {}) => {
   const { i18n } = useTranslation();
   const lang = i18n.language?.substring(0, 2) || 'en';
   const navigate = useNavigate();
+  const workspace = options.workspace || null;
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [recentActions, setRecentActions] = useState(() => {
@@ -29,9 +30,10 @@ export const useServiceSearch = (options = {}) => {
     if (!query || query.length < 2) return [];
     return searchActions(query, lang, { 
       ...options, 
-      category: selectedCategory 
+      category: selectedCategory,
+      workspace: workspace
     });
-  }, [query, lang, selectedCategory, options]);
+  }, [query, lang, selectedCategory, workspace, options]);
 
   const categories = useMemo(() => getCategories(lang), [lang]);
 
@@ -39,13 +41,14 @@ export const useServiceSearch = (options = {}) => {
     if (query.length >= 2) return [];
     return getSuggestedActions(lang, { 
       route: window.location.pathname,
-      recentActions 
+      recentActions,
+      workspace: workspace
     });
-  }, [lang, recentActions, query]);
+  }, [lang, recentActions, query, workspace]);
 
   const allActions = useMemo(() => {
-    return getActionsByCategory(lang, selectedCategory);
-  }, [lang, selectedCategory]);
+    return getActionsByCategory(lang, selectedCategory, workspace);
+  }, [lang, selectedCategory, workspace]);
 
   const executeAction = useCallback((action) => {
     const updatedRecent = [
@@ -57,7 +60,33 @@ export const useServiceSearch = (options = {}) => {
     localStorage.setItem('recentServiceActions', JSON.stringify(updatedRecent));
 
     if (action.route) {
-      navigate(action.route);
+      const routeWithQuery = action.route.includes('?') 
+        ? action.route 
+        : action.route;
+      
+      navigate(routeWithQuery);
+      
+      if (routeWithQuery.includes('?modal=') || routeWithQuery.includes('?action=')) {
+        setTimeout(() => {
+          const url = new URL(window.location.href);
+          const modalParam = url.searchParams.get('modal');
+          const actionParam = url.searchParams.get('action');
+          
+          if (modalParam === 'upload') {
+            const event = new CustomEvent('openModal', { 
+              detail: { type: 'policyUpload' } 
+            });
+            window.dispatchEvent(event);
+          }
+          
+          if (actionParam === 'create') {
+            const event = new CustomEvent('openModal', { 
+              detail: { type: 'createEvent' } 
+            });
+            window.dispatchEvent(event);
+          }
+        }, 100);
+      }
     }
 
     return action;

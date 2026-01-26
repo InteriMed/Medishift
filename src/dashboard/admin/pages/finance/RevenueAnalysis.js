@@ -186,55 +186,29 @@ const RevenueAnalysis = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
-        <div style={{ color: 'var(--text-light-color)', fontSize: 'var(--font-size-medium)' }}>{t('admin:finance.loadingRevenue', 'Loading revenue data...')}</div>
+      <div className="flex items-center justify-center h-96">
+        <div className="text-muted-foreground text-sm">{t('admin:finance.loadingRevenue', 'Loading revenue data...')}</div>
       </div>
     );
   }
 
   return (
     <ProtectedRoute requiredPermission={PERMISSIONS.VIEW_FINANCE}>
-      <div style={{ padding: 'var(--spacing-xl)', maxWidth: '1400px', margin: '0 auto' }}>
-        <div style={{ marginBottom: 'var(--spacing-xl)' }}>
-          <h1 style={{ 
-            fontSize: 'var(--font-size-xxxlarge)', 
-            fontWeight: 'var(--font-weight-large)', 
-            color: 'var(--text-color)', 
-            marginBottom: 0,
-            letterSpacing: '-0.5px'
-          }}>
+      <div className="p-6 max-w-[1400px] mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-foreground mb-0">
             {t('admin:finance.revenue.title', 'Revenue & Margin Analysis')}
           </h1>
         </div>
 
-        <div style={{ 
-          backgroundColor: 'var(--background-div-color)', 
-          borderRadius: 'var(--border-radius-md)', 
-          padding: 'var(--spacing-lg)', 
-          boxShadow: 'var(--shadow-sm)',
-          border: '1px solid var(--grey-2)',
-          marginBottom: 'var(--spacing-xl)'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 'var(--spacing-md)',
-            marginBottom: 'var(--spacing-md)'
-          }}>
-            <Calendar style={{ color: 'var(--primary-color)' }} size={20} />
-            <h3 style={{ 
-              fontSize: 'var(--font-size-medium)', 
-              fontWeight: 'var(--font-weight-medium)', 
-              color: 'var(--text-color)' 
-            }}>
+        <div className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Calendar className="text-primary" size={20} />
+            <h3 className="text-sm font-medium text-foreground">
               {t('admin:finance.period', 'Period')}
             </h3>
           </div>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-            gap: 'var(--spacing-lg)'
-          }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <DateField
               label={t('admin:finance.from', 'From')}
               value={dateFrom}
@@ -250,179 +224,55 @@ const RevenueAnalysis = () => {
           </div>
         </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-          gap: 'var(--spacing-lg)',
-          marginBottom: 'var(--spacing-xl)'
-        }}>
-          <div style={{ 
-            backgroundColor: 'var(--background-div-color)', 
-            borderRadius: 'var(--border-radius-md)', 
-            padding: 'var(--spacing-xl)', 
-            boxShadow: 'var(--shadow-sm)',
-            border: '1px solid var(--grey-2)',
-            transition: 'var(--transition-normal)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ 
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: '100px',
-              height: '100px',
-              background: 'linear-gradient(135deg, rgba(63, 139, 27, 0.15), transparent)',
-              borderRadius: '0 0 0 100px'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)', position: 'relative', zIndex: 1 }}>
-              <div style={{ 
-                backgroundColor: 'var(--green-1)', 
-                borderRadius: 'var(--border-radius-sm)', 
-                padding: 'var(--spacing-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <DollarSign style={{ color: 'var(--green-4)' }} size={20} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          <div className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-100/50 to-transparent rounded-bl-full" />
+            <div className="flex items-center gap-4 mb-4 relative z-10">
+              <div className="p-2 bg-green-50 rounded-lg flex items-center justify-center">
+                <DollarSign className="text-green-600" size={20} />
               </div>
-              <h3 style={{ 
-                fontSize: 'var(--font-size-small)', 
-                fontWeight: 'var(--font-weight-medium)', 
-                color: 'var(--text-light-color)',
-                margin: 0
-              }}>
+              <h3 className="text-xs font-medium text-muted-foreground m-0">
                 {t('admin:finance.revenue.totalCommissions', 'Total Commissions')}
               </h3>
             </div>
-            <p style={{ 
-              fontSize: 'var(--font-size-xxxlarge)', 
-              fontWeight: 'var(--font-weight-large)',
-              color: 'var(--text-color)',
-              margin: 0,
-              position: 'relative',
-              zIndex: 1
-            }}>
+            <p className="text-3xl font-semibold text-foreground m-0 relative z-10">
               CHF {metrics.totalCommissions.toLocaleString('de-CH')}
             </p>
           </div>
 
-          <div style={{ 
-            backgroundColor: 'var(--background-div-color)', 
-            borderRadius: 'var(--border-radius-md)', 
-            padding: 'var(--spacing-xl)', 
-            boxShadow: 'var(--shadow-sm)',
-            border: '1px solid var(--grey-2)',
-            transition: 'var(--transition-normal)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ 
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: '100px',
-              height: '100px',
-              background: 'linear-gradient(135deg, rgba(0, 40, 77, 0.15), transparent)',
-              borderRadius: '0 0 0 100px'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)', position: 'relative', zIndex: 1 }}>
-              <div style={{ 
-                backgroundColor: 'var(--blue-1)', 
-                borderRadius: 'var(--border-radius-sm)', 
-                padding: 'var(--spacing-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <TrendingUp style={{ color: 'var(--blue-4)' }} size={20} />
+          <div className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100/50 to-transparent rounded-bl-full" />
+            <div className="flex items-center gap-4 mb-4 relative z-10">
+              <div className="p-2 bg-blue-50 rounded-lg flex items-center justify-center">
+                <TrendingUp className="text-blue-600" size={20} />
               </div>
-              <h3 style={{ 
-                fontSize: 'var(--font-size-small)', 
-                fontWeight: 'var(--font-weight-medium)', 
-                color: 'var(--text-light-color)',
-                margin: 0
-              }}>
+              <h3 className="text-xs font-medium text-muted-foreground m-0">
                 {t('admin:finance.revenue.saasMRR', 'SaaS MRR')}
               </h3>
             </div>
-            <p style={{ 
-              fontSize: 'var(--font-size-xxxlarge)', 
-              fontWeight: 'var(--font-weight-large)',
-              color: 'var(--text-color)',
-              margin: 0,
-              position: 'relative',
-              zIndex: 1
-            }}>
+            <p className="text-3xl font-semibold text-foreground m-0 relative z-10">
               CHF {metrics.saasMRR.toLocaleString('de-CH')}
             </p>
           </div>
 
-          <div style={{ 
-            backgroundColor: 'var(--background-div-color)', 
-            borderRadius: 'var(--border-radius-md)', 
-            padding: 'var(--spacing-xl)', 
-            boxShadow: 'var(--shadow-sm)',
-            border: '1px solid var(--grey-2)',
-            transition: 'var(--transition-normal)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ 
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: '100px',
-              height: '100px',
-              background: 'linear-gradient(135deg, rgba(151, 0, 15, 0.15), transparent)',
-              borderRadius: '0 0 0 100px'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)', position: 'relative', zIndex: 1 }}>
-              <div style={{ 
-                backgroundColor: 'var(--red-1)', 
-                borderRadius: 'var(--border-radius-sm)', 
-                padding: 'var(--spacing-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Percent style={{ color: 'var(--red-4)' }} size={20} />
+          <div className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-100/50 to-transparent rounded-bl-full" />
+            <div className="flex items-center gap-4 mb-4 relative z-10">
+              <div className="p-2 bg-red-50 rounded-lg flex items-center justify-center">
+                <Percent className="text-red-600" size={20} />
               </div>
-              <h3 style={{ 
-                fontSize: 'var(--font-size-small)', 
-                fontWeight: 'var(--font-weight-medium)', 
-                color: 'var(--text-light-color)',
-                margin: 0
-              }}>
+              <h3 className="text-xs font-medium text-muted-foreground m-0">
                 {t('admin:finance.revenue.churnRate', 'Churn Rate')}
               </h3>
             </div>
-            <p style={{ 
-              fontSize: 'var(--font-size-xxxlarge)', 
-              fontWeight: 'var(--font-weight-large)',
-              color: 'var(--text-color)',
-              margin: 0,
-              position: 'relative',
-              zIndex: 1
-            }}>
+            <p className="text-3xl font-semibold text-foreground m-0 relative z-10">
               {metrics.churnRate.toFixed(1)}%
             </p>
           </div>
         </div>
 
-        <div style={{ 
-          backgroundColor: 'var(--background-div-color)', 
-          borderRadius: 'var(--border-radius-md)', 
-          padding: 'var(--spacing-xl)', 
-          boxShadow: 'var(--shadow-sm)',
-          border: '1px solid var(--grey-2)'
-        }}>
-          <h2 style={{ 
-            fontSize: 'var(--font-size-xlarge)', 
-            fontWeight: 'var(--font-weight-medium)', 
-            marginBottom: 'var(--spacing-lg)',
-            color: 'var(--text-color)'
-          }}>
+        <div className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow">
+          <h2 className="text-xl font-semibold mb-6 text-foreground">
             {t('admin:finance.revenue.marginByProfession', 'Margin by Profession')}
           </h2>
           {metrics.marginByProfession.length > 0 ? (
@@ -444,12 +294,7 @@ const RevenueAnalysis = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div style={{ 
-              textAlign: 'center', 
-              padding: 'var(--spacing-xxl)', 
-              color: 'var(--text-light-color)',
-              fontSize: 'var(--font-size-medium)'
-            }}>
+            <div className="text-center py-12 text-muted-foreground text-sm">
               {t('admin:finance.revenue.noData', 'No data available for this period')}
             </div>
           )}

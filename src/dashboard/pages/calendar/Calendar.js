@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CALENDAR_COLORS } from './utils/constants';
-import { getMultipleWeeks, getMultipleDays, getShortDays, isSameDay } from './utils/dateHelpers';
+import { getMultipleWeeks } from './utils/dateHelpers';
 import { getUserTypeFromData, getUserIdFromData } from './utils/userHelpers';
 import { filterEventsByCategories } from './utils/eventUtils';
 import CalendarHeader from './components/CalendarHeader';
@@ -16,7 +16,9 @@ import { useSidebar } from '../../contexts/SidebarContext';
 import { useCalendarState } from './hooks/useCalendarState';
 import { useCalendarEvents } from './utils/eventDatabase';
 import { cn } from '../../../utils/cn';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiSettings, FiPlus } from 'react-icons/fi';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
 import ResourceGrid from './components/ResourceGrid';
 import useProfileData from '../../hooks/useProfileData';
 import useCalendarStore from './hooks/useCalendarStore';
@@ -25,8 +27,10 @@ import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 import PropTypes from 'prop-types';
 
 const Calendar = ({ userData }) => {
-  const { t, i18n } = useTranslation(['dashboard', 'calendar']);
+  const { t } = useTranslation(['dashboard', 'calendar', 'dashboardProfile']);
   const { selectedWorkspace } = useDashboard();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const accountType = getUserTypeFromData(userData);
   const userId = getUserIdFromData(userData);
@@ -35,13 +39,21 @@ const Calendar = ({ userData }) => {
   const scrollContainerRef = useRef(null);
   const headerScrollRef = useRef(null);
 
-  const [calendarMode, setCalendarMode] = useState('calendar');
+  const getInitialCalendarMode = () => {
+    const mode = searchParams.get('mode');
+    return mode === 'team' ? 'team' : 'calendar';
+  };
+
+  const getInitialNightView = () => {
+    const night = searchParams.get('night');
+    return night === 'true';
+  };
+
+  const [calendarMode, setCalendarMode] = useState(getInitialCalendarMode);
   const [showMiniCalendar, setShowMiniCalendar] = useState(true);
   const [showUpcomingEvents, setShowUpcomingEvents] = useState(true);
-  const [nightView, setNightView] = useState(false);
-  const [showTopHeader, setShowTopHeader] = useState(true);
-  const [showBottomHeader, setShowBottomHeader] = useState(false);
-  const timeSlotsScrollRef = useRef(null);
+  const [nightView, setNightView] = useState(getInitialNightView);
+  const [openAddRoleModal, setOpenAddRoleModal] = useState(false);
 
   const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || !!selectedWorkspace?.facilityId;
 
@@ -86,14 +98,169 @@ const Calendar = ({ userData }) => {
   const redo = useCalendarStore(state => state.redo);
   const syncPendingChanges = useCalendarStore(state => state.syncPendingChanges);
 
-  // Calendar State Hook (kept separate effectively as UI state)
   const {
-    currentDate, setCurrentDate, view, setView,
+    currentDate, setCurrentDate, view, setView: setViewState,
     categories, setCategories, isSidebarCollapsed, setIsSidebarCollapsed,
     showHeaderDateDropdown, setShowHeaderDateDropdown, dropdownPosition,
     navigateDate, handleDayClick, handleUpcomingEventClick,
     handleCategoryToggle, handleHeaderDateClick, toggleSidebar
   } = useCalendarState();
+
+  const isUpdatingURL = useRef(false);
+  const isReadingFromURL = useRef(false);
+  const prevSearchParams = useRef(searchParams.toString());
+
+  const updateURLParams = useCallback((updates) => {
+    if (isUpdatingURL.current) return;
+    
+    isUpdatingURL.current = true;
+    const newParams = new URLSearchParams(searchParams);
+    let hasChanges = false;
+    
+    Object.entries(updates).forEach(([key, value]) => {
+      const currentValue = newParams.get(key);
+      const newValue = value === null || value === undefined || value === '' || value === false ? null : String(value);
+      
+      if (currentValue !== newValue) {
+        hasChanges = true;
+        if (newValue === null) {
+          newParams.delete(key);
+        } else {
+          newParams.set(key, newValue);
+        }
+      }
+    });
+    
+    if (hasChanges) {
+      setSearchParams(newParams, { replace: true });
+      prevSearchParams.current = newParams.toString();
+    }
+    isUpdatingURL.current = false;
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    const currentParams = searchParams.toString();
+    if (currentParams === prevSearchParams.current) return;
+    
+    prevSearchParams.current = currentParams;
+    isReadingFromURL.current = true;
+    isUpdatingURL.current = true;
+    
+    const viewParam = searchParams.get('view');
+    const modeParam = searchParams.get('mode');
+    const nightParam = searchParams.get('night');
+
+    if (viewParam && (viewParam === 'day' || viewParam === 'week') && view !== viewParam) {
+      setViewState(viewParam);
+    }
+    if (modeParam && (modeParam === 'team' || modeParam === 'calendar') && calendarMode !== modeParam) {
+      setCalendarMode(modeParam);
+    }
+    if (nightParam === 'true' && !nightView) {
+      setNightView(true);
+    } else if (nightParam !== 'true' && nightView && nightParam !== null) {
+      setNightView(false);
+    }
+    
+    isReadingFromURL.current = false;
+    isUpdatingURL.current = false;
+  }, [searchParams, view, calendarMode, nightView, setViewState]);
+
+  useEffect(() => {
+    if (!isReadingFromURL.current) {
+      updateURLParams({ view: view !== 'week' ? view : null });
+    }
+  }, [view, updateURLParams]);
+
+  useEffect(() => {
+    if (!isReadingFromURL.current) {
+      updateURLParams({ mode: calendarMode !== 'calendar' ? calendarMode : null });
+    }
+  }, [calendarMode, updateURLParams]);
+
+  useEffect(() => {
+    if (!isReadingFromURL.current) {
+      updateURLParams({ night: nightView ? 'true' : null });
+    }
+  }, [nightView, updateURLParams]);
+
+  useEffect(() => {
+    const modalParam = searchParams.get('modal');
+    const eventId = searchParams.get('eventId');
+    
+    if (modalParam === 'event' && eventId && events.length > 0) {
+      const event = events.find(e => e.id === eventId);
+      if (event && !selectedEvent) {
+        handleEventClick(event);
+      }
+    } else if (modalParam === 'addRole') {
+      if (!openAddRoleModal) {
+        setOpenAddRoleModal(true);
+      }
+    } else if (modalParam === 'filters') {
+      if (!showFiltersOverlay) {
+        setShowFiltersOverlay(true);
+      }
+    }
+  }, [searchParams, events, selectedEvent, openAddRoleModal, showFiltersOverlay, handleEventClick]);
+
+  const handlePanelCloseWithURL = useCallback(() => {
+    handlePanelClose();
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('modal');
+    newParams.delete('eventId');
+    setSearchParams(newParams, { replace: true });
+  }, [handlePanelClose, searchParams, setSearchParams]);
+
+  const handleAddRoleModalClose = useCallback(() => {
+    setOpenAddRoleModal(false);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('modal');
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const handleFiltersOverlayClose = useCallback(() => {
+    setShowFiltersOverlay(false);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('modal');
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const handleEventClickWithURL = useCallback((event) => {
+    handleEventClick(event);
+    if (event?.id) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('modal', 'event');
+      newParams.set('eventId', event.id);
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [handleEventClick, searchParams, setSearchParams]);
+
+  const handleOpenAddRoleModal = useCallback(() => {
+    setOpenAddRoleModal(true);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('modal', 'addRole');
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const handleOpenFiltersOverlay = useCallback(() => {
+    setShowFiltersOverlay(true);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('modal', 'filters');
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const setView = useCallback((newView) => {
+    setViewState(newView);
+  }, [setViewState]);
+
+  const setCalendarModeWithURL = useCallback((mode) => {
+    setCalendarMode(mode);
+  }, []);
+
+  const setNightViewWithURL = useCallback((night) => {
+    setNightView(night);
+  }, []);
 
   // Track the actual visible week for MiniCalendar highlighting
   const [visibleWeekStart, setVisibleWeekStart] = useState(() => {
@@ -162,7 +329,7 @@ const Calendar = ({ userData }) => {
 
     gridScroll.scrollTo({
       left: targetScrollLeft,
-      behavior: hasInitialScrolled.current ? 'smooth' : 'auto'
+      behavior: 'auto'
     });
 
     if (!hasInitialScrolled.current) {
@@ -245,40 +412,6 @@ const Calendar = ({ userData }) => {
     setEvents(merged);
   }, [calendarEvents, userId, setEvents]);
 
-  // Auto-scroll to 8 AM
-  useEffect(() => {
-    const timeSlots = document.querySelector('.time-slots');
-    if (timeSlots) timeSlots.scrollTop = (8 - 1) * 60;
-  }, []);
-
-  // Handle scroll for night mode header visibility
-  useEffect(() => {
-    if (!nightView) {
-      setShowTopHeader(true);
-      setShowBottomHeader(false);
-      return;
-    }
-    
-    const timeSlots = timeSlotsScrollRef.current || document.querySelector('.time-slots');
-    if (!timeSlots) return;
-
-    const handleScroll = () => {
-      const scrollTop = timeSlots.scrollTop;
-      const scrollHeight = timeSlots.scrollHeight;
-      const clientHeight = timeSlots.clientHeight;
-      const scrollBottom = scrollHeight - scrollTop - clientHeight;
-      
-      setShowTopHeader(scrollTop < 50);
-      setShowBottomHeader(scrollBottom < 50);
-    };
-
-    timeSlots.addEventListener('scroll', handleScroll);
-    handleScroll();
-    
-    return () => {
-      timeSlots.removeEventListener('scroll', handleScroll);
-    };
-  }, [nightView]);
 
   // Sync scroll headers
   useEffect(() => {
@@ -287,13 +420,6 @@ const Calendar = ({ userData }) => {
     if (!headerScroll || !gridScroll) return;
     let isSyncing = false;
 
-    const syncFromGrid = () => {
-      if (!isSyncing) {
-        isSyncing = true;
-        if (headerScroll) headerScroll.scrollLeft = gridScroll.scrollLeft;
-        requestAnimationFrame(() => { isSyncing = false; });
-      }
-    };
     const syncFromHeader = () => {
       if (!isSyncing) {
         isSyncing = true;
@@ -301,13 +427,56 @@ const Calendar = ({ userData }) => {
         requestAnimationFrame(() => { isSyncing = false; });
       }
     };
-    gridScroll.addEventListener('scroll', syncFromGrid);
+
+    const syncFromGrid = () => {
+      if (!isSyncing) {
+        isSyncing = true;
+        if (headerScroll) headerScroll.scrollLeft = gridScroll.scrollLeft;
+        requestAnimationFrame(() => { isSyncing = false; });
+      }
+    };
+
+    // Night Mode Header Visibility Logic
+    const handleScroll = () => {
+      syncFromGrid();
+
+      if (nightView) {
+        const { scrollTop, scrollHeight, clientHeight } = gridScroll;
+        const topHeader = document.querySelector('.calendar-top-header-instance');
+        const bottomHeader = document.querySelector('.calendar-bottom-header-instance');
+
+        if (topHeader && bottomHeader) {
+          // Fade out top header as we scroll down (first 300px)
+          const topVisibleOffset = 300;
+          const topOpacity = Math.max(0, 1 - (scrollTop / topVisibleOffset));
+          topHeader.style.opacity = topOpacity;
+          topHeader.style.pointerEvents = topOpacity < 0.1 ? 'none' : 'auto';
+
+          // Fade in bottom header as we scroll to the bottom
+          const bottomVisibleThreshold = scrollHeight - clientHeight - 300;
+          const bottomOpacity = scrollTop > bottomVisibleThreshold
+            ? Math.min(1, (scrollTop - bottomVisibleThreshold) / 300)
+            : 0;
+          bottomHeader.style.opacity = bottomOpacity;
+          bottomHeader.style.pointerEvents = bottomOpacity < 0.1 ? 'none' : 'auto';
+        }
+      } else {
+        // Reset opacities if not in night view
+        const topHeader = document.querySelector('.calendar-top-header-instance');
+        if (topHeader) {
+          topHeader.style.opacity = 1;
+          topHeader.style.pointerEvents = 'auto';
+        }
+      }
+    };
+
+    gridScroll.addEventListener('scroll', handleScroll);
     headerScroll.addEventListener('scroll', syncFromHeader);
     return () => {
-      gridScroll.removeEventListener('scroll', syncFromGrid);
+      gridScroll.removeEventListener('scroll', handleScroll);
       headerScroll.removeEventListener('scroll', syncFromHeader);
     };
-  }, []);
+  }, [nightView]);
 
   // Keyboard Shortcuts (Inline Adapter)
   useEffect(() => {
@@ -378,7 +547,7 @@ const Calendar = ({ userData }) => {
         start: new Date(event.start),
         end: new Date(event.end)
       };
-      
+
       useCalendarStore.getState().setOriginalEventPosition(originalEventPosition);
       useCalendarStore.getState().showMoveDialog(event, {
         start: new Date(event.start),
@@ -390,7 +559,7 @@ const Calendar = ({ userData }) => {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
+    <div className="h-full flex flex-col overflow-hidden">
       <div className={cn(
         "flex-1 flex relative min-h-0 mx-4 my-4",
         "gap-6"
@@ -449,61 +618,75 @@ const Calendar = ({ userData }) => {
                     handleCategoryToggle={handleCategoryToggle}
                     onResetCategories={handleResetCategories}
                     isTopBarMode={true}
-                    onShowFiltersOverlay={setShowFiltersOverlay}
+                    onShowFiltersOverlay={handleOpenFiltersOverlay}
                     scrollContainerRef={scrollContainerRef}
                     calendarMode={calendarMode}
-                    setCalendarMode={setCalendarMode}
+                    setCalendarMode={setCalendarModeWithURL}
                     isTeamWorkspace={isTeamWorkspace}
-                handleCreateEventClick={() => handleCreateEventClick(currentDate)}
-                showMiniCalendar={showMiniCalendar}
-                setShowMiniCalendar={setShowMiniCalendar}
-                showUpcomingEvents={showUpcomingEvents}
-                setShowUpcomingEvents={setShowUpcomingEvents}
-                nightView={nightView}
-                setNightView={setNightView}
-              />
+                    handleCreateEventClick={() => handleCreateEventClick(currentDate)}
+                    showMiniCalendar={showMiniCalendar}
+                    setShowMiniCalendar={setShowMiniCalendar}
+                    showUpcomingEvents={showUpcomingEvents}
+                    setShowUpcomingEvents={setShowUpcomingEvents}
+                    nightView={nightView}
+                    setNightView={setNightViewWithURL}
+                  />
                 </div>
 
-                  <div className="flex-1 h-full flex flex-col calendar-grid overflow-hidden">
-                  {calendarMode !== 'team' || !isTeamWorkspace ? (
-                    <div className="flex shrink-0">
-                      <div
-                        className="shrink-0 bg-background/95 backdrop-blur-sm z-10 flex items-end justify-center pb-2"
-                        style={{ width: '4rem', minHeight: '3rem' }}
-                      />
-                      <div
-                        className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                        ref={headerScrollRef}
-                      >
-                      <div className={cn(
-                        "transition-opacity duration-200",
-                        nightView && !showTopHeader ? "opacity-0 pointer-events-none" : "opacity-100"
-                      )}>
-                        <TimeHeaders
-                          currentDate={currentDate}
-                          referenceDate={currentDate}
-                          view={view}
-                          handleDayClick={handleDayClick}
-                          scrollContainerRef={headerScrollRef}
-                          numWeeks={numWeeks}
-                          numDays={numDays}
-                          setView={setView}
-                          onEventDropOnDay={handleEventDropOnDay}
-                          nightView={nightView}
-                        />
-                      </div>
-                      </div>
+                <div className="flex-1 h-full flex flex-col calendar-grid overflow-hidden">
+                  <div className={cn(
+                    "flex shrink-0 calendar-top-header-instance",
+                    nightView && "sticky top-0 z-[30]"
+                  )}>
+                    <div
+                      className={cn(
+                        "shrink-0 bg-background/95 backdrop-blur-sm z-10 flex items-center justify-center",
+                        calendarMode === 'team' && isTeamWorkspace && "border-r border-b border-border"
+                      )}
+                      style={{ width: calendarMode === 'team' && isTeamWorkspace ? '14rem' : '4rem', minHeight: '3rem' }}
+                    >
+                      {calendarMode === 'team' && isTeamWorkspace && (
+                        <button
+                          className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
+                          style={{ height: 'var(--boxed-inputfield-height)' }}
+                          onClick={handleOpenAddRoleModal}
+                        >
+                          <FiPlus className="w-4 h-4" />
+                          {t('dashboardProfile:operations.addWorker', 'Add Worker')}
+                        </button>
+                      )}
                     </div>
-                  ) : null}
+                    <div
+                      className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                      ref={headerScrollRef}
+                    >
+                      <TimeHeaders
+                        currentDate={currentDate}
+                        referenceDate={currentDate}
+                        view={view}
+                        handleDayClick={handleDayClick}
+                        scrollContainerRef={headerScrollRef}
+                        numWeeks={numWeeks}
+                        numDays={numDays}
+                        setView={setView}
+                        onEventDropOnDay={handleEventDropOnDay}
+                        nightView={nightView}
+                        isBottom={false}
+                      />
+                    </div>
+                  </div>
 
-                  <div className="flex-1 time-slots bg-muted/5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" ref={timeSlotsScrollRef}>
+                  <div className={cn(
+                    "flex-1 time-slots bg-muted/5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+                    nightView && "pt-12"
+                  )}>
                     <div className="relative min-h-full flex">
                       {calendarMode === 'team' && isTeamWorkspace ? (
                         <ResourceGrid
                           currentDate={currentDate}
                           events={filteredEvents}
                           employees={[]}
-                          onEventClick={handleEventClick}
+                                onEventClick={handleEventClickWithURL}
                           onCreateEvent={handleGridCreateEvent}
                           view={view}
                           onDateClick={handleDayClick}
@@ -514,12 +697,14 @@ const Calendar = ({ userData }) => {
                           scrollContainerRef={scrollContainerRef}
                           headerScrollRef={headerScrollRef}
                           nightView={nightView}
+                          openAddRoleModal={openAddRoleModal}
+                          onAddRoleModalClose={handleAddRoleModalClose}
                         />
                       ) : (
                         <>
                           <div
                             className="sticky shrink-0 bg-background/95 backdrop-blur-sm z-10"
-                            style={{ width: '4rem', height: nightView ? '1440px' : '1440px', left: 0, top: 0, alignSelf: 'flex-start' }}
+                            style={{ width: '4rem', height: '1440px', left: 0, top: 0, alignSelf: 'flex-start' }}
                           >
                             {nightView ? (
                               <>
@@ -551,7 +736,7 @@ const Calendar = ({ userData }) => {
                           </div>
                           <div
                             className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                            style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
+                            style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'auto' }}
                             ref={scrollContainerRef}
                             onScroll={(e) => {
                               if (headerScrollRef.current) {
@@ -559,102 +744,47 @@ const Calendar = ({ userData }) => {
                               }
                             }}
                           >
-                            <TimeGrid
-                              view={view}
-                              events={filteredEvents}
-                              selectedEventId={selectedEventId}
-                              currentDate={currentDate}
-                              referenceDate={currentDate}
-                              getEventsForCurrentWeek={() => { }}
-                              validatedEvents={useCalendarStore.getState().validatedEvents}
-                              onEventClick={handleEventClick}
-                              onEventRightClick={(e, event) => useCalendarStore.getState().showContextMenuAt({ x: e.clientX, y: e.clientY }, event)}
-                              onEventMove={handleGridEventMove}
-                              onEventResize={handleGridEventResize}
-                              onCreateEvent={handleGridCreateEvent}
-                              scrollContainerRef={scrollContainerRef}
-                              numWeeks={numWeeks}
-                              numDays={numDays}
-                              nightView={nightView}
-                            />
-                          </div>
-                          {nightView && (() => {
-                            const shortDays = getShortDays(i18n.language || 'en');
-                            const today = new Date();
-                            
-                            let allDays;
-                            if (view === 'day') {
-                              const nextDay = new Date(currentDate);
-                              nextDay.setDate(nextDay.getDate() + 1);
-                              allDays = [nextDay];
-                            } else {
-                              const weeks = getMultipleWeeks(currentDate, numWeeks, numWeeks);
-                              const baseDays = weeks.flat();
-                              allDays = baseDays.map(date => {
-                                const nextDay = new Date(date);
-                                nextDay.setDate(nextDay.getDate() + 1);
-                                return nextDay;
-                              });
-                            }
-                            
-                            return (
-                              <div
-                                className={cn(
-                                  "sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm z-10 border-t-2 border-red-500 transition-opacity duration-200",
-                                  showBottomHeader ? "opacity-100" : "opacity-0 pointer-events-none"
-                                )}
-                                style={{ marginLeft: '4rem' }}
-                              >
-                                <div
-                                  className="time-headers flex py-2"
-                                  style={{
-                                    width: view === 'day' ? `${allDays.length * 100}%` : `${allDays.length * (100 / 7)}%`,
-                                    minWidth: view === 'day' ? `${allDays.length * 100}%` : `${allDays.length * (100 / 7)}%`
-                                  }}
-                                >
-                                  {allDays.map((date, index) => {
-                                    const isToday = isSameDay(date, today);
-                                    const dayOfWeek = date.getDay();
-                                    const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-                                    
-                                    return (
-                                      <div
-                                        key={`bottom-${index}`}
-                                        className="flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-muted/50 pb-2"
-                                        style={{
-                                          width: view === 'day' ? `${100 / allDays.length}%` : `${100 / allDays.length}%`,
-                                          flexShrink: 0,
-                                          minWidth: view === 'day' ? `${100 / allDays.length}%` : `${100 / allDays.length}%`,
-                                          minHeight: '3rem'
-                                        }}
-                                        onClick={() => {
-                                          const clickedDate = new Date(date);
-                                          clickedDate.setHours(0, 0, 0, 0);
-                                          handleDayClick(clickedDate);
-                                          if (setView) {
-                                            setView('day');
-                                          }
-                                        }}
-                                      >
-                                        <div className="uppercase text-red-500 font-semibold tracking-wider mb-1" style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
-                                          {shortDays[dayIndex]}
-                                        </div>
-                                        <div
-                                          className={cn(
-                                            "flex items-center justify-center w-8 h-8 rounded-full transition-all",
-                                            isToday ? 'bg-red-500 text-white' : 'text-red-500'
-                                          )}
-                                          style={{ fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)' }}
-                                        >
-                                          {date.getDate()}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
+                            <div className="relative">
+                              <TimeGrid
+                                view={view}
+                                events={filteredEvents}
+                                selectedEventId={selectedEventId}
+                                currentDate={currentDate}
+                                referenceDate={currentDate}
+                                getEventsForCurrentWeek={() => { }}
+                                validatedEvents={useCalendarStore.getState().validatedEvents}
+                                onEventClick={handleEventClickWithURL}
+                                onEventRightClick={(e, event) => useCalendarStore.getState().showContextMenuAt({ x: e.clientX, y: e.clientY }, event)}
+                                onEventMove={handleGridEventMove}
+                                onEventResize={handleGridEventResize}
+                                onCreateEvent={handleGridCreateEvent}
+                                scrollContainerRef={scrollContainerRef}
+                                numWeeks={numWeeks}
+                                numDays={numDays}
+                                nightView={nightView}
+                              />
+
+                              {nightView && (
+                                <div className="calendar-bottom-header-instance sticky bottom-0 left-0 right-0 z-20 flex">
+                                  <div className="shrink-0 bg-background/95 backdrop-blur-sm pointer-events-none" style={{ width: '4rem' }} />
+                                  <div className="flex-1 bg-background/95 backdrop-blur-sm border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+                                    <TimeHeaders
+                                      currentDate={currentDate}
+                                      referenceDate={currentDate}
+                                      view={view}
+                                      handleDayClick={handleDayClick}
+                                      numWeeks={numWeeks}
+                                      numDays={numDays}
+                                      setView={setView}
+                                      onEventDropOnDay={handleEventDropOnDay}
+                                      nightView={nightView}
+                                      isBottom={true}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })()}
+                              )}
+                            </div>
+                          </div>
                         </>
                       )}
                     </div>
@@ -680,7 +810,7 @@ const Calendar = ({ userData }) => {
       {selectedEvent && (
         <EventPanel
           event={selectedEvent}
-          onClose={handlePanelClose}
+          onClose={handlePanelCloseWithURL}
           onSave={handleEventSave}
           onDelete={() => setEventToDelete(selectedEvent)}
           colorOptions={CALENDAR_COLORS}
@@ -699,16 +829,17 @@ const Calendar = ({ userData }) => {
         />
       )}
 
+
       {showFiltersOverlay && (
         <>
           <div
             className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setShowFiltersOverlay(false)}
+            onClick={handleFiltersOverlayClose}
           />
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300" style={{ height: '75vh' }}>
             <div className="p-4 border-b border-border flex items-center justify-between">
               <h3 className="text-lg font-semibold m-0">{t('calendar:categoryFilters')}</h3>
-              <button onClick={() => setShowFiltersOverlay(false)} className="p-2 hover:bg-muted rounded-lg transition-colors">
+              <button onClick={handleFiltersOverlayClose} className="p-2 hover:bg-muted rounded-lg transition-colors">
                 <FiX className="w-5 h-5" />
               </button>
             </div>
@@ -736,7 +867,7 @@ const Calendar = ({ userData }) => {
               ))}
               {hasActiveFilters && (
                 <button
-                  onClick={() => { handleResetCategories(); setShowFiltersOverlay(false); }}
+                  onClick={() => { handleResetCategories(); handleFiltersOverlayClose(); }}
                   className="w-full h-10 rounded-lg border border-input bg-background text-sm font-medium hover:bg-muted transition-all mt-4"
                 >
                   {t('calendar:resetAll')}

@@ -4,18 +4,18 @@
       "overview": "Overview",
       "profile": "Profile",
       "contracts": "Contracts",
-      "messages": "Messages",
+      "communication": "Communication",
       "calendar": "Calendar",
       "marketplace": "Marketplace",
       "settings": "Settings",
       "incompleteProfile": "Your profile is incomplete",
       "completeProfileFirst": "Please complete your profile first",
       "organization": "Organization",
+      "facility": "Facility",
       "lockedDuringTutorial": "Locked during tutorial",
       "collapse": "Collapse",
       "expand": "Expand",
       "payroll": "Payroll",
-      "facility": "Facility Profile",
       "employees": "Employee Management"
     },
     "header": {
@@ -30,6 +30,10 @@
       "messages": {
         "title": "Messages",
         "subtitle": "Communicate with facilities and professionals"
+      },
+      "announcements": {
+        "title": "Announcements",
+        "subtitle": "View and manage facility announcements"
       },
       "calendar": {
         "title": "Calendar",
@@ -121,7 +125,7 @@
         "professionalLegalText3": "According to the Code of Obligations (Art. 321a), you must obtain written approval from your main employer to work for a competitor.",
         "professionalLegalText4": "The law requires 11 consecutive hours of rest between shifts (can be reduced to 8 hours once per week).",
         "agreementStatus": "Agreement Status",
-        "areYouEmployed": "Are you currently employed by a facility?",
+        "areYouEmployed": "Are you currently employed",
         "areYouEmployedDescription": "Activate if you work for an organization",
         "termsAcceptance": "Terms and Legal Considerations",
         "termsAcceptanceDescription": "I understand and acknowledge the legal considerations and terms of service",
@@ -130,7 +134,7 @@
         "note": "By proceeding, you acknowledge that you have read and understood the legal considerations applicable to your role.",
         "restrictedServices": {
           "title": "Create Profile for Internal Facility Services Only",
-          "description": "This account can only be used to access facility internal services. Account verification must be completed for accessing full services.",
+          "description": "You will need to finish the onboarding verification later on to access the marketplace services",
           "modal": {
             "title": "Restricted Services - Internal Facility Access Only",
             "intro": "By creating your profile with internal facility access only, you will __NOT__ have access to the following services:",
@@ -161,7 +165,7 @@
         "facility": "Facility",
         "facilityDescription": "I represent a company or facility looking for professionals",
         "organization": "Organization",
-        "organizationDescription": "I represent a pharmacy chain or organization"
+        "organizationDescription": "I represent a chain of establishments or organization"
       },
       "step3": {
         "chain": {
@@ -297,6 +301,7 @@
     },
     "navigation": {
       "overview": "Overview",
+      "communication": "Communication",
       "messages": "Messages",
       "contracts": "Contracts",
       "calendar": "Calendar",

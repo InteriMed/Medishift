@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiSearch, FiX, FiFilter, FiCheck, FiInbox, FiGrid, FiList, FiAlertCircle, FiSettings } from 'react-icons/fi';
+import { FiSearch, FiX, FiFilter, FiCheck, FiInbox, FiGrid, FiList, FiAlertCircle, FiSettings, FiArrowDown, FiSliders } from 'react-icons/fi';
 import { useMobileView } from '../../hooks/useMobileView';
 import DropdownFieldAddListOriginal from '../../../components/BoxedInputFields/Dropdown-Field-AddList';
 import DateField from '../../../components/BoxedInputFields/DateField';
@@ -41,6 +41,9 @@ const Marketplace = () => {
   const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [justExpanded, setJustExpanded] = useState(false);
+  const [sortBy, setSortBy] = useState('relevance');
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [showActiveFilters, setShowActiveFilters] = useState(false);
 
   useEffect(() => {
       fetchListings({}, 'jobs');
@@ -64,8 +67,22 @@ const Marketplace = () => {
       });
     }
 
+    if (sortBy === 'date') {
+      result.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.created || a.startTime || 0);
+        const dateB = new Date(b.createdAt || b.created || b.startTime || 0);
+        return dateB - dateA;
+      });
+    } else if (sortBy === 'title') {
+      result.sort((a, b) => {
+        const titleA = (a.title || a.jobTitle || '').toLowerCase();
+        const titleB = (b.title || b.jobTitle || '').toLowerCase();
+        return titleA.localeCompare(titleB);
+      });
+    }
+
     setProcessedListings(result);
-  }, [filteredListings, searchTerm]);
+  }, [filteredListings, searchTerm, sortBy]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({
@@ -160,25 +177,7 @@ const Marketplace = () => {
 
       <div className="flex-1 overflow-auto">
         <div className="max-w-[1400px] mx-auto w-full p-6">
-          {/* ORGANIZATION INFO STYLED CARD */}
-          <div className="bg-card border border-border rounded-xl p-4 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground">
-                {t('marketplace:info.title', 'Marketplace Info')}
-              </h3>
-              <button className="text-sm text-primary hover:text-primary/80 flex items-center gap-1">
-                <FiSettings className="w-4 h-4" />
-                {t('common:settings', 'Settings')}
-              </button>
-            </div>
-            <div className="pt-3 border-t border-border">
-              <p className="text-sm text-muted-foreground">
-                {t('marketplace:info.description', 'Browse and search for available positions in the marketplace.')}
-              </p>
-            </div>
-          </div>
-
-          {/* FLOATING TOOLBAR */}
+          {/* ORGANIZATION INFO STYLED CARD WITH SEARCH BAR */}
           <div 
             className={cn(
               "bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full mb-4",
@@ -190,7 +189,17 @@ const Marketplace = () => {
               }
             }}
           >
-          <div className="flex flex-wrap items-center gap-3 w-full">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-foreground">
+                {t('marketplace:info.title', 'Marketplace Info')}
+              </h3>
+            </div>
+            <div className="pt-3 border-t border-border mb-4">
+              <p className="text-sm text-muted-foreground">
+                {t('marketplace:info.description', 'Browse and search for available positions in the marketplace.')}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 w-full">
             {/* Search Input */}
             <div className="relative flex-1 min-w-[200px]">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
@@ -212,7 +221,7 @@ const Marketplace = () => {
             {/* Date From */}
             <div className="relative shrink-0 w-[218px]">
               <DateField
-                label=""
+                label="From"
                 value={filters.fromDate ? new Date(filters.fromDate) : null}
                 onChange={(date) => handleFilterChange('fromDate', date ? date.toISOString().split('T')[0] : '')}
                 marginBottom="0"
@@ -223,7 +232,7 @@ const Marketplace = () => {
             {/* Date To */}
             <div className="relative shrink-0 w-[218px]">
               <DateField
-                label=""
+                label="To"
                 value={filters.toDate ? new Date(filters.toDate) : null}
                 onChange={(date) => handleFilterChange('toDate', date ? date.toISOString().split('T')[0] : '')}
                 marginBottom="0"
@@ -231,7 +240,65 @@ const Marketplace = () => {
               />
             </div>
 
-            {/* Filter Toggle */}
+            {/* Sort By Button */}
+            <div className="relative shrink-0">
+              <button
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                className="px-4 rounded-xl border-2 border-input bg-background text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 text-sm font-medium transition-all flex items-center gap-2 shrink-0"
+                style={{ height: 'var(--boxed-inputfield-height)' }}
+              >
+                <FiArrowDown className="w-4 h-4" />
+                {t('marketplace:sortBy', 'Sort by')}
+              </button>
+              {showSortDropdown && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setShowSortDropdown(false)}
+                  />
+                  <div className="absolute top-full mt-2 right-0 z-20 bg-card border border-border rounded-lg shadow-lg min-w-[180px]">
+                    <button
+                      onClick={() => {
+                        setSortBy('relevance');
+                        setShowSortDropdown(false);
+                      }}
+                      className={cn(
+                        "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
+                        sortBy === 'relevance' && "bg-muted"
+                      )}
+                    >
+                      {t('marketplace:sort.relevance', 'Relevance')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSortBy('date');
+                        setShowSortDropdown(false);
+                      }}
+                      className={cn(
+                        "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
+                        sortBy === 'date' && "bg-muted"
+                      )}
+                    >
+                      {t('marketplace:sort.date', 'Date')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSortBy('title');
+                        setShowSortDropdown(false);
+                      }}
+                      className={cn(
+                        "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
+                        sortBy === 'title' && "bg-muted"
+                      )}
+                    >
+                      {t('marketplace:sort.title', 'Title')}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Parameters/Settings Toggle */}
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -256,24 +323,14 @@ const Marketplace = () => {
                   : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
               )}
               style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
-              title="Filters"
+              title="Parameters"
             >
-              <FiFilter className={`w-4 h-4 ${isFiltersExpanded ? 'text-white' : ''}`} />
+              <FiSliders className={`w-4 h-4 ${isFiltersExpanded ? 'text-white' : ''}`} />
               {activeCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
                   {activeCount}
                 </span>
               )}
-            </button>
-
-            {/* Apply Button */}
-            <button
-              onClick={applyFilters}
-              className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
-              style={{ height: 'var(--boxed-inputfield-height)' }}
-            >
-              <FiCheck className="w-4 h-4" />
-              {t('marketplace:filter.apply', 'Apply')}
             </button>
 
             {/* View Mode Toggle */}
@@ -361,6 +418,70 @@ const Marketplace = () => {
                     value={filters.workAmount}
                     onChange={(value) => handleFilterChange('workAmount', value)}
                   />
+                </div>
+              </div>
+            )}
+
+            {/* Second Row - Apply Filters Button (only when filters are active) */}
+            {activeCount > 0 && (
+              <div className="mt-3 pt-3 border-t border-border w-full">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setShowActiveFilters(!showActiveFilters);
+                      applyFilters();
+                    }}
+                    className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
+                    style={{ height: 'var(--boxed-inputfield-height)' }}
+                  >
+                    <FiCheck className="w-4 h-4" />
+                    {t('marketplace:filter.apply', 'Apply Filters')}
+                  </button>
+                  
+                  {showActiveFilters && (
+                    <div className="flex-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground animate-in fade-in slide-in-from-left-1 duration-200">
+                      {filters.canton?.length > 0 && (
+                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
+                          {t('marketplace:filters.canton', 'Canton')}: {filters.canton.length}
+                        </span>
+                      )}
+                      {filters.city?.length > 0 && (
+                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
+                          {t('marketplace:filters.city', 'City')}: {filters.city.length}
+                        </span>
+                      )}
+                      {filters.area?.length > 0 && (
+                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
+                          {t('marketplace:filters.area', 'Area')}: {filters.area.length}
+                        </span>
+                      )}
+                      {filters.experience?.length > 0 && (
+                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
+                          {t('marketplace:filters.experience', 'Experience')}: {filters.experience.length}
+                        </span>
+                      )}
+                      {filters.software?.length > 0 && (
+                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
+                          {t('marketplace:filters.software', 'Software')}: {filters.software.length}
+                        </span>
+                      )}
+                      {filters.workAmount?.length > 0 && (
+                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
+                          {t('marketplace:filters.workAmount', 'Work Amount')}: {filters.workAmount.length}
+                        </span>
+                      )}
+                      {filters.fromDate && (
+                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
+                          From: {new Date(filters.fromDate).toLocaleDateString()}
+                        </span>
+                      )}
+                      {filters.toDate && (
+                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
+                          To: {new Date(filters.toDate).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -462,14 +583,14 @@ const Marketplace = () => {
             </div>
             <div className="overflow-y-auto p-4 space-y-4" style={{ height: 'calc(75vh - 73px)', scrollbarGutter: 'stable' }}>
               <DateField
-                label={t('marketplace:overlay.fromDate')}
+                label="From"
                 value={filters.fromDate ? new Date(filters.fromDate) : null}
                 onChange={(date) => handleFilterChange('fromDate', date ? date.toISOString().split('T')[0] : '')}
                 marginBottom="0"
                 showClearButton={true}
               />
               <DateField
-                label={t('marketplace:overlay.toDate')}
+                label="To"
                 value={filters.toDate ? new Date(filters.toDate) : null}
                 onChange={(date) => handleFilterChange('toDate', date ? date.toISOString().split('T')[0] : '')}
                 marginBottom="0"

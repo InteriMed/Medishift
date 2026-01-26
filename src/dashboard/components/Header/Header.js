@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import HeaderWorkspaceSelector from './WorkspaceSelector/WorkspaceSelector';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -8,13 +8,16 @@ import { cn } from '../../../utils/cn';
 import { getPageConfig } from '../../config/pageConfig';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useAuth } from '../../../contexts/AuthContext';
-import { normalizePathname } from '../../utils/pathUtils';
+import { normalizePathname, getWorkspaceIdForUrl, buildDashboardUrl } from '../../utils/pathUtils';
 import useProfileData from '../../hooks/useProfileData';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
 import { ServiceSearchBar } from '../../../service_tree';
 import { useTutorial } from '../../contexts/TutorialContext';
-import ContactFormPopup from '../../../components/ContactFormPopup/ContactFormPopup';
+import ColorPicker from '../ColorPicker/ColorPicker';
+import { db } from '../../../services/firebase';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 
 export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen = false, onBackButtonClick, showBackButton = false }) {
   const location = useLocation();
@@ -27,6 +30,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
     switchWorkspace,
     isLoading
   } = useDashboard();
+  const { currentUser } = useAuth();
 
   // Use auth for logout
   const { logout } = useAuth();
@@ -69,7 +73,6 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   const [searchOpen, setSearchOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const [showContactForm, setShowContactForm] = useState(false);
 
   const notificationsRef = useRef(null);
   const profileMenuRef = useRef(null);
@@ -147,14 +150,147 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
 
   const shouldShowWorkspaceSelector = !isLoading;
 
-  const getHeaderColor = () => {
-    if (selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN) {
+  const [workspaceColors, setWorkspaceColors] = useState(() => {
+    try {
+      const stored = localStorage.getItem(LOCALSTORAGE_KEYS.WORKSPACE_COLORS);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [userPreferences, setUserPreferences] = useState(null);
+
+  useEffect(() => {
+    const fetchUserPreferences = async () => {
+      if (!currentUser) return;
+      
+      try {
+        const stored = localStorage.getItem(LOCALSTORAGE_KEYS.USER_PREFERENCES(currentUser.uid));
+        if (stored) {
+          const cachedPreferences = JSON.parse(stored);
+          setUserPreferences(cachedPreferences);
+        }
+      } catch (error) {
+        console.error('Error loading user preferences from localStorage:', error);
+      }
+      
+      try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          const preferences = data.preferences || null;
+          setUserPreferences(preferences);
+          if (preferences) {
+            try {
+              localStorage.setItem(LOCALSTORAGE_KEYS.USER_PREFERENCES(currentUser.uid), JSON.stringify(preferences));
+            } catch (error) {
+              console.error('Failed to save user preferences to localStorage:', error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user preferences:', error);
+      }
+    };
+    fetchUserPreferences();
+  }, [currentUser]);
+
+  const getCurrentRole = useCallback(() => {
+    if (!selectedWorkspace) return 'professional';
+    if (selectedWorkspace.type === WORKSPACE_TYPES.ADMIN) return 'admin';
+    if (selectedWorkspace.type === 'organization') return 'organization';
+    if (selectedWorkspace.type === WORKSPACE_TYPES.FACILITY || selectedWorkspace.type === 'team') return 'facility';
+    if (user?.role === 'facility' || user?.role === 'company') return 'facility';
+    if (selectedWorkspace.role === 'employee') return 'employee';
+    return 'professional';
+  }, [selectedWorkspace, user]);
+
+  const getDefaultWorkspaceColor = useCallback((workspace) => {
+    if (!workspace) return '#2563eb';
+    
+    if (workspace.type === WORKSPACE_TYPES.ADMIN) {
       return '#dc2626';
     }
-    if (selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || selectedWorkspace?.type === 'team') {
-      return 'var(--color-logo-2, #0f172a)';
+    if (workspace.type === WORKSPACE_TYPES.FACILITY || workspace.type === 'team') {
+      return '#0f172a';
     }
-    return 'var(--color-logo-1, #2563eb)';
+    if (workspace.type === 'organization') {
+      return '#22c55e';
+    }
+    return '#2563eb';
+  }, []);
+
+  const getWorkspaceColor = useCallback((workspace) => {
+    if (!workspace) return getDefaultWorkspaceColor(null);
+    
+    const role = getCurrentRole();
+    const prefColor = userPreferences?.[role]?.design?.headerColor?.[workspace.id];
+    if (prefColor) return prefColor;
+    
+    return workspaceColors[workspace.id] || getDefaultWorkspaceColor(workspace);
+  }, [workspaceColors, getDefaultWorkspaceColor, userPreferences, getCurrentRole]);
+
+  const handleColorChange = useCallback(async (color, color1) => {
+    if (!selectedWorkspace || !currentUser) return;
+    
+    const role = getCurrentRole();
+    
+    try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      const currentData = userDoc.exists() ? userDoc.data() : {};
+      const currentPreferences = currentData.preferences || {};
+      
+      const currentHeaderColors = currentPreferences[role]?.design?.headerColor || {};
+      const updatedHeaderColors = {
+        ...currentHeaderColors,
+        [selectedWorkspace.id]: color
+      };
+      
+      const updatedPreferences = {
+        ...currentPreferences,
+        [role]: {
+          ...currentPreferences[role],
+          design: {
+            ...currentPreferences[role]?.design,
+            headerColor: updatedHeaderColors
+          }
+        }
+      };
+      
+      await updateDoc(userDocRef, {
+        preferences: updatedPreferences
+      });
+      
+      setUserPreferences(updatedPreferences);
+      
+      try {
+        localStorage.setItem(LOCALSTORAGE_KEYS.USER_PREFERENCES(currentUser.uid), JSON.stringify(updatedPreferences));
+      } catch (error) {
+        console.error('Failed to save user preferences to localStorage:', error);
+      }
+      
+      const newColors = {
+        ...workspaceColors,
+        [selectedWorkspace.id]: color
+      };
+      setWorkspaceColors(newColors);
+      try {
+        localStorage.setItem(LOCALSTORAGE_KEYS.WORKSPACE_COLORS, JSON.stringify(newColors));
+      } catch (error) {
+        console.error('Failed to save workspace color to localStorage:', error);
+      }
+    } catch (error) {
+      console.error('Failed to save workspace color to Firestore:', error);
+    }
+  }, [workspaceColors, selectedWorkspace, currentUser, getCurrentRole]);
+
+  const getHeaderColor = () => {
+    if (!selectedWorkspace) {
+      return 'var(--color-logo-1, #2563eb)';
+    }
+    return getWorkspaceColor(selectedWorkspace);
   };
 
   const handleCreateBusiness = () => {
@@ -180,7 +316,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   };
 
   const handleSupportClick = () => {
-    setShowContactForm(true);
+    const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+    navigate(buildDashboardUrl('support', workspaceId));
     setHelpMenuOpen(false);
   };
 
@@ -239,26 +376,17 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         )}
       </div>
 
-      {/* Left-Center: Page Title & Workspace Selector */}
+      {/* Left-Center: Workspace Selector */}
       <div className="flex-1 flex items-center justify-center min-w-0 px-2 sm:px-3 ml-2 sm:ml-3 gap-2 sm:gap-3 lg:gap-4">
-        {/* Page Icon & Title */}
-        {Icon && (
-          <div key={`${location.pathname}-${i18n.language}`} className="hidden lg:flex items-center gap-1.5 flex-shrink-0">
-            <Icon className="w-3.5 h-3.5 text-white/90" />
-            <h1 className="text-xs lg:text-sm font-normal text-white/90 flex items-center m-0 p-0 truncate" style={{ fontFamily: 'var(--font-family-headings, Roboto, sans-serif)' }}>
-              {title}
-            </h1>
-          </div>
-        )}
-
         {/* Workspace Selector */}
         {!isLoading && shouldShowWorkspaceSelector && (
-          <div className="flex-shrink min-w-0">
+          <div className="flex-shrink min-w-0 flex items-center gap-2">
             <HeaderWorkspaceSelector
               workspaces={sortedWorkspaces}
               selectedWorkspace={selectedWorkspace}
               onSelectWorkspace={switchWorkspace}
               onOpenChange={setWorkspaceSelectorOpen}
+              headerColor={headerColor}
             >
               {isProfessional && (
                 <>
@@ -351,7 +479,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             className="relative text-white/90 hover:text-white hover:bg-white/5 transition-all flex-shrink-0 flex items-center justify-center rounded-md p-2"
             aria-label={t('common:header.notifications', 'Notifications')}
           >
-            <FiBell className="h-4 w-4" />
+            <FiBell className="h-[22px] w-[22px]" strokeWidth={2} />
             {unreadCount > 0 && (
               <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-red-400" />
             )}
@@ -400,7 +528,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             onClick={handleTutorialButtonClick}
             title="Help"
           >
-            <FiHelpCircle className="h-4 w-4" />
+            <FiHelpCircle className="h-[22px] w-[22px]" strokeWidth={2} />
           </button>
 
           {helpMenuOpen && (
@@ -411,7 +539,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground transition-colors"
                 >
                   <FiHelpCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <span className="truncate flex-1 text-left">{t('common:header.tutorial', 'Tutorial')}</span>
+                  <span className="truncate flex-1 text-left">{t('common:header.help', 'Help')}</span>
                 </button>
                 <button
                   onClick={handleSupportClick}
@@ -425,6 +553,18 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           )}
         </div>
 
+        {/* Color Picker - Between Help and Language */}
+        {selectedWorkspace && (
+          <div className="relative hidden md:block">
+            <ColorPicker
+              color={getWorkspaceColor(selectedWorkspace)}
+              onChange={handleColorChange}
+              size={20}
+              className="flex-shrink-0"
+            />
+          </div>
+        )}
+
         {/* Language Selector - Dropdown style like UserMenu - Hidden on mobile */}
         <div className="relative hidden md:block" ref={languageRef}>
           <button
@@ -432,7 +572,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             className="flex items-center justify-center gap-1.5 text-white/90 hover:text-white hover:bg-white/5 transition-all rounded-md px-2.5 py-2"
           >
             <span className="text-xs font-medium uppercase text-white">{i18n.language?.slice(0, 2) || 'EN'}</span>
-            <FiChevronDown className={cn("w-3 h-3 text-white transition-transform", languageOpen && "rotate-180")} />
+            <FiChevronDown className={cn("h-[22px] w-[22px] text-white transition-transform", languageOpen && "rotate-180")} strokeWidth={2} />
           </button>
 
           {languageOpen && (
@@ -515,14 +655,14 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                   <div className="my-1 h-px bg-border/50" />
                 </div>
 
-                {/* Mobile-only: Tutorial */}
+                {/* Mobile-only: Help */}
                 <button
                   onClick={() => { handleTutorialClick(); setProfileMenuOpen(false); }}
                   className="md:hidden w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground"
                 >
                   <FiHelpCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   <span className="truncate">
-                    {t('common:header.tutorial', 'Tutorial')}
+                    {t('common:header.help', 'Help')}
                   </span>
                 </button>
                 {/* Mobile-only: Support */}
@@ -580,10 +720,18 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                   <div className="my-1 h-px bg-border/50" />
                 </div>
 
-                <button onClick={() => { navigate('/dashboard/profile'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground">
+                <button onClick={() => {
+                  const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+                  navigate(buildDashboardUrl('profile', workspaceId));
+                  setProfileMenuOpen(false);
+                }} className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground">
                   <FiUser className="w-4 h-4 text-muted-foreground flex-shrink-0" /> <span className="truncate">{typeof t('dashboard.header.profile') === 'object' ? t('dashboard.header.profile').title : t('dashboard.header.profile', 'Profile')}</span>
                 </button>
-                <button onClick={() => { navigate('/dashboard/profile/settings'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground">
+                <button onClick={() => {
+                  const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+                  navigate(buildDashboardUrl('profile/settings', workspaceId));
+                  setProfileMenuOpen(false);
+                }} className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground">
                   <FiSettings className="w-4 h-4 text-muted-foreground flex-shrink-0" /> <span className="truncate">{typeof t('dashboard.header.settings') === 'object' ? t('dashboard.header.settings').title : t('dashboard.header.settings', 'Settings')}</span>
                 </button>
                 <div className="my-1 h-px bg-border/50" />
@@ -627,11 +775,6 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       )}
 
 
-      {/* Contact Form Popup */}
-      <ContactFormPopup
-        isOpen={showContactForm}
-        onClose={() => setShowContactForm(false)}
-      />
 
       {/* Reset Profile Confirmation Dialog */}
       {showResetConfirm && (

@@ -6,11 +6,11 @@ import classNames from 'classnames';
 import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2, FiMail, FiZap } from 'react-icons/fi';
 import { httpsCallable } from 'firebase/functions';
 
-import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSwitchField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import DateField from '../../../../../components/BoxedInputFields/DateField';
+import Switch from '../../../../../components/BoxedInputFields/Switch';
 import Button from '../../../../../components/BoxedInputFields/Button';
 import Dialog from '../../../../../components/Dialog/Dialog';
 import BankingAccessModal from '../../components/BankingAccessModal';
@@ -27,7 +27,6 @@ import { LOCALSTORAGE_KEYS } from '../../../../../config/keysDatabase';
 
 // Tailwind styles
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
   headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex flex-col billing-information-header",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
@@ -36,22 +35,7 @@ const styles = {
   subtitleRow: "flex items-end justify-between gap-4",
   mandatoryFieldLegend: "text-xs",
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  hiringMandatoryMark: "text-orange-500",
-  sectionsWrapper: "billing-information-sections-wrapper w-full max-w-[1400px] mx-auto",
-  leftColumn: "flex flex-col gap-6 flex-1",
-  rightColumn: "flex flex-col gap-6 flex-1",
-  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative overflow-visible",
-  cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
-  cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
-  cardIconStyle: { color: 'var(--primary-color)' },
-  cardTitle: "flex-1 min-w-0",
-  cardTitleH3: "m-0 text-sm font-semibold truncate",
-  cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "grid grid-cols-1 gap-6 overflow-visible",
-  gridSingle: "grid grid-cols-1 gap-6",
-  fieldWrapper: "space-y-2",
-  fullWidth: "md:col-span-2",
-  formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto"
+  hiringMandatoryMark: "text-orange-500"
 };
 
 const BillingInformation = ({
@@ -389,7 +373,7 @@ const BillingInformation = ({
       case 'checkbox':
       case 'switch':
         return (
-          <BoxedSwitchField
+          <Switch
             key={name}
             label={label}
             checked={!!value}
@@ -479,166 +463,84 @@ const BillingInformation = ({
   }, [fieldsToRender, formData, getNestedValue, onSaveAndContinue, checkDependency]);
 
   return (
-    <div className={styles.sectionContainer} style={{ position: 'relative' }}>
-      <style>{`
-        .billing-information-container {
-          container-type: inline-size;
-        }
-        
-        .billing-information-header-grid {
-          display: grid;
-          gap: 1.5rem;
-          width: 100%;
-          grid-template-columns: 1fr 1fr;
-          grid-template-areas: 
-            "title title"
-            "completion autofill";
-          align-items: center;
-        }
-
-        .header-title-row {
-          grid-area: title;
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-        }
-
-        .header-completion-centered {
-          grid-area: completion;
-          display: flex;
-          justify-content: flex-start;
-          width: 100%;
-        }
-
-        .header-autofill-right {
-          grid-area: autofill;
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        .billing-information-sections-wrapper {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1.5rem;
-        }
-
-        @container (max-width: 700px) {
-          .billing-information-sections-wrapper {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-      <div className="billing-information-container w-full max-w-[1400px] mx-auto">
-        <div className={styles.sectionsWrapper}>
-          <div className={styles.leftColumn}>
-            {groupedFields.employmentEligibility && (
-              <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 10 }}>
-                <div className={styles.grid}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiBriefcase className="w-4 h-4" style={styles.cardIconStyle} /></div>
-                    <div className={styles.cardTitle}>
-                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.employmentEligibilityTitle')}</h3>
-                    </div>
-                  </div>
-                  {groupedFields.employmentEligibility.map(renderField)}
-                </div>
+    <>
+      <div className="profile-sections-wrapper">
+        {/* Employment Eligibility Section */}
+        {groupedFields.employmentEligibility && (
+          <div className="profile-section-card" style={{ zIndex: 10 }}>
+            <div className="profile-card-header">
+              <div className="profile-card-icon-wrapper"><FiBriefcase className="w-4 h-4" style={{ color: 'var(--primary-color)' }} /></div>
+              <div className="profile-card-title">
+                <h3 className="profile-card-title-h3">{t('billingInformation.employmentEligibilityTitle')}</h3>
               </div>
-            )}
-
-            {/* Banking Information Section */}
-            {groupedFields.banking && (
-              <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 5 }}>
-                <div className={styles.grid}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiCreditCard className="w-4 h-4" style={styles.cardIconStyle} /></div>
-                    <div className={styles.cardTitle}>
-                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.bankingInfo')}</h3>
-                    </div>
-                    {hasExistingBankingInfo && !hasBankingAccess && (
-                      <button
-                        onClick={handleUnlockBanking}
-                        className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                        title={t('common.edit', 'Edit')}
-                      >
-                        <FiEdit2 className="w-4 h-4" />
-                      </button>
-                    )}
-                    {hasBankingAccess && (
-                      <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-logo-1)' }}>
-                        <FiShield className="w-3 h-3" style={{ color: 'var(--color-logo-1)' }} />
-                        {t('billingInformation.bankingAccessGranted', 'Access granted')}
-                      </div>
-                    )}
-                  </div>
-                  {groupedFields.banking.map(renderField)}
-                </div>
-              </div>
-            )}
-
-            {/* Legacy sections for backward compatibility */}
-            {groupedFields.residency && (
-              <div className={styles.sectionCard}>
-                <div className={styles.grid}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiBriefcase className="w-4 h-4" style={styles.cardIconStyle} /></div>
-                    <div className={styles.cardTitle}>
-                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.residencyPermitTitle')}</h3>
-                    </div>
-                  </div>
-                  {groupedFields.residency.map(renderField)}
-                </div>
-              </div>
-            )}
-
-            {groupedFields.insurance && (
-              <div className={styles.sectionCard}>
-                <div className={styles.grid}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiShield className="w-4 h-4" style={styles.cardIconStyle} /></div>
-                    <div className={styles.cardTitle}>
-                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.insurance')}</h3>
-                    </div>
-                  </div>
-                  {groupedFields.insurance.map(renderField)}
-                </div>
-              </div>
-            )}
-
-            {groupedFields.billingAddress && (
-              <div className={styles.sectionCard}>
-                <div className={styles.grid}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiHome className="w-4 h-4" style={styles.cardIconStyle} /></div>
-                    <div className={styles.cardTitle}>
-                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.billingAddress')}</h3>
-                    </div>
-                  </div>
-                  {groupedFields.billingAddress.find(f => f.name === 'sameAsResidential') && renderField(groupedFields.billingAddress.find(f => f.name === 'sameAsResidential'))}
-                  {groupedFields.billingAddress.filter(f => f.name !== 'sameAsResidential').map(renderField)}
-                </div>
-              </div>
-            )}
+            </div>
+            <div className="profile-field-grid">
+              {groupedFields.employmentEligibility.map(renderField)}
+            </div>
           </div>
+        )}
 
-          <div className={styles.rightColumn}>
-            {groupedFields.payrollData && (
-              <div className={styles.sectionCard}>
-                <div className={styles.gridSingle}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardIconWrapper}><FiDollarSign className="w-4 h-4" style={styles.cardIconStyle} /></div>
-                    <div className={styles.cardTitle}>
-                      <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('billingInformation.payrollDataTitle')}</h3>
-                    </div>
-                  </div>
-                  {groupedFields.payrollData.map(field => renderField(field, true))}
-                </div>
+        {/* Banking Information Section */}
+        {groupedFields.banking && (
+          <div className="profile-section-card" style={{ zIndex: 9 }}>
+            <div className="profile-card-header">
+              <div className="profile-card-icon-wrapper"><FiCreditCard className="w-4 h-4" style={{ color: 'var(--primary-color)' }} /></div>
+              <div className="profile-card-title">
+                <h3 className="profile-card-title-h3">{t('billingInformation.bankingInfo')}</h3>
               </div>
-            )}
+              {hasExistingBankingInfo && !hasBankingAccess && (
+                <button
+                  onClick={handleUnlockBanking}
+                  className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                  title={t('common.edit', 'Edit')}
+                >
+                  <FiEdit2 className="w-4 h-4" />
+                </button>
+              )}
+              {hasBankingAccess && (
+                <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-logo-1)' }}>
+                  <FiShield className="w-3 h-3" style={{ color: 'var(--color-logo-1)' }} />
+                  {t('billingInformation.bankingAccessGranted', 'Access granted')}
+                </div>
+              )}
+            </div>
+            <div className="profile-field-grid">
+              {groupedFields.banking.map(renderField)}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Billing Address Section */}
+        {groupedFields.billingAddress && (
+          <div className="profile-section-card">
+            <div className="profile-card-header">
+              <div className="profile-card-icon-wrapper"><FiHome className="w-4 h-4" style={{ color: 'var(--primary-color)' }} /></div>
+              <div className="profile-card-title">
+                <h3 className="profile-card-title-h3">{t('billingInformation.billingAddress')}</h3>
+              </div>
+            </div>
+            <div className="profile-field-grid">
+              {groupedFields.billingAddress.find(f => f.name === 'sameAsResidential') && renderField(groupedFields.billingAddress.find(f => f.name === 'sameAsResidential'))}
+              {groupedFields.billingAddress.filter(f => f.name !== 'sameAsResidential').map(renderField)}
+            </div>
+          </div>
+        )}
+
+        {/* Payroll Data Section */}
+        {groupedFields.payrollData && (
+          <div className="profile-section-card">
+            <div className="profile-card-header">
+              <div className="profile-card-icon-wrapper"><FiDollarSign className="w-4 h-4" style={{ color: 'var(--primary-color)' }} /></div>
+              <div className="profile-card-title">
+                <h3 className="profile-card-title-h3">{t('billingInformation.payrollDataTitle')}</h3>
+              </div>
+            </div>
+            <div className="profile-field-grid">
+              {groupedFields.payrollData.map(field => renderField(field, true))}
+            </div>
+          </div>
+        )}
       </div>
-
-
       <Dialog
         isOpen={showHiringInfo}
         onClose={() => setShowHiringInfo(false)}
@@ -656,7 +558,7 @@ const BillingInformation = ({
         userPhone={getNestedValue(formData, 'contact.primaryPhone')}
         userPhonePrefix={getNestedValue(formData, 'contact.primaryPhonePrefix')}
       />
-    </div>
+    </>
   );
 };
 

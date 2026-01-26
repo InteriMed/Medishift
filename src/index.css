@@ -260,9 +260,13 @@ button:hover .arrow-animate,
 }
 
 @media (min-width: 1400px) {
-  header>div {
+  header > div,
+  .profile-layout-container,
+  .profile-sections-wrapper,
+  .profile-form-actions {
     max-width: 1400px;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
@@ -546,9 +550,56 @@ input[readonly].banking-masked::placeholder,
   }
 }
 
-@media (min-width: 1400px) {
-  header > div {
-    max-width: 1400px;
-    margin: 0 auto;
+/* Standard Profile Layout System */
+@layer components {
+  .profile-layout-container {
+    @apply flex flex-col gap-6 p-1 w-full relative;
+    container-type: inline-size;
+  }
+
+  .profile-sections-wrapper {
+    @apply w-full grid gap-6;
+    grid-template-columns: 1fr;
+    container-type: inline-size;
+  }
+
+  @container (min-width: 700px) {
+    .profile-sections-wrapper {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .profile-section-card {
+    @apply bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative overflow-visible;
+  }
+
+  .profile-card-header {
+    @apply flex items-center gap-3 mb-4 pb-3 border-b border-border/40;
+  }
+
+  .profile-card-icon-wrapper {
+    @apply p-2.5 rounded-xl bg-primary/10 flex-shrink-0;
+  }
+
+  .profile-card-title {
+    @apply flex-1 min-w-0;
+  }
+
+  .profile-card-title-h3 {
+    @apply m-0 text-sm font-semibold truncate;
+    color: var(--text-color);
+    font-family: var(--font-family-text, Roboto, sans-serif);
+  }
+
+  .profile-field-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6 overflow-visible;
+  }
+
+  .profile-field-wrapper {
+    @apply space-y-2;
+  }
+
+  .profile-form-actions {
+    @apply flex justify-end gap-4 w-full;
   }
 }

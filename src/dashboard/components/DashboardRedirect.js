@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { getSavedDashboardRoute } from '../utils/routePersistence';
 import { useDashboard } from '../contexts/DashboardContext';
 
@@ -7,9 +7,14 @@ const DashboardRedirect = () => {
   const [targetRoute, setTargetRoute] = useState(null);
   const [isChecking, setIsChecking] = useState(true);
   const { isLoading, selectedWorkspace, user, userProfile } = useDashboard();
+  const location = useLocation();
 
   useEffect(() => {
     if (isLoading) {
+      return;
+    }
+
+    if (location.pathname.includes('/profile')) {
       return;
     }
 
@@ -38,9 +43,13 @@ const DashboardRedirect = () => {
       setTargetRoute('overview');
       setIsChecking(false);
     }
-  }, [isLoading, selectedWorkspace, user, userProfile]);
+  }, [isLoading, selectedWorkspace, user, userProfile, location.pathname]);
 
   if (isChecking || isLoading) {
+    return null;
+  }
+
+  if (location.pathname.includes('/profile')) {
     return null;
   }
 

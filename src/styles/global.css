@@ -9,8 +9,6 @@ body {
   font-family: var(--font-family-text, Roboto, sans-serif);
   color: var(--text-color, var(--grey-4));
   background-color: var(--background-color, var(--background-div-color));
-  margin: 0;
-  padding: 0;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -84,7 +82,6 @@ h1 {
   /* Adjust font size as needed */
   font-weight: bold;
   justify-self: center;
-  margin-bottom: 0 !important;
 }
 
 h2 {
@@ -108,9 +105,6 @@ h4 {
 p {
   font-family: var(--font-family-text, Roboto, sans-serif);
   font-size: var(--font-size-small);
-  /* Adjust as needed */
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
   /* Space between paragraphs */
 }
 
@@ -123,8 +117,6 @@ li {
   font-size: var(--font-size-small);
   /* Adjust as needed */
   color: var(--text-secondary);
-  margin-bottom: .5rem;
-  /* Space between paragraphs */
   list-style-type: disc;
   /* Add bullet points for unordered lists */
 }
@@ -146,7 +138,6 @@ a:hover {
 .container {
   width: 100%;
   max-width: var(--app-max-width);
-  margin: 0 auto;
   padding: 0 3rem;
   box-sizing: border-box;
 }
@@ -176,7 +167,6 @@ a:hover {
   width: 1px;
   height: 1px;
   padding: 0;
-  margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
@@ -207,60 +197,6 @@ a:hover {
 
 .justify-between {
   justify-content: space-between;
-}
-
-/* Spacing utilities */
-.m-0 {
-  margin: 0;
-}
-
-.p-0 {
-  padding: 0;
-}
-
-.mt-1 {
-  margin-top: 0.25rem;
-}
-
-.mt-2 {
-  margin-top: 0.5rem;
-}
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-.mt-4 {
-  margin-top: 1.5rem;
-}
-
-.mt-5 {
-  margin-top: 3rem;
-}
-
-.mb-1 {
-  margin-bottom: 0.25rem;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.mb-3 {
-  margin-bottom: 1rem;
-}
-
-.mb-4 {
-  margin-bottom: 1.5rem;
-}
-
-.mb-5 {
-  margin-bottom: 3rem;
-}
-
-/* Alternatively, you can try this */
-.with-header .content {
-  /* margin-top removed - handled by individual sections */
 }
 
 /* Hide scrollbar but keep scrollbar gutter for alignment */
