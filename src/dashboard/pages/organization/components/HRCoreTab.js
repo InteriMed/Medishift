@@ -240,40 +240,40 @@ const HRCoreTab = () => {
         </div>
       </div>
 
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-2 border-b overflow-x-auto max-w-[1400px] mx-auto px-6">
         <button
-          onClick={() => setActiveView('overview')}
-          className={cn(
-            "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-            activeView === 'overview'
-              ? "text-blue-600 border-blue-600"
-              : "text-gray-500 border-transparent hover:text-gray-700"
-          )}
-        >
-          {t('organization:hr.overview', 'Overview')}
-        </button>
-        <button
-          onClick={() => setActiveView('sickLeave')}
-          className={cn(
-            "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-            activeView === 'sickLeave'
-              ? "text-blue-600 border-blue-600"
-              : "text-gray-500 border-transparent hover:text-gray-700"
-          )}
-        >
-          {t('organization:hr.sickLeave', 'Sick Leave')}
-        </button>
-        <button
-          onClick={() => setActiveView('vacancies')}
-          className={cn(
-            "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-            activeView === 'vacancies'
-              ? "text-blue-600 border-blue-600"
-              : "text-gray-500 border-transparent hover:text-gray-700"
-          )}
-        >
-          {t('organization:hr.vacancies', 'Vacancies')}
-        </button>
+            onClick={() => setActiveView('overview')}
+            className={cn(
+              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+              activeView === 'overview'
+                ? "text-blue-600 border-blue-600"
+                : "text-gray-500 border-transparent hover:text-gray-700"
+            )}
+          >
+            {t('organization:hr.overview', 'Overview')}
+          </button>
+          <button
+            onClick={() => setActiveView('sickLeave')}
+            className={cn(
+              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+              activeView === 'sickLeave'
+                ? "text-blue-600 border-blue-600"
+                : "text-gray-500 border-transparent hover:text-gray-700"
+            )}
+          >
+            {t('organization:hr.sickLeave', 'Sick Leave')}
+          </button>
+          <button
+            onClick={() => setActiveView('vacancies')}
+            className={cn(
+              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+              activeView === 'vacancies'
+                ? "text-blue-600 border-blue-600"
+                : "text-gray-500 border-transparent hover:text-gray-700"
+            )}
+          >
+            {t('organization:hr.vacancies', 'Vacancies')}
+          </button>
       </div>
 
       {activeView === 'overview' && (

@@ -60,7 +60,7 @@
     "jobPreferences": "Préférences",
     "documentUploads": "Documents",
     "settings": "Paramètres",
-    "marketplacePreferences": "Marketplace",
+    "marketplacePreferences": "Paramètres",
     "account": "Compte",
     "accountManagement": "Gestion du compte",
     "deleteAccount": "Supprimer le compte"
@@ -168,7 +168,11 @@
     "fullAccess.benefit4": "Complétez votre profil complet maintenant",
     "glnRequired": "Vérification GLN requise pour l'accès complet",
     "backToOnboarding": "Retour à l'intégration",
-    "continueProfile": "Continuer le profil"
+    "continueProfile": "Continuer le profil",
+    "completePersonalTab": {
+      "title": "Compléter les informations personnelles",
+      "message": "Veuillez compléter l'onglet Informations personnelles pour continuer."
+    }
   },
   "personalDetails": {
     "identityInfo": "Informations d'identité",
@@ -461,6 +465,7 @@
     "autofill": "Remplissage automatique",
     "selectDocumentType": "Sélectionnez le type de document",
     "selectDocumentTypePlaceholder": "Sélectionnez le type de document",
+    "billingDocument": "Facturation / Carte de crédit",
     "selectedFile": "Fichier sélectionné",
     "autoFillTitle": "Remplissage automatique",
     "fillProfile": "Remplir le profil",
@@ -471,7 +476,10 @@
     "selectEducationPlaceholder": "Sélectionnez une formation",
     "selectQualificationPlaceholder": "Sélectionnez une qualification",
     "selectReferencePlaceholder": "Sélectionnez une référence",
-    "replaceWorkPermitButton": "Remplacer le permis de travail"
+    "replaceWorkPermitButton": "Remplacer le permis de travail",
+    "uploadIdCardButton": "Télécharger la carte d'identité",
+    "replaceIdCardButton": "Remplacer la carte d'identité",
+    "addIdCardButton": "Ajouter la carte d'identité"
   },
   "onboarding": {
     "title": "Intégration",
@@ -531,6 +539,14 @@
     "note": "Votre progression actuelle sera sauvegardée. Vous pourrez continuer là où vous vous êtes arrêté.",
     "button": "Redémarrer le tutoriel"
   },
+  "errors": {
+    "loadingConfig": "Erreur lors du chargement de la configuration du profil. Veuillez actualiser la page.",
+    "loadingProfile": "Erreur lors du chargement des données du profil",
+    "accessDenied": "Accès refusé. Vous n'avez pas la permission de consulter ce profil.",
+    "notLoggedIn": "Vous devez être connecté pour effectuer cette action",
+    "tooManyRequests": "Trop de requêtes",
+    "popupClosed": "Popup fermé"
+  },
   "settings": {
     "title": "Paramètres & Préférences",
     "subtitle": "Personnalisez votre expérience sur la plateforme, gérez les notifications et contrôlez les paramètres de votre compte.",
@@ -551,11 +567,85 @@
     "smsNotifications": "Notifications SMS",
     "marketplaceNotifications": "Mises à jour du marketplace",
     "scheduleNotifications": "Changements de planning",
-    "contractNotifications": "Mises à jour des contrats"
+    "contractNotifications": "Mises à jour des contrats",
+    "operationalSettingsTitle": "Paramètres opérationnels",
+    "operationalSettingsDescription": "Ajustez vos préférences de plateforme et les exigences de notification.",
+    "contractSettingsTitle": "Paramètres de contrat",
+    "contractSettingsDescription": "Configurez les termes et conditions de contrat par défaut.",
+    "autoRenewal": "Renouvellement automatique",
+    "requiresApproval": "Nécessite une approbation"
   },
   "account": {
     "title": "Compte & Abonnement",
     "subtitle": "Gérez votre abonnement, mot de passe et paramètres de compte.",
     "passwordManagement": "Gestion du mot de passe"
+  },
+  "facilityDetails": {
+    "subtitle": "Assurez-vous que les détails de l'établissement sont exacts et à jour.",
+    "country": "Pays",
+    "selectCountry": "Sélectionnez le pays",
+    "groupTitle_general": "Informations Générales",
+    "groupTitle_address": "Adresse",
+    "groupTitle_legal": "Informations Légales",
+    "groupTitle_legalRep": "Personne Responsable",
+    "groupTitle_billing": "Contact Facturation",
+    "groupTitle_bankingFacility": "Détails Bancaires",
+    "facilityName": "Nom de l'établissement",
+    "facilityNamePlaceholder": "Nom de l'établissement",
+    "facilityType": "Type d'établissement",
+    "selectFacilityType": "Sélectionnez le type",
+    "facilityTypeOther": "Autre type d'établissement (Préciser)",
+    "street": "Rue",
+    "streetPlaceholder": "Nom de la rue",
+    "houseNumber": "Numéro",
+    "houseNumberPlaceholder": "Numéro",
+    "postalCode": "Code postal",
+    "postalPlaceholder": "Code postal",
+    "city": "Ville",
+    "cityPlaceholder": "Ville",
+    "canton": "Canton",
+    "selectCanton": "Sélectionnez le canton",
+    "mainPhoneNumber": "Téléphone Principal",
+    "mainPhoneNumberPlaceholder": "+41 XX XXX XX XX",
+    "mainEmail": "Email Principal",
+    "mainEmailPlaceholder": "info@etablissement.ch",
+    "website": "Site Web",
+    "websitePlaceholder": "https://...",
+    "legalEntityName": "Nom Légal",
+    "uidNumber": "Numéro UID",
+    "uidNumberPlaceholder": "CHE-123.456.789",
+    "uidNumberInfoSwiss": "Numéro d'identification d'entreprise.",
+    "glnNumber": "Numéro GLN",
+    "glnNumberPlaceholder": "7601001000000",
+    "glnNumberInfoSwiss": "Global Location Number (13 chiffres).",
+    "commercialRegisterNumber": "Numéro du Registre du Commerce",
+    "commercialRegisterNumberPlaceholder": "CH-123.4.567.890-1",
+    "legalRepFirstName": "Prénom",
+    "legalRepLastName": "Nom",
+    "legalRepEmail": "Email",
+    "legalRepPhone": "Téléphone",
+    "legalRepNationality": "Nationalité",
+    "legalRepDob": "Date de Naissance",
+    "billingContactName": "Nom du Contact",
+    "billingContactEmail": "Email de Facturation",
+    "billingContactPhone": "Téléphone de Facturation",
+    "billingContactInfo": "Qui doit recevoir les factures ?",
+    "facilityIBAN": "IBAN",
+    "facilityIBANInfo": "IBAN suisse pour les paiements.",
+    "facilityBankName": "Nom de la Banque"
+  },
+  "operations": {
+    "title": "Opérations",
+    "subtitle": "Configurez les horaires d'ouverture et les exigences de personnel pour votre établissement.",
+    "openingHoursTitle": "Horaires d'ouverture",
+    "monday": "Lundi",
+    "tuesday": "Mardi",
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi",
+    "friday": "Vendredi",
+    "saturday": "Samedi",
+    "sunday": "Dimanche",
+    "open": "Ouvert",
+    "closed": "Fermé"
   }
 }

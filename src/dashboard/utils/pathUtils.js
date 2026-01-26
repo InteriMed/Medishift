@@ -42,7 +42,9 @@ export const buildDashboardUrl = (path, workspaceId) => {
 
   // If the first part is already a workspace ID, remove it to re-add later
   const firstPart = parts[0];
-  const isKnownWorkspacePart = firstPart === 'personal' || firstPart === 'admin' || (firstPart && firstPart.length > 10);
+  const isKnownWorkspacePart = firstPart === 'personal' ||
+    firstPart === 'admin' ||
+    (firstPart && (firstPart.startsWith('facility_') || firstPart.length > 20));
 
   const finalPathParts = isKnownWorkspacePart ? parts.slice(1) : parts;
   const subPath = finalPathParts.join('/');

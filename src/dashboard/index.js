@@ -6,34 +6,18 @@ import { PageMobileProvider } from './contexts/PageMobileContext';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner';
 import AdminRoute from './admin/AdminRoute';
+import ProtectedRoute from './admin/components/ProtectedRoute';
 import AdminLayout from './admin/components/AdminLayout';
 import { WORKSPACE_TYPES } from '../utils/sessionAuth';
-import { WorkspaceAwareNavigate, WorkspaceDefaultRedirect } from './components/WorkspaceAwareNavigate';
+import { WorkspaceDefaultRedirect } from './components/WorkspaceAwareNavigate';
 import {
   SHARED_ROUTES,
   PROFESSIONAL_ROUTES,
   FACILITY_ROUTES,
   ADMIN_ROUTES,
-  ACCESS_TYPES,
-  canAccessRoute,
 } from './config/routes';
 
-/**
- * Renders a route element with proper workspace access control
- * Note: Marketplace and Organization routes are always allowed to load
- * Access control is handled at the UI level with popups
- */
-const RouteElement = ({ route, workspaceType, userData }) => {
-  const isAccessible = canAccessRoute(route, workspaceType);
-
-  // Allow marketplace and organization to load even if not fully accessible
-  // They will show access popups at the UI level
-  const isMarketplaceOrOrg = route.id === 'marketplace' || route.id === 'organization';
-
-  if (!isAccessible && !isMarketplaceOrOrg) {
-    return <WorkspaceAwareNavigate to="/dashboard/overview" />;
-  }
-
+const RouteElement = ({ route, userData }) => {
   const Component = route.component;
   return route.passUserData ? <Component userData={userData} /> : <Component />;
 };
@@ -72,25 +56,33 @@ const Dashboard = () => {
               <LoadingSpinner />
             ) : (
               <Routes>
-                {/* Default redirect */}
-                <Route path="/" element={<WorkspaceDefaultRedirect />} />
+                {/* Default redirect - handle global routes explicitly at index */}
+                <Route index element={
+                  location.pathname.endsWith('/marketplace') ? (
+                    <RouteElement
+                      route={SHARED_ROUTES.find(r => r.id === 'marketplace')}
+                      userData={userData}
+                    />
+                  ) : (
+                    <WorkspaceDefaultRedirect />
+                  )
+                } />
 
-                {/* Shared routes - accessible from all workspace types */}
-                {SHARED_ROUTES.map(route => (
+                {/* Shared routes */}
+                {SHARED_ROUTES.filter(r => !(isAdminWorkspace && r.id === 'profile')).map(route => (
                   <Route
                     key={route.id}
                     path={route.path}
                     element={
                       <RouteElement
                         route={route}
-                        workspaceType={workspaceType}
                         userData={userData}
                       />
                     }
                   />
                 ))}
 
-                {/* Professional routes - accessible from personal and facility workspaces */}
+                {/* Professional routes */}
                 {PROFESSIONAL_ROUTES.map(route => (
                   <Route
                     key={route.id}
@@ -98,14 +90,13 @@ const Dashboard = () => {
                     element={
                       <RouteElement
                         route={route}
-                        workspaceType={workspaceType}
                         userData={userData}
                       />
                     }
                   />
                 ))}
 
-                {/* Facility routes - accessible from facility workspace only */}
+                {/* Facility routes */}
                 {FACILITY_ROUTES.map(route => (
                   <Route
                     key={route.id}
@@ -113,7 +104,6 @@ const Dashboard = () => {
                     element={
                       <RouteElement
                         route={route}
-                        workspaceType={workspaceType}
                         userData={userData}
                       />
                     }
@@ -128,9 +118,11 @@ const Dashboard = () => {
                     path={route.path}
                     element={
                       <AdminRoute>
-                        <AdminLayout>
-                          <route.component />
-                        </AdminLayout>
+                        <ProtectedRoute requiredRight={route.permission}>
+                          <AdminLayout>
+                            <route.component />
+                          </AdminLayout>
+                        </ProtectedRoute>
                       </AdminRoute>
                     }
                   />

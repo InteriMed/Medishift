@@ -1,6 +1,6 @@
 .dashboard-layout-wrapper {
   min-height: 100vh;
-  background: var(--dashboard-bg, #f1f4f7);
+  background: var(--dashboard-bg, #ffffff);
   position: relative;
   overflow: visible;
 }
@@ -17,8 +17,8 @@
 }
 
 .dashboard-layout-content main[data-dashboard="true"] {
-  height: calc(100vh - 4rem);
-  max-height: calc(100vh - 4rem);
+  height: calc(100vh - 3.5rem);
+  max-height: calc(100vh - 3.5rem);
   overflow: visible;
   margin: 0;
   padding: 0;

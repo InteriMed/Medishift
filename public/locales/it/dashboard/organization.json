@@ -2,6 +2,9 @@
   "title": "Organizzazione",
   "subtitle": "Gestisci la tua catena di farmacie",
   "noOrg": "Crea o unisciti a un'organizzazione",
+  "tabs": {
+    "profile": "Profilo"
+  },
   "sections": {
     "info": "Info Organizzazione",
     "facilities": "Strutture Affiliate",

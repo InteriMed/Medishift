@@ -10,7 +10,25 @@ const functions = getFunctions(firebaseApp, 'europe-west6');
 export const isAdmin = (userProfile) => {
   if (!userProfile) return false;
   
-  if (userProfile.adminData && userProfile.adminData.isActive !== false) {
+  if (userProfile.adminData) {
+    if (userProfile.adminData.isActive === false) return false;
+    
+    const adminRoles = Array.isArray(userProfile.adminData.roles) ? userProfile.adminData.roles : [];
+    if (adminRoles.includes('superAdmin') || adminRoles.includes('super_admin')) {
+      return true;
+    }
+    
+    if (userProfile.adminData.rights && Array.isArray(userProfile.adminData.rights) && userProfile.adminData.rights.length > 0) {
+      return true;
+    }
+    
+    if (userProfile.adminData.role === 'superAdmin' || userProfile.adminData.role === 'super_admin' || userProfile.adminData.role === 'admin') {
+      return true;
+    }
+  }
+  
+  const userRoles = Array.isArray(userProfile.roles) ? userProfile.roles : [];
+  if (userRoles.includes('superAdmin') || userRoles.includes('super_admin') || userRoles.includes('admin')) {
     return true;
   }
   
@@ -205,43 +223,4 @@ export const getMonthlyRevenue = async (month, year) => {
   }
 };
 
-export const seedMedishiftDemoFacility = async () => {
-  try {
-    const seedDemoFacility = httpsCallable(functions, 'seedDemoFacility');
-    const result = await seedDemoFacility();
-    
-    if (result.data.success) {
-      return {
-        success: true,
-        facilityId: result.data.facilityId,
-        adminCount: result.data.adminCount,
-        message: `Demo facility created successfully for ${result.data.adminCount} admin(s)`
-      };
-    } else {
-      throw new Error(result.data.message || 'Failed to seed demo facility');
-    }
-  } catch (error) {
-    console.error('Error seeding demo facility:', error);
-    throw error;
-  }
-};
-
-export const removeMedishiftDemoFacility = async () => {
-  try {
-    const removeDemoFacility = httpsCallable(functions, 'removeDemoFacility');
-    const result = await removeDemoFacility();
-    
-    if (result.data.success) {
-      return {
-        success: true,
-        message: 'Demo facility removed successfully'
-      };
-    } else {
-      throw new Error(result.data.message || 'Failed to remove demo facility');
-    }
-  } catch (error) {
-    console.error('Error removing demo facility:', error);
-    throw error;
-  }
-};
 

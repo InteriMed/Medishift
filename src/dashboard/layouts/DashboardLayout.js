@@ -90,7 +90,7 @@ export function DashboardLayout({ children }) {
                 )}
 
                 {/* Overlay Sidebar for 768px <= viewport < 1200px - Hidden for admin routes */}
-                {!isAdminRoute && isOverlayMode && (
+                {!isAdminRoute && isOverlayMode && !isMobileMenuOpen && (
                     <>
                         {!isSidebarCollapsed && (
                             <div
@@ -123,6 +123,23 @@ export function DashboardLayout({ children }) {
                     </>
                 )}
 
+                {/* Overlay Sidebar for 768px <= viewport < 1200px when menu is open - Hidden for admin routes */}
+                {!isAdminRoute && isOverlayMode && isMobileMenuOpen && (
+                    <>
+                        <div
+                            className="fixed inset-0 bg-black/50 z-[45]"
+                            onClick={closeMobileMenu}
+                        />
+                        <Sidebar
+                            collapsed={false}
+                            onToggle={closeMobileMenu}
+                            isMobile={false}
+                            isOverlayMode={true}
+                            isOverlayExpanded={true}
+                        />
+                    </>
+                )}
+
                 {/* Main Content Area */}
                 <div 
                     className={cn(
@@ -151,9 +168,9 @@ export function DashboardLayout({ children }) {
                         style={{ 
                             position: 'relative', 
                             zIndex: 0,
-                            height: 'calc(100vh - 4rem)',
+                            height: 'calc(100vh - 3.5rem)',
                             overflow: 'visible',
-                            marginTop: '4rem',
+                            marginTop: '3.5rem',
                             padding: 0,
                             width: '100%'
                         }} 

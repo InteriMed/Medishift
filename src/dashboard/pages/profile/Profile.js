@@ -3,23 +3,20 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cloneDeep } from 'lodash';
-import { FiUpload, FiFileText, FiZap, FiAlertCircle } from 'react-icons/fi';
+import { FiUpload, FiFileText, FiZap, FiAlertCircle, FiUser, FiBriefcase, FiCreditCard, FiSettings, FiHome } from 'react-icons/fi';
 
 import { useAuth } from '../../../contexts/AuthContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import useProfileData from '../../hooks/useProfileData';
 import { useDashboard } from '../../contexts/DashboardContext';
-import { useMobileView } from '../../hooks/useMobileView';
-import { usePageMobile } from '../../contexts/PageMobileContext';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
 
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import Button from '../../../components/BoxedInputFields/Button';
 import Dialog from '../../../components/Dialog/Dialog';
 import UploadFile from '../../../components/BoxedInputFields/UploadFile';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
-import ProfileHeader from './components/ProfileHeader';
 import PageHeader from '../../components/PageHeader/PageHeader';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
 import { mergeOnboardingDocuments } from '../../utils/mergeOnboardingDocuments';
 import { getAllMockData, getMockDataForTab } from './utils/mockProfileData';
 import PersonalDetails from './professionals/components/PersonalDetails';
@@ -34,15 +31,13 @@ import FacilityAccount from './facilities/components/Account';
 import FacilitySettings from './facilities/components/Settings';
 import { cn } from '../../../utils/cn';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { hasFacilityAccessSync, isAdminSync } from '../../../config/workspaceDefinitions';
 
-import { useProfileTutorial } from './hooks/useProfileTutorial';
 import { useProfileConfig } from './hooks/useProfileConfig';
 import { useProfileValidation } from './hooks/useProfileValidation';
 import { useProfileDocumentProcessing } from './hooks/useProfileDocumentProcessing';
 import { useProfileFormHandlers } from './hooks/useProfileFormHandlers';
 import { calculateProfileCompleteness, isTabCompleted, isTabAccessible } from './utils/profileUtils';
-import { useTutorial } from '../../contexts/TutorialContext';
-import { isProfileTabAccessible as checkTutorialProfileTabAccess, getTabOrder } from '../../../config/tutorialSystem';
 
 export { calculateProfileCompleteness, isTabCompleted, isTabAccessible };
 
@@ -53,21 +48,6 @@ const Profile = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { setProfileCompletionStatus, selectedWorkspace } = useDashboard();
-    const isMobile = useMobileView();
-    // Custom breakpoint for Profile page tabbed layout (1200px)
-    const [isTabbedLayout, setIsTabbedLayout] = useState(() => {
-        return typeof window !== 'undefined' ? window.innerWidth < 1200 : false;
-    });
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsTabbedLayout(window.innerWidth < 1200);
-        };
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-    const pageMobileContext = usePageMobile();
 
     const {
         profileData: initialProfileData,
@@ -79,13 +59,17 @@ const Profile = () => {
 
     const [activeTab, setActiveTab] = useState('');
     const [subscriptionStatus, setSubscriptionStatus] = useState('free');
-    const [isProfileMenuCollapsed, setIsProfileMenuCollapsed] = useState(false);
-    const [showSidebar, setShowSidebar] = useState(true);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const originalData = useRef(null);
     const autoFillButtonRef = useRef(null);
 
-    const { profileConfig, isLoadingConfig, formData, setFormData } = useProfileConfig(initialProfileData);
+    const { profileConfig: baseProfileConfig, isLoadingConfig, formData, setFormData } = useProfileConfig(initialProfileData);
+
+    const profileConfig = useMemo(() => {
+        if (!baseProfileConfig || !userProfile) return baseProfileConfig;
+
+        return baseProfileConfig;
+    }, [baseProfileConfig, userProfile, selectedWorkspace, formData]);
 
     useEffect(() => {
         if (formData && profileConfig) {
@@ -106,51 +90,10 @@ const Profile = () => {
         isLoadingData
     );
 
-    const { accessLevelChoice, onboardingType } = useTutorial();
-    const tutorial = useProfileTutorial(formData);
-    const { isTutorialActive, activeTutorial, stepData, onTabCompleted, maxAccessedProfileTab, syncProfileInitialState } = tutorial;
-
-    const hasSyncedInitialRef = useRef(false);
-    useEffect(() => {
-        if (isTutorialActive && accessLevelChoice !== 'full' && formData && profileConfig && !hasSyncedInitialRef.current) {
-            syncProfileInitialState(formData, profileConfig);
-            hasSyncedInitialRef.current = true;
-        }
-        if (!isTutorialActive) {
-            hasSyncedInitialRef.current = false;
-        }
-    }, [isTutorialActive, accessLevelChoice, formData, profileConfig, syncProfileInitialState]);
-
-    // Tabs that require full access (locked for team/no access outside tutorial)
-    const lockedTabsOutsideTutorial = useMemo(() => ['professionalBackground', 'billingInformation', 'documentUploads', 'marketplace'], []);
-
-    // TUTORIAL-AWARE TAB ACCESSIBILITY
-    const isTabAccessibleDuringTutorial = useCallback((data, tabId, config) => {
-        // 1. Outside Tutorial: Check access level locking
-        if (!isTutorialActive && accessLevelChoice !== 'full' && lockedTabsOutsideTutorial.includes(tabId)) {
-            return false;
-        }
-
-        // 2. Tutorial Mode: Centralized logic based on highlight system & progress
-        if (isTutorialActive) {
-            return checkTutorialProfileTabAccess(tabId, {
-                isTutorialActive,
-                maxAccessedProfileTab,
-                onboardingType,
-                accessMode: accessLevelChoice,
-                highlightTab: stepData?.highlightTab
-            });
-        }
-
-        // 3. Normal Mode Fallback:
-        if (tabId === 'account' || tabId === 'marketplace') {
-            return true;
-        }
-
-        return isTabAccessible(data, tabId, config);
-    }, [isTutorialActive, maxAccessedProfileTab, onboardingType, accessLevelChoice, stepData?.highlightTab, lockedTabsOutsideTutorial]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const isInOrganizationContext = location.pathname.includes('/organization');
 
     const {
         handleInputChange,
@@ -160,7 +103,7 @@ const Profile = () => {
         handleSave,
         handleSaveOnly,
         handleSaveAndContinue,
-        handleTabChange,
+        handleTabChange: originalHandleTabChange,
         handleCancelChanges,
         confirmCancelChanges,
         isFormModified
@@ -174,11 +117,22 @@ const Profile = () => {
         updateProfileData,
         validateCurrentTabData,
         setErrors,
-        isTutorialActive,
-        activeTutorial,
-        onTabCompleted,
         setIsSubmitting
     );
+
+    const handleTabChange = useCallback((tabId) => {
+        if (tabId === activeTab) return;
+        
+        if (isFormModified) {
+            handleSave({ navigateToNextTab: false }).then((saveSuccess) => {
+                if (saveSuccess) {
+                    setActiveTab(tabId);
+                }
+            });
+        } else {
+            setActiveTab(tabId);
+        }
+    }, [activeTab, isFormModified, handleSave, setActiveTab]);
 
     const documentProcessing = useProfileDocumentProcessing(
         formData,
@@ -254,61 +208,30 @@ const Profile = () => {
     }, [formData, initialProfileData]);
 
     useEffect(() => {
-        const pathParts = location.pathname.split('/');
-        const tabFromUrl = pathParts[pathParts.length - 1];
-        const validTabIds = profileConfig?.tabs?.map(t => t.id) || [];
+        if (!profileConfig || !formData || isLoadingConfig || isLoadingData) return;
+        
+        const searchParams = new URLSearchParams(location.search);
+        const tabFromUrl = searchParams.get('tab');
+        const validTabIds = profileConfig.tabs.map(t => t.id);
 
-        let targetTab = '';
-
-        if (tabFromUrl && validTabIds.includes(tabFromUrl)) {
-            const isAccessible = isTabAccessibleDuringTutorial(formData, tabFromUrl, profileConfig);
-            if (isAccessible) {
-                targetTab = tabFromUrl;
-            } else {
-                targetTab = validTabIds.find(id => isTabAccessibleDuringTutorial(formData, id, profileConfig)) || validTabIds[0];
-                showNotification(t('validation:completePreviousSteps'), 'warning');
-            }
-        } else {
-            targetTab = validTabIds.find(id => isTabAccessibleDuringTutorial(formData, id, profileConfig)) || validTabIds[0];
-        }
-
-        if (targetTab && targetTab !== activeTab) {
-            setActiveTab(targetTab);
-        }
-
-        const currentUrlEnd = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
-        if (targetTab && targetTab !== currentUrlEnd) {
-            const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl(`/profile/${targetTab}`, workspaceId), { replace: true });
-        }
-    }, [location.pathname, profileConfig, formData, isLoadingConfig, isLoadingData, activeTab, navigate, showNotification, t, selectedWorkspace, isTabAccessibleDuringTutorial]);
-
-    // Progressive Tutorial Logic: Auto-trigger completion check on tab activation or data change
-    useEffect(() => {
-        if (isTutorialActive && accessLevelChoice !== 'full' && activeTab && formData && profileConfig) {
-            const isComplete = isTabCompleted(formData, activeTab, profileConfig);
-            console.log(`[Profile] Progressive Check: ${activeTab} complete = ${isComplete}`);
-            if (isComplete) {
-                onTabCompleted(activeTab, true);
+        if (tabFromUrl && validTabIds.includes(tabFromUrl) && tabFromUrl !== activeTab) {
+            setActiveTab(tabFromUrl);
+        } else if (!tabFromUrl && activeTab) {
+            const pathParts = location.pathname.split('/').filter(Boolean);
+            const profileIndex = pathParts.findIndex(part => part === 'profile');
+            const tabFromPath = profileIndex >= 0 && profileIndex < pathParts.length - 1 
+                ? pathParts[profileIndex + 1] 
+                : null;
+            
+            if (tabFromPath && validTabIds.includes(tabFromPath) && tabFromPath !== activeTab) {
+                setActiveTab(tabFromPath);
             }
         }
-    }, [activeTab, isTutorialActive, accessLevelChoice, formData, profileConfig, onTabCompleted]);
+    }, [location.pathname, location.search, profileConfig, formData, isLoadingConfig, isLoadingData, activeTab]);
 
-    useEffect(() => {
-        const setPageMobileState = pageMobileContext?.setPageMobileState;
-        if (!setPageMobileState || typeof setPageMobileState !== 'function') {
-            return;
-        }
-        if (isMobile && activeTab && !showSidebar) {
-            const handleBack = () => {
-                setActiveTab(profileConfig?.tabs?.[0]?.id || '');
-                setShowSidebar(true);
-            };
-            setPageMobileState(true, handleBack);
-        } else {
-            setPageMobileState(false, null);
-        }
-    }, [isMobile, activeTab, showSidebar, profileConfig, pageMobileContext]);
+    const hasInitializedRef = useRef(false);
+
+
 
     const handleCancelClick = () => {
         const shouldShowDialog = handleCancelChanges();
@@ -344,12 +267,14 @@ const Profile = () => {
     };
 
     const isLoading = isLoadingData || isLoadingConfig;
+    const isProfessional = initialProfileData?.role === 'professional';
     const renderLoadingOrError = () => {
         if (isLoading && !formData) return <LoadingSpinner />;
         if (profileError) return <div className="p-8 text-center text-red-500">{t('errors.loadingProfile')}: {profileError.message}</div>;
         if (!profileConfig && !isLoading && initialProfileData) return <div className="p-8 text-center text-red-500">{t('errors.loadingConfig')}</div>;
+        const isAdmin = isAdminSync(userProfile);
         const validRoles = ['professional', 'facility', 'company'];
-        if (initialProfileData && initialProfileData.role && !validRoles.includes(initialProfileData.role)) {
+        if (initialProfileData && initialProfileData.role && !validRoles.includes(initialProfileData.role) && !isAdmin) {
             return <div className="p-8 text-center text-red-500">{t('errors.accessDenied')}</div>;
         }
         return null;
@@ -370,8 +295,6 @@ const Profile = () => {
             onCancel: handleCancelClick,
             getNestedValue,
             validateCurrentTabData,
-            onTabCompleted,
-            isTutorialActive,
             completionPercentage,
             handleAutoFillClick,
             isUploading,
@@ -385,17 +308,17 @@ const Profile = () => {
         const isFacility = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM;
 
         switch (activeTab) {
-            case 'personalDetails': return <PersonalDetails {...commonProps} onTriggerUpload={handleUploadButtonClick} t={t} stepData={stepData} />;
-            case 'professionalBackground': return <ProfessionalBackground {...commonProps} t={t} stepData={stepData} />;
-            case 'billingInformation': return <BillingInformation {...commonProps} t={t} stepData={stepData} />;
-            case 'documentUploads': return <ProfessionalDocumentUploads {...commonProps} t={t} stepData={stepData} />;
-            case 'facilityCoreDetails': return <FacilityDetails activeTab={activeTab} {...commonProps} t={t} stepData={stepData} />;
-            case 'facilityLegalBilling': return <FacilityBillingInformation {...commonProps} t={t} stepData={stepData} />;
+            case 'personalDetails': return <PersonalDetails {...commonProps} onTriggerUpload={handleUploadButtonClick} t={t} />;
+            case 'professionalBackground': return <ProfessionalBackground {...commonProps} t={t} />;
+            case 'billingInformation': return <BillingInformation {...commonProps} t={t} />;
+            case 'documentUploads': return <ProfessionalDocumentUploads {...commonProps} t={t} />;
+            case 'facilityCoreDetails': return <FacilityDetails activeTab={activeTab} {...commonProps} t={t} />;
+            case 'facilityLegalBilling': return <FacilityBillingInformation {...commonProps} t={t} />;
             case 'account':
-                return isFacility ? <FacilityAccount {...commonProps} t={t} stepData={stepData} /> : <ProfessionalAccount {...commonProps} t={t} stepData={stepData} />;
+                return isFacility ? <FacilityAccount {...commonProps} t={t} /> : <ProfessionalAccount {...commonProps} t={t} />;
             case 'subscription':
             case 'marketplace':
-                return isFacility ? <FacilitySettings {...commonProps} t={t} stepData={stepData} /> : <ProfessionalSettings {...commonProps} t={t} stepData={stepData} />;
+                return isFacility ? <FacilitySettings {...commonProps} t={t} /> : <ProfessionalSettings {...commonProps} t={t} />;
             default: return <div>{t('common.selectTab')}</div>;
         }
     };
@@ -407,12 +330,12 @@ const Profile = () => {
         if (!profileConfig || !formData) return null;
         const tabs = profileConfig.tabs || [];
         for (const tab of tabs) {
-            if (!isTabCompleted(formData, tab.id, profileConfig) && isTabAccessibleDuringTutorial(formData, tab.id, profileConfig)) {
+            if (!isTabCompleted(formData, tab.id, profileConfig)) {
                 return tab.id;
             }
         }
         return null;
-    }, [formData, profileConfig, isTabAccessibleDuringTutorial]);
+    }, [formData, profileConfig]);
 
     const getNextTab = useCallback((currentTabId) => {
         if (!profileConfig) return null;
@@ -424,11 +347,333 @@ const Profile = () => {
         return null;
     }, [profileConfig]);
 
+    const getIconForTab = useCallback((tabId) => {
+        switch (tabId) {
+            case 'personalDetails':
+                return <FiUser className="w-4 h-4 shrink-0" />;
+            case 'professionalBackground':
+                return <FiBriefcase className="w-4 h-4 shrink-0" />;
+            case 'billingInformation':
+                return <FiCreditCard className="w-4 h-4 shrink-0" />;
+            case 'documentUploads':
+                return <FiFileText className="w-4 h-4 shrink-0" />;
+            case 'facilityCoreDetails':
+                return <FiUser className="w-4 h-4 shrink-0" />;
+            case 'facilityLegalBilling':
+                return <FiCreditCard className="w-4 h-4 shrink-0" />;
+            case 'settings':
+                return <FiBriefcase className="w-4 h-4 shrink-0" />;
+            case 'marketplace':
+                return <FiHome className="w-4 h-4 shrink-0" />;
+            case 'account':
+                return <FiSettings className="w-4 h-4 shrink-0" />;
+            default:
+                return <FiUser className="w-4 h-4 shrink-0" />;
+        }
+    }, []);
+
+    const getTabTitle = useCallback((tabId) => {
+        if (!profileConfig) return '';
+        const tab = profileConfig.tabs.find(t => t.id === tabId);
+        if (tab) {
+            return t(tab.labelKey, tab.id);
+        }
+        return '';
+    }, [profileConfig, t]);
+
+    const getTabSubtitle = useCallback((tabId) => {
+        switch (tabId) {
+            case 'personalDetails':
+                return t('dashboardProfile:personalDetails.subtitle', 'Manage your personal information and contact details.');
+            case 'professionalBackground':
+                return t('dashboardProfile:professionalBackground.subtitle', 'Manage your work experience and education');
+            case 'billingInformation':
+                return t('dashboardProfile:billingInformation.subtitle', 'Manage your banking details and billing information for payments.');
+            case 'documentUploads':
+                return t('dashboardProfile:documents.subtitle', 'Securely upload and manage your required documents');
+            case 'facilityCoreDetails':
+                return t('dashboardProfile:facilityDetails.subtitle', 'Please ensure facility details are accurate and up to date.');
+            case 'facilityLegalBilling':
+                return t('dashboardProfile:billingInformation.subtitle', 'Manage your banking details and billing information for payments.');
+            case 'marketplace':
+            case 'settings':
+                return t('dashboardProfile:settings.subtitle', 'Customize your platform experience, manage notifications, and control your account settings.');
+            case 'account':
+                return t('dashboardProfile:account.subtitle', 'Manage your subscription, password, and account settings.');
+            default:
+                return '';
+        }
+    }, [t]);
+
+    const [showAutofillMenu, setShowAutofillMenu] = useState(false);
+    const autofillMenuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (autofillMenuRef.current && !autofillMenuRef.current.contains(event.target)) {
+                setShowAutofillMenu(false);
+            }
+        };
+        if (showAutofillMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showAutofillMenu]);
+
     return (
         <>
             <div className={cn(
                 "h-full flex flex-col animate-in fade-in duration-500 [&_button]:!text-sm profile-page"
             )} style={{ overflow: 'visible' }}>
+                {isProfessional && !isInOrganizationContext ? (
+                    <>
+                        {!isInOrganizationContext && (
+                            <PageHeader
+                                title={activeTab ? getTabTitle(activeTab) : t('dashboardProfile:title', 'Profile')}
+                                subtitle={activeTab ? getTabSubtitle(activeTab) : t('dashboardProfile:subtitle', 'Manage your profile information')}
+                                actions={
+                                    <div className="relative" ref={autofillMenuRef}>
+                                        {showAutofillMenu && (
+                                            <div className="absolute right-0 top-full mt-2 w-64 bg-white border-2 border-[var(--red-2)] rounded-lg shadow-xl z-[200000] animate-in slide-in-from-top-2 duration-200 overflow-hidden">
+                                                <div className="px-4 py-3 bg-white border-b-2 border-[var(--red-2)] text-[var(--red-4)] flex gap-3 items-center">
+                                                    <div className="flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-full bg-[var(--red-2)]/20 flex items-center justify-center border-2 border-[var(--red-2)]">
+                                                            <FiZap className="w-4 h-4 text-[var(--red-4)]" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-bold text-sm text-[var(--red-4)]">{t('dashboardProfile:common.autofillOptions')}</h4>
+                                                    </div>
+                                                </div>
+                                                <div className="px-4 py-3 flex items-center justify-between gap-3">
+                                                    <button
+                                                        onClick={() => {
+                                                            handleAutofill('current');
+                                                            setShowAutofillMenu(false);
+                                                        }}
+                                                        className="flex-1 text-left px-4 py-2.5 text-sm text-[var(--red-4)]/90 hover:bg-[var(--red-2)]/10 transition-colors flex items-center gap-2 rounded"
+                                                    >
+                                                        <FiZap className="w-3.5 h-3.5 text-[var(--red-4)]" />
+                                                        {t('dashboardProfile:common.fillCurrentTab')}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleAutofill('all');
+                                                            setShowAutofillMenu(false);
+                                                        }}
+                                                        className="flex-1 text-right px-4 py-2.5 text-sm font-semibold text-[var(--red-4)] hover:bg-[var(--red-2)]/10 transition-colors flex items-center justify-end gap-2 rounded"
+                                                    >
+                                                        {t('dashboardProfile:common.fillAll')}
+                                                        <FiZap className="w-3.5 h-3.5 text-[var(--red-4)]" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => setShowAutofillMenu(!showAutofillMenu)}
+                                            data-tutorial="profile-upload-button"
+                                            className={cn(
+                                                "flex items-center gap-2 px-4 py-2 rounded-lg border border-border",
+                                                "hover:bg-muted transition-colors",
+                                                showAutofillMenu && "bg-muted/30"
+                                            )}
+                                            title={t('dashboardProfile:common.autofillOptions')}
+                                        >
+                                            <FiZap className="w-4 h-4" />
+                                            <span className="text-sm font-medium">{t('dashboardProfile:common.betaFill')}</span>
+                                        </button>
+                                    </div>
+                                }
+                                variant="default"
+                            />
+                        )}
+
+                        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                            {profileConfig && formData && (
+                                <div className="shrink-0 pt-0">
+                                    <div className="flex gap-2 border-b border-border overflow-x-auto max-w-[1400px] mx-auto px-6">
+                                        {profileConfig.tabs.map((tab) => {
+                                            const isTabCompletedValue = isTabCompleted(formData, tab.id, profileConfig);
+                                            const isActive = activeTab === tab.id;
+                                            const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+                                            
+                                            return (
+                                                <button
+                                                    key={tab.id}
+                                                    onClick={async () => {
+                                                        if (tab.id === activeTab) return;
+                                                        
+                                                        if (isFormModified) {
+                                                            const saveSuccess = await handleSave({ navigateToNextTab: false });
+                                                            if (saveSuccess) {
+                                                                setActiveTab(tab.id);
+                                                                const profilePath = isInOrganizationContext 
+                                                                    ? `/organization/profile`
+                                                                    : `/profile`;
+                                                                navigate(buildDashboardUrl(`${profilePath}?tab=${tab.id}`, workspaceId));
+                                                            }
+                                                        } else {
+                                                            setActiveTab(tab.id);
+                                                            const profilePath = isInOrganizationContext 
+                                                                ? `/organization/profile`
+                                                                : `/profile`;
+                                                            navigate(buildDashboardUrl(`${profilePath}?tab=${tab.id}`, workspaceId));
+                                                        }
+                                                    }}
+                                                    className={cn(
+                                                        "px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap",
+                                                        isActive
+                                                            ? "border-primary text-primary"
+                                                            : "border-transparent text-muted-foreground hover:text-foreground"
+                                                    )}
+                                                >
+                                                    {getIconForTab(tab.id)}
+                                                    <span>{t(tab.labelKey, tab.id)}</span>
+                                                    {isTabCompletedValue && (
+                                                        <span className="text-green-500">✓</span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex-1 overflow-auto p-6">
+                                {renderLoadingOrError() || (
+                                    <div className="animate-in slide-in-from-bottom-2 duration-500 h-full">
+                                        {currentTabComponent()}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        {!isInOrganizationContext && (
+                            <PageHeader
+                                title={activeTab ? getTabTitle(activeTab) : t('dashboardProfile:title', 'Profile')}
+                                subtitle={activeTab ? getTabSubtitle(activeTab) : t('dashboardProfile:subtitle', 'Manage your profile information')}
+                                actions={
+                                    <div className="relative" ref={autofillMenuRef}>
+                                        {showAutofillMenu && (
+                                            <div className="absolute right-0 top-full mt-2 w-64 bg-white border-2 border-[var(--red-2)] rounded-lg shadow-xl z-[200000] animate-in slide-in-from-top-2 duration-200 overflow-hidden">
+                                                <div className="px-4 py-3 bg-white border-b-2 border-[var(--red-2)] text-[var(--red-4)] flex gap-3 items-center">
+                                                    <div className="flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-full bg-[var(--red-2)]/20 flex items-center justify-center border-2 border-[var(--red-2)]">
+                                                            <FiZap className="w-4 h-4 text-[var(--red-4)]" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-bold text-sm text-[var(--red-4)]">{t('dashboardProfile:common.autofillOptions')}</h4>
+                                                    </div>
+                                                </div>
+                                                <div className="px-4 py-3 flex items-center justify-between gap-3">
+                                                    <button
+                                                        onClick={() => {
+                                                            handleAutofill('current');
+                                                            setShowAutofillMenu(false);
+                                                        }}
+                                                        className="flex-1 text-left px-4 py-2.5 text-sm text-[var(--red-4)]/90 hover:bg-[var(--red-2)]/10 transition-colors flex items-center gap-2 rounded"
+                                                    >
+                                                        <FiZap className="w-3.5 h-3.5 text-[var(--red-4)]" />
+                                                        {t('dashboardProfile:common.fillCurrentTab')}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleAutofill('all');
+                                                            setShowAutofillMenu(false);
+                                                        }}
+                                                        className="flex-1 text-right px-4 py-2.5 text-sm font-semibold text-[var(--red-4)] hover:bg-[var(--red-2)]/10 transition-colors flex items-center justify-end gap-2 rounded"
+                                                    >
+                                                        {t('dashboardProfile:common.fillAll')}
+                                                        <FiZap className="w-3.5 h-3.5 text-[var(--red-4)]" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => setShowAutofillMenu(!showAutofillMenu)}
+                                            data-tutorial="profile-upload-button"
+                                            className={cn(
+                                                "flex items-center gap-2 px-4 py-2 rounded-lg border border-border",
+                                                "hover:bg-muted transition-colors",
+                                                showAutofillMenu && "bg-muted/30"
+                                            )}
+                                            title={t('dashboardProfile:common.autofillOptions')}
+                                        >
+                                            <FiZap className="w-4 h-4" />
+                                            <span className="text-sm font-medium">{t('dashboardProfile:common.betaFill')}</span>
+                                        </button>
+                                    </div>
+                                }
+                                variant="default"
+                            />
+                        )}
+
+                        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                            {profileConfig && formData && (
+                                <div className="shrink-0 pt-0">
+                                    <div className="flex gap-2 border-b border-border overflow-x-auto max-w-[1400px] mx-auto px-6">
+                                        {profileConfig.tabs.map((tab) => {
+                                            const isTabCompletedValue = isTabCompleted(formData, tab.id, profileConfig);
+                                            const isActive = activeTab === tab.id;
+                                            const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+                                            
+                                            return (
+                                                <button
+                                                    key={tab.id}
+                                                    onClick={async () => {
+                                                        if (tab.id === activeTab) return;
+                                                        
+                                                        if (isFormModified) {
+                                                            const saveSuccess = await handleSave({ navigateToNextTab: false });
+                                                            if (saveSuccess) {
+                                                                setActiveTab(tab.id);
+                                                                const profilePath = isInOrganizationContext 
+                                                                    ? `/organization/profile`
+                                                                    : `/profile`;
+                                                                navigate(buildDashboardUrl(`${profilePath}?tab=${tab.id}`, workspaceId));
+                                                            }
+                                                        } else {
+                                                            setActiveTab(tab.id);
+                                                            const profilePath = isInOrganizationContext 
+                                                                ? `/organization/profile`
+                                                                : `/profile`;
+                                                            navigate(buildDashboardUrl(`${profilePath}?tab=${tab.id}`, workspaceId));
+                                                        }
+                                                    }}
+                                                    className={cn(
+                                                        "px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap",
+                                                        isActive
+                                                            ? "border-primary text-primary"
+                                                            : "border-transparent text-muted-foreground hover:text-foreground"
+                                                    )}
+                                                >
+                                                    {getIconForTab(tab.id)}
+                                                    <span>{t(tab.labelKey, tab.id)}</span>
+                                                    {isTabCompletedValue && (
+                                                        <span className="text-green-500">✓</span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex-1 overflow-auto p-6">
+                                {renderLoadingOrError() || (
+                                    <div className="animate-in slide-in-from-bottom-2 duration-500 h-full">
+                                        {currentTabComponent()}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </>
+                )}
 
                 <Dialog
                     isOpen={showAutoFillDialog}
@@ -580,69 +825,6 @@ const Profile = () => {
                         </ul>
                     </div>
                 </Dialog>
-
-                <div className={cn(
-                    "flex-1 flex min-h-0 relative mx-4 my-4",
-                    isTabbedLayout ? "flex-col p-0 gap-4" : "gap-6"
-                )} style={{ overflow: 'visible' }}>
-                    <div
-                        className={cn(
-                            "transition-all duration-300 ease-in-out",
-                            isTabbedLayout
-                                ? "w-full z-10 sticky top-0"
-                                : cn(
-                                    "dashboard-sidebar-container",
-                                    isProfileMenuCollapsed ? "w-[70px]" : "dashboard-sidebar-container-desktop"
-                                )
-                        )}
-                        style={{ overflow: 'visible' }}
-                    >
-                        {profileConfig && formData && (
-                            <ProfileHeader
-                                profile={formData}
-                                config={profileConfig}
-                                activeTab={activeTab}
-                                onTabChange={handleTabChange}
-                                isTabCompleted={(tabId) => isTabCompleted(formData, tabId, profileConfig)}
-                                isTabAccessible={(data, tabId, config) => isTabAccessibleDuringTutorial(data, tabId, config)}
-                                nextIncompleteSection={nextIncompleteTab}
-                                highlightTabId={(() => {
-                                    if (isTutorialActive && accessLevelChoice !== 'full' && maxAccessedProfileTab) {
-                                        const tabOrder = getTabOrder(onboardingType);
-                                        const maxIdx = tabOrder.indexOf(maxAccessedProfileTab);
-
-                                        for (let i = 0; i <= maxIdx; i++) {
-                                            const tab = tabOrder[i];
-                                            if (!isTabCompleted(formData, tab, profileConfig)) {
-                                                return tab;
-                                            }
-                                        }
-
-                                        const result = tabOrder[maxIdx];
-                                        return result;
-                                    }
-
-                                    return nextIncompleteTab;
-                                })()}
-                                collapsed={!isTabbedLayout && isProfileMenuCollapsed}
-                                onToggle={() => setIsProfileMenuCollapsed(!isProfileMenuCollapsed)}
-                                onAutofill={handleAutofill}
-                                customMobileState={isTabbedLayout}
-                            />
-                        )}
-                    </div>
-
-                    <div className={cn(
-                        "dashboard-main-content h-full",
-                        isTabbedLayout ? "w-full overflow-visible" : ""
-                    )} style={{ scrollbarGutter: 'stable', overflowY: isTabbedLayout ? 'visible' : 'auto', overflowX: 'hidden' }}>
-                        {renderLoadingOrError() || (
-                            <div className="animate-in slide-in-from-bottom-2 duration-500 h-full">
-                                {currentTabComponent()}
-                            </div>
-                        )}
-                    </div>
-                </div>
 
                 {showDocumentsView && (
                     <Dialog

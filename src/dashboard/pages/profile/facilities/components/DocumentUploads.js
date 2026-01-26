@@ -17,7 +17,7 @@ import useAutoSave from '../../../../hooks/useAutoSave';
 
 const styles = {
     sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-    headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
+    headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex items-center",
     sectionTitle: "text-2xl font-semibold mb-2",
     sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     sectionSubtitle: "text-sm font-medium",
@@ -29,12 +29,12 @@ const styles = {
     sectionsWrapper: "facility-uploads-wrapper w-full max-w-[1400px] mx-auto",
     leftColumn: "flex flex-col gap-6 flex-1",
     rightColumn: "flex flex-col gap-6 flex-1",
-    sectionCard: "space-y-6 bg-card p-6 rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm w-full",
+    sectionCard: "space-y-6 bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow w-full",
     cardHeader: "flex items-center gap-4 mb-0",
     cardIconWrapper: "p-2 rounded-lg bg-primary/10",
     cardIconStyle: { color: 'var(--primary-color)' },
     cardTitle: "flex-1",
-    cardTitleH3: "text-lg font-bold flex items-center gap-2 m-0",
+    cardTitleH3: "text-lg font-semibold flex items-center gap-2 m-0",
     cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
     formActions: "flex justify-end gap-4 w-full max-w-[1400px] mx-auto",
     sectionContent: "space-y-4",
@@ -84,8 +84,6 @@ const DocumentUploads = ({
     onCancel,
     getNestedValue,
     validateCurrentTabData,
-    onTabCompleted,
-    isTutorialActive
 }) => {
     const { t } = useTranslation(['dashboardProfile', 'common', 'validation']);
     const { upload, uploadState } = useFileUpload();
@@ -113,8 +111,6 @@ const DocumentUploads = ({
         getNestedValue,
         extractTabData,
         validateCurrentTabData,
-        onTabCompleted,
-        isTutorialActive
     });
 
     const handleCancel = useCallback(() => {
@@ -383,13 +379,6 @@ const DocumentUploads = ({
             }
         `}</style>
             <div className={styles.sectionContainer}>
-                <div className={styles.headerCard}>
-                    <div className="flex flex-col gap-1 flex-1">
-                        <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('documents.title')}</h2>
-                        <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('documents.subtitle')}</p>
-                    </div>
-                </div>
-
                 <div className="facility-uploads-container w-full max-w-[1400px] mx-auto">
                     <div className={styles.sectionsWrapper}>
                         <div className={styles.leftColumn}>

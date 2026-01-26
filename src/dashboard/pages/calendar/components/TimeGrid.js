@@ -29,6 +29,7 @@ const TimeGrid = ({
   numWeeks = 7,
   numDays = 30,
   referenceDate: propReferenceDate,
+  nightView = false,
 }) => {
   const gridRef = useRef(null);
   const internalScrollContainerRef = useRef(null);
@@ -46,7 +47,28 @@ const TimeGrid = ({
   const referenceDate = propReferenceDate || currentDate;
   let allDays;
 
-  if (view === 'day') {
+  if (nightView) {
+    // Night view: show previous day + next day for each date
+    if (view === 'day') {
+      const prevDay = new Date(referenceDate);
+      prevDay.setDate(prevDay.getDate() - 1);
+      const nextDay = new Date(referenceDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      allDays = [prevDay, nextDay];
+    } else {
+      const weeksBefore = numWeeks;
+      const weeksAfter = numWeeks;
+      const weeks = getMultipleWeeks(referenceDate, weeksBefore, weeksAfter);
+      const baseDays = weeks.flat();
+      allDays = baseDays.flatMap(date => {
+        const prevDay = new Date(date);
+        prevDay.setDate(prevDay.getDate() - 1);
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+        return [prevDay, nextDay];
+      });
+    }
+  } else if (view === 'day') {
     // Day view: generate days centered around current date
     // Day view: generate single day (current date)
     const daysBefore = 0;
@@ -90,12 +112,63 @@ const TimeGrid = ({
    * @param {boolean} snapToHour - If true, snap to hour boundaries (for click events)
    */
   const getTimeFromY = useCallback((y, referenceDate, snapToHour = false) => {
-    // Normalize reference date to start of day at 00:00:00 (midnight is part of current day)
+    if (nightView) {
+      // Night view: first 12 hours (12:00-00:00) = previous day, next 12 hours (00:00-12:00) = next day
+      const hoursFromTop = y / PIXELS_PER_HOUR;
+      const isPreviousDay = hoursFromTop < 12;
+      
+      let targetDate, hours, minutes, seconds;
+      
+      if (isPreviousDay) {
+        // Previous day: 12:00-00:00 (hours 12-23)
+        targetDate = new Date(referenceDate);
+        targetDate.setDate(targetDate.getDate() - 1);
+        const normalizedDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0, 0);
+        
+        if (snapToHour) {
+          hours = Math.max(12, Math.min(23, 12 + Math.floor(hoursFromTop)));
+          minutes = 0;
+          seconds = 0;
+        } else {
+          hours = Math.max(12, Math.min(23, 12 + Math.floor(hoursFromTop)));
+          const minutesDecimal = (hoursFromTop - Math.floor(hoursFromTop)) * 60;
+          minutes = Math.round(minutesDecimal / MINUTES_INCREMENT) * MINUTES_INCREMENT;
+          seconds = 0;
+        }
+        
+        const date = new Date(normalizedDate);
+        date.setHours(hours, minutes, seconds, 0);
+        return date;
+      } else {
+        // Next day: 00:00-12:00 (hours 0-11)
+        targetDate = new Date(referenceDate);
+        targetDate.setDate(targetDate.getDate() + 1);
+        const normalizedDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0, 0);
+        
+        const adjustedHours = hoursFromTop - 12;
+        
+        if (snapToHour) {
+          hours = Math.max(0, Math.min(11, Math.floor(adjustedHours)));
+          minutes = 0;
+          seconds = 0;
+        } else {
+          hours = Math.max(0, Math.min(11, Math.floor(adjustedHours)));
+          const minutesDecimal = (adjustedHours - Math.floor(adjustedHours)) * 60;
+          minutes = Math.round(minutesDecimal / MINUTES_INCREMENT) * MINUTES_INCREMENT;
+          seconds = 0;
+        }
+        
+        const date = new Date(normalizedDate);
+        date.setHours(hours, minutes, seconds, 0);
+        return date;
+      }
+    }
+    
+    // Normal view: 00:00-24:00
     const normalizedDate = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate(), 0, 0, 0, 0);
 
-    // Explicitly handle Y=0 or negative case
     if (y <= 0) {
-      return normalizedDate; // Already set to 00:00:00
+      return normalizedDate;
     }
 
     const hoursFromTop = y / PIXELS_PER_HOUR;
@@ -103,12 +176,10 @@ const TimeGrid = ({
     let hours, minutes, seconds;
 
     if (snapToHour) {
-      // For clicks, snap to the hour cell that was clicked
       hours = Math.max(0, Math.min(23, Math.floor(hoursFromTop)));
       minutes = 0;
       seconds = 0;
     } else {
-      // For drags, use precise timing with 15-min snapping
       hours = Math.max(0, Math.min(23, Math.floor(hoursFromTop)));
       const minutesDecimal = (hoursFromTop - Math.floor(hoursFromTop)) * 60;
       minutes = Math.round(minutesDecimal / MINUTES_INCREMENT) * MINUTES_INCREMENT;
@@ -118,7 +189,7 @@ const TimeGrid = ({
     const date = new Date(normalizedDate);
     date.setHours(hours, minutes, seconds, 0);
     return date;
-  }, []);
+  }, [nightView]);
 
   /**
    * Get day date from X position in horizontal scrollable weeks
@@ -352,8 +423,6 @@ const TimeGrid = ({
       const rawMinutes = deltaY * minutesPerPixel;
       const minutesDelta = Math.round(rawMinutes / MINUTES_INCREMENT) * MINUTES_INCREMENT;
 
-      if (minutesDelta === 0) return;
-
       if (type === 'resize-top') {
         const newStart = new Date(initialStart.getTime() + minutesDelta * 60000);
         const snappedStart = snapToInterval(newStart);
@@ -367,37 +436,30 @@ const TimeGrid = ({
           onEventResize?.(event.id, initialStart, snappedEnd, true);
         }
       } else {
-        // Move - only allow time changes, no day changes
-        let newStart = new Date(initialStart.getTime() + minutesDelta * 60000);
-        let snappedStart = snapToInterval(newStart);
-        let snappedEnd = new Date(snappedStart.getTime() + duration);
+        // Move - allow both time and day changes (including vertical day wrap across hours)
+        const currentX = moveEvent.clientX - gridRect.left;
+        const baseDayFromX = getDayFromX(currentX, gridRect.width);
 
-        // Keep event on the same day as it started
-        const originalDay = new Date(initialStart);
-        originalDay.setHours(0, 0, 0, 0);
-        const newDay = new Date(snappedStart);
-        newDay.setHours(0, 0, 0, 0);
+        const minutesPerPixel = 60 / PIXELS_PER_HOUR;
+        const currentScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+        const scrollDelta = currentScrollTop - initialScrollTop;
+        const deltaY = (moveEvent.clientY - initialMouseY.current) + scrollDelta;
+        const minutesDelta = Math.round((deltaY * minutesPerPixel) / MINUTES_INCREMENT) * MINUTES_INCREMENT;
 
-        // If the day changed, clamp back to original day boundaries
-        if (newDay.getTime() !== originalDay.getTime()) {
-          const startOfDay = new Date(originalDay);
-          startOfDay.setHours(0, 0, 0, 0);
-          const endOfDay = new Date(originalDay);
-          endOfDay.setHours(23, 59, 59, 999);
+        // Calculate total minutes from midnight of the base day to determine wrap
+        const startMinutesAtMidnight = initialStart.getHours() * 60 + initialStart.getMinutes();
+        const totalMinutes = startMinutesAtMidnight + minutesDelta;
 
-          // Clamp to stay within the original day
-          if (snappedStart < startOfDay) {
-            snappedStart = startOfDay;
-            snappedEnd = new Date(snappedStart.getTime() + duration);
-          } else if (snappedEnd > endOfDay) {
-            snappedEnd = endOfDay;
-            snappedStart = new Date(snappedEnd.getTime() - duration);
-            if (snappedStart < startOfDay) {
-              snappedStart = startOfDay;
-              snappedEnd = new Date(snappedStart.getTime() + duration);
-            }
-          }
-        }
+        // Vertical day offset (1440 mins = 24h)
+        const dayOffset = Math.floor(totalMinutes / 1440);
+        const wrappedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+
+        const targetDate = new Date(baseDayFromX);
+        targetDate.setDate(targetDate.getDate() + dayOffset);
+        targetDate.setHours(Math.floor(wrappedMinutes / 60), wrappedMinutes % 60, 0, 0);
+
+        const snappedStart = snapToInterval(targetDate);
+        const snappedEnd = new Date(snappedStart.getTime() + duration);
 
         onEventMove?.(event.id, snappedStart, snappedEnd, true);
       }
@@ -419,20 +481,13 @@ const TimeGrid = ({
         return;
       }
 
-      // Finalize
-      // Calculate scroll delta to account for auto-scrolling
+      // Finalize move
       const finalScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
       const scrollDelta = finalScrollTop - initialScrollTop;
-
-      // Adjust deltaY to account for scroll changes
-      // When scrolling down (scrollDelta > 0), content moves up, so mouse is further down relative to content
-      // When scrolling up (scrollDelta < 0), content moves down, so mouse is further up relative to content
       const deltaY = (upEvent.clientY - initialMouseY.current) + scrollDelta;
-      const minutesPerPixel = 60 / PIXELS_PER_HOUR;
-      const rawMinutes = deltaY * minutesPerPixel;
-      const minutesDelta = Math.round(rawMinutes / MINUTES_INCREMENT) * MINUTES_INCREMENT;
 
-      if (minutesDelta === 0) return;
+      const minutesPerPixel = 60 / PIXELS_PER_HOUR;
+      const minutesDelta = Math.round((deltaY * minutesPerPixel) / MINUTES_INCREMENT) * MINUTES_INCREMENT;
 
       if (type === 'resize-top') {
         const newStart = new Date(initialStart.getTime() + minutesDelta * 60000);
@@ -447,37 +502,21 @@ const TimeGrid = ({
           onEventResize?.(event.id, initialStart, snappedEnd, false);
         }
       } else {
-        // Move - only allow time changes, no day changes
-        let newStart = new Date(initialStart.getTime() + minutesDelta * 60000);
-        let snappedStart = snapToInterval(newStart);
-        let snappedEnd = new Date(snappedStart.getTime() + duration);
+        const finalX = upEvent.clientX - gridRect.left;
+        const baseDayFromX = getDayFromX(finalX, gridRect.width);
 
-        // Keep event on the same day as it started
-        const originalDay = new Date(initialStart);
-        originalDay.setHours(0, 0, 0, 0);
-        const newDay = new Date(snappedStart);
-        newDay.setHours(0, 0, 0, 0);
+        const startMinutesAtMidnight = initialStart.getHours() * 60 + initialStart.getMinutes();
+        const totalMinutes = startMinutesAtMidnight + minutesDelta;
 
-        // If the day changed, clamp back to original day boundaries
-        if (newDay.getTime() !== originalDay.getTime()) {
-          const startOfDay = new Date(originalDay);
-          startOfDay.setHours(0, 0, 0, 0);
-          const endOfDay = new Date(originalDay);
-          endOfDay.setHours(23, 59, 59, 999);
+        const dayOffset = Math.floor(totalMinutes / 1440);
+        const wrappedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
 
-          // Clamp to stay within the original day
-          if (snappedStart < startOfDay) {
-            snappedStart = startOfDay;
-            snappedEnd = new Date(snappedStart.getTime() + duration);
-          } else if (snappedEnd > endOfDay) {
-            snappedEnd = endOfDay;
-            snappedStart = new Date(snappedEnd.getTime() - duration);
-            if (snappedStart < startOfDay) {
-              snappedStart = startOfDay;
-              snappedEnd = new Date(snappedStart.getTime() + duration);
-            }
-          }
-        }
+        const targetDate = new Date(baseDayFromX);
+        targetDate.setDate(targetDate.getDate() + dayOffset);
+        targetDate.setHours(Math.floor(wrappedMinutes / 60), wrappedMinutes % 60, 0, 0);
+
+        const snappedStart = snapToInterval(targetDate);
+        const snappedEnd = new Date(snappedStart.getTime() + duration);
 
         onEventMove?.(event.id, snappedStart, snappedEnd, false);
       }
@@ -485,7 +524,60 @@ const TimeGrid = ({
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [snapToInterval, onEventMove, onEventResize, onEventClick]);
+  }, [snapToInterval, onEventMove, onEventResize, onEventClick, getDayFromX]);
+
+  // Handle true infinite scrolling loop with date shift (Vertical Timeline Progression)
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    let isInternalShift = false;
+
+    const handleScroll = () => {
+      if (isInternalShift) return;
+
+      const { scrollTop } = scrollContainer;
+      const cycleHeight = 1440; // 24 hours in pixels
+
+      // If we scroll into the "Tomorrow" zone (beyond Segment 1)
+      if (scrollTop >= cycleHeight * 2) {
+        isInternalShift = true;
+        const nextDate = new Date(currentDate);
+        nextDate.setDate(nextDate.getDate() + 1);
+
+        // Shift scroll back to maintain position relative to midnight
+        scrollContainer.scrollTop -= cycleHeight;
+
+        // Update store state to advance time
+        import('../hooks/useCalendarStore').then(m => m.default.getState().setCurrentDate(nextDate));
+
+        setTimeout(() => { isInternalShift = false; }, 50);
+      }
+      // If we scroll into the "Yesterday" zone (below Segment 1)
+      else if (scrollTop < cycleHeight) {
+        isInternalShift = true;
+        const prevDate = new Date(currentDate);
+        prevDate.setDate(prevDate.getDate() - 1);
+
+        // Shift scroll forward
+        scrollContainer.scrollTop += cycleHeight;
+
+        // Update store state to go back in time
+        import('../hooks/useCalendarStore').then(m => m.default.getState().setCurrentDate(prevDate));
+
+        setTimeout(() => { isInternalShift = false; }, 50);
+      }
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+
+    // Initial centering if at 0 (start at 8 AM of Today)
+    if (scrollContainer.scrollTop === 0) {
+      scrollContainer.scrollTop = 1440 + (8 * 60);
+    }
+
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [scrollContainerRef, currentDate]);
 
   /**
    * Handle grid mouse down - for drag-to-create
@@ -547,11 +639,28 @@ const TimeGrid = ({
       // For drag, use precise timing (not snapped to hour)
       const currentTime = getTimeFromY(currentY, dayDate, false);
 
-      // Ensure event stays within the same day
-      const dayStart = new Date(dayDate);
-      dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(dayDate);
-      dayEnd.setHours(23, 59, 59, 999);
+      // Ensure event stays within the same day (or night view time range)
+      let dayStart, dayEnd;
+      if (nightView) {
+        const isPreviousDay = allDays.indexOf(dayDate) % 2 === 0;
+        if (isPreviousDay) {
+          dayStart = new Date(dayDate);
+          dayStart.setHours(12, 0, 0, 0);
+          dayEnd = new Date(dayDate);
+          dayEnd.setDate(dayEnd.getDate() + 1);
+          dayEnd.setHours(0, 0, 0, 0);
+        } else {
+          dayStart = new Date(dayDate);
+          dayStart.setHours(0, 0, 0, 0);
+          dayEnd = new Date(dayDate);
+          dayEnd.setHours(12, 0, 0, 0);
+        }
+      } else {
+        dayStart = new Date(dayDate);
+        dayStart.setHours(0, 0, 0, 0);
+        dayEnd = new Date(dayDate);
+        dayEnd.setHours(23, 59, 59, 999);
+      }
 
       // Determine start and end based on drag direction
       let newStart, newEnd;
@@ -675,38 +784,43 @@ const TimeGrid = ({
 
       allDays.forEach((date, i) => {
         const dayEvents = normalEvents.filter(event => {
-          if (!event || !event.start) return false;
-          const eventDate = new Date(event.start);
-          return eventDate.getDate() === date.getDate() &&
-            eventDate.getMonth() === date.getMonth() &&
-            eventDate.getFullYear() === date.getFullYear();
+          if (!event || !event.start || !event.end) return false;
+
+          const eventStart = new Date(event.start);
+          const eventEnd = new Date(event.end);
+          
+          if (nightView) {
+            // Night view: check if event falls in the time range for this day
+            // For even indices (0, 2, 4...): previous day 12:00-00:00
+            // For odd indices (1, 3, 5...): next day 00:00-12:00
+            const isPreviousDay = i % 2 === 0;
+            const dayStart = new Date(date);
+            const dayEnd = new Date(date);
+            
+            if (isPreviousDay) {
+              dayStart.setHours(12, 0, 0, 0);
+              dayEnd.setHours(23, 59, 59, 999);
+            } else {
+              dayStart.setHours(0, 0, 0, 0);
+              dayEnd.setHours(11, 59, 59, 999);
+            }
+            
+            return eventStart < dayEnd && eventEnd > dayStart;
+          } else {
+            const dayStart = new Date(date);
+            dayStart.setHours(0, 0, 0, 0);
+            const dayEnd = new Date(date);
+            dayEnd.setHours(23, 59, 59, 999);
+
+            return eventStart < dayEnd && eventEnd > dayStart;
+          }
         });
-        const processed = calculateEventOverlaps(dayEvents, view).map(e => ({ ...e, dayIndex: i }));
+
+        const processed = calculateEventOverlaps(dayEvents, view).map(e => ({ ...e, dayIndex: i, dayDate: date }));
         eventsToRender.push(...processed);
       });
 
-      // Also handle events that might not match exactly (fallback)
-      normalEvents.forEach(event => {
-        if (!event || !event.start) return;
-        const eventDate = new Date(event.start);
-        const existingIndex = eventsToRender.findIndex(e => e.id === event.id);
-        if (existingIndex === -1) {
-          // Event not matched to any day, find closest day
-          let dayIndex = allDays.findIndex(d =>
-            d.getDate() === eventDate.getDate() &&
-            d.getMonth() === eventDate.getMonth() &&
-            d.getFullYear() === eventDate.getFullYear()
-          );
-          if (dayIndex < 0) {
-            const daysDiff = Math.floor((eventDate - rangeStart) / (1000 * 60 * 60 * 24));
-            dayIndex = Math.max(0, Math.min(allDays.length - 1, daysDiff));
-          }
-          const processed = calculateEventOverlaps([event], view).map(e => ({ ...e, dayIndex }));
-          eventsToRender.push(...processed);
-        }
-      });
-
-      // Add moved/resized events separately - always render them to keep them visible during drag
+      // Also handle active (moving/resizing) events
       activeEvents.forEach(event => {
         const eventDate = new Date(event.start);
         let dayIndex = allDays.findIndex(d =>
@@ -720,9 +834,11 @@ const TimeGrid = ({
           dayIndex = Math.max(0, Math.min(allDays.length - 1, daysDiff));
         }
 
+        const dayDate = allDays[dayIndex];
         eventsToRender.push({
           ...event,
           dayIndex,
+          dayDate,
           column: 0,
           totalColumns: 1,
           isOverlapping: false
@@ -743,53 +859,106 @@ const TimeGrid = ({
       eventsToRender.push({
         ...draftEvent,
         dayIndex,
+        dayDate: allDays[dayIndex],
         column: 0,
         totalColumns: 1,
         isOverlapping: false,
       });
     }
 
-    return eventsToRender.map(event => {
+    return eventsToRender.flatMap(event => {
       if (!event || !event.start || event.dayIndex === undefined || event.dayIndex < 0) {
         return null;
       }
 
       const eventStart = new Date(event.start);
       const eventEnd = new Date(event.end);
-      // Grid now starts at 00:00, so use hour directly
-      const hour = eventStart.getHours();
-      const top = (hour + eventStart.getMinutes() / 60) * 60;
-      const duration = (eventEnd - eventStart) / (1000 * 60 * 60);
-      const height = Math.max(duration * 60, 15); // Minimum 15px height
 
-      // Horizontal scrollable weeks: events positioned by day index across all weeks
+      // Use the day date specifically for this column to calculate segments
+      const columnDate = event.dayDate || currentDate;
+
+      // Rendering logic: an event spans through segments based on its day distance from the column's date
+      const segments = [];
+
+      if (nightView) {
+        // Night view: show previous day (12:00-00:00) and next day (00:00-12:00)
+        const isPreviousDay = event.dayIndex % 2 === 0;
+        
+        if (isPreviousDay) {
+          // Previous day: 12:00-00:00 (maps to Y: 0-720px)
+          const targetDayStart = new Date(columnDate);
+          targetDayStart.setHours(12, 0, 0, 0);
+          const targetDayEnd = new Date(columnDate);
+          targetDayEnd.setDate(targetDayEnd.getDate() + 1);
+          targetDayEnd.setHours(0, 0, 0, 0);
+          
+          const visibleStart = eventStart > targetDayStart ? eventStart : targetDayStart;
+          const visibleEnd = eventEnd < targetDayEnd ? eventEnd : targetDayEnd;
+          
+          if (visibleStart < visibleEnd) {
+            const startHours = visibleStart.getHours() + (visibleStart.getMinutes() / 60);
+            const endHours = visibleEnd.getHours() + (visibleEnd.getMinutes() / 60);
+            
+            // Map 12:00-24:00 to 0-720px
+            const top = (startHours - 12) * 60;
+            const durationHours = endHours - startHours;
+            const height = Math.max(durationHours * 60, 15);
+            
+            segments.push({ top, height, offset: 0 });
+          }
+        } else {
+          // Next day: 00:00-12:00 (maps to Y: 720-1440px)
+          const targetDayStart = new Date(columnDate);
+          targetDayStart.setHours(0, 0, 0, 0);
+          const targetDayEnd = new Date(columnDate);
+          targetDayEnd.setHours(12, 0, 0, 0);
+          
+          const visibleStart = eventStart > targetDayStart ? eventStart : targetDayStart;
+          const visibleEnd = eventEnd < targetDayEnd ? eventEnd : targetDayEnd;
+          
+          if (visibleStart < visibleEnd) {
+            const startHours = visibleStart.getHours() + (visibleStart.getMinutes() / 60);
+            const endHours = visibleEnd.getHours() + (visibleEnd.getMinutes() / 60);
+            
+            // Map 00:00-12:00 to 720-1440px
+            const top = 720 + (startHours * 60);
+            const durationHours = endHours - startHours;
+            const height = Math.max(durationHours * 60, 15);
+            
+            segments.push({ top, height, offset: 0 });
+          }
+        }
+      } else {
+        // Normal view: We check Yesterday (-1), Today (0), Tomorrow (+1) relative to this column's day
+        [-1, 0, 1].forEach(offset => {
+          const segmentBaseY = (offset + 1) * 1440; // Yes=-1 -> 0, Tod=0 -> 1440, Tom=1 -> 2880
+
+          // Find portion of event in this target day
+          const targetDayStart = new Date(columnDate);
+          targetDayStart.setDate(targetDayStart.getDate() + offset);
+          targetDayStart.setHours(0, 0, 0, 0);
+
+        const targetDayEnd = new Date(targetDayStart);
+        targetDayEnd.setHours(23, 59, 59, 999);
+
+        if (eventStart < targetDayEnd && eventEnd > targetDayStart) {
+          const visibleStart = new Date(Math.max(eventStart, targetDayStart));
+          const visibleEnd = new Date(Math.min(eventEnd, targetDayEnd));
+
+          const hour = visibleStart.getHours();
+          const top = segmentBaseY + (hour + visibleStart.getMinutes() / 60) * 60;
+          const durationHours = (visibleEnd - visibleStart) / (1000 * 60 * 60);
+          const height = Math.max(durationHours * 60, 15);
+
+          segments.push({ top, height, offset });
+        }
+      });
+      }
+
+      // Horizontal layout
       const numDays = allDays.length;
       const dayWidth = `${100 / numDays}%`;
       const dayLeft = `${event.dayIndex * (100 / numDays)}%`;
-
-      let style = {};
-      // Use percentage-based layout for all views
-      if (event.isOverlapping) {
-        const dayWidthNum = 100 / numDays;
-        const subWidth = dayWidthNum / event.totalColumns;
-        style = {
-          top: `${top}px`,
-          left: `calc(${dayLeft} + ${event.column * subWidth}%)`,
-          width: `calc(${subWidth}% - 4px)`,
-          height: `${height}px`,
-          position: 'absolute',
-          zIndex: event.isSelected ? 3 : 2,
-        };
-      } else {
-        style = {
-          top: `${top}px`,
-          left: dayLeft,
-          width: `calc(${dayWidth} - 4px)`,
-          height: `${height}px`,
-          position: 'absolute',
-          zIndex: event.isSelected ? 3 : 1,
-        };
-      }
 
       // Color Logic
       let eventToRender = { ...event };
@@ -799,18 +968,43 @@ const TimeGrid = ({
         eventToRender.color2 = '#4da6fb';
       }
 
-      return (
-        <Event
-          key={event.id}
-          {...eventToRender}
-          style={style}
-          isOverlapping={event.isOverlapping}
-          isSelected={selectedEventId === event.id}
-          onMouseDown={handleEventMouseDown}
-          onRightClick={onEventRightClick}
-          onClick={onEventClick}
-        />
-      );
+      return segments.map(seg => {
+        let style = {};
+        if (event.isOverlapping) {
+          const dayWidthNum = 100 / numDays;
+          const subWidth = dayWidthNum / event.totalColumns;
+          style = {
+            top: `${seg.top}px`,
+            left: `calc(${dayLeft} + ${event.column * subWidth}%)`,
+            width: `calc(${subWidth}% - 4px)`,
+            height: `${seg.height}px`,
+            position: 'absolute',
+            zIndex: event.isSelected ? 3 : 2,
+          };
+        } else {
+          style = {
+            top: `${seg.top}px`,
+            left: dayLeft,
+            width: `calc(${dayWidth} - 4px)`,
+            height: `${seg.height}px`,
+            position: 'absolute',
+            zIndex: event.isSelected ? 3 : 1,
+          };
+        }
+
+        return (
+          <Event
+            key={`${event.id}-${seg.offset}`}
+            {...eventToRender}
+            style={style}
+            isOverlapping={event.isOverlapping}
+            isSelected={selectedEventId === event.id}
+            onMouseDown={handleEventMouseDown}
+            onRightClick={onEventRightClick}
+            onClick={onEventClick}
+          />
+        );
+      });
     }).filter(Boolean);
   };
 
@@ -819,15 +1013,15 @@ const TimeGrid = ({
       className="relative flex-1 bg-transparent select-none min-w-max"
       ref={gridRef}
       style={{
-        height: '1440px',
+        height: nightView ? '1440px' : '4320px',
         width: view === 'day' ? `${allDays.length * 100}%` : `${(allDays.length / 7) * 100}%`,
         minWidth: view === 'day' ? `${allDays.length * 100}%` : `${(allDays.length / 7) * 100}%`
       }}
       onMouseDown={handleGridMouseDown}
       onDoubleClick={handleGridDoubleClick}
     >
-      {/* Background Grid Lines (Horizontal for Time) - 24 hours from 00:00 to 23:00 */}
-      {Array.from({ length: 24 }, (_, index) => (
+      {/* Background Grid Lines (Horizontal for Time) */}
+      {Array.from({ length: nightView ? 24 : 72 }, (_, index) => (
         <div
           key={index}
           className="h-[60px] w-full border-b border-border flex items-start"
@@ -844,6 +1038,17 @@ const TimeGrid = ({
           />
         ))}
       </div>
+
+      {/* Red Separator Line for Night View - Between Previous Day and Next Day */}
+      {nightView && (
+        <div
+          className="absolute left-0 right-0 border-t-2 pointer-events-none z-20"
+          style={{
+            top: '720px',
+            borderColor: '#ef4444'
+          }}
+        />
+      )}
 
       {/* Events Layer - MUST have pointer-events enabled for interactions */}
       <div className="absolute inset-0 top-0 left-0 w-full h-full">

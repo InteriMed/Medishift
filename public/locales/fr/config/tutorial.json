@@ -51,11 +51,30 @@
           "content": "Vous allez maintenant être redirigé vers le tutoriel de messagerie."
         }
       }
+    },
+    "facilityProfileTabs": {
+      "name": "Configuration du profil d'établissement",
+      "description": "Complétez votre profil d'établissement étape par étape",
+      "steps": {
+        "facility-core-details-tab": {
+          "title": "Étape 1 : Détails principaux de l'établissement",
+          "content": "Commencez par remplir les informations de votre établissement comme le nom, le type, l'adresse et les coordonnées. Vous pouvez télécharger des documents avec le bouton Auto Fill pour accélérer le processus, ou remplir manuellement."
+        },
+        "facility-legal-billing-tab": {
+          "title": "Étape 2 : Informations légales et de facturation",
+          "content": "Ensuite, ajoutez les détails légaux de votre entreprise, les informations de facturation et la configuration des paiements. Vous pouvez utiliser le bouton Auto Fill pour accélérer le processus, ou remplir manuellement. C'est la dernière étape !"
+        },
+        "facility-profile-completion-info": {
+          "title": "Profil terminé !",
+          "content": "Félicitations ! Votre profil d'établissement est maintenant complet. Vous avez accès à toutes les fonctionnalités de la plateforme. Passons à la section suivante."
+        }
+      }
     }
   },
   "buttons": {
     "iUnderstood": "J'ai compris",
     "showMe": "Montrez-moi",
+    "continueToMessages": "Continuer vers les messages",
     "next": "Suivant",
     "previous": "Précédent",
     "skip": "Passer",

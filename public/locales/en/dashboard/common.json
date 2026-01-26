@@ -13,7 +13,11 @@
     "aboutUs": "About Us",
     "contact": "Contact",
     "blog": "Blog",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "settings": "Settings"
+  },
+  "roles": {
+    "admin": "Admin"
   },
   "header": {
     "logoAlt": "MediShift",

@@ -6,10 +6,15 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import InputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldHideUnhide from '../../components/BoxedInputFields/InputFieldHideUnhide';
+import PersonnalizedInputField from '../../components/BoxedInputFields/Personnalized-InputField';
+import TextareaField from '../../components/BoxedInputFields/TextareaField';
+import SimpleDropdown from '../../components/BoxedInputFields/Dropdown-Field';
+import Button from '../../components/BoxedInputFields/Button';
 import UnderlinedLink from '../../components/Links/UnderlinedLink';
 import { FcGoogle } from 'react-icons/fc';
 import { ShieldAlert, X } from 'lucide-react';
-import { auth, firebaseApp, db, loginWithGoogle } from '../../services/firebase';
+import { auth, firebaseApp, db, loginWithGoogle, functions } from '../../services/firebase';
+import { httpsCallable } from 'firebase/functions';
 import { useNotification } from '../../contexts/NotificationContext';
 import '../../styles/auth.css';
 
@@ -33,6 +38,18 @@ function Login() {
   // Ban state
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
   const [banDetails, setBanDetails] = useState(null);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactFormData, setContactFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    message: '',
+    subject: 'Account Ban Appeal',
+    type: 'general'
+  });
+  const [contactFormErrors, setContactFormErrors] = useState({});
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   // Removed unused redirect handling effect since we now use popup for Google Sign In
 
@@ -449,49 +466,202 @@ function Login() {
       {/* Ban Information Popup */}
       {isBanModalOpen && (
         <div className="modal-overlay" style={{ zIndex: 10000 }}>
-          <div className="modal-content ban-modal" style={{ maxWidth: '450px', borderTop: '4px solid var(--red-4)' }}>
+          <div className="modal-content ban-modal" style={{ maxWidth: showContactForm ? '600px' : '450px', borderTop: '4px solid var(--red-4)', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setIsBanModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light-color)' }}>
+              <button onClick={() => { setIsBanModalOpen(false); setShowContactForm(false); setContactSubmitted(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light-color)' }}>
                 <X size={24} />
               </button>
             </div>
 
-            <div style={{ textAlign: 'center', padding: '0 20px 20px' }}>
-              <div style={{
-                width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(var(--red-4-rgb), 0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--red-4)'
-              }}>
-                <ShieldAlert size={36} />
-              </div>
-
-              <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-color)', marginBottom: '10px' }}>
-                {t('auth.ban.title')}
-              </h2>
-
-              <div style={{
-                backgroundColor: 'var(--grey-1)', padding: '15px', borderRadius: '8px', textAlign: 'left',
-                marginBottom: '20px', border: '1px solid var(--grey-2)'
-              }}>
-                <p style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  <strong style={{ color: 'var(--text-color)' }}>{t('auth.ban.reason')}:</strong><br />
-                  <span style={{ color: 'var(--red-4)' }}>{banDetails?.reason}</span>
-                </p>
-                <p style={{ fontSize: '13px', color: 'var(--text-light-color)', lineHeight: '1.5' }}>
-                  {banDetails?.info}
-                </p>
-                <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--text-light-color)', textAlign: 'right' }}>
-                  {t('auth.ban.disabledOn')}: {banDetails?.date}
+            {!showContactForm ? (
+              <div style={{ textAlign: 'center', padding: '0 20px 20px' }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(var(--red-4-rgb), 0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--red-4)'
+                }}>
+                  <ShieldAlert size={36} />
                 </div>
-              </div>
 
-              <button
-                onClick={() => setIsBanModalOpen(false)}
-                className="auth-button primary-button"
-                style={{ width: '100%' }}
-              >
-                {t('auth.ban.understood')}
-              </button>
-            </div>
+                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-color)', marginBottom: '10px' }}>
+                  Account Disabled
+                </h2>
+
+                <div style={{
+                  backgroundColor: 'var(--grey-1)', padding: '15px', borderRadius: '8px', textAlign: 'left',
+                  marginBottom: '20px', border: '1px solid var(--grey-2)'
+                }}>
+                  <p style={{ fontSize: '14px', marginBottom: '8px', color: 'var(--text-color)', fontWeight: '600' }}>
+                    Your account has been disabled because your information did not match our verification requirements.
+                  </p>
+                  <p style={{ fontSize: '13px', color: 'var(--text-light-color)', lineHeight: '1.5', marginBottom: '12px' }}>
+                    If you believe this is a mistake, please contact our support team using the form below.
+                  </p>
+                  {banDetails?.reason && (
+                    <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--grey-2)' }}>
+                      <p style={{ fontSize: '12px', color: 'var(--text-light-color)', marginBottom: '4px' }}>
+                        <strong>Reason:</strong> {banDetails.reason}
+                      </p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-light-color)', textAlign: 'right', marginTop: '8px' }}>
+                        Disabled on: {banDetails?.date}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setShowContactForm(true)}
+                  className="auth-button primary-button"
+                  style={{ width: '100%', marginBottom: '12px' }}
+                >
+                  Contact Support
+                </button>
+                <button
+                  onClick={() => setIsBanModalOpen(false)}
+                  className="auth-button secondary-button"
+                  style={{ width: '100%' }}
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <div style={{ padding: '0 20px 20px' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-color)', marginBottom: '20px', textAlign: 'center' }}>
+                  Contact Support
+                </h2>
+
+                {contactSubmitted ? (
+                  <div style={{ backgroundColor: 'var(--green-1)', border: '1px solid var(--green-2)', borderRadius: '8px', padding: '16px', textAlign: 'center', marginBottom: '20px' }}>
+                    <p style={{ color: 'var(--green-4)', fontWeight: '600', marginBottom: '8px' }}>Message Sent Successfully</p>
+                    <p style={{ color: 'var(--text-light-color)', fontSize: '14px' }}>We will review your request and get back to you as soon as possible.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const errors = {};
+                    if (!contactFormData.name.trim()) errors.name = 'Name is required';
+                    if (!contactFormData.email.trim()) errors.email = 'Email is required';
+                    if (!contactFormData.message.trim()) errors.message = 'Message is required';
+                    
+                    if (Object.keys(errors).length > 0) {
+                      setContactFormErrors(errors);
+                      return;
+                    }
+
+                    setIsSubmittingContact(true);
+                    try {
+                      const sendContactFormEmail = httpsCallable(functions, 'sendContactFormEmail');
+                      await sendContactFormEmail({
+                        name: contactFormData.name,
+                        email: contactFormData.email,
+                        phone: contactFormData.phone || '',
+                        company: '',
+                        subject: contactFormData.subject,
+                        message: contactFormData.message,
+                        type: 'account_ban_appeal'
+                      });
+                      setContactSubmitted(true);
+                    } catch (error) {
+                      console.error('Error submitting contact form:', error);
+                      setContactFormErrors({ submit: 'Failed to send message. Please try again.' });
+                    } finally {
+                      setIsSubmittingContact(false);
+                    }
+                  }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <PersonnalizedInputField
+                        label="Name"
+                        type="text"
+                        name="name"
+                        value={contactFormData.name}
+                        onChange={(e) => {
+                          setContactFormData({ ...contactFormData, name: e.target.value });
+                          if (contactFormErrors.name) setContactFormErrors({ ...contactFormErrors, name: '' });
+                        }}
+                        placeholder="Your full name"
+                        error={contactFormErrors.name}
+                        required
+                        marginBottom="0"
+                      />
+                      <PersonnalizedInputField
+                        label="Email"
+                        type="email"
+                        name="email"
+                        value={contactFormData.email}
+                        onChange={(e) => {
+                          setContactFormData({ ...contactFormData, email: e.target.value });
+                          if (contactFormErrors.email) setContactFormErrors({ ...contactFormErrors, email: '' });
+                        }}
+                        placeholder="your.email@example.com"
+                        error={contactFormErrors.email}
+                        required
+                        marginBottom="0"
+                      />
+                    </div>
+
+                    <PersonnalizedInputField
+                      label="Phone (Optional)"
+                      type="tel"
+                      name="phone"
+                      value={contactFormData.phone}
+                      onChange={(e) => setContactFormData({ ...contactFormData, phone: e.target.value })}
+                      placeholder="+41 XX XXX XX XX"
+                      marginBottom="0"
+                    />
+
+                    <PersonnalizedInputField
+                      label="Subject"
+                      type="text"
+                      name="subject"
+                      value={contactFormData.subject}
+                      onChange={(e) => setContactFormData({ ...contactFormData, subject: e.target.value })}
+                      placeholder="Account Ban Appeal"
+                      marginBottom="0"
+                    />
+
+                    <TextareaField
+                      label="Message"
+                      name="message"
+                      value={contactFormData.message}
+                      onChange={(e) => {
+                        setContactFormData({ ...contactFormData, message: e.target.value });
+                        if (contactFormErrors.message) setContactFormErrors({ ...contactFormErrors, message: '' });
+                      }}
+                      placeholder="Please explain why you believe your account should be reinstated..."
+                      error={contactFormErrors.message}
+                      required
+                      rows={5}
+                      marginBottom="0"
+                    />
+
+                    {contactFormErrors.submit && (
+                      <div style={{ backgroundColor: 'var(--red-1)', border: '1px solid var(--red-2)', borderRadius: '8px', padding: '12px', color: 'var(--red-4)', fontSize: '14px' }}>
+                        {contactFormErrors.submit}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setShowContactForm(false)}
+                        style={{ flex: 1 }}
+                        disabled={isSubmittingContact}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        style={{ flex: 1 }}
+                        disabled={isSubmittingContact}
+                      >
+                        {isSubmittingContact ? 'Sending...' : 'Send Message'}
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

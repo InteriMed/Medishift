@@ -78,6 +78,7 @@ const Dialog = ({
     small: 'max-w-md',
     medium: 'max-w-xl',
     large: 'max-w-3xl',
+    xlarge: 'max-w-5xl',
     full: 'max-w-[95vw]'
   };
 
@@ -126,7 +127,7 @@ const Dialog = ({
       ...positionStyles,
       zIndex: 200000,
       pointerEvents: 'auto',
-      maxWidth: window.innerWidth < 768 ? 'calc(100vw - 20px)' : sizeClasses[size] === 'max-w-md' ? '28rem' : sizeClasses[size] === 'max-w-xl' ? '36rem' : sizeClasses[size] === 'max-w-3xl' ? '48rem' : '95vw',
+      maxWidth: window.innerWidth < 768 ? 'calc(100vw - 20px)' : sizeClasses[size] === 'max-w-md' ? '28rem' : sizeClasses[size] === 'max-w-xl' ? '36rem' : sizeClasses[size] === 'max-w-3xl' ? '48rem' : sizeClasses[size] === 'max-w-5xl' ? '64rem' : '95vw',
       width: 'auto'
     };
 

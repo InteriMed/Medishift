@@ -282,18 +282,18 @@ const UploadFile = forwardRef(({
               </div>
             </div>
           ) : (
-            <>
-              <div className="upload-idle-state">
-                <FiUploadCloud className="upload-icon-main" />
-                <span className="upload-text-main">Drag & Drop or Click</span>
-              </div>
-              <div className="upload-drag-overlay">
-                <FiUploadCloud className="upload-drag-icon" />
-                <span className="upload-drag-text">Drop File Here</span>
-              </div>
-            </>
+            <div className="upload-idle-state">
+              <FiUploadCloud className="upload-icon-main" />
+              <span className="upload-text-main">Drag & Drop or Click</span>
+            </div>
           )}
         </div>
+        {!fileName && !isUploadingInternal && !isLoading && (
+          <div className="upload-drag-overlay">
+            <FiUploadCloud className="upload-drag-icon" />
+            <span className="upload-drag-text">Drop File Here</span>
+          </div>
+        )}
       </form>
     </div>
   );

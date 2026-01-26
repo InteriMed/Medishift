@@ -112,6 +112,7 @@ function AppContent() {
     // Known workspace types/patterns
     const isWorkspaceId = firstSegmentAfterDashboard === 'personal' ||
       firstSegmentAfterDashboard === 'admin' ||
+      firstSegmentAfterDashboard === 'marketplace' ||
       firstSegmentAfterDashboard.length > 15; // Firestore IDs are ~20 chars
 
     // If it's a valid workspace URL, allow Outlet to render children

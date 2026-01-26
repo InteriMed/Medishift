@@ -75,6 +75,7 @@ export const useDropdownOptions = () => {
     skills: useMemo(() => createOptionsFromObject('skills'), [createOptionsFromObject, dropdownTranslations]),
     languages: useMemo(() => createOptionsFromObject('languages'), [createOptionsFromObject, dropdownTranslations]),
     jobPreferences: useMemo(() => createOptionsFromObject('jobPreferences'), [createOptionsFromObject, dropdownTranslations]),
+    facilityTypes: useMemo(() => createOptionsFromObject('facilityTypes'), [createOptionsFromObject, dropdownTranslations]),
     phonePrefixes: useMemo(() => {
       const options = createOptionsFromObject('phonePrefixes');
       if (process.env.NODE_ENV !== 'production' && (!options || options.length === 0)) {
@@ -98,6 +99,7 @@ export const useDropdownOptions = () => {
     skillsOptions: optionSets.skills,
     languagesOptions: optionSets.languages,
     jobPreferencesOptions: optionSets.jobPreferences,
+    facilityTypesOptions: optionSets.facilityTypes,
     phonePrefixOptions: optionSets.phonePrefixes,
 
     // Legacy naming conventions (for backward compatibility)

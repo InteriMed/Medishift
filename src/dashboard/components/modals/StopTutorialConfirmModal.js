@@ -7,7 +7,7 @@ import Button from '../../../components/BoxedInputFields/Button';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
-import { isProfileTutorial } from '../../../config/tutorialSystem';
+import { isProfileTutorial } from '../../contexts/TutorialContext/config/tutorialSystem';
 
 const StopTutorialConfirmModal = ({
     isOpen,

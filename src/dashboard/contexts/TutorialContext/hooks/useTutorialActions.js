@@ -1,14 +1,14 @@
 import { useCallback } from 'react';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import {
     TUTORIAL_IDS,
-    LOCALSTORAGE_KEYS,
     getProfileTutorialForType,
     isProfileTutorial,
     getMandatoryTutorials,
     PROFILE_TAB_IDS
-} from '../../../../config/tutorialSystem';
+} from '../config/tutorialSystem';
+import tutorialCache from '../utils/tutorialCache';
 
 export const useTutorialActions = (state) => {
     const {
@@ -64,7 +64,12 @@ export const useTutorialActions = (state) => {
                 updatedAt: serverTimestamp()
             };
 
-            await updateDoc(profileDocRef, updates);
+            const profileDoc = await getDoc(profileDocRef);
+            if (profileDoc.exists()) {
+                await updateDoc(profileDocRef, updates);
+            } else {
+                await setDoc(profileDocRef, updates, { merge: true });
+            }
         } catch (error) {
             console.error('Error saving tutorial progress:', error);
         }
@@ -85,12 +90,7 @@ export const useTutorialActions = (state) => {
         console.log('[TutorialContext] Starting tutorial:', feature);
 
         try {
-            try {
-                localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_STATE);
-                localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB);
-            } catch (error) {
-                console.error('[TutorialContext] Error clearing tutorial localStorage on start:', error);
-            }
+            tutorialCache.clean();
 
             if (completedTutorials[feature]) {
                 setCompletedTutorials(prev => {
@@ -103,9 +103,12 @@ export const useTutorialActions = (state) => {
                     try {
                         const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
                         const profileDocRef = doc(db, profileCollection, currentUser.uid);
-                        await updateDoc(profileDocRef, {
-                            [`completedTutorials.${feature}`]: null
-                        });
+                        const profileDoc = await getDoc(profileDocRef);
+                        if (profileDoc.exists()) {
+                            await updateDoc(profileDocRef, {
+                                [`completedTutorials.${feature}`]: null
+                            });
+                        }
                     } catch (error) {
                         console.error('Error clearing completed tutorial status:', error);
                     }
@@ -143,11 +146,7 @@ export const useTutorialActions = (state) => {
 
                 if (!hasRealAccessChoice) {
                     setMaxAccessedProfileTab(PROFILE_TAB_IDS.PERSONAL_DETAILS);
-                    try {
-                        localStorage.setItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB, 'personalDetails');
-                    } catch (error) {
-                        console.error('[TutorialContext] Error resetting maxAccessedProfileTab in localStorage:', error);
-                    }
+                    tutorialCache.save.maxAccessedProfileTab(PROFILE_TAB_IDS.PERSONAL_DETAILS);
                 }
             }
 
@@ -207,12 +206,7 @@ export const useTutorialActions = (state) => {
         setStepData(null);
         setElementPosition(null);
 
-        try {
-            localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_STATE);
-            localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB);
-        } catch (error) {
-            console.error('[TutorialContext] Error clearing tutorial localStorage on stop:', error);
-        }
+        tutorialCache.clean();
 
         await safelyUpdateTutorialState([
             [setIsTutorialActive, false],
@@ -224,10 +218,13 @@ export const useTutorialActions = (state) => {
                 try {
                     const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
                     const profileDocRef = doc(db, profileCollection, currentUser.uid);
-                    await updateDoc(profileDocRef, {
-                        [`tutorialProgress.${onboardingType}.activeTutorial`]: null,
-                        updatedAt: serverTimestamp()
-                    });
+                    const profileDoc = await getDoc(profileDocRef);
+                    if (profileDoc.exists()) {
+                        await updateDoc(profileDocRef, {
+                            [`tutorialProgress.${onboardingType}.activeTutorial`]: null,
+                            updatedAt: serverTimestamp()
+                        });
+                    }
                 } catch (error) {
                     console.error('[TutorialContext] Error clearing activeTutorial from Firestore:', error);
                 }
@@ -244,6 +241,8 @@ export const useTutorialActions = (state) => {
         const previousTutorial = state.activeTutorial;
         lastRestoredStateRef.current = { tutorial: null, step: null };
         completingTutorialRef.current = previousTutorial;
+
+        tutorialCache.delete.state();
 
         try {
             await safelyUpdateTutorialState([
@@ -364,18 +363,18 @@ export const useTutorialActions = (state) => {
                 try {
                     const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
                     const profileDocRef = doc(db, profileCollection, currentUser.uid);
-                    await updateDoc(profileDocRef, {
-                        [`tutorialProgress.${onboardingType}.activeTutorial`]: null,
-                        updatedAt: serverTimestamp()
-                    });
+                    const profileDoc = await getDoc(profileDocRef);
+                    if (profileDoc.exists()) {
+                        await updateDoc(profileDocRef, {
+                            [`tutorialProgress.${onboardingType}.activeTutorial`]: null,
+                            updatedAt: serverTimestamp()
+                        });
+                    }
                 } catch (error) { }
             }
         });
 
-        try {
-            localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_STATE);
-            localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB);
-        } catch (error) { }
+        tutorialCache.clean();
     }, [state.isBusy, safelyUpdateTutorialState, currentUser, onboardingType, setIsPaused, setShowStopTutorialConfirm, setIsTutorialActive, setShowFirstTimeModal, setActiveTutorial, setCurrentStep]);
 
     // 8. Restart Onboarding

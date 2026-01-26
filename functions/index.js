@@ -227,11 +227,4 @@ module.exports.getScraperSchedules = jobScraperScheduler.getScraperSchedules;
 module.exports.getScraperStatus = jobScraperScheduler.getScraperStatus;
 module.exports.runScheduledScraper = jobScraperScheduler.runScheduledScraper;
 
-// =========================================================================
-//  🏢 MEDISHIFT DEMO FACILITY - Admin Presentation Environment
-// =========================================================================
-
-// DEMO FACILITY MANAGEMENT - Export from database/index.js
-module.exports.seedDemoFacility = databaseFunctions.seedDemoFacility;
-module.exports.removeDemoFacility = databaseFunctions.removeDemoFacility;
 

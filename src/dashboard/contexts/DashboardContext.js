@@ -14,7 +14,7 @@ import {
   getAvailableWorkspaces,
   WORKSPACE_TYPES
 } from '../../utils/sessionAuth';
-import { COLLECTIONS, MEDISHIFT_DEMO_FACILITY_ID, isAdminSync } from '../../config/workspaceDefinitions';
+import { COLLECTIONS, isAdminSync } from '../../config/workspaceDefinitions';
 import { buildDashboardUrl, getDefaultRouteForWorkspace } from '../utils/pathUtils';
 import Dialog from '../../components/Dialog/Dialog';
 import Button from '../../components/BoxedInputFields/Button';
@@ -39,8 +39,6 @@ export const DashboardProvider = ({ children }) => {
   const [workspaces, setWorkspaces] = useState([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [profileComplete, setProfileComplete] = useState(false);
-  const [tutorialPassed, setTutorialPassed] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
   const [nextIncompleteProfileSection, setNextIncompleteProfileSection] = useState(null);
@@ -48,6 +46,8 @@ export const DashboardProvider = ({ children }) => {
   const [showFacilityNotFoundDialog, setShowFacilityNotFoundDialog] = useState(false);
   const [facilityNotFoundWorkspace, setFacilityNotFoundWorkspace] = useState(null);
   const [isLeavingFacility, setIsLeavingFacility] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
+  const [tutorialPassed, setTutorialPassed] = useState(false);
 
   // Debug logging - Fixed to prevent infinite loops
   // Debug logging
@@ -56,56 +56,19 @@ export const DashboardProvider = ({ children }) => {
 
   // Helper functions for cookie management
   const setCookieValues = (userId, isProfessionalProfileComplete, isTutorialPassed) => {
-    if (!userId) return;
-
-    Cookies.set(getCookieKey('PROFILE_COMPLETE', userId), isProfessionalProfileComplete ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
-    Cookies.set(getCookieKey('TUTORIAL_PASSED', userId), isTutorialPassed ? 'true' : 'false', { expires: COOKIE_EXPIRY_DAYS });
+    // Cookie setting removed
   };
 
   const getCookieValues = (userId) => {
-    if (!userId) return { profileComplete: false, tutorialPassed: false };
-
-    const profileCompleteCookie = Cookies.get(getCookieKey('PROFILE_COMPLETE', userId));
-    const tutorialPassedCookie = Cookies.get(getCookieKey('TUTORIAL_PASSED', userId));
-
-    return {
-      profileComplete: profileCompleteCookie === 'true',
-      tutorialPassed: tutorialPassedCookie === 'true'
-    };
+    return {};
   };
 
   const clearCookieValues = (userId) => {
-    if (!userId) return;
-
-    Cookies.remove(getCookieKey('PROFILE_COMPLETE', userId));
-    Cookies.remove(getCookieKey('TUTORIAL_PASSED', userId));
+    // Cookie clearing removed
   };
 
-  // Set tutorial completion status
   const setTutorialComplete = async (isComplete = true) => {
-    if (!currentUser) return false;
-
-    try {
-      // Use profile collection instead of users
-      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? FIRESTORE_COLLECTIONS.FACILITY_PROFILES : FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES;
-
-      // Update in database
-      await updateDoc(doc(db, collectionName, currentUser.uid), {
-        tutorialPassed: isComplete,
-        updatedAt: serverTimestamp()
-      });
-
-      // Update local state
-      setTutorialPassed(isComplete);
-
-      // Update cookie
-      setCookieValues(currentUser.uid, profileComplete, isComplete);
-
-      return true;
-    } catch (error) {
-      console.error('Error updating tutorial status:', error);
-      return false;
-    }
+    return false;
   };
 
   // Set profile completion status
@@ -321,12 +284,20 @@ export const DashboardProvider = ({ children }) => {
             if (adminDoc.exists()) {
               const data = adminDoc.data();
               if (data.isActive !== false) {
-                adminData = data;
-                adminDataRef.current = data;
+                adminData = {
+                  ...data,
+                  isActive: data.isActive !== false
+                };
+                adminDataRef.current = adminData;
+                console.log('[DashboardContext] Admin data loaded:', { uid: currentUser.uid, isActive: adminData.isActive, roles: adminData.roles, rights: adminData.rights });
+              } else {
+                console.log('[DashboardContext] Admin document exists but isActive is false');
               }
+            } else {
+              console.log('[DashboardContext] No admin document found for user:', currentUser.uid);
             }
           } catch (adminErr) {
-            // Error silently ignored
+            console.error('[DashboardContext] Error loading admin data:', adminErr);
           }
 
           const isProfileComplete = profileData.hasOwnProperty('isProfessionalProfileComplete')
@@ -344,6 +315,7 @@ export const DashboardProvider = ({ children }) => {
             ...userData,
             ...profileData,
             uid: currentUser.uid,
+            roles: userData.roles || [],
             // CENTRALIZED: professionalProfile existence is the ONLY condition
             hasProfessionalProfile: profDoc.exists(),
             _professionalProfileExists: profDoc.exists(),
@@ -351,6 +323,14 @@ export const DashboardProvider = ({ children }) => {
             hasFacilityProfile: (userData.roles || []).some(r => r.facility_uid),
             adminData: adminData
           };
+          
+          console.log('[DashboardContext] User data loaded:', {
+            uid: userWithId.uid,
+            roles: userWithId.roles,
+            adminData: userWithId.adminData,
+            adminDataExists: !!userWithId.adminData,
+            adminDataIsActive: userWithId.adminData?.isActive
+          });
 
           fetchedUser = userWithId;
           setUser(userWithId);
@@ -377,18 +357,38 @@ export const DashboardProvider = ({ children }) => {
 
     if (currentUser) {
       const userDocRef = doc(db, 'users', currentUser.uid);
-      unsubscribeUser = onSnapshot(userDocRef, (docSnapshot) => {
+      unsubscribeUser = onSnapshot(userDocRef, async (docSnapshot) => {
         if (docSnapshot.exists()) {
           const userData = docSnapshot.data();
           const userWithId = { ...userData, uid: docSnapshot.id };
+          
+          let currentAdminData = adminDataRef.current;
+          if (!currentAdminData) {
+            try {
+              const adminDoc = await getDoc(doc(db, 'admins', currentUser.uid));
+              if (adminDoc.exists()) {
+                const data = adminDoc.data();
+                if (data.isActive !== false) {
+                  currentAdminData = {
+                    ...data,
+                    isActive: data.isActive !== false
+                  };
+                  adminDataRef.current = currentAdminData;
+                }
+              }
+            } catch (adminErr) {
+              console.error('[DashboardContext] Error loading admin data in snapshot:', adminErr);
+            }
+          }
+          
           setUser(prev => ({
             ...userWithId,
             // Preserve computed profile flags - use prev if available, otherwise keep from Firestore
             hasProfessionalProfile: prev?.hasProfessionalProfile ?? userWithId.hasProfessionalProfile,
             hasFacilityProfile: prev?.hasFacilityProfile ?? userWithId.hasFacilityProfile,
-            adminData: prev?.adminData || adminDataRef.current
+            adminData: currentAdminData
           }));
-          setUserProfile(userWithId);
+          setUserProfile({ ...userWithId, adminData: currentAdminData });
         }
       });
 
@@ -414,8 +414,8 @@ export const DashboardProvider = ({ children }) => {
           setUser(prev => {
             // Don't let profile data override critical user fields
             const { role: _ignoreRole, hasProfessionalProfile: _ignorePP, hasFacilityProfile: _ignoreFP, adminData: _ignoreAdmin, ...safeProfileData } = profileData;
-            return { 
-              ...prev, 
+            return {
+              ...prev,
               ...safeProfileData,
               // Preserve these critical user fields
               role: prev?.role,
@@ -484,16 +484,11 @@ export const DashboardProvider = ({ children }) => {
           return;
         }
       } else if (workspace.type === WORKSPACE_TYPES.TEAM && isOnline) {
-        // Skip document check for Medishift Demo Facility (admin-only virtual facility)
-        const isDemoFacility = workspace.facilityId === MEDISHIFT_DEMO_FACILITY_ID || workspace.isAdminDemo;
-        
-        if (!isDemoFacility) {
-          const facilityDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, workspace.facilityId));
-          if (!facilityDoc.exists()) {
-            setFacilityNotFoundWorkspace(workspace);
-            setShowFacilityNotFoundDialog(true);
-            return;
-          }
+        const facilityDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, workspace.facilityId));
+        if (!facilityDoc.exists()) {
+          setFacilityNotFoundWorkspace(workspace);
+          setShowFacilityNotFoundDialog(true);
+          return;
         }
 
         // Also verify user has facility profile if this is their own facility
@@ -536,7 +531,7 @@ export const DashboardProvider = ({ children }) => {
 
       // Handle workspace navigation based on type changes
       const typeChanged = selectedWorkspace && selectedWorkspace.type !== workspace.type;
-      
+
       if (typeChanged) {
         // If switching workspace types, navigate to appropriate default page and reload
         let targetUrl;
@@ -549,7 +544,7 @@ export const DashboardProvider = ({ children }) => {
         } else {
           targetUrl = `/dashboard/personal/overview`;
         }
-        
+
         // Use window.location to ensure full reload with new workspace context
         window.location.href = targetUrl;
       } else {
@@ -557,7 +552,7 @@ export const DashboardProvider = ({ children }) => {
         const currentPath = location.pathname;
         const segments = currentPath.split('/').filter(Boolean);
         const dashboardIndex = segments.indexOf('dashboard');
-        
+
         if (dashboardIndex !== -1 && segments.length > dashboardIndex + 1) {
           const currentWorkspaceId = segments[dashboardIndex + 1];
           if (currentWorkspaceId !== workspace.id) {
@@ -686,10 +681,10 @@ export const DashboardProvider = ({ children }) => {
     const dashboardIndex = segments.indexOf('dashboard');
     if (dashboardIndex !== -1 && segments.length > dashboardIndex + 1) {
       const workspaceId = segments[dashboardIndex + 1];
-      
+
       const availableWs = getAvailableWorkspaces(userWithAdmin);
       const wsFromUrl = availableWs.find(w => w.id === workspaceId);
-      
+
       if (wsFromUrl) {
 
         let stateChanged = false;
@@ -730,7 +725,20 @@ export const DashboardProvider = ({ children }) => {
 
     // Get available workspaces based on user roles
     const availableWorkspaces = getAvailableWorkspaces(userWithAdmin);
-
+    
+    const isUserAdmin = isAdminSync(userWithAdmin);
+    
+    console.log('[DashboardContext] Workspace initialization:', {
+      isUserAdmin,
+      userRoles: userWithAdmin.roles,
+      adminData: userWithAdmin.adminData,
+      adminDataRoles: userWithAdmin.adminData?.roles,
+      adminDataRights: userWithAdmin.adminData?.rights,
+      adminDataIsActive: userWithAdmin.adminData?.isActive,
+      availableWorkspaces: availableWorkspaces.map(w => ({ id: w.id, type: w.type, name: w.name })),
+      selectedWorkspace: selectedWorkspace?.id,
+      userUid: userWithAdmin.uid
+    });
 
     // Only update workspaces state if it actually changed to prevent downstream re-renders
     setWorkspaces(prev => {
@@ -743,17 +751,30 @@ export const DashboardProvider = ({ children }) => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const dashIdx = pathSegments.indexOf('dashboard');
     const workspaceIdFromUrl = dashIdx !== -1 && pathSegments.length > dashIdx + 1 ? pathSegments[dashIdx + 1] : null;
-    
+
+    // SPECIAL HANDLING: If URL contains /dashboard/admin/*, force admin workspace selection
+    if (location.pathname.includes('/dashboard/admin/') && isUserAdmin) {
+      const adminWorkspace = availableWorkspaces.find(w => w.type === WORKSPACE_TYPES.ADMIN);
+      if (adminWorkspace) {
+        if (!selectedWorkspace || selectedWorkspace.id !== adminWorkspace.id) {
+          console.log('[DashboardContext] Admin URL detected, selecting admin workspace');
+          setSelectedWorkspace(adminWorkspace);
+          setWorkspaceCookie(adminWorkspace);
+        }
+        return;
+      }
+    }
+
     let workspaceFromUrl = null;
     if (workspaceIdFromUrl) {
       workspaceFromUrl = availableWorkspaces.find(w => w.id === workspaceIdFromUrl);
-      
+
       if (workspaceFromUrl && !selectedWorkspace) {
         setSelectedWorkspace(workspaceFromUrl);
         setWorkspaceCookie(workspaceFromUrl);
         return;
       }
-      
+
       if (!workspaceFromUrl && workspaceIdFromUrl === 'personal') {
         if (typeof userWithAdmin.hasProfessionalProfile === 'undefined') {
           return;
@@ -777,19 +798,9 @@ export const DashboardProvider = ({ children }) => {
           const currentPath = location.pathname;
           const segments = currentPath.split('/').filter(Boolean);
           const dIdx = segments.indexOf('dashboard');
-          
-          if (dIdx !== -1 && (segments.length <= dIdx + 1 || segments[dIdx + 1] !== selectedWorkspace.id)) {
-            // Correct the path to include workspace ID
-            const newSegments = [...segments];
-            if (newSegments.length <= dIdx + 1) {
-              newSegments.push(selectedWorkspace.id);
-              newSegments.push('overview');
-            } else {
-              newSegments[dIdx + 1] = selectedWorkspace.id;
-            }
-            const newUrl = '/' + newSegments.join('/');
-            navigate(newUrl, { replace: true });
-          }
+
+          // Aggressive URL rewriting removed to prevent feature redirect loops
+          // The router will handle 404s if the path is invalid.
         }
         return;
       }
@@ -806,33 +817,30 @@ export const DashboardProvider = ({ children }) => {
 
       // Validate existing session
       let hasValidSession = true; // Default to true since we are using path-based routing
-      
+
       // Only validate if we are NOT using path-based routing or if we explicitly want to check cookies
       // hasValidSession = validateWorkspaceSession(...) !== null;
-      
+
 
       if (hasValidSession) {
         setSelectedWorkspace(savedWorkspace);
-
-        const currentPath = location.pathname;
-        const segments = currentPath.split('/').filter(Boolean);
-        const dIdx = segments.indexOf('dashboard');
-
-        if (dIdx !== -1 && (segments.length <= dIdx + 1 || segments[dIdx + 1] !== savedWorkspace.id)) {
-          const newSegments = [...segments];
-          if (newSegments.length <= dIdx + 1) {
-            newSegments.push(savedWorkspace.id);
-            newSegments.push('overview');
-          } else {
-            newSegments[dIdx + 1] = savedWorkspace.id;
-          }
-          const targetUrl = '/' + newSegments.join('/');
-          navigate(targetUrl, { replace: true });
-        }
+        return;
       } else {
         switchWorkspace(savedWorkspace);
       }
-    } else if (availableWorkspaces.length > 0) {
+    }
+
+    // AUTO-SELECT ADMIN WORKSPACE: If user is admin and no workspace selected, auto-select admin workspace
+    const adminWorkspace = availableWorkspaces.find(w => w.type === WORKSPACE_TYPES.ADMIN);
+    if (adminWorkspace && !selectedWorkspace && isUserAdmin) {
+      console.log('[DashboardContext] Auto-selecting admin workspace for admin user');
+      setSelectedWorkspace(adminWorkspace);
+      setWorkspaceCookie(adminWorkspace);
+      navigate(`/dashboard/admin/portal`, { replace: true });
+      return;
+    }
+
+    if (availableWorkspaces.length > 0) {
       // CRITICAL FIX: If URL explicitly requests a workspace, don't auto-select a different one
       // Wait for user data to fully load so the requested workspace appears in available list
       if (workspaceIdFromUrl && !workspaceFromUrl) {
@@ -843,6 +851,18 @@ export const DashboardProvider = ({ children }) => {
         // If workspace is explicitly requested but not available, don't auto-select
         // The switchWorkspace function will handle validation and redirect if needed
         return;
+      }
+
+      // AUTO-SELECT ADMIN WORKSPACE: If user is admin, prioritize admin workspace
+      if (isUserAdmin) {
+        const adminWorkspace = availableWorkspaces.find(w => w.type === WORKSPACE_TYPES.ADMIN);
+        if (adminWorkspace) {
+          console.log('[DashboardContext] Auto-selecting admin workspace for admin user');
+          setSelectedWorkspace(adminWorkspace);
+          setWorkspaceCookie(adminWorkspace);
+          navigate(`/dashboard/admin/portal`, { replace: true });
+          return;
+        }
       }
 
       // Auto-select workspace based on user's primary role to avoid blinking
@@ -953,8 +973,6 @@ export const DashboardProvider = ({ children }) => {
     selectedWorkspace,
     switchWorkspace,
     isLoading,
-    profileComplete,
-    tutorialPassed,
     nextIncompleteProfileSection,
     setTutorialComplete,
     setProfileCompletionStatus,
@@ -979,8 +997,6 @@ export const DashboardProvider = ({ children }) => {
     selectedWorkspace,
     switchWorkspace,
     isLoading,
-    profileComplete,
-    tutorialPassed,
     nextIncompleteProfileSection,
     currentUser,
     refreshUserData,
@@ -992,7 +1008,7 @@ export const DashboardProvider = ({ children }) => {
   return (
     <DashboardContext.Provider value={value}>
       {typeof children === 'function'
-        ? children({ profileComplete, tutorialPassed, isLoading })
+        ? children({ isLoading })
         : children}
       <Dialog
         isOpen={showFacilityNotFoundDialog}

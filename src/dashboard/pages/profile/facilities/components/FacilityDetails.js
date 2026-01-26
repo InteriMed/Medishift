@@ -15,7 +15,7 @@ import useAutoSave from '../../../../hooks/useAutoSave';
 // Tailwind styles (copied from PersonalDetails.js to ensure consistency)
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
+  headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex items-center",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium",
@@ -27,7 +27,7 @@ const styles = {
   sectionsWrapper: "facility-details-sections-wrapper w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
-  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
+  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full",
   cardHeader: "flex items-center gap-4 mb-0",
   cardIconWrapper: "p-2 rounded-lg bg-primary/10",
   cardIconStyle: { color: 'var(--primary-color)' },
@@ -52,8 +52,6 @@ const FacilityDetails = ({
   onCancel,
   getNestedValue,
   validateCurrentTabData,
-  onTabCompleted,
-  isTutorialActive,
   completionPercentage,
   handleAutoFillClick,
   isUploading,
@@ -63,9 +61,9 @@ const FacilityDetails = ({
   handleFileUpload,
   uploadProgress,
   t: tProp,
-  stepData
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'validation', 'common']);
+  const isTutorialActive = false;
 
   const dropdownOptionsFromHook = useDropdownOptions();
 
@@ -84,8 +82,6 @@ const FacilityDetails = ({
     onSave,
     getNestedValue,
     validateCurrentTabData,
-    onTabCompleted,
-    isTutorialActive
   });
 
   // Get options from translations if available
@@ -267,8 +263,6 @@ const FacilityDetails = ({
     }));
   }, [fieldsToRender]);
 
-  const currentTabConfig = config?.tabs?.find(tab => tab.id === activeTab);
-
   const getGroupIcon = (groupKey) => {
     switch (groupKey) {
       case 'general': return <FiHome />;
@@ -311,64 +305,6 @@ const FacilityDetails = ({
         }
       `}</style>
       <div className={`${styles.sectionContainer} facility-details-container`}>
-        {/* Title Card */}
-        <div className={styles.headerCard}>
-          <div className="flex flex-col gap-1 flex-1">
-            <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{currentTabConfig ? t(currentTabConfig.labelKey) : activeTab}</h2>
-            <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('facilityDetails.subtitle', 'Please ensure facility details are accurate and up to date.')}</p>
-          </div>
-
-          {isTutorialActive && (
-            <div className="flex items-center gap-3">
-              <div className="relative" ref={autoFillButtonRef}>
-                <button
-                  onClick={handleAutoFillClick}
-                  disabled={isUploading || isAnalyzing}
-                  className={cn(
-                    "px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0",
-                    (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
-                    (stepData?.highlightUploadButton) && "tutorial-highlight"
-                  )}
-                  style={{ height: 'var(--boxed-inputfield-height)', backgroundColor: 'rgba(255, 191, 14, 1)' }}
-                  data-tutorial="profile-upload-button"
-                >
-                  {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4 text-white" />}
-                  <span className="text-sm font-medium text-white">
-                    {isAnalyzing
-                      ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
-                      : t('dashboardProfile:documents.autofill', 'Auto Fill')
-                    }
-                  </span>
-                </button>
-              </div>
-              {uploadInputRef && (
-                <UploadFile
-                  ref={uploadInputRef}
-                  onChange={handleFileUpload}
-                  isLoading={isUploading}
-                  progress={uploadProgress}
-                  accept=".pdf,.doc,.docx,.jpg,.png"
-                  label=""
-                  className="hidden"
-                />
-              )}
-
-              {formData && completionPercentage !== undefined && (
-                <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                  <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                  <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                      style={{ width: `${completionPercentage}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
         <div className={styles.sectionsWrapper}>
           {/* Logic to split groups into columns - simplistic approach: odd/even or specific groups */}
           <div className={styles.leftColumn}>

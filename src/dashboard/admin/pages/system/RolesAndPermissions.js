@@ -2,31 +2,47 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Shield, CheckCircle2, XCircle } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
-import { PERMISSIONS, ADMIN_ROLES, ROLE_PERMISSIONS } from '../../utils/rbac';
+import { RIGHTS, ADMIN_ROLES, ALL_RIGHTS } from '../../utils/rbac';
 import { ROLE_DEFINITIONS } from '../../../../config/roleDefinitions';
 import '../../../../styles/variables.css';
 
 const RolesAndPermissions = () => {
   const { t } = useTranslation(['admin']);
 
-  const allAdminPermissions = Object.values(PERMISSIONS);
+  const allAdminRights = ALL_RIGHTS;
 
-  const getPermissionDisplayName = (permission) => {
-    return permission
+  const getRightDisplayName = (right) => {
+    return right
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
 
   const renderAdminRolesSection = () => {
+    const adminRoles = [
+      {
+        key: ADMIN_ROLES.SUPER_ADMIN,
+        name: 'Super Admin',
+        hasAllRights: true,
+        rights: ALL_RIGHTS
+      },
+      {
+        key: ADMIN_ROLES.ADMIN,
+        name: 'Admin',
+        hasAllRights: false,
+        rights: [],
+        description: 'Rights are assigned individually per admin user'
+      }
+    ];
+
     return (
       <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-lg)', border: '1px solid var(--grey-2)', boxShadow: 'var(--shadow-sm)', marginBottom: 'var(--spacing-lg)' }}>
         <h2 style={{ fontSize: 'var(--font-size-xxlarge)', fontWeight: 'var(--font-weight-large)', color: 'var(--text-color)', marginBottom: 'var(--spacing-md)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
           <Shield size={24} />
-          Admin Roles & Permissions
+          Admin Roles & Rights
         </h2>
         <p style={{ color: 'var(--text-light-color)', marginBottom: 'var(--spacing-lg)' }}>
-          Complete list of admin roles and their associated permissions. Super Admin has access to all permissions.
+          Complete list of admin roles and their associated rights. Super Admin has access to all rights by default. Admin users have rights assigned individually.
         </p>
 
         <div className="overflow-x-auto">
@@ -36,40 +52,41 @@ const RolesAndPermissions = () => {
                 <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-color)' }}>
                   Role
                 </th>
-                {allAdminPermissions.map((permission) => (
-                  <th key={permission} style={{ textAlign: 'center', padding: 'var(--spacing-md)', fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-light-color)', minWidth: '120px' }}>
-                    {getPermissionDisplayName(permission)}
+                {allAdminRights.map((right) => (
+                  <th key={right} style={{ textAlign: 'center', padding: 'var(--spacing-md)', fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-light-color)', minWidth: '120px' }}>
+                    {getRightDisplayName(right)}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {Object.entries(ROLE_PERMISSIONS).map(([roleKey, rolePerms]) => {
-                const roleName = roleKey
-                  .split('_')
-                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(' ');
-                const isSuperAdmin = roleKey === ADMIN_ROLES.SUPER_ADMIN;
-                const hasAllPermissions = isSuperAdmin;
+              {adminRoles.map((role) => {
+                const isSuperAdmin = role.key === ADMIN_ROLES.SUPER_ADMIN;
+                const hasAllRights = isSuperAdmin;
 
                 return (
-                  <tr key={roleKey} style={{ borderBottom: '1px solid var(--grey-2)', transition: 'background-color 0.2s' }} className="hover:bg-grey-1">
+                  <tr key={role.key} style={{ borderBottom: '1px solid var(--grey-2)', transition: 'background-color 0.2s' }} className="hover:bg-grey-1">
                     <td style={{ padding: 'var(--spacing-md)', fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-color)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-                        {isSuperAdmin && <Shield size={16} style={{ color: 'var(--blue-4)' }} />}
-                        {roleName}
+                        {isSuperAdmin && <Shield size={16} style={{ color: 'var(--purple-4)' }} />}
+                        {role.name}
                         {isSuperAdmin && (
-                          <span style={{ fontSize: 'var(--font-size-small)', color: 'var(--blue-4)', marginLeft: 'var(--spacing-xs)' }}>
-                            (All Permissions)
+                          <span style={{ fontSize: 'var(--font-size-small)', color: 'var(--purple-4)', marginLeft: 'var(--spacing-xs)' }}>
+                            (All Rights)
                           </span>
                         )}
                       </div>
+                      {!isSuperAdmin && role.description && (
+                        <div style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)', marginTop: '4px', fontStyle: 'italic' }}>
+                          {role.description}
+                        </div>
+                      )}
                     </td>
-                    {allAdminPermissions.map((permission) => {
-                      const hasPermission = hasAllPermissions || rolePerms.includes(permission);
+                    {allAdminRights.map((right) => {
+                      const hasRight = hasAllRights;
                       return (
-                        <td key={permission} style={{ textAlign: 'center', padding: 'var(--spacing-md)' }}>
-                          {hasPermission ? (
+                        <td key={right} style={{ textAlign: 'center', padding: 'var(--spacing-md)' }}>
+                          {hasRight ? (
                             <CheckCircle2 size={20} style={{ color: 'var(--green-4)', margin: '0 auto' }} />
                           ) : (
                             <XCircle size={20} style={{ color: 'var(--grey-3)', margin: '0 auto' }} />
@@ -86,20 +103,15 @@ const RolesAndPermissions = () => {
 
         <div style={{ marginTop: 'var(--spacing-lg)', padding: 'var(--spacing-md)', backgroundColor: 'var(--blue-1)', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--blue-2)' }}>
           <h3 style={{ fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)', color: 'var(--blue-4)', marginBottom: 'var(--spacing-xs)' }}>
-            Permission Summary
+            Rights Summary
           </h3>
-          {Object.entries(ROLE_PERMISSIONS).map(([roleKey, rolePerms]) => {
-            const roleName = roleKey
-              .split('_')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ');
-            const isSuperAdmin = roleKey === ADMIN_ROLES.SUPER_ADMIN;
-            const permissionCount = isSuperAdmin ? allAdminPermissions.length : rolePerms.length;
+          {adminRoles.map((role) => {
+            const isSuperAdmin = role.key === ADMIN_ROLES.SUPER_ADMIN;
+            const rightCount = isSuperAdmin ? allAdminRights.length : 0;
 
             return (
-              <div key={roleKey} style={{ marginTop: 'var(--spacing-sm)', fontSize: 'var(--font-size-small)', color: 'var(--text-color)' }}>
-                <strong>{roleName}:</strong> {permissionCount} permission{permissionCount !== 1 ? 's' : ''}
-                {isSuperAdmin && ' (All permissions)'}
+              <div key={role.key} style={{ marginTop: 'var(--spacing-sm)', fontSize: 'var(--font-size-small)', color: 'var(--text-color)' }}>
+                <strong>{role.name}:</strong> {isSuperAdmin ? `${rightCount} rights (All rights)` : 'Rights assigned individually per user'}
               </div>
             );
           })}
@@ -144,7 +156,7 @@ const RolesAndPermissions = () => {
                       border: '1px solid var(--blue-2)'
                     }}
                   >
-                    {getPermissionDisplayName(permission)}
+                    {getRightDisplayName(permission)}
                   </span>
                 ))}
               </div>
@@ -174,7 +186,7 @@ const RolesAndPermissions = () => {
                       border: '1px solid var(--blue-2)'
                     }}
                   >
-                    {getPermissionDisplayName(permission)}
+                    {getRightDisplayName(permission)}
                   </span>
                 ))}
               </div>
@@ -186,7 +198,7 @@ const RolesAndPermissions = () => {
   };
 
   return (
-    <ProtectedRoute requiredPermission={PERMISSIONS.VIEW_AUDIT_LOGS}>
+    <ProtectedRoute requiredRight={RIGHTS.VIEW_AUDIT_LOGS}>
       <div style={{ padding: 'var(--spacing-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
         <div>
           <h1 style={{ fontSize: 'var(--font-size-xxxlarge)', fontWeight: 'var(--font-weight-large)', color: 'var(--text-color)', marginBottom: 0 }}>

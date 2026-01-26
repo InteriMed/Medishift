@@ -17,7 +17,8 @@ const CalendarSidebar = ({
   visibleWeekStart,
   visibleWeekEnd,
   showMiniCalendar = true,
-  showUpcomingEvents = true
+  showUpcomingEvents = true,
+  highlightOnlyToday = false
 }) => {
   const { t } = useTranslation();
 
@@ -37,12 +38,13 @@ const CalendarSidebar = ({
           view={view}
           visibleWeekStart={visibleWeekStart}
           visibleWeekEnd={visibleWeekEnd}
+          highlightOnlyToday={highlightOnlyToday}
         />
       )}
 
       {showUpcomingEvents && (
-        <div className="flex-1 flex flex-col min-h-0 bg-card p-6 backdrop-blur-sm rounded-2xl border border-border/50 shadow-lg" style={{ overflow: 'visible' }}>
-          <h3 className="text-lg font-bold text-foreground mb-6">{t('calendar:upcomingEvents')}</h3>
+        <div className="flex-1 flex flex-col min-h-0 bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow" style={{ overflow: 'visible' }}>
+          <h3 className="text-lg font-semibold text-foreground mb-6">{t('calendar:upcomingEvents')}</h3>
 
           {events && events.length > 0 && events.filter(e => new Date(e.start) > new Date()).length > 0 ? (
             <div className="flex-1 overflow-y-auto space-y-4 -mr-1 pr-1 custom-scrollbar">
@@ -114,7 +116,8 @@ CalendarSidebar.propTypes = {
   visibleWeekStart: PropTypes.instanceOf(Date),
   visibleWeekEnd: PropTypes.instanceOf(Date),
   showMiniCalendar: PropTypes.bool,
-  showUpcomingEvents: PropTypes.bool
+  showUpcomingEvents: PropTypes.bool,
+  highlightOnlyToday: PropTypes.bool
 };
 
 export default CalendarSidebar;

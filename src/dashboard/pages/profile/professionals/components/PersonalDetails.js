@@ -18,14 +18,11 @@ import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
 import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
 import { cn } from '../../../../../utils/cn';
 
-// --- 
-// Default bio is now empty to allow AI extraction or manual entry
-const DEFAULT_BIO = "";
 
 // Tailwind styles
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex flex-col personal-details-header",
+  headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex flex-col personal-details-header",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium",
@@ -41,7 +38,7 @@ const styles = {
   sectionsWrapper: "personal-details-sections-wrapper w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
-  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
+  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative",
   cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
   cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
@@ -67,8 +64,6 @@ const PersonalDetails = ({
   onTriggerUpload,
   onStepGuideVisibilityChange,
   validateCurrentTabData,
-  onTabCompleted,
-  isTutorialActive,
   completionPercentage,
   handleAutoFillClick,
   isUploading,
@@ -78,7 +73,6 @@ const PersonalDetails = ({
   handleFileUpload,
   uploadProgress,
   t: tProp,
-  stepData
 }) => {
   const { t } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
   const { currentUser } = useAuth();
@@ -97,9 +91,7 @@ const PersonalDetails = ({
     onInputChange,
     onSave,
     getNestedValue,
-    validateCurrentTabData,
-    onTabCompleted,
-    isTutorialActive
+    validateCurrentTabData
   });
 
   useEffect(() => {
@@ -421,37 +413,6 @@ const PersonalDetails = ({
         .personal-details-container {
           container-type: inline-size;
         }
-        
-        .personal-details-header-grid {
-          display: grid;
-          gap: 1.5rem;
-          width: 100%;
-          grid-template-columns: 1fr 1fr;
-          grid-template-areas: 
-            "title title"
-            "completion autofill";
-          align-items: center;
-        }
-
-        .header-title-row {
-          grid-area: title;
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-        }
-
-        .header-completion-centered {
-          grid-area: completion;
-          display: flex;
-          justify-content: flex-start;
-          width: 100%;
-        }
-
-        .header-autofill-right {
-          grid-area: autofill;
-          display: flex;
-          justify-content: flex-end;
-        }
 
         .personal-details-sections-wrapper {
           container-type: inline-size;
@@ -467,78 +428,11 @@ const PersonalDetails = ({
         }
       `}</style>
       <div className={`${styles.sectionContainer} personal-details-container`}>
-
-
-        {/* Title Card */}
-        <div className={styles.headerCard}>
-          <div className="personal-details-header-grid">
-            <div className="header-title-row">
-              <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('personalDetails.title')}</h2>
-              <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('personalDetails.subtitle', 'Please ensure your personal details are accurate and up to date.')}</p>
-            </div>
-
-            {isTutorialActive && (
-              <>
-                <div className="header-completion-centered">
-                  {formData && completionPercentage !== undefined && (
-                    <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                      <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                      <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                        <div
-                          className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                          style={{ width: `${completionPercentage}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="header-autofill-right">
-                  <div className="relative" ref={autoFillButtonRef}>
-                    <button
-                      onClick={handleAutoFillClick}
-                      disabled={isUploading || isAnalyzing}
-                      className={cn(
-                        "group px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0",
-                        (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
-                        (stepData?.highlightUploadButton) && "tutorial-highlight"
-                      )}
-                      style={{ height: 'var(--boxed-inputfield-height)', backgroundColor: 'rgba(255, 191, 14, 1)' }}
-                      data-tutorial="profile-upload-button"
-                    >
-                      {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4 text-muted-foreground group-hover:text-black transition-colors" />}
-                      <span className="text-sm font-medium text-muted-foreground group-hover:text-black transition-colors">
-                        {isAnalyzing
-                          ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
-                          : t('dashboardProfile:documents.autofill', 'Auto Fill')
-                        }
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {isTutorialActive && uploadInputRef && (
-            <UploadFile
-              ref={uploadInputRef}
-              onChange={handleFileUpload}
-              isLoading={isUploading}
-              progress={uploadProgress}
-              accept=".pdf,.doc,.docx,.jpg,.png"
-              label=""
-              className="hidden"
-            />
-          )}
-        </div>
-
         <div className={styles.sectionsWrapper}>
           {/* Left Column */}
           <div className={styles.leftColumn}>
-            {groupedFields.filter(group => group.key === 'identity' || group.key === 'contact').map((group) => (
-              <div key={group.key} className={styles.sectionCard}>
+            {groupedFields.filter(group => group.key === 'identity' || group.key === 'contact').map((group, index) => (
+              <div key={group.key} className={styles.sectionCard} style={{ zIndex: 20 - index }}>
                 {group.key === 'contact' ? (
                   <div className={styles.gridSingle}>
                     <div className={styles.cardHeader}>
@@ -570,8 +464,8 @@ const PersonalDetails = ({
 
           {/* Right Column */}
           <div className={styles.rightColumn}>
-            {groupedFields.filter(group => group.key === 'address').map((group) => (
-              <div key={group.key} className={styles.sectionCard}>
+            {groupedFields.filter(group => group.key === 'address').map((group, index) => (
+              <div key={group.key} className={styles.sectionCard} style={{ zIndex: 20 - index }}>
                 <div className={styles.grid}>
                   <div className={styles.cardHeader}>
                     <div className={styles.cardIconWrapper}>
@@ -586,31 +480,6 @@ const PersonalDetails = ({
               </div>
             ))}
 
-            {/* Summary Section */}
-            <div className={styles.sectionCard}>
-              <div className={styles.gridSingle}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrapper}>
-                    <FiFileText className="w-4 h-4" style={styles.cardIconStyle} />
-                  </div>
-                  <div className={styles.cardTitle}>
-                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('personalDetails.summary', 'Summary')}</h3>
-                  </div>
-                </div>
-                <div className={styles.gridSingle}>
-                  <TextareaField
-                    label=""
-                    name="bio"
-                    value={getNestedValue(formData, 'bio') || DEFAULT_BIO}
-                    onChange={(e) => onInputChange('bio', e.target.value)}
-                    placeholder={t('personalDetails.summaryPlaceholder', 'Tell us about your professional background...')}
-                    error={getNestedValue(errors, 'bio')}
-                    maxLength={1000}
-                    rows={8}
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 

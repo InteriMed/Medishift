@@ -149,15 +149,11 @@ button:hover .arrow-animate,
 }
 
 .bg-premium-hero {
-  background: radial-gradient(circle at top right, #f8fafc, transparent 40%),
-    radial-gradient(circle at bottom left, #f8fafc, transparent 40%);
   background-color: white;
 }
 
 .bg-hero-gradient {
-  background: linear-gradient(135deg, #fef0f4 0%, #f0f4ff 15%, #f0fdf4 30%, #fefce8 45%, #fdf2f8 60%, #f0f9ff 75%, #f5f3ff 90%, #fff1f2 100%);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background-color: white;
   position: relative;
   overflow: hidden;
 }
@@ -305,12 +301,9 @@ button:hover .arrow-animate,
 }
 
 @keyframes tutorialButtonPulse {
-
-  0%,
-  100% {
+  0%, 100% {
     box-shadow: 0 0 0 0 rgba(255, 215, 83, 0.8);
   }
-
   50% {
     box-shadow: 0 0 0 10px rgb(255, 215, 83, 0);
   }
@@ -345,7 +338,7 @@ nav:has(.tutorial-highlight) {
   overflow-x: visible !important;
 }
 
-nav:has(.tutorial-highlight)>* {
+nav:has(.tutorial-highlight) > * {
   overflow-x: visible !important;
 }
 
@@ -354,21 +347,9 @@ div:has(.tutorial-highlight) {
 }
 
 @keyframes shake {
-
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  20%,
-  60% {
-    transform: translateX(-8px);
-  }
-
-  40%,
-  80% {
-    transform: translateX(8px);
-  }
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
 }
 
 .animate-shake {
@@ -410,7 +391,6 @@ div:has(.tutorial-highlight) {
   position: relative;
   user-select: none;
   pointer-events: auto;
-  cursor: not-allowed;
 }
 
 /* BANKING SECURE INPUT STYLES */
@@ -440,12 +420,18 @@ input[readonly].banking-masked::placeholder,
 }
 
 .dashboard-sidebar-container-desktop {
-  @apply w-[320px] lg:w-[360px];
+  @apply w-[384px] lg:w-[432px];
+  overflow: visible !important;
+}
+
+.dashboard-sidebar-container-desktop.calendar-sidebar,
+.dashboard-sidebar-container-desktop.content-sidebar {
+  @apply w-[320px];
   overflow: visible !important;
 }
 
 .dashboard-sidebar-inner {
-  @apply flex-1 flex flex-col bg-card backdrop-blur-sm border border-border/50 shadow-lg rounded-2xl;
+  @apply flex-1 flex flex-col bg-card border border-border hover:shadow-md transition-shadow rounded-xl;
   overflow: visible !important;
 }
 
@@ -466,7 +452,7 @@ input[readonly].banking-masked::placeholder,
 }
 
 .dashboard-main-inner {
-  @apply h-full w-full bg-card backdrop-blur-sm border border-border/50 shadow-lg overflow-y-auto overflow-x-hidden rounded-2xl;
+  @apply h-full w-full bg-card border border-border hover:shadow-md transition-shadow overflow-y-auto overflow-x-hidden rounded-xl;
 }
 
 .dashboard-main-inner-mobile {
@@ -478,7 +464,7 @@ input[readonly].banking-masked::placeholder,
 }
 
 .dashboard-empty-state-card {
-  @apply max-w-md w-full bg-card p-8 rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm duration-500 mx-auto;
+  @apply max-w-md w-full bg-card p-8 rounded-xl border border-border hover:shadow-md transition-shadow duration-500 mx-auto;
 }
 
 .dashboard-empty-state-icon {
@@ -490,7 +476,7 @@ input[readonly].banking-masked::placeholder,
 }
 
 .dashboard-empty-state-title {
-  @apply text-xl font-bold mb-2;
+  @apply text-lg font-semibold mb-2;
   color: var(--text-color);
   font-family: var(--font-family-text, Roboto, sans-serif);
 }
@@ -501,20 +487,24 @@ input[readonly].banking-masked::placeholder,
   font-family: var(--font-family-text, Roboto, sans-serif);
 }
 
-/* DASHBOARD HEADER MOBILE RESPONSIVE STYLES */
-.profile-sidebar-menu {
+.dashboard-card {
+  @apply bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow;
+}
+
+/* DASHBOARD CONTENT SIDEBAR STYLES */
+.content-sidebar-menu {
   overflow: visible !important;
 }
 
-.profile-sidebar-tabs {
+.content-sidebar-tabs {
   overflow: visible !important;
 }
 
-.profile-sidebar-tabs>* {
+.content-sidebar-tabs > * {
   overflow: visible !important;
 }
 
-.profile-sidebar-autofill {
+.content-sidebar-autofill {
   overflow: visible !important;
 }
 
@@ -522,7 +512,7 @@ input[readonly].banking-masked::placeholder,
   overflow: visible !important;
 }
 
-.calendar-sidebar-container>* {
+.calendar-sidebar-container > * {
   overflow: visible !important;
 }
 
@@ -536,7 +526,7 @@ input[readonly].banking-masked::placeholder,
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
   }
-
+  
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: hsl(var(--muted-foreground) / 0.3);
   }
@@ -557,12 +547,8 @@ input[readonly].banking-masked::placeholder,
 }
 
 @media (min-width: 1400px) {
-  header>div {
+  header > div {
     max-width: 1400px;
     margin: 0 auto;
   }
-}
-
-.tutorial-highlight.fixed-overlay {
-  position: fixed !important;
 }

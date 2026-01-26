@@ -44,6 +44,10 @@
   box-shadow: var(--boxed-inputfield-focus-shadow);
 }
 
+.has-value.boxed-switchfield-container:not(.boxed-switchfield-container--error) {
+  border-color: var(--boxed-inputfield-border-color);
+}
+
 .boxed-switchfield-container--error {
   border-color: var(--boxed-inputfield-error-color);
 }
@@ -70,7 +74,19 @@
 }
 
 .boxed-switchfield-label--focused {
+  top: 0;
+  left: 12px !important;
+  background-color: var(--boxed-inputfield-background);
   color: var(--boxed-inputfield-color-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.has-value .boxed-switchfield-label {
+  top: 0;
+  left: 12px !important;
+  background-color: var(--boxed-inputfield-background);
+  color: var(--boxed-inputfield-color-text);
+  font-weight: var(--font-weight-medium);
 }
 
 .boxed-switchfield-label--error,

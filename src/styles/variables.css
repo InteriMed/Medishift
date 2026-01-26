@@ -1,9 +1,9 @@
 /* CSS Variables - Enhanced Design System */
 :root {
   /* Colors */
-  --background-color: #f5f5f7;
+  --background-color: #ffffff;
   --background-div-color: #ffffff;
-  --background-div-color-2: #f5fcff;
+  --background-div-color-2: #ffffff;
   --text-color: #333333;
   --text-color-logo-1: #ffffff;
   --text-color-logo-2: #ffffff;
@@ -97,7 +97,7 @@
   --border-radius-xl: 20px;
   --border-radius-hero: 2.5rem; /* 40px - matches hero section image */
   --default-border: none; /* No border by default */
-  --dashboard-bg: #f1f4f7; /* Very subtle grey background for dashboard */
+  --dashboard-bg: #ffffff; /* White background for dashboard */
   --default-div-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Subtle shadow for divs */
   --margin-sm: 0 10px 10px 10px;
   

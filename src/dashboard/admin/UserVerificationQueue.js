@@ -12,6 +12,8 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import Button from '../../components/BoxedInputFields/Button';
 import PersonnalizedInputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import DropdownField from '../../components/BoxedInputFields/Dropdown-Field';
+import TextareaField from '../../components/BoxedInputFields/TextareaField';
+import Dialog from '../../components/Dialog/Dialog';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../utils/auditLogger';
 import { useAuth } from '../../contexts/AuthContext';
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
@@ -33,8 +35,10 @@ const UserVerificationQueue = () => {
   // UI State
   const [activeTab, setActiveTab] = useState('professionals'); // 'professionals', 'facilities', 'history'
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [glnData, setGlnData] = useState(null);
-  const [fetchingGln, setFetchingGln] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [isRejecting, setIsRejecting] = useState(false);
 
   // Lightbox/PDF State
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -98,59 +102,77 @@ const UserVerificationQueue = () => {
     loadHistoryUsers();
   }, []);
 
-  useEffect(() => {
-    if (selectedUserId) {
-      const user = [...users, ...historyUsers].find(u => u.id === selectedUserId);
-      if (user) {
-        const gln = user.professionalProfile?.verification?.glnNumber || user.facilityProfile?.glnNumber;
-        if (gln) {
-          fetchGlnInfo(gln, !!user.professionalProfile);
-        } else {
-          setGlnData(null);
-        }
-      }
-    } else {
-      setGlnData(null);
-    }
-  }, [selectedUserId, users, historyUsers]);
 
   const loadPendingUsers = async () => {
     setLoading(true);
     try {
-      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
-      const q = query(usersRef, where('verificationStatus', '!=', 'verified'));
-      const snapshot = await getDocs(q);
-
       const usersList = [];
-      for (const docSnap of snapshot.docs) {
-        const userData = docSnap.data();
-        const userId = docSnap.id;
-
-        if (userData.onboardingStatus === 'completed' && userData.verificationStatus === 'verified') continue;
-
-        let professionalProfile = null;
-        const profId = userData.professionalProfileId || userId;
-        const profDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, profId));
-        if (profDoc.exists()) professionalProfile = profDoc.data();
-
-        let facilityProfile = null;
-        const facId = userData.facilityProfileId || userId;
-        const facDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facId));
-        if (facDoc.exists()) facilityProfile = facDoc.data();
-
-        if (!professionalProfile && !facilityProfile && userData.onboardingStatus !== 'pending_verification') continue;
-
+      
+      const professionalProfilesRef = collection(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES);
+      const professionalProfilesSnapshot = await getDocs(professionalProfilesRef);
+      
+      for (const profDoc of professionalProfilesSnapshot.docs) {
+        const profData = profDoc.data();
+        const userId = profDoc.id;
+        
+        const verification = profData.verification || {};
+        const manualVerification = verification.manualVerification === true;
+        const verificationStatus = verification.overallVerificationStatus || verification.verificationStatus || verification.status;
+        
+        if (manualVerification || verificationStatus === 'verified') continue;
+        
+        const userDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId));
+        if (!userDoc.exists()) continue;
+        
+        const userData = userDoc.data();
+        if (userData.accountStatus === 'disabled') continue;
+        
         usersList.push({
           id: userId,
           ...userData,
-          professionalProfile,
-          facilityProfile
+          professionalProfile: profData
         });
+      }
+      
+      const facilityProfilesRef = collection(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES);
+      const facilityProfilesSnapshot = await getDocs(facilityProfilesRef);
+      
+      for (const facDoc of facilityProfilesSnapshot.docs) {
+        const facData = facDoc.data();
+        const facilityId = facDoc.id;
+        
+        const verification = facData.verification || {};
+        const manualVerification = verification.manualVerification === true;
+        const verificationStatus = verification.overallVerificationStatus || verification.overallStatus || verification.verificationStatus || verification.status;
+        
+        if (manualVerification || verificationStatus === 'verified') continue;
+        
+        const admins = facData.admins || [];
+        if (admins.length === 0) continue;
+        
+        const userId = admins[0];
+        const userDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId));
+        if (!userDoc.exists()) continue;
+        
+        const userData = userDoc.data();
+        if (userData.accountStatus === 'disabled') continue;
+        
+        if (!usersList.find(u => u.id === userId)) {
+          usersList.push({
+            id: userId,
+            ...userData,
+            facilityProfile: facData,
+            facilityProfileId: facilityId
+          });
+        } else {
+          const existingUser = usersList.find(u => u.id === userId);
+          existingUser.facilityProfile = facData;
+          existingUser.facilityProfileId = facilityId;
+        }
       }
 
       setUsers(usersList);
       if (usersList.length > 0 && !selectedUserId) {
-        // Auto-select first user based on active tab
         const first = usersList.find(u => activeTab === 'facilities' ? u.facilityProfile : u.professionalProfile);
         if (first) setSelectedUserId(first.id);
       }
@@ -200,26 +222,9 @@ const UserVerificationQueue = () => {
     }
   };
 
-  const fetchGlnInfo = async (gln, isProfessional) => {
-    setFetchingGln(true);
-    try {
-      const functions = getFunctions(undefined, 'europe-west6');
-      const apiName = isProfessional ? 'healthRegistryAPI' : 'companySearchAPI';
-      const callApi = httpsCallable(functions, apiName);
-
-      const result = await callApi(isProfessional ? { gln } : { glnCompany: gln });
-      if (result.data.success) {
-        setGlnData(result.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching GLN info:', error);
-      setGlnData(null);
-    } finally {
-      setFetchingGln(false);
-    }
-  };
 
   const handleApprove = async (userId) => {
+    setIsApproving(true);
     try {
       const user = [...users, ...historyUsers].find(u => u.id === userId);
       const userEmail = user?.email || 'Unknown';
@@ -261,38 +266,60 @@ const UserVerificationQueue = () => {
     } catch (error) {
       console.error('Error approving user:', error);
       alert('Error approving user.');
+    } finally {
+      setIsApproving(false);
     }
   };
 
-  const handleReject = async (userId, reason) => {
-    const rejectionReason = reason || prompt('Rejection reason:');
-    if (!rejectionReason) return;
+  const handleReject = async (userId) => {
+    if (!rejectReason.trim()) {
+      alert('Please provide a rejection reason');
+      return;
+    }
 
+    setIsRejecting(true);
     try {
       const user = [...users, ...historyUsers].find(u => u.id === userId);
       const userName = user?.professionalProfile ? `${user.firstName} ${user.lastName}` : user?.facilityProfile?.companyName || user?.email;
 
-      await updateDoc(doc(db, 'users', userId), {
-        onboardingStatus: 'rejected',
-        verificationStatus: 'rejected',
-        rejectionReason,
-        rejectedAt: serverTimestamp(),
-        rejectedBy: userProfile?.uid || 'admin'
+      const functions = getFunctions(undefined, 'europe-west6');
+      const disableUser = httpsCallable(functions, 'disableUser');
+
+      const banInfo = 'Your account has been disabled because your information did not match our verification requirements. Please contact our support team if you believe this is a mistake.';
+
+      const result = await disableUser({
+        userId,
+        reason: rejectReason,
+        banInfo: banInfo
       });
 
-      await logAdminAction({
-        eventType: ADMIN_AUDIT_EVENTS.USER_REJECTED,
-        action: `User rejected: ${userName}`,
-        resource: { type: 'user', id: userId, name: userName },
-        details: { rejectionReason }
-      });
+      if (result.data.success) {
+        await updateDoc(doc(db, 'users', userId), {
+          onboardingStatus: 'rejected',
+          verificationStatus: 'rejected',
+          rejectionReason: rejectReason,
+          rejectedAt: serverTimestamp(),
+          rejectedBy: userProfile?.uid || 'admin'
+        });
 
-      setSelectedUserId(null);
-      await loadPendingUsers();
-      await loadHistoryUsers();
+        await logAdminAction({
+          eventType: ADMIN_AUDIT_EVENTS.USER_REJECTED,
+          action: `User rejected and banned: ${userName}`,
+          resource: { type: 'user', id: userId, name: userName },
+          details: { rejectionReason: rejectReason }
+        });
+
+        setSelectedUserId(null);
+        setShowRejectDialog(false);
+        setRejectReason('');
+        await loadPendingUsers();
+        await loadHistoryUsers();
+      }
     } catch (error) {
       console.error('Error rejecting user:', error);
-      alert('Error rejecting user.');
+      alert('Error rejecting user: ' + (error.message || 'Unknown error'));
+    } finally {
+      setIsRejecting(false);
     }
   };
 
@@ -324,8 +351,11 @@ const UserVerificationQueue = () => {
 
   const openImageLightbox = async (imagePath) => {
     try {
-      const imageRef = ref(storage, imagePath);
-      const url = await getDownloadURL(imageRef);
+      let url = imagePath;
+      if (!imagePath.startsWith('http') && !imagePath.startsWith('data:')) {
+        const imageRef = ref(storage, imagePath);
+        url = await getDownloadURL(imageRef);
+      }
       setLightboxImages([{ src: url }]);
       setLightboxOpen(true);
     } catch (error) {
@@ -485,9 +515,9 @@ const UserVerificationQueue = () => {
           overflow: 'hidden'
         }}>
           {!selectedUser ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', items: 'center', justifyContent: 'center', gap: 'var(--spacing-md)', color: 'var(--text-light-color)' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 'var(--spacing-md)', color: 'var(--text-light-color)' }}>
               <Eye size={48} style={{ opacity: 0.2 }} />
-              <p>Select a user to view details</p>
+              <p style={{ textAlign: 'center' }}>Select a user to view details</p>
             </div>
           ) : (
             <>
@@ -511,8 +541,10 @@ const UserVerificationQueue = () => {
                 </div>
                 {activeTab !== 'history' ? (
                   <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-                    <Button variant="danger" onClick={() => handleReject(selectedUser.id)} style={{ padding: '8px 16px' }}>Reject</Button>
-                    <Button variant="confirmation" onClick={() => handleApprove(selectedUser.id)} style={{ padding: '8px 24px' }}>Approve</Button>
+                    <Button variant="danger" onClick={() => setShowRejectDialog(true)} style={{ padding: '8px 16px' }} disabled={isApproving || isRejecting}>Reject</Button>
+                    <Button variant="confirmation" onClick={() => handleApprove(selectedUser.id)} style={{ padding: '8px 24px' }} disabled={isApproving || isRejecting}>
+                      {isApproving ? 'Approving...' : 'Approve'}
+                    </Button>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
@@ -526,7 +558,8 @@ const UserVerificationQueue = () => {
               </div>
 
               {/* Preview Content */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--spacing-lg)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--spacing-xl)' }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--spacing-lg)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-xl)', maxWidth: '100%' }}>
 
                 {/* Profile Section */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
@@ -540,31 +573,11 @@ const UserVerificationQueue = () => {
                       <span style={{ fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Globe size={14} /> GLN Registry Information
                       </span>
-                      {fetchingGln && <RotateCw size={14} className="animate-spin" />}
                     </div>
-
-                    {!glnData ? (
-                      <div style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light-color)', fontSize: '12px', border: '1px dashed var(--grey-3)', borderRadius: '8px' }}>
-                        {fetchingGln ? 'Fetching Registry Data...' : 'No GLN Information Available'}
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-                        <InfoRow label="GLN" value={selectedUser.professionalProfile?.verification?.glnNumber || selectedUser.facilityProfile?.glnNumber} bold />
-                        {selectedUser.professionalProfile ? (
-                          <>
-                            <InfoRow label="Name" value={`${glnData[0]?.firstName || ''} ${glnData[0]?.name || ''}`} />
-                            <InfoRow label="Profession" value={glnData[0]?.professions?.join(', ')} />
-                            <InfoRow label="Academic Titles" value={glnData[0]?.cetTitles?.join(', ')} />
-                          </>
-                        ) : (
-                          <>
-                            <InfoRow label="Company Name" value={glnData[0]?.name} />
-                            <InfoRow label="Company Type" value={glnData[0]?.companyType} />
-                          </>
-                        )}
-                        <InfoRow label="City" value={glnData[0]?.city} />
-                      </div>
-                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+                      <InfoRow label="GLN Certified" value={selectedUser.GLN_certified !== undefined ? (selectedUser.GLN_certified === true || selectedUser.GLN_certified === 'true' ? 'Yes' : 'No') : 'N/A'} bold />
+                      <InfoRow label="GLN Number" value={selectedUser.professionalProfile?.verification?.glnNumber || selectedUser.facilityProfile?.glnNumber || 'N/A'} />
+                    </div>
                   </div>
 
                   {/* Identity Detail Card */}
@@ -573,23 +586,8 @@ const UserVerificationQueue = () => {
                       <User size={14} /> Identity Details
                     </span>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-                      {selectedUser.professionalProfile?.identity ? (
-                        <>
-                          <InfoRow label="Legal First Name" value={selectedUser.professionalProfile.identity.legalFirstName} />
-                          <InfoRow label="Legal Last Name" value={selectedUser.professionalProfile.identity.legalLastName} />
-                          <InfoRow label="Date of Birth" value={selectedUser.professionalProfile.identity.dateOfBirth?.toDate?.()?.toLocaleDateString() || selectedUser.professionalProfile.identity.dateOfBirth} />
-                          <InfoRow label="Nationality" value={selectedUser.professionalProfile.identity.nationality} />
-                          <InfoRow label="AHV Number" value={selectedUser.professionalProfile.identity.ahvNumber} />
-                        </>
-                      ) : selectedUser.facilityProfile ? (
-                        <>
-                          <InfoRow label="Institution Type" value={selectedUser.facilityProfile.institutionType} />
-                          <InfoRow label="UID Number" value={selectedUser.facilityProfile.uidNumber} />
-                          <InfoRow label="Billing Contact" value={selectedUser.facilityProfile.billing?.billingContactName} />
-                        </>
-                      ) : (
-                        <p style={{ color: 'var(--text-light-color)', fontStyle: 'italic' }}>Incomplete profile</p>
-                      )}
+                      <InfoRow label="First Name" value={selectedUser.professionalProfile?.identity?.legalFirstName || selectedUser.firstName || 'N/A'} />
+                      <InfoRow label="Last Name" value={selectedUser.professionalProfile?.identity?.legalLastName || selectedUser.lastName || 'N/A'} />
                     </div>
                   </div>
 
@@ -599,15 +597,8 @@ const UserVerificationQueue = () => {
                       <Mail size={14} /> Contact Information
                     </span>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-                      <InfoRow label="Primary Email" value={selectedUser.email} />
-                      <InfoRow label="Phone" value={selectedUser.professionalProfile?.contact?.primaryPhone || selectedUser.facilityProfile?.contact?.primaryPhone} />
-                      <div style={{ marginTop: '4px', borderTop: '1px solid var(--grey-1)', paddingTop: '4px' }}>
-                        <span style={{ color: 'var(--text-light-color)', fontSize: '11px' }}>Address:</span>
-                        <p style={{ fontWeight: '500', marginTop: '2px' }}>
-                          {selectedUser.professionalProfile?.contact?.residentialAddress?.street || selectedUser.facilityProfile?.contact?.address?.street || 'N/A'}<br />
-                          {selectedUser.professionalProfile?.contact?.residentialAddress?.postalCode || selectedUser.facilityProfile?.contact?.address?.postalCode} {selectedUser.professionalProfile?.contact?.residentialAddress?.city || selectedUser.facilityProfile?.contact?.address?.city}
-                        </p>
-                      </div>
+                      <InfoRow label="Email" value={selectedUser.email || 'N/A'} />
+                      <InfoRow label="Phone" value={selectedUser.primaryPhonePrefix && selectedUser.primaryPhone ? `${selectedUser.primaryPhonePrefix} ${selectedUser.primaryPhone}` : selectedUser.primaryPhone || selectedUser.professionalProfile?.contact?.primaryPhone || selectedUser.facilityProfile?.contact?.primaryPhone || 'N/A'} />
                     </div>
                   </div>
                 </div>
@@ -625,56 +616,16 @@ const UserVerificationQueue = () => {
                         No documents submitted
                       </div>
                     ) : (
-                      getVerificationDocuments(selectedUser).map((doc, idx) => (
-                        <div key={idx} style={{
-                          padding: '12px', backgroundColor: 'var(--white)', borderRadius: '10px',
-                          border: '1px solid var(--grey-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ padding: '8px', backgroundColor: 'var(--primary-color-light)', borderRadius: '8px', color: 'var(--primary-color)' }}>
-                              <FileText size={18} />
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: '600', fontSize: '13px' }}>{doc.type}</div>
-                              <div style={{ fontSize: '10px', color: 'var(--text-light-color)' }}>{doc.fileName || 'Verification Document'}</div>
-                            </div>
-                          </div>
-                          <Button variant="ghost" onClick={() => doc.storageUrl?.includes('.pdf') ? openPdfViewer(doc.storageUrl) : openImageLightbox(doc.storageUrl)} style={{ fontSize: '12px', padding: '4px 12px' }}>
-                            View
-                          </Button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Activity History */}
-                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: '600', borderBottom: '1px solid var(--grey-2)', paddingBottom: '8px', marginTop: 'var(--spacing-md)' }}>
-                    <History size={18} className="text-primary" /> Activity History
-                  </h3>
-                  <div style={{
-                    maxHeight: '300px', overflowY: 'auto',
-                    borderRadius: '8px', border: '1px solid var(--grey-2)',
-                    backgroundColor: 'var(--grey-1)', padding: '12px'
-                  }}>
-                    {!selectedUser.verificationHistory || selectedUser.verificationHistory.length === 0 ? (
-                      <p style={{ color: 'var(--text-light-color)', fontSize: '12px', textAlign: 'center', fontStyle: 'italic' }}>No history found</p>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {selectedUser.verificationHistory.map((h, i) => (
-                          <div key={i} style={{ borderBottom: i < selectedUser.verificationHistory.length - 1 ? '1px solid var(--grey-2)' : 'none', paddingBottom: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                              <span style={{ fontWeight: '600', fontSize: '12px', color: h.status === 'approved' ? 'var(--green-4)' : 'var(--red-4)' }}>{h.status.toUpperCase()}</span>
-                              <span style={{ fontSize: '10px', color: 'var(--text-light-color)' }}>{h.updatedAt?.toDate?.()?.toLocaleString() || h.date}</span>
-                            </div>
-                            {h.rejectionReason && <p style={{ fontSize: '11px', backgroundColor: 'rgba(var(--red-4-rgb), 0.05)', padding: '4px', borderRadius: '4px', borderLeft: '2px solid var(--red-4)' }}>{h.rejectionReason}</p>}
-                            {h.adminName && <p style={{ fontSize: '10px', color: 'var(--text-light-color)', marginTop: '2px' }}>by {h.adminName}</p>}
-                          </div>
-                        )).reverse()}
-                      </div>
+                      getVerificationDocuments(selectedUser).map((doc, idx) => {
+                        const isImage = doc.storageUrl && !doc.storageUrl.includes('.pdf') && (doc.storageUrl.includes('.jpg') || doc.storageUrl.includes('.jpeg') || doc.storageUrl.includes('.png') || doc.storageUrl.includes('.gif') || doc.fileType?.includes('image') || doc.mimeType?.includes('image'));
+                        return (
+                          <DocumentImageItem key={idx} doc={doc} isImage={isImage} openImageLightbox={openImageLightbox} openPdfViewer={openPdfViewer} />
+                        );
+                      })
                     )}
                   </div>
                 </div>
-
+                </div>
               </div>
             </>
           )}
@@ -706,6 +657,42 @@ const UserVerificationQueue = () => {
           </div>
         </div>
       )}
+
+      <Dialog
+        isOpen={showRejectDialog}
+        onClose={() => { setShowRejectDialog(false); setRejectReason(''); }}
+        title="Reject User Verification"
+        size="medium"
+        messageType="warning"
+        actions={
+          <>
+            <Button onClick={() => { setShowRejectDialog(false); setRejectReason(''); }} variant="secondary" disabled={isRejecting}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleReject(selectedUserId)}
+              variant="danger"
+              disabled={isRejecting || !rejectReason.trim()}
+            >
+              {isRejecting ? 'Rejecting...' : 'Reject & Ban Account'}
+            </Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ color: 'var(--text-color)', fontSize: '14px' }}>
+            This will reject the user's verification and permanently disable their account. The user will not be able to log in and will see a message to contact support.
+          </p>
+          <TextareaField
+            label="Rejection Reason"
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="Enter the reason for rejection (e.g., Information did not match verification requirements)"
+            required
+            rows={4}
+          />
+        </div>
+      </Dialog>
     </div>
   );
 };
@@ -717,6 +704,82 @@ const InfoRow = ({ label, value, bold = false }) => (
     <span style={{ fontWeight: bold ? '700' : '500', textAlign: 'right', wordBreak: 'break-word' }}>{value || 'N/A'}</span>
   </div>
 );
+
+const DocumentImageItem = ({ doc, isImage, openImageLightbox, openPdfViewer }) => {
+  const [imageUrl, setImageUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const loadImage = async () => {
+      if (!isImage || !doc.storageUrl) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        if (doc.storageUrl.startsWith('http') || doc.storageUrl.startsWith('data:')) {
+          setImageUrl(doc.storageUrl);
+        } else {
+          const imageRef = ref(storage, doc.storageUrl);
+          const url = await getDownloadURL(imageRef);
+          setImageUrl(url);
+        }
+      } catch (error) {
+        console.error('Error loading image:', error);
+        setImageUrl(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadImage();
+  }, [doc.storageUrl, isImage]);
+  
+  return (
+    <div style={{
+      padding: '12px', backgroundColor: 'var(--white)', borderRadius: '10px',
+      border: '1px solid var(--grey-2)', display: 'flex', flexDirection: 'column', gap: '8px'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ padding: '8px', backgroundColor: 'var(--primary-color-light)', borderRadius: '8px', color: 'var(--primary-color)' }}>
+            {isImage ? <ImageIcon size={18} /> : <FileText size={18} />}
+          </div>
+          <div>
+            <div style={{ fontWeight: '600', fontSize: '13px' }}>{doc.type}</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-light-color)' }}>{doc.fileName || 'Verification Document'}</div>
+          </div>
+        </div>
+        <Button variant="ghost" onClick={() => doc.storageUrl?.includes('.pdf') ? openPdfViewer(doc.storageUrl) : openImageLightbox(doc.storageUrl)} style={{ fontSize: '12px', padding: '4px 12px' }}>
+          View
+        </Button>
+      </div>
+      {isImage && (
+        <div style={{ width: '100%', maxHeight: '300px', overflow: 'hidden', borderRadius: '8px', border: '1px solid var(--grey-2)', backgroundColor: 'var(--grey-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
+          {loading ? (
+            <div style={{ padding: '20px', color: 'var(--text-light-color)', fontSize: '12px' }}>Loading image...</div>
+          ) : imageUrl ? (
+            <img 
+              src={imageUrl} 
+              alt={doc.fileName || 'Verification Document'}
+              style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'contain', cursor: 'pointer' }}
+              onClick={() => openImageLightbox(doc.storageUrl)}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = 'padding: 20px; color: var(--text-light-color); font-size: 12px;';
+                errorDiv.textContent = 'Failed to load image';
+                e.target.parentElement.appendChild(errorDiv);
+              }}
+            />
+          ) : (
+            <div style={{ padding: '20px', color: 'var(--text-light-color)', fontSize: '12px' }}>Failed to load image</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const getVerificationDocuments = (user) => {
   const profile = user.professionalProfile || user.facilityProfile || {};

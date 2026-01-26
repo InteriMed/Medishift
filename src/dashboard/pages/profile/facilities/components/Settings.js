@@ -17,7 +17,7 @@ import OpeningHours from './OpeningHours';
 
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
+  headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex items-center",
   sectionTitle: "text-2xl font-semibold mb-0",
   sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionSubtitle: "text-sm font-medium",
@@ -27,18 +27,21 @@ const styles = {
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   mandatoryMark: "text-destructive",
   sectionsWrapper: "facility-settings-sections-wrapper w-full max-w-[1400px] mx-auto",
-  sectionCard: "bg-card rounded-2xl border border-border/50 p-5 shadow-lg backdrop-blur-sm w-full",
+  leftColumn: "flex flex-col gap-6 flex-1",
+  rightColumn: "flex flex-col gap-6 flex-1",
+  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative overflow-visible",
   cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10 flex-shrink-0",
+  cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
   cardTitle: "flex-1 min-w-0",
   cardTitleH3: "m-0 text-sm font-semibold truncate",
   cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   cardDescription: "text-xs mt-1",
   cardDescriptionStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  grid: "flex flex-col gap-4",
+  grid: "grid grid-cols-1 gap-6 overflow-visible",
+  gridSingle: "grid grid-cols-1 gap-6",
   fieldWrapper: "space-y-2",
-  fullWidth: "col-span-full",
+  fullWidth: "md:col-span-2",
   infoCard: "bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800 p-4 w-full max-w-[1400px] mx-auto",
   infoCardText: "text-sm",
   infoCardTextStyle: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }
@@ -54,9 +57,7 @@ const Settings = ({
   onSave,
   onCancel,
   getNestedValue,
-  validateCurrentTabData,
-  onTabCompleted,
-  isTutorialActive
+  validateCurrentTabData
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
 
@@ -81,9 +82,7 @@ const Settings = ({
     onInputChange,
     onSave,
     getNestedValue,
-    validateCurrentTabData,
-    onTabCompleted,
-    isTutorialActive
+    validateCurrentTabData
   });
 
   const getDropdownOptions = useCallback((optionsKey) => {
@@ -243,7 +242,7 @@ const Settings = ({
   }, [fieldsToRender]);
 
   return (
-    <div className={styles.sectionContainer}>
+    <div className={styles.sectionContainer} style={{ position: 'relative' }}>
       <style>{`
         .facility-settings-container {
           container-type: inline-size;
@@ -253,7 +252,7 @@ const Settings = ({
           container-type: inline-size;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1rem;
+          gap: 1.5rem;
         }
 
         @container (max-width: 700px) {
@@ -262,10 +261,38 @@ const Settings = ({
           }
         }
       `}</style>
-      <div className={styles.headerCard}>
-        <div className="flex flex-col gap-1 flex-1">
-          <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('settings.title')}</h2>
-          <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('settings.subtitle')}</p>
+      <div className={styles.sectionsWrapper}>
+        <div className={styles.leftColumn}>
+          {groupedFields.contractSettings && (
+            <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 10 }}>
+              <div className={styles.grid}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.cardIconWrapper}><FiFileText className="w-4 h-4" style={styles.cardIconStyle} /></div>
+                  <div className={styles.cardTitle}>
+                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.contractSettingsTitle')}</h3>
+                  </div>
+                </div>
+                {groupedFields.contractSettings.map(renderField)}
+              </div>
+            </div>
+          )}
+
+          {groupedFields.operationalSettings && (
+            <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 9 }}>
+              <div className={styles.grid}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" style={styles.cardIconStyle} /></div>
+                  <div className={styles.cardTitle}>
+                    <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.operationalSettingsTitle')}</h3>
+                  </div>
+                </div>
+                {groupedFields.operationalSettings.map(renderField)}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.rightColumn}>
         </div>
       </div>
 
@@ -278,42 +305,6 @@ const Settings = ({
         getNestedValue={getNestedValue}
         showActions={false}
       />
-
-      <div className={styles.sectionsWrapper}>
-        {groupedFields.operationalSettings && (
-          <div className={styles.sectionCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" style={styles.cardIconStyle} /></div>
-              <div className={styles.cardTitle}>
-                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.operationalSettingsTitle')}</h3>
-                <p className={styles.cardDescription} style={styles.cardDescriptionStyle}>
-                  {t('settings.operationalSettingsDescription')}
-                </p>
-              </div>
-            </div>
-            <div className={styles.grid}>
-              {groupedFields.operationalSettings.map(renderField)}
-            </div>
-          </div>
-        )}
-
-        {groupedFields.contractSettings && (
-          <div className={styles.sectionCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.cardIconWrapper}><FiFileText className="w-4 h-4" style={styles.cardIconStyle} /></div>
-              <div className={styles.cardTitle}>
-                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('settings.contractSettingsTitle')}</h3>
-                <p className={styles.cardDescription} style={styles.cardDescriptionStyle}>
-                  {t('settings.contractSettingsDescription')}
-                </p>
-              </div>
-            </div>
-            <div className={styles.grid}>
-              {groupedFields.contractSettings.map(renderField)}
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

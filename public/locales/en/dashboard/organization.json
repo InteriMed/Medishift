@@ -4,12 +4,26 @@
   "noOrg": "Create or join an organization",
   "tabs": {
     "overview": "Overview",
+    "directory": "Global Directory",
+    "floatPool": "Float Pool Manager",
+    "agencySpend": "Agency Spend",
+    "consolidatedPayroll": "Consolidated Payroll",
+    "policyLibrary": "Policy Library",
+    "hiringATS": "Hiring & ATS",
     "headquarters": "Headquarters",
     "chain": "Chain",
     "openingHours": "Opening Hours",
     "facilityRoles": "Facility Roles",
     "hrCore": "HR Core",
-    "organigram": "Organigram"
+    "organigram": "Organigram",
+    "employees": "Employees",
+    "profile": "Profile"
+  },
+  "subTabs": {
+    "employees": "Employees",
+    "hiring": "Hiring Processes",
+    "admin": "Admin",
+    "teams": "Teams"
   },
   "sections": {
     "info": "Organization Info",
@@ -23,7 +37,11 @@
     "admins": "Admins",
     "chainAdminsSynced": "Chain admins synced",
     "group": "Group",
-    "unnamedFacility": "Unnamed Facility"
+    "unnamedFacility": "Unnamed Facility",
+    "selectFacility": "Select Facility",
+    "searchFacility": "Search Facility",
+    "searchFacilityPlaceholder": "Search by name...",
+    "allFacilities": "All"
   },
   "settings": {
     "sharedStaff": "Shared Staff Pool",
@@ -34,7 +52,8 @@
     "create": "Create Organization",
     "addFacility": "Add Facility",
     "removeFacility": "Remove Facility",
-    "remove": "Remove from organization"
+    "remove": "Remove from organization",
+    "removeFromConsolidatedPayroll": "Remove from Consolidated payroll"
   },
   "create": {
     "title": "Create Organization",
@@ -68,19 +87,62 @@
     }
   },
   "confirm": {
-    "removeFacility": "Remove this facility from the organization?"
+    "removeFacility": "Remove this facility from the organization?",
+    "deletePolicy": "Are you sure you want to delete this policy?",
+    "removeFromConsolidatedPayroll": "Remove this organization from Consolidated Payroll? This will disable consolidated payroll processing for all facilities."
   },
   "errors": {
     "fetchFailed": "Failed to load organization",
     "createFailed": "Failed to create organization",
     "addFacilityFailed": "Failed to add facility",
     "removeFacilityFailed": "Failed to remove facility",
-    "nameRequired": "Organization name is required"
+    "removeFromConsolidatedPayrollFailed": "Failed to remove from Consolidated Payroll",
+    "nameRequired": "Organization name is required",
+    "fetchPoliciesFailed": "Failed to load policies",
+    "fileTooLarge": "File size must be less than 10MB",
+    "invalidFileType": "Only PDF and Word documents are allowed",
+    "missingFields": "Please fill in all required fields",
+    "uploadFailed": "Failed to upload policy",
+    "deleteFailed": "Failed to delete policy",
+    "updateFailed": "Failed to update profile"
   },
   "success": {
     "created": "Organization created successfully!",
     "facilityAdded": "Facility added successfully!",
-    "facilityRemoved": "Facility removed successfully!"
+    "facilityRemoved": "Facility removed successfully!",
+    "removedFromConsolidatedPayroll": "Removed from Consolidated Payroll successfully!",
+    "policyUploaded": "Policy uploaded successfully",
+    "policyDeleted": "Policy deleted successfully",
+    "profileUpdated": "Profile updated successfully"
+  },
+  "policy": {
+    "title": "Standardized Policy Library",
+    "subtitle": "Manage and distribute policies to all facilities instantly.",
+    "uploadNew": "Upload New Policy",
+    "uploadFirst": "Upload Your First Policy",
+    "empty": "No policies uploaded yet",
+    "uploadTitle": "Upload New Policy",
+    "policyName": "Policy Name",
+    "policyNamePlaceholder": "Enter policy name",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter policy description (optional)",
+    "file": "Policy File",
+    "selectFile": "Click to select a file or drag and drop",
+    "fileTypes": "PDF or Word documents only, max 10MB",
+    "upload": "Upload Policy",
+    "active": "Active",
+    "review": "Review",
+    "daysAgo": "{{count}} days ago",
+    "weeksAgo": "{{count}} week ago",
+    "monthsAgo": "{{count}} month ago",
+    "internalPolicy": "Internal Policy",
+    "interim": "Interim",
+    "createCommunication": "Create Communication",
+    "options": "Policy Options",
+    "switchesInfoTitle": "Policy Options",
+    "infoInternal": "Internal Policy: Only visible to organization members",
+    "infoInterim": "Interim: Temporary policies",
+    "infoCommunication": "Create Communication: Notify relevant parties when uploaded"
   },
   "hr": {
     "title": "HR Core",
@@ -122,6 +184,7 @@
   "organigram": {
     "title": "Organizational Chart",
     "description": "View your team organized by hierarchy. Click on any employee to see details.",
+    "hqTitle": "Headquarters",
     "admins": "Administrators",
     "unassigned": "Unassigned",
     "adminBadge": "Administrator",
@@ -168,6 +231,32 @@
     "fireWarning": "Fire Warning",
     "firePrompt": "Fire Prompt",
     "toConfirm": "To Confirm"
+  },
+  "hq": {
+    "tools": "Tools"
+  },
+  "directory": {
+    "title": "Employee Directory",
+    "subtitle": "Search and manage employees across all facilities",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Find a nurse, doctor, or staff member across all locations...",
+    "emptyState": "Enter a name or role to search across the entire organization.",
+    "noResults": "No employees found matching your search.",
+    "sort": "Sort",
+    "filters": {
+      "facility": "Facility",
+      "role": "Role",
+      "status": "Status",
+      "sortBy": "Sort By",
+      "name": "Name",
+      "allFacilities": "All Facilities",
+      "allRoles": "All Roles",
+      "allStatuses": "All Statuses",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "clearAll": "Clear All Filters"
+    }
   },
   "employee": {
     "rightToWork": "Right to Work",
@@ -235,6 +324,54 @@
     "homeBranch": "Home Branch",
     "remove": "Remove"
   },
+  "profile": {
+    "title": "Organization Profile",
+    "subtitle": "Manage your organization information and settings",
+    "tabs": {
+      "details": "Organization Details",
+      "settings": "Settings",
+      "billing": "Billing Information",
+      "documents": "Documents"
+    },
+    "sections": {
+      "basicInfo": "Basic Information",
+      "address": "Address",
+      "contact": "Contact Information",
+      "legal": "Legal Information",
+      "organizationSettings": "Organization Settings",
+      "billingInfo": "Billing Information",
+      "billingContact": "Billing Contact",
+      "documents": "Documents"
+    },
+    "fields": {
+      "organizationName": "Organization Name",
+      "organizationType": "Organization Type",
+      "street": "Street",
+      "houseNumber": "House Number",
+      "postalCode": "Postal Code",
+      "city": "City",
+      "canton": "Canton",
+      "email": "Email",
+      "phone": "Phone",
+      "website": "Website",
+      "legalEntityName": "Legal Entity Name",
+      "uidNumber": "UID Number",
+      "commercialRegisterNumber": "Commercial Register Number",
+      "iban": "IBAN",
+      "bankName": "Bank Name",
+      "contactName": "Contact Name",
+      "contactEmail": "Contact Email",
+      "contactPhone": "Contact Phone",
+      "commercialRegisterExtract": "Commercial Register Extract",
+      "proofOfAddress": "Proof of Address"
+    },
+    "settings": {
+      "sharedStaffDescription": "Allow facilities to share staff members across the organization",
+      "crossSchedulingDescription": "Enable scheduling across multiple facilities",
+      "consolidatedBillingDescription": "Consolidate billing for all facilities"
+    },
+    "facilitiesCount": "{{count}} facilities"
+  },
   "dashboard": {
     "onboarding": {
       "phoneVerification": {
@@ -255,6 +392,172 @@
         "verifying": "Verifying",
         "verify": "Verify"
       }
+    }
+  },
+  "pilot": {
+    "title": "Pilot Program Active",
+    "description": "You're currently enjoying 0% platform fees until February 28, 2025!"
+  },
+  "hiring": {
+    "title": "Hiring Processes",
+    "subtitle": "Manage job postings and review candidates",
+    "createPosition": "Create Position",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search positions...",
+    "empty": "No positions found",
+    "noApplications": "No applications found",
+    "appliedOn": "Applied on",
+    "applications": "applications",
+    "sortLabel": "Sort",
+    "filters": {
+      "facility": "Facility",
+      "status": "Status",
+      "allFacilities": "All Facilities",
+      "allStatuses": "All Statuses",
+      "open": "Open",
+      "interview": "Interview",
+      "accepted": "Accepted",
+      "closed": "Closed",
+      "clearAll": "Clear",
+      "apply": "Apply"
+    },
+    "sort": {
+      "created": "Date Created",
+      "title": "Title",
+      "facility": "Facility",
+      "applications": "Applications"
+    },
+    "candidates": {
+      "title": "Review Candidates",
+      "empty": "No candidates found",
+      "phone": "Phone",
+      "email": "Email",
+      "yearsExperience": "years experience",
+      "sort": {
+        "experience": "Experience",
+        "name": "Name",
+        "applied": "Date Applied"
+      }
+    },
+    "stats": {
+      "totalPositions": "Total Positions",
+      "open": "Open",
+      "interviews": "Interviews",
+      "accepted": "Accepted"
+    },
+    "errors": {
+      "loadFailed": "Failed to load hiring processes"
+    }
+  },
+  "admin": {
+    "title": "Organization Administration",
+    "subtitle": "Manage administrators, permissions, and organization settings",
+    "addAdmin": "Add Administrator",
+    "searchPlaceholder": "Search administrators...",
+    "noAdmins": "No administrators found",
+    "role": "Administrator",
+    "views": {
+      "admins": "Administrators",
+      "roles": "Roles & Permissions",
+      "permissions": "Permissions",
+      "settings": "Settings"
+    },
+    "permissions": {
+      "title": "Permission Overview",
+      "manageEmployees": "Manage Employees",
+      "viewEmployees": "View Employees",
+      "inviteUsers": "Invite Users",
+      "manageFacilities": "Manage Facilities",
+      "viewFacilities": "View Facilities",
+      "manageSchedules": "Manage Schedules",
+      "viewSchedules": "View Schedules",
+      "postPositions": "Post Positions",
+      "viewApplications": "View Applications",
+      "manageContracts": "Manage Contracts",
+      "viewContracts": "View Contracts",
+      "manageSettings": "Manage Settings",
+      "viewReports": "View Reports",
+      "viewAnalytics": "View Analytics",
+      "manageOrganization": "Manage Organization",
+      "manageRoles": "Manage Roles",
+      "enabled": "Enabled",
+      "categories": {
+        "employees": "Employees",
+        "facilities": "Facilities",
+        "scheduling": "Scheduling",
+        "hiring": "Hiring",
+        "contracts": "Contracts",
+        "settings": "Settings",
+        "reports": "Reports",
+        "organization": "Organization"
+      }
+    },
+    "roles": {
+      "title": "Custom Roles",
+      "create": "Create Role",
+      "createRole": "Create New Role",
+      "editRole": "Edit Role",
+      "edit": "Edit role",
+      "delete": "Delete role",
+      "empty": "No custom roles created yet",
+      "createFirst": "Create your first role",
+      "created": "Role created successfully",
+      "updated": "Role updated successfully",
+      "deleted": "Role deleted successfully",
+      "selectedCount": "{{count}} permissions selected",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "confirmDelete": "Are you sure you want to delete this role? This action cannot be undone.",
+      "form": {
+        "name": "Role Name",
+        "namePlaceholder": "e.g., HR Manager, Team Lead",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the role and its responsibilities",
+        "permissions": "Permissions"
+      },
+      "errors": {
+        "loadFailed": "Failed to load roles",
+        "saveFailed": "Failed to save role",
+        "deleteFailed": "Failed to delete role",
+        "nameRequired": "Role name is required",
+        "permissionsRequired": "At least one permission is required"
+      }
+    },
+    "settings": {
+      "title": "Organization Settings",
+      "sharedStaff": "Shared Staff Pool",
+      "sharedStaffDesc": "Allow facilities to share staff members",
+      "crossScheduling": "Cross-Facility Scheduling",
+      "crossSchedulingDesc": "Enable scheduling across multiple facilities"
+    },
+    "errors": {
+      "loadFailed": "Failed to load administrators"
+    }
+  },
+  "teams": {
+    "title": "Teams Management",
+    "subtitle": "Organize employees into teams and manage team structures",
+    "createTeam": "Create Team",
+    "searchPlaceholder": "Search teams or members...",
+    "empty": "No teams found",
+    "noMembers": "No members found",
+    "unassigned": "Unassigned",
+    "member": "member",
+    "members": "members",
+    "more": "more",
+    "views": {
+      "overview": "Overview",
+      "teams": "Teams",
+      "members": "Members"
+    },
+    "stats": {
+      "totalMembers": "Total Members",
+      "totalTeams": "Total Teams",
+      "unassigned": "Unassigned",
+      "admins": "Admins"
+    },
+    "errors": {
+      "loadFailed": "Failed to load team data"
     }
   }
 }

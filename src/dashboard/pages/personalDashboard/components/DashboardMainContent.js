@@ -16,9 +16,9 @@ const DashboardMainContent = ({ stats, chartData }) => {
   return (
     <div className="space-y-8">
       {/* Activity Chart */}
-      <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
+      <div className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-foreground">Weekly Activity</h3>
+          <h3 className="text-lg font-semibold text-foreground">Weekly Activity</h3>
           <select className="text-sm border-input rounded-lg text-muted-foreground bg-transparent focus:ring-primary focus:border-primary">
             <option>This Week</option>
             <option>Last Week</option>
@@ -68,9 +68,9 @@ const DashboardMainContent = ({ stats, chartData }) => {
       </div>
 
       {/* Recent Activity List */}
-      <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
+      <div className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-foreground">Recent Activity</h3>
+          <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
           <button className="text-sm text-primary hover:text-primary/80 font-medium transition-colors">View All</button>
         </div>
         

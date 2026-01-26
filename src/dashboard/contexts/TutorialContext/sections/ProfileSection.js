@@ -10,7 +10,7 @@ import {
     getProfileTutorialForType,
     getTabOrder,
     isProfileTabAccessible
-} from '../../../../config/tutorialSystem';
+} from '../config/tutorialSystem';
 import { isTabCompleted } from '../../../pages/profile/utils/profileUtils';
 
 export const useProfileSection = (state, actions) => {
@@ -159,9 +159,7 @@ export const useProfileSection = (state, actions) => {
                 }
 
                 if (onboardingType === 'professional' && activeTutorial === TUTORIAL_IDS.PROFILE_TABS && tabId === PROFILE_TAB_IDS.PERSONAL_DETAILS) {
-                    if (accessLevelChoice !== 'team' && accessLevelChoice !== 'full') {
-                        setAccessMode('team');
-                    }
+                    // Mode upgrade logic removed to prevent locking
                 }
             }
 
@@ -182,65 +180,9 @@ export const useProfileSection = (state, actions) => {
     ]);
 
     // 4. Auto-Sync Logic (Specific to Profile)
-    useEffect(() => {
-        if (!isTutorialActive || !isProfileTutorial(activeTutorial)) return;
-        if (!isProfilePath(location.pathname)) return;
+    // 4. Auto-Sync Logic (Specific to Profile) - REMOVED to prevent forced redirects
+    // Users can navigate freely without tutorial interfering with routing.
 
-        let currentTab = location.pathname.split('/').pop();
-        if (currentTab === 'profile') currentTab = 'personalDetails';
-
-        const tabToStepMap = onboardingType === 'facility' ? {
-            'facilityCoreDetails': 0,
-            'facilityLegalBilling': 1,
-            'marketplace': 2,
-            'account': 3 // Adjust if different
-        } : {
-            'personalDetails': 0,
-            'professionalBackground': 1,
-            'billingInformation': 2,
-            'documentUploads': 3,
-            'marketplace': 4,
-            'account': 6
-        };
-
-        const expectedStep = tabToStepMap[currentTab];
-        const extendedTabOrder = getTabOrder(onboardingType);
-
-        // Create context for centralized access rule
-        const accessContext = {
-            isTutorialActive,
-            maxAccessedProfileTab,
-            onboardingType,
-            accessMode: accessLevelChoice,
-            highlightTab: stepData?.highlightTab
-        };
-
-        const canAccessTab = isProfileTabAccessible(currentTab, accessContext);
-
-        if (!canAccessTab) {
-            // Redirect back to the last accessible tab
-            const redirectStep = extendedTabOrder.indexOf(maxAccessedProfileTab);
-            if (redirectStep !== -1 && redirectStep !== currentStep && redirectStep < 4) {
-                safelyUpdateTutorialState([[setCurrentStep, redirectStep]], async () => {
-                    await saveTutorialProgress(activeTutorial, redirectStep);
-                });
-                const workspaceId = state.selectedWorkspace?.id || 'personal';
-                navigate(`/dashboard/${workspaceId}/profile/${maxAccessedProfileTab}`);
-            }
-            return;
-        }
-
-        // If we can access it, check if we should forward-sync the tutorial step
-        if (expectedStep !== undefined && expectedStep !== currentStep && !showAccessLevelModal) {
-            if (expectedStep >= currentStep) { // Only forward sync during manual navigation
-                if (state.isWaitingForSave) setIsWaitingForSave(false);
-                safelyUpdateTutorialState([[setCurrentStep, expectedStep]], async () => {
-                    await saveTutorialProgress(activeTutorial, expectedStep);
-                });
-            }
-        }
-
-    }, [isTutorialActive, activeTutorial, location.pathname, maxAccessedProfileTab, currentStep, showAccessLevelModal, onboardingType, navigate, safelyUpdateTutorialState, saveTutorialProgress, setCurrentStep, setIsWaitingForSave, setMaxAccessedProfileTab]);
 
 
     // 5. Highlight Tab Effect
@@ -358,33 +300,9 @@ export const useProfileSection = (state, actions) => {
         }
 
         const path = location.pathname;
-        if (!isProfilePath(path)) {
-            // Logic for leaving profile area (Access Level Modal)
-            const isTutorialMarketplaceTarget = isTutorialActive && stepData?.highlightSidebarItem === 'marketplace' && path.includes('/marketplace');
+        // Logic for leaving profile area (Access Level Modal) - REMOVED for simplification
+        // Users are now free to navigate away from the profile section even during the tutorial.
 
-            if (accessLevelChoice === 'team') {
-                if (path.includes('/marketplace')) {
-                    if (isTutorialMarketplaceTarget) return;
-                    setAllowAccessLevelModalClose(true);
-                    setShowAccessLevelModal(true);
-                    return;
-                }
-                return;
-            }
-
-            if (accessLevelChoice === 'full' && currentStep >= 1) {
-                if (path.includes('/marketplace')) {
-                    if (isTutorialMarketplaceTarget) return;
-                    setAllowAccessLevelModalClose(true);
-                    setShowAccessLevelModal(true);
-                    return;
-                }
-                return;
-            }
-
-            const workspaceId = state.selectedWorkspace?.id || 'personal';
-            navigate(`/dashboard/${workspaceId}/profile`);
-        }
 
     }, [isTutorialActive, activeTutorial, location.pathname, accessLevelChoice, currentStep, stepData, showAccessLevelModal, state.selectedWorkspace, navigate, setAllowAccessLevelModalClose, setShowAccessLevelModal, tutorialSteps]);
 

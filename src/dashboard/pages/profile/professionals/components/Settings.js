@@ -28,7 +28,7 @@ const styles = {
   mandatoryFieldLegendStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   mandatoryMark: "text-destructive",
   sectionsWrapper: "settings-sections-wrapper w-full max-w-[1400px] mx-auto",
-  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
+  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative",
   cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
   cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
@@ -55,9 +55,7 @@ const Settings = ({
   onSave,
   onCancel,
   getNestedValue,
-  validateCurrentTabData,
-  onTabCompleted,
-  isTutorialActive
+  validateCurrentTabData
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
 
@@ -83,9 +81,7 @@ const Settings = ({
     onInputChange,
     onSave,
     getNestedValue,
-    validateCurrentTabData,
-    onTabCompleted,
-    isTutorialActive
+    validateCurrentTabData
   });
 
   const getDropdownOptions = useCallback((optionsKey) => {
@@ -338,13 +334,6 @@ const Settings = ({
           }
         }
       `}</style>
-      <div className={styles.headerCard}>
-        <div className="flex flex-col gap-1 flex-1">
-          <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('settings.title')}</h2>
-          <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('settings.subtitle')}</p>
-        </div>
-      </div>
-
       <div className="settings-container w-full max-w-[1400px] mx-auto">
         <div className={styles.sectionsWrapper}>
           {platformSettingsWithoutNotes.length > 0 && (

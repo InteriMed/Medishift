@@ -125,7 +125,7 @@ function BoxedSwitchField({
                 tabIndex={disabled ? -1 : 0}
             >
                 {label && (
-                    <label className={`boxed-switchfield-label ${isFocused ? 'boxed-switchfield-label--focused' : ''} ${error ? 'boxed-switchfield-label--error' : ''}`}>
+                    <label className={`boxed-switchfield-label ${(isFocused || hasValue) ? 'boxed-switchfield-label--focused' : ''} ${error ? 'boxed-switchfield-label--error' : ''}`}>
                         {label}
                         {required && !hasRequiredIndicator(label) && <span className="boxed-switchfield-required">*</span>}
                     </label>

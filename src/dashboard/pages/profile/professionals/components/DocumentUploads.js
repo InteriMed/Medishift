@@ -28,7 +28,7 @@ const styles = {
     sectionsWrapper: "document-uploads-sections-wrapper w-full max-w-[1400px] mx-auto",
     leftColumn: "flex flex-col gap-6 flex-1",
     rightColumn: "flex flex-col gap-6 flex-1",
-    sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
+    sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative",
     cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
     cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
     cardIconStyle: { color: 'var(--primary-color)' },
@@ -84,8 +84,6 @@ const DocumentUploads = ({
     onCancel,
     getNestedValue,
     validateCurrentTabData,
-    onTabCompleted,
-    isTutorialActive,
     completionPercentage,
     handleAutoFillClick,
     isUploading,
@@ -95,7 +93,6 @@ const DocumentUploads = ({
     handleFileUpload: handleFileUploadProp,
     uploadProgress,
     t: tProp,
-    stepData
 }) => {
     const { t } = useTranslation(['dashboardProfile', 'common', 'validation']);
     const { upload, uploadState } = useFileUpload();
@@ -122,8 +119,6 @@ const DocumentUploads = ({
         getNestedValue,
         extractTabData,
         validateCurrentTabData,
-        onTabCompleted,
-        isTutorialActive
     });
 
     const nationality = getNestedValue(formData, 'identity.nationality');
@@ -305,9 +300,21 @@ const DocumentUploads = ({
     }, [getNestedValue, formData, onInputChange, onArrayChange]);
 
     const getCurrentFiles = useCallback((fieldConfig) => {
-        const { isMultiple, docType } = fieldConfig;
+        const { isMultiple, docType, name: fieldName } = fieldConfig;
         const allDocs = getNestedValue(formData, 'verification.verificationDocuments') || [];
-        const docsOfType = allDocs.filter(doc => doc.type === docType);
+        
+        // For Identity Card (idCard), also check for workPermit type in storage (for Swiss users)
+        const typesToCheck = docType === 'idCard' ? [docType, 'workPermit'] : [docType];
+        const docsOfType = allDocs.filter(doc => typesToCheck.includes(doc.type));
+        
+        // Also check for direct field value (legacy support for workPermitUrl)
+        const directValue = getNestedValue(formData, fieldName);
+        const hasDirectValue = directValue !== null && directValue !== undefined && directValue !== '' && (typeof directValue !== 'string' || directValue.trim() !== '');
+        
+        // If there's a direct value but no storage files, create a synthetic file entry
+        if (hasDirectValue && docsOfType.length === 0 && !isMultiple) {
+            return [{ url: directValue, doc: { type: docType, storageUrl: directValue } }];
+        }
 
         if (isMultiple) {
             return docsOfType.map(doc => ({ url: doc.storageUrl, doc }));
@@ -387,7 +394,11 @@ const DocumentUploads = ({
     const RenderDocumentCard = ({ fieldConfig }) => {
         const { docType, name: fieldName, required, isMultiple, labelKey, accept } = fieldConfig;
         const currentFiles = getCurrentFiles(fieldConfig);
-        const error = getNestedValue(errors, fieldName);
+        const directValue = getNestedValue(formData, fieldName);
+        const hasDirectValue = directValue !== null && directValue !== undefined && directValue !== '' && (typeof directValue !== 'string' || directValue.trim() !== '');
+        const hasStorageFiles = currentFiles.length > 0;
+        const hasFile = hasDirectValue || hasStorageFiles;
+        const error = hasFile ? undefined : getNestedValue(errors, fieldName);
         const label = t(labelKey, docType);
 
         const isCurrentlyUploading = uploadState.isLoading && uploadState.type === docType;
@@ -695,6 +706,7 @@ const DocumentUploads = ({
                                 accept={accept || ".pdf,.jpg,.png,.doc,.docx"}
                                 label={uploadButtonLabel}
                                 documentName={label.toLowerCase()}
+                                error={error && currentFiles.length === 0 ? error : undefined}
                                 className={error && currentFiles.length === 0 ? styles.errorUpload : ''}
                                 disabled={(showEducationDropdown && (selectedEducationIndex === null || selectedEducationIndex === '')) ||
                                     (showQualificationDropdown && (selectedQualificationIndex === null || selectedQualificationIndex === '')) ||
@@ -820,27 +832,19 @@ const DocumentUploads = ({
                     }
                 }
             `}</style>
-            <div className={styles.headerCard}>
-                <div className="flex flex-col gap-1 flex-1">
-                    <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('documents.title')}</h2>
-                    <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('documents.subtitle')}</p>
-                </div>
-
-                {formData && completionPercentage !== undefined && (
-                            <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                                <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                                <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                                        style={{ width: `${completionPercentage}%` }}
-                                    ></div>
-                                </div>
-                                <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
-                            </div>
-                        )}
-            </div>
-
             <div className="document-uploads-container w-full max-w-[1400px] mx-auto">
+                {formData && completionPercentage !== undefined && (
+                    <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input mb-6" style={{ height: 'var(--boxed-inputfield-height)' }}>
+                        <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
+                        <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                            <div
+                                className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
+                                style={{ width: `${completionPercentage}%` }}
+                            ></div>
+                        </div>
+                        <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
+                    </div>
+                )}
                 <div className={styles.sectionsWrapper}>
                     <div className={styles.leftColumn}>
                         {documentFieldsConfig.filter((_, index) => index % 2 === 0).map(fieldConfig => (

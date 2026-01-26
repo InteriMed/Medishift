@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
-import { isProfilePath, WORKSPACE_TYPES, getProfileTutorialForType } from '../../../../config/tutorialSystem';
+import { isProfilePath, WORKSPACE_TYPES, getProfileTutorialForType } from '../config/tutorialSystem';
 import i18n from '../../../../i18n';
 
 export const useTutorialStatus = (state, actions) => {
@@ -90,25 +90,14 @@ export const useTutorialStatus = (state, actions) => {
                     }
 
                     if (!hasEstablishedWorkspace) {
-                        if (isInDashboard && !isProfilePage) {
-                            const lang = i18n.language || 'fr';
-                            navigate(`/${lang}/onboarding`);
-                        }
-                        return;
-                    }
-
-                    if (tutorialPassed && !isTutorialActive && !showFirstTimeModal) {
+                        // Tutorial redirects disabled - allow access
                         setIsReady(true);
                         return;
                     }
 
-                    if (!onboardingCompleted && !isVerifiedProfile && !isAdmin) {
-                        if (isInDashboard && !isProfilePage) {
-                            const lang = i18n.language || 'fr';
-                            navigate(`/${lang}/onboarding`);
-                        }
-                        return;
-                    }
+                    // Tutorial redirects disabled - always set ready
+                    setIsReady(true);
+                    return;
 
                     // Restoration Logic
                     const typeProgress = userData.tutorialProgress?.[onboardingType] || {};
@@ -157,40 +146,16 @@ export const useTutorialStatus = (state, actions) => {
                         return;
                     }
 
-                    // Auto-start checks (Removed, but clearing flags)
-                    if (!isTutorialActive && !showFirstTimeModal && isInDashboard && !tutorialPassed && !isAdmin && onboardingCompleted) {
-                        try {
-                            const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
-                            const profileRef = doc(db, profileCollection, currentUser.uid);
-                            const profileDoc = await getDoc(profileRef);
-                            if (profileDoc.exists() && profileDoc.data().shouldStartTutorial === true) {
-                                await updateDoc(profileRef, { shouldStartTutorial: false });
-                            }
-                        } catch (e) { console.error(e); }
-                    }
-
-                    if (isInDashboard && !tutorialPassed && !isAdmin) {
-                        if (showFirstTimeModal || isTutorialActive) return;
-                        if (onboardingCompleted || isVerifiedProfile) {
-                            setShowFirstTimeModal(false);
-                        }
-                    } else if (isInDashboard && tutorialPassed) {
-                        if (showFirstTimeModal) return;
-                        setShowFirstTimeModal(false);
-                    }
+                    // Tutorial logic disabled - no checks needed
 
                 } else {
-                    if (isInDashboard && !tutorialPassed) {
-                        const lang = i18n.language || 'fr';
-                        navigate(`/${lang}/onboarding`);
-                    }
+                    // Tutorial redirects disabled
+                    setIsReady(true);
                 }
 
             } catch (error) {
-                if (isInDashboard && !isProfilePath(location.pathname)) {
-                    const lang = i18n.language || 'fr';
-                    navigate(`/${lang}/onboarding`);
-                }
+                // Tutorial redirects disabled - always set ready
+                setIsReady(true);
             } finally {
                 setIsReady(true);
             }

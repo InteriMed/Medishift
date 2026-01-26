@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiX } from 'react-icons/fi';
 import Button from '../../../../components/BoxedInputFields/Button';
+import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
+import TextareaField from '../../../../components/BoxedInputFields/TextareaField';
+import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
 import styles from './contractForm.module.css';
 
 const ContractForm = ({ contract, onSubmit, onCancel }) => {
@@ -118,48 +121,35 @@ const ContractForm = ({ contract, onSubmit, onCancel }) => {
         
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.formSection}>
-            <div className={styles.formGroup}>
-              <label htmlFor="title">{t('dashboard.contracts.title')}</label>
-              <input
-                id="title"
-                name="title"
-                type="text"
-                value={formData.title}
-                onChange={handleChange}
-                className={styles.input}
-                required
-              />
-            </div>
+            <PersonnalizedInputField
+              label={t('dashboard.contracts.title')}
+              name="title"
+              type="text"
+              value={formData.title}
+              onChange={(e) => handleChange(e)}
+              required
+            />
             
-            <div className={styles.formGroup}>
-              <label htmlFor="description">{t('dashboard.contracts.description')}</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className={styles.textarea}
-                rows={3}
-              />
-            </div>
+            <TextareaField
+              label={t('dashboard.contracts.description')}
+              name="description"
+              value={formData.description}
+              onChange={(e) => handleChange(e)}
+            />
             
-            <div className={styles.formGroup}>
-              <label htmlFor="status">{t('dashboard.contracts.status')}</label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className={styles.select}
-              >
-                <option value="draft">{t('dashboard.contracts.statusDraft')}</option>
-                <option value="sent">{t('dashboard.contracts.statusSent')}</option>
-                <option value="signed">{t('dashboard.contracts.statusSigned')}</option>
-                <option value="active">{t('dashboard.contracts.statusActive')}</option>
-                <option value="completed">{t('dashboard.contracts.statusCompleted')}</option>
-                <option value="cancelled">{t('dashboard.contracts.statusCancelled')}</option>
-              </select>
-            </div>
+            <SimpleDropdown
+              label={t('dashboard.contracts.status')}
+              options={[
+                { value: 'draft', label: t('dashboard.contracts.statusDraft') },
+                { value: 'sent', label: t('dashboard.contracts.statusSent') },
+                { value: 'signed', label: t('dashboard.contracts.statusSigned') },
+                { value: 'active', label: t('dashboard.contracts.statusActive') },
+                { value: 'completed', label: t('dashboard.contracts.statusCompleted') },
+                { value: 'cancelled', label: t('dashboard.contracts.statusCancelled') }
+              ]}
+              value={formData.status}
+              onChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
+            />
           </div>
           
           <div className={styles.formSection}>
@@ -192,46 +182,34 @@ const ContractForm = ({ contract, onSubmit, onCancel }) => {
                 </div>
                 
                 <div className={styles.partyFields}>
-                  <div className={styles.formGroup}>
-                    <label>{t('dashboard.contracts.partyName')}</label>
-                    <input
-                      type="text"
-                      value={party.name}
-                      onChange={(e) => handlePartyChange(index, 'name', e.target.value)}
-                      className={styles.input}
-                      required
-                    />
-                  </div>
+                  <PersonnalizedInputField
+                    label={t('dashboard.contracts.partyName')}
+                    type="text"
+                    value={party.name}
+                    onChange={(e) => handlePartyChange(index, 'name', e.target.value)}
+                    required
+                  />
                   
-                  <div className={styles.formGroup}>
-                    <label>{t('dashboard.contracts.partyRole')}</label>
-                    <input
-                      type="text"
-                      value={party.role}
-                      onChange={(e) => handlePartyChange(index, 'role', e.target.value)}
-                      className={styles.input}
-                    />
-                  </div>
+                  <PersonnalizedInputField
+                    label={t('dashboard.contracts.partyRole')}
+                    type="text"
+                    value={party.role}
+                    onChange={(e) => handlePartyChange(index, 'role', e.target.value)}
+                  />
                   
-                  <div className={styles.formGroup}>
-                    <label>{t('dashboard.contracts.partyEmail')}</label>
-                    <input
-                      type="email"
-                      value={party.email}
-                      onChange={(e) => handlePartyChange(index, 'email', e.target.value)}
-                      className={styles.input}
-                    />
-                  </div>
+                  <PersonnalizedInputField
+                    label={t('dashboard.contracts.partyEmail')}
+                    type="email"
+                    value={party.email}
+                    onChange={(e) => handlePartyChange(index, 'email', e.target.value)}
+                  />
                   
-                  <div className={styles.formGroup}>
-                    <label>{t('dashboard.contracts.partyPhone')}</label>
-                    <input
-                      type="tel"
-                      value={party.phone}
-                      onChange={(e) => handlePartyChange(index, 'phone', e.target.value)}
-                      className={styles.input}
-                    />
-                  </div>
+                  <PersonnalizedInputField
+                    label={t('dashboard.contracts.partyPhone')}
+                    type="tel"
+                    value={party.phone}
+                    onChange={(e) => handlePartyChange(index, 'phone', e.target.value)}
+                  />
                 </div>
               </div>
             ))}
@@ -267,27 +245,20 @@ const ContractForm = ({ contract, onSubmit, onCancel }) => {
                 </div>
                 
                 <div className={styles.termFields}>
-                  <div className={styles.formGroup}>
-                    <label>{t('dashboard.contracts.termTitle')}</label>
-                    <input
-                      type="text"
-                      value={term.title}
-                      onChange={(e) => handleTermChange(index, 'title', e.target.value)}
-                      className={styles.input}
-                      required
-                    />
-                  </div>
+                  <PersonnalizedInputField
+                    label={t('dashboard.contracts.termTitle')}
+                    type="text"
+                    value={term.title}
+                    onChange={(e) => handleTermChange(index, 'title', e.target.value)}
+                    required
+                  />
                   
-                  <div className={styles.formGroup}>
-                    <label>{t('dashboard.contracts.termContent')}</label>
-                    <textarea
-                      value={term.content}
-                      onChange={(e) => handleTermChange(index, 'content', e.target.value)}
-                      className={styles.textarea}
-                      rows={3}
-                      required
-                    />
-                  </div>
+                  <TextareaField
+                    label={t('dashboard.contracts.termContent')}
+                    value={term.content}
+                    onChange={(e) => handleTermChange(index, 'content', e.target.value)}
+                    required
+                  />
                 </div>
               </div>
             ))}

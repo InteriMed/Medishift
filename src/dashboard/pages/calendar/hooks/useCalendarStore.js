@@ -276,6 +276,13 @@ const useCalendarStore = create(
 
           if (!shouldClose || !userId) {
             console.log('[useCalendarStore] Skipping database sync', { shouldClose, userId });
+            if (shouldClose) {
+              set(state => {
+                state.selectedEvent = null;
+                state.selectedEventId = null;
+                state.originalEventPosition = null;
+              });
+            }
             return;
           }
 
@@ -334,6 +341,12 @@ const useCalendarStore = create(
                     state.events[eIdx].isValidated = true;
                     console.log('[useCalendarStore] Updated event ID in state', { oldId: eventWithDates.id, newId: result.id });
                   }
+                }
+
+                if (shouldClose) {
+                  state.selectedEvent = null;
+                  state.selectedEventId = null;
+                  state.originalEventPosition = null;
                 }
               });
               console.log('[useCalendarStore] State updated, save complete');

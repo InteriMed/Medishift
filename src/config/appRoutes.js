@@ -36,9 +36,6 @@ import LoadingPage from '../pages/LoadingPage';
  * Use dashboard/config/routes.js for dashboard-specific routes.
  */
 
-const TestPage = lazy(() => import('../pages/TestPage'));
-const TestPhonePage = lazy(() => import('../pages/TestPhonePage'));
-const TestPopupPage = lazy(() => import('../pages/TestPopupPage'));
 const GLNTestVerifPage = lazy(() => import('../pages/GLNTestVerifPage'));
 
 export const ROUTE_TYPES = {
@@ -211,30 +208,6 @@ export const PROTECTED_ROUTES = [
 ];
 
 export const TEST_ROUTES = [
-  {
-    id: 'test',
-    path: 'test',
-    component: TestPage,
-    type: ROUTE_TYPES.TEST,
-    label: 'Test',
-    hidden: true
-  },
-  {
-    id: 'testphone',
-    path: 'testphone',
-    component: TestPhonePage,
-    type: ROUTE_TYPES.TEST,
-    label: 'Test Phone',
-    hidden: true
-  },
-  {
-    id: 'testpopup',
-    path: 'testpopup',
-    component: TestPopupPage,
-    type: ROUTE_TYPES.TEST,
-    label: 'Test Popup',
-    hidden: true
-  },
   {
     id: 'glntestverif',
     path: 'glntestverif',

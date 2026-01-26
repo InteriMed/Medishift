@@ -99,6 +99,50 @@ export const getFacilityRoles = async (userId) => {
   }
 };
 
+/**
+ * Check if user has Organization access (is attached to at least one organization)
+ * CONDITION: User has entries in users.roles array with organization_uid
+ * 
+ * @param {string} userId - Firebase Auth UID
+ * @returns {Promise<boolean>}
+ */
+export const hasOrganizationAccess = async (userId) => {
+  if (!userId) return false;
+  
+  try {
+    const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, userId));
+    if (!userDoc.exists()) return false;
+    
+    const userData = userDoc.data();
+    const roles = userData.roles || [];
+    
+    return roles.some(r => r.organization_uid);
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Get user's organization roles
+ * @param {string} userId - Firebase Auth UID
+ * @returns {Promise<Array>} Array of organization role objects [{organization_uid, roles: [], rights: []}]
+ */
+export const getOrganizationRoles = async (userId) => {
+  if (!userId) return [];
+  
+  try {
+    const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, userId));
+    if (!userDoc.exists()) return [];
+    
+    const userData = userDoc.data();
+    const roles = userData.roles || [];
+    
+    return roles.filter(r => r.organization_uid);
+  } catch (error) {
+    return [];
+  }
+};
+
 // ============================================================================
 // SYNC VERSIONS - For use when data is already loaded
 // ============================================================================
@@ -124,8 +168,30 @@ export const isProfessionalSync = (userData) => {
  */
 export const isAdminSync = (userData) => {
   if (!userData) return false;
-  if (!userData.adminData) return false;
-  return userData.adminData.isActive !== false;
+  
+  if (userData.adminData) {
+    if (userData.adminData.isActive === false) return false;
+    
+    const adminRoles = Array.isArray(userData.adminData.roles) ? userData.adminData.roles : [];
+    if (adminRoles.includes('superAdmin') || adminRoles.includes('super_admin')) {
+      return true;
+    }
+    
+    if (userData.adminData.rights && Array.isArray(userData.adminData.rights) && userData.adminData.rights.length > 0) {
+      return true;
+    }
+    
+    if (userData.adminData.role === 'superAdmin' || userData.adminData.role === 'super_admin' || userData.adminData.role === 'admin') {
+      return true;
+    }
+  }
+  
+  const userRoles = Array.isArray(userData.roles) ? userData.roles : [];
+  if (userRoles.includes('superAdmin') || userRoles.includes('super_admin') || userRoles.includes('admin')) {
+    return true;
+  }
+  
+  return false;
 };
 
 /**
@@ -141,11 +207,6 @@ export const hasFacilityAccessSync = (userData, facilityId = null) => {
   
   // ADMIN BYPASS: Admins have unrestricted access to all facilities
   if (isAdminSync(userData)) {
-    // If checking for Medishift Demo Facility, always allow for admins
-    if (facilityId === MEDISHIFT_DEMO_FACILITY_ID) {
-      return true;
-    }
-    // For other facilities, admins can access any facility
     return true;
   }
   
@@ -158,11 +219,35 @@ export const hasFacilityAccessSync = (userData, facilityId = null) => {
   return roles.some(r => r.facility_uid);
 };
 
+/**
+ * Check if user has Organization access (sync version)
+ * Use when user data with roles is already fetched
+ * 
+ * @param {Object} userData - User data object (must include roles array)
+ * @param {string} organizationId - Optional organization ID to check specific organization
+ * @returns {boolean}
+ */
+export const hasOrganizationAccessSync = (userData, organizationId = null) => {
+  if (!userData) return false;
+  
+  // ADMIN BYPASS: Admins have unrestricted access to all organizations
+  if (isAdminSync(userData)) {
+    return true;
+  }
+  
+  const roles = userData.roles || [];
+  
+  if (organizationId) {
+    return roles.some(r => r.organization_uid === organizationId);
+  }
+  
+  return roles.some(r => r.organization_uid);
+};
+
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
-export const MEDISHIFT_DEMO_FACILITY_ID = 'medishift-demo-facility';
 
 // ============================================================================
 // WORKSPACE GENERATION
@@ -206,23 +291,22 @@ export const getAvailableWorkspaces = (userData) => {
         description: 'Manage facility operations and team'
       });
     }
-  });
-
-  // 3. ADMIN: Add Medishift Demo Facility if admin and not already in roles
-  if (isUserAdmin) {
-    const hasDemoFacility = roles.some(r => r.facility_uid === MEDISHIFT_DEMO_FACILITY_ID);
-    if (!hasDemoFacility) {
+    
+    // 3. ORGANIZATION WORKSPACES - for each organization in roles array
+    const organizationId = roleEntry.organization_uid;
+    if (organizationId) {
       workspaces.push({
-        id: MEDISHIFT_DEMO_FACILITY_ID,
-        name: 'Medishift Demo Facility',
-        type: WORKSPACE_TYPES.FACILITY,
-        facilityId: MEDISHIFT_DEMO_FACILITY_ID,
-        roles: ['admin', 'scheduler', 'hr_manager', 'employee'],
-        description: 'Demo facility for admin presentation and testing',
-        isAdminDemo: true
+        id: organizationId,
+        name: 'Organization Workspace',
+        type: 'organization',
+        organizationId: organizationId,
+        roles: roleEntry.roles || [],
+        rights: roleEntry.rights || [],
+        description: 'Manage organization facilities and teams'
       });
     }
-  }
+  });
+
 
   // 4. ADMIN WORKSPACE - if admin document exists and is active
   if (isUserAdmin) {
@@ -296,6 +380,10 @@ export const fetchCompleteUserData = async (userId) => {
       // Facility status - based on roles array
       _hasFacilityRoles: (userData.roles || []).some(r => r.facility_uid),
       hasFacilityProfile: (userData.roles || []).some(r => r.facility_uid),
+      
+      // Organization status - based on roles array
+      _hasOrganizationRoles: (userData.roles || []).some(r => r.organization_uid),
+      hasOrganizationProfile: (userData.roles || []).some(r => r.organization_uid),
       
       // Admin status - based on admin document
       adminData: null,
@@ -407,6 +495,96 @@ export const detachProfessionalFromFacility = async (userId, facilityId) => {
   }
 };
 
+/**
+ * Attach a professional profile to an organization
+ * This should be called when:
+ * - Creating a new organization
+ * - Accepting an organization invitation
+ * - Joining an organization
+ * 
+ * @param {string} userId - Firebase Auth UID
+ * @param {Object} organizationInfo - Organization information
+ * @param {string} organizationInfo.organizationId - Organization profile ID
+ * @param {Array<string>} organizationInfo.roles - User's roles in organization (e.g., ['org_admin', 'org_manager'])
+ * @param {Array<string>} organizationInfo.rights - User's rights in organization (e.g., ['manage_facilities'])
+ * @returns {Promise<boolean>} Success status
+ */
+export const attachProfessionalToOrganization = async (userId, organizationInfo) => {
+  if (!userId || !organizationInfo?.organizationId) {
+    console.error('[WorkspaceDefinitions] Invalid parameters for attachProfessionalToOrganization');
+    return false;
+  }
+
+  const { updateDoc, getDoc, serverTimestamp } = await import('firebase/firestore');
+
+  try {
+    const userRef = doc(db, COLLECTIONS.USERS, userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      console.error('[WorkspaceDefinitions] User document not found:', userId);
+      return false;
+    }
+
+    const userData = userDoc.data();
+    const existingRoles = userData.roles || [];
+    
+    const newRoleEntry = {
+      organization_uid: organizationInfo.organizationId,
+      roles: organizationInfo.roles || ['org_employee'],
+      rights: organizationInfo.rights || []
+    };
+
+    const updatedRoles = existingRoles.filter(r => r.organization_uid !== organizationInfo.organizationId);
+    updatedRoles.push(newRoleEntry);
+
+    await updateDoc(userRef, {
+      roles: updatedRoles,
+      updatedAt: serverTimestamp(),
+    });
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Detach a professional profile from an organization
+ * @param {string} userId - Firebase Auth UID
+ * @param {string} organizationId - Organization profile ID to detach from
+ * @returns {Promise<boolean>} Success status
+ */
+export const detachProfessionalFromOrganization = async (userId, organizationId) => {
+  if (!userId || !organizationId) {
+    console.error('[WorkspaceDefinitions] Invalid parameters for detachProfessionalFromOrganization');
+    return false;
+  }
+
+  const { updateDoc, getDoc, serverTimestamp } = await import('firebase/firestore');
+
+  try {
+    const userRef = doc(db, COLLECTIONS.USERS, userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) return false;
+
+    const userData = userDoc.data();
+    const currentRoles = userData.roles || [];
+    
+    const updatedRoles = currentRoles.filter(r => r.organization_uid !== organizationId);
+
+    await updateDoc(userRef, {
+      roles: updatedRoles,
+      updatedAt: serverTimestamp(),
+    });
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 // ============================================================================
 // ADMIN CRM QUERIES - For searching users
 // ============================================================================
@@ -496,19 +674,20 @@ export default {
   WORKSPACE_TYPES,
   COLLECTIONS,
   
-  // Constants
-  MEDISHIFT_DEMO_FACILITY_ID,
   
   // Async checks
   isProfessional,
   isAdmin,
   hasFacilityAccess,
   getFacilityRoles,
+  hasOrganizationAccess,
+  getOrganizationRoles,
   
   // Sync checks
   isProfessionalSync,
   isAdminSync,
   hasFacilityAccessSync,
+  hasOrganizationAccessSync,
   
   // Workspace functions
   getAvailableWorkspaces,
@@ -520,6 +699,10 @@ export default {
   // Facility attachment
   attachProfessionalToFacility,
   detachProfessionalFromFacility,
+  
+  // Organization attachment
+  attachProfessionalToOrganization,
+  detachProfessionalFromOrganization,
   
   // CRM queries
   queryProfessionals,

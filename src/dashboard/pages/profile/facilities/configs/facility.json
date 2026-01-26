@@ -21,20 +21,18 @@
         { "name": "address.country", "type": "dropdown", "optionsKey": "countries", "required": true, "labelKey": "facilityDetails.country", "placeholderKey": "facilityDetails.selectCountry" },
         { "name": "mainPhoneNumber", "type": "tel", "required": true, "labelKey": "facilityDetails.mainPhoneNumber", "placeholderKey": "facilityDetails.mainPhoneNumberPlaceholder", "validationRules": {"pattern": "^\\+?[0-9\\s-()]{7,20}$", "patternErrorKey": "validation.invalidPhoneNumber"} },
         { "name": "mainEmail", "type": "email", "required": true, "labelKey": "facilityDetails.mainEmail", "placeholderKey": "facilityDetails.mainEmailPlaceholder", "validationRules": {"pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "patternErrorKey": "validation.invalidEmail"} },
-        { "name": "website", "type": "url", "required": false, "labelKey": "facilityDetails.website", "placeholderKey": "facilityDetails.websitePlaceholder" }
-      ],
-  
-      "facilityLegalBilling": [
-        
-        { "name": "legalEntityName", "type": "text", "required": true, "labelKey": "facilityDetails.legalEntityName", "group": "legal", "validationRules": { "minLength": 3 } },
-        { "name": "uidNumber", "type": "text", "required": true, "labelKey": "facilityDetails.uidNumber", "placeholderKey": "facilityDetails.uidNumberPlaceholder", "group": "legal", "infoKey": "facilityDetails.uidNumberInfoSwiss", "validationRules": {"pattern": "^CHE-[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}(\\sMWST)?$", "patternErrorKey": "validation.invalidUIDNumberSwiss"} },
-        { "name": "commercialRegisterNumber", "type": "text", "required": false, "labelKey": "facilityDetails.commercialRegisterNumber", "placeholderKey": "facilityDetails.commercialRegisterNumberPlaceholder", "group": "legal" },
+        { "name": "website", "type": "url", "required": false, "labelKey": "facilityDetails.website", "placeholderKey": "facilityDetails.websitePlaceholder" },
         { "name": "legalRepresentative.firstName", "type": "text", "required": true, "labelKey": "facilityDetails.legalRepFirstName", "group": "legalRep" },
         { "name": "legalRepresentative.lastName", "type": "text", "required": true, "labelKey": "facilityDetails.legalRepLastName", "group": "legalRep" },
         { "name": "responsiblePersonIdentity.nationality", "type": "dropdown", "optionsKey": "countries", "required": true, "labelKey": "personalDetails.nationality", "placeholderKey": "personalDetails.selectNationality", "group": "legalRep" },
         { "name": "legalRepresentative.email", "type": "email", "required": true, "labelKey": "facilityDetails.legalRepEmail", "group": "legalRep" },
-        { "name": "legalRepresentative.phone", "type": "tel", "required": false, "labelKey": "facilityDetails.legalRepPhone", "group": "legalRep" },
+        { "name": "legalRepresentative.phone", "type": "tel", "required": false, "labelKey": "facilityDetails.legalRepPhone", "group": "legalRep" }
+      ],
   
+      "facilityLegalBilling": [
+        { "name": "legalEntityName", "type": "text", "required": true, "labelKey": "facilityDetails.legalEntityName", "group": "legal", "validationRules": { "minLength": 3 } },
+        { "name": "uidNumber", "type": "text", "required": true, "labelKey": "facilityDetails.uidNumber", "placeholderKey": "facilityDetails.uidNumberPlaceholder", "group": "legal", "infoKey": "facilityDetails.uidNumberInfoSwiss", "validationRules": {"pattern": "^CHE-[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}(\\sMWST)?$", "patternErrorKey": "validation.invalidUIDNumberSwiss"} },
+        { "name": "commercialRegisterNumber", "type": "text", "required": false, "labelKey": "facilityDetails.commercialRegisterNumber", "placeholderKey": "facilityDetails.commercialRegisterNumberPlaceholder", "group": "legal" },
         { "name": "billingContact.name", "type": "text", "required": false, "labelKey": "facilityDetails.billingContactName", "group": "billing", "infoKey": "facilityDetails.billingContactInfo" },
         { "name": "billingContact.email", "type": "email", "required": true, "labelKey": "facilityDetails.billingContactEmail", "group": "billing" },
         { "name": "billingContact.phone", "type": "tel", "required": false, "labelKey": "facilityDetails.billingContactPhone", "group": "billing" },

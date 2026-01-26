@@ -1,0 +1,648 @@
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
+import { db } from '../../../../services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { useNotification } from '../../../../contexts/NotificationContext';
+import {
+    FiBriefcase,
+    FiX,
+    FiPlus,
+    FiMove,
+    FiUser,
+    FiCalendar,
+    FiSearch,
+    FiFilter,
+    FiCheck
+} from 'react-icons/fi';
+import { cn } from '../../../../utils/cn';
+import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
+
+const HiringProcesses = ({ organization, memberFacilities = [] }) => {
+    const { t } = useTranslation(['organization', 'common']);
+    const { currentUser } = useAuth();
+    const { showNotification } = useNotification();
+    
+    const [positions, setPositions] = useState([]);
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [facilityFilter, setFacilityFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('created');
+    const [showSortMenu, setShowSortMenu] = useState(false);
+    const [selectedPosition, setSelectedPosition] = useState(null);
+    const [showCandidatePopup, setShowCandidatePopup] = useState(false);
+    const [positionCandidates, setPositionCandidates] = useState([]);
+    const [candidateSortBy, setCandidateSortBy] = useState('experience');
+    const [candidateShowSortMenu, setCandidateShowSortMenu] = useState(false);
+    const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
+    const [justExpanded, setJustExpanded] = useState(false);
+
+    const loadPositions = useCallback(async () => {
+        if (!organization || memberFacilities.length === 0) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const allPositions = [];
+            const allApplications = [];
+
+            for (const facility of memberFacilities) {
+                const facilityId = facility.id;
+                try {
+                    const positionsQuery = query(
+                        collection(db, 'positions'),
+                        where('facilityProfileId', '==', facilityId),
+                        orderBy('created', 'desc')
+                    );
+                    const positionsSnapshot = await getDocs(positionsQuery);
+
+                    for (const positionDoc of positionsSnapshot.docs) {
+                        const positionData = positionDoc.data();
+                        allPositions.push({
+                            id: positionDoc.id,
+                            ...positionData,
+                            facilityName: facility.facilityName || facility.companyName || 'Unknown'
+                        });
+
+                        try {
+                            const applicationsQuery = query(
+                                collection(db, 'positions', positionDoc.id, 'applications'),
+                                orderBy('createdAt', 'desc')
+                            );
+                            const applicationsSnapshot = await getDocs(applicationsQuery);
+                            
+                            applicationsSnapshot.forEach((appDoc) => {
+                                allApplications.push({
+                                    id: appDoc.id,
+                                    positionId: positionDoc.id,
+                                    ...appDoc.data()
+                                });
+                            });
+                        } catch (appError) {
+                            console.error(`Error loading applications for position ${positionDoc.id}:`, appError);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error loading positions for facility ${facilityId}:`, error);
+                }
+            }
+
+            setPositions(allPositions);
+            setApplications(allApplications);
+        } catch (error) {
+            console.error('Error loading hiring processes:', error);
+            showNotification(t('organization:hiring.errors.loadFailed', 'Failed to load hiring processes'), 'error');
+        } finally {
+            setLoading(false);
+        }
+    }, [organization, memberFacilities, showNotification, t]);
+
+    useEffect(() => {
+        loadPositions();
+    }, [loadPositions]);
+
+    const loadPositionCandidates = useCallback(async (positionId) => {
+        try {
+            const positionApplications = applications.filter(a => a.positionId === positionId);
+            const candidatesWithProfiles = [];
+
+            for (const application of positionApplications) {
+                const professionalId = application.professionalProfileId || application.userId;
+                if (!professionalId) continue;
+
+                try {
+                    const professionalRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, professionalId);
+                    const professionalSnap = await getDoc(professionalRef);
+                    
+                    if (professionalSnap.exists()) {
+                        const profileData = professionalSnap.data();
+                        const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, professionalId);
+                        const userSnap = await getDoc(userRef);
+                        const userData = userSnap.exists() ? userSnap.data() : {};
+
+                        candidatesWithProfiles.push({
+                            ...application,
+                            profile: {
+                                ...profileData,
+                                firstName: userData.firstName || profileData.firstName || profileData.identity?.firstName || '',
+                                lastName: userData.lastName || profileData.lastName || profileData.identity?.lastName || '',
+                                email: userData.email || '',
+                                photoURL: userData.photoURL || profileData.profileDisplay?.profilePictureUrl || '',
+                                experienceYears: profileData.profileDisplay?.experienceYears || 0,
+                                jobTitle: profileData.profileDisplay?.jobTitle || '',
+                                specializations: profileData.specializations || [],
+                                skills: profileData.skills || []
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error loading candidate profile ${professionalId}:`, error);
+                }
+            }
+
+            setPositionCandidates(candidatesWithProfiles);
+        } catch (error) {
+            console.error('Error loading position candidates:', error);
+        }
+    }, [applications]);
+
+    const handlePositionClick = (position) => {
+        setSelectedPosition(position);
+        loadPositionCandidates(position.id);
+        setShowCandidatePopup(true);
+    };
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'open':
+                return 'bg-blue-100 text-blue-700';
+            case 'interview':
+                return 'bg-yellow-100 text-yellow-700';
+            case 'accepted':
+            case 'accepted_for_contract':
+                return 'bg-green-100 text-green-700';
+            case 'rejected':
+            case 'closed':
+                return 'bg-red-100 text-red-700';
+            default:
+                return 'bg-gray-100 text-gray-700';
+        }
+    };
+
+    const filteredAndSortedPositions = useMemo(() => {
+        let filtered = positions;
+
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(pos => 
+                pos.title?.toLowerCase().includes(query) ||
+                pos.facilityName?.toLowerCase().includes(query)
+            );
+        }
+
+        if (facilityFilter !== 'all') {
+            filtered = filtered.filter(pos => {
+                const facility = memberFacilities.find(f => f.id === facilityFilter);
+                return facility && (pos.facilityProfileId === facilityFilter || pos.facilityName === (facility.facilityName || facility.companyName));
+            });
+        }
+
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(pos => pos.status === statusFilter);
+        }
+
+        const sorted = [...filtered].sort((a, b) => {
+            switch (sortBy) {
+                case 'created':
+                    const dateA = a.created?.toDate?.() || a.created || new Date(0);
+                    const dateB = b.created?.toDate?.() || b.created || new Date(0);
+                    return dateB - dateA;
+                case 'title':
+                    return (a.title || '').localeCompare(b.title || '');
+                case 'facility':
+                    return (a.facilityName || '').localeCompare(b.facilityName || '');
+                case 'applications':
+                    const appsA = applications.filter(app => app.positionId === a.id).length;
+                    const appsB = applications.filter(app => app.positionId === b.id).length;
+                    return appsB - appsA;
+                default:
+                    return 0;
+            }
+        });
+
+        return sorted;
+    }, [positions, searchQuery, facilityFilter, statusFilter, sortBy, memberFacilities, applications]);
+
+    const sortedCandidates = useMemo(() => {
+        const sorted = [...positionCandidates].sort((a, b) => {
+            switch (candidateSortBy) {
+                case 'experience':
+                    return (b.profile?.experienceYears || 0) - (a.profile?.experienceYears || 0);
+                case 'name':
+                    const nameA = `${a.profile?.firstName || ''} ${a.profile?.lastName || ''}`.toLowerCase();
+                    const nameB = `${b.profile?.firstName || ''} ${b.profile?.lastName || ''}`.toLowerCase();
+                    return nameA.localeCompare(nameB);
+                case 'applied':
+                    const dateA = a.createdAt?.toDate?.() || a.createdAt || new Date(0);
+                    const dateB = b.createdAt?.toDate?.() || b.createdAt || new Date(0);
+                    return dateB - dateA;
+                default:
+                    return 0;
+            }
+        });
+        return sorted;
+    }, [positionCandidates, candidateSortBy]);
+
+    const hasActiveFilters = facilityFilter !== 'all' || statusFilter !== 'all';
+
+    const clearFilters = () => {
+        setFacilityFilter('all');
+        setStatusFilter('all');
+    };
+
+    const sortOptions = [
+        { value: 'created', label: t('organization:hiring.sort.created', 'Date Created') },
+        { value: 'title', label: t('organization:hiring.sort.title', 'Title') },
+        { value: 'facility', label: t('organization:hiring.sort.facility', 'Facility') },
+        { value: 'applications', label: t('organization:hiring.sort.applications', 'Applications') }
+    ];
+
+    const candidateSortOptions = [
+        { value: 'experience', label: t('organization:hiring.candidates.sort.experience', 'Experience') },
+        { value: 'name', label: t('organization:hiring.candidates.sort.name', 'Name') },
+        { value: 'applied', label: t('organization:hiring.candidates.sort.applied', 'Date Applied') }
+    ];
+
+    const maskContactInfo = (text) => {
+        if (!text) return '••••••••';
+        if (text.length <= 4) return '••••';
+        return text.slice(0, 2) + '•••' + text.slice(-2);
+    };
+
+    const getInitials = (firstName, lastName) => {
+        const first = firstName?.[0]?.toUpperCase() || '';
+        const last = lastName?.[0]?.toUpperCase() || '';
+        return first + last || '?';
+    };
+
+    const getDisplayName = (firstName, lastName) => {
+        const first = firstName || '';
+        const last = lastName?.[0]?.toUpperCase() || '';
+        return `${first} ${last}.`.trim();
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-16">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    const activeFilterCount = (facilityFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0);
+
+    return (
+        <div className="space-y-6">
+            <div className="bg-card border border-border rounded-xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 className="text-lg font-semibold text-foreground">
+                            {t('organization:hiring.title', 'Hiring Processes')}
+                        </h2>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            {t('organization:hiring.subtitle', 'Manage job postings and review candidates')}
+                        </p>
+                    </div>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                        <FiPlus className="w-4 h-4" />
+                        {t('organization:hiring.createPosition', 'Create Position')}
+                    </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 w-full mb-4">
+                    <div className="relative flex-1 min-w-[200px]">
+                        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder={t('organization:hiring.searchPlaceholder', 'Search positions...')}
+                            className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
+                            style={{
+                                height: 'var(--boxed-inputfield-height)',
+                                fontWeight: '500',
+                                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
+                                color: 'var(--boxed-inputfield-color-text)'
+                            }}
+                        />
+                    </div>
+
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const willExpand = !isFiltersExpanded;
+                                setIsFiltersExpanded(willExpand);
+                                if (willExpand) {
+                                    setJustExpanded(true);
+                                    setTimeout(() => {
+                                        setJustExpanded(false);
+                                    }, 150);
+                                }
+                            }}
+                            className={cn(
+                                "flex items-center justify-center rounded-xl border-2 transition-all relative shrink-0",
+                                isFiltersExpanded
+                                    ? "bg-[var(--color-logo-1)] border-[var(--color-logo-1)] text-white"
+                                    : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                            )}
+                            style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
+                            title="Filters"
+                        >
+                            <FiFilter className={`w-4 h-4 ${isFiltersExpanded ? 'text-white' : ''}`} />
+                            {activeFilterCount > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
+                                    {activeFilterCount}
+                                </span>
+                            )}
+                        </button>
+
+                        {activeFilterCount > 0 && (
+                            <button
+                                onClick={clearFilters}
+                                className="text-sm text-muted-foreground hover:text-foreground underline transition-colors shrink-0 whitespace-nowrap"
+                            >
+                                {t('organization:hiring.filters.clearAll', 'Remove settings')}
+                            </button>
+                        )}
+
+                        <button
+                            onClick={() => {}}
+                            className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
+                            style={{ height: 'var(--boxed-inputfield-height)' }}
+                        >
+                            <FiCheck className="w-4 h-4" />
+                            {t('organization:hiring.filters.apply', 'Apply')}
+                        </button>
+                    </div>
+
+                {isFiltersExpanded && (
+                    <div 
+                        className="mt-3 pt-3 border-t border-border animate-in slide-in-from-top-1 duration-200"
+                        style={{ pointerEvents: justExpanded ? 'none' : 'auto' }}
+                    >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-1">
+                                <SimpleDropdown
+                                    label={t('organization:hiring.filters.facility', 'Facility')}
+                                    options={[
+                                        { value: 'all', label: t('organization:hiring.filters.allFacilities', 'All Facilities') },
+                                        ...memberFacilities.map(facility => ({
+                                            value: facility.id,
+                                            label: facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')
+                                        }))
+                                    ]}
+                                    value={facilityFilter}
+                                    onChange={setFacilityFilter}
+                                    placeholder={t('organization:hiring.filters.facility', 'Facility')}
+                                />
+                                <SimpleDropdown
+                                    label={t('organization:hiring.filters.status', 'Status')}
+                                    options={[
+                                        { value: 'all', label: t('organization:hiring.filters.allStatuses', 'All Statuses') },
+                                        { value: 'open', label: t('organization:hiring.filters.open', 'Open') },
+                                        { value: 'interview', label: t('organization:hiring.filters.interview', 'Interview') },
+                                        { value: 'accepted', label: t('organization:hiring.filters.accepted', 'Accepted') },
+                                        { value: 'closed', label: t('organization:hiring.filters.closed', 'Closed') }
+                                    ]}
+                                    value={statusFilter}
+                                    onChange={setStatusFilter}
+                                    placeholder={t('organization:hiring.filters.status', 'Status')}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                {positions.length > 0 && (
+                    <p className="text-sm text-muted-foreground text-center mt-2">
+                        {filteredAndSortedPositions.length} {filteredAndSortedPositions.length === 1 ? 'position' : 'positions'} found
+                        {searchQuery && ` matching "${searchQuery}"`}
+                        {hasActiveFilters && ` (filtered)`}
+                    </p>
+                )}
+            </div>
+
+            {filteredAndSortedPositions.length === 0 ? (
+                <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
+                    <FiBriefcase className="w-24 h-24 mx-auto mb-4 opacity-20" />
+                    <p>{t('organization:hiring.empty', 'No positions found')}</p>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {filteredAndSortedPositions.map((position) => {
+                        const positionApplications = applications.filter(a => a.positionId === position.id);
+                        return (
+                            <div
+                                key={position.id}
+                                className="bg-card border border-border rounded-lg p-4 hover:bg-muted/10 transition-colors cursor-pointer"
+                                onClick={() => handlePositionClick(position)}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="shrink-0">
+                                        <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                                            <FiBriefcase className="w-6 h-6" />
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <h3 className="font-semibold text-foreground truncate">{position.title || 'Untitled Position'}</h3>
+                                            <span className={cn("shrink-0 px-2 py-0.5 text-xs font-medium rounded-full", getStatusColor(position.status))}>
+                                                {position.status}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground truncate mb-2">{position.facilityName}</p>
+                                        <div className="flex items-center gap-4 text-sm">
+                                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                <FiUser className="w-4 h-4 shrink-0" />
+                                                <span>{positionApplications.length} {t('organization:hiring.applications', 'applications')}</span>
+                                            </div>
+                                            {position.created && (
+                                                <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                    <FiCalendar className="w-4 h-4 shrink-0" />
+                                                    <span>{new Date(position.created.toDate?.() || position.created).toLocaleDateString()}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {showCandidatePopup && selectedPosition && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-card border border-border rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between p-6 border-b border-border">
+                            <div>
+                                <h3 className="text-xl font-semibold text-foreground">
+                                    {selectedPosition.title || 'Untitled Position'}
+                                </h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    {t('organization:hiring.candidates.title', 'Review Candidates')} • {sortedCandidates.length} {sortedCandidates.length === 1 ? 'candidate' : 'candidates'}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setCandidateShowSortMenu(!candidateShowSortMenu)}
+                                        className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg bg-background hover:bg-muted/30 transition-colors"
+                                    >
+                                        <FiMove className="w-4 h-4" />
+                                        <span className="text-sm">{t('organization:hiring.sortLabel', 'Sort')}</span>
+                                    </button>
+                                    {candidateShowSortMenu && (
+                                        <>
+                                            <div 
+                                                className="fixed inset-0 z-10" 
+                                                onClick={() => setCandidateShowSortMenu(false)}
+                                            />
+                                            <div className="absolute right-0 top-full mt-2 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px]">
+                                                {candidateSortOptions.map(option => (
+                                                    <button
+                                                        key={option.value}
+                                                        onClick={() => {
+                                                            setCandidateSortBy(option.value);
+                                                            setCandidateShowSortMenu(false);
+                                                        }}
+                                                        className={cn(
+                                                            "w-full text-left px-4 py-2 text-sm hover:bg-muted/30 transition-colors",
+                                                            candidateSortBy === option.value && "bg-primary/10 text-primary font-medium"
+                                                        )}
+                                                    >
+                                                        {option.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setShowCandidatePopup(false);
+                                        setSelectedPosition(null);
+                                        setPositionCandidates([]);
+                                    }}
+                                    className="p-2 text-muted-foreground hover:text-foreground rounded-lg transition-colors"
+                                >
+                                    <FiX className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6">
+                            {sortedCandidates.length === 0 ? (
+                                <div className="text-center py-12 text-muted-foreground">
+                                    <FiUser className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                                    <p>{t('organization:hiring.candidates.empty', 'No candidates found')}</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {sortedCandidates.map((candidate) => {
+                                        const profile = candidate.profile || {};
+                                        const displayName = getDisplayName(profile.firstName, profile.lastName);
+                                        const initials = getInitials(profile.firstName, profile.lastName);
+                                        
+                                        return (
+                                            <div key={candidate.id} className="border border-border rounded-lg p-4 hover:bg-muted/10 transition-colors">
+                                                <div className="flex items-start gap-4">
+                                                    <div className="shrink-0">
+                                                        {profile.photoURL ? (
+                                                            <img 
+                                                                src={profile.photoURL} 
+                                                                alt={displayName}
+                                                                className="w-16 h-16 rounded-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-lg">
+                                                                {initials}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <h4 className="font-semibold text-foreground">{displayName}</h4>
+                                                            <span className={cn(
+                                                                "px-2 py-0.5 text-xs font-medium rounded-full",
+                                                                candidate.status === 'submitted' || candidate.status === 'pending'
+                                                                    ? "bg-blue-100 text-blue-700"
+                                                                    : candidate.status === 'accepted' || candidate.status === 'accepted_for_contract'
+                                                                    ? "bg-green-100 text-green-700"
+                                                                    : candidate.status === 'rejected'
+                                                                    ? "bg-red-100 text-red-700"
+                                                                    : "bg-gray-100 text-gray-700"
+                                                            )}>
+                                                                {candidate.status}
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        {profile.jobTitle && (
+                                                            <p className="text-sm font-medium text-foreground mb-1">{profile.jobTitle}</p>
+                                                        )}
+                                                        
+                                                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                                                            {profile.experienceYears > 0 && (
+                                                                <span>{profile.experienceYears}+ {t('organization:hiring.candidates.yearsExperience', 'years experience')}</span>
+                                                            )}
+                                                            {candidate.createdAt && (
+                                                                <span className="flex items-center gap-1">
+                                                                    <FiCalendar className="w-3.5 h-3.5" />
+                                                                    {new Date(candidate.createdAt.toDate?.() || candidate.createdAt).toLocaleDateString()}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                                <span>{t('organization:hiring.candidates.phone', 'Phone')}: {maskContactInfo(profile.phone || '1234567890')}</span>
+                                                                <span>•</span>
+                                                                <span>{t('organization:hiring.candidates.email', 'Email')}: {maskContactInfo(profile.email || 'example@email.com')}</span>
+                                                            </div>
+
+                                                            {profile.specializations && profile.specializations.length > 0 && (
+                                                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                                                    {profile.specializations.slice(0, 5).map((spec, idx) => (
+                                                                        <span 
+                                                                            key={idx}
+                                                                            className="px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded"
+                                                                        >
+                                                                            {spec}
+                                                                        </span>
+                                                                    ))}
+                                                                    {profile.specializations.length > 5 && (
+                                                                        <span className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded">
+                                                                            +{profile.specializations.length - 5}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            {profile.skills && profile.skills.length > 0 && (
+                                                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                                                    {profile.skills.slice(0, 5).map((skill, idx) => (
+                                                                        <span 
+                                                                            key={idx}
+                                                                            className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded"
+                                                                        >
+                                                                            {skill}
+                                                                        </span>
+                                                                    ))}
+                                                                    {profile.skills.length > 5 && (
+                                                                        <span className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded">
+                                                                            +{profile.skills.length - 5}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default HiringProcesses;

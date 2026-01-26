@@ -81,6 +81,7 @@ export const FIRESTORE_COLLECTIONS = {
   USERS: 'users',
   PROFESSIONAL_PROFILES: 'professionalProfiles',
   FACILITY_PROFILES: 'facilityProfiles',
+  ORGANIZATIONS: 'organizations',
   ADMINS: 'admins',
   CONVERSATIONS: 'conversations',
   MESSAGES: 'messages',

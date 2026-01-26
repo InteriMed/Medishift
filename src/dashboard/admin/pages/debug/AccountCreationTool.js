@@ -237,8 +237,10 @@ const AccountCreationTool = () => {
 
       admin: [userId],
       employees: [{
+        user_uid: userId,
         uid: userId,
-        rights: 'admin'
+        roles: ['admin'],
+        rights: []
       }],
       createdAt: timestamp,
       updatedAt: timestamp,
@@ -250,15 +252,26 @@ const AccountCreationTool = () => {
 
     await setDoc(doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, userId), facilityProfileData, { merge: true });
 
-    // Attach professional to facility via centralized membership structure
-    await setDoc(doc(db, 'users', userId), {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    const userData = userDoc.exists() ? userDoc.data() : {};
+    const existingRoles = userData.roles || [];
+    const updatedRoles = existingRoles.filter(r => r.facility_uid !== userId);
+    updatedRoles.push({
+      facility_uid: userId,
+      roles: ['admin']
+    });
+
+    await setDoc(userRef, {
+      roles: updatedRoles,
       facilityMemberships: [{
         facilityId: userId,
         facilityProfileId: userId,
         facilityName: firstName || email.split('@')[0],
         role: 'admin',
         joinedAt: new Date().toISOString()
-      }]
+      }],
+      updatedAt: serverTimestamp()
     }, { merge: true });
   };
 

@@ -3,10 +3,13 @@
     "personal": "Personal Messages",
     "personalDesc": "Messages related to your professional profile",
     "facility": "Facility Messages",
-    "facilityDesc": "Messages related to facility operations"
+    "facilityDesc": "Messages related to facility operations",
+    "conversations": "Conversations",
+    "threads": "Communication",
+    "threadsLocked": "Communication is only available for facility members"
   },
   "noConversations": "No Conversations",
-  "noConversationsHint": "Start conversations through marketplace interactions",
+  "noConversationsHint": "Start a new conversation",
   "noFacilityConversationsHint": "Facility-related conversations will appear here",
   "selectConversation": {
     "title": "Select a Conversation",
@@ -24,6 +27,7 @@
   "errors": {
     "loadingConversations": "Failed to load conversations",
     "loadingMessages": "Failed to load messages",
+    "loadingThreads": "Failed to load communication",
     "sendingMessage": "Failed to send message",
     "title": "Title",
     "description": "Description",
@@ -66,7 +70,12 @@
     "startConversation": "Start Conversation",
     "noMessagesInChat": "No Messages In Chat",
     "startChatting": "Start Chatting",
-    "noConversationsFound": "No Conversations Found"
+    "noConversationsFound": "No Conversations Found",
+    "noThreadsFound": "No communication found",
+    "noThreadsYet": "No communication yet",
+    "startThread": "Start new communication",
+    "threadsLocked": "Communication unavailable",
+    "threadsLockedDescription": "Communication is only available for users who belong to a facility"
   },
   "status": {
     "you": "You",

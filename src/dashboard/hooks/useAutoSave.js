@@ -12,8 +12,6 @@ const useAutoSave = ({
   getNestedValue,
   extractTabData,
   validateCurrentTabData,
-  onTabCompleted,
-  isTutorialActive,
   disableLocalStorage = false
 }) => {
   const location = useLocation();
@@ -62,25 +60,14 @@ const useAutoSave = ({
   }, [extractData, localStorageKey, disableLocalStorage]);
 
   const performValidation = useCallback((isInitial = false) => {
-    if (!validateCurrentTabData || !onTabCompleted) return;
-    
-    if (isTutorialActive && !isInitial) {
-      const timeSinceTabChange = Date.now() - tabChangeTimestampRef.current;
-      if (timeSinceTabChange < 2000) {
-        return;
-      }
-    }
+    if (!validateCurrentTabData) return;
     
     const isValid = validateCurrentTabData(null, null, true);
     
     if (isValid !== lastValidationStateRef.current) {
       lastValidationStateRef.current = isValid;
-      
-      if (isValid && isTutorialActive && activeTab) {
-        onTabCompleted(activeTab, true);
-      }
     }
-  }, [validateCurrentTabData, onTabCompleted, isTutorialActive, activeTab]);
+  }, [validateCurrentTabData]);
 
   useEffect(() => {
     if (!formData || hasLoadedFromStorageRef.current || disableLocalStorage) return;

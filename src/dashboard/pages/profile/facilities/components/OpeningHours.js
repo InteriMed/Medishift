@@ -9,19 +9,15 @@ import Switch from '../../../../../components/BoxedInputFields/Switch';
 
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-  headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex items-center",
-  sectionTitle: "text-2xl font-semibold",
-  sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-  sectionSubtitle: "text-sm font-medium",
-  sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionsWrapper: "flex flex-col gap-6 w-full max-w-[1400px] mx-auto",
-  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
-  cardHeader: "flex items-center gap-4 mb-6",
-  cardIconWrapper: "p-2 rounded-lg bg-primary/10",
+  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative overflow-visible",
+  cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
+  cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
-  cardTitle: "flex-1",
-  cardTitleH3: "m-0",
+  cardTitle: "flex-1 min-w-0",
+  cardTitleH3: "m-0 text-sm font-semibold truncate",
   cardTitleH3Style: { color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+  grid: "grid grid-cols-1 gap-6 overflow-visible",
   openingHoursGrid: "grid grid-cols-1 md:grid-cols-2 gap-3",
   dayRow: "flex flex-col gap-3 p-4 border border-border/60 rounded-lg bg-card/50 transition-all hover:border-primary/30",
   dayRowClosed: "opacity-60",
@@ -106,76 +102,106 @@ const OpeningHours = ({
 
   return (
     <div className={styles.sectionContainer}>
-      <div className={styles.headerCard}>
-        <div className="flex flex-col gap-1 flex-1">
-          <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>
-            {t('operations.openingHoursTitle')}
-          </h2>
-          <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>
-            {t('operations.subtitle')}
-          </p>
-        </div>
-      </div>
-
       <div className={styles.sectionsWrapper}>
-        <div className={styles.sectionCard}>
-          <div className={styles.cardHeader}>
-            <div className={styles.cardIconWrapper}><FiClock /></div>
-            <div className={styles.cardTitle}>
-              <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
-                {t('operations.openingHoursTitle')}
-              </h3>
+        <div className={styles.sectionCard} style={{ position: 'relative', zIndex: 8 }}>
+          <div className={styles.grid}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiClock className="w-4 h-4" style={styles.cardIconStyle} /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>
+                  {t('operations.openingHoursTitle')}
+                </h3>
+              </div>
             </div>
-          </div>
 
-          <div className={styles.openingHoursGrid}>
+            <div className={styles.openingHoursGrid}>
             {openingHours.map(day => {
               const hasError = getNestedValue(errors, `operationalSettings.standardOpeningHours.${day.key}`);
               const borderClass = hasError ? `${styles.errorUpload} border-2` : 'border-border/60 hover:border-primary/30';
 
+              const handleDayRowClick = (e) => {
+                const target = e.target;
+                const isInput = target.tagName === 'INPUT' || target.closest('input');
+                const isButton = target.tagName === 'BUTTON' || target.closest('button');
+                const isInputField = target.closest('.boxed-inputfield-wrapper') || target.closest('.boxed-inputfield-container');
+                
+                if (isInput || isButton || isInputField) {
+                  return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+                handleDayHoursChange(day.key, 'isClosed', day.isClosed);
+              };
+
+              const handleSwitchChange = (checked) => {
+                handleDayHoursChange(day.key, 'isClosed', !checked);
+              };
 
               return (
                 <div
                   key={day.key}
-                  className={`flex flex-col gap-3 p-4 border rounded-lg bg-card/50 transition-all ${borderClass} ${day.isClosed ? styles.dayRowClosed : ''}`}
+                  onClick={handleDayRowClick}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleDayRowClick(e);
+                    }
+                  }}
+                  className={`flex flex-col gap-4 p-4 border rounded-lg bg-card/50 transition-all cursor-pointer select-none ${borderClass} ${day.isClosed ? styles.dayRowClosed : ''}`}
+                  style={{ userSelect: 'none' }}
                 >
-                  <div className={styles.dayHeader}>
-                    <div className={styles.dayLabel}>{t(day.labelKey)}</div>
-                    <div className={styles.closedToggle}>
-                      <Switch
-                        label=""
-                        checked={!day.isClosed}
-                        onChange={(checked) => handleDayHoursChange(day.key, 'isClosed', !checked)}
-                        marginBottom="0"
-                      />
-                      <span className="text-xs text-muted-foreground ml-1">
-                        {t('operations.open', 'Open')}
+                  <div className="flex items-center justify-between pointer-events-none">
+                    <div className="font-semibold text-sm" style={{ color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                      {t(day.labelKey)}
+                    </div>
+                    <div className="flex items-center gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Switch
+                          label=""
+                          checked={!day.isClosed}
+                          onChange={handleSwitchChange}
+                          marginBottom="0"
+                        />
+                      </div>
+                      <span className="text-xs font-medium" style={{ 
+                        color: day.isClosed ? 'var(--text-light-color)' : 'var(--primary-color)'
+                      }}>
+                        {day.isClosed ? t('operations.closed', 'Closed') : t('operations.open', 'Open')}
                       </span>
                     </div>
                   </div>
                   {day.isClosed ? (
-                    <div className={styles.closedBadge}>
-                      {t('operations.closed')}
+                    <div className="boxed-inputfield-wrapper pointer-events-none">
+                      <div className="boxed-inputfield-container">
+                        <div className="p-3 text-sm font-medium text-center" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
+                          {t('operations.closed', 'Closed')}
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                    <div className={styles.timeInputsRow}>
-                      <div className={styles.timeInputWrapper}>
+                    <div className="flex items-end gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex-1 min-w-0">
                         <InputField
-                          label={t('operations.openingTime')}
+                          label={t('operations.openingTime', 'Opening Time')}
                           type="time"
                           value={day.openingTime}
                           onChange={(e) => handleDayHoursChange(day.key, 'openingTime', e.target.value)}
                           error={getNestedValue(errors, `operationalSettings.standardOpeningHours.${day.key}`)}
+                          marginBottom="0"
                         />
                       </div>
-                      <span className={styles.timeSeparator}>-</span>
-                      <div className={styles.timeInputWrapper}>
+                      <span className="text-sm font-medium mb-2" style={{ color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>-</span>
+                      <div className="flex-1 min-w-0">
                         <InputField
-                          label={t('operations.closingTime')}
+                          label={t('operations.closingTime', 'Closing Time')}
                           type="time"
                           value={day.closingTime}
                           onChange={(e) => handleDayHoursChange(day.key, 'closingTime', e.target.value)}
                           error={getNestedValue(errors, `operationalSettings.standardOpeningHours.${day.key}`)}
+                          marginBottom="0"
                         />
                       </div>
                     </div>
@@ -183,6 +209,7 @@ const OpeningHours = ({
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
       </div>

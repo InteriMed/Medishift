@@ -1,18 +1,23 @@
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
-import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
+import tutorialCache from './tutorialCache';
 
 export const saveTutorialStep = async (profileCollection, userId, stepIndex) => {
     if (!userId || !profileCollection) return;
 
     try {
         const profileDocRef = doc(db, profileCollection, userId);
-        await updateDoc(profileDocRef, {
+        const profileDoc = await getDoc(profileDocRef);
+        const updates = {
             currentStepIndex: stepIndex,
             updatedAt: serverTimestamp()
-        });
+        };
+        if (profileDoc.exists()) {
+            await updateDoc(profileDocRef, updates);
+        } else {
+            await setDoc(profileDocRef, updates, { merge: true });
+        }
     } catch (error) {
-        // Error saving tutorial step
     }
 };
 
@@ -21,39 +26,28 @@ export const saveAccessLevelChoice = async (profileCollection, userId, accessLev
 
     try {
         const profileDocRef = doc(db, profileCollection, userId);
-        await updateDoc(profileDocRef, {
+        const profileDoc = await getDoc(profileDocRef);
+        const updates = {
             accessLevelChoice: accessLevel,
             updatedAt: serverTimestamp()
-        });
+        };
+        if (profileDoc.exists()) {
+            await updateDoc(profileDocRef, updates);
+        } else {
+            await setDoc(profileDocRef, updates, { merge: true });
+        }
     } catch (error) {
-        // Error saving access level choice
     }
 };
 
-const STORAGE_KEY = LOCALSTORAGE_KEYS.TUTORIAL_STATE;
-
 export const saveLocalState = (state) => {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (error) {
-        // Error saving local state
-    }
+    return tutorialCache.save.state(state);
 };
 
 export const loadLocalState = () => {
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? JSON.parse(stored) : null;
-    } catch (error) {
-        // Error loading local state
-        return null;
-    }
+    return tutorialCache.get.state();
 };
 
 export const clearLocalState = () => {
-    try {
-        localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-        // Error clearing local state
-    }
+    return tutorialCache.clean();
 };

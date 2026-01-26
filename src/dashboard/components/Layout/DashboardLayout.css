@@ -1,6 +1,6 @@
 .dashboard-layout-wrapper {
   min-height: 100vh;
-  background: var(--dashboard-bg, #f1f4f7);
+  background: var(--dashboard-bg, #ffffff);
   position: relative;
   overflow: visible;
 }

@@ -2,15 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { cn } from '../../../utils/cn';
 
-const PageHeader = ({ 
+const PageHeader = React.forwardRef(({ 
   title, 
   subtitle, 
   actions,
   className,
   variant = 'default'
-}) => {
+}, ref) => {
   return (
     <div 
+      ref={ref}
       className={cn(
         "shrink-0 px-6 sm:px-8 py-8 border-b border-border/60 transition-all duration-300",
         variant === 'default' && "bg-gradient-to-r from-card/50 via-card/30 to-transparent",
@@ -39,7 +40,9 @@ const PageHeader = ({
       </div>
     </div>
   );
-};
+});
+
+PageHeader.displayName = 'PageHeader';
 
 PageHeader.propTypes = {
   title: PropTypes.string.isRequired,

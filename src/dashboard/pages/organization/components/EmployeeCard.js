@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next';
 import {
   FiUser, FiPhone, FiMail, FiMessageCircle, FiClock, FiCalendar,
   FiAlertTriangle, FiCheckCircle, FiShield, FiTrendingUp, FiMapPin,
-  FiFileText, FiX, FiActivity, FiDownload, FiStar, FiExternalLink, FiUserX
+  FiFileText, FiX, FiActivity, FiDownload, FiStar, FiExternalLink, FiUserX, FiMessageSquare
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import PublicEmployeeProfile from './PublicEmployeeProfile';
 import Button from '../../../../components/BoxedInputFields/Button';
+import { useNavigate } from 'react-router-dom';
+import { useDashboard } from '../../../contexts/DashboardContext';
 
 const StatusBadge = ({ status }) => {
   // Mock status logic - in real app, derive from schedule/presence
@@ -57,9 +59,11 @@ const SectionHeader = ({ title, icon: Icon }) => (
 
 
 
-const EmployeeCard = ({ employee, hrMetrics, onClose, viewerIsAdmin, onFireEmployee }) => {
+const EmployeeCard = ({ employee, hrMetrics, onClose, viewerIsAdmin, onFireEmployee, employeeId }) => {
   const { t } = useTranslation(['organization', 'common']);
   const [showPublicProfile, setShowPublicProfile] = useState(false);
+  const navigate = useNavigate();
+  const { selectedWorkspace } = useDashboard();
 
   // -- Calculated States --
   const fullName = `${employee.firstName} ${employee.lastName}`.trim();
@@ -74,10 +78,24 @@ const EmployeeCard = ({ employee, hrMetrics, onClose, viewerIsAdmin, onFireEmplo
     alert(`Generating Performance Report for ${fullName}...`);
   };
 
+  const handleMessage = () => {
+    if (employeeId) {
+      navigate(`/dashboard/${selectedWorkspace?.id || 'personal'}/messages?userId=${employeeId}`);
+      onClose();
+    }
+  };
+
+  const handleCalendar = () => {
+    if (employeeId) {
+      navigate(`/dashboard/${selectedWorkspace?.id || 'personal'}/calendar?userId=${employeeId}`);
+      onClose();
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="bg-card rounded-2xl border border-border shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200"
+        className="bg-card rounded-xl border border-border hover:shadow-md transition-shadow max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 1. Header Section (Identity) */}
@@ -101,9 +119,9 @@ const EmployeeCard = ({ employee, hrMetrics, onClose, viewerIsAdmin, onFireEmplo
 
           <div className="relative">
             {employee.photoURL ? (
-              <img src={employee.photoURL} alt={fullName} className="w-24 h-24 rounded-2xl object-cover shadow-lg border-4 border-card" />
+              <img src={employee.photoURL} alt={fullName} className="w-24 h-24 rounded-xl object-cover hover:shadow-md transition-shadow border-4 border-card" />
             ) : (
-              <div className="w-24 h-24 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-3xl font-bold shadow-lg border-4 border-card">
+              <div className="w-24 h-24 rounded-xl bg-primary flex items-center justify-center text-primary-foreground text-3xl font-bold hover:shadow-md transition-shadow border-4 border-card">
                 {employee.firstName?.[0]}{employee.lastName?.[0]}
               </div>
             )}
@@ -115,17 +133,29 @@ const EmployeeCard = ({ employee, hrMetrics, onClose, viewerIsAdmin, onFireEmplo
           <div className="flex-1">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-foreground">{fullName}</h1>
+                <h1 className="text-lg font-semibold text-foreground">{fullName}</h1>
                 <StatusBadge status={currentStatus} />
               </div>
               <p className="text-muted-foreground font-medium">{jobTitle} • {t('organization:employee.homeBranch', 'Plainpalais')}</p> {/* Mock Home Branch */}
 
-              <div className="flex items-center gap-2 mt-3">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium hover:bg-muted transition-colors">
-                  <FiPhone className="w-3.5 h-3.5" /> Call
+              <div className="flex items-center gap-2 mt-3 flex-wrap">
+                <button 
+                  onClick={handleMessage}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium hover:bg-muted transition-colors"
+                >
+                  <FiMessageSquare className="w-3.5 h-3.5" /> {t('common:message', 'Message')}
+                </button>
+                <button 
+                  onClick={handleCalendar}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium hover:bg-muted transition-colors"
+                >
+                  <FiCalendar className="w-3.5 h-3.5" /> {t('common:calendar', 'Calendar')}
                 </button>
                 <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium hover:bg-muted transition-colors">
-                  <FiMail className="w-3.5 h-3.5" /> Email
+                  <FiPhone className="w-3.5 h-3.5" /> {t('common:call', 'Call')}
+                </button>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium hover:bg-muted transition-colors">
+                  <FiMail className="w-3.5 h-3.5" /> {t('common:email', 'Email')}
                 </button>
                 <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium hover:bg-muted transition-colors text-green-600">
                   <FiMessageCircle className="w-3.5 h-3.5" /> WhatsApp
@@ -342,7 +372,8 @@ EmployeeCard.propTypes = {
   onSave: PropTypes.func,
   viewerIsAdmin: PropTypes.bool,
   hrMetrics: PropTypes.object,
-  onFireEmployee: PropTypes.func
+  onFireEmployee: PropTypes.func,
+  employeeId: PropTypes.string
 };
 
 export default EmployeeCard;

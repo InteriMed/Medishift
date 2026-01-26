@@ -177,3 +177,185 @@ exports.cleanupFacilityRoles = onDocumentDeleted({
 exports.syncAdminRoles = exports.syncFacilityRoles;
 exports.cleanupRolesOnFacilityDelete = exports.cleanupFacilityRoles;
 
+exports.syncOrganizationRoles = onDocumentUpdated({
+    document: 'organizations/{organizationId}',
+    database: 'medishift',
+    region: 'europe-west6'
+}, async (event) => {
+    const organizationId = event.params.organizationId;
+    const beforeData = event.data.before.data();
+    const afterData = event.data.after.data();
+
+    const beforeInternalTeam = beforeData.internalTeam || {};
+    const afterInternalTeam = afterData.internalTeam || {};
+    const beforeEmployeesList = beforeInternalTeam.employees || [];
+    const afterEmployeesList = afterInternalTeam.employees || [];
+
+    const beforeUserIds = beforeEmployeesList.map(emp => emp.user_uid || emp.uid);
+    const afterUserIds = afterEmployeesList.map(emp => emp.user_uid || emp.uid);
+
+    const addedUsers = afterUserIds.filter(uid => !beforeUserIds.includes(uid));
+    const removedUsers = beforeUserIds.filter(uid => !afterUserIds.includes(uid));
+    const modifiedUsers = afterUserIds.filter(uid => beforeUserIds.includes(uid));
+
+    try {
+        const batch = admin.firestore().batch();
+        let updatesCount = 0;
+
+        for (const userId of addedUsers) {
+            const userRef = admin.firestore().collection('users').doc(userId);
+            const userDoc = await userRef.get();
+
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                const currentRoles = userData.roles || [];
+                const employeeEntry = afterEmployeesList.find(emp => (emp.user_uid || emp.uid) === userId);
+                
+                const existingIndex = currentRoles.findIndex(r => r.organization_uid === organizationId);
+                let updatedRoles;
+                
+                if (existingIndex >= 0) {
+                    updatedRoles = [...currentRoles];
+                    updatedRoles[existingIndex] = {
+                        organization_uid: organizationId,
+                        roles: employeeEntry?.roles || ['org_employee'],
+                        rights: employeeEntry?.rights || []
+                    };
+                } else {
+                    updatedRoles = [
+                        ...currentRoles,
+                        {
+                            organization_uid: organizationId,
+                            roles: employeeEntry?.roles || ['org_employee'],
+                            rights: employeeEntry?.rights || []
+                        }
+                    ];
+                }
+
+                batch.update(userRef, {
+                    roles: updatedRoles,
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+                updatesCount++;
+            }
+        }
+
+        for (const userId of removedUsers) {
+            const userRef = admin.firestore().collection('users').doc(userId);
+            const userDoc = await userRef.get();
+
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                const currentRoles = userData.roles || [];
+                const updatedRoles = currentRoles.filter(r => r.organization_uid !== organizationId);
+
+                batch.update(userRef, {
+                    roles: updatedRoles,
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+                updatesCount++;
+            }
+        }
+
+        for (const userId of modifiedUsers) {
+            const beforeEmployee = beforeEmployeesList.find(emp => (emp.user_uid || emp.uid) === userId);
+            const afterEmployee = afterEmployeesList.find(emp => (emp.user_uid || emp.uid) === userId);
+            
+            const beforeRolesStr = JSON.stringify(beforeEmployee?.roles || []);
+            const afterRolesStr = JSON.stringify(afterEmployee?.roles || []);
+            const beforeRightsStr = JSON.stringify(beforeEmployee?.rights || []);
+            const afterRightsStr = JSON.stringify(afterEmployee?.rights || []);
+            
+            if (beforeRolesStr !== afterRolesStr || beforeRightsStr !== afterRightsStr) {
+                const userRef = admin.firestore().collection('users').doc(userId);
+                const userDoc = await userRef.get();
+
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    const currentRoles = userData.roles || [];
+                    const existingIndex = currentRoles.findIndex(r => r.organization_uid === organizationId);
+                    
+                    let updatedRoles;
+                    if (existingIndex >= 0) {
+                        updatedRoles = [...currentRoles];
+                        updatedRoles[existingIndex] = {
+                            organization_uid: organizationId,
+                            roles: afterEmployee?.roles || ['org_employee'],
+                            rights: afterEmployee?.rights || []
+                        };
+                    } else {
+                        updatedRoles = [
+                            ...currentRoles,
+                            {
+                                organization_uid: organizationId,
+                                roles: afterEmployee?.roles || ['org_employee'],
+                                rights: afterEmployee?.rights || []
+                            }
+                        ];
+                    }
+
+                    batch.update(userRef, {
+                        roles: updatedRoles,
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                    });
+                    updatesCount++;
+                }
+            }
+        }
+
+        if (updatesCount > 0) {
+            await batch.commit();
+        }
+
+        return { success: true, updatesCount };
+    } catch (error) {
+        console.error('Error syncing organization roles:', error);
+        throw error;
+    }
+});
+
+exports.cleanupOrganizationRoles = onDocumentDeleted({
+    document: 'organizations/{organizationId}',
+    database: 'medishift',
+    region: 'europe-west6'
+}, async (event) => {
+    const organizationId = event.params.organizationId;
+    const organizationData = event.data.data();
+    const internalTeam = organizationData?.internalTeam || {};
+    const employeesList = internalTeam?.employees || [];
+
+    try {
+        const batch = admin.firestore().batch();
+        let updatesCount = 0;
+
+        for (const employee of employeesList) {
+            const userId = employee.user_uid || employee.uid;
+            if (!userId) continue;
+
+            const userRef = admin.firestore().collection('users').doc(userId);
+            const userDoc = await userRef.get();
+
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                const currentRoles = userData.roles || [];
+                const updatedRoles = currentRoles.filter(r => r.organization_uid !== organizationId);
+
+                batch.update(userRef, {
+                    roles: updatedRoles,
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+                updatesCount++;
+            }
+        }
+
+        if (updatesCount > 0) {
+            await batch.commit();
+        }
+
+        return { success: true, updatesCount };
+    } catch (error) {
+        console.error('Error cleaning up organization roles:', error);
+        throw error;
+    }
+});
+

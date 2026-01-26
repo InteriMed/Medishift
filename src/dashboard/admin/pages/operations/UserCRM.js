@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
-import { Search, User, Building2, Eye, X, Filter, Check, Edit2, Save, Calendar, Users, FileText, Plus, ArrowLeft, ShieldCheck, Stethoscope, Trash2, LogOut } from 'lucide-react';
+import { Search, User, Building2, Eye, X, Filter, Check, Edit2, Save, Calendar, Users, FileText, Plus, ArrowLeft, ShieldCheck, Stethoscope, Trash2, LogOut, UserPlus, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../../../contexts/AuthContext';
-import { hasPermission, PERMISSIONS } from '../../utils/rbac';
+import { useAdminPermission } from '../../hooks/useAdminPermission';
+import { PERMISSIONS } from '../../utils/rbac';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../../components/BoxedInputFields/Button';
@@ -71,6 +72,25 @@ const UserCRM = () => {
   const [facilityEmployees, setFacilityEmployees] = useState([]);
   const [facilityAdmins, setFacilityAdmins] = useState([]);
 
+  // Add User to Facility State
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userSearchResults, setUserSearchResults] = useState([]);
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+  const [showAddUserDialog, setShowAddUserDialog] = useState(false);
+  const [selectedUserToAdd, setSelectedUserToAdd] = useState(null);
+  const [isAddingUser, setIsAddingUser] = useState(false);
+
+  // Facility Stats State
+  const [facilityStats, setFacilityStats] = useState({
+    totalEmployees: 0,
+    totalAdmins: 0,
+    totalShifts: 0,
+    activeShifts: 0,
+    completedShifts: 0,
+    cancelledShifts: 0
+  });
+  const [loadingStats, setLoadingStats] = useState(false);
+
   // Facility Management Dialogs
   const [showDeleteFacilityDialog, setShowDeleteFacilityDialog] = useState(false);
   const [showLeaveFacilityDialog, setShowLeaveFacilityDialog] = useState(false);
@@ -78,10 +98,15 @@ const UserCRM = () => {
   const [facilityActionProcessing, setFacilityActionProcessing] = useState(false);
   const [targetFacilityForAction, setTargetFacilityForAction] = useState(null);
 
-  const canImpersonate = hasPermission(userProfile?.roles || [], PERMISSIONS.IMPERSONATE_USERS);
-  const isSuperAdmin = userProfile?.roles?.includes('super_admin');
+  const { hasRight, isSuperAdmin, canImpersonate, canViewUsers, adminRights } = useAdminPermission();
 
   const loadUsers = async (accountTypeOverride = null) => {
+    if (!canViewUsers) {
+      setError('You do not have permission to view users. Please contact an administrator.');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const accountType = accountTypeOverride || activeFilters.accountType;
@@ -124,8 +149,11 @@ const UserCRM = () => {
       }
     } catch (error) {
       console.error('Error loading users:', error);
-      if (error.code === 'permission-denied' || error.message?.includes('permissions')) {
-        setError('You do not have permission to view users. Please contact an administrator.');
+      console.error('Admin rights:', adminRights);
+      console.error('Can view users:', canViewUsers);
+      
+      if (error.code === 'permission-denied' || error.message?.includes('permissions') || error.message?.includes('Permission')) {
+        setError(`You do not have permission to view users. Please contact an administrator. (Error: ${error.code || error.message})`);
       } else {
         setError('Failed to load users: ' + (error.message || 'Unknown error'));
       }
@@ -177,11 +205,42 @@ const UserCRM = () => {
         if (activeFilters.accountType === 'facility') {
           const employees = userData.employees || [];
           const admins = userData.admins || [];
-          setFacilityEmployees(employees);
+          
+          const employeesWithUserData = await Promise.all(
+            employees.map(async (emp) => {
+              try {
+                const empUserDoc = await getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, emp.uid));
+                if (empUserDoc.exists()) {
+                  const empUserData = empUserDoc.data();
+                  return {
+                    ...emp,
+                    email: empUserData.email,
+                    firstName: empUserData.firstName,
+                    lastName: empUserData.lastName,
+                    displayName: `${empUserData.firstName || ''} ${empUserData.lastName || ''}`.trim() || empUserData.email || emp.uid
+                  };
+                }
+              } catch (error) {
+                console.error(`Error loading user data for ${emp.uid}:`, error);
+              }
+              return { ...emp, displayName: emp.uid, email: '' };
+            })
+          );
+          
+          setFacilityEmployees(employeesWithUserData);
           setFacilityAdmins(admins);
+          loadFacilityStats(userId, shifts);
         } else {
           setFacilityEmployees([]);
           setFacilityAdmins([]);
+          setFacilityStats({
+            totalEmployees: 0,
+            totalAdmins: 0,
+            totalShifts: 0,
+            activeShifts: 0,
+            completedShifts: 0,
+            cancelledShifts: 0
+          });
         }
 
         const fullUserData = {
@@ -521,8 +580,10 @@ const UserCRM = () => {
 
         admins: [userId],
         employees: [{
+          user_uid: userId,
           uid: userId,
-          rights: 'admin'
+          roles: ['admin'],
+          rights: []
         }],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -536,8 +597,18 @@ const UserCRM = () => {
       };
       await setDoc(doc(db, 'facilityProfiles', newFacilityId), facilityData);
       
-      // Use centralized facility attachment
-      await updateDoc(doc(db, 'users', userId), {
+      const userRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userRef);
+      const userData = userDoc.exists() ? userDoc.data() : {};
+      const existingRoles = userData.roles || [];
+      const updatedRoles = existingRoles.filter(r => r.facility_uid !== newFacilityId);
+      updatedRoles.push({
+        facility_uid: newFacilityId,
+        roles: ['admin']
+      });
+      
+      await updateDoc(userRef, {
+        roles: updatedRoles,
         facilityMemberships: arrayUnion({ 
           facilityId: newFacilityId, 
           facilityProfileId: newFacilityId,
@@ -633,6 +704,170 @@ const UserCRM = () => {
     }
   };
 
+  const loadFacilityStats = async (facilityId, shifts = []) => {
+    setLoadingStats(true);
+    try {
+      const facilityRef = doc(db, 'facilityProfiles', facilityId);
+      const facilitySnap = await getDoc(facilityRef);
+      
+      if (facilitySnap.exists()) {
+        const facilityData = facilitySnap.data();
+        const employees = facilityData.employees || [];
+        const admins = facilityData.admins || [];
+        
+        const now = new Date();
+        const activeShifts = shifts.filter(s => {
+          const start = s.startTime?.toDate ? s.startTime.toDate() : new Date(s.startTime);
+          const end = s.endTime?.toDate ? s.endTime.toDate() : new Date(s.endTime);
+          return start <= now && end >= now && s.status !== 'cancelled';
+        });
+        const completedShifts = shifts.filter(s => s.status === 'completed');
+        const cancelledShifts = shifts.filter(s => s.status === 'cancelled');
+        
+        setFacilityStats({
+          totalEmployees: employees.length,
+          totalAdmins: admins.length,
+          totalShifts: shifts.length,
+          activeShifts: activeShifts.length,
+          completedShifts: completedShifts.length,
+          cancelledShifts: cancelledShifts.length
+        });
+      }
+    } catch (error) {
+      console.error('Error loading facility stats:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const handleSearchUsers = async () => {
+    if (!userSearchQuery.trim()) {
+      setUserSearchResults([]);
+      return;
+    }
+    
+    setIsSearchingUsers(true);
+    try {
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
+      const searchLower = userSearchQuery.toLowerCase();
+      const allUsersSnapshot = await getDocs(usersRef);
+      
+      const results = [];
+      allUsersSnapshot.forEach((docSnap) => {
+        const userData = docSnap.data();
+        const email = userData.email || '';
+        const firstName = userData.firstName || '';
+        const lastName = userData.lastName || '';
+        
+        if (
+          email.toLowerCase().includes(searchLower) ||
+          firstName.toLowerCase().includes(searchLower) ||
+          lastName.toLowerCase().includes(searchLower) ||
+          `${firstName} ${lastName}`.toLowerCase().includes(searchLower)
+        ) {
+          results.push({
+            id: docSnap.id,
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+            displayName: `${firstName} ${lastName}`.trim() || email
+          });
+        }
+      });
+      
+      setUserSearchResults(results.slice(0, 10));
+    } catch (error) {
+      console.error('Error searching users:', error);
+      alert('Failed to search users: ' + error.message);
+    } finally {
+      setIsSearchingUsers(false);
+    }
+  };
+
+  const handleAddUserToFacility = async () => {
+    if (!selectedUserToAdd || !selectedUser) {
+      alert('Please select a user to add');
+      return;
+    }
+    
+    setIsAddingUser(true);
+    try {
+      const facilityId = selectedUser.id;
+      const userId = selectedUserToAdd.id;
+      
+      const facilityRef = doc(db, 'facilityProfiles', facilityId);
+      const facilitySnap = await getDoc(facilityRef);
+      
+      if (!facilitySnap.exists()) {
+        alert('Facility not found');
+        return;
+      }
+      
+      const facilityData = facilitySnap.data();
+      const existingEmployees = facilityData.employees || [];
+      const existingAdmins = facilityData.admins || [];
+      
+      if (existingEmployees.some(e => e.uid === userId) || existingAdmins.includes(userId)) {
+        alert('User is already a member of this facility');
+        setIsAddingUser(false);
+        return;
+      }
+      
+      const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
+      const userSnap = await getDoc(userRef);
+      
+      if (!userSnap.exists()) {
+        alert('User not found');
+        return;
+      }
+      
+      const userData = userSnap.data();
+      const facilityName = facilityData.facilityDetails?.name || facilityData.legalCompanyName || facilityData.facilityName || 'Facility';
+      
+      const newEmployee = {
+        uid: userId,
+        rights: 'employee'
+      };
+      
+      await updateDoc(facilityRef, {
+        employees: arrayUnion(newEmployee),
+        updatedAt: serverTimestamp()
+      });
+      
+      const existingMemberships = userData.facilityMemberships || [];
+      const newMembership = {
+        facilityId: facilityId,
+        facilityProfileId: facilityId,
+        facilityName: facilityName,
+        role: 'employee',
+        joinedAt: new Date().toISOString()
+      };
+      
+      await updateDoc(userRef, {
+        facilityMemberships: arrayUnion(newMembership),
+        updatedAt: serverTimestamp()
+      });
+      
+      await logAdminAction({
+        eventType: ADMIN_AUDIT_EVENTS.USER_PROFILE_UPDATED,
+        targetUserId: userId,
+        details: { action: 'add_user_to_facility', facilityId, facilityName, addedBy: userProfile?.uid }
+      });
+      
+      await loadUserDetails(facilityId, 'facility');
+      setShowAddUserDialog(false);
+      setUserSearchQuery('');
+      setUserSearchResults([]);
+      setSelectedUserToAdd(null);
+      alert('User added to facility successfully');
+    } catch (error) {
+      console.error('Error adding user to facility:', error);
+      alert('Failed to add user: ' + error.message);
+    } finally {
+      setIsAddingUser(false);
+    }
+  };
+
   const handleLeaveFacility = async () => {
     if (facilityActionConfirmText !== 'LEAVE FACILITY' && facilityActionConfirmText !== 'REMOVE EMPLOYEE') return;
     if (!targetFacilityForAction) return;
@@ -723,6 +958,23 @@ const UserCRM = () => {
     setFilters(defaultFilters); setActiveFilters(defaultFilters); setHasSearched(false);
   };
 
+  if (!canViewUsers) {
+    return (
+      <div style={{ padding: 'var(--spacing-lg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: 'var(--spacing-md)' }}>
+        <ShieldCheck size={64} style={{ color: 'var(--red-4)', opacity: 0.7 }} />
+        <h2 style={{ fontSize: 'var(--font-size-xxlarge)', color: 'var(--text-color)', margin: 0 }}>
+          Access Denied
+        </h2>
+        <p style={{ fontSize: 'var(--font-size-medium)', color: 'var(--grey-4)', textAlign: 'center', maxWidth: '500px' }}>
+          You do not have permission to view users. Please contact an administrator.
+        </p>
+        <p style={{ fontSize: 'var(--font-size-small)', color: 'var(--grey-3)', textAlign: 'center', maxWidth: '500px', marginTop: 'var(--spacing-sm)' }}>
+          Your rights: {adminRights.length > 0 ? adminRights.join(', ') : 'None'}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: 'var(--spacing-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
       {/* Title & Filter Section */}
@@ -812,6 +1064,7 @@ const UserCRM = () => {
                   {(activeFilters.accountType === 'facility' ? [
                     { id: 'overview', label: 'Facility Info', icon: Building2 },
                     { id: 'employees', label: 'Employees', icon: Users },
+                    { id: 'stats', label: 'Stats', icon: BarChart3 },
                     { id: 'shifts', label: 'Shifts', icon: Calendar },
                     { id: 'admin_rights', label: 'Admin Rights', icon: ShieldCheck },
                     { id: 'notes', label: 'Internal Notes', icon: FileText }
@@ -1104,15 +1357,25 @@ const UserCRM = () => {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #e5e7eb' }}>
                       <h3 style={{ margin: 0, fontSize: '1.2em' }}>Facility Employees</h3>
-                      <span style={{ fontSize: '0.9em', color: 'gray', background: '#f3f4f6', padding: '4px 12px', borderRadius: '12px' }}>{facilityEmployees.length} Total</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '0.9em', color: 'gray', background: '#f3f4f6', padding: '4px 12px', borderRadius: '12px' }}>{facilityEmployees.length} Total</span>
+                        <Button
+                          onClick={() => setShowAddUserDialog(true)}
+                          variant="primary"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <UserPlus size={16} /> Add User to Facility
+                        </Button>
+                      </div>
                     </div>
                     {facilityEmployees.length > 0 ? (
                       <div style={{ display: 'grid', gap: '10px' }}>
                         {facilityEmployees.map((emp, i) => (
                           <div key={i} style={{ padding: '16px', border: '1px solid #eee', borderRadius: '8px', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
-                              <strong>{emp.uid}</strong>
-                              <div style={{ fontSize: '0.9em', color: 'gray' }}>Rights: {emp.rights || 'employee'}</div>
+                              <strong>{emp.displayName || emp.uid}</strong>
+                              {emp.email && <div style={{ fontSize: '0.85em', color: 'gray' }}>{emp.email}</div>}
+                              <div style={{ fontSize: '0.9em', color: 'gray', marginTop: '4px' }}>Rights: {emp.rights || 'employee'} {facilityAdmins.includes(emp.uid) && '• Admin'}</div>
                             </div>
                             <div style={{ display: 'flex', gap: '8px' }}>
                               <Button
@@ -1128,6 +1391,45 @@ const UserCRM = () => {
                       </div>
                     ) : (
                       <p style={{ color: 'gray', fontStyle: 'italic' }}>No employees in this facility.</p>
+                    )}
+                  </div>
+                )}
+
+                {/* STATS TAB (Facility only) */}
+                {activeTab === 'stats' && activeFilters.accountType === 'facility' && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #e5e7eb' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.2em' }}>Facility Statistics</h3>
+                    </div>
+                    {loadingStats ? (
+                      <div style={{ textAlign: 'center', padding: '40px', color: 'gray' }}>Loading statistics...</div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                        <div style={{ padding: '20px', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #bae6fd' }}>
+                          <div style={{ fontSize: '0.85em', color: '#0369a1', marginBottom: '8px' }}>Total Employees</div>
+                          <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: '#0c4a6e' }}>{facilityStats.totalEmployees}</div>
+                        </div>
+                        <div style={{ padding: '20px', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+                          <div style={{ fontSize: '0.85em', color: '#166534', marginBottom: '8px' }}>Administrators</div>
+                          <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: '#14532d' }}>{facilityStats.totalAdmins}</div>
+                        </div>
+                        <div style={{ padding: '20px', background: '#fef3c7', borderRadius: '12px', border: '1px solid #fde68a' }}>
+                          <div style={{ fontSize: '0.85em', color: '#92400e', marginBottom: '8px' }}>Total Shifts</div>
+                          <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: '#78350f' }}>{facilityStats.totalShifts}</div>
+                        </div>
+                        <div style={{ padding: '20px', background: '#dbeafe', borderRadius: '12px', border: '1px solid #93c5fd' }}>
+                          <div style={{ fontSize: '0.85em', color: '#1e40af', marginBottom: '8px' }}>Active Shifts</div>
+                          <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: '#1e3a8a' }}>{facilityStats.activeShifts}</div>
+                        </div>
+                        <div style={{ padding: '20px', background: '#dcfce7', borderRadius: '12px', border: '1px solid #86efac' }}>
+                          <div style={{ fontSize: '0.85em', color: '#166534', marginBottom: '8px' }}>Completed Shifts</div>
+                          <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: '#14532d' }}>{facilityStats.completedShifts}</div>
+                        </div>
+                        <div style={{ padding: '20px', background: '#fee2e2', borderRadius: '12px', border: '1px solid #fca5a5' }}>
+                          <div style={{ fontSize: '0.85em', color: '#991b1b', marginBottom: '8px' }}>Cancelled Shifts</div>
+                          <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: '#7f1d1d' }}>{facilityStats.cancelledShifts}</div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
@@ -1334,6 +1636,78 @@ const UserCRM = () => {
                 placeholder="LEAVE FACILITY"
               />
             </>
+          )}
+        </div>
+      </Dialog>
+
+      {/* Add User to Facility Dialog */}
+      <Dialog
+        isOpen={showAddUserDialog}
+        onClose={() => { setShowAddUserDialog(false); setUserSearchQuery(''); setUserSearchResults([]); setSelectedUserToAdd(null); }}
+        title="Add User to Facility"
+        size="medium"
+        actions={
+          <>
+            <Button onClick={() => { setShowAddUserDialog(false); setUserSearchQuery(''); setUserSearchResults([]); setSelectedUserToAdd(null); }} variant="secondary" disabled={isAddingUser}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddUserToFacility}
+              variant="primary"
+              disabled={isAddingUser || !selectedUserToAdd}
+            >
+              {isAddingUser ? 'Adding...' : 'Add User'}
+            </Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9em', fontWeight: '500' }}>Search by Email or Name</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <PersonnalizedInputField
+                value={userSearchQuery}
+                onChange={e => setUserSearchQuery(e.target.value)}
+                placeholder="Enter email or name..."
+                onKeyPress={e => e.key === 'Enter' && handleSearchUsers()}
+                style={{ flex: 1 }}
+              />
+              <Button onClick={handleSearchUsers} variant="secondary" disabled={isSearchingUsers || !userSearchQuery.trim()}>
+                <Search size={16} style={{ marginRight: '4px' }} /> {isSearchingUsers ? 'Searching...' : 'Search'}
+              </Button>
+            </div>
+          </div>
+          
+          {userSearchResults.length > 0 && (
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9em', fontWeight: '500' }}>Select User</label>
+              <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+                {userSearchResults.map((user) => (
+                  <div
+                    key={user.id}
+                    onClick={() => setSelectedUserToAdd(user)}
+                    style={{
+                      padding: '12px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #f3f4f6',
+                      backgroundColor: selectedUserToAdd?.id === user.id ? '#eff6ff' : 'white',
+                      borderLeft: selectedUserToAdd?.id === user.id ? '4px solid var(--primary-color)' : 'none'
+                    }}
+                  >
+                    <div style={{ fontWeight: '500' }}>{user.displayName}</div>
+                    <div style={{ fontSize: '0.85em', color: 'gray' }}>{user.email}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {selectedUserToAdd && (
+            <div style={{ padding: '12px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
+              <div style={{ fontSize: '0.85em', color: '#166534', marginBottom: '4px' }}>Selected User:</div>
+              <div style={{ fontWeight: '500' }}>{selectedUserToAdd.displayName}</div>
+              <div style={{ fontSize: '0.85em', color: '#15803d' }}>{selectedUserToAdd.email}</div>
+            </div>
           )}
         </div>
       </Dialog>

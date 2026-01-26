@@ -5,6 +5,8 @@ import { useDashboard } from '../../../contexts/DashboardContext';
 import { cn } from '../../../../utils/cn';
 import WeekDaySelector from '../../../../components/BoxedInputFields/WeekDaySelector';
 import CustomDateInput from './CustomDateInput';
+import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
+import TextareaField from '../../../../components/BoxedInputFields/TextareaField';
 
 // Helper component for label with icon
 const Label = ({ icon: Icon, children }) => (
@@ -314,7 +316,7 @@ const EventPanel = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[20001] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto p-4" onClick={onClose} style={{ zIndex: 20001 }}>
+    <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto p-4" onClick={onClose} style={{ zIndex: 100000 }}>
       <div
         className="bg-card w-full rounded-2xl shadow-2xl flex flex-col border border-border animate-in zoom-in-95 duration-200 my-auto relative"
         style={{ maxWidth: formData.isRecurring ? '1400px' : '700px' }}
@@ -372,18 +374,14 @@ const EventPanel = ({
             <>
               {/* Left Column - Main Fields */}
               <div className="p-6 space-y-5 bg-background">
-                {/* Title */}
-                <div className="space-y-1.5">
-                  <Label icon={FiFileText}>{t('title', 'Title')}</Label>
-                  <input
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    placeholder="Add title"
-                    className={cn(inputClasses, "text-base font-medium")}
-                    autoFocus={!event?.id}
-                  />
-                </div>
+                <PersonnalizedInputField
+                  label={t('title', 'Title')}
+                  name="title"
+                  type="text"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="Add title"
+                />
 
                 {/* Date & Time Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -403,29 +401,22 @@ const EventPanel = ({
                   </div>
                 </div>
 
-                {/* Location */}
-                <div className="space-y-1.5">
-                  <Label icon={FiMapPin}>{t('location', 'Location')}</Label>
-                  <input
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    placeholder="Add location"
-                    className={inputClasses}
-                  />
-                </div>
+                <PersonnalizedInputField
+                  label={t('location', 'Location')}
+                  name="location"
+                  type="text"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="Add location"
+                />
 
-                {/* Notes */}
-                <div className="space-y-1.5">
-                  <Label icon={FiAlignLeft}>{t('notes', 'Description')}</Label>
-                  <textarea
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleChange}
-                    placeholder="Add description..."
-                    className={textareaClasses}
-                  />
-                </div>
+                <TextareaField
+                  label={t('notes', 'Description')}
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  placeholder="Add description..."
+                />
 
                 {/* Recurring Toggle */}
                 <div className="space-y-1.5">
@@ -524,18 +515,15 @@ const EventPanel = ({
                     </div>
 
                     {formData.monthlyType === 'day' && (
-                      <div className="space-y-1.5">
-                        <Label>Day number</Label>
-                        <input
-                          type="number"
-                          name="monthlyDay"
-                          value={formData.monthlyDay}
-                          onChange={handleChange}
-                          min="1"
-                          max="31"
-                          className={inputClasses}
-                        />
-                      </div>
+                      <PersonnalizedInputField
+                        label="Day number"
+                        name="monthlyDay"
+                        type="number"
+                        value={formData.monthlyDay}
+                        onChange={handleChange}
+                        min="1"
+                        max="31"
+                      />
                     )}
 
                     {formData.monthlyType === 'weekday' && (
@@ -592,18 +580,15 @@ const EventPanel = ({
                 {(formData.endRepeatValue === 'After' || formData.endRepeatValue === 'On Date') && (
                   <div className="grid grid-cols-2 gap-4">
                     {formData.endRepeatValue === 'After' && (
-                      <div className="space-y-1.5">
-                        <Label>Number of occurrences</Label>
-                        <input
-                          type="number"
-                          name="endRepeatCount"
-                          value={formData.endRepeatCount}
-                          onChange={handleChange}
-                          min="1"
-                          max="365"
-                          className={inputClasses}
-                        />
-                      </div>
+                      <PersonnalizedInputField
+                        label="Number of occurrences"
+                        name="endRepeatCount"
+                        type="number"
+                        value={formData.endRepeatCount}
+                        onChange={handleChange}
+                        min="1"
+                        max="365"
+                      />
                     )}
 
                     {formData.endRepeatValue === 'On Date' && (
@@ -640,18 +625,14 @@ const EventPanel = ({
             </>
           ) : (
             <div className="space-y-5">
-              {/* Title */}
-              <div className="space-y-1.5">
-                <Label icon={FiFileText}>{t('title', 'Title')}</Label>
-                <input
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Add title"
-                  className={cn(inputClasses, "text-base font-medium")}
-                  autoFocus={!event?.id}
-                />
-              </div>
+              <PersonnalizedInputField
+                label={t('title', 'Title')}
+                name="title"
+                type="text"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="Add title"
+              />
 
               {/* Date & Time Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -671,29 +652,22 @@ const EventPanel = ({
                 </div>
               </div>
 
-              {/* Location */}
-              <div className="space-y-1.5">
-                <Label icon={FiMapPin}>{t('location', 'Location')}</Label>
-                <input
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="Add location"
-                  className={inputClasses}
-                />
-              </div>
+              <PersonnalizedInputField
+                label={t('location', 'Location')}
+                name="location"
+                type="text"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Add location"
+              />
 
-              {/* Notes */}
-              <div className="space-y-1.5">
-                <Label icon={FiAlignLeft}>{t('notes', 'Description')}</Label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  placeholder="Add description..."
-                  className={textareaClasses}
-                />
-              </div>
+              <TextareaField
+                label={t('notes', 'Description')}
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                placeholder="Add description..."
+              />
 
               {/* Recurring Toggle */}
               <div className="space-y-1.5">

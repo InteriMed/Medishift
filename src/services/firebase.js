@@ -67,31 +67,18 @@ if (getApps().length === 0) {
   firebaseApp = getApp();
 }
 
-// Then initialize services using the app
+// Initialize Firebase services using a simple singleton pattern
 const auth = getAuth(firebaseApp);
+
 let db;
-
-const INIT_FLAG = WINDOW_FLAGS.FIRESTORE_INITIALIZED;
-const isInitialized = typeof window !== 'undefined' && window[INIT_FLAG];
-
-if (!isInitialized) {
-  try {
-    db = initializeFirestore(firebaseApp, {
-      localCache: memoryLocalCache()
-    }, FIRESTORE_DATABASE_NAME);
-
-    if (typeof window !== 'undefined') {
-      window[INIT_FLAG] = true;
-    }
-  } catch (error) {
-    try {
-      db = getFirestore(firebaseApp, FIRESTORE_DATABASE_NAME);
-    } catch (e) {
-      throw e;
-    }
-  }
-} else {
+try {
+  // Try to get the existing instance first
   db = getFirestore(firebaseApp, FIRESTORE_DATABASE_NAME);
+} catch (error) {
+  // If not initialized, do it now
+  db = initializeFirestore(firebaseApp, {
+    localCache: memoryLocalCache()
+  }, FIRESTORE_DATABASE_NAME);
 }
 
 if (typeof window !== 'undefined' && db) {

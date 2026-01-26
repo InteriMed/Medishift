@@ -22,11 +22,32 @@ export const isTabCompleted = (profileData, tabId, config) => {
 
                 if (isSwiss) {
                     // Swiss citizens MUST upload ID card (stored in same field)
-                    const value = get(profileData, field.name);
-                    const isEmpty = value === null || value === undefined || value === '' || (typeof value === 'string' && value.trim() === '');
-                    return !isEmpty;
+                    // Check both direct field value and storage files
+                    const directValue = get(profileData, field.name);
+                    const verificationDocs = get(profileData, 'verification.verificationDocuments') || [];
+                    const hasStorageFile = verificationDocs.some(doc => {
+                        const docType = doc.type || doc.category;
+                        return docType === 'idCard' || docType === 'workPermit';
+                    });
+                    const hasDirectValue = directValue !== null && directValue !== undefined && directValue !== '' && (typeof directValue !== 'string' || directValue.trim() !== '');
+                    return hasDirectValue || hasStorageFile;
                 }
                 // For non-Swiss, continue with normal dependsOn check below
+            }
+
+            // For other document upload fields, check both direct value and storage files
+            if (tabId === 'documentUploads' && field.docType) {
+                const directValue = get(profileData, field.name);
+                const verificationDocs = get(profileData, 'verification.verificationDocuments') || [];
+                const hasStorageFile = verificationDocs.some(doc => {
+                    const docType = doc.type || doc.category;
+                    return docType === field.docType;
+                });
+                const hasDirectValue = directValue !== null && directValue !== undefined && directValue !== '' && (typeof directValue !== 'string' || directValue.trim() !== '');
+                if (hasDirectValue || hasStorageFile) {
+                    return true;
+                }
+                // If no value found, continue with normal validation below
             }
 
             if (field.dependsOn) {
@@ -84,21 +105,10 @@ export const isTabCompleted = (profileData, tabId, config) => {
 };
 
 export const isTabAccessible = (profileData, tabId, config) => {
-    // Account and Marketplace tabs are ALWAYS accessible (utility tabs)
-    if (tabId === 'account' || tabId === 'marketplace') {
-        return true;
-    }
-
-    if (!config?.tabs) return tabId === config?.tabs?.[0]?.id;
-    const tabIndex = config.tabs.findIndex(t => t.id === tabId);
-    if (tabIndex <= 0) return true;
-
-    for (let i = 0; i < tabIndex; i++) {
-        if (!isTabCompleted(profileData, config.tabs[i].id, config)) {
-            return false;
-        }
-    }
-    return true;
+    // Accessibility is now open for all tabs to allow non-linear completion
+    if (!config?.tabs) return false;
+    // Check if tabId exists in config
+    return config.tabs.some(t => t.id === tabId);
 };
 
 export const calculateProfileCompleteness = (data, config) => {

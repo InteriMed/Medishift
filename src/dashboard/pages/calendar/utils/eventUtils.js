@@ -15,9 +15,13 @@ export const getEventsForCurrentWeek = (events, weekDates) => {
 
 // Filter events based on active categories
 export const filterEventsByCategories = (events, categories, calendarColors) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+
   // Get active category colors
   const activeCategories = categories.reduce((acc, category) => {
-    if (category.checked) {
+    if (category && category.checked) {
       acc.push(category.color);
     }
     return acc;
@@ -27,6 +31,12 @@ export const filterEventsByCategories = (events, categories, calendarColors) => 
   if (activeCategories.length === 0) {
     return events;
   }
+
+  // Find blue and grey colors from calendarColors with safety check
+  const blueColorObj = calendarColors?.find(c => c && c.id === 'blue');
+  const greyColorObj = calendarColors?.find(c => c && c.id === 'grey');
+  const blueColor = blueColorObj?.color;
+  const greyColor = greyColorObj?.color;
 
   // Filter events based on category colors
   return events.filter(event => {
@@ -42,17 +52,22 @@ export const filterEventsByCategories = (events, categories, calendarColors) => 
       return true;
     }
 
-    // Handle validated events
+    // Handle validated events - only show if blue category is active
     if (event.isValidated === true) {
-      return activeCategories.includes(calendarColors.find(c => c.id === 'blue').color);
+      return blueColor ? activeCategories.includes(blueColor) : false;
     }
 
-    // Handle unvalidated events
+    // Handle unvalidated events - only show if grey category is active
     if (event.isValidated === false) {
-      return activeCategories.includes(calendarColors.find(c => c.id === 'grey').color);
+      return greyColor ? activeCategories.includes(greyColor) : false;
     }
 
-    // For events with explicit category colors, use direct matching
-    return activeCategories.includes(event.color);
+    // For events without isValidated flag or with explicit category colors, use direct color matching
+    if (event.color && activeCategories.includes(event.color)) {
+      return true;
+    }
+
+    // Default: don't show if no match
+    return false;
   });
 }; 

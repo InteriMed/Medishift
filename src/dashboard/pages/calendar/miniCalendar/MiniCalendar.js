@@ -10,7 +10,8 @@ const MiniCalendar = ({
   events = [],
   view = 'week',
   visibleWeekStart,
-  visibleWeekEnd
+  visibleWeekEnd,
+  highlightOnlyToday = false
 }) => {
   const { t, i18n } = useTranslation();
   const [calendarDate, setCalendarDate] = useState(new Date(currentDate));
@@ -220,7 +221,7 @@ const MiniCalendar = ({
   });
 
   return (
-    <div className="w-full bg-card backdrop-blur-sm rounded-2xl p-3 select-none border border-border/50 shadow-lg" style={{ overflow: 'visible' }}>
+    <div className="w-full bg-card rounded-xl p-3 select-none border border-border hover:shadow-md transition-shadow" style={{ overflow: 'visible' }}>
       {/* Header with Navigation */}
       <div className="flex items-center justify-between mb-0 px-0.5">
         <div className="flex items-center gap-1 text-foreground" style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
@@ -282,9 +283,10 @@ const MiniCalendar = ({
       <div className="grid grid-cols-7 gap-y-1">
         {calendarDays.map((dayInfo, index) => {
           const { date, isCurrentMonth } = dayInfo;
+          const isToday = isSameDay(date, new Date());
           const isSelected = isSameDay(date, currentDate);
           const inVisibleWeek = view === 'week' && isInSameWeek(date);
-          const isHighlight = isSelected || inVisibleWeek;
+          const isHighlight = highlightOnlyToday ? isToday : (isSelected || inVisibleWeek);
 
           const isWeekStart = index % 7 === 0;
           const isWeekEnd = index % 7 === 6;
@@ -299,7 +301,7 @@ const MiniCalendar = ({
                 // Width: Highlighted items fill the cell
                 isHighlight ? "w-full" : "w-7 mx-auto rounded-lg",
                 // Rounding
-                isHighlight && view === 'week'
+                isHighlight && view === 'week' && !highlightOnlyToday
                   ? cn(isWeekStart && "rounded-l-lg", isWeekEnd && "rounded-r-lg")
                   : "rounded-lg",
 

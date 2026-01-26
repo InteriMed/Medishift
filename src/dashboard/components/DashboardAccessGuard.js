@@ -1,14 +1,23 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useDashboard } from '../contexts/DashboardContext';
 import { isAdminSync } from '../../config/workspaceDefinitions';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 
 const DashboardAccessGuard = ({ children }) => {
   const { user, isLoading } = useDashboard();
+  const location = useLocation();
+
+  // Allow marketplace access without profile check
+  const isMarketplace = location.pathname.includes('/marketplace');
 
   if (isLoading || !user) {
     return <LoadingSpinner />;
+  }
+
+  // Marketplace is accessible to all authenticated users
+  if (isMarketplace) {
+    return children;
   }
 
   const hasFacilityProfile = (user.roles || []).some(r => r.facility_uid);

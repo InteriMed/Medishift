@@ -84,6 +84,7 @@ h1 {
   /* Adjust font size as needed */
   font-weight: bold;
   justify-self: center;
+  margin-bottom: 0 !important;
 }
 
 h2 {

@@ -14,9 +14,11 @@
     "notifications": "Notifications",
     "startTutorial": "Démarrer le tutoriel",
     "changeLanguage": "Changer de langue",
+    "language": "Langue",
     "profileAlt": "Profil",
     "stopTutorial": "Stop Tutorial",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "help": "Aide"
   },
   "auth": {
     "login": {
@@ -33,7 +35,11 @@
     "aboutUs": "About Us",
     "contact": "Contact",
     "blog": "Blog",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "settings": "Paramètres"
+  },
+  "roles": {
+    "admin": "Administrateur"
   },
   "footer": {
     "newsletter": {
@@ -75,9 +81,12 @@
     "autoFill": "Auto Fill",
     "ok": "OK"
   },
+  "ok": "OK",
+  "processing": "Traitement en cours",
   "add": "Add",
   "phone": "Phone",
   "email": "Email",
   "continue": "Continue",
-  "close": "Fermer"
+  "close": "Fermer",
+  "refresh": "Actualiser"
 }

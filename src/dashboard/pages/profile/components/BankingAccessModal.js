@@ -108,7 +108,7 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
       onClose={handleCancel}
       title={t('billingInformation.bankingAccessTitle', 'Secure Banking Access')}
       blurred_background={true}
-      size="medium"
+      size="large"
       centerTitle={true}
     >
       <div className="space-y-6">
@@ -137,7 +137,6 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
                   <button
                     onClick={() => {
                       setVerificationMethod('email');
-                      handleSendCode('email');
                     }}
                     className={`border-2 rounded-xl p-6 hover:border-blue-600 transition-colors flex flex-col items-center text-center w-full ${
                       verificationMethod === 'email'
@@ -178,7 +177,6 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
                   <button
                     onClick={() => {
                       setVerificationMethod('phone');
-                      handleSendCode('phone');
                     }}
                     className={`border-2 rounded-xl p-6 hover:border-green-600 transition-colors flex flex-col items-center text-center w-full ${
                       verificationMethod === 'phone'
@@ -218,13 +216,20 @@ const BankingAccessModal = ({ isOpen, onClose, onSuccess, userEmail, userPhone, 
               </div>
             </div>
 
-            <div className="flex justify-center pt-4">
+            <div className="flex justify-between gap-3 pt-4">
               <button
                 onClick={handleCancel}
                 disabled={sendingCode}
                 className="px-4 py-2 rounded-lg border-2 border-border bg-transparent hover:bg-muted text-foreground font-medium transition-colors"
               >
                 {t('common.cancel', 'Cancel')}
+              </button>
+              <button
+                onClick={() => handleSendCode(verificationMethod)}
+                disabled={sendingCode || !verificationMethod}
+                className="px-6 py-2 rounded-lg border-2 border-blue-600 bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {sendingCode ? t('billingInformation.sendingCode', 'Sending code...') : t('billingInformation.sendCode', 'Send Code')}
               </button>
             </div>
           </div>

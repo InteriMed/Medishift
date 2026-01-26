@@ -4,8 +4,9 @@ import { useDashboard } from '../../DashboardContext';
 import { useSidebar } from '../../SidebarContext';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
-import { TUTORIAL_IDS, LOCALSTORAGE_KEYS, WORKSPACE_TYPES, getProfileTutorialForType } from '../../../../config/tutorialSystem';
+import { TUTORIAL_IDS, WORKSPACE_TYPES, getProfileTutorialForType } from '../config/tutorialSystem';
 import { DEFAULT_SIDEBAR_WIDTH } from '../constants';
+import tutorialCache from '../utils/tutorialCache';
 
 export const useTutorialState = () => {
     const { currentUser } = useAuth();
@@ -36,14 +37,7 @@ export const useTutorialState = () => {
     const [allowAccessLevelModalClose, setAllowAccessLevelModalClose] = useState(false);
     const [accessLevelChoice, setAccessLevelChoice] = useState(null);
     const [maxAccessedProfileTab, setMaxAccessedProfileTab] = useState(() => {
-        try {
-            const saved = localStorage.getItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB);
-            if (saved === 'settings') return 'marketplace';
-            return saved || 'personalDetails';
-        } catch (error) {
-            console.error('[TutorialContext] Error loading maxAccessedProfileTab from localStorage:', error);
-            return 'personalDetails';
-        }
+        return tutorialCache.get.maxAccessedProfileTab();
     });
 
     // 3. Navigation/Step State
@@ -94,14 +88,8 @@ export const useTutorialState = () => {
         }
     }, []);
 
-    // Save maxAccessedProfileTab to localStorage
     useEffect(() => {
-        try {
-            const valueToPersist = maxAccessedProfileTab === 'settings' ? 'marketplace' : maxAccessedProfileTab;
-            localStorage.setItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB, valueToPersist);
-        } catch (error) {
-            console.error('[TutorialContext] Error saving maxAccessedProfileTab to localStorage:', error);
-        }
+        tutorialCache.save.maxAccessedProfileTab(maxAccessedProfileTab);
     }, [maxAccessedProfileTab]);
 
     return {

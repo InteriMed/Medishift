@@ -2,6 +2,9 @@
   "title": "Organisation",
   "subtitle": "Verwalten Sie Ihre Apothekenkette",
   "noOrg": "Organisation erstellen oder beitreten",
+  "tabs": {
+    "profile": "Profil"
+  },
   "sections": {
     "info": "Organisationsinfo",
     "facilities": "Mitgliedseinrichtungen",

@@ -31,14 +31,6 @@ const ATSScorecard = () => {
                         </p>
                     </div>
                 </div>
-
-                <div className="mt-8 border-t border-border pt-6">
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Recent Candidates (Chain-wide)</h3>
-                    <div className="text-center py-8 text-muted-foreground bg-muted/10 rounded-lg border border-dashed border-border">
-                        <FiUserPlus className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        No active candidates found across facilities.
-                    </div>
-                </div>
             </div>
         </div>
     );

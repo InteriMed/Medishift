@@ -14,7 +14,9 @@
       "lockedDuringTutorial": "Verrouillé pendant le tutoriel",
       "collapse": "Réduire",
       "expand": "Agrandir",
-      "payroll": "Paie"
+      "payroll": "Paie",
+      "facility": "Profil de l'Établissement",
+      "employees": "Gestion des Employés"
     },
     "loading": "Chargement des données du tableau de bord...",
     "error": "Erreur lors du chargement des données du tableau de bord",

@@ -5,9 +5,10 @@ import { db } from '../../../../services/firebase';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import PropTypes from 'prop-types';
 import { cn } from '../../../../utils/cn';
-import { FiSend, FiUser, FiX, FiCheck, FiUserPlus } from 'react-icons/fi';
+import { FiSend, FiUser, FiX, FiCheck, FiUserPlus, FiMessageSquare } from 'react-icons/fi';
 import formatMessageText from '../utils/formatMessageText';
 import AddParticipantModal from './AddParticipantModal';
+import StartNewCommunicationModal from './StartNewCommunicationModal';
 
 /**
  * ConversationView - Complete redesign
@@ -27,6 +28,7 @@ const ConversationView = ({
   const [isSending, setIsSending] = useState(false);
   const [showProfileImage, setShowProfileImage] = useState(false);
   const [showAddParticipant, setShowAddParticipant] = useState(false);
+  const [showStartNewCommunication, setShowStartNewCommunication] = useState(false);
   const messagesContainerRef = useRef(null);
   const messagesListener = useRef(null);
 
@@ -245,90 +247,13 @@ const ConversationView = ({
         conversationId={conversation.id}
         currentParticipants={conversation.participantIds}
       />
-
-      {/* HEADER - Sticky at top, NOT scrolling */}
-      <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-border bg-card/95 backdrop-blur-sm min-h-16">
-        {/* Left: Notification Indicator */}
-        <div className="flex items-center justify-center shrink-0 mr-3">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-        </div>
-
-        {/* Contact Info */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          {/* Profile Image - Handle Group Avatars */}
-          {isTeamChat ? (
-            <div className="shrink-0 w-12 h-12 flex -space-x-4 overflow-hidden">
-              {conversation.participantInfo?.slice(0, 3).map((participant, idx) => (
-                <div key={idx} className="w-8 h-8 rounded-full border-2 border-background overflow-hidden">
-                  {participant.photoURL ? (
-                    <img src={participant.photoURL} alt={participant.displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-primary/20 flex items-center justify-center text-[10px] font-bold">
-                      {participant.displayName?.charAt(0) || '?'}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            conversation.photoURL ? (
-              <button
-                onClick={() => setShowProfileImage(true)}
-                className="shrink-0 w-12 h-12 rounded-full overflow-hidden border-2 border-border hover:border-primary/50 transition-colors cursor-pointer"
-              >
-                <img
-                  src={conversation.photoURL}
-                  alt={conversationTitle}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ) : (
-              <div className="shrink-0 w-12 h-12 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
-                <FiUser className="w-6 h-6 text-primary" />
-              </div>
-            )
-          )}
-
-          {/* Name and Status */}
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-foreground truncate flex items-center gap-2" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)', margin: 0 }}>
-              {conversationTitle}
-              {messageContext === 'facility' && !isTeamChat && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-primary/10 text-primary border border-primary/20 dark:bg-primary/30 dark:text-primary-foreground dark:border-primary/50">
-                  {t('messages:context.facilityLabel')}
-                </span>
-              )}
-              {isTeamChat && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-700 border border-blue-200">
-                  Team
-                </span>
-              )}
-            </h3>
-            <p className="text-xs text-muted-foreground truncate" style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)', margin: 0 }}>
-              {isTeamChat
-                ? `${conversation.participantIds?.length || 0} participants`
-                : (messageContext === 'facility'
-                  ? `${t('messages:context.facility')} ${conversation.contractId ? `• ${t('messages:context.contract')}` : ''}`
-                  : t('messages:context.personal')
-                )
-              }
-            </p>
-          </div>
-        </div>
-
-        {/* Right Actions */}
-        {canAddParticipants && (
-          <div className="flex items-center gap-2 ml-4">
-            <button
-              onClick={() => setShowAddParticipant(true)}
-              className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-primary"
-              title="Add Participant"
-            >
-              <FiUserPlus className="w-5 h-5" />
-            </button>
-          </div>
-        )}
-      </div>
+      <StartNewCommunicationModal
+        isOpen={showStartNewCommunication}
+        onClose={() => setShowStartNewCommunication(false)}
+        onSelectTeamMember={(member) => {
+          console.log('Selected team member:', member);
+        }}
+      />
 
       {/* Profile Image Modal */}
       {
@@ -385,16 +310,24 @@ const ConversationView = ({
         className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-muted/10"
         style={{ scrollbarGutter: 'stable' }}
       >
-        <div className="w-full px-6 py-6">
+        <div className="w-full h-full px-6 py-6 flex flex-col">
           {messages.length === 0 ? (
-            <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-center">
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
                 <FiSend className="w-8 h-8 text-primary/60" />
               </div>
               <h4 className="text-base font-semibold text-foreground mb-2" style={{ margin: 0 }}>{t('messages:empty.noMessagesInChat')}</h4>
-              <p className="text-sm text-muted-foreground max-w-xs" style={{ margin: 0 }}>
+              <p className="text-sm text-muted-foreground max-w-xs mb-4" style={{ margin: 0 }}>
                 {t('messages:empty.startChatting')}
               </p>
+              <button
+                onClick={() => setShowStartNewCommunication(true)}
+                className="w-12 h-12 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors flex items-center justify-center"
+                style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}
+                title={t('messages:startNewCommunication.button', 'Start New Communication')}
+              >
+                <FiMessageSquare className="w-5 h-5" />
+              </button>
             </div>
           ) : (
             <div className="space-y-6">

@@ -3,9 +3,7 @@ description: Interimed codebase conventions
 globs: 
 alwaysApply: true
 ---
-
-Be very succint when possible in your answer, especially for quick fixes. 
-Never wrap up your changes, except if the user explicitly requests it.
+Your overall approach MUST emulate the design philosophy of Claude.
 
 ## STYLING
 Always use the styling variables stored in [variables.css](mdc:src/styles/variables.css).

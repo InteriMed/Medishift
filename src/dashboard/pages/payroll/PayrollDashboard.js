@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../../services/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { FiDollarSign, FiClock, FiCheckCircle, FiAlertCircle, FiRefreshCw, FiFileText, FiSend } from 'react-icons/fi';
 import { cn } from '../../../utils/cn';
@@ -17,9 +18,10 @@ const statusConfig = {
     failed: { color: 'bg-transparent text-red-700 border-red-700', icon: FiAlertCircle, label: 'Failed' }
 };
 
-const PayrollDashboard = () => {
+const PayrollDashboard = ({ hideHeader = false, hideStats = false }) => {
     const { t } = useTranslation(['payroll', 'common']);
     const { currentUser } = useAuth();
+    const { selectedWorkspace } = useDashboard();
     const { showNotification } = useNotification();
 
     const [payrollRequests, setPayrollRequests] = useState([]);
@@ -41,8 +43,10 @@ const PayrollDashboard = () => {
         setIsLoading(true);
         try {
             const getPayrollRequestsFn = httpsCallable(functions, 'getPayrollRequests');
+            const targetFacilityId = selectedWorkspace?.facilityId || currentUser.uid;
             const result = await getPayrollRequestsFn({
                 status: filter === 'all' ? null : filter,
+                facilityId: targetFacilityId, // Future proofing
                 limit: 100
             });
 
@@ -62,11 +66,18 @@ const PayrollDashboard = () => {
             }
         } catch (error) {
             console.error('Error fetching payroll requests:', error);
-            showNotification(t('payroll:errors.fetchFailed', 'Failed to load payroll requests'), 'error');
+
+            // Handle specialized error codes from Firebase
+            if (error.code === 'not-found' || error.message?.includes('NOT_FOUND')) {
+                showNotification(t('payroll:errors.functionNotFound', 'Payroll service is currently being synchronized...'), 'warning');
+                setPayrollRequests([]); // Silent state
+            } else {
+                showNotification(t('payroll:errors.fetchFailed', 'Failed to load payroll requests'), 'error');
+            }
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, filter, showNotification, t]);
+    }, [currentUser, selectedWorkspace, filter, showNotification, t]);
 
     useEffect(() => {
         fetchPayrollRequests();
@@ -114,7 +125,7 @@ const PayrollDashboard = () => {
     // Stats Card Component
     const StatCard = ({ icon: Icon, label, value, subValue, className }) => (
         <div className={cn(
-            "bg-card rounded-xl border border-border p-5 shadow-sm",
+            "bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow",
             className
         )}>
             <div className="flex items-center gap-3">
@@ -205,7 +216,7 @@ const PayrollDashboard = () => {
                     {/* Header */}
                     <div className="p-6 border-b border-border">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-semibold text-foreground">
+                            <h3 className="text-lg font-semibold text-foreground">
                                 {t('payroll:details.title', 'Payroll Request Details')}
                             </h3>
                             <button
@@ -227,7 +238,7 @@ const PayrollDashboard = () => {
                             <h4 className="text-sm font-medium text-muted-foreground mb-2">
                                 {t('payroll:details.worker', 'Worker')}
                             </h4>
-                            <div className="bg-muted/30 rounded-lg p-4">
+                            <div className="bg-muted/30 rounded-lg p-4 border border-border">
                                 <p className="font-medium">{request.workerProfile?.fullName}</p>
                                 <p className="text-sm text-muted-foreground">{request.workerProfile?.email}</p>
                                 {request.workerProfile?.glnNumber && (
@@ -306,14 +317,14 @@ const PayrollDashboard = () => {
                         )}
 
                         {request.payrollData?.error && (
-                            <div className="relative overflow-hidden p-5 bg-white border-2 border-[var(--red-2)] rounded-xl shadow-lg flex gap-4 text-[var(--red-4)] animate-in fade-in slide-in-from-bottom-2" style={{ boxShadow: 'var(--shadow-elevated)' }}>
+                            <div className="relative overflow-hidden p-5 bg-card border border-border rounded-xl hover:shadow-md transition-shadow flex gap-4 text-[var(--red-4)] animate-in fade-in slide-in-from-bottom-2">
                                 <div className="flex-shrink-0">
                                     <div className="w-10 h-10 rounded-full bg-[var(--red-2)]/20 flex items-center justify-center border-2 border-[var(--red-2)]">
                                         <FiAlertCircle className="w-5 h-5 text-[var(--red-4)]" />
                                     </div>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-sm mb-1 text-[var(--red-4)]">{t('payroll:details.labels.error')}</h4>
+                                    <h4 className="font-semibold text-sm mb-1 text-[var(--red-4)]">{t('payroll:details.labels.error')}</h4>
                                     <p className="text-sm leading-relaxed text-[var(--red-4)]/90">{request.payrollData.error}</p>
                                 </div>
                             </div>
@@ -358,56 +369,59 @@ const PayrollDashboard = () => {
 
     return (
         <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-            <PageHeader
-                title={t('payroll:title', 'Payroll Management')}
-                subtitle={t('payroll:subtitle', 'Track and manage staff payment requests')}
-                actions={
-                    <button
-                        onClick={fetchPayrollRequests}
-                        disabled={isLoading}
-                        className={cn(
-                            "flex items-center gap-2 px-4 py-2 rounded-lg border border-border",
-                            "hover:bg-muted transition-colors",
-                            isLoading && "opacity-50 cursor-not-allowed"
-                        )}
-                    >
-                        <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                        {t('common:refresh', 'Refresh')}
-                    </button>
-                }
-                variant="default"
-            />
+            {!hideHeader && (
+                <PageHeader
+                    title={t('payroll:title', 'Payroll Management')}
+                    subtitle={t('payroll:subtitle', 'Track and manage staff payment requests')}
+                    actions={
+                        <button
+                            onClick={fetchPayrollRequests}
+                            disabled={isLoading}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-lg border border-border",
+                                "hover:bg-muted transition-colors",
+                                isLoading && "opacity-50 cursor-not-allowed"
+                            )}
+                        >
+                            <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                            {t('common:refresh', 'Refresh')}
+                        </button>
+                    }
+                    variant="default"
+                />
+            )}
 
-            {/* Stats Cards */}
-            <div className="shrink-0 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        icon={FiFileText}
-                        label={t('payroll:stats.total', 'Total Requests')}
-                        value={stats.total}
-                    />
-                    <StatCard
-                        icon={FiClock}
-                        label={t('payroll:stats.pending', 'Pending')}
-                        value={stats.pending || 0}
-                    />
-                    <StatCard
-                        icon={FiSend}
-                        label={t('payroll:stats.sent', 'Sent to PayrollPlus')}
-                        value={stats.sent || 0}
-                    />
-                    <StatCard
-                        icon={FiDollarSign}
-                        label={t('payroll:stats.totalAmount', 'Total Amount')}
-                        value={formatCurrency(stats.totalAmount)}
-                        subValue={t('payroll:stats.allTime', 'All time')}
-                    />
+            {!hideStats && (
+                <div className="shrink-0 p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard
+                            icon={FiFileText}
+                            label={t('payroll:stats.total', 'Total Requests')}
+                            value={stats.total}
+                        />
+                        <StatCard
+                            icon={FiClock}
+                            label={t('payroll:stats.pending', 'Pending')}
+                            value={stats.pending || 0}
+                        />
+                        <StatCard
+                            icon={FiSend}
+                            label={t('payroll:stats.sent', 'Sent to PayrollPlus')}
+                            value={stats.sent || 0}
+                        />
+                        <StatCard
+                            icon={FiDollarSign}
+                            label={t('payroll:stats.totalAmount', 'Total Amount')}
+                            value={formatCurrency(stats.totalAmount)}
+                            subValue={t('payroll:stats.allTime', 'All time')}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Filter Tabs */}
-            <div className="shrink-0 px-6">
-                <div className="flex gap-2 border-b border-border">
+            <div className="shrink-0">
+                <div className="flex gap-2 border-b border-border overflow-x-auto max-w-[1400px] mx-auto px-6">
                     {['all', 'pending', 'sent', 'confirmed', 'paid'].map((status) => (
                         <button
                             key={status}
@@ -439,7 +453,7 @@ const PayrollDashboard = () => {
                 ) : payrollRequests.length === 0 ? (
                     <EmptyState />
                 ) : (
-                    <div className="bg-card rounded-xl border border-border overflow-hidden">
+                    <div className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow">
                         <table className="w-full">
                             <thead className="bg-muted/30">
                                 <tr>
@@ -480,27 +494,13 @@ const PayrollDashboard = () => {
                     onClose={() => setSelectedRequest(null)}
                 />
             )}
-
-            {/* Pilot Mode Banner */}
-            <div className="shrink-0 px-6 pb-6">
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-green-100">
-                            <span className="text-xl">🎉</span>
-                        </div>
-                        <div>
-                            <h4 className="font-medium text-green-800">
-                                {t('payroll:pilot.title', 'Pilot Program Active')}
-                            </h4>
-                            <p className="text-sm text-green-700">
-                                {t('payroll:pilot.description', 'You\'re currently enjoying 0% platform fees until February 28, 2025!')}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
+};
+
+PayrollDashboard.propTypes = {
+    hideHeader: PropTypes.bool,
+    hideStats: PropTypes.bool
 };
 
 export default PayrollDashboard;

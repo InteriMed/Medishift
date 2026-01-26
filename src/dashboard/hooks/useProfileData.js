@@ -1,13 +1,14 @@
 // FILE: /src/hooks/useProfileData.js (Updated)
 
 import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc, setDoc, updateDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, Timestamp, deleteField } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboard } from '../contexts/DashboardContext';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
 import { FIRESTORE_COLLECTIONS, LOCALSTORAGE_KEYS } from '../../config/keysDatabase';
+import tutorialCache from '../contexts/TutorialContext/utils/tutorialCache';
 
 const storage = getStorage();
 
@@ -326,7 +327,6 @@ const useProfileData = () => {
 
     setIsLoading(true);
     try {
-      // Use provided role/type or fallback to current profile data
       const userRole = targetRole || profileData?.role || 'professional';
       const userProfileType = targetProfileType || profileData?.profileType || (typeof getDefaultProfileType === 'function' ? getDefaultProfileType(userRole) : 'doctor');
       const profileCollection = getProfileCollectionName(userRole);
@@ -341,68 +341,101 @@ const useProfileData = () => {
 
       const userData = userDoc.data();
       const profileDoc = await getDoc(profileDocRef);
-
       const now = Timestamp.now();
 
-      const existingProfileData = profileDoc.exists() ? profileDoc.data() : null;
-      const autofillData = existingProfileData?.autofill || null;
+      const firstName = currentUser.displayName?.split(' ')[0] || userData.firstName || '';
+      const lastName = currentUser.displayName?.split(' ').slice(1).join(' ') || userData.lastName || '';
 
-      // Only reset user document fields relevant to this profile type
       const userUpdates = {
         role: userRole,
         profileType: userProfileType,
         updatedAt: now,
+        profileStatus: 'incomplete',
+        onboardingCompleted: false,
+        onboardingProgress: deleteField(),
+        onboardingData: deleteField(),
+        ...(userRole === 'professional' ? {
+          firstName,
+          lastName,
+          isProfessionalProfileComplete: false
+        } : {
+          isFacilityProfileComplete: false
+        })
       };
-
-      // completion flags will be set directly in resetProfileData
-      if (userRole === 'professional') {
-        // Also reset name fields to auth defaults if resetting professional
-        userUpdates.firstName = currentUser.displayName?.split(' ')[0] || userData.firstName || '';
-        userUpdates.lastName = currentUser.displayName?.split(' ').slice(1).join(' ') || userData.lastName || '';
-      }
 
       await updateDoc(userDocRef, userUpdates);
 
-      // Reset the specific Profile Document (Professional or Facility)
       const resetProfileData = {
         userId: currentUser.uid,
-        createdAt: profileDoc.exists() ? profileDoc.data().createdAt : now,
+        createdAt: profileDoc.exists() ? (profileDoc.data().createdAt || now) : now,
         updatedAt: now,
         tutorialAccessMode: null,
-        currentStepIndex: 0,
+        accessLevelChoice: null,
         subscriptionTier: 'free',
+        autofill: null,
         ...(userRole === 'professional' ? {
           education: [],
           licensesCertifications: [],
           identity: {
-            legalFirstName: userUpdates.firstName || userData.firstName || '',
-            legalLastName: userUpdates.lastName || userData.lastName || ''
+            legalFirstName: firstName,
+            legalLastName: lastName
           },
           contact: {
-            email: currentUser.email
+            primaryEmail: currentUser.email,
+            primaryPhone: '',
+            primaryPhonePrefix: '',
+            residentialAddress: {
+              street: '',
+              number: '',
+              postalCode: '',
+              city: '',
+              canton: '',
+              country: ''
+            }
           }
         } : {
-          facilityName: `${userData.firstName || 'New'} ${userProfileType || ''}`.trim(),
-          facilityDetails: {}
+          facilityName: `${firstName || 'New'} ${userProfileType || ''}`.trim(),
+          facilityDetails: {},
+          facilityLegalBilling: null
         })
       };
 
-      if (autofillData) {
-        resetProfileData.autofill = autofillData;
-      }
-
-      // Merge: false ensures we completely wipe the previous profile data
       await setDoc(profileDocRef, resetProfileData, { merge: false });
 
-      // Clear local storage tutorial state
-      localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_STATE);
-      localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB);
+      const userId = currentUser.uid;
+      
+      tutorialCache.clean();
+      localStorage.removeItem(LOCALSTORAGE_KEYS.ONBOARDING_FORM_DATA);
+      localStorage.removeItem(LOCALSTORAGE_KEYS.AUTOFILL_CACHE(userId));
+      localStorage.removeItem(LOCALSTORAGE_KEYS.DOCUMENT_PROCESSING_CACHE(userId));
+      
+      const profileTabs = ['personalDetails', 'professionalBackground', 'billingInformation', 'documentUploads', 'marketplace', 'account', 'facilityCoreDetails', 'facilityLegalBilling'];
+      profileTabs.forEach(tab => {
+        localStorage.removeItem(LOCALSTORAGE_KEYS.PROFILE_DRAFT(tab));
+      });
+      
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('popup_shown_') && key.includes(userId)) {
+          localStorage.removeItem(key);
+        }
+        if (key.startsWith(`autofill_cache_${userId}`)) {
+          localStorage.removeItem(key);
+        }
+        if (key.startsWith(`document_processing_cache_${userId}`)) {
+          localStorage.removeItem(key);
+        }
+        if (key.startsWith('profile_') && key.endsWith('_draft')) {
+          localStorage.removeItem(key);
+        }
+      });
 
       await fetchProfileData();
       return true;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      console.error('[resetProfile] Error resetting profile:', err);
+      const errorMessage = err.message || 'Failed to reset profile';
+      setError(errorMessage);
+      throw new Error(`Profile reset failed: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }

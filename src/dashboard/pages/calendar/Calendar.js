@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CALENDAR_COLORS } from './utils/constants';
-import { getMultipleWeeks } from './utils/dateHelpers';
+import { getMultipleWeeks, getMultipleDays, getShortDays, isSameDay } from './utils/dateHelpers';
 import { getUserTypeFromData, getUserIdFromData } from './utils/userHelpers';
 import { filterEventsByCategories } from './utils/eventUtils';
 import CalendarHeader from './components/CalendarHeader';
@@ -13,7 +13,6 @@ import EventContextMenu from './components/EventContextMenu';
 import EventPanel from './EventPanel/EventPanel';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useSidebar } from '../../contexts/SidebarContext';
-import { useTutorial } from '../../contexts/TutorialContext';
 import { useCalendarState } from './hooks/useCalendarState';
 import { useCalendarEvents } from './utils/eventDatabase';
 import { cn } from '../../../utils/cn';
@@ -21,12 +20,12 @@ import { FiX } from 'react-icons/fi';
 import ResourceGrid from './components/ResourceGrid';
 import useProfileData from '../../hooks/useProfileData';
 import useCalendarStore from './hooks/useCalendarStore';
+import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 
 import PropTypes from 'prop-types';
 
 const Calendar = ({ userData }) => {
-  const { t } = useTranslation(['dashboard', 'calendar']);
-  const { isTutorialActive, activeTutorial } = useTutorial();
+  const { t, i18n } = useTranslation(['dashboard', 'calendar']);
   const { selectedWorkspace } = useDashboard();
 
   const accountType = getUserTypeFromData(userData);
@@ -39,8 +38,12 @@ const Calendar = ({ userData }) => {
   const [calendarMode, setCalendarMode] = useState('calendar');
   const [showMiniCalendar, setShowMiniCalendar] = useState(true);
   const [showUpcomingEvents, setShowUpcomingEvents] = useState(true);
+  const [nightView, setNightView] = useState(false);
+  const [showTopHeader, setShowTopHeader] = useState(true);
+  const [showBottomHeader, setShowBottomHeader] = useState(false);
+  const timeSlotsScrollRef = useRef(null);
 
-  const isTeamWorkspace = selectedWorkspace?.type === 'team';
+  const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || !!selectedWorkspace?.facilityId;
 
   const { profileData, isLoading: isLoadingProfile, updateProfileData } = useProfileData();
 
@@ -225,9 +228,11 @@ const Calendar = ({ userData }) => {
   // Merge Database Events with Local State
   useEffect(() => {
     if (!userId || !Array.isArray(calendarEvents)) return;
-    
+
     const eventsWithDbFlag = calendarEvents.map(event => ({
-      ...event, fromDatabase: true, isValidated: true
+      ...event,
+      fromDatabase: true,
+      isValidated: event.isValidated !== undefined ? event.isValidated : true
     }));
 
     const currentEvents = useCalendarStore.getState().events;
@@ -245,6 +250,35 @@ const Calendar = ({ userData }) => {
     const timeSlots = document.querySelector('.time-slots');
     if (timeSlots) timeSlots.scrollTop = (8 - 1) * 60;
   }, []);
+
+  // Handle scroll for night mode header visibility
+  useEffect(() => {
+    if (!nightView) {
+      setShowTopHeader(true);
+      setShowBottomHeader(false);
+      return;
+    }
+    
+    const timeSlots = timeSlotsScrollRef.current || document.querySelector('.time-slots');
+    if (!timeSlots) return;
+
+    const handleScroll = () => {
+      const scrollTop = timeSlots.scrollTop;
+      const scrollHeight = timeSlots.scrollHeight;
+      const clientHeight = timeSlots.clientHeight;
+      const scrollBottom = scrollHeight - scrollTop - clientHeight;
+      
+      setShowTopHeader(scrollTop < 50);
+      setShowBottomHeader(scrollBottom < 50);
+    };
+
+    timeSlots.addEventListener('scroll', handleScroll);
+    handleScroll();
+    
+    return () => {
+      timeSlots.removeEventListener('scroll', handleScroll);
+    };
+  }, [nightView]);
 
   // Sync scroll headers
   useEffect(() => {
@@ -327,62 +361,47 @@ const Calendar = ({ userData }) => {
     if (!isTemporary) useCalendarStore.getState().markEventForSync(id);
   };
 
+  const handleEventDropOnDay = (draggedEvent, targetDate) => {
+    const originalStart = new Date(draggedEvent.start);
+    const originalEnd = new Date(draggedEvent.end);
+    const duration = originalEnd.getTime() - originalStart.getTime();
+
+    const newStart = new Date(targetDate);
+    newStart.setHours(originalStart.getHours(), originalStart.getMinutes(), originalStart.getSeconds(), 0);
+
+    const newEnd = new Date(newStart.getTime() + duration);
+
+    const event = events.find(e => e.id === draggedEvent.id);
+    if (event) {
+      const originalEventPosition = {
+        ...event,
+        start: new Date(event.start),
+        end: new Date(event.end)
+      };
+      
+      useCalendarStore.getState().setOriginalEventPosition(originalEventPosition);
+      useCalendarStore.getState().showMoveDialog(event, {
+        start: new Date(event.start),
+        end: new Date(event.end)
+      }, { start: newStart, end: newEnd });
+      useCalendarStore.getState().updateEventLocal(draggedEvent.id, { start: newStart, end: newEnd, isBeingMoved: false });
+      useCalendarStore.getState().markEventForSync(draggedEvent.id);
+    }
+  };
+
   return (
-    <div className="h-full flex flex-col animate-in fade-in duration-500" style={{ overflow: 'visible' }}>
+    <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
       <div className={cn(
         "flex-1 flex relative min-h-0 mx-4 my-4",
-        calendarMode === 'team' ? "p-0" : "gap-6"
+        "gap-6"
       )} style={{ overflow: 'visible' }}>
-        {calendarMode === 'team' && isTeamWorkspace ? (
-          <div className="w-full h-full flex flex-col">
-            <div className="shrink-0 w-full bg-white border-b border-border/60 shadow-sm px-6 py-3 min-h-16">
-              <CalendarHeader
-                currentDate={currentDate}
-                view={view}
-                setView={setView}
-                navigateDate={navigateDate}
-                setCurrentDate={setCurrentDate}
-                isSidebarCollapsed={false}
-                toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                categories={categories}
-                handleCategoryToggle={handleCategoryToggle}
-                onResetCategories={handleResetCategories}
-                isTopBarMode={true}
-                onShowFiltersOverlay={setShowFiltersOverlay}
-                scrollContainerRef={scrollContainerRef}
-                calendarMode={calendarMode}
-                setCalendarMode={setCalendarMode}
-                isTeamWorkspace={isTeamWorkspace}
-                handleCreateEventClick={() => handleCreateEventClick(currentDate)}
-                showMiniCalendar={showMiniCalendar}
-                setShowMiniCalendar={setShowMiniCalendar}
-                showUpcomingEvents={showUpcomingEvents}
-                setShowUpcomingEvents={setShowUpcomingEvents}
-              />
-            </div>
-            <div className="flex-1">
-              <ResourceGrid
-                currentDate={currentDate}
-                events={filteredEvents}
-                employees={[]}
-                onEventClick={handleEventClick}
-                onCreateEvent={handleGridCreateEvent}
-                view={view}
-                onDateClick={handleDayClick}
-                onEventMove={handleGridEventMove}
-                profileData={profileData}
-                onUpdateProfileData={updateProfileData}
-                isLoadingProfile={isLoadingProfile}
-              />
-            </div>
-          </div>
-        ) : (
+        {(
           <>
             {(showMiniCalendar || showUpcomingEvents) && (
               <div className={cn(
                 "dashboard-sidebar-container",
                 isMainSidebarCollapsed ? "flex" : (isSidebarCollapsed ? "hidden lg:flex w-0" : "flex"),
-                "dashboard-sidebar-container-desktop pr-0"
+                "dashboard-sidebar-container-desktop calendar-sidebar pr-0"
               )} style={{ overflow: 'visible' }}>
                 <div className={cn(
                   "dashboard-sidebar-inner",
@@ -417,7 +436,7 @@ const Calendar = ({ userData }) => {
               !(showMiniCalendar || showUpcomingEvents) && "flex-1"
             )}>
               <div className="dashboard-main-inner flex flex-col h-full">
-                <div className="shrink-0 w-full bg-white border-b border-border/60 px-6 py-3" style={{ minHeight: 'var(--boxed-inputfield-height)' }}>
+                <div className="shrink-0 w-full bg-card border-b border-border px-6 py-2" style={{ minHeight: 'var(--boxed-inputfield-height)' }}>
                   <CalendarHeader
                     currentDate={currentDate}
                     view={view}
@@ -435,77 +454,209 @@ const Calendar = ({ userData }) => {
                     calendarMode={calendarMode}
                     setCalendarMode={setCalendarMode}
                     isTeamWorkspace={isTeamWorkspace}
-                    handleCreateEventClick={() => handleCreateEventClick(currentDate)}
-                    showMiniCalendar={showMiniCalendar}
-                    setShowMiniCalendar={setShowMiniCalendar}
-                    showUpcomingEvents={showUpcomingEvents}
-                    setShowUpcomingEvents={setShowUpcomingEvents}
-                  />
+                handleCreateEventClick={() => handleCreateEventClick(currentDate)}
+                showMiniCalendar={showMiniCalendar}
+                setShowMiniCalendar={setShowMiniCalendar}
+                showUpcomingEvents={showUpcomingEvents}
+                setShowUpcomingEvents={setShowUpcomingEvents}
+                nightView={nightView}
+                setNightView={setNightView}
+              />
                 </div>
 
-                <div className="flex-1 h-full flex flex-col calendar-grid overflow-hidden">
-                  <div className="flex shrink-0">
-                    <div
-                      className="shrink-0 bg-background/95 backdrop-blur-sm z-10 flex items-end justify-center pb-2"
-                      style={{ width: '4rem', minHeight: '3rem' }}
-                    />
-                    <div
-                      className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                      ref={headerScrollRef}
-                    >
-                      <TimeHeaders
-                        currentDate={currentDate}
-                        referenceDate={currentDate}
-                        view={view}
-                        handleDayClick={handleDayClick}
-                        scrollContainerRef={headerScrollRef}
-                        numWeeks={numWeeks}
-                        numDays={numDays}
-                        setView={setView}
+                  <div className="flex-1 h-full flex flex-col calendar-grid overflow-hidden">
+                  {calendarMode !== 'team' || !isTeamWorkspace ? (
+                    <div className="flex shrink-0">
+                      <div
+                        className="shrink-0 bg-background/95 backdrop-blur-sm z-10 flex items-end justify-center pb-2"
+                        style={{ width: '4rem', minHeight: '3rem' }}
                       />
-                    </div>
-                  </div>
-
-                  <div className="flex-1 time-slots bg-muted/5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <div className="relative min-h-full flex">
                       <div
-                        className="sticky shrink-0 bg-background/95 backdrop-blur-sm z-10"
-                        style={{ width: '4rem', height: '1440px', left: 0, top: 0, alignSelf: 'flex-start' }}
+                        className="flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                        ref={headerScrollRef}
                       >
-                        {Array.from({ length: 24 }, (_, i) => (
-                          <div key={i} className="h-[60px] text-[10px] text-muted-foreground text-right pr-4 relative">
-                            <span className="text-[10px] pb-1">{i < 10 ? `0${i}:00` : `${i}:00`}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div
-                        className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                        style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
-                        ref={scrollContainerRef}
-                        onScroll={(e) => {
-                          if (headerScrollRef.current) {
-                            headerScrollRef.current.scrollLeft = e.target.scrollLeft;
-                          }
-                        }}
-                      >
-                        <TimeGrid
-                          view={view}
-                          events={filteredEvents}
-                          selectedEventId={selectedEventId}
+                      <div className={cn(
+                        "transition-opacity duration-200",
+                        nightView && !showTopHeader ? "opacity-0 pointer-events-none" : "opacity-100"
+                      )}>
+                        <TimeHeaders
                           currentDate={currentDate}
                           referenceDate={currentDate}
-                          getEventsForCurrentWeek={() => { }}
-                          validatedEvents={useCalendarStore.getState().validatedEvents}
-                          onEventClick={handleEventClick}
-                          onEventRightClick={(e, event) => useCalendarStore.getState().showContextMenuAt({ x: e.clientX, y: e.clientY }, event)}
-                          onEventMove={handleGridEventMove}
-                          onEventResize={handleGridEventResize}
-                          onCreateEvent={handleGridCreateEvent}
-                          scrollContainerRef={scrollContainerRef}
+                          view={view}
+                          handleDayClick={handleDayClick}
+                          scrollContainerRef={headerScrollRef}
                           numWeeks={numWeeks}
                           numDays={numDays}
+                          setView={setView}
+                          onEventDropOnDay={handleEventDropOnDay}
+                          nightView={nightView}
                         />
                       </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="flex-1 time-slots bg-muted/5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" ref={timeSlotsScrollRef}>
+                    <div className="relative min-h-full flex">
+                      {calendarMode === 'team' && isTeamWorkspace ? (
+                        <ResourceGrid
+                          currentDate={currentDate}
+                          events={filteredEvents}
+                          employees={[]}
+                          onEventClick={handleEventClick}
+                          onCreateEvent={handleGridCreateEvent}
+                          view={view}
+                          onDateClick={handleDayClick}
+                          onEventMove={handleGridEventMove}
+                          profileData={profileData}
+                          onUpdateProfileData={updateProfileData}
+                          isLoadingProfile={isLoadingProfile}
+                          scrollContainerRef={scrollContainerRef}
+                          headerScrollRef={headerScrollRef}
+                          nightView={nightView}
+                        />
+                      ) : (
+                        <>
+                          <div
+                            className="sticky shrink-0 bg-background/95 backdrop-blur-sm z-10"
+                            style={{ width: '4rem', height: nightView ? '1440px' : '1440px', left: 0, top: 0, alignSelf: 'flex-start' }}
+                          >
+                            {nightView ? (
+                              <>
+                                {Array.from({ length: 12 }, (_, i) => {
+                                  const hour = i + 12;
+                                  return (
+                                    <div key={`prev-${i}`} className="h-[60px] text-[10px] text-right pr-4 relative">
+                                      <span className={cn("text-[10px] pb-1", i === 0 ? "text-red-500 font-semibold" : "text-muted-foreground")}>
+                                        {hour < 10 ? `0${hour}:00` : `${hour}:00`}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                                {Array.from({ length: 12 }, (_, i) => (
+                                  <div key={`next-${i}`} className="h-[60px] text-[10px] text-right pr-4 relative">
+                                    <span className={cn("text-[10px] pb-1", i === 0 ? "text-red-500 font-semibold" : "text-muted-foreground")}>
+                                      {i < 10 ? `0${i}:00` : `${i}:00`}
+                                    </span>
+                                  </div>
+                                ))}
+                              </>
+                            ) : (
+                              Array.from({ length: 24 }, (_, i) => (
+                                <div key={i} className="h-[60px] text-[10px] text-muted-foreground text-right pr-4 relative">
+                                  <span className="text-[10px] pb-1">{i < 10 ? `0${i}:00` : `${i}:00`}</span>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                          <div
+                            className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                            style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
+                            ref={scrollContainerRef}
+                            onScroll={(e) => {
+                              if (headerScrollRef.current) {
+                                headerScrollRef.current.scrollLeft = e.target.scrollLeft;
+                              }
+                            }}
+                          >
+                            <TimeGrid
+                              view={view}
+                              events={filteredEvents}
+                              selectedEventId={selectedEventId}
+                              currentDate={currentDate}
+                              referenceDate={currentDate}
+                              getEventsForCurrentWeek={() => { }}
+                              validatedEvents={useCalendarStore.getState().validatedEvents}
+                              onEventClick={handleEventClick}
+                              onEventRightClick={(e, event) => useCalendarStore.getState().showContextMenuAt({ x: e.clientX, y: e.clientY }, event)}
+                              onEventMove={handleGridEventMove}
+                              onEventResize={handleGridEventResize}
+                              onCreateEvent={handleGridCreateEvent}
+                              scrollContainerRef={scrollContainerRef}
+                              numWeeks={numWeeks}
+                              numDays={numDays}
+                              nightView={nightView}
+                            />
+                          </div>
+                          {nightView && (() => {
+                            const shortDays = getShortDays(i18n.language || 'en');
+                            const today = new Date();
+                            
+                            let allDays;
+                            if (view === 'day') {
+                              const nextDay = new Date(currentDate);
+                              nextDay.setDate(nextDay.getDate() + 1);
+                              allDays = [nextDay];
+                            } else {
+                              const weeks = getMultipleWeeks(currentDate, numWeeks, numWeeks);
+                              const baseDays = weeks.flat();
+                              allDays = baseDays.map(date => {
+                                const nextDay = new Date(date);
+                                nextDay.setDate(nextDay.getDate() + 1);
+                                return nextDay;
+                              });
+                            }
+                            
+                            return (
+                              <div
+                                className={cn(
+                                  "sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm z-10 border-t-2 border-red-500 transition-opacity duration-200",
+                                  showBottomHeader ? "opacity-100" : "opacity-0 pointer-events-none"
+                                )}
+                                style={{ marginLeft: '4rem' }}
+                              >
+                                <div
+                                  className="time-headers flex py-2"
+                                  style={{
+                                    width: view === 'day' ? `${allDays.length * 100}%` : `${allDays.length * (100 / 7)}%`,
+                                    minWidth: view === 'day' ? `${allDays.length * 100}%` : `${allDays.length * (100 / 7)}%`
+                                  }}
+                                >
+                                  {allDays.map((date, index) => {
+                                    const isToday = isSameDay(date, today);
+                                    const dayOfWeek = date.getDay();
+                                    const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                                    
+                                    return (
+                                      <div
+                                        key={`bottom-${index}`}
+                                        className="flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-muted/50 pb-2"
+                                        style={{
+                                          width: view === 'day' ? `${100 / allDays.length}%` : `${100 / allDays.length}%`,
+                                          flexShrink: 0,
+                                          minWidth: view === 'day' ? `${100 / allDays.length}%` : `${100 / allDays.length}%`,
+                                          minHeight: '3rem'
+                                        }}
+                                        onClick={() => {
+                                          const clickedDate = new Date(date);
+                                          clickedDate.setHours(0, 0, 0, 0);
+                                          handleDayClick(clickedDate);
+                                          if (setView) {
+                                            setView('day');
+                                          }
+                                        }}
+                                      >
+                                        <div className="uppercase text-red-500 font-semibold tracking-wider mb-1" style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
+                                          {shortDays[dayIndex]}
+                                        </div>
+                                        <div
+                                          className={cn(
+                                            "flex items-center justify-center w-8 h-8 rounded-full transition-all",
+                                            isToday ? 'bg-red-500 text-white' : 'text-red-500'
+                                          )}
+                                          style={{ fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)' }}
+                                        >
+                                          {date.getDate()}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

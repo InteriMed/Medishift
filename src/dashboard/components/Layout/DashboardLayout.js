@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../Sidebar/Sidebar';
 import Header from '../Header/Header';
 import { useLocation } from 'react-router-dom';
-import { useTutorial } from '../../contexts/TutorialContext';
 import './DashboardLayout.css';
 
 /**
@@ -16,7 +15,6 @@ const DashboardLayout = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSidebarDisabled, setIsSidebarDisabled] = useState(false);
   const sidebarRef = useRef(null);
-  const { stepData, isTutorialActive } = useTutorial();
 
   // Function to get CSS variable value
   const getCssVariable = (variableName) => {
@@ -39,13 +37,13 @@ const DashboardLayout = ({ children }) => {
       display: 'flex',
       flex: 1,
       overflow: 'visible',
-      height: 'calc(100vh - 4rem)',
+      height: 'calc(100vh - 3.5rem)',
     },
     mainContent: {
       flex: 1,
       display: 'flex',
       flexDirection: 'column',
-      height: 'calc(100vh - 4rem)',
+      height: 'calc(100vh - 3.5rem)',
       overflow: 'visible',
       transition: 'margin-left 0.3s ease',
       marginLeft:
@@ -85,11 +83,9 @@ const DashboardLayout = ({ children }) => {
 
   // Check if we're in a tutorial step that requires the sidebar to remain open
   useEffect(() => {
-    if (isTutorialActive && stepData) {
+    if (false) {
       // Determine if the current step is related to the sidebar
-      const isSidebarStep = stepData.targetArea === 'sidebar' ||
-        stepData.highlightSidebarItem ||
-        (stepData.targetSelector && stepData.targetSelector.includes('sidebar'));
+      const isSidebarStep = false;
 
       // If it's a sidebar step, ensure the sidebar is open and disable closing
       if (isSidebarStep) {
@@ -101,7 +97,7 @@ const DashboardLayout = ({ children }) => {
     } else {
       setIsSidebarDisabled(false);
     }
-  }, [stepData, isTutorialActive]);
+  }, []);
 
   // Listen for window resize
   useEffect(() => {
@@ -109,9 +105,7 @@ const DashboardLayout = ({ children }) => {
       if (window.innerWidth < 1350) {
         setIsSidebarCollapsed(false);
         // Keep sidebar closed on mobile by default
-        if (!isTutorialActive) {
-          setIsSidebarOpen(false);
-        }
+        setIsSidebarOpen(false);
       } else {
         // Keep sidebar open on desktop by default
         setIsSidebarOpen(true);
@@ -120,7 +114,7 @@ const DashboardLayout = ({ children }) => {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isTutorialActive]);
+  }, []);
 
   // Handle clicks outside the sidebar to close it on mobile
   useEffect(() => {

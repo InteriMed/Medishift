@@ -3,7 +3,10 @@
     "personal": "Messaggi Personali",
     "personalDesc": "Messaggi relativi al tuo profilo professionale",
     "facility": "Messaggi Struttura",
-    "facilityDesc": "Messaggi relativi alle operazioni della struttura"
+    "facilityDesc": "Messaggi relativi alle operazioni della struttura",
+    "conversations": "Conversazioni",
+    "threads": "Comunicazione",
+    "threadsLocked": "La comunicazione è disponibile solo per i membri di una struttura"
   },
   "noConversations": "Nessuna Conversazione",
   "noConversationsHint": "Inizia conversazioni tramite interazioni nel marketplace",
@@ -24,6 +27,7 @@
   "errors": {
     "loadingConversations": "Impossibile caricare le conversazioni",
     "loadingMessages": "Impossibile caricare i messaggi",
+    "loadingThreads": "Impossibile caricare la comunicazione",
     "sendingMessage": "Impossibile inviare il messaggio",
     "title": "Titolo",
     "description": "Descrizione",
@@ -66,7 +70,12 @@
     "startConversation": "Inizia conversazione",
     "noMessagesInChat": "Nessun messaggio nella chat",
     "startChatting": "Inizia a chattare",
-    "noConversationsFound": "Nessuna conversazione trovata"
+    "noConversationsFound": "Nessuna conversazione trovata",
+    "noThreadsFound": "Nessuna comunicazione trovata",
+    "noThreadsYet": "Nessuna comunicazione ancora",
+    "startThread": "Inizia nuova comunicazione",
+    "threadsLocked": "Comunicazione non disponibile",
+    "threadsLockedDescription": "La comunicazione è disponibile solo per gli utenti che appartengono a una struttura"
   },
   "status": {
     "you": "Tu",

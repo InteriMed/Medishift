@@ -30,20 +30,37 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && (
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         (
-           (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
-            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['super_admin', 'ops_manager', 'finance', 'recruiter', 'support', 'external_payroll'])) ||
-           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
-         )) ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['superAdmin', 'super_admin', 'admin']) ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superAdmin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin')) ||
         (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive == true)
       );
+    }
+    
+    function isSuperAdminUser() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['superAdmin', 'super_admin']);
+    }
+    
+    function canReadAllProfiles() {
+      return isAdmin() || isSuperAdminUser();
     }
     
     // Admins collection
     match /admins/{adminId} {
       allow read: if isAuthenticated() && (request.auth.uid == adminId || isAdmin());
       allow write: if false;
+    }
+    
+    // Admin roles collection
+    match /adminRoles/{roleId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if isAuthenticated() && isAdmin();
     }
     
     // Workers collection
@@ -259,9 +276,9 @@ service cloud.firestore {
     
     // Professional profile rules
     match /professionalProfiles/{userId} {
-      allow read: if request.auth.uid == userId || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['super_admin', 'admin']));
-      allow create: if request.auth.uid == userId || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['super_admin', 'admin']));
-      allow update: if request.auth.uid == userId || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['super_admin', 'admin']));
+      allow read: if request.auth.uid == userId || canReadAllProfiles();
+      allow create: if request.auth.uid == userId || canReadAllProfiles();
+      allow update: if request.auth.uid == userId || canReadAllProfiles();
       allow delete: if false;
     }
     
@@ -277,22 +294,72 @@ service cloud.firestore {
       function canReadFacility() {
         return isAuthenticated() && (
           request.auth.uid == facilityId ||
-          isAdmin() ||
+          canReadAllProfiles() ||
           (exists(/databases/$(database)/documents/facilityProfiles/$(facilityId)) == false) ||
           (resource.data.admins != null && request.auth.uid in resource.data.admins) ||
           (resource.data.chainAdmins != null && request.auth.uid in resource.data.chainAdmins)
         );
       }
       function isSuperAdmin() {
-        return isAuthenticated() && 
-               exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
-               'super_admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles;
+        return isAuthenticated() && (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['superAdmin', 'super_admin'])) ||
+          (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && 
+           get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive == true &&
+           (get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'superAdmin' ||
+            get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'super_admin' ||
+            (get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.roles != null &&
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.roles.hasAny(['superAdmin', 'super_admin']))))
+        );
       }
-      allow read: if canReadFacility();
+      allow read: if canReadFacility() || isSuperAdminUser();
       allow create: if request.auth.uid == facilityId || isAdmin();
       allow update: if request.auth.uid == facilityId || isAdmin() || (resource.data.admins != null && request.auth.uid in resource.data.admins);
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isAdmin();
+    }
+    
+    // Organization profile rules
+    match /organizations/{organizationId} {
+      function isOrganizationMember() {
+        return isAuthenticated() && (
+          request.auth.uid == organizationId ||
+          (resource.data.internalTeam != null && 
+           resource.data.internalTeam.admins != null && 
+           request.auth.uid in resource.data.internalTeam.admins) ||
+          (resource.data.internalTeam != null && 
+           resource.data.internalTeam.employees != null && 
+           resource.data.internalTeam.employees.size() > 0)
+        );
+      }
+      function canReadOrganization() {
+        return isAuthenticated() && (
+          request.auth.uid == organizationId ||
+          canReadAllProfiles() ||
+          (exists(/databases/$(database)/documents/organizations/$(organizationId)) == false) ||
+          (resource.data.internalTeam != null && 
+           resource.data.internalTeam.admins != null && 
+           request.auth.uid in resource.data.internalTeam.admins) ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny([{'organization_uid': organizationId}]))
+        );
+      }
+      function isOrganizationAdmin() {
+        return isAuthenticated() && (
+          request.auth.uid == organizationId ||
+          (resource.data.internalTeam != null && 
+           resource.data.internalTeam.admins != null && 
+           request.auth.uid in resource.data.internalTeam.admins) ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny([{'organization_uid': organizationId, 'roles': ['org_admin']}]))
+        );
+      }
+      allow read: if canReadOrganization() || isSuperAdminUser();
+      allow create: if request.auth.uid == organizationId || isAdmin();
+      allow update: if isOrganizationAdmin() || isAdmin();
+      allow delete: if isSuperAdmin() || isAdmin();
     }
     
     // Conversations collection
@@ -326,6 +393,44 @@ service cloud.firestore {
         allow read: if isMessageParticipant();
         allow create: if isMessageParticipant() && request.resource.data.senderId == request.auth.uid;
         allow update: if isMessageParticipant() && (
+          resource.data.senderId == request.auth.uid ||
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions', 'status'])
+        );
+        allow delete: if false;
+      }
+    }
+    
+    // Threads collection
+    match /threads/{threadId} {
+      function isThreadParticipant() {
+        return isAuthenticated() && (
+          (resource.data.participantIds != null && request.auth.uid in resource.data.participantIds) ||
+          (resource.data.participants != null && request.auth.uid in resource.data.participants)
+        );
+      }
+      function canCreateThread() {
+        return isAuthenticated() && (
+          (request.resource.data.participantIds != null && request.auth.uid in request.resource.data.participantIds) ||
+          (request.resource.data.participants != null && request.auth.uid in request.resource.data.participants)
+        );
+      }
+      allow read: if isThreadParticipant();
+      allow create: if canCreateThread();
+      allow update: if isThreadParticipant();
+      allow delete: if isThreadParticipant();
+      
+      match /messages/{messageId} {
+        function isThreadMessageParticipant() {
+          return isAuthenticated() && (
+            (get(/databases/$(database)/documents/threads/$(threadId)).data.participantIds != null &&
+            request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participantIds) ||
+            (get(/databases/$(database)/documents/threads/$(threadId)).data.participants != null &&
+            request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants)
+          );
+        }
+        allow read: if isThreadMessageParticipant();
+        allow create: if isThreadMessageParticipant() && request.resource.data.senderId == request.auth.uid;
+        allow update: if isThreadMessageParticipant() && (
           resource.data.senderId == request.auth.uid ||
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions', 'status'])
         );

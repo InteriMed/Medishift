@@ -167,16 +167,20 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
   };
 
   const handleDragStart = (e) => {
+    if (e.target.classList.contains('resize-handle-top') || 
+        e.target.classList.contains('resize-handle-bottom')) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
     
-    // Set a global flag to indicate dragging is happening
     window.calendarEventDragging = true;
     
-    // Check if this is a double-click
     const now = Date.now();
     if (dragStartTime && (now - dragStartTime < 300)) {
-      // It's a double click, clear drag state and trigger click event
       setDragStartTime(null);
       setIsDragging(false);
       window.calendarEventDragging = false;
@@ -184,13 +188,7 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
       return;
     }
     
-    // Save click time for double-click detection
     setDragStartTime(now);
-    
-    if (e.target.classList.contains('resize-handle-top') || 
-        e.target.classList.contains('resize-handle-bottom')) {
-      return;
-    }
 
     // Ensure start and end are Date objects
     const startTime = start instanceof Date ? new Date(start) : new Date(start);
@@ -212,22 +210,18 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
     const initialMondayBasedDayIndex = getMondayBasedDayIndex(startTime);
 
     const handleMouseMove = (e) => {
-      // Start dragging if we haven't already
       if (!isDragging) {
         setIsDragging(true);
       }
 
-      // Check if we're in day view
       const isDayView = timeGrid && timeGrid.style.gridTemplateColumns === '1fr';
 
       if (isDayView) {
-        // Day view: only allow time changes, no day changes
         const currentY = e.clientY - gridRect.top;
         const newHour = Math.max(0, Math.min(23, currentY / 50));
         const roundedHour = Math.floor(newHour);
         const minutes = Math.floor((newHour - roundedHour) * 60);
 
-        // Calculate new start and end times (same day, different time)
         const newStartTime = new Date(startTime);
         newStartTime.setHours(roundedHour, minutes, 0, 0);
 
@@ -236,16 +230,39 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
 
         onMove(newStartTime, newEndTime, true);
       } else {
-        // Week view: allow both day and time changes
-        const gridRect = timeGrid.getBoundingClientRect();
-        const currentX = e.clientX - gridRect.left;
-        const currentY = e.clientY - gridRect.top;
+        const currentGridRect = timeGrid.getBoundingClientRect();
+        const currentX = e.clientX - currentGridRect.left;
+        const currentY = e.clientY - currentGridRect.top;
+
+        const timeHeadersContainer = document.querySelector('.time-headers');
+        if (timeHeadersContainer) {
+          const headers = Array.from(timeHeadersContainer.querySelectorAll('div[data-date]'));
+          for (const header of headers) {
+            const headerRect = header.getBoundingClientRect();
+            if (e.clientY >= headerRect.top && e.clientY <= headerRect.bottom &&
+                e.clientX >= headerRect.left && e.clientX <= headerRect.right) {
+              const dateStr = header.getAttribute('data-date');
+              if (dateStr) {
+                const targetDate = new Date(dateStr);
+                targetDate.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+                const newEndTime = new Date(targetDate.getTime() + duration);
+                onMove(targetDate, newEndTime, true);
+                
+                header.classList.add('drag-over');
+                headers.forEach(h => {
+                  if (h !== header) h.classList.remove('drag-over');
+                });
+                return;
+              }
+            }
+          }
+          headers.forEach(h => h.classList.remove('drag-over'));
+        }
         
-        // Check if mouse is outside grid boundaries for auto-scroll
-        const scrollThreshold = 50; // pixels from edge
+        const scrollThreshold = 50;
         const isOutsideLeft = currentX < scrollThreshold;
-        const isOutsideRight = currentX > gridRect.width - scrollThreshold;
-        const isCompletelyOutside = currentX < 0 || currentX > gridRect.width;
+        const isOutsideRight = currentX > currentGridRect.width - scrollThreshold;
+        const isCompletelyOutside = currentX < 0 || currentX > currentGridRect.width;
         
         // Auto-scroll logic: start scrolling when near edges, continue when completely outside, stop only when in safe zone
         if (isOutsideLeft && !isCompletelyOutside && scrollDirection !== -1) {
@@ -344,27 +361,51 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
             onMove(newStart, newEnd, false);
           }
         } else {
-          // Week view: use scrollable system for consistency
-          const currentX = e.clientX - gridRect.left;
-          const gridDayIndex = Math.floor((currentX / gridRect.width) * 7);
-          const weekDates = getScrollableWeekDates(currentDate, weekScrollOffset);
-          const targetDate = weekDates[gridDayIndex];
-          const newScrollableDayIndex = getScrollableDayIndex(targetDate, weekScrollOffset);
-          const hourDelta = Math.round(deltaY / 50);
+          const timeHeadersContainer = document.querySelector('.time-headers');
+          let droppedOnHeader = false;
           
-          if (gridDayIndex >= 0 && gridDayIndex < 7) {
-            const daysDelta = newScrollableDayIndex - getScrollableDayIndex(startTime, weekScrollOffset);
+          if (timeHeadersContainer) {
+            const headers = Array.from(timeHeadersContainer.querySelectorAll('div[data-date]'));
+            for (const header of headers) {
+              const headerRect = header.getBoundingClientRect();
+              if (e.clientY >= headerRect.top && e.clientY <= headerRect.bottom &&
+                  e.clientX >= headerRect.left && e.clientX <= headerRect.right) {
+                const dateStr = header.getAttribute('data-date');
+                if (dateStr) {
+                  const targetDate = new Date(dateStr);
+                  targetDate.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+                  const newEndTime = new Date(targetDate.getTime() + duration);
+                  onMove(targetDate, newEndTime, false);
+                  droppedOnHeader = true;
+                  break;
+                }
+              }
+            }
+            headers.forEach(h => h.classList.remove('drag-over'));
+          }
+          
+          if (!droppedOnHeader) {
+            const currentGridRect = timeGrid.getBoundingClientRect();
+            const currentX = e.clientX - currentGridRect.left;
+            const gridDayIndex = Math.floor((currentX / currentGridRect.width) * 7);
+            const weekDates = getScrollableWeekDates(currentDate, weekScrollOffset);
             
-            if (hourDelta !== 0 || daysDelta !== 0) {
-              const newStart = new Date(startTime);
-              const newEnd = new Date(endTime);
+            if (weekDates && gridDayIndex >= 0 && gridDayIndex < 7) {
+              const targetDate = weekDates[gridDayIndex];
+              const newScrollableDayIndex = getScrollableDayIndex(targetDate, weekScrollOffset);
+              const hourDelta = Math.round(deltaY / 50);
+              const daysDelta = newScrollableDayIndex - getScrollableDayIndex(startTime, weekScrollOffset);
+              
+              if (hourDelta !== 0 || daysDelta !== 0) {
+                const newStart = new Date(startTime);
+                const newEnd = new Date(endTime);
 
-              // Apply adjustments
-              newStart.setHours(startTime.getHours() + hourDelta);
-              newStart.setDate(startTime.getDate() + daysDelta);
-              newEnd.setTime(newStart.getTime() + duration);
+                newStart.setHours(startTime.getHours() + hourDelta);
+                newStart.setDate(startTime.getDate() + daysDelta);
+                newEnd.setTime(newStart.getTime() + duration);
 
-              onMove(newStart, newEnd, false);
+                onMove(newStart, newEnd, false);
+              }
             }
           }
         }
@@ -648,30 +689,29 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
   if (isResizing) className += ' resizing';
   if (overlapInfo && overlapInfo.totalColumns > 1) className += ' overlapping';
 
-  // Handle drag start for cross-day dragging in day view
   const handleDragStartHTML5 = (e) => {
-    // Check if we're in day view
-    const timeGrid = document.querySelector('.time-grid');
-    const isDayView = timeGrid && timeGrid.style.gridTemplateColumns === '1fr';
+    const eventData = {
+      id: id,
+      start: start instanceof Date ? start.toISOString() : start,
+      end: end instanceof Date ? end.toISOString() : end,
+      title: title,
+      color: color,
+      color1: color1,
+      isRecurring: isRecurring,
+      notes: notes,
+      location: location,
+      employees: employees
+    };
     
-    if (isDayView) {
-      // Set drag data for cross-day dragging
-      const eventData = {
-        id: id,
-        start: start,
-        end: end,
-        title: title,
-        color: color,
-        color1: color1,
-        isRecurring: isRecurring,
-        notes: notes,
-        location: location,
-        employees: employees
-      };
-      
-      e.dataTransfer.setData('text/plain', JSON.stringify(eventData));
-      e.dataTransfer.effectAllowed = 'move';
-    }
+    e.dataTransfer.setData('text/plain', JSON.stringify(eventData));
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setDragImage(e.currentTarget, 0, 0);
+    
+    window.calendarEventDragging = true;
+  };
+
+  const handleDragEndHTML5 = (e) => {
+    window.calendarEventDragging = false;
   };
 
   return (
@@ -683,6 +723,7 @@ const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize
       onDoubleClick={(e) => e.preventDefault()}
       draggable={true}
       onDragStart={handleDragStartHTML5}
+      onDragEnd={handleDragEndHTML5}
     >
       {isRecurring && (
         <div className="recurring-indicator">

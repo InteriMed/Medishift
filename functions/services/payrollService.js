@@ -431,19 +431,25 @@ const getPayrollRequests = onCall(
             throw new HttpsError('unauthenticated', 'You must be logged in');
         }
 
-        const pharmacyUid = request.auth.uid;
-        const { status, limit = 50 } = request.data || {};
+        const { status, limit = 50, facilityId } = request.data || {};
+        const pharmacyUid = facilityId || request.auth.uid;
         const db = admin.firestore();
+
+        logger.info(`Fetching payroll requests for pharmacy: ${pharmacyUid}`, {
+            requestedBy: request.auth.uid,
+            status,
+            facilityId
+        });
 
         try {
             let query = db.collection('payroll_requests')
-                .where('pharmacyUid', '==', pharmacyUid)
-                .orderBy('createdAt', 'desc')
-                .limit(limit);
+                .where('pharmacyUid', '==', pharmacyUid);
 
             if (status) {
                 query = query.where('status', '==', status);
             }
+
+            query = query.orderBy('createdAt', 'desc').limit(limit);
 
             const snapshot = await query.get();
             const requests = [];
@@ -465,7 +471,19 @@ const getPayrollRequests = onCall(
             };
 
         } catch (error) {
-            logger.error('Failed to get payroll requests', { error: error.message });
+            if (error.code === 5 || error.message?.includes('NOT_FOUND') || error.message?.includes('index')) {
+                logger.info('Payroll requests collection or index not found yet, returning empty array', {
+                    pharmacyUid,
+                    error: error.message
+                });
+                return {
+                    success: true,
+                    requests: [],
+                    count: 0
+                };
+            }
+            
+            logger.error('Failed to get payroll requests', { error: error.message, code: error.code });
             throw new HttpsError('internal', error.message);
         }
     }

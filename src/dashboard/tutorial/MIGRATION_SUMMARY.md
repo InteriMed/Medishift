@@ -8,8 +8,8 @@
 ## Files Still To Move
 
 ### Context Files
-- [ ] `dashboard/contexts/TutorialContext.js` → `dashboard/tutorial/contexts/TutorialContext.js`
-  - Update import: `tutorialSteps` from `../tutorial/tutorialSteps` → `../../tutorialSteps`
+- ✅ `dashboard/contexts/TutorialContext/TutorialContext.js` - **CORRECT LOCATION - DO NOT MOVE**
+  - TutorialContext must remain in `dashboard/contexts/TutorialContext/` as the single source of truth
 
 ### Hooks
 - [ ] `dashboard/hooks/useTutorialPersistence.js` → `dashboard/tutorial/hooks/useTutorialPersistence.js`
@@ -37,8 +37,8 @@
 - Update: `from '../../contexts/tutorial/useTutorialRules'` → `from '../../tutorial/contexts/useTutorialRules'`
 
 ### Files importing from `contexts/TutorialContext`:
-- Update: `from '../../contexts/TutorialContext'` → `from '../../tutorial/contexts/TutorialContext'`
-- Update: `from '../contexts/TutorialContext'` → `from '../tutorial/contexts/TutorialContext'`
+- ✅ **CORRECT**: All imports should use `from '../../contexts/TutorialContext'` or `from '../contexts/TutorialContext'`
+- ❌ **DO NOT UPDATE**: TutorialContext stays in `dashboard/contexts/TutorialContext/` (not in tutorial/contexts/)
 
 ### Files importing tutorial hooks:
 - Update: `from '../../hooks/useTutorialPersistence'` → `from '../../tutorial/hooks/useTutorialPersistence'`
@@ -50,7 +50,8 @@
 - Update: `from '../components/modals/TutorialSelectionModal'` → `from '../tutorial/components/TutorialSelectionModal'`
 
 ## Notes
-- The main `TutorialContext.js` is heavily used throughout the app - ensure all imports are updated
+- ✅ **TutorialContext.js** is correctly located in `dashboard/contexts/TutorialContext/` - this is the ONLY location
+- All imports correctly reference `dashboard/contexts/TutorialContext/` - no changes needed
 - Some components may have relative imports that need adjustment based on their location
 - CSS module imports will need path updates in their respective JS files
 

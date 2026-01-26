@@ -35,7 +35,7 @@
       "fromDate": "From date...",
       "toDate": "To date..."
     },
-    "clear": "Clear All",
+    "clear": "Remove settings",
     "apply": "Apply Filters",
     "show": "Show Filters",
     "hide": "Hide Filters",
@@ -143,5 +143,9 @@
   "view": {
     "grid": "Grid",
     "list": "List"
+  },
+  "info": {
+    "title": "Marketplace Info",
+    "description": "Browse and search for available positions in the marketplace."
   }
 }

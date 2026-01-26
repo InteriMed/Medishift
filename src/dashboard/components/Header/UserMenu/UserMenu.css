@@ -60,7 +60,7 @@
   background-color: white;
   border: 1px solid var(--grey-2);
   border-radius: 10px;
-  z-index: 1000;
+  z-index: 200001;
   min-width: 220px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: slideDownFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);

@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
-import { PERMISSIONS } from '../admin/utils/rbac';
+import { RIGHTS as PERMISSIONS } from '../admin/utils/rbac';
 
 // Lazy-loaded components
 const PersonalDashboard = lazy(() => import('../pages/personalDashboard/PersonalDashboard'));
@@ -12,6 +12,7 @@ const Marketplace = lazy(() => import('../pages/marketplace/Marketplace'));
 const PayrollDashboard = lazy(() => import('../pages/payroll/PayrollDashboard'));
 const OrganizationDashboard = lazy(() => import('../pages/organization/OrganizationDashboard'));
 const PricingPage = lazy(() => import('../pages/pricing/PricingPage'));
+const SupportPage = lazy(() => import('../pages/support/SupportPage'));
 
 // Admin pages
 const ExecutiveDashboard = lazy(() => import('../admin/pages/ExecutiveDashboard'));
@@ -26,7 +27,7 @@ const AuditLogs = lazy(() => import('../admin/pages/system/AuditLogs'));
 const NotificationsCenter = lazy(() => import('../admin/pages/system/NotificationsCenter'));
 const RolesAndPermissions = lazy(() => import('../admin/pages/system/RolesAndPermissions'));
 const PayrollExport = lazy(() => import('../admin/pages/payroll/PayrollExport'));
-const EmployeeManagement = lazy(() => import('../admin/pages/management/EmployeeManagement'));
+const AdminManagement = lazy(() => import('../admin/pages/management/AdminManagement'));
 const LinkedInJobScraper = lazy(() => import('../admin/pages/operations/LinkedInJobScraper'));
 const GLNTestPage = lazy(() => import('../pages/glnTest/GLNTestPage'));
 const EmailCenter = lazy(() => import('../pages/admin/EmailCenter'));
@@ -86,6 +87,23 @@ export const SHARED_ROUTES = [
     label: 'Pricing',
     icon: 'DollarSign',
   },
+  {
+    id: 'marketplace',
+    path: 'marketplace',
+    component: Marketplace,
+    access: ACCESS_TYPES.ALL,
+    label: 'Marketplace',
+    icon: 'ShoppingBag',
+    passUserData: true,
+  },
+  {
+    id: 'support',
+    path: 'support',
+    component: SupportPage,
+    access: ACCESS_TYPES.ALL,
+    label: 'Support',
+    icon: 'HelpCircle',
+  },
 ];
 
 export const PROFESSIONAL_ROUTES = [
@@ -114,15 +132,6 @@ export const PROFESSIONAL_ROUTES = [
     access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
     label: 'Contracts',
     icon: 'FileText',
-    passUserData: true,
-  },
-  {
-    id: 'marketplace',
-    path: 'marketplace/*',
-    component: Marketplace,
-    access: ACCESS_TYPES.PERSONAL,
-    label: 'Marketplace',
-    icon: 'ShoppingBag',
     passUserData: true,
   },
 ];
@@ -284,11 +293,11 @@ export const ADMIN_ROUTES = [
     icon: 'FileText',
   },
   {
-    id: 'admin-employees',
-    path: 'management/employees',
-    component: EmployeeManagement,
+    id: 'admin-management',
+    path: 'management/admins',
+    component: AdminManagement,
     access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.MANAGE_EMPLOYEES,
+    permission: PERMISSIONS.MANAGE_ADMINS,
     label: 'Admin Management',
     icon: 'Shield',
   },
@@ -326,11 +335,11 @@ export const canAccessRoute = (route, workspaceType) => {
     case ACCESS_TYPES.PERSONAL:
       return workspaceType === WORKSPACE_TYPES.PERSONAL;
     case ACCESS_TYPES.FACILITY:
-      return workspaceType === WORKSPACE_TYPES.TEAM;
+      return workspaceType === WORKSPACE_TYPES.FACILITY || workspaceType === WORKSPACE_TYPES.TEAM;
     case ACCESS_TYPES.ADMIN:
       return workspaceType === WORKSPACE_TYPES.ADMIN;
     case ACCESS_TYPES.PERSONAL_OR_FACILITY:
-      return workspaceType === WORKSPACE_TYPES.PERSONAL || workspaceType === WORKSPACE_TYPES.TEAM;
+      return workspaceType === WORKSPACE_TYPES.PERSONAL || workspaceType === WORKSPACE_TYPES.FACILITY || workspaceType === WORKSPACE_TYPES.TEAM;
     default:
       return false;
   }
@@ -410,7 +419,8 @@ export const DASHBOARD_ROUTE_IDS = {
   ADMIN_EMAIL: 'admin-email',
   ADMIN_GLN_TEST: 'admin-gln-test',
   ADMIN_PAYROLL_EXPORT: 'admin-payroll-export',
-  ADMIN_EMPLOYEES: 'admin-employees'
+  ADMIN_EMPLOYEES: 'admin-employees',
+  FACILITY_EMPLOYEES: 'employees'
 };
 
 export default {

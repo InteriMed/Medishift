@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -15,12 +15,12 @@ import {
 } from 'react-icons/fi';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useSidebar } from '../../contexts/SidebarContext';
-import { useTutorial } from '../../contexts/TutorialContext';
 import { useCalendarState } from '../calendar/hooks/useCalendarState';
 import useCalendarStore from '../calendar/hooks/useCalendarStore';
 import { useCalendarEvents } from '../calendar/utils/eventDatabase';
 import useProfessionalStats from '../../hooks/useProfessionalStats';
 import { cn } from '../../../utils/cn';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
 import styles from './personalDashboard.module.css';
 import DashboardMainContent from './components/DashboardMainContent';
 import CalendarSidebar from '../calendar/components/CalendarSidebar';
@@ -28,9 +28,8 @@ import CalendarSidebar from '../calendar/components/CalendarSidebar';
 const PersonalDashboard = () => {
   const { t } = useTranslation('dashboardPersonal');
   const navigate = useNavigate();
-  const { profileComplete, isLoading: isDashboardLoading, user, selectedWorkspace } = useDashboard();
+  const { isLoading: isDashboardLoading, user, selectedWorkspace } = useDashboard();
   const { isMainSidebarCollapsed } = useSidebar();
-  const { isTutorialActive, activeTutorial } = useTutorial();
 
   const accountType = user?.role || 'professional';
   const userId = user?.uid;
@@ -74,8 +73,14 @@ const PersonalDashboard = () => {
   const {
     currentDate: calDate, setCurrentDate: setCalDate, view, setView,
     isSidebarCollapsed, setIsSidebarCollapsed,
-    handleDayClick, handleUpcomingEventClick, toggleSidebar
+    handleDayClick: originalHandleDayClick, handleUpcomingEventClick, toggleSidebar
   } = useCalendarState();
+
+  const handleDayClickForOverview = useCallback((date) => {
+    const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+    const calendarPath = buildDashboardUrl('/calendar', workspaceId);
+    navigate(calendarPath);
+  }, [navigate, selectedWorkspace]);
 
   // Track visible week for MiniCalendar highlighting
   const [visibleWeekStart, setVisibleWeekStart] = useState(() => {
@@ -136,7 +141,14 @@ const PersonalDashboard = () => {
   const upcomingJobsCount = events?.filter(e => new Date(e.start) > new Date()).length || 0;
 
   return (
-    <div className="h-full flex flex-col animate-in fade-in duration-500" style={{ overflow: 'visible' }}>
+    <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
+      <div className="shrink-0 py-4 border-b border-border bg-card/30">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
+          <h1 className="text-xl font-semibold text-foreground mb-3">
+            {t('dashboard.overview.title', 'Overview')}
+          </h1>
+        </div>
+      </div>
       <div className={cn(
         "flex-1 flex relative min-h-0 mx-4 my-4 gap-6",
       )} style={{ overflow: 'visible' }}>
@@ -145,7 +157,7 @@ const PersonalDashboard = () => {
         <div className={cn(
           "dashboard-sidebar-container",
           isMainSidebarCollapsed ? "flex" : (isSidebarCollapsed ? "hidden lg:flex w-0" : "flex"),
-          "dashboard-sidebar-container-desktop pr-0"
+          "dashboard-sidebar-container-desktop calendar-sidebar pr-0"
         )} style={{ overflow: 'visible' }}>
           <div className={cn(
             "dashboard-sidebar-inner",
@@ -158,11 +170,12 @@ const PersonalDashboard = () => {
               events={events}
               isSidebarCollapsed={isSidebarCollapsed}
               handleCreateEventClick={() => navigate('/dashboard/calendar')}
-              handleDayClick={handleDayClick}
+              handleDayClick={handleDayClickForOverview}
               toggleSidebar={toggleSidebar}
               view={view}
               visibleWeekStart={visibleWeekStart}
               visibleWeekEnd={visibleWeekEnd}
+              highlightOnlyToday={true}
             />
           </div>
         </div>
@@ -171,15 +184,15 @@ const PersonalDashboard = () => {
         <div className={cn(
           "dashboard-main-content dashboard-main-content-desktop flex-1"
         )}>
-          <div className="dashboard-main-inner flex flex-col h-full bg-background/50 rounded-2xl border border-border/50 overflow-hidden">
+          <div className="dashboard-main-inner flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden">
 
             {/* Header Tool Area with Quick Actions */}
-            <div className="shrink-0 w-full bg-white border-b border-border/60 px-6 py-4 min-h-20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="shrink-0 w-full bg-card border-b border-border px-6 py-4 min-h-20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h1 className="text-xl font-bold text-foreground tracking-tight m-0" style={{ fontFamily: 'var(--font-family-headings)' }}>
+                <h1 className="text-lg font-semibold text-foreground tracking-tight m-0" style={{ fontFamily: 'var(--font-family-headings)' }}>
                   {t('dashboard.overview.welcome')}, {user?.firstName || 'Professional'}!
                 </h1>
-                <p className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
+                <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-2">
                   <FiCalendar className="w-3.5 h-3.5" />
                   {currentDateDisplay}
                 </p>
@@ -218,7 +231,7 @@ const PersonalDashboard = () => {
               <div className="max-w-[1600px] mx-auto space-y-8">
 
                 {/* Profile Completion Banner */}
-                {!profileComplete && (
+                {false && (
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm animate-in slide-in-from-top duration-500">
                     <div className="flex gap-4">
                       <div className="p-3 bg-amber-100 rounded-full text-amber-600 shrink-0">
@@ -290,7 +303,7 @@ const StatCard = ({ title, value, icon: Icon, trend, color }) => {
   };
 
   return (
-    <div className="bg-card p-6 rounded-xl border border-border shadow-sm hover:shadow-md transition-all duration-200 group">
+    <div className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow group">
       <div className="flex justify-between items-start mb-4">
         <div className={cn("p-3 rounded-xl transition-transform group-hover:scale-110", colors[color] || colors.blue)}>
           <Icon className="w-6 h-6" />

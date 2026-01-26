@@ -209,5 +209,16 @@
   "jobPreferences": {
     "full_time": "Temps plein",
     "part_time": "Temps partiel"
+  },
+  "facilityTypes": {
+    "pharmacy": "Pharmacie",
+    "hospital": "Hôpital",
+    "clinic": "Clinique",
+    "medical_center": "Centre médical",
+    "dental_clinic": "Clinique dentaire",
+    "laboratory": "Laboratoire",
+    "nursing_home": "Maison de retraite",
+    "rehabilitation_center": "Centre de réadaptation",
+    "other": "Autre"
   }
 } 

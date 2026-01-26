@@ -224,5 +224,16 @@
   "jobPreferences": {
     "full_time": "Full Time",
     "part_time": "Part Time"
+  },
+  "facilityTypes": {
+    "pharmacy": "Pharmacy",
+    "hospital": "Hospital",
+    "clinic": "Clinic",
+    "medical_center": "Medical Center",
+    "dental_clinic": "Dental Clinic",
+    "laboratory": "Laboratory",
+    "nursing_home": "Nursing Home",
+    "rehabilitation_center": "Rehabilitation Center",
+    "other": "Other"
   }
 }

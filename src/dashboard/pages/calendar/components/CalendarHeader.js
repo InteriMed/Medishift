@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiSliders, FiX, FiCalendar, FiClock, FiPlus } from 'react-icons/fi';
+import { FiSliders, FiX, FiCalendar, FiClock, FiPlus, FiMoon } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 const CalendarHeader = ({
   currentDate,
@@ -25,6 +25,8 @@ const CalendarHeader = ({
   setShowMiniCalendar,
   showUpcomingEvents,
   setShowUpcomingEvents,
+  nightView,
+  setNightView,
 }) => {
   const { t } = useTranslation();
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -56,8 +58,8 @@ const CalendarHeader = ({
         {/* Mini Calendar Toggle */}
         <button
           className={cn(
-            "flex items-center justify-center rounded-xl transition-all border-2",
-            showMiniCalendar ? "bg-primary/10 text-primary border-primary/30" : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+            "flex items-center justify-center rounded-xl transition-all",
+            showMiniCalendar ? "bg-primary/10 text-primary" : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
           )}
           style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
           onClick={() => setShowMiniCalendar(!showMiniCalendar)}
@@ -69,8 +71,8 @@ const CalendarHeader = ({
         {/* Upcoming Events Toggle */}
         <button
           className={cn(
-            "flex items-center justify-center rounded-xl transition-all border-2",
-            showUpcomingEvents ? "bg-primary/10 text-primary border-primary/30" : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+            "flex items-center justify-center rounded-xl transition-all",
+            showUpcomingEvents ? "bg-primary/10 text-primary" : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
           )}
           style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
           onClick={() => setShowUpcomingEvents(!showUpcomingEvents)}
@@ -97,77 +99,64 @@ const CalendarHeader = ({
           {t('calendar:today')}
         </button>
 
-        {calendarMode === 'calendar' && (
-          <>
-            <div className="h-6 w-px bg-border/50 hidden md:block" />
+        <>
+          <div className="h-6 w-px bg-border/50 hidden md:block" />
 
-            {/* View Toggle - Only show in calendar mode */}
-            <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-              <button
-                className={cn(
-                  "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
-                  view === 'day'
-                    ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
-                )}
-                onClick={() => {
-                  setView('day');
-                }}
-              >
-                {t('calendar:dayView')}
-              </button>
-              <button
-                className={cn(
-                  "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
-                  view === 'week'
-                    ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
-                )}
-                onClick={() => setView('week')}
-              >
-                {t('calendar:weekView')}
-              </button>
-            </div>
-          </>
-        )}
+          {/* View Toggle - Show in both calendar and team modes */}
+          <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
+            <button
+              className={cn(
+                "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
+                view === 'day'
+                  ? "bg-background text-foreground shadow-sm border-2"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
+              )}
+              style={view === 'day' ? { borderColor: 'var(--color-logo-1)' } : {}}
+              onClick={() => {
+                setView('day');
+              }}
+            >
+              {t('calendar:dayView')}
+            </button>
+            <button
+              className={cn(
+                "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
+                view === 'week'
+                  ? "bg-background text-foreground shadow-sm border-2"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
+              )}
+              style={view === 'week' ? { borderColor: 'var(--color-logo-1)' } : {}}
+              onClick={() => setView('week')}
+            >
+              {t('calendar:weekView')}
+            </button>
+          </div>
+        </>
       </div>
 
-      {/* Center: New Appointment Button - Always visible in calendar mode */}
-      {calendarMode === 'calendar' && (
-        <div className="flex items-center justify-center">
-          <button
-            className="new-appointment-button flex items-center gap-2 px-4 text-sm font-medium rounded-xl transition-all bg-primary text-primary-foreground hover:bg-primary/90"
-            style={{ height: 'var(--boxed-inputfield-height)' }}
-            onClick={handleCreateEventClick}
-            title={t('calendar:newAppointment')}
-          >
-            <FiPlus className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('calendar:newAppointment')}</span>
-          </button>
-        </div>
-      )}
-
-      {/* Center: Calendar/Team Toggle - Only show for team workspaces */}
+      {/* Center: Calendar/Team Toggle - Show for team workspaces (visible in night mode too) */}
       {isTeamWorkspace && (
         <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input absolute left-1/2 -translate-x-1/2" style={{ height: 'var(--boxed-inputfield-height)' }}>
           <button
             className={cn(
-              "px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0",
+              "px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 border-2",
               calendarMode === 'calendar'
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-transparent"
             )}
+            style={calendarMode === 'calendar' ? { borderColor: 'var(--color-logo-1)' } : {}}
             onClick={() => setCalendarMode('calendar')}
           >
             {t('calendar:calendarView', 'Calendar')}
           </button>
           <button
             className={cn(
-              "px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0",
+              "px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 border-2",
               calendarMode === 'team'
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-transparent"
             )}
+            style={calendarMode === 'team' ? { borderColor: 'var(--color-logo-1)' } : {}}
             onClick={() => setCalendarMode('team')}
           >
             {t('calendar:teamView', 'Team')}
@@ -175,19 +164,31 @@ const CalendarHeader = ({
         </div>
       )}
 
-      {/* Right: Filters & Actions - Only show in calendar mode */}
-      {calendarMode === 'calendar' && (
-        <div className="flex items-center gap-2 flex-1 justify-end">
+      {/* Right: Filters & Actions */}
+      <div className="flex items-center gap-2 flex-1 justify-end">
+        {/* Night View Button - Show in both calendar and team modes */}
+        <button
+          className={cn(
+            "flex items-center justify-center rounded-xl transition-all",
+            nightView ? "bg-primary/10 text-primary" : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
+          )}
+          style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
+          onClick={() => setNightView(!nightView)}
+          title={nightView ? "Day View" : "Night View"}
+        >
+          <FiMoon className="w-4 h-4" />
+        </button>
 
-        {/* Category Filter */}
+        {/* Category Filter - Show in both calendar and team modes */}
         <div className="relative" ref={categoryDropdownRef}>
           <button
             className={cn(
-              "p-1.5 rounded-full transition-colors relative",
-              showCategoryDropdown
+              "flex items-center justify-center rounded-xl transition-all",
+              showCategoryDropdown || hasActiveFilters
                 ? "bg-primary/10 text-primary"
-                : "hover:bg-muted text-muted-foreground"
+                : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
             )}
+            style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
             onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
             title={t('calendar:filterCategories')}
           >
@@ -197,11 +198,14 @@ const CalendarHeader = ({
           {showCategoryDropdown && (
             <div className="absolute right-0 top-full mt-2 w-64 bg-card rounded-lg shadow-xl border border-border p-2 z-30 animate-in fade-in zoom-in-95 duration-200">
               <div className="px-3 py-2 border-b border-border/50 mb-2 flex justify-between items-center">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('calendar:categories')}</span>
+                <span className="text-sm font-medium text-foreground">{t('calendar:categories')}</span>
                 {hasActiveFilters && (
                   <button
-                    onClick={onResetCategories}
-                    className="text-[10px] text-primary hover:underline"
+                    onClick={() => {
+                      onResetCategories();
+                      setShowCategoryDropdown(false);
+                    }}
+                    className="text-xs text-primary hover:underline font-medium"
                   >
                     {t('calendar:reset')}
                   </button>
@@ -237,7 +241,7 @@ const CalendarHeader = ({
                     </div>
 
                     <div className="flex items-center gap-2 select-none">
-                      <span className="text-xs font-medium text-foreground">{category.name}</span>
+                      <span className="text-sm text-foreground">{category.name}</span>
                     </div>
                   </label>
                 ))}
@@ -246,21 +250,16 @@ const CalendarHeader = ({
           )}
         </div>
 
-        {/* Clear Filters Button */}
+        {/* Create Event Button */}
         <button
-          onClick={onResetCategories}
-          className={cn(
-            "flex items-center justify-center rounded-xl border-2 border-input hover:bg-muted hover:border-muted-foreground/30 text-muted-foreground transition-all",
-            !hasActiveFilters && "opacity-50 cursor-not-allowed hover:bg-transparent hover:border-input"
-          )}
+          className="flex items-center justify-center rounded-xl transition-all bg-primary text-primary-foreground hover:bg-primary/90"
           style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
-          disabled={!hasActiveFilters}
-          title={t('calendar:resetAll')}
+          onClick={handleCreateEventClick}
+          title={t('calendar:newAppointment')}
         >
-          <FiX className="w-4 h-4" />
+          <FiPlus className="w-4 h-4" />
         </button>
       </div>
-      )}
     </div>
   );
 };
@@ -295,7 +294,9 @@ CalendarHeader.propTypes = {
   showMiniCalendar: PropTypes.bool,
   setShowMiniCalendar: PropTypes.func,
   showUpcomingEvents: PropTypes.bool,
-  setShowUpcomingEvents: PropTypes.func
+  setShowUpcomingEvents: PropTypes.func,
+  nightView: PropTypes.bool,
+  setNightView: PropTypes.func
 };
 
 export default CalendarHeader; 

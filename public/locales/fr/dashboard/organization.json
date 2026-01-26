@@ -5,7 +5,9 @@
   "tabs": {
     "chain": "Chaîne",
     "openingHours": "Heures d'ouverture",
-    "facilityRoles": "Rôles de l'établissement"
+    "facilityRoles": "Rôles de l'établissement",
+    "employees": "Employés",
+    "profile": "Profil"
   },
   "sections": {
     "info": "Info Organisation",
@@ -145,6 +147,7 @@
   "organigram": {
     "fireSuccess": "Fire Success",
     "fireError": "Fire Error",
+    "hqTitle": "Siège social",
     "admins": "Admins",
     "unassigned": "Unassigned",
     "title": "Title",
@@ -163,5 +166,13 @@
     "fireWarning": "Fire Warning",
     "firePrompt": "Fire Prompt",
     "toConfirm": "To Confirm"
+  },
+  "hq": {
+    "tools": "Outils"
+  },
+  "directory": {
+    "title": "Répertoire des employés",
+    "searchPlaceholder": "Rechercher des employés...",
+    "emptyState": "Aucun employé trouvé"
   }
 }

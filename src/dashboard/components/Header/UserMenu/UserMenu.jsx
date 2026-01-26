@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FiSettings, FiGlobe } from 'react-icons/fi';
+import { FiSettings, FiGlobe, FiHelpCircle } from 'react-icons/fi';
 import { useAuth } from '../../../../contexts/AuthContext';
 import Button from '../../../../components/BoxedInputFields/Button'; // Import the Button component
 import './UserMenu.css'; // Import the CSS file
@@ -95,6 +95,13 @@ const UserMenu = () => {
               <FiSettings />
             </div>
             {getTranslation('userMenu.settings', 'Settings')}
+          </Link>
+          
+          <Link to={`/${lang}/dashboard/support`} className="menu-item">
+            <div className="menu-item-icon-wrapper">
+              <FiHelpCircle />
+            </div>
+            {getTranslation('userMenu.support', 'Support')}
           </Link>
           
           <div className="menu-divider"></div>

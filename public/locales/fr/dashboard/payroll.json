@@ -66,7 +66,8 @@
   },
   "errors": {
     "fetchFailed": "Échec du chargement des demandes de paie",
-    "createFailed": "Échec de la création de la demande de paie"
+    "createFailed": "Échec de la création de la demande de paie",
+    "functionNotFound": "Le service de paie est actuellement en cours de synchronisation..."
   },
   "success": {
     "created": "Demande de paie créée avec succès"

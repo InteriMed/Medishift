@@ -7,9 +7,7 @@ import { uploadFile } from '../../../../services/storageService';
 import { processDocumentWithAI, mergeExtractedData, getCachedExtractedData, saveCachedExtractedData } from '../../../../services/documentProcessingService';
 import { useDropdownOptions } from '../utils/DropdownListsImports';
 import { isTabCompleted } from '../utils/profileUtils';
-import { isProfileTutorial } from '../../../../config/tutorialSystem';
-
-export const useProfileDocumentProcessing = (formData, profileConfig, setFormData, updateProfileData, validateCurrentTabData, getNestedValue, isTutorialActive, activeTutorial, onTabCompleted, onProfileComplete) => {
+export const useProfileDocumentProcessing = (formData, profileConfig, setFormData, updateProfileData, validateCurrentTabData, getNestedValue, onProfileComplete) => {
     const { t } = useTranslation(['dashboardProfile', 'common']);
     const { currentUser } = useAuth();
     const { showNotification } = useNotification();
@@ -188,11 +186,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
                         isTabCompleted(savedData, tab.id, profileConfig)
                     );
 
-                    if (allTabsComplete && isTutorialActive && isProfileTutorial(activeTutorial)) {
-                        const isDocumentTabComplete = isTabCompleted(savedData, 'documentUploads', profileConfig);
-                        if (isDocumentTabComplete && onTabCompleted) {
-                            onTabCompleted('documentUploads', true);
-                        }
+                    if (allTabsComplete) {
                         if (onProfileComplete) {
                             onProfileComplete();
                         }
@@ -217,7 +211,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
             setFileUploadError(t('dashboardProfile:documents.uploadError', 'Error uploading document'));
             showNotification(t('dashboardProfile:documents.uploadError', 'Error uploading document'), 'error');
         }
-    }, [currentUser, isProfessional, formData, profileConfig, selectedDocumentType, selectedFile, showNotification, t, updateProfileData, processAndFillProfile, handleCloseAutoFillDialog, getNestedValue, setFormData, isTutorialActive, activeTutorial, onTabCompleted, onProfileComplete]);
+    }, [currentUser, isProfessional, formData, profileConfig, selectedDocumentType, selectedFile, showNotification, t, updateProfileData, processAndFillProfile, handleCloseAutoFillDialog, getNestedValue, setFormData, onProfileComplete]);
 
     const handleUploadButtonClick = useCallback(() => {
         if (uploadInputRef.current) {
@@ -256,7 +250,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
                     isTabCompleted(savedData, tab.id, profileConfig)
                 );
 
-                if (allTabsComplete && isTutorialActive && isProfileTutorial(activeTutorial)) {
+                if (allTabsComplete) {
                     if (onProfileComplete) {
                         onProfileComplete();
                     }
@@ -272,7 +266,7 @@ export const useProfileDocumentProcessing = (formData, profileConfig, setFormDat
         } finally {
             setIsSubmitting(false);
         }
-    }, [extractedData, formData, updateProfileData, showNotification, t, setFormData, validateCurrentTabData, profileConfig, isTutorialActive, activeTutorial, onProfileComplete]);
+    }, [extractedData, formData, updateProfileData, showNotification, t, setFormData, validateCurrentTabData, profileConfig, onProfileComplete]);
 
     const handleFillEmptyFields = useCallback(() => {
         applyExtractedData();

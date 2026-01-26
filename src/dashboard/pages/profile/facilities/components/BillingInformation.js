@@ -35,7 +35,7 @@ const styles = {
   sectionsWrapper: "facility-billing-sections-wrapper w-full max-w-[1400px] mx-auto",
   leftColumn: "flex flex-col gap-6 flex-1",
   rightColumn: "flex flex-col gap-6 flex-1",
-  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full overflow-visible",
+  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative overflow-visible",
   cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
   cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
@@ -60,8 +60,6 @@ const BillingInformation = ({
   onCancel,
   getNestedValue,
   validateCurrentTabData,
-  onTabCompleted,
-  isTutorialActive,
   completionPercentage,
   handleAutoFillClick,
   isUploading,
@@ -71,9 +69,10 @@ const BillingInformation = ({
   handleFileUpload,
   uploadProgress,
   t: tProp,
-  stepData
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
+  const isTutorialActive = false;
+  const stepData = null;
   const [showBankingAccessModal, setShowBankingAccessModal] = useState(false);
   const [hasBankingAccess, setHasBankingAccess] = useState(false);
 
@@ -212,8 +211,6 @@ const BillingInformation = ({
     getNestedValue,
     extractTabData: extractBillingData,
     validateCurrentTabData,
-    onTabCompleted,
-    isTutorialActive,
     disableLocalStorage: true
   });
 
@@ -472,69 +469,6 @@ const BillingInformation = ({
         }
       `}</style>
       <div className={styles.sectionContainer}>
-        <div className={styles.headerCard}>
-          <div className="billing-information-header-grid">
-            <div className="header-title-row">
-              <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('billingInformation.title')}</h2>
-              <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('billingInformation.subtitle', 'Manage your banking details and billing information for payments.')}</p>
-            </div>
-
-            {isTutorialActive && (
-              <>
-                <div className="header-completion-centered">
-                  {formData && completionPercentage !== undefined && (
-                    <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                      <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                      <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                        <div
-                          className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                          style={{ width: `${completionPercentage}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="header-autofill-right">
-                  <div className="relative" ref={autoFillButtonRef}>
-                    <button
-                      onClick={handleAutoFillClick}
-                      disabled={isUploading || isAnalyzing}
-                      className={cn(
-                        "group px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0",
-                        (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
-                        (stepData?.highlightUploadButton) && "tutorial-highlight"
-                      )}
-                      style={{ height: 'var(--boxed-inputfield-height)', backgroundColor: 'rgba(255, 191, 14, 1)' }}
-                      data-tutorial="profile-upload-button"
-                    >
-                      {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4 text-muted-foreground group-hover:text-black transition-colors" />}
-                      <span className="text-sm font-medium text-muted-foreground group-hover:text-black transition-colors">
-                        {isAnalyzing
-                          ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
-                          : t('dashboardProfile:documents.autofill', 'Auto Fill')
-                        }
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-          {isTutorialActive && uploadInputRef && (
-            <UploadFile
-              ref={uploadInputRef}
-              onChange={handleFileUpload}
-              isLoading={isUploading}
-              progress={uploadProgress}
-              accept=".pdf,.doc,.docx,.jpg,.png"
-              label=""
-              className="hidden"
-            />
-          )}
-        </div>
-
         <div className={styles.sectionsWrapper}>
           <div className={styles.leftColumn}>
             {groupedFields.legal && (

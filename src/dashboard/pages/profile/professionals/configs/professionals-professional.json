@@ -448,6 +448,14 @@
         "defaultValue": true
       },
       {
+        "name": "notificationPreferences.push",
+        "type": "checkbox",
+        "required": false,
+        "labelKey": "settings.pushNotifications",
+        "group": "notifications",
+        "defaultValue": true
+      },
+      {
         "name": "notificationPreferences.marketplaceUpdates",
         "type": "checkbox",
         "required": false,

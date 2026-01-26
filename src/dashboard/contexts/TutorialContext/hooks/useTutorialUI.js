@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { debounce } from '../../../../utils/debounce';
-import { isProfileTutorial, PROFILE_TAB_IDS } from '../../../../config/tutorialSystem';
+import { isProfileTutorial, PROFILE_TAB_IDS } from '../config/tutorialSystem';
 
 export const useTutorialUI = (state) => {
     const {

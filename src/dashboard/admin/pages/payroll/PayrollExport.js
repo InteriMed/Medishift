@@ -40,7 +40,9 @@ const PayrollExport = () => {
             const professionalUsers = usersSnapshot.docs.filter(docSnap => {
                 const data = docSnap.data();
                 const role = data.role?.toLowerCase();
-                const roles = (Array.isArray(data.roles) ? data.roles : []).map(r => r.toLowerCase());
+                const roles = (Array.isArray(data.roles) ? data.roles : [])
+                    .filter(r => typeof r === 'string')
+                    .map(r => r.toLowerCase());
                 return role === 'professional' || roles.includes('professional') || data.isProfessionalProfileComplete;
             });
 
@@ -398,7 +400,9 @@ const PayrollExport = () => {
             const professionalDocs = usersSnapshot.docs.filter(docSnap => {
                 const data = docSnap.data();
                 const role = data.role?.toLowerCase();
-                const roles = (Array.isArray(data.roles) ? data.roles : []).map(r => r.toLowerCase());
+                const roles = (Array.isArray(data.roles) ? data.roles : [])
+                    .filter(r => typeof r === 'string')
+                    .map(r => r.toLowerCase());
                 return role === 'professional' || roles.includes('professional') || data.isProfessionalProfileComplete;
             });
 

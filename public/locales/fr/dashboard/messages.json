@@ -3,7 +3,10 @@
     "personal": "Messages personnels",
     "personalDesc": "Messages liés à votre profil professionnel",
     "facility": "Messages de l'établissement",
-    "facilityDesc": "Messages liés aux opérations de l'établissement"
+    "facilityDesc": "Messages liés aux opérations de l'établissement",
+    "conversations": "Conversations",
+    "threads": "Communication",
+    "threadsLocked": "La communication est uniquement disponible pour les membres d'un établissement"
   },
   "noConversations": "Aucune conversation",
   "noConversationsHint": "Démarrez des conversations via les interactions du marketplace",
@@ -24,6 +27,7 @@
   "errors": {
     "loadingConversations": "Échec du chargement des conversations",
     "loadingMessages": "Échec du chargement des messages",
+    "loadingThreads": "Échec du chargement de la communication",
     "sendingMessage": "Échec de l'envoi du message",
     "title": "Titre",
     "description": "Description",
@@ -50,6 +54,7 @@
   "filters": {
     "all": "Tous",
     "unreadOnly": "Uniquement non lus",
+    "unresponded": "Sans réponse",
     "date": {
       "all": "Toute la période",
       "lastWeek": "La semaine dernière",
@@ -66,7 +71,12 @@
     "startConversation": "Démarrer une conversation",
     "noMessagesInChat": "Aucun message dans le chat",
     "startChatting": "Commencer à discuter",
-    "noConversationsFound": "Aucune conversation trouvée"
+    "noConversationsFound": "Aucune conversation trouvée",
+    "noThreadsFound": "Aucune communication trouvée",
+    "noThreadsYet": "Aucune communication pour le moment",
+    "startThread": "Démarrer une nouvelle communication",
+    "threadsLocked": "Communication indisponible",
+    "threadsLockedDescription": "La communication est uniquement disponible pour les utilisateurs qui appartiennent à un établissement"
   },
   "status": {
     "you": "Vous",

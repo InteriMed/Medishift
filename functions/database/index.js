@@ -305,7 +305,9 @@ exports.updateUserProfile = onCallV2(
           if (profileCollection === 'facilityProfiles') {
             profileFieldsToUpdate.employees = profileFieldsToUpdate.employees || [{
               user_uid: userId,
-              roles: ['admin']
+              uid: userId,
+              roles: ['admin'],
+              rights: []
             }];
             if (!profileFieldsToUpdate.facilityProfileId) {
               profileFieldsToUpdate.facilityProfileId = userId;
@@ -841,61 +843,6 @@ const onContractUpdate = onDocumentUpdated({
   }
 });
 
-const { seedMedishiftDemoFacility, removeMedishiftDemoFacility, MEDISHIFT_DEMO_FACILITY_ID } = require('./seedMedishiftDemoFacility');
-
-const seedDemoFacility = onCallV2(
-  {
-    region: 'europe-west6',
-    enforceAppCheck: false
-  },
-  async (request) => {
-    if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'You must be logged in');
-    }
-
-    const userId = request.auth.uid;
-    const adminDoc = await db.collection('admins').doc(userId).get();
-
-    if (!adminDoc.exists || adminDoc.data().isActive === false) {
-      throw new HttpsError('permission-denied', 'Only admins can seed the demo facility');
-    }
-
-    try {
-      const result = await seedMedishiftDemoFacility();
-      return result;
-    } catch (error) {
-      console.error('Error seeding demo facility:', error);
-      throw new HttpsError('internal', error.message);
-    }
-  }
-);
-
-const removeDemoFacility = onCallV2(
-  {
-    region: 'europe-west6',
-    enforceAppCheck: false
-  },
-  async (request) => {
-    if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'You must be logged in');
-    }
-
-    const userId = request.auth.uid;
-    const adminDoc = await db.collection('admins').doc(userId).get();
-
-    if (!adminDoc.exists || adminDoc.data().isActive === false) {
-      throw new HttpsError('permission-denied', 'Only admins can remove the demo facility');
-    }
-
-    try {
-      const result = await removeMedishiftDemoFacility();
-      return result;
-    } catch (error) {
-      console.error('Error removing demo facility:', error);
-      throw new HttpsError('internal', error.message);
-    }
-  }
-);
 
 module.exports = {
   createUserProfile: exports.createUserProfile,
@@ -904,8 +851,5 @@ module.exports = {
   updateUserProfile: exports.updateUserProfile,
   onContractCreate,
   onContractUpdate,
-  onPositionUpdate,
-  seedDemoFacility,
-  removeDemoFacility,
-  MEDISHIFT_DEMO_FACILITY_ID
+  onPositionUpdate
 }; 

@@ -3,7 +3,7 @@
 ## Current Structure
 Tutorial-related files are scattered across multiple locations:
 - `dashboard/tutorial/` - Core tutorial files
-- `dashboard/contexts/TutorialContext.js` - Main context
+- `dashboard/contexts/TutorialContext/` - **Main context (CORRECT LOCATION - DO NOT MOVE)**
 - `dashboard/contexts/tutorial/` - Context utilities
 - `dashboard/hooks/` - Tutorial hooks
 - `dashboard/onboarding/components/` - Tutorial components
@@ -15,6 +15,8 @@ Tutorial-related files are scattered across multiple locations:
 ## Target Structure
 All tutorial files will be organized under `dashboard/tutorial/`:
 
+**NOTE**: TutorialContext.js must remain in `dashboard/contexts/TutorialContext/` as the single source of truth.
+
 ```
 dashboard/tutorial/
 ├── Tutorial.js (core - already here)
@@ -22,7 +24,7 @@ dashboard/tutorial/
 ├── TutorialMockData.js (already here)
 ├── tutorialSteps.js (already here)
 ├── contexts/
-│   ├── TutorialContext.js (move from dashboard/contexts/)
+│   ├── TutorialContext.js (❌ DO NOT MOVE - stays in dashboard/contexts/TutorialContext/)
 │   ├── useTutorialLifecycle.js (move from contexts/tutorial/)
 │   ├── useTutorialRules.js (move from contexts/tutorial/)
 │   └── tutorialReducer.js (move from contexts/tutorial/)
@@ -46,6 +48,6 @@ dashboard/tutorial/
 ## Files to Update Imports
 After moving files, update imports in:
 - All files importing from old locations
-- TutorialContext.js (update tutorialSteps import)
+- TutorialContext.js (update tutorialSteps import) - **NOTE**: TutorialContext stays in dashboard/contexts/TutorialContext/
 - All components using tutorial hooks/contexts
 

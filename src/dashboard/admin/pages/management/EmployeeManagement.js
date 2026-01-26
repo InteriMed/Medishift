@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { db, firebaseApp } from '../../../../services/firebase';
 import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { UserPlus, Shield, Mail, Search, CheckCircle, XCircle, User } from 'lucide-react';
+import { UserPlus, Shield, Mail, Search, CheckCircle, XCircle, User, FileCheck, FileText } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -23,6 +23,15 @@ const EmployeeManagement = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('ops_manager');
   const [inviting, setInviting] = useState(false);
+
+  const roleLabels = {
+    super_admin: 'Super Admin',
+    ops_manager: 'Operations Manager',
+    finance: 'Finance',
+    recruiter: 'Recruiter',
+    support: 'Support',
+    external_payroll: 'External Payroll'
+  };
 
   useEffect(() => {
     loadEmployees();
@@ -185,15 +194,6 @@ const EmployeeManagement = () => {
     );
   });
 
-  const roleLabels = {
-    super_admin: 'Super Admin',
-    ops_manager: 'Operations Manager',
-    finance: 'Finance',
-    recruiter: 'Recruiter',
-    support: 'Support',
-    external_payroll: 'External Payroll'
-  };
-
   if (loading) {
     return (
       <ProtectedRoute requiredPermission={PERMISSIONS.MANAGE_EMPLOYEES}>
@@ -220,7 +220,7 @@ const EmployeeManagement = () => {
           </h2>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)', alignItems: 'end' }}>
-            <div style={{ gridColumn: 'span 2' }}>
+            <div style={{ gridColumn: 'span 2', marginTop: 'var(--spacing-md)' }}>
               <PersonnalizedInputField
                 label={t('admin:management.email', 'Email')}
                 type="email"
@@ -253,20 +253,55 @@ const EmployeeManagement = () => {
         </div>
 
         <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-lg)', border: '1px solid var(--grey-2)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
-            <h2 style={{ fontSize: 'var(--font-size-large)', fontWeight: 'var(--font-weight-medium)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-              <Shield size={20} />
-              {t('admin:management.employees', 'Administrators')} ({filteredEmployees.length})
-            </h2>
-            <div style={{ position: 'relative', width: '300px' }}>
-              <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light-color)' }} />
-              <input
-                type="text"
-                placeholder={t('admin:management.search', 'Search admins...')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: '100%', paddingLeft: '36px', paddingRight: '12px', paddingTop: '10px', paddingBottom: '10px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--grey-2)', outline: 'none', fontSize: 'var(--font-size-small)' }}
-              />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--spacing-md)', alignItems: 'stretch', marginBottom: 'var(--spacing-lg)' }}>
+            {/* Column 1: Interview Scorecards */}
+            <div style={{ border: '1px solid var(--grey-2)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'background-color var(--transition-fast)' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--grey-1-light)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--primary-color-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--spacing-md)', color: 'var(--primary-color)' }}>
+                <FileCheck size={24} />
+              </div>
+              <h3 style={{ fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)', marginBottom: 'var(--spacing-xs)', color: 'var(--text-color)' }}>
+                Interview Scorecards
+              </h3>
+              <p style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)', margin: 0 }}>
+                Create and manage standardized interview templates for all facilities to ensure consistent hiring quality.
+              </p>
+            </div>
+
+            {/* Column 2: Search Bar */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-xs)' }}>
+                <h2 style={{ fontSize: 'var(--font-size-large)', fontWeight: 'var(--font-weight-medium)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', margin: 0 }}>
+                  <Shield size={20} />
+                  {t('admin:management.employees', 'Administrators')} ({filteredEmployees.length})
+                </h2>
+              </div>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light-color)' }} />
+                <input
+                  type="text"
+                  placeholder={t('admin:management.search', 'Search admins...')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{ width: '100%', paddingLeft: '36px', paddingRight: '12px', paddingTop: '10px', paddingBottom: '10px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--grey-2)', outline: 'none', fontSize: 'var(--font-size-small)' }}
+                />
+              </div>
+            </div>
+
+            {/* Column 3: Automated Offer Letters */}
+            <div style={{ border: '1px solid var(--grey-2)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'background-color var(--transition-fast)' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--grey-1-light)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--primary-color-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--spacing-md)', color: 'var(--primary-color)' }}>
+                <FileText size={24} />
+              </div>
+              <h3 style={{ fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)', marginBottom: 'var(--spacing-xs)', color: 'var(--text-color)' }}>
+                Automated Offer Letters
+              </h3>
+              <p style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)', margin: 0 }}>
+                Configure offer letter templates with dynamic fields for instant generation and sending.
+              </p>
             </div>
           </div>
 
@@ -340,17 +375,19 @@ const EmployeeManagement = () => {
       {/* Invite Preview Modal */}
       {showInviteModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-lg)', padding: 'var(--spacing-xl)', width: '100%', maxWidth: '500px', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--grey-2)' }}>
+          <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-lg)', padding: 'var(--spacing-xl)', width: '100%', maxWidth: '500px', minHeight: '450px', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--grey-2)' }}>
             <h3 style={{ fontSize: 'var(--font-size-xlarge)', fontWeight: 'var(--font-weight-bold)', marginBottom: 'var(--spacing-lg)', color: 'var(--text-color)' }}>
               Confirm Invitation
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-              <PersonnalizedInputField
-                label="Recipient Email"
-                value={invitePreview.email}
-                onChange={(e) => setInvitePreview({ ...invitePreview, email: e.target.value })}
-              />
+              <div style={{ marginTop: 'var(--spacing-md)' }}>
+                <PersonnalizedInputField
+                  label="Recipient Email"
+                  value={invitePreview.email}
+                  onChange={(e) => setInvitePreview({ ...invitePreview, email: e.target.value })}
+                />
+              </div>
 
               <PersonnalizedInputField
                 label="Email Subject"

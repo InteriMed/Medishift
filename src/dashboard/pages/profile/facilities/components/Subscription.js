@@ -15,8 +15,6 @@ const Subscription = ({
   onCancel,
   getNestedValue,
   validateCurrentTabData,
-  onTabCompleted,
-  isTutorialActive
 }) => {
   const { t } = useTranslation(['dashboardProfile', 'common']);
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -29,8 +27,6 @@ const Subscription = ({
     onSave,
     getNestedValue,
     validateCurrentTabData,
-    onTabCompleted,
-    isTutorialActive
   });
 
   const currentSubscription = useMemo(() => {
@@ -269,8 +265,6 @@ Subscription.propTypes = {
   onCancel: PropTypes.func.isRequired,
   getNestedValue: PropTypes.func.isRequired,
   validateCurrentTabData: PropTypes.func,
-  onTabCompleted: PropTypes.func,
-  isTutorialActive: PropTypes.bool
 };
 
 export default Subscription;

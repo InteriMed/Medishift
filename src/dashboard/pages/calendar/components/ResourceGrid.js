@@ -22,7 +22,10 @@ const ResourceGrid = ({
     onEventMove,
     profileData,
     onUpdateProfileData,
-    isLoadingProfile = false
+    isLoadingProfile = false,
+    scrollContainerRef,
+    headerScrollRef,
+    nightView = false
 }) => {
     const { t } = useTranslation(['calendar', 'dashboard', 'dashboardProfile']);
     const navigate = useNavigate();
@@ -31,13 +34,24 @@ const ResourceGrid = ({
     const [editingRole, setEditingRole] = useState(null);
     const [teamMembers, setTeamMembers] = useState([]);
 
-    // Generate dates based on view
+    // Generate dates based on view and night view mode
     const dates = useMemo(() => {
-        if (view === 'day') {
-            return [currentDate];
+        if (nightView) {
+            // Night view: show half previous day + half next day for each date
+            const baseDates = view === 'day' ? [currentDate] : getWeekDates(currentDate);
+            return baseDates.flatMap(date => {
+                const prevDay = new Date(date);
+                prevDay.setDate(prevDay.getDate() - 1);
+                const nextDay = new Date(date);
+                nextDay.setDate(nextDay.getDate() + 1);
+                return [{ date: prevDay, isHalf: true, side: 'second' }, { date: nextDay, isHalf: true, side: 'first' }];
+            });
         }
-        return getWeekDates(currentDate);
-    }, [currentDate, view]);
+        if (view === 'day') {
+            return [{ date: currentDate, isHalf: false }];
+        }
+        return getWeekDates(currentDate).map(date => ({ date, isHalf: false }));
+    }, [currentDate, view, nightView]);
 
 
     // Group events by employee and date for efficient rendering
@@ -252,144 +266,27 @@ const ResourceGrid = ({
     };
 
     return (
-        <div className="flex flex-1 overflow-hidden h-full bg-background border rounded-lg shadow-sm" style={{ minHeight: '600px' }}>
-            {/* Sidebar: Facility Roles List */}
-            <div className="w-56 flex-shrink-0 border-r border-border bg-card z-10 flex flex-col">
-                {/* Header Spacer - Clickable for Organization Settings */}
-                <button
-                    className="h-20 border-b border-border flex items-center justify-center gap-2 px-4 bg-muted/30 w-full hover:bg-muted/50 transition-colors group"
-                    onClick={() => navigate('/dashboard/organization?tab=organigram')}
-                    title={t('dashboard:dashboard.sidebar.organization')}
-                >
-                    <FiSettings className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:rotate-90 group-hover:scale-110" />
-                    <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground uppercase tracking-wider transition-colors">
-                        {t('dashboardProfile:operations.facilityRolesTitle')}
-                    </span>
-                </button>
-
-                {/* Add Team Member Button */}
-                <button
-                    className="h-12 border-b border-border flex items-center justify-center gap-2 px-4 bg-primary/5 hover:bg-primary/10 w-full transition-colors group"
-                    onClick={() => navigate('/dashboard/organization?tab=organigram')}
-                    title={t('dashboardProfile:operations.addTeamMember', 'Add Team Member')}
-                >
-                    <FiPlus className="w-4 h-4 text-primary group-hover:scale-110 transition-all" />
-                    <span className="text-xs font-semibold text-primary">
-                        {t('dashboardProfile:operations.addTeamMember', 'Add Team Member')}
-                    </span>
-                </button>
-
-                {/* Facility Roles Rows */}
-                <div className="flex-1 overflow-hidden overflow-y-auto custom-scrollbar">
-                    {shouldShowLoading ? (
-                        <div className="flex items-center justify-center h-full min-h-[200px]">
-                            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                        </div>
-                    ) : (
-                        expandedFacilityRoles.map(role => (
-                            <div
-                                key={role.uniqueKey}
-                                className="h-16 border-b border-border flex items-center px-4 relative group hover:bg-muted/50 transition-colors cursor-pointer"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    const originalRole = facilityRoles.find(r => r.id === role.id);
-                                    setEditingRole(originalRole);
-                                    setShowAddRoleModal(true);
-                                }}
-                            >
-                                {/* Color Strip */}
-                                <div
-                                    className="absolute left-0 top-0 bottom-0 w-1"
-                                    style={{ backgroundColor: role.color || '#cbd5e1' }}
-                                />
-                                <div className="pl-2 overflow-hidden flex-1">
-                                    <div className="font-medium text-sm truncate text-foreground">
-                                        {role.worker?.workerId && role.worker.workerId !== 'placeholder'
-                                          ? getWorkerName(role.worker.workerId) || 'Unknown Worker'
-                                          : role.worker?.placeholderName || getWorkerTypeLabel(role.workerType, role.workerTypeOther)}
-                                    </div>
-                                    <div
-                                        className="text-xs truncate font-medium mt-0.5"
-                                        style={{ color: role.color || '#94a3b8' }}
-                                    >
-                                        {getWorkerTypeLabel(role.workerType, role.workerTypeOther)}
-                                    </div>
-                                </div>
-                                {/* Settings Icon with Hover Animation */}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        const originalRole = facilityRoles.find(r => r.id === role.id);
-                                        setEditingRole(originalRole);
-                                        setShowAddRoleModal(true);
-                                    }}
-                                    className="opacity-0 group-hover:opacity-100 transition-all duration-300 p-2 hover:bg-muted rounded-lg ml-2 flex-shrink-0"
-                                    title={t('dashboardProfile:operations.editWorkerRequirement', 'Edit Facility Role')}
-                                >
-                                    <FiSettings className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:rotate-90 group-hover:scale-110" />
-                                </button>
-                            </div>
-                        ))
-                    )}
-
-                    {/* Add Role Button */}
-                    <button
-                        onClick={() => {
-                            setEditingRole(null);
-                            setShowAddRoleModal(true);
-                        }}
-                        className="h-16 border-t border-border flex items-center justify-center gap-2 px-4 bg-muted/30 w-full hover:bg-muted/50 transition-colors group"
-                    >
-                        <FiPlus className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-all" />
-                        <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
-                            {t('dashboardProfile:operations.addWorkerRequirement')}
-                        </span>
-                    </button>
-                </div>
-            </div>
-
-            {/* Main Grid: Days & Events */}
-            <div className="flex-1 overflow-auto custom-scrollbar">
-                <div className="min-w-max">
-                    {/* Header Row: Dates */}
-                    <div className="flex h-20 border-b border-border sticky top-0 bg-card z-10 shadow-sm">
-                        {dates.map(date => {
-                            const isToday = isSameDay(date, new Date());
-                            return (
-                                <div
-                                    key={date.toISOString()}
-                                    className={cn(
-                                        "flex-1 min-w-[160px] flex flex-col items-center justify-center border-r border-border px-2 cursor-pointer hover:bg-muted/30 transition-colors",
-                                        isToday && "bg-primary/5"
-                                    )}
-                                    onClick={() => onDateClick && onDateClick(date)}
-                                >
-                                    <span className={cn(
-                                        "text-xs font-medium uppercase tracking-wider",
-                                        isToday ? "text-primary" : "text-muted-foreground"
-                                    )}>
-                                        {date.toLocaleDateString(undefined, { weekday: 'short' })}
-                                    </span>
-                                    <span className={cn(
-                                        "text-sm font-semibold mt-0.5 w-7 h-7 flex items-center justify-center rounded-full",
-                                        isToday ? "bg-primary text-primary-foreground" : "text-foreground"
-                                    )}>
-                                        {date.getDate()}
-                                    </span>
-                                </div>
-                            );
-                        })}
+        <>
+            {/* Facility Roles Sidebar - Sticky */}
+            <div className="sticky left-0 z-20 bg-background/95 backdrop-blur-sm border-r border-border" style={{ width: '14rem', top: 0 }}>
+                <div className="h-full flex flex-col">
+                    <div className="shrink-0 h-12 border-b border-border flex items-center justify-center gap-2 px-4 bg-muted/30">
+                        <button
+                            className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                            onClick={() => navigate('/dashboard/organization?tab=organigram')}
+                        >
+                            <FiSettings className="w-4 h-4" />
+                            {t('dashboardProfile:operations.facilityRolesTitle')}
+                        </button>
                     </div>
-
-                    {/* Grid Rows - One row per facility role */}
-                    {shouldShowLoading ? (
-                        <div className="flex items-center justify-center h-full min-h-[200px]">
-                            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                        </div>
-                    ) : shouldShowEmptyState ? (
-                        <div className="flex items-center justify-center h-full min-h-[200px] p-4">
-                            <div className="text-center">
-                                <p className="text-sm text-muted-foreground mb-4">
+                    <div className="flex-1 overflow-y-auto">
+                        {shouldShowLoading ? (
+                            <div className="flex items-center justify-center h-full min-h-[200px]">
+                                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            </div>
+                        ) : shouldShowEmptyState ? (
+                            <div className="p-4 text-center">
+                                <p className="text-xs text-muted-foreground mb-2">
                                     {t('dashboardProfile:operations.noWorkerRequirements')}
                                 </p>
                                 <button
@@ -397,49 +294,227 @@ const ResourceGrid = ({
                                         setEditingRole(null);
                                         setShowAddRoleModal(true);
                                     }}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                                    className="text-xs text-primary hover:underline"
                                 >
-                                    <FiPlus className="w-4 h-4" />
                                     {t('dashboardProfile:operations.addWorkerRequirement')}
                                 </button>
                             </div>
+                        ) : (
+                            <>
+                                {expandedFacilityRoles.map(role => (
+                                    <div
+                                        key={role.uniqueKey}
+                                        className="h-[60px] border-b border-border flex items-center px-3 relative group hover:bg-muted/50 transition-colors cursor-pointer"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            const originalRole = facilityRoles.find(r => r.id === role.id);
+                                            setEditingRole(originalRole);
+                                            setShowAddRoleModal(true);
+                                        }}
+                                    >
+                                        <div
+                                            className="absolute left-0 top-0 bottom-0 w-1"
+                                            style={{ backgroundColor: role.color || '#cbd5e1' }}
+                                        />
+                                        <div className="pl-2 overflow-hidden flex-1 min-w-0">
+                                            <div className="font-medium text-xs truncate text-foreground">
+                                                {role.worker?.workerId && role.worker.workerId !== 'placeholder'
+                                                  ? getWorkerName(role.worker.workerId) || 'Unknown Worker'
+                                                  : role.worker?.placeholderName || getWorkerTypeLabel(role.workerType, role.workerTypeOther)}
+                                            </div>
+                                            <div
+                                                className="text-[10px] truncate font-medium mt-0.5"
+                                                style={{ color: role.color || '#94a3b8' }}
+                                            >
+                                                {getWorkerTypeLabel(role.workerType, role.workerTypeOther)}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const originalRole = facilityRoles.find(r => r.id === role.id);
+                                                setEditingRole(originalRole);
+                                                setShowAddRoleModal(true);
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-muted rounded flex-shrink-0"
+                                            title={t('dashboardProfile:operations.editWorkerRequirement', 'Edit Facility Role')}
+                                        >
+                                            <FiSettings className="w-3 h-3 text-muted-foreground" />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    onClick={() => {
+                                        setEditingRole(null);
+                                        setShowAddRoleModal(true);
+                                    }}
+                                    className="h-12 border-t border-border flex items-center justify-center gap-2 px-3 bg-muted/30 w-full hover:bg-muted/50 transition-colors text-xs font-semibold text-muted-foreground hover:text-foreground"
+                                >
+                                    <FiPlus className="w-3 h-3" />
+                                    {t('dashboardProfile:operations.addWorkerRequirement')}
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Grid Content - Scrollable */}
+            <div className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }} ref={scrollContainerRef} onScroll={(e) => { if (headerScrollRef?.current) { headerScrollRef.current.scrollLeft = e.target.scrollLeft; } }}>
+                <div className="relative" style={{ minHeight: '400px', minWidth: `${dates.length * 200}px` }}>
+                {shouldShowLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                ) : shouldShowEmptyState ? (
+                    <div className="flex items-center justify-center h-full p-4">
+                        <div className="text-center">
+                            <p className="text-sm text-muted-foreground mb-4">
+                                {t('dashboardProfile:operations.noWorkerRequirements')}
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setEditingRole(null);
+                                    setShowAddRoleModal(true);
+                                }}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                            >
+                                <FiPlus className="w-4 h-4" />
+                                {t('dashboardProfile:operations.addWorkerRequirement')}
+                            </button>
                         </div>
-                    ) : (
-                        expandedFacilityRoles.map(role => (
-                            <div key={role.uniqueKey} className="flex h-16 border-b border-border">
-                                {dates.map(date => {
-                                    const roleEvents = events.filter(e => {
-                                        const eventDate = new Date(e.start);
-                                        if (!isSameDay(eventDate, date)) return false;
-                                        
-                                        if (role.worker) {
-                                            if (role.worker.workerId && role.worker.workerId !== 'placeholder') {
-                                                return (e.workerId === role.worker.workerId || e.employeeId === role.worker.workerId);
-                                            } else if (role.worker.placeholderName) {
-                                                return (e.workerName === role.worker.placeholderName || e.employeeName === role.worker.placeholderName);
-                                            }
-                                        }
-                                        
-                                        const eventRole = e.workerRole || e.employeeRole;
-                                        const eventWorkerType = e.workerType;
-                                        return (eventRole === role.workerType ||
-                                            eventWorkerType === role.workerType ||
-                                            (role.workerType === 'other' && eventRole === role.workerTypeOther));
-                                    });
+                    </div>
+                ) : (
+                    <>
+                        {/* Day Headers with Morning/Afternoon Labels */}
+                        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border" style={{ height: '80px' }}>
+                            <div className="flex h-full">
+                                {dates.map((dateInfo, dateIndex) => {
+                                    const date = dateInfo.date || dateInfo;
+                                    const isHalf = dateInfo.isHalf;
+                                    const side = dateInfo.side;
                                     const isToday = isSameDay(date, new Date());
+                                    const dayWidth = 100 / dates.length;
+                                    const leftPercent = dateIndex * dayWidth;
 
                                     return (
                                         <div
-                                            key={date.toISOString()}
+                                            key={`${date.toISOString()}-${dateIndex}`}
+                                            className="absolute border-r border-border"
+                                            style={{
+                                                left: `${leftPercent}%`,
+                                                width: `${dayWidth}%`,
+                                                height: '100%'
+                                            }}
+                                        >
+                                            <div className={cn(
+                                                "h-12 flex flex-col items-center justify-center border-b border-border",
+                                                isToday && "bg-primary/5"
+                                            )}>
+                                                <span className={cn(
+                                                    "text-xs font-medium uppercase tracking-wider",
+                                                    isToday ? "text-primary" : "text-muted-foreground"
+                                                )}>
+                                                    {date.toLocaleDateString(undefined, { weekday: 'short' })}
+                                                </span>
+                                                <span className={cn(
+                                                    "text-sm font-semibold mt-0.5 w-7 h-7 flex items-center justify-center rounded-full",
+                                                    isToday ? "bg-primary text-primary-foreground" : "text-foreground"
+                                                )}>
+                                                    {date.getDate()}
+                                                </span>
+                                            </div>
+                                            <div className="h-8 flex">
+                                                {!isHalf ? (
+                                                    <>
+                                                        <div className="flex-1 border-r border-border flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
+                                                            {t('calendar:morning', 'Morning')}
+                                                        </div>
+                                                        <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
+                                                            {t('calendar:afternoon', 'Afternoon')}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
+                                                        {side === 'first' ? t('calendar:morning', 'Morning') : t('calendar:afternoon', 'Afternoon')}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Grid Rows */}
+                        {expandedFacilityRoles.map((role, roleIndex) => (
+                            <div key={role.uniqueKey} className="border-b border-border" style={{ height: '60px' }}>
+                                {dates.map((dateInfo, dateIndex) => {
+                                    const date = dateInfo.date || dateInfo;
+                                    const isHalf = dateInfo.isHalf || false;
+                                    const side = dateInfo.side;
+                                    const roleEvents = events.filter(e => {
+                                        const eventDate = new Date(e.start);
+                                        if (!isSameDay(eventDate, date)) return false;
+                                    
+                                    if (role.worker) {
+                                        if (role.worker.workerId && role.worker.workerId !== 'placeholder') {
+                                            return (e.workerId === role.worker.workerId || e.employeeId === role.worker.workerId);
+                                        } else if (role.worker.placeholderName) {
+                                            return (e.workerName === role.worker.placeholderName || e.employeeName === role.worker.placeholderName);
+                                        }
+                                    }
+                                    
+                                    const eventRole = e.workerRole || e.employeeRole;
+                                    const eventWorkerType = e.workerType;
+                                    return (eventRole === role.workerType ||
+                                        eventWorkerType === role.workerType ||
+                                        (role.workerType === 'other' && eventRole === role.workerTypeOther));
+                                });
+                                    const isToday = isSameDay(date, new Date());
+                                    const dayWidth = 100 / dates.length;
+                                    const leftPercent = dateIndex * dayWidth;
+
+                                    // Filter events by time period (morning/afternoon)
+                                    const periodEvents = roleEvents.filter(event => {
+                                        if (isHalf) {
+                                            const eventHour = new Date(event.start).getHours();
+                                            if (side === 'first') {
+                                                return eventHour < 12; // Morning (0-11)
+                                            } else {
+                                                return eventHour >= 12; // Afternoon (12-23)
+                                            }
+                                        }
+                                        return true; // Show all events if not half day
+                                    });
+
+                                    return (
+                                        <div
+                                            key={`${date.toISOString()}-${dateIndex}`}
                                             className={cn(
-                                                "flex-1 min-w-[160px] border-r border-border p-1.5 flex flex-col gap-1 relative group hover:bg-muted/30 transition-colors",
+                                                "absolute border-r border-border p-1 flex relative group hover:bg-muted/30 transition-colors",
                                                 isToday && "bg-primary/5 hover:bg-primary/10"
                                             )}
+                                            style={{
+                                                left: `${leftPercent}%`,
+                                                width: `${dayWidth}%`,
+                                                height: '100%'
+                                            }}
                                             onClick={() => {
                                                 const start = new Date(date);
-                                                start.setHours(9, 0, 0, 0);
-                                                const end = new Date(date);
-                                                end.setHours(17, 0, 0, 0);
+                                                if (isHalf && side === 'first') {
+                                                    start.setHours(0, 0, 0, 0);
+                                                } else if (isHalf && side === 'second') {
+                                                    start.setHours(12, 0, 0, 0);
+                                                } else {
+                                                    start.setHours(9, 0, 0, 0);
+                                                }
+                                                const end = new Date(start);
+                                                if (isHalf) {
+                                                    end.setHours(start.getHours() + 12, 0, 0, 0);
+                                                } else {
+                                                    end.setHours(17, 0, 0, 0);
+                                                }
                                                 const newEvent = {
                                                     id: `temp-${Date.now()}`,
                                                     start,
@@ -457,40 +532,75 @@ const ResourceGrid = ({
                                                 onCreateEvent(newEvent, true);
                                             }}
                                         >
-                                            {roleEvents.map(event => (
-                                                <div
-                                                    key={event.id}
-                                                    className="text-xs p-1.5 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all truncate"
-                                                    style={{
-                                                        backgroundColor: event.color1 || role.color || '#e2e8f0',
-                                                        borderColor: event.color || role.color || '#cbd5e1',
-                                                        color: '#1e293b'
-                                                    }}
-                                                    onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
-                                                >
-                                                    <div className="font-medium truncate">{event.title || 'Assignment'}</div>
-                                                    {event.start && (
-                                                        <div className="text-[10px] opacity-80">
-                                                            {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            -
-                                                            {new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {!isHalf ? (
+                                                <>
+                                                    <div className="flex-1 border-r border-border p-0.5 flex flex-col gap-0.5">
+                                                        {periodEvents.filter(e => new Date(e.start).getHours() < 12).map(event => (
+                                                            <div
+                                                                key={event.id}
+                                                                className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
+                                                                style={{
+                                                                    backgroundColor: event.color1 || role.color || '#e2e8f0',
+                                                                    borderColor: event.color || role.color || '#cbd5e1',
+                                                                    color: '#1e293b'
+                                                                }}
+                                                                onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
+                                                            >
+                                                                <div className="font-medium truncate">{event.title || 'Assignment'}</div>
+                                                                <div className="text-[9px] opacity-80">
+                                                                    {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex-1 p-0.5 flex flex-col gap-0.5">
+                                                        {periodEvents.filter(e => new Date(e.start).getHours() >= 12).map(event => (
+                                                            <div
+                                                                key={event.id}
+                                                                className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
+                                                                style={{
+                                                                    backgroundColor: event.color1 || role.color || '#e2e8f0',
+                                                                    borderColor: event.color || role.color || '#cbd5e1',
+                                                                    color: '#1e293b'
+                                                                }}
+                                                                onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
+                                                            >
+                                                                <div className="font-medium truncate">{event.title || 'Assignment'}</div>
+                                                                <div className="text-[9px] opacity-80">
+                                                                    {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="w-full p-0.5 flex flex-col gap-0.5">
+                                                    {periodEvents.map(event => (
+                                                        <div
+                                                            key={event.id}
+                                                            className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
+                                                            style={{
+                                                                backgroundColor: event.color1 || role.color || '#e2e8f0',
+                                                                borderColor: event.color || role.color || '#cbd5e1',
+                                                                color: '#1e293b'
+                                                            }}
+                                                            onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
+                                                        >
+                                                            <div className="font-medium truncate">{event.title || 'Assignment'}</div>
+                                                            <div className="text-[9px] opacity-80">
+                                                                {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </div>
                                                         </div>
-                                                    )}
+                                                    ))}
                                                 </div>
-                                            ))}
-
-                                            {/* Add Button Placeholder -> Visible on Hover */}
-                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <div className="bg-primary/10 text-primary rounded-full p-1">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                                </div>
-                                            </div>
+                                            )}
                                         </div>
                                     );
                                 })}
                             </div>
-                        ))
-                    )}
+                        ))}
+                    </>
+                )}
                 </div>
             </div>
 
@@ -506,7 +616,7 @@ const ResourceGrid = ({
                 onDelete={handleDeleteRole}
                 editingRole={editingRole}
             />
-        </div>
+        </>
     );
 };
 

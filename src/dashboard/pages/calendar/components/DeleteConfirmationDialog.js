@@ -1,14 +1,16 @@
 import React, { useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import Button from '../../../../components/BoxedInputFields/Button';
-import { FiX, FiAlertTriangle } from 'react-icons/fi';
+import { FiX, FiTrash2 } from 'react-icons/fi';
 import '../../../../styles/variables.css';
 
-const DeleteConfirmationDialog = ({ event, currentDate, onConfirm, onCancel, isRecurring }) => {
-  const { t } = useTranslation();
+const DeleteConfirmationDialog = ({ event, currentDate, onConfirm, onCancel }) => {
+  const { t } = useTranslation(['calendar', 'common']);
 
   const hasRecurrenceId = event.recurrenceId != null;
-  const isRecurringEvent = isRecurring || hasRecurrenceId;
+  const isRecurringEvent = hasRecurrenceId;
+  const recurrenceMetadata = event.recurrenceMetadata || {};
+  const eventStart = new Date(event.start);
+  const isPastEvent = eventStart < new Date();
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Escape') {
@@ -45,7 +47,7 @@ const DeleteConfirmationDialog = ({ event, currentDate, onConfirm, onCancel, isR
         onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: 'var(--background-div-color)',
-          borderColor: 'var(--grey-2)',
+          borderColor: 'var(--red-2)',
           boxShadow: 'var(--box-shadow-md)'
         }}
       >
@@ -61,29 +63,29 @@ const DeleteConfirmationDialog = ({ event, currentDate, onConfirm, onCancel, isR
               className="p-2 rounded-full"
               style={{
                 backgroundColor: 'var(--red-2)',
-                color: 'var(--red-4)'
+                color: 'var(--white)'
               }}
             >
-              <FiAlertTriangle size={24} />
+              <FiTrash2 size={24} />
             </div>
             <h3
               className="text-xl font-semibold tracking-tight"
               style={{
-                color: 'var(--red-4)',
+                color: 'var(--red-2)',
                 fontFamily: 'var(--font-family-headings)',
                 fontSize: 'var(--font-size-large)'
               }}
             >
               {isRecurringEvent
-                ? t('calendar:deleteTitle', 'Delete Recurring Event')
-                : t('common:deleteConfirmation.title', 'Delete Event')}
+                ? t('calendar:deleteRecurringEvent', 'Delete Recurring Event')
+                : t('calendar:deleteEvent', 'Delete Event')}
             </h3>
           </div>
           <button
             onClick={onCancel}
             className="p-2 rounded-full transition-colors hover:bg-black/5"
             style={{
-              color: 'var(--red-4)'
+              color: 'var(--red-2)'
             }}
             aria-label="Close"
           >
@@ -103,19 +105,19 @@ const DeleteConfirmationDialog = ({ event, currentDate, onConfirm, onCancel, isR
           <p style={{ marginBottom: 'var(--spacing-md)' }}>
             {isRecurringEvent
               ? t('calendar:deleteMessage', 'This is a recurring event. Which occurrences would you like to delete?')
-              : t('common:deleteConfirmation.message', 'Are you sure you want to delete this event?')}
+              : t('calendar:deleteSingleMessage', 'Are you sure you want to delete this event? This action cannot be undone.')}
           </p>
-          {event.type === 'contract' && (
+          {isPastEvent && (
             <div
               className="p-4 rounded-lg mt-4"
               style={{
-                backgroundColor: 'var(--red-1)',
-                border: '1px solid var(--red-2)',
-                color: 'var(--red-4)',
+                backgroundColor: 'var(--grey-1-light)',
+                border: '1px solid var(--grey-2)',
+                color: 'var(--text-color)',
                 fontSize: 'var(--font-size-small)'
               }}
             >
-              <strong>{t('common:deleteConfirmation.contractWarning', 'WARNING: This is a scheduled appointment. Deleting it may affect your employment status and availability record.')}</strong>
+              <strong>{t('calendar:pastEventDeleteNote', 'Note: This is a past event.')}</strong>
             </div>
           )}
         </div>
@@ -138,23 +140,47 @@ const DeleteConfirmationDialog = ({ event, currentDate, onConfirm, onCancel, isR
             <>
               <button
                 onClick={() => onConfirm('single')}
-                className="px-4 py-2 text-sm font-medium rounded-md shadow-sm btn-yellow"
+                className="px-4 py-2 text-sm font-medium rounded-md shadow-sm"
+                style={{
+                  backgroundColor: 'var(--red-1)',
+                  border: '1px solid var(--red-2)',
+                  color: 'var(--red-2)'
+                }}
               >
-                {t('common:deleteConfirmation.deleteThisOnly', 'Delete Only This Event')}
+                {t('calendar:deleteThisOnly', 'Delete Only This Event')}
               </button>
               <button
                 onClick={() => onConfirm('future')}
-                className="px-4 py-2 text-sm font-medium rounded-md shadow-sm btn-yellow"
+                className="px-4 py-2 text-sm font-medium rounded-md shadow-sm"
+                style={{
+                  backgroundColor: 'var(--red-1)',
+                  border: '1px solid var(--red-2)',
+                  color: 'var(--red-2)'
+                }}
               >
-                {t('common:deleteConfirmation.deleteAllFuture', 'Delete This & Future Events')}
+                {t('calendar:deleteAllFuture', 'Delete This & Future Events')}
+              </button>
+              <button
+                onClick={() => onConfirm('all')}
+                className="px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-all hover:shadow-md active:scale-95"
+                style={{
+                  backgroundColor: 'var(--red-2)',
+                  border: '1px solid var(--red-2)'
+                }}
+              >
+                {t('calendar:deleteAllOccurrences', 'Delete All Occurrences')}
               </button>
             </>
           ) : (
             <button
               onClick={() => onConfirm('single')}
-              className="px-4 py-2 text-sm font-medium text-white bg-destructive hover:bg-destructive/90 rounded-md shadow-sm transition-all hover:shadow-md active:scale-95"
+              className="px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-all hover:shadow-md active:scale-95"
+              style={{
+                backgroundColor: 'var(--red-2)',
+                border: '1px solid var(--red-2)'
+              }}
             >
-              {t('common:deleteConfirmation.delete', 'Delete Event')}
+              {t('calendar:deleteEvent', 'Delete Event')}
             </button>
           )}
         </div>
@@ -164,3 +190,4 @@ const DeleteConfirmationDialog = ({ event, currentDate, onConfirm, onCancel, isR
 };
 
 export default DeleteConfirmationDialog;
+

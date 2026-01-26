@@ -1,8 +1,11 @@
 {
   "title": "Page Not Found",
   "subtitle": "The page you're looking for doesn't exist or has been moved.",
+  "description": "The page you are looking for doesn't exist or has not been deployed yet, but leave us your contact, in the newsletter or register already. We'll be in touch soon!",
   "goHome": "Go Home",
+  "return_home": "Return to Homepage",
   "goBack": "Go Back",
+  "go_back": "Go Back",
   "meta": {
     "title": "404 - Page Not Found | Interimed",
     "description": "The requested page could not be found."

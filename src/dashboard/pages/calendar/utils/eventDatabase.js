@@ -1,9 +1,7 @@
 import { collection, getDocs, query, where, orderBy, Timestamp, onSnapshot } from 'firebase/firestore';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { db, auth, firebaseApp } from '../../../../services/firebase';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { useTutorial } from '../../../contexts/TutorialContext';
-import { TUTORIAL_IDS } from '../../../../config/tutorialSystem';
 import { DEFAULT_VALUES } from '../../../../config/keysDatabase';
 
 const functions = getFunctions(firebaseApp, DEFAULT_VALUES.FIREBASE_REGION);
@@ -697,79 +695,11 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { isTutorialActive, activeTutorial } = useTutorial();
+  const eventsRef = useRef({ availability: [], events: [], contracts: [] });
 
   const getMockEvents = useCallback(() => {
-    if (!isTutorialActive || activeTutorial !== 'calendar') return [];
-
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    const nextWeek = new Date(today);
-    nextWeek.setDate(nextWeek.getDate() + 7);
-
-    return [
-      {
-        id: 'tutorial-availability-1',
-        title: 'Available',
-        start: new Date(tomorrow.getTime() + 9 * 60 * 60 * 1000),
-        end: new Date(tomorrow.getTime() + 17 * 60 * 60 * 1000),
-        color: '#0f54bc',
-        color1: '#a8c1ff',
-        color2: '#4da6fb',
-        isAvailability: true,
-        isValidated: true,
-        fromDatabase: false,
-        isTutorial: true
-      },
-      {
-        id: 'tutorial-availability-2',
-        title: 'Available',
-        start: new Date(nextWeek.getTime() + 8 * 60 * 60 * 1000),
-        end: new Date(nextWeek.getTime() + 16 * 60 * 60 * 1000),
-        color: '#0f54bc',
-        color1: '#a8c1ff',
-        color2: '#4da6fb',
-        isAvailability: true,
-        isValidated: true,
-        fromDatabase: false,
-        isTutorial: true
-      },
-      {
-        id: 'tutorial-contract-1',
-        title: 'Geneva Hospital - Temporary Contract',
-        start: new Date('2026-02-01'),
-        end: new Date('2026-03-31'),
-        color: '#f54455',
-        color1: '#ffbbcf',
-        color2: '#ff6064',
-        isContract: true,
-        isValidated: true,
-        location: 'Geneva Hospital, Rue Gabrielle-Perret-Gentil 4, 1205 Geneva',
-        notes: 'Emergency Department - Full-time position',
-        fromDatabase: false,
-        isTutorial: true
-      },
-      {
-        id: 'tutorial-contract-2',
-        title: 'Lausanne Clinic - Part-time',
-        start: new Date('2026-04-01'),
-        end: new Date('2026-06-30'),
-        color: '#f54455',
-        color1: '#ffbbcf',
-        color2: '#ff6064',
-        isContract: true,
-        isValidated: false,
-        location: 'Lausanne Clinic, Avenue de la Gare 28, 1000 Lausanne',
-        notes: 'General Practice - Weekends only',
-        fromDatabase: false,
-        isTutorial: true
-      }
-    ];
-  }, [isTutorialActive, activeTutorial]);
+    return [];
+  }, []);
 
   useEffect(() => {
     if (!userId) {
@@ -777,19 +707,64 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
       return;
     }
 
-    if (isTutorialActive && activeTutorial === TUTORIAL_IDS.CALENDAR) {
-      const mockEvents = getMockEvents();
-      setEvents(mockEvents);
+    const processEventData = (data, docId) => {
+      const startDate = data.from instanceof Timestamp ? data.from.toDate() : new Date(data.from);
+      const endDate = data.to instanceof Timestamp ? data.to.toDate() : new Date(data.to);
+
+      const isValidated = data.isValidated || false;
+      let eventColor, color1, color2;
+
+      if (isValidated) {
+        eventColor = '#0f54bc';
+        color1 = '#a8c1ff';
+        color2 = '#4da6fb';
+      } else {
+        eventColor = '#8c8c8c';
+        color1 = '#e6e6e6';
+        color2 = '#b3b3b3';
+      }
+
+      return {
+        id: docId,
+        title: data.title || 'Available',
+        start: startDate,
+        end: endDate,
+        color: eventColor,
+        color1: color1,
+        color2: color2,
+        isAvailability: data.isAvailability !== false,
+        isValidated: isValidated,
+        recurrenceId: data.recurrenceId || null,
+        isRecurring: !!data.recurrenceId,
+        canton: data.locationCountry || [],
+        area: data.LocationArea || [],
+        languages: data.languages || [],
+        experience: data.experience || '',
+        software: data.software || [],
+        certifications: data.certifications || [],
+        workAmount: data.workAmount || '',
+        notes: data.notes || '',
+        location: typeof data.location === 'object' ? (data.location.address || data.location.name || '') : (data.location || ''),
+        visibility: data.visibility || 'public',
+        fromDatabase: true
+      };
+    };
+
+    const updateEventsState = () => {
+      const eventMap = new Map();
+      [...eventsRef.current.availability, ...eventsRef.current.events, ...eventsRef.current.contracts].forEach(event => {
+        if (!eventMap.has(event.id)) {
+          eventMap.set(event.id, event);
+        }
+      });
+      setEvents(Array.from(eventMap.values()));
       setLoading(false);
       setError(null);
-      return;
-    }
+    };
 
-    // Set up real-time listener for availability events
     const availabilityQuery = query(
       collection(db, 'availability'),
       where('userId', '==', userId)
-      // orderBy removed to avoid composite index requirement
     );
 
     const unsubscribeAvailability = onSnapshot(
@@ -797,64 +772,44 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
       (snapshot) => {
         try {
           const availabilityEvents = [];
+          snapshot.forEach(doc => {
+            const event = processEventData(doc.data(), doc.id);
+            availabilityEvents.push(event);
+          });
 
+          eventsRef.current.availability = availabilityEvents;
+          updateEventsState();
+        } catch (err) {
+          setError(err.message);
+          setLoading(false);
+        }
+      },
+      (err) => {
+        setError(err.message);
+        setLoading(false);
+      }
+    );
+
+    const eventsQuery = query(
+      collection(db, 'events'),
+      where('userId', '==', userId)
+    );
+
+    const unsubscribeEvents = onSnapshot(
+      eventsQuery,
+      (snapshot) => {
+        try {
+          const eventsFromCollection = [];
           snapshot.forEach(doc => {
             const data = doc.data();
-
-            // Convert Firestore timestamps to JavaScript dates
-            const startDate = data.from instanceof Timestamp ? data.from.toDate() : new Date(data.from);
-            const endDate = data.to instanceof Timestamp ? data.to.toDate() : new Date(data.to);
-
-            // Determine colors based on validation status
-            const isValidated = data.isValidated || false;
-            let eventColor, color1, color2;
-
-            if (isValidated) {
-              eventColor = '#0f54bc';  // Blue for validated
-              color1 = '#a8c1ff';
-              color2 = '#4da6fb';
-            } else {
-              eventColor = '#8c8c8c';  // Grey for unvalidated
-              color1 = '#e6e6e6';
-              color2 = '#b3b3b3';
+            if (data.type === 'worker_availability' || data.isAvailability) {
+              const event = processEventData(data, doc.id);
+              eventsFromCollection.push(event);
             }
-
-            availabilityEvents.push({
-              id: doc.id,
-              title: data.title || 'Available',
-              start: startDate,
-              end: endDate,
-              color: eventColor,
-              color1: color1,
-              color2: color2,
-              isAvailability: true,
-              isValidated: isValidated,
-              recurrenceId: data.recurrenceId || null,
-              isRecurring: !!data.recurrenceId,
-              // Additional metadata
-              canton: data.locationCountry || [],
-              area: data.LocationArea || [],
-              languages: data.languages || [],
-              experience: data.experience || '',
-              software: data.software || [],
-              certifications: data.certifications || [],
-              workAmount: data.workAmount || '',
-              notes: data.notes || '',
-              location: data.location || '',
-              fromDatabase: true
-            });
           });
 
-          // Sort client-side instead of server-side to avoid index requirement
-          availabilityEvents.sort((a, b) => b.start - a.start);
-
-          setEvents(prevEvents => {
-            // Preserve existing contract events
-            const contractEvents = prevEvents.filter(e => e.isContract);
-            return [...availabilityEvents, ...contractEvents];
-          });
-          setLoading(false);
-          setError(null);
+          eventsRef.current.events = eventsFromCollection;
+          updateEventsState();
         } catch (err) {
           setError(err.message);
           setLoading(false);
@@ -936,21 +891,15 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
                 });
               });
 
-              // Combine availability and contract events
-              setEvents(prevEvents => {
-                const availabilityEvents = prevEvents.filter(event => event.isAvailability);
-                const existingContractEvents = prevEvents.filter(event => event.isContract);
-
-                // Merge contract events, avoiding duplicates
-                const contractMap = new Map();
-                [...existingContractEvents, ...contractEvents].forEach(event => {
-                  if (!contractMap.has(event.id)) {
-                    contractMap.set(event.id, event);
-                  }
-                });
-
-                return [...availabilityEvents, ...Array.from(contractMap.values())];
+              const contractMap = new Map();
+              [...eventsRef.current.contracts, ...contractEvents].forEach(event => {
+                if (!contractMap.has(event.id)) {
+                  contractMap.set(event.id, event);
+                }
               });
+
+              eventsRef.current.contracts = Array.from(contractMap.values());
+              updateEventsState();
 
             } catch (err) {
               // Error processing contract events
@@ -972,6 +921,7 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
     // Cleanup function
     return () => {
       unsubscribeAvailability();
+      unsubscribeEvents();
       if (unsubscribeContracts) {
         unsubscribeContracts();
       }

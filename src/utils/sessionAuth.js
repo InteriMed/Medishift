@@ -11,7 +11,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { WORKSPACE_TYPES, FIRESTORE_COLLECTIONS as COLLECTIONS, SESSION_PREFIXES, COOKIE_CONFIG, getCookieKey, getEnvVar } from '../config/keysDatabase';
 import { hasProfessionalAccess, hasFacilityAccess, hasAdminAccess } from './workspaceAccess';
-import { getAvailableWorkspaces as getAvailableWorkspacesFromDefs, MEDISHIFT_DEMO_FACILITY_ID, isAdminSync } from '../config/workspaceDefinitions';
+import { getAvailableWorkspaces as getAvailableWorkspacesFromDefs, isAdminSync } from '../config/workspaceDefinitions';
 
 export { WORKSPACE_TYPES, hasAdminAccess };
 
@@ -109,19 +109,16 @@ export const createWorkspaceSession = async (userId, workspaceType, facilityId =
         return null;
       }
 
-      // ADMIN BYPASS: Admins can access any facility, especially the demo facility
+      // ADMIN BYPASS: Admins can access any facility
       if (!isAdmin) {
         if (!hasFacilityAccess(userData, facilityId)) {
           return null;
         }
       }
 
-      // For Medishift Demo Facility, skip document check (it's virtual for admins)
-      if (facilityId !== MEDISHIFT_DEMO_FACILITY_ID) {
-        const facilityDoc = await getDoc(doc(db, COLLECTIONS.FACILITY_PROFILES, facilityId));
-        if (!facilityDoc.exists()) {
-          return null;
-        }
+      const facilityDoc = await getDoc(doc(db, COLLECTIONS.FACILITY_PROFILES, facilityId));
+      if (!facilityDoc.exists()) {
+        return null;
       }
     } else if (workspaceType === WORKSPACE_TYPES.ADMIN) {
       const hasAdmin = await hasAdminAccess(userId);

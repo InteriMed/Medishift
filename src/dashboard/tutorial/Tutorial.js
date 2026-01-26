@@ -5,8 +5,9 @@ import { useDashboard } from '../contexts/DashboardContext';
 import HighlightTooltip from '../onboarding/components/HighlightTooltip';
 import AccessLevelChoicePopup from '../pages/profile/components/AccessLevelChoicePopup';
 import StopTutorialConfirmModal from '../components/modals/StopTutorialConfirmModal';
+import TutorialSelectionModal from '../components/modals/TutorialSelectionModal';
 import { useTranslation } from 'react-i18next';
-import { TUTORIAL_IDS } from '../../config/tutorialSystem';
+import { TUTORIAL_IDS } from '../contexts/TutorialContext/config/tutorialSystem';
 
 
 // Temporary empty styles object until Tailwind classes are implemented
@@ -26,12 +27,16 @@ const Tutorial = () => {
     showFirstTimeModal,
     showAccessLevelModal,
     showStopTutorialConfirm,
+    showTutorialSelectionModal,
+    setShowTutorialSelectionModal,
     currentStep,
     activeTutorial,
     prevStep,
     nextStep,
     completeTutorial,
     stopTutorial,
+    startAllTutorials,
+    startTutorial,
     isBusy,
     isPaused,
     setShowAccessLevelModal,
@@ -117,6 +122,39 @@ const Tutorial = () => {
   const displayNextStep = shouldShowTeamCloseTooltip ? async () => { await stopTutorial({ forceStop: true, showAccessPopupForProfile: false }); } : nextStep;
   const displayCompleteTutorial = shouldShowTeamCloseTooltip ? async () => { await stopTutorial({ forceStop: true, showAccessPopupForProfile: false }); } : completeTutorial;
 
+  const getCurrentPageName = () => {
+    const path = location.pathname.toLowerCase();
+    if (path.includes('/profile')) return 'profileTabs';
+    if (path.includes('/messages')) return 'messages';
+    if (path.includes('/contracts')) return 'contracts';
+    if (path.includes('/calendar')) return 'calendar';
+    if (path.includes('/marketplace')) return 'marketplace';
+    if (path.includes('/payroll')) return 'payroll';
+    if (path.includes('/organization')) return 'organization';
+    if (path.includes('/settings')) return 'settings';
+    return 'dashboard';
+  };
+
+  const getTutorialForCurrentPage = () => {
+    const pageName = getCurrentPageName();
+    const tutorialMap = {
+      'profileTabs': TUTORIAL_IDS.PROFILE_TABS,
+      'messages': TUTORIAL_IDS.MESSAGES,
+      'contracts': TUTORIAL_IDS.CONTRACTS,
+      'calendar': TUTORIAL_IDS.CALENDAR,
+      'marketplace': TUTORIAL_IDS.MARKETPLACE,
+      'payroll': TUTORIAL_IDS.PAYROLL,
+      'organization': TUTORIAL_IDS.ORGANIZATION,
+      'dashboard': TUTORIAL_IDS.DASHBOARD
+    };
+    return tutorialMap[pageName] || TUTORIAL_IDS.DASHBOARD;
+  };
+
+  const handleStartCurrentTutorial = async () => {
+    const tutorialId = getTutorialForCurrentPage();
+    await startTutorial(tutorialId);
+  };
+
   return (
     <>
       {shouldRenderTutorial && (
@@ -152,6 +190,13 @@ const Tutorial = () => {
         onConfirm={() => {
           stopTutorial({ forceStop: true, showAccessPopupForProfile: true });
         }}
+      />
+      <TutorialSelectionModal
+        isOpen={showTutorialSelectionModal}
+        onClose={() => setShowTutorialSelectionModal(false)}
+        onStartAll={startAllTutorials}
+        onStartCurrent={handleStartCurrentTutorial}
+        currentPageName={getCurrentPageName()}
       />
     </>
   );

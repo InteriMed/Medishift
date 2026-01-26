@@ -3,16 +3,19 @@ import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp, deleteFiel
 import { db } from '../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
+import tutorialCache from '../contexts/TutorialContext/utils/tutorialCache';
 
 export const useTutorialPersistence = (currentUser, selectedWorkspace) => {
     const saveLocalState = useCallback((state) => {
+        return tutorialCache.save.state(state);
     }, [currentUser, selectedWorkspace]);
 
     const loadLocalState = useCallback(() => {
-        return null;
+        return tutorialCache.get.state();
     }, [currentUser, selectedWorkspace]);
 
     const clearLocalState = useCallback(() => {
+        return tutorialCache.clean();
     }, [currentUser, selectedWorkspace]);
 
     // --- New Onboarding Persistence Operations ---

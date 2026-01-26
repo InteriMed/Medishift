@@ -10,11 +10,8 @@ import {
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { useNotification } from '../../contexts/NotificationContext';
-import { useTutorial } from '../contexts/TutorialContext';
-import { TUTORIAL_IDS } from '../../config/tutorialSystem';
 
 export const useMarketplaceData = () => {
-  const { isTutorialActive, activeTutorial } = useTutorial();
   const { showNotification } = useNotification();
 
   const [listings, setListings] = useState([]);
@@ -24,137 +21,11 @@ export const useMarketplaceData = () => {
   const [error, setError] = useState(null);
 
   const getMockListings = useCallback(() => {
-    if (!isTutorialActive || activeTutorial !== TUTORIAL_IDS.MARKETPLACE) return [];
-
-    const now = new Date();
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const twoMonthsLater = new Date(now.getFullYear(), now.getMonth() + 2, 28);
-
-    return [
-      {
-        id: 'tutorial-position-1',
-        title: 'Emergency Department Physician',
-        jobTitle: 'Emergency Department Physician',
-        description: 'Looking for an experienced emergency department physician for temporary contract. Full-time position with rotating shifts.',
-        facilityProfileId: 'tutorial-geneva-hospital',
-        status: 'open',
-        location: { canton: 'Geneva', city: 'Geneva' },
-        locationPreference: { canton: 'Geneva', city: 'Geneva' },
-        compensation: { amount: 12000, currency: 'CHF' },
-        contractType: 'Temporary',
-        workPercentage: 100,
-        startDate: new Date('2026-02-01'),
-        endDate: new Date('2026-03-31'),
-        startTime: new Date('2026-02-01'),
-        endTime: new Date('2026-03-31'),
-        createdAt: new Date('2026-01-15'),
-        canton: 'Geneva',
-        city: 'Geneva',
-        area: '20km',
-        experience_level: 'experienced',
-        software_skills: ['Electronic Health Records', 'Patient Management System'],
-        work_amount: '80-100',
-        available_from: '2026-02-01',
-        available_to: '2026-03-31',
-        isTutorial: true
-      },
-      {
-        id: 'tutorial-position-2',
-        title: 'General Practice Physician - Part-time',
-        jobTitle: 'General Practice Physician - Part-time',
-        description: 'Part-time position for general practice physician. Weekends only, flexible schedule available.',
-        facilityProfileId: 'tutorial-lausanne-clinic',
-        status: 'open',
-        location: { canton: 'Vaud', city: 'Lausanne' },
-        locationPreference: { canton: 'Vaud', city: 'Lausanne' },
-        compensation: { amount: 6500, currency: 'CHF' },
-        contractType: 'Part-time',
-        workPercentage: 50,
-        startDate: new Date('2026-04-01'),
-        endDate: new Date('2026-06-30'),
-        startTime: new Date('2026-04-01'),
-        endTime: new Date('2026-06-30'),
-        createdAt: new Date('2026-01-20'),
-        canton: 'Vaud',
-        city: 'Lausanne',
-        area: '10km',
-        experience_level: 'intermediate',
-        software_skills: ['Practice Management Software'],
-        work_amount: '40-60',
-        available_from: '2026-04-01',
-        available_to: '2026-06-30',
-        isTutorial: true
-      },
-      {
-        id: 'tutorial-position-3',
-        title: 'Pharmacist - Full-time',
-        jobTitle: 'Pharmacist - Full-time',
-        description: 'Full-time pharmacist position in a busy pharmacy. Experience with Golden Gate software preferred.',
-        facilityProfileId: 'tutorial-pharmacy-1',
-        status: 'open',
-        location: { canton: 'Zurich', city: 'Zurich' },
-        locationPreference: { canton: 'Zurich', city: 'Zurich' },
-        compensation: { amount: 8500, currency: 'CHF' },
-        contractType: 'Permanent',
-        workPercentage: 100,
-        startDate: nextMonth,
-        endDate: null,
-        startTime: nextMonth,
-        endTime: null,
-        createdAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
-        canton: 'Zurich',
-        city: 'Zurich',
-        area: '5km',
-        experience_level: 'experienced',
-        software_skills: ['Golden Gate', 'ABACUS'],
-        work_amount: '80-100',
-        available_from: nextMonth.toISOString().split('T')[0],
-        available_to: null,
-        isTutorial: true
-      },
-      {
-        id: 'tutorial-position-4',
-        title: 'Clinical Pharmacist - Temporary',
-        jobTitle: 'Clinical Pharmacist - Temporary',
-        description: 'Temporary clinical pharmacist position for hospital setting. 3-month contract with possibility of extension.',
-        facilityProfileId: 'tutorial-hospital-1',
-        status: 'open',
-        location: { canton: 'Bern', city: 'Bern' },
-        locationPreference: { canton: 'Bern', city: 'Bern' },
-        compensation: { amount: 9500, currency: 'CHF' },
-        contractType: 'Temporary',
-        workPercentage: 100,
-        startDate: twoMonthsLater,
-        endDate: new Date(twoMonthsLater.getFullYear(), twoMonthsLater.getMonth() + 3, 28),
-        startTime: twoMonthsLater,
-        endTime: new Date(twoMonthsLater.getFullYear(), twoMonthsLater.getMonth() + 3, 28),
-        createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
-        canton: 'Bern',
-        city: 'Bern',
-        area: '50km',
-        experience_level: 'experienced',
-        software_skills: ['Pharmatic', 'Hospital Information System'],
-        work_amount: '80-100',
-        available_from: twoMonthsLater.toISOString().split('T')[0],
-        available_to: new Date(twoMonthsLater.getFullYear(), twoMonthsLater.getMonth() + 3, 28).toISOString().split('T')[0],
-        isTutorial: true
-      }
-    ];
-  }, [isTutorialActive, activeTutorial]);
+    return [];
+  }, []);
 
 
 
-  useEffect(() => {
-    if (isTutorialActive && activeTutorial === TUTORIAL_IDS.MARKETPLACE) {
-      const mockData = getMockListings();
-      if (mockData.length > 0) {
-        setListings(mockData);
-        setFilteredListings(mockData);
-        setIsLoading(false);
-        setError(null);
-      }
-    }
-  }, [isTutorialActive, activeTutorial, getMockListings]);
 
   // Fetch all listings
   const fetchListings = useCallback(async (filters = {}, viewMode = 'jobs') => {
@@ -162,13 +33,6 @@ export const useMarketplaceData = () => {
       setIsLoading(true);
       setError(null);
 
-      if (isTutorialActive && activeTutorial === TUTORIAL_IDS.MARKETPLACE) {
-        const mockData = getMockListings();
-        setListings(mockData);
-        setFilteredListings(mockData);
-        setIsLoading(false);
-        return;
-      }
 
       // Use the correct collections based on Firebase Database Organization document
       const collectionName = viewMode === 'jobs' ? 'positions' : 'professionalAvailabilities';
@@ -262,7 +126,7 @@ export const useMarketplaceData = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [showNotification, isTutorialActive, activeTutorial, getMockListings]);
+  }, [showNotification]);
 
   // Get a specific listing details
   const fetchListingDetails = useCallback(async (id, type = 'job') => {

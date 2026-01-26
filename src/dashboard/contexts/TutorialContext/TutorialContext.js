@@ -7,9 +7,9 @@ import {
     getTutorialSteps,
     isProfileTutorial,
     PROFILE_TAB_IDS,
-    LOCALSTORAGE_KEYS,
     getProfileTutorialForType
-} from '../../../config/tutorialSystem';
+} from './config/tutorialSystem';
+import tutorialCache from './utils/tutorialCache';
 import i18n from '../../../i18n';
 
 // Hooks
@@ -97,23 +97,8 @@ export const TutorialProvider = ({ children }) => {
         const isProfileTutorialComplete = state.completedTutorials?.[TUTORIAL_IDS.PROFILE_TABS] === true || state.completedTutorials?.[TUTORIAL_IDS.FACILITY_PROFILE_TABS] === true;
 
         if (isInProfileTutorial && !isProfileTutorialComplete) {
-            // Check if Personal Details (first tab) is complete
-            const firstTabId = state.onboardingType === 'facility' ? 'facilityCoreDetails' : 'personalDetails';
-            const isFirstTabComplete = state.tabsProgress?.[firstTabId] === true;
-            const hasFullAccess = state.accessLevelChoice === 'full';
-
-            if (!hasFullAccess && !isFirstTabComplete) {
-                console.log('[TutorialContext] Personal details not complete - blocking skip');
-                state.setAllowAccessLevelModalClose(false);
-                state.setShowAccessLevelModal(true);
-                return;
-            }
-
-            if (state.accessLevelChoice !== 'team') {
-                state.setAllowAccessLevelModalClose(true);
-                state.setShowAccessLevelModal(true);
-                return;
-            }
+            // Simplified: Allow skipping at any time. The user can complete profile later.
+            // Logic regarding first tab completion blocking skip has been removed.
         }
 
         state.resetProfileTabAccess();
@@ -123,10 +108,7 @@ export const TutorialProvider = ({ children }) => {
         state.setStepData(null);
         state.setElementPosition(null);
 
-        try {
-            localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_STATE);
-            localStorage.removeItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB);
-        } catch (error) { }
+        tutorialCache.clean();
 
         await state.safelyUpdateTutorialState([
             [state.setIsTutorialActive, false],
@@ -194,7 +176,8 @@ export const TutorialProvider = ({ children }) => {
         state.setOnboardingType('facility');
         const firstTutorial = getProfileTutorialForType('facility');
         await actions.startTutorial(firstTutorial);
-        navigate('/fr/onboarding?type=facility'); // Force nav
+        const lang = i18n.language || 'fr';
+        navigate(`/${lang}/onboarding?type=facility`);
     }, [state.setOnboardingType, actions.startTutorial, navigate]);
 
     const restartOnboarding = useCallback(async (type = 'professional') => {
@@ -210,9 +193,7 @@ export const TutorialProvider = ({ children }) => {
     // Reset Profile Tab Access
     const resetProfileTabAccess = useCallback(() => {
         state.setMaxAccessedProfileTab('personalDetails');
-        try {
-            localStorage.setItem(LOCALSTORAGE_KEYS.TUTORIAL_MAX_ACCESSED_PROFILE_TAB, 'personalDetails');
-        } catch (error) { }
+        tutorialCache.save.maxAccessedProfileTab('personalDetails');
     }, [state]);
 
     // Resume (No-op)

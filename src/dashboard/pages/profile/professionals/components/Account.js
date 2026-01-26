@@ -6,7 +6,6 @@ import { auth } from '../../../../../services/firebase';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { useNotification } from '../../../../../contexts/NotificationContext';
-import { useTutorial } from '../../../../contexts/TutorialContext';
 
 import AccountDeletion from '../../components/AccountDeletion';
 import InputFieldHideUnhide from '../../../../../components/BoxedInputFields/InputFieldHideUnhide';
@@ -22,7 +21,7 @@ const styles = {
   sectionSubtitle: "text-sm font-medium",
   sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
   sectionsWrapper: "account-sections-wrapper w-full max-w-[1400px] mx-auto",
-  sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
+  sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative",
   cardHeader: "flex items-center gap-3 mb-5 pb-4 border-b border-border/40",
   cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
   cardIconStyle: { color: 'var(--primary-color)' },
@@ -43,14 +42,11 @@ const Account = ({
   onSave,
   onCancel,
   getNestedValue,
-  validateCurrentTabData,
-  onTabCompleted,
-  isTutorialActive
+  validateCurrentTabData
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
   const { currentUser } = useAuth();
   const { showNotification } = useNotification();
-  const { setAccessMode, accessLevelChoice } = useTutorial();
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -60,14 +56,6 @@ const Account = ({
   });
   const [passwordErrors, setPasswordErrors] = useState({});
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-
-  // Only grant full access when accessing Account during tutorial
-  // Outside tutorial, Account is accessible without granting full access
-  useEffect(() => {
-    if (isTutorialActive && accessLevelChoice !== 'full' && setAccessMode) {
-      setAccessMode('full');
-    }
-  }, [isTutorialActive, accessLevelChoice, setAccessMode]);
 
   const currentSubscription = useMemo(() => {
     const subscription = formData?.platformSubscriptionPlan ||
@@ -173,9 +161,7 @@ const Account = ({
     onInputChange,
     onSave,
     getNestedValue,
-    validateCurrentTabData,
-    onTabCompleted,
-    isTutorialActive
+    validateCurrentTabData
   });
 
   return (
@@ -197,13 +183,6 @@ const Account = ({
           }
         }
       `}</style>
-      <div className={styles.headerCard}>
-        <div className="flex flex-col gap-1 flex-1">
-          <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('account.title')}</h2>
-          <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('account.subtitle')}</p>
-        </div>
-      </div>
-
       <div className="account-container w-full max-w-[1400px] mx-auto">
         <div className={styles.sectionsWrapper}>
           <div className={styles.sectionCard}>

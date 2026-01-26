@@ -14,7 +14,7 @@ import {
   TUTORIAL_STEP_DEFINITIONS as tutorialSteps,
   isOnCorrectPage as isPageMatch,
   getPathForTutorial
-} from '../../../config/tutorialSystem';
+} from '../../contexts/TutorialContext/config/tutorialSystem';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
 import Dialog from '../../../components/Dialog/Dialog';
 import Button from '../../../components/BoxedInputFields/Button';

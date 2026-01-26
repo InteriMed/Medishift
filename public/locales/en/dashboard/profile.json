@@ -100,6 +100,30 @@
     "note": "Your current progress will be saved. You can continue from where you left off.",
     "button": "Restart Tutorial"
   },
+  "accessLevelChoice": {
+    "title": "Choose Your Access Level",
+    "message": "How would you like to use MediShift?",
+    "teamAccess": "Team Access",
+    "quickStart": "Quick Start",
+    "teamAccess.benefit1": "Join teams and collaborate immediately",
+    "teamAccess.benefit2": "Access calendar, messages, and team features",
+    "teamAccess.benefit3": "Perfect for team members and employees",
+    "teamAccess.benefit4": "Complete your profile later if needed",
+    "selectTeamAccess": "Select Team Access",
+    "fullAccess": "Full Access",
+    "completeProfile": "Complete Profile",
+    "fullAccess.benefit1": "Work independently and take on replacements",
+    "fullAccess.benefit2": "Access all platform features",
+    "fullAccess.benefit3": "Required for independent professionals",
+    "fullAccess.benefit4": "Complete your full profile now",
+    "glnRequired": "GLN verification required for Full Access",
+    "backToOnboarding": "Back to Onboarding",
+    "continueProfile": "Continue Profile",
+    "completePersonalTab": {
+      "title": "Complete Personal Details",
+      "message": "Please complete the Personal Details tab to continue."
+    }
+  },
   "errors": {
     "loadingConfig": "Error loading profile configuration. Please refresh the page.",
     "loadingProfile": "Error loading profile data",
@@ -118,9 +142,10 @@
     "subscription": "Subscription",
     "account": "Account",
     "settings": "Settings",
-    "marketplacePreferences": "Marketplace",
+    "marketplacePreferences": "Parameters",
     "accountManagement": "Account Management",
     "deleteAccount": "Delete Account",
+    "facility": "Facilities",
     "facilityCoreDetails": "Facility Details",
     "facilityLegalBilling": "Legal & Billing",
     "facilityDocuments": "Documents"
@@ -600,7 +625,37 @@
     "otherOperationalSettingsDescription": "Adjust your platform preferences and notification requirements.",
     "contractSettingsTitle": "Contract Settings",
     "contractSettingsDescription": "Configure default contract terms and conditions.",
+    "autoRenewal": "Auto Renewal",
+    "requiresApproval": "Requires Approval",
     "premiumFeatureRequired": "Premium subscription required for this feature",
     "premiumFeature": "Premium Feature"
+  },
+  "facility": {
+    "title": "Facilities",
+    "subtitle": "Manage your facility memberships",
+    "noFacilities": "No Facility Memberships",
+    "noFacilitiesDescription": "You are not currently a member of any facilities.",
+    "switchToFacility": "Switch to Facility Workspace",
+    "unnamed": "Unnamed Facility",
+    "roles": {
+      "admin": "Admin",
+      "employee": "Employee",
+      "scheduler": "Scheduler",
+      "manager": "Manager"
+    }
+  },
+  "operations": {
+    "title": "Operations",
+    "subtitle": "Configure opening hours and staff requirements for your facility.",
+    "openingHoursTitle": "Opening Hours",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+    "open": "Open",
+    "closed": "Closed"
   }
 }

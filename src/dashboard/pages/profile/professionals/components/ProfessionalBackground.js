@@ -19,14 +19,14 @@ import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSw
 import Dialog from '../../../../../components/Dialog/Dialog';
 import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
 import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
-import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye, FiZap } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye, FiZap, FiFileText } from 'react-icons/fi';
 import { cn } from '../../../../../utils/cn';
 
 
 // Tailwind styles
 const styles = {
    sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1400px] mx-auto",
-   headerCard: "bg-card rounded-2xl border border-border/50 px-6 py-4 shadow-lg backdrop-blur-sm w-full max-w-[1400px] mx-auto flex flex-col professional-background-header",
+   headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto flex flex-col professional-background-header",
    sectionTitle: "text-2xl font-semibold mb-0",
    sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
    sectionSubtitle: "text-sm font-medium",
@@ -38,7 +38,7 @@ const styles = {
    sectionsWrapper: "professional-background-sections-wrapper w-full max-w-[1400px] mx-auto",
    leftColumn: "flex flex-col gap-6 flex-1",
    rightColumn: "flex flex-col gap-6 flex-1",
-   sectionCard: "bg-card rounded-2xl border border-border/50 p-6 shadow-lg backdrop-blur-sm w-full",
+   sectionCard: "bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow w-full relative",
    cardHeader: "flex items-center gap-3 mb-4 pb-3 border-b border-border/40",
    cardIconWrapper: "p-2.5 rounded-xl bg-primary/10 flex-shrink-0",
    cardIconStyle: { color: 'var(--primary-color)' },
@@ -54,7 +54,7 @@ const styles = {
    formSectionError: "border-destructive/50",
    emptyStateText: "text-center py-8",
    emptyStateTextStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
-   addItemForm: "rounded-2xl p-6 border border-border/50 mt-4",
+   addItemForm: "rounded-xl p-6 border border-border mt-4",
    itemDisplayLine: "flex flex-col",
    itemContent: "flex flex-col gap-1",
    itemActions: "flex gap-2",
@@ -74,8 +74,6 @@ const ProfessionalBackground = ({
    getNestedValue,
    onInputChange,
    validateCurrentTabData,
-   onTabCompleted,
-   isTutorialActive,
    completionPercentage,
    handleAutoFillClick,
    isUploading,
@@ -85,7 +83,6 @@ const ProfessionalBackground = ({
    handleFileUpload,
    uploadProgress,
    t: tProp,
-   stepData
 }) => {
    const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
 
@@ -112,9 +109,7 @@ const ProfessionalBackground = ({
       onSave,
       getNestedValue,
       extractTabData,
-      validateCurrentTabData,
-      onTabCompleted,
-      isTutorialActive
+      validateCurrentTabData
    });
 
    useEffect(() => {
@@ -478,7 +473,7 @@ const ProfessionalBackground = ({
                isOpen={dialogState.isOpen}
                onClose={closeDialog}
                title={`${t('common.view', 'View')} ${subsectionTitle}`}
-               size="large"
+               size="xlarge"
                actions={
                   <Button onClick={closeDialog} variant="primary">
                      {t('common.close', 'Close')}
@@ -558,7 +553,7 @@ const ProfessionalBackground = ({
                isOpen={dialogState.isOpen}
                onClose={closeDialog}
                title={`${mode === 'edit' ? t('common.edit') : t('common.add')} ${subsectionTitle}`}
-               size="large"
+               size="xlarge"
                actions={
                   <>
                      <Button onClick={closeDialog} variant="secondary">{t('common.cancel')}</Button>
@@ -799,69 +794,6 @@ const ProfessionalBackground = ({
                }
             }
          `}</style>
-         <div className={styles.headerCard}>
-            <div className="professional-background-header-grid">
-               <div className="header-title-row">
-                  <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>{t('professionalBackground.title')}</h2>
-                  <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>{t('professionalBackground.subtitle')}</p>
-               </div>
-
-               {isTutorialActive && (
-                  <>
-                     <div className="header-completion-centered">
-                        {formData && completionPercentage !== undefined && (
-                           <div className="flex items-center gap-3 px-4 bg-muted/30 rounded-xl border-2 border-input" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                              <span className="text-sm font-medium text-muted-foreground">{t('dashboardProfile:profile.profileCompletion')}</span>
-                              <div className="w-32 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
-                                 <div
-                                    className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 rounded-full"
-                                    style={{ width: `${completionPercentage}%` }}
-                                 ></div>
-                              </div>
-                              <span className="text-sm font-semibold text-foreground">{completionPercentage}%</span>
-                           </div>
-                        )}
-                     </div>
-
-                     <div className="header-autofill-right">
-                        <div className="relative" ref={autoFillButtonRef}>
-                           <button
-                              onClick={handleAutoFillClick}
-                              disabled={isUploading || isAnalyzing}
-                              className={cn(
-                                 "group px-4 flex items-center justify-center gap-2 rounded-xl transition-all shrink-0",
-                                 (isUploading || isAnalyzing) && "opacity-50 cursor-not-allowed",
-                                 (stepData?.highlightUploadButton) && "tutorial-highlight"
-                              )}
-                              style={{ height: 'var(--boxed-inputfield-height)', backgroundColor: 'rgba(255, 191, 14, 1)' }}
-                              data-tutorial="profile-upload-button"
-                           >
-                              {isAnalyzing ? <LoadingSpinner size="sm" /> : <FiZap className="w-4 h-4 text-muted-foreground group-hover:text-black transition-colors" />}
-                              <span className="text-sm font-medium text-muted-foreground group-hover:text-black transition-colors">
-                                 {isAnalyzing
-                                    ? t('dashboardProfile:documents.analyzing', 'Analyzing...')
-                                    : t('dashboardProfile:documents.autofill', 'Auto Fill')
-                                 }
-                              </span>
-                           </button>
-                        </div>
-                     </div>
-                  </>
-               )}
-            </div>
-            {isTutorialActive && uploadInputRef && (
-               <UploadFile
-                  ref={uploadInputRef}
-                  onChange={handleFileUpload}
-                  isLoading={isUploading}
-                  progress={uploadProgress}
-                  accept=".pdf,.doc,.docx,.jpg,.png"
-                  label=""
-                  className="hidden"
-               />
-            )}
-         </div>
-
          {/* Dynamically render each section based on config items */}
          <div className="professional-background-container w-full max-w-[1400px] mx-auto">
             <div className={styles.sectionsWrapper}>
@@ -871,6 +803,30 @@ const ProfessionalBackground = ({
 
                <div className={styles.rightColumn}>
                   {Object.keys(sectionConfig).filter(sectionKey => sectionKey === 'workExperience').map(sectionKey => renderListSection(sectionKey))}
+                  <div className={styles.sectionCard}>
+                     <div className={styles.gridSingle}>
+                        <div className={styles.cardHeader}>
+                           <div className={styles.cardIconWrapper}>
+                              <FiFileText className="w-4 h-4" style={styles.cardIconStyle} />
+                           </div>
+                           <div className={styles.cardTitle}>
+                              <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('personalDetails.summary', 'Summary')}</h3>
+                           </div>
+                        </div>
+                        <div className={styles.gridSingle}>
+                           <TextareaField
+                              label=""
+                              name="professionalDetails.professionalSummary"
+                              value={getNestedValue(formData, 'professionalDetails.professionalSummary') || ''}
+                              onChange={(e) => onInputChange('professionalDetails.professionalSummary', e.target.value)}
+                              placeholder={t('personalDetails.summaryPlaceholder', 'Tell us about your professional background...')}
+                              error={getNestedValue(errors, 'professionalDetails.professionalSummary')}
+                              maxLength={1000}
+                              rows={8}
+                           />
+                        </div>
+                     </div>
+                  </div>
                </div>
             </div>
          </div>

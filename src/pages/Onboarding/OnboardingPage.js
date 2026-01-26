@@ -11,6 +11,7 @@ import {
     FiLoader, FiArrowLeft, FiShield, FiUser,
     FiLink, FiHelpCircle, FiPhone, FiAlertTriangle
 } from 'react-icons/fi';
+import ContactFormPopup from '../../components/ContactFormPopup/ContactFormPopup';
 import ProfessionalGLNVerification from '../../dashboard/onboarding/components/ProfessionalGLNVerification';
 import FacilityGLNVerification from '../../dashboard/onboarding/components/FacilityGLNVerification';
 import PhoneVerificationStep from '../../dashboard/onboarding/components/PhoneVerificationStep';
@@ -52,6 +53,7 @@ const OnboardingPage = () => {
     const [chainPhoneNumber, setChainPhoneNumber] = useState('');
     const [showRestrictedServicesModal, setShowRestrictedServicesModal] = useState(false);
     const [isCreatingProfile, setIsCreatingProfile] = useState(false);
+    const [showContactForm, setShowContactForm] = useState(false);
 
     // Internal Phone State
     const [phoneInternalStep, setPhoneInternalStep] = useState(1);
@@ -249,6 +251,9 @@ const OnboardingPage = () => {
         try {
             if (currentUser) {
                 const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
+                const userDoc = await getDoc(userDocRef);
+                const userData = userDoc.exists() ? userDoc.data() : {};
+
                 await updateDoc(userDocRef, {
                     [`onboardingProgress.${onboardingType}`]: { completed: true, role, completedAt: new Date() },
                     ...(onboardingType === 'professional' ? { onboardingCompleted: true } : {}),
@@ -259,7 +264,95 @@ const OnboardingPage = () => {
                 const profileDocRef = doc(db, profileCollection, currentUser.uid);
                 const profileDoc = await getDoc(profileDocRef);
                 
-                if (profileDoc.exists()) {
+                if (!profileDoc.exists() && onboardingType === 'facility' && role === 'company') {
+                    const { httpsCallable } = await import('firebase/functions');
+                    const { functions } = await import('../../services/firebase');
+                    const updateProfile = httpsCallable(functions, 'updateUserProfile');
+                    
+                    const facilityData = {
+                        role: 'facility',
+                        profileType: 'pharmacy',
+                        userId: currentUser.uid,
+                        email: currentUser.email,
+                        facilityDetails: {
+                            name: userData.firstName || userData.displayName || 'New Facility',
+                            additionalName: null,
+                            operatingAddress: {
+                                street: '',
+                                city: '',
+                                postalCode: '',
+                                canton: '',
+                                country: 'CH'
+                            },
+                            glnCompany: null,
+                            responsiblePersons: []
+                        },
+                        responsiblePersonIdentity: {
+                            firstName: userData.firstName || '',
+                            lastName: userData.lastName || '',
+                            dateOfBirth: null,
+                            nationality: null,
+                            gender: null,
+                            documentType: null,
+                            documentNumber: null,
+                            documentExpiry: null,
+                            residentialAddress: null
+                        },
+                        identityLegal: {
+                            legalCompanyName: userData.firstName || userData.displayName || 'New Facility',
+                            uidNumber: null
+                        },
+                        billingInformation: {
+                            legalName: userData.firstName || userData.displayName || 'New Facility',
+                            uidNumber: null,
+                            billingAddress: {
+                                street: '',
+                                city: '',
+                                postalCode: '',
+                                canton: '',
+                                country: 'CH'
+                            },
+                            invoiceEmail: currentUser.email || '',
+                            internalRef: '',
+                            verificationStatus: 'pending'
+                        },
+                        contact: {
+                            primaryEmail: currentUser.email || '',
+                            primaryPhone: userData.primaryPhone || '',
+                            primaryPhonePrefix: userData.primaryPhonePrefix || ''
+                        },
+                        verification: {
+                            identityStatus: 'not_verified',
+                            billingStatus: 'not_verified',
+                            overallVerificationStatus: 'not_verified',
+                            verificationDocuments: []
+                        },
+                        employees: [{
+                            user_uid: currentUser.uid,
+                            roles: ['admin']
+                        }],
+                        facilityProfileId: currentUser.uid,
+                        facilityName: userData.firstName || userData.displayName || 'New Facility',
+                        subscriptionTier: 'free'
+                    };
+
+                    await updateProfile(facilityData);
+
+                    const existingRoles = userData.roles || [];
+                    const updatedRoles = existingRoles.filter(r => r.facility_uid !== currentUser.uid);
+                    updatedRoles.push({
+                        facility_uid: currentUser.uid,
+                        roles: ['admin']
+                    });
+
+                    await updateDoc(userDocRef, {
+                        roles: updatedRoles,
+                        updatedAt: new Date()
+                    });
+                }
+
+                const finalProfileDoc = await getDoc(profileDocRef);
+                if (finalProfileDoc.exists()) {
                     await updateDoc(profileDocRef, {
                         shouldStartTutorial: true,
                         updatedAt: new Date()
@@ -268,7 +361,7 @@ const OnboardingPage = () => {
             }
             navigate(`/${lang}/dashboard/profile`);
         } catch (err) {
-            console.error(err);
+            console.error('Error completing onboarding:', err);
             setIsProcessing(false);
         }
     };
@@ -289,7 +382,7 @@ const OnboardingPage = () => {
     };
 
     return (
-        <div className="auth-container py-12 px-4 text-center">
+        <div className="auth-container py-12 px-4 text-center relative">
             {isCreatingProfile && (
                 <div className="fixed inset-0 bg-white/95 backdrop-blur-md z-[100000] flex items-center justify-center">
                     <div className="flex flex-col items-center gap-4">
@@ -300,6 +393,21 @@ const OnboardingPage = () => {
                     </div>
                 </div>
             )}
+            
+            <button
+                onClick={() => setShowContactForm(true)}
+                className="fixed top-4 right-4 z-50 p-3 rounded-full bg-[var(--color-logo-1)] text-white shadow-lg hover:bg-[var(--color-logo-1)]/90 transition-all hover:scale-110 flex items-center justify-center"
+                aria-label={t('common:header.help', 'Help')}
+                title={t('common:header.help', 'Help')}
+            >
+                <FiHelpCircle className="w-5 h-5" />
+            </button>
+
+            <ContactFormPopup
+                isOpen={showContactForm}
+                onClose={() => setShowContactForm(false)}
+            />
+
             <div className={`auth-content mx-auto bg-white rounded-[3.5rem] shadow-2xl p-6 md:p-14 relative overflow-hidden ${(step === 2 || step === 4) ? 'wide' : ''}`}>
                 {/* Step Indicator Header */}
                 <div className="flex justify-center items-center gap-4 mb-10">

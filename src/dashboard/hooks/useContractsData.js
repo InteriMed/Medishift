@@ -41,7 +41,7 @@ const useContractsData = () => {
   // Helper function to check if user has any facility admin role
   const hasAnyFacilityAdminRole = useMemo(() => {
     if (!user || !user.roles) return false;
-    return user.roles.some(role => role.startsWith('facility_admin_'));
+    return user.roles.some(role => typeof role === 'string' && role.startsWith('facility_admin_'));
   }, [user]);
 
   // Helper function to get user's facility memberships

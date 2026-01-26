@@ -109,7 +109,7 @@
 }
 
 .workspaceOption:hover {
-  background-color: #f3f4f6;
+  background-color: #ffffff;
   color: #111827;
 }
 
@@ -119,7 +119,6 @@
 }
 
 .workspaceOption .workspaceAvatar {
-  background-color: var(--color-logo-1);
   border: none;
   width: 24px;
   height: 24px;

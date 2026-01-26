@@ -238,6 +238,8 @@ function DropdownField({
 
     // Close dropdown when clicking outside
     useEffect(() => {
+        if (!isOpen) return;
+
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsOpen(false);
@@ -248,13 +250,17 @@ function DropdownField({
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [label]);
+    }, [isOpen]);
 
     const handleContainerClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        setIsOpen(true);
-        setIsFocused(true);
+        const target = e.target;
+        const currentTarget = e.currentTarget;
+        if (target === currentTarget || currentTarget.contains(target)) {
+            setIsOpen(true);
+            setIsFocused(true);
+        }
     };
 
     return (
@@ -312,37 +318,39 @@ function DropdownField({
                     ▼
                 </span>
 
-                <div
-                    id="boxed-inputfield-options"
-                    className={`boxed-inputfield-options ${isOpen ? 'boxed-inputfield-options--visible' : ''}`}
-                    role="listbox"
-                    style={{ maxHeight: maxHeight }}
-                >
-                    {filteredOptions.map((option, index) => {
-                        const optionValue = typeof option === 'string' ? option : option.value || option.label;
-                        const optionLabel = typeof option === 'string' ? option : option.label;
-                        const isSelected = selectedValues.some(item =>
-                            item.value === optionValue || item.label === optionLabel
-                        );
+                {isOpen && (
+                    <div
+                        id="boxed-inputfield-options"
+                        className="boxed-inputfield-options boxed-inputfield-options--visible"
+                        role="listbox"
+                        style={{ maxHeight: maxHeight }}
+                    >
+                        {filteredOptions.map((option, index) => {
+                            const optionValue = typeof option === 'string' ? option : option.value || option.label;
+                            const optionLabel = typeof option === 'string' ? option : option.label;
+                            const isSelected = selectedValues.some(item =>
+                                item.value === optionValue || item.label === optionLabel
+                            );
 
-                        return (
-                            <div
-                                key={index}
-                                id={`option-${index}`}
-                                className={`boxed-inputfield-option ${selectedIndex === index ? 'selected' : ''}`}
-                                onClick={() => handleOptionSelect(option)}
-                                onMouseEnter={() => setIsOptionHovered(true)}
-                                onMouseLeave={() => setIsOptionHovered(false)}
-                                role="option"
-                                aria-selected={selectedIndex === index}
-                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                            >
-                                <span>{typeof option === 'string' ? option : option.label}</span>
-                                <span className={`option-tick ${isSelected ? 'visible' : ''}`}>✓</span>
-                            </div>
-                        );
-                    })}
-                </div>
+                            return (
+                                <div
+                                    key={index}
+                                    id={`option-${index}`}
+                                    className={`boxed-inputfield-option ${selectedIndex === index ? 'selected' : ''}`}
+                                    onClick={() => handleOptionSelect(option)}
+                                    onMouseEnter={() => setIsOptionHovered(true)}
+                                    onMouseLeave={() => setIsOptionHovered(false)}
+                                    role="option"
+                                    aria-selected={selectedIndex === index}
+                                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                >
+                                    <span>{typeof option === 'string' ? option : option.label}</span>
+                                    <span className={`option-tick ${isSelected ? 'visible' : ''}`}>✓</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {selectedValues.length > 0 && (

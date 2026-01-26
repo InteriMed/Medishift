@@ -1,6 +1,6 @@
 :root {
-  --boxed-inputfield-height: 45px;
-  --boxed-inputfield-height-sm: 45px;
+  --boxed-inputfield-height: 38px;
+  --boxed-inputfield-height-sm: 38px;
   --boxed-inputfield-padding-x: 10px;
   --boxed-inputfield-padding: 18px;
   --boxed-inputfield-font-size: var(--font-size-small);
@@ -153,9 +153,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transform-origin: center;
 }
 
-.boxed-inputfield-arrow { top: 24px; transform: translateY(-60%) rotate(90deg); padding: 10px; }
+.boxed-inputfield-arrow { top: 50%; transform: translateY(-50%) rotate(90deg); padding: 10px; }
 .boxed-dropdown-arrow { top: 50%; transform: translateY(-50%); height: 100%; flex-shrink: 0; }
 .boxed-inputfield-arrow--open { transform: translateY(-50%) rotate(0deg); color: var(--grey-3); }
 .has-selections .boxed-inputfield-arrow,
@@ -345,6 +346,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   margin-top: 4px;
   animation: dropdownIn 0.2s ease-out;
+  display: none;
+  visibility: hidden;
+  opacity: 0;
 }
 
 @keyframes dropdownIn {

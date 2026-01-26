@@ -5,7 +5,7 @@ import { db, auth } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { FiUsers, FiShield, FiUser, FiX, FiBriefcase, FiCalendar, FiMail, FiPhone, FiTrendingUp, FiFileText, FiClock, FiExternalLink, FiAlertCircle, FiCheckCircle, FiUserX } from 'react-icons/fi';
+import { FiUsers, FiShield, FiUser, FiX, FiBriefcase, FiCalendar, FiMail, FiPhone, FiTrendingUp, FiFileText, FiClock, FiExternalLink, FiAlertCircle, FiCheckCircle, FiUserX, FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { CALENDAR_COLORS } from '../../calendar/utils/constants';
 import { cn } from '../../../../utils/cn';
@@ -47,6 +47,7 @@ const Organigram = ({ formData }) => {
   const [contracts, setContracts] = useState([]);
   const [hrMetrics, setHrMetrics] = useState(null);
   const [viewerIsAdmin, setViewerIsAdmin] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [showFireEmployeeDialog, setShowFireEmployeeDialog] = useState(false);
   const [fireEmployeeConfirmText, setFireEmployeeConfirmText] = useState('');
@@ -530,6 +531,23 @@ const Organigram = ({ formData }) => {
     return columns.sort((a, b) => a.level - b.level);
   }, [teamMembers, workerRequirements, t]);
 
+  const filteredHierarchicalColumns = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return hierarchicalColumns;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return hierarchicalColumns.map(column => ({
+      ...column,
+      members: column.members.filter(member =>
+        member.firstName?.toLowerCase().includes(query) ||
+        member.lastName?.toLowerCase().includes(query) ||
+        member.email?.toLowerCase().includes(query) ||
+        `${member.firstName} ${member.lastName}`.toLowerCase().includes(query)
+      )
+    })).filter(column => column.members.length > 0);
+  }, [hierarchicalColumns, searchQuery]);
+
   const handleEmployeeClick = (employee) => {
     setSelectedEmployee(employee);
   };
@@ -550,27 +568,39 @@ const Organigram = ({ formData }) => {
   return (
     <div className={cn(styles.sectionContainer, "relative")}>
       <div className={styles.headerCard}>
-        <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>
-          {t('organization:organigram.title', 'Organizational Chart')}
-        </h2>
-        <div className={styles.subtitleRow}>
-          <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)' }}>
-            {t('organization:organigram.description', 'View your team organized by hierarchy. Click on any employee to see details.')}
-          </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>
+              {t('organization:organigram.title', 'Organizational Chart')}
+            </h2>
+            <p className={styles.sectionSubtitle} style={{ fontFamily: 'var(--font-family-text, Roboto, sans-serif)', marginTop: '4px' }}>
+              {t('organization:organigram.description', 'View your team organized by hierarchy. Click on any employee to see details.')}
+            </p>
+          </div>
+        </div>
+        <div className="relative max-w-md">
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <input
+            type="text"
+            placeholder={t('organization:directory.searchPlaceholder', 'Search employees...')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+          />
         </div>
       </div>
 
-      {hierarchicalColumns.length === 0 ? (
+      {filteredHierarchicalColumns.length === 0 ? (
         <div className="text-center py-16">
           <FiUsers className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
           <p className="text-muted-foreground">
-            {t('organization:organigram.empty', 'No team members found')}
+            {searchQuery ? t('organization:directory.emptyState', 'No employees found') : t('organization:organigram.empty', 'No team members found')}
           </p>
         </div>
       ) : (
         <div className="relative w-full overflow-x-auto pb-8">
           <div className="flex gap-6 min-w-max px-4" style={{ minHeight: '400px' }}>
-            {hierarchicalColumns.map((column, columnIndex) => (
+            {filteredHierarchicalColumns.map((column, columnIndex) => (
               <div
                 key={column.role}
                 className="flex flex-col gap-4 min-w-[280px]"
@@ -674,10 +704,10 @@ const Organigram = ({ formData }) => {
                             </div>
                           </div>
                         </button>
-                        {columnIndex < hierarchicalColumns.length - 1 && memberIndex === column.members.length - 1 && (
+                        {columnIndex < filteredHierarchicalColumns.length - 1 && memberIndex === column.members.length - 1 && (
                           <div
                             className="absolute -right-6 top-1/2 w-6 h-0.5 -translate-y-1/2"
-                            style={{ backgroundColor: hierarchicalColumns[columnIndex + 1]?.color || 'var(--color-logo-1)' }}
+                            style={{ backgroundColor: filteredHierarchicalColumns[columnIndex + 1]?.color || 'var(--color-logo-1)' }}
                           />
                         )}
                       </div>
@@ -743,6 +773,7 @@ const Organigram = ({ formData }) => {
           viewerIsAdmin={viewerIsAdmin}
           hrMetrics={hrMetrics}
           onFireEmployee={viewerIsAdmin ? () => openFireEmployeeDialog(selectedEmployee) : null}
+          employeeId={selectedEmployee?.uid}
         />
       )}
 

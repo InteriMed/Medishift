@@ -20,7 +20,8 @@ import {
 import { cn } from '../../../utils/cn';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useDashboard } from '../../contexts/DashboardContext';
-import { hasPermission, PERMISSIONS } from '../utils/rbac';
+import { useAdminPermission } from '../hooks/useAdminPermission';
+import { RIGHTS as PERMISSIONS } from '../utils/rbac';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
@@ -29,13 +30,9 @@ import '../../../styles/variables.css';
 const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
     const { t } = useTranslation(['admin']);
     const location = useLocation();
-    const { userProfile } = useAuth();
-    const { user } = useDashboard();
+    const { hasRight, isSuperAdmin, adminRole } = useAdminPermission();
     const [pendingCount, setPendingCount] = useState(0);
     const [urgentCount, setUrgentCount] = useState(0);
-
-    // Get admin roles from AuthContext userProfile or DashboardContext user
-    const userRoles = userProfile?.adminData?.roles || user?.adminData?.roles || [];
 
     // Load badge counts
     useEffect(() => {
@@ -180,14 +177,17 @@ const AdminSidebar = ({ collapsed = false, onToggleCollapse }) => {
         {
             title: t('admin:sidebar.adminManagement', 'Admin Management'),
             icon: Shield,
-            path: '/dashboard/admin/management/employees',
-            permission: PERMISSIONS.MANAGE_EMPLOYEES
+            path: '/dashboard/admin/management/admins',
+            permission: PERMISSIONS.MANAGE_ADMINS
         }
     ];
 
     const renderMenuItem = (item) => {
-        if (item.permission && !hasPermission(userRoles, item.permission)) {
-            return null;
+        if (item.permission) {
+            const hasAccess = hasRight(item.permission);
+            if (!hasAccess) {
+                return null;
+            }
         }
 
         // Single menu item
