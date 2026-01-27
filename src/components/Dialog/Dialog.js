@@ -19,20 +19,15 @@ const Dialog = ({
   centerTitle = false,
   titleIcon = null
 }) => {
-  // Initialize isVisible based on isOpen for immediate display (especially for tooltips)
-  const [isVisible, setIsVisible] = useState(isOpen && !!position);
+  const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
-      // Set visible immediately for positioned dialogs (tooltips) to avoid delay
-      // For centered dialogs, use double RAF for animation
       if (position) {
-        // Positioned dialogs (tooltips) should appear immediately
         setIsVisible(true);
       } else {
-        // Centered dialogs use animation
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             setIsVisible(true);
@@ -57,7 +52,7 @@ const Dialog = ({
         }
       };
     }
-  }, [isOpen, position, title]);
+  }, [isOpen, position]);
 
   const handleKeyDown = useCallback((e) => {
     if (closeOnEscape && e.key === 'Escape' && isOpen) onClose();

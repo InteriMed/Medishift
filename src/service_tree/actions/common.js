@@ -457,7 +457,7 @@ export const commonActions = [
     keywords: ["announcement", "create", "new", "post", "broadcast", "communication"],
     labelKey: "serviceTree:announcements.createAnnouncement",
     descriptionKey: "serviceTree:announcements.createAnnouncementDesc",
-    route: "/dashboard/announcements?action=create",
+    route: "/dashboard/announcements/new",
     icon: "megaphone",
     parameters: [
       {

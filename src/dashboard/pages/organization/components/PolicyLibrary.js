@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiFileText, FiUploadCloud, FiClock, FiX, FiDownload, FiTrash2, FiInfo, FiPlus, FiSearch, FiEye, FiArrowDown, FiSliders, FiGrid, FiList, FiCheck, FiRefreshCw, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
-import DateField from '../../../../components/BoxedInputFields/DateField';
-import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
+import { FiFileText, FiUploadCloud, FiClock, FiX, FiDownload, FiTrash2, FiInfo, FiPlus, FiRefreshCw } from 'react-icons/fi';
+import FilterBar from '../../../components/FilterBar/FilterBar';
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { uploadFile } from '../../../../services/storageService';
@@ -13,6 +12,8 @@ import Dialog from '../../../../components/Dialog/Dialog';
 import BoxedSwitchField from '../../../../components/BoxedInputFields/BoxedSwitchField';
 import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldParagraph from '../../../../components/BoxedInputFields/TextareaField';
+import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
+import DateField from '../../../../components/BoxedInputFields/DateField';
 import { cn } from '../../../../utils/cn';
 import PageHeader from '../../../components/PageHeader/PageHeader';
 import PropTypes from 'prop-types';
@@ -55,10 +56,6 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
     });
     const [sortBy, setSortBy] = useState('date');
     const [viewMode, setViewMode] = useState('list');
-    const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
-    const [showSortDropdown, setShowSortDropdown] = useState(false);
-    const [showActiveFilters, setShowActiveFilters] = useState(false);
-    const [justExpanded, setJustExpanded] = useState(false);
 
     const organizationId = selectedWorkspace?.facilityId;
     const [memberFacilities, setMemberFacilities] = useState([]);
@@ -306,7 +303,7 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
         }));
     };
 
-    const clearAllFilters = () => {
+    const handleClearFilters = () => {
         setFilters({
             status: 'all',
             type: 'all',
@@ -317,8 +314,6 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
             toDate: ''
         });
     };
-
-    const activeCount = (filters.status !== 'all' ? 1 : 0) + (filters.type !== 'all' ? 1 : 0) + (filters.role !== 'all' ? 1 : 0) + (isOrganizationWorkspace && filters.facility !== 'all' ? 1 : 0) + (filters.priority !== 'all' ? 1 : 0) + (filters.fromDate ? 1 : 0) + (filters.toDate ? 1 : 0);
 
     const filteredPolicies = policies.filter(policy => {
         if (searchTerm.trim()) {
@@ -399,42 +394,6 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
     const hasPolicies = policies.length > 0;
     const hasFilteredPolicies = sortedPolicies.length > 0;
 
-    const stats = useMemo(() => {
-        const total = policies.length;
-        const active = policies.filter(p => p.status === 'active').length;
-        const review = policies.filter(p => p.status === 'review').length;
-        const archived = policies.filter(p => p.status === 'archived').length;
-        return { total, active, review, archived };
-    }, [policies]);
-
-    const StatCard = ({ icon: Icon, label, value, subValue, className }) => (
-        <div className={cn(
-            "bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow",
-            className
-        )}>
-            <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
-                    <Icon className="w-5 h-5" />
-                </div>
-                <div>
-                    <p className="text-sm text-muted-foreground">{label}</p>
-                    <p className="text-2xl font-bold text-foreground">{value}</p>
-                    {subValue && (
-                        <p className="text-xs text-muted-foreground mt-0.5">{subValue}</p>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-
-    StatCard.propTypes = {
-        icon: PropTypes.elementType.isRequired,
-        label: PropTypes.string.isRequired,
-        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-        subValue: PropTypes.string,
-        className: PropTypes.string
-    };
-
     return (
         <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
             {!hideHeader && (
@@ -470,484 +429,223 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
                 />
             )}
 
-            {!hideStats && (
-                <div className="shrink-0 p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard
-                            icon={FiFileText}
-                            label={t('organization:policy.stats.total', 'Total Policies')}
-                            value={stats.total}
-                        />
-                        <StatCard
-                            icon={FiCheckCircle}
-                            label={t('organization:policy.stats.active', 'Active')}
-                            value={stats.active || 0}
-                        />
-                        <StatCard
-                            icon={FiAlertCircle}
-                            label={t('organization:policy.stats.review', 'Under Review')}
-                            value={stats.review || 0}
-                        />
-                        <StatCard
-                            icon={FiFileText}
-                            label={t('organization:policy.stats.archived', 'Archived')}
-                            value={stats.archived || 0}
-                        />
-                    </div>
-                </div>
-            )}
-
-            <div className="flex-1 overflow-auto">
-                <div className="px-6 pb-6">
-            <div 
-                className={cn(
-                    "bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full mb-4",
-                    isFiltersExpanded ? 'px-6 py-3' : 'px-6 py-2'
-                )}
-                onMouseDown={(e) => {
-                    if (e.target.closest('button[title="Parameters"]')) {
-                        e.stopPropagation();
-                    }
-                }}
-            >
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-semibold text-foreground">
-                        {t('organization:policy.info.title', 'Policy Library')}
-                    </h3>
-                    <button
-                        onClick={fetchPolicies}
-                        disabled={isLoading}
-                        className={cn(
-                            "px-4 rounded-xl border-2 border-input bg-background text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 text-sm font-medium transition-all flex items-center gap-2 shrink-0",
-                            isLoading && "opacity-50 cursor-not-allowed"
-                        )}
-                        style={{ height: 'var(--boxed-inputfield-height)' }}
-                    >
-                        <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                        {t('common:refresh', 'Refresh')}
-                    </button>
-                </div>
-                <div className="pt-3 border-t border-border mb-4">
-                    <p className="text-sm text-muted-foreground">
-                        {t('organization:policy.info.description', 'Browse and search for policies in the library.')}
-                    </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 w-full">
-                    <div className="relative flex-1 min-w-[200px]">
-                        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder={t('organization:policy.searchPlaceholder', 'Search policies...')}
-                            className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                            style={{
-                                height: 'var(--boxed-inputfield-height)',
-                                fontWeight: '500',
-                                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                color: 'var(--boxed-inputfield-color-text)'
-                            }}
-                        />
-                    </div>
-
-                    <div className="relative shrink-0 w-[218px]">
-                        <DateField
-                            label="From"
-                            value={filters.fromDate ? new Date(filters.fromDate) : null}
-                            onChange={(date) => handleFilterChange('fromDate', date ? date.toISOString().split('T')[0] : '')}
-                            marginBottom="0"
-                            showClearButton={true}
-                        />
-                    </div>
-
-                    <div className="relative shrink-0 w-[218px]">
-                        <DateField
-                            label="To"
-                            value={filters.toDate ? new Date(filters.toDate) : null}
-                            onChange={(date) => handleFilterChange('toDate', date ? date.toISOString().split('T')[0] : '')}
-                            marginBottom="0"
-                            showClearButton={true}
-                        />
-                    </div>
-
-                    <div className="relative shrink-0">
-                        <button
-                            onClick={() => setShowSortDropdown(!showSortDropdown)}
-                            className="px-4 rounded-xl border-2 border-input bg-background text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 text-sm font-medium transition-all flex items-center gap-2 shrink-0"
-                            style={{ height: 'var(--boxed-inputfield-height)' }}
-                        >
-                            <FiArrowDown className="w-4 h-4" />
-                            {t('organization:policy.sortBy', 'Sort by')}
-                        </button>
-                        {showSortDropdown && (
-                            <>
-                                <div 
-                                    className="fixed inset-0 z-10" 
-                                    onClick={() => setShowSortDropdown(false)}
-                                />
-                                <div className="absolute top-full mt-2 right-0 z-20 bg-card border border-border rounded-lg shadow-lg min-w-[180px]">
-                                    <button
-                                        onClick={() => {
-                                            setSortBy('date');
-                                            setShowSortDropdown(false);
-                                        }}
-                                        className={cn(
-                                            "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                                            sortBy === 'date' && "bg-muted"
-                                        )}
-                                    >
-                                        {t('organization:policy.sort.date', 'Date')}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setSortBy('name');
-                                            setShowSortDropdown(false);
-                                        }}
-                                        className={cn(
-                                            "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                                            sortBy === 'name' && "bg-muted"
-                                        )}
-                                    >
-                                        {t('organization:policy.sort.name', 'Name')}
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const willExpand = !isFiltersExpanded;
-                            setIsFiltersExpanded(willExpand);
-                            if (willExpand) {
-                                setJustExpanded(true);
-                                setTimeout(() => {
-                                    setJustExpanded(false);
-                                }, 150);
-                            }
-                        }}
-                        onMouseDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                        }}
-                        className={cn(
-                            "flex items-center justify-center rounded-xl border-2 transition-all relative shrink-0",
-                            isFiltersExpanded
-                                ? "bg-[var(--color-logo-1)] border-[var(--color-logo-1)] text-white"
-                                : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
-                        )}
-                        style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
-                        title="Parameters"
-                    >
-                        <FiSliders className={`w-4 h-4 ${isFiltersExpanded ? 'text-white' : ''}`} />
-                        {activeCount > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-                                {activeCount}
-                            </span>
-                        )}
-                    </button>
-
-                    <div className="flex items-center gap-1 border-2 border-input rounded-xl p-0.5 bg-background shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={cn(
-                                "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
-                                viewMode === 'grid'
-                                    ? "bg-primary text-primary-foreground"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                            )}
-                            title={t('organization:policy.view.grid', 'Grid view')}
-                        >
-                            <FiGrid className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={cn(
-                                "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
-                                viewMode === 'list'
-                                    ? "bg-primary text-primary-foreground"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                            )}
-                            title={t('organization:policy.view.list', 'List view')}
-                        >
-                            <FiList className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-
-                {isFiltersExpanded && (
-                    <div 
-                        className="mt-3 pt-3 border-t border-border animate-in slide-in-from-top-1 duration-200 w-full"
-                        style={{ pointerEvents: justExpanded ? 'none' : 'auto' }}
-                        onClick={(e) => {
-                            if (justExpanded) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                return;
-                            }
-                        }}
-                        onMouseDown={(e) => {
-                            if (justExpanded) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                return;
-                            }
-                        }}
-                    >
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pb-1">
-                            <SimpleDropdown
-                                label={t('organization:policy.filter.status', 'Status')}
-                                options={[
-                                    { value: 'all', label: t('organization:policy.filter.all', 'All') },
-                                    ...statusOptions
-                                ]}
-                                value={filters.status}
-                                onChange={(value) => handleFilterChange('status', value)}
-                            />
-                            <SimpleDropdown
-                                label={t('organization:policy.filter.type', 'Type')}
-                                options={[
-                                    { value: 'all', label: t('organization:policy.filter.all', 'All') },
-                                    ...policyTypes
-                                ]}
-                                value={filters.type}
-                                onChange={(value) => handleFilterChange('type', value)}
-                            />
-                            <SimpleDropdown
-                                label={t('organization:policy.filter.role', 'Role')}
-                                options={availableRoles}
-                                value={filters.role}
-                                onChange={(value) => handleFilterChange('role', value)}
-                            />
-                            {isOrganizationWorkspace && memberFacilities.length > 0 && (
-                                <SimpleDropdown
-                                    label={t('organization:policy.filter.facility', 'Facility')}
-                                    options={[
-                                        { value: 'all', label: t('organization:policy.filter.allFacilities', 'All Facilities') },
-                                        ...memberFacilities.map(facility => ({
-                                            value: facility.id,
-                                            label: facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')
-                                        }))
-                                    ]}
-                                    value={filters.facility}
-                                    onChange={(value) => handleFilterChange('facility', value)}
-                                />
-                            )}
-                            <SimpleDropdown
-                                label={t('organization:policy.filter.priority', 'Priority')}
-                                options={[
-                                    { value: 'all', label: t('organization:policy.filter.all', 'All') },
-                                    ...priorityOptions
-                                ]}
-                                value={filters.priority}
-                                onChange={(value) => handleFilterChange('priority', value)}
-                            />
-                        </div>
-                        {activeCount > 0 && (
-                            <div className="mt-3 pt-3 border-t border-border w-full">
-                                <div className="flex items-center gap-3">
-                                    <button
-                                        onClick={() => {
-                                            setShowActiveFilters(!showActiveFilters);
-                                        }}
-                                        className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
-                                        style={{ height: 'var(--boxed-inputfield-height)' }}
-                                    >
-                                        <FiCheck className="w-4 h-4" />
-                                        {t('organization:policy.filter.apply', 'Apply Filters')}
-                                    </button>
-                                    
-                                    {showActiveFilters && (
-                                        <div className="flex-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground animate-in fade-in slide-in-from-left-1 duration-200">
-                                            {filters.status !== 'all' && (
-                                                <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                    {t('organization:policy.filter.status', 'Status')}: {statusOptions.find(o => o.value === filters.status)?.label || filters.status}
-                                                </span>
-                                            )}
-                                            {filters.type !== 'all' && (
-                                                <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                    {t('organization:policy.filter.type', 'Type')}: {policyTypes.find(o => o.value === filters.type)?.label || filters.type}
-                                                </span>
-                                            )}
-                                            {filters.role !== 'all' && (
-                                                <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                    {t('organization:policy.filter.role', 'Role')}: {availableRoles.find(o => o.value === filters.role)?.label || filters.role}
-                                                </span>
-                                            )}
-                                            {filters.facility !== 'all' && (
-                                                <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                    {t('organization:policy.filter.facility', 'Facility')}: {memberFacilities.find(f => f.id === filters.facility)?.facilityName || memberFacilities.find(f => f.id === filters.facility)?.companyName || filters.facility}
-                                                </span>
-                                            )}
-                                            {filters.priority !== 'all' && (
-                                                <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                    {t('organization:policy.filter.priority', 'Priority')}: {priorityOptions.find(o => o.value === filters.priority)?.label || filters.priority}
-                                                </span>
-                                            )}
-                                            {filters.fromDate && (
-                                                <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                    From: {new Date(filters.fromDate).toLocaleDateString()}
-                                                </span>
-                                            )}
-                                            {filters.toDate && (
-                                                <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                    To: {new Date(filters.toDate).toLocaleDateString()}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
+            <div className="shrink-0 px-6 py-6">
+                <FilterBar
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    onClearFilters={handleClearFilters}
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    searchPlaceholder={t('organization:policy.searchPlaceholder', 'Search policies...')}
+                    dropdownFields={[
+                        {
+                            key: 'status',
+                            label: t('organization:policy.filter.status', 'Status'),
+                            options: [
+                                { value: 'all', label: t('organization:policy.filter.all', 'All') },
+                                ...statusOptions
+                            ],
+                            defaultValue: 'all'
+                        },
+                        {
+                            key: 'type',
+                            label: t('organization:policy.filter.type', 'Type'),
+                            options: [
+                                { value: 'all', label: t('organization:policy.filter.all', 'All') },
+                                ...policyTypes
+                            ],
+                            defaultValue: 'all'
+                        },
+                        {
+                            key: 'role',
+                            label: t('organization:policy.filter.role', 'Role'),
+                            options: availableRoles,
+                            defaultValue: 'all'
+                        },
+                        ...(isOrganizationWorkspace && memberFacilities.length > 0 ? [{
+                            key: 'facility',
+                            label: t('organization:policy.filter.facility', 'Facility'),
+                            options: [
+                                { value: 'all', label: t('organization:policy.filter.allFacilities', 'All Facilities') },
+                                ...memberFacilities.map(facility => ({
+                                    value: facility.id,
+                                    label: facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')
+                                }))
+                            ],
+                            defaultValue: 'all'
+                        }] : []),
+                        {
+                            key: 'priority',
+                            label: t('organization:policy.filter.priority', 'Priority'),
+                            options: [
+                                { value: 'all', label: t('organization:policy.filter.all', 'All') },
+                                ...priorityOptions
+                            ],
+                            defaultValue: 'all'
+                        }
+                    ]}
+                    dateFields={[
+                        {
+                            key: 'fromDate',
+                            showClearButton: true
+                        },
+                        {
+                            key: 'toDate',
+                            showClearButton: true
+                        }
+                    ]}
+                    showViewToggle={true}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    sortOptions={[
+                        { value: 'date', label: t('organization:policy.sort.date', 'Date') },
+                        { value: 'name', label: t('organization:policy.sort.name', 'Name') }
+                    ]}
+                    sortValue={sortBy}
+                    onSortChange={setSortBy}
+                    translationNamespace="organization"
+                    title={t('organization:policy.info.title', 'Policy Library')}
+                    description={t('organization:policy.info.description', 'Browse and search for policies in the library.')}
+                    onRefresh={fetchPolicies}
+                    isLoading={isLoading}
+                />
             </div>
 
-            {isLoading ? (
+            <div className={cn("flex-1 overflow-auto", hideHeader ? "" : "px-6 pb-6")}>
+                {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
-                ) : !hasPolicies ? (
+                ) : sortedPolicies.length === 0 ? (
                     <div className="dashboard-empty-state">
                         <div className="dashboard-empty-state-card">
                             <div className="dashboard-empty-state-icon">
                                 <FiFileText className="w-8 h-8" />
                             </div>
-                            <h2 className="dashboard-empty-state-title">{t('organization:policy.empty.title', 'No policies found')}</h2>
+                            <h2 className="dashboard-empty-state-title">
+                                {t('organization:policy.empty.title', 'No policies found')}
+                            </h2>
                             <p className="dashboard-empty-state-description">
                                 {t('organization:policy.empty.description', 'No policies available at the moment')}
                             </p>
                         </div>
                     </div>
-                ) : !hasFilteredPolicies ? (
-                    <div className="dashboard-empty-state">
-                        <div className="dashboard-empty-state-card">
-                            <div className="dashboard-empty-state-icon">
-                                <FiSearch className="w-8 h-8" />
-                            </div>
-                            <h2 className="dashboard-empty-state-title">{t('organization:policy.noMatches', 'No policies match your search')}</h2>
-                            <p className="dashboard-empty-state-description">
-                                {t('organization:policy.noMatches.description', 'Try adjusting your filters to see more results')}
-                            </p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
-                        {sortedPolicies.map((policy) => (
-                            <div
-                                key={policy.id}
-                                className={cn(
-                                    "bg-background border border-border rounded-lg hover:border-primary/50 transition-colors group cursor-pointer",
-                                    viewMode === 'grid' ? "p-4 flex flex-col" : "flex items-center p-4"
-                                )}
-                                onClick={() => handlePolicySelect(policy)}
-                            >
-                                <div className={cn(
-                                    "rounded-lg bg-primary/10 flex items-center justify-center shrink-0",
-                                    viewMode === 'grid' ? "w-12 h-12 mb-3" : "w-10 h-10 mr-4"
-                                )}>
-                                    <FiFileText className="text-primary w-5 h-5" />
-                                </div>
-                                <div className={cn("flex-1 min-w-0", viewMode === 'grid' && "flex flex-col")}>
-                                    <div className={cn(
-                                        "flex items-start justify-between gap-2 mb-1",
-                                        viewMode === 'grid' && "flex-col"
-                                    )}>
-                                        <h4 className={cn(
-                                            "font-medium text-foreground group-hover:text-primary transition-colors",
-                                            viewMode === 'grid' ? "text-base mb-2" : "truncate flex-1"
-                                        )}>
-                                            {policy.name}
-                                        </h4>
-                                        <div className="flex items-center gap-1 flex-wrap">
+                ) : viewMode === 'list' ? (
+                    <div className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow">
+                        <table className="w-full">
+                            <thead className="bg-muted/30">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
+                                        {t('organization:policy.table.name', 'Name')}
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
+                                        {t('organization:policy.table.type', 'Type')}
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
+                                        {t('organization:policy.table.status', 'Status')}
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
+                                        {t('organization:policy.table.uploaded', 'Uploaded')}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sortedPolicies.map((policy) => (
+                                    <tr
+                                        key={policy.id}
+                                        className="border-b border-border hover:bg-muted/30 cursor-pointer transition-colors"
+                                        onClick={() => handlePolicySelect(policy)}
+                                    >
+                                        <td className="px-4 py-3">
+                                            <div className="font-medium text-foreground">{policy.name}</div>
+                                            {policy.description && (
+                                                <div className="text-xs text-muted-foreground">{policy.description}</div>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="text-sm">{policyTypes.find(o => o.value === policy.type)?.label || policy.type || 'N/A'}</div>
+                                        </td>
+                                        <td className="px-4 py-3">
                                             <span
                                                 className={cn(
-                                                    'px-2 py-1 rounded text-xs shrink-0',
+                                                    'px-2 py-1 rounded text-xs',
                                                     policy.status === 'active'
                                                         ? 'bg-green-100 text-green-700'
                                                         : policy.status === 'archived'
                                                         ? 'bg-gray-100 text-gray-700'
                                                         : policy.status === 'draft'
                                                         ? 'bg-blue-100 text-blue-700'
-                                                        : 'bg-yellow-100 text-yellow-700',
-                                                    viewMode === 'grid' && "self-start"
+                                                        : 'bg-yellow-100 text-yellow-700'
                                                 )}
                                             >
                                                 {statusOptions.find(o => o.value === policy.status)?.label || policy.status}
                                             </span>
-                                            {policy.priority && (
-                                                <span className={cn(
-                                                    'px-2 py-1 rounded text-xs shrink-0',
-                                                    policy.priority === 'high' ? 'bg-red-100 text-red-700' :
-                                                    policy.priority === 'medium' ? 'bg-orange-100 text-orange-700' :
-                                                    'bg-gray-100 text-gray-700'
-                                                )}>
-                                                    {priorityOptions.find(o => o.value === policy.priority)?.label || policy.priority}
-                                                </span>
-                                            )}
-                                        </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                                            {formatDate(policy.uploadedAt)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {sortedPolicies.map((policy) => (
+                            <div
+                                key={policy.id}
+                                className="bg-card border border-border rounded-lg hover:border-primary/50 transition-colors p-4 cursor-pointer"
+                                onClick={() => handlePolicySelect(policy)}
+                            >
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                        <h4 className="font-medium text-foreground mb-1">
+                                            {policy.name}
+                                        </h4>
+                                        {policy.description && (
+                                            <p className="text-xs text-muted-foreground">
+                                                {policy.description}
+                                            </p>
+                                        )}
                                     </div>
-                                    {policy.description && (
-                                        <p className={cn(
-                                            "text-xs text-muted-foreground mb-1",
-                                            viewMode === 'grid' ? "line-clamp-2 mb-2" : "truncate"
-                                        )}>
-                                            {policy.description}
-                                        </p>
-                                    )}
-                                    <div className={cn(
-                                        "flex items-center text-xs text-muted-foreground",
-                                        viewMode === 'grid' && "mt-auto pt-2"
-                                    )}>
+                                    <div className="flex items-center gap-1 flex-wrap">
+                                        <span
+                                            className={cn(
+                                                'px-2 py-1 rounded text-xs shrink-0',
+                                                policy.status === 'active'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : policy.status === 'archived'
+                                                    ? 'bg-gray-100 text-gray-700'
+                                                    : policy.status === 'draft'
+                                                    ? 'bg-blue-100 text-blue-700'
+                                                    : 'bg-yellow-100 text-yellow-700'
+                                            )}
+                                        >
+                                            {statusOptions.find(o => o.value === policy.status)?.label || policy.status}
+                                        </span>
+                                        {policy.priority && (
+                                            <span className={cn(
+                                                'px-2 py-1 rounded text-xs shrink-0',
+                                                policy.priority === 'high' ? 'bg-red-100 text-red-700' :
+                                                policy.priority === 'medium' ? 'bg-orange-100 text-orange-700' :
+                                                'bg-gray-100 text-gray-700'
+                                            )}>
+                                                {priorityOptions.find(o => o.value === policy.priority)?.label || policy.priority}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center text-xs text-muted-foreground">
                                         <FiClock className="mr-1" />
                                         {formatDate(policy.uploadedAt)}
                                     </div>
-                                </div>
-                                <div className={cn(
-                                    "flex items-center gap-2 shrink-0",
-                                    viewMode === 'grid' ? "mt-3 pt-3 border-t border-border justify-end" : "ml-2"
-                                )}>
-                                    {policy.downloadURL && (
-                                        <a
-                                            href={policy.downloadURL}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            onClick={(e) => e.stopPropagation()}
-                                            className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                            title={t('common:download', 'Download')}
-                                        >
-                                            <FiDownload className="w-4 h-4" />
-                                        </a>
-                                    )}
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handlePolicySelect(policy);
-                                        }}
-                                        className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                        title={t('organization:policy.viewDetails', 'View Details')}
-                                    >
-                                        <FiEye className="w-4 h-4" />
-                                    </button>
-                                    {currentUser?.uid === policy.uploadedBy && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeletePolicy(policy.id, policy.storagePath);
-                                            }}
-                                            className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                            title={t('common:delete', 'Delete')}
-                                        >
-                                            <FiTrash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
+            </div>
 
             <Dialog
                 isOpen={isUploadModalOpen}
@@ -1418,8 +1116,6 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
                     </div>
                 )}
             </Dialog>
-                </div>
-            </div>
         </div>
     );
 };

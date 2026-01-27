@@ -530,7 +530,7 @@ const UserVerificationQueue = () => {
                     color: selectedUser.facilityProfile ? 'var(--blue-5)' : 'var(--purple-5)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 'bold'
                   }}>
-                    {(selectedUser.facilityProfile ? selectedUser.facilityProfile.companyName : selectedUser.firstName).charAt(0)}
+                    {((selectedUser.facilityProfile ? selectedUser.facilityProfile.companyName : selectedUser.firstName) || '?').charAt(0)}
                   </div>
                   <div>
                     <h2 style={{ fontSize: 'var(--font-size-xlarge)', fontWeight: 'bold', marginBottom: '2px' }}>

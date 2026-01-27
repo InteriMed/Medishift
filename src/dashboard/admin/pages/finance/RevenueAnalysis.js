@@ -9,6 +9,8 @@ import { format } from 'date-fns';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import DateField from '../../../../components/BoxedInputFields/DateField';
+import PageHeader from '../../../components/PageHeader/PageHeader';
+import FilterBar from '../../../components/FilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const RevenueAnalysis = () => {
@@ -192,37 +194,48 @@ const RevenueAnalysis = () => {
     );
   }
 
+  const handleFilterChange = (key, value) => {
+    if (key === 'fromDate') {
+      setDateFrom(value ? new Date(value) : getFirstDayOfMonth());
+    } else if (key === 'toDate') {
+      setDateTo(value ? new Date(value) : getLastDayOfMonth());
+    }
+  };
+
+  const filterBarDateFields = [
+    {
+      key: 'fromDate',
+      label: t('admin:finance.from', 'From')
+    },
+    {
+      key: 'toDate',
+      label: t('admin:finance.to', 'To')
+    }
+  ];
+
   return (
     <ProtectedRoute requiredPermission={PERMISSIONS.VIEW_FINANCE}>
-      <div className="p-6 max-w-[1400px] mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-foreground mb-0">
-            {t('admin:finance.revenue.title', 'Revenue & Margin Analysis')}
-          </h1>
-        </div>
-
-        <div className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Calendar className="text-primary" size={20} />
-            <h3 className="text-sm font-medium text-foreground">
-              {t('admin:finance.period', 'Period')}
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <DateField
-              label={t('admin:finance.from', 'From')}
-              value={dateFrom}
-              onChange={(date) => setDateFrom(date)}
-              max={dateTo ? format(dateTo, 'yyyy-MM-dd') : undefined}
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <PageHeader
+          title={t('admin:finance.revenue.title', 'Revenue & Margin Analysis')}
+          subtitle={t('admin:finance.revenue.description', 'Analyze revenue, commissions, and margins')}
+        />
+        
+        <div style={{ flex: 1, overflow: 'auto', padding: 'var(--spacing-lg)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+            <FilterBar
+              filters={{
+                fromDate: dateFrom ? dateFrom.toISOString().split('T')[0] : null,
+                toDate: dateTo ? dateTo.toISOString().split('T')[0] : null
+              }}
+              onFilterChange={handleFilterChange}
+              dateFields={filterBarDateFields}
+              translationNamespace="admin"
+              title={t('admin:finance.period', 'Period')}
+              description={t('admin:finance.periodDescription', 'Select date range for revenue analysis')}
+              onRefresh={loadRevenueData}
+              isLoading={loading}
             />
-            <DateField
-              label={t('admin:finance.to', 'To')}
-              value={dateTo}
-              onChange={(date) => setDateTo(date)}
-              min={dateFrom ? format(dateFrom, 'yyyy-MM-dd') : undefined}
-            />
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow relative overflow-hidden">
@@ -298,6 +311,8 @@ const RevenueAnalysis = () => {
               {t('admin:finance.revenue.noData', 'No data available for this period')}
             </div>
           )}
+        </div>
+          </div>
         </div>
       </div>
     </ProtectedRoute>

@@ -54,6 +54,7 @@ export const AnnouncementDetail = ({ threadId, onBack }) => {
     const [replying, setReplying] = useState(null);
     const [replyData, setReplyData] = useState({});
     const [pollVotes, setPollVotes] = useState({});
+    const [showPollResults, setShowPollResults] = useState(false);
     const replyInputRef = useRef(null);
     const messagesListener = useRef(null);
 
@@ -84,6 +85,7 @@ export const AnnouncementDetail = ({ threadId, onBack }) => {
             };
             
             setThread(threadObj);
+            setShowPollResults(false);
             
             if (threadData.poll && user) {
                 const userVote = threadData.poll.options?.find(opt => 
@@ -458,118 +460,141 @@ export const AnnouncementDetail = ({ threadId, onBack }) => {
                         </p>
                     </div>
 
-                    {thread.poll && (
-                        <div className="mt-6 pt-6 border-t border-border">
-                            <div className="flex items-center gap-2 mb-4">
-                                <FiBarChart2 className="w-5 h-5 text-primary" />
-                                <h3 className="text-lg font-semibold text-foreground">{thread.poll.question}</h3>
-                            </div>
-                            <div className="space-y-3">
-                                {thread.poll.options?.map((option, index) => {
-                                    const totalVotes = thread.poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
-                                    const percentage = totalVotes > 0 ? ((option.votes || 0) / totalVotes) * 100 : 0;
-                                    const isVoted = pollVotes[thread.id] === option.text;
-                                    const hasVoted = !!pollVotes[thread.id];
-                                    
-                                    return (
+                    {thread.poll && (() => {
+                        const canSeeResults = thread.poll.showResultsToEveryone || (user && thread.createdBy === user.uid);
+                        const totalVotes = thread.poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0) || 0;
+                        
+                        return (
+                            <div className="mt-6 pt-6 border-t border-border">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <FiBarChart2 className="w-5 h-5 text-primary" />
+                                        <h3 className="text-lg font-semibold text-foreground">{thread.poll.question}</h3>
+                                    </div>
+                                    {canSeeResults && (
                                         <button
-                                            key={index}
-                                            onClick={async () => {
-                                                if (hasVoted && !isVoted) return;
-                                                if (!user) {
-                                                    showError('Please log in to vote');
-                                                    return;
-                                                }
-                                                
-                                                try {
-                                                    const threadRef = doc(db, 'threads', thread.id);
-                                                    const currentPoll = thread.poll;
-                                                    const updatedOptions = [...currentPoll.options];
-                                                    const optionIndex = updatedOptions.findIndex(opt => opt.text === option.text);
-                                                    
-                                                    if (isVoted) {
-                                                        updatedOptions[optionIndex] = {
-                                                            ...updatedOptions[optionIndex],
-                                                            votes: Math.max(0, (updatedOptions[optionIndex].votes || 0) - 1),
-                                                            voters: (updatedOptions[optionIndex].voters || []).filter(v => v !== user.uid)
-                                                        };
-                                                        setPollVotes(prev => {
-                                                            const newVotes = { ...prev };
-                                                            delete newVotes[thread.id];
-                                                            return newVotes;
-                                                        });
-                                                    } else {
-                                                        const previousVoteIndex = updatedOptions.findIndex(opt => 
-                                                            (opt.voters || []).includes(user.uid)
-                                                        );
-                                                        
-                                                        if (previousVoteIndex >= 0) {
-                                                            updatedOptions[previousVoteIndex] = {
-                                                                ...updatedOptions[previousVoteIndex],
-                                                                votes: Math.max(0, (updatedOptions[previousVoteIndex].votes || 0) - 1),
-                                                                voters: (updatedOptions[previousVoteIndex].voters || []).filter(v => v !== user.uid)
-                                                            };
-                                                        }
-                                                        
-                                                        updatedOptions[optionIndex] = {
-                                                            ...updatedOptions[optionIndex],
-                                                            votes: (updatedOptions[optionIndex].votes || 0) + 1,
-                                                            voters: [...(updatedOptions[optionIndex].voters || []), user.uid]
-                                                        };
-                                                        setPollVotes(prev => ({ ...prev, [thread.id]: option.text }));
+                                            onClick={() => setShowPollResults(!showPollResults)}
+                                            className="flex items-center gap-2 px-3 py-1.5 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                                        >
+                                            <FiBarChart2 className="w-4 h-4" />
+                                            {showPollResults ? 'Hide Results' : 'Show Results'}
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="space-y-3">
+                                    {thread.poll.options?.map((option, index) => {
+                                        const percentage = totalVotes > 0 ? ((option.votes || 0) / totalVotes) * 100 : 0;
+                                        const isVoted = pollVotes[thread.id] === option.text;
+                                        const hasVoted = !!pollVotes[thread.id];
+                                        
+                                        return (
+                                            <button
+                                                key={index}
+                                                onClick={async () => {
+                                                    if (hasVoted && !isVoted) return;
+                                                    if (!user) {
+                                                        showError('Please log in to vote');
+                                                        return;
                                                     }
                                                     
-                                                    await updateDoc(threadRef, {
-                                                        poll: {
-                                                            ...currentPoll,
-                                                            options: updatedOptions
+                                                    try {
+                                                        const threadRef = doc(db, 'threads', thread.id);
+                                                        const currentPoll = thread.poll;
+                                                        const updatedOptions = [...currentPoll.options];
+                                                        const optionIndex = updatedOptions.findIndex(opt => opt.text === option.text);
+                                                        
+                                                        if (isVoted) {
+                                                            updatedOptions[optionIndex] = {
+                                                                ...updatedOptions[optionIndex],
+                                                                votes: Math.max(0, (updatedOptions[optionIndex].votes || 0) - 1),
+                                                                voters: (updatedOptions[optionIndex].voters || []).filter(v => v !== user.uid)
+                                                            };
+                                                            setPollVotes(prev => {
+                                                                const newVotes = { ...prev };
+                                                                delete newVotes[thread.id];
+                                                                return newVotes;
+                                                            });
+                                                        } else {
+                                                            const previousVoteIndex = updatedOptions.findIndex(opt => 
+                                                                (opt.voters || []).includes(user.uid)
+                                                            );
+                                                            
+                                                            if (previousVoteIndex >= 0) {
+                                                                updatedOptions[previousVoteIndex] = {
+                                                                    ...updatedOptions[previousVoteIndex],
+                                                                    votes: Math.max(0, (updatedOptions[previousVoteIndex].votes || 0) - 1),
+                                                                    voters: (updatedOptions[previousVoteIndex].voters || []).filter(v => v !== user.uid)
+                                                                };
+                                                            }
+                                                            
+                                                            updatedOptions[optionIndex] = {
+                                                                ...updatedOptions[optionIndex],
+                                                                votes: (updatedOptions[optionIndex].votes || 0) + 1,
+                                                                voters: [...(updatedOptions[optionIndex].voters || []), user.uid]
+                                                            };
+                                                            setPollVotes(prev => ({ ...prev, [thread.id]: option.text }));
                                                         }
-                                                    });
-                                                    
-                                                    await loadThread();
-                                                } catch (error) {
-                                                    console.error('Error voting:', error);
-                                                    showError('Failed to vote');
-                                                }
-                                            }}
-                                            disabled={hasVoted && !isVoted}
-                                            className={cn(
-                                                "w-full text-left p-4 rounded-xl border-2 transition-all",
-                                                isVoted 
-                                                    ? "border-primary bg-primary/10" 
-                                                    : "border-border hover:border-primary/50 bg-card",
-                                                hasVoted && !isVoted && "opacity-50 cursor-not-allowed"
-                                            )}
-                                        >
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="font-medium text-foreground">{option.text}</span>
-                                                <span className="text-sm text-muted-foreground">
-                                                    {option.votes || 0} {option.votes === 1 ? 'vote' : 'votes'}
-                                                </span>
-                                            </div>
-                                            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                                                <div 
-                                                    className={cn(
-                                                        "h-full transition-all duration-300",
-                                                        isVoted ? "bg-primary" : "bg-primary/50"
+                                                        
+                                                        await updateDoc(threadRef, {
+                                                            poll: {
+                                                                ...currentPoll,
+                                                                options: updatedOptions
+                                                            }
+                                                        });
+                                                        
+                                                        await loadThread();
+                                                    } catch (error) {
+                                                        console.error('Error voting:', error);
+                                                        showError('Failed to vote');
+                                                    }
+                                                }}
+                                                disabled={hasVoted && !isVoted}
+                                                className={cn(
+                                                    "w-full text-left p-4 rounded-xl border-2 transition-all",
+                                                    isVoted 
+                                                        ? "border-primary bg-primary/10" 
+                                                        : "border-border hover:border-primary/50 bg-card",
+                                                    hasVoted && !isVoted && "opacity-50 cursor-not-allowed"
+                                                )}
+                                            >
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="font-medium text-foreground">{option.text}</span>
+                                                    {canSeeResults && showPollResults && (
+                                                        <span className="text-sm text-muted-foreground">
+                                                            {option.votes || 0} {option.votes === 1 ? 'vote' : 'votes'}
+                                                        </span>
                                                     )}
-                                                    style={{ width: `${percentage}%` }}
-                                                />
-                                            </div>
-                                            {percentage > 0 && (
-                                                <span className="text-xs text-muted-foreground mt-1 block">
-                                                    {percentage.toFixed(1)}%
-                                                </span>
-                                            )}
-                                        </button>
-                                    );
-                                })}
+                                                </div>
+                                                {canSeeResults && showPollResults && (
+                                                    <>
+                                                        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                                                            <div 
+                                                                className={cn(
+                                                                    "h-full transition-all duration-300",
+                                                                    isVoted ? "bg-primary" : "bg-primary/50"
+                                                                )}
+                                                                style={{ width: `${percentage}%` }}
+                                                            />
+                                                        </div>
+                                                        {percentage > 0 && (
+                                                            <span className="text-xs text-muted-foreground mt-1 block">
+                                                                {percentage.toFixed(1)}%
+                                                            </span>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {canSeeResults && showPollResults && (
+                                    <p className="text-xs text-muted-foreground mt-4">
+                                        {totalVotes} total {totalVotes === 1 ? 'vote' : 'votes'}
+                                    </p>
+                                )}
                             </div>
-                            <p className="text-xs text-muted-foreground mt-4">
-                                {thread.poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0) || 0} total votes
-                            </p>
-                        </div>
-                    )}
+                        );
+                    })()}
                 </div>
 
                 <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">

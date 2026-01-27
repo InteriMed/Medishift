@@ -94,5 +94,20 @@
     "signup": {
       "button": "Sign Up"
     }
+  },
+  "refresh": "Refresh",
+  "filter": {
+    "title": "Filters",
+    "description": "Filter and search your data",
+    "fromDate": "From",
+    "toDate": "To",
+    "search": "Search...",
+    "sortBy": "Sort by",
+    "apply": "Apply Filters",
+    "clear": "Clear",
+    "show": "Show Filters",
+    "hide": "Hide",
+    "noFiltersApplied": "No filters applied",
+    "activeFilterCount": "{{count}} filter{{count, plural, one {} other {s}}} active"
   }
 }

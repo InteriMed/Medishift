@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { doc, getDoc, onSnapshot, collection, query, where, getDocs, collectionGroup, Timestamp, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, collection, query, where, getDocs, Timestamp, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { FiUsers, FiShield, FiUser, FiX, FiBriefcase, FiCalendar, FiMail, FiPhone, FiTrendingUp, FiFileText, FiClock, FiExternalLink, FiAlertCircle, FiCheckCircle, FiUserX, FiSearch, FiPlus } from 'react-icons/fi';
+import { useSidebar } from '../../../contexts/SidebarContext';
+import { FiUsers, FiShield, FiSearch, FiPlus, FiMaximize2, FiMinimize2, FiZoomIn, FiZoomOut, FiMove } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { CALENDAR_COLORS } from '../../calendar/utils/constants';
 import { cn } from '../../../../utils/cn';
@@ -39,6 +40,7 @@ const Organigram = ({ formData }) => {
   const { t } = useTranslation(['organization', 'dashboardProfile', 'common']);
   const { selectedWorkspace } = useDashboard();
   const { showNotification } = useNotification();
+  const { setIsMainSidebarCollapsed } = useSidebar();
   const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState([]);
   const [loadingTeamMembers, setLoadingTeamMembers] = useState(false);
@@ -49,6 +51,14 @@ const Organigram = ({ formData }) => {
   const [hrMetrics, setHrMetrics] = useState(null);
   const [viewerIsAdmin, setViewerIsAdmin] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isReducedView, setIsReducedView] = useState(true);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
 
   const [showFireEmployeeDialog, setShowFireEmployeeDialog] = useState(false);
   const [fireEmployeeConfirmText, setFireEmployeeConfirmText] = useState('');
@@ -559,6 +569,84 @@ const Organigram = ({ formData }) => {
     setEmployeeDetails(null);
   };
 
+  const handleFullscreenToggle = useCallback(() => {
+    const newFullscreen = !isFullscreen;
+    setIsFullscreen(newFullscreen);
+    if (newFullscreen) {
+      setIsMainSidebarCollapsed(true);
+      setIsReducedView(false);
+    }
+  }, [isFullscreen, setIsMainSidebarCollapsed]);
+
+  const handleZoomIn = useCallback(() => {
+    setZoom(prev => Math.min(prev + 0.1, 2));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoom(prev => Math.max(prev - 0.1, 0.5));
+  }, []);
+
+  const handleMouseDown = useCallback((e) => {
+    if (e.button === 0 && !e.target.closest('.node-content') && !e.target.closest('button')) {
+      setIsPanning(true);
+      setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+      e.preventDefault();
+    }
+  }, [pan]);
+
+  const handleMouseMove = useCallback((e) => {
+    if (isPanning) {
+      setPan({
+        x: e.clientX - panStart.x,
+        y: e.clientY - panStart.y
+      });
+    }
+  }, [isPanning, panStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsPanning(false);
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const container = containerRef.current;
+      container.addEventListener('mousedown', handleMouseDown);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        container.removeEventListener('mousedown', handleMouseDown);
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [handleMouseDown, handleMouseMove, handleMouseUp]);
+
+  const handleWheel = useCallback((e) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const containerCenterX = rect.width / 2;
+        const containerCenterY = rect.height / 2;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        const newZoom = Math.max(0.3, Math.min(3, zoom + delta));
+        
+        const zoomRatio = newZoom / zoom;
+        const offsetX = (mouseX - containerCenterX) * (1 - zoomRatio);
+        const offsetY = (mouseY - containerCenterY) * (1 - zoomRatio);
+        
+        setZoom(newZoom);
+        setPan({
+          x: pan.x + offsetX,
+          y: pan.y + offsetY
+        });
+      }
+    }
+  }, [zoom, pan]);
+
   if (loadingTeamMembers) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -572,23 +660,109 @@ const Organigram = ({ formData }) => {
     ? t('organization:organigram.roles', 'Roles')
     : t('organization:organigram.title', 'Organizational Chart');
 
+  const nodePositions = useMemo(() => {
+    const positions = {};
+    const horizontalSpacing = isReducedView ? 220 : 280;
+    const verticalSpacing = isReducedView ? 100 : 140;
+    
+    const totalColumns = filteredHierarchicalColumns.length;
+    const totalWidth = totalColumns > 0 ? (totalColumns - 1) * horizontalSpacing : 0;
+    const startX = 5000 - (totalWidth / 2);
+    
+    let maxMembersInColumn = 0;
+    filteredHierarchicalColumns.forEach(column => {
+      if (column.members.length > maxMembersInColumn) {
+        maxMembersInColumn = column.members.length;
+      }
+    });
+    
+    const totalHeight = maxMembersInColumn > 0 ? (maxMembersInColumn - 1) * verticalSpacing : 0;
+    const startY = 5000 - (totalHeight / 2);
+
+    filteredHierarchicalColumns.forEach((column, columnIndex) => {
+      const columnX = startX + (columnIndex * horizontalSpacing);
+      const columnStartY = startY - ((column.members.length - 1) * verticalSpacing) / 2;
+      
+      column.members.forEach((member, memberIndex) => {
+        positions[member.uid] = {
+          x: columnX,
+          y: columnStartY + (memberIndex * verticalSpacing),
+          columnIndex,
+          memberIndex
+        };
+      });
+    });
+
+    return positions;
+  }, [filteredHierarchicalColumns, isReducedView]);
+
   return (
-    <div className={cn(styles.sectionContainer, "relative")}>
-      <div className={cn("bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full mb-4 px-6 py-3")}>
+    <div className={cn(styles.sectionContainer, "relative", isFullscreen && "fixed inset-0 z-[100] bg-background")}>
+      <div className={cn("bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full mb-4 px-6 py-3", isFullscreen && "mb-0 rounded-none border-0 border-b")}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-foreground">
             {organigramTitle}
           </h3>
-          {isFacilityContext && (
-            <Button
-              onClick={() => setShowCreateRoleModal(true)}
-              variant="primary"
-              className="flex items-center gap-2"
+          <div className="flex items-center gap-2">
+            {isFullscreen && (
+              <>
+                <button
+                  onClick={handleZoomOut}
+                  className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
+                  title={t('common:zoomOut', 'Zoom Out')}
+                >
+                  <FiZoomOut className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleZoomIn}
+                  className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
+                  title={t('common:zoomIn', 'Zoom In')}
+                >
+                  <FiZoomIn className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setZoom(1);
+                    setPan({ x: 0, y: 0 });
+                  }}
+                  className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
+                  title={t('common:reset', 'Reset View')}
+                >
+                  <FiMove className="w-4 h-4" />
+                </button>
+                <div className="w-px h-6 bg-border mx-1" />
+              </>
+            )}
+            <button
+              onClick={() => setIsReducedView(!isReducedView)}
+              className={cn(
+                "px-3 py-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm",
+                isReducedView && "bg-primary text-primary-foreground border-primary"
+              )}
             >
-              <FiPlus className="w-4 h-4" />
-              {t('organization:facilityRoles.createRole', 'Create Role')}
-            </Button>
-          )}
+              {isReducedView ? t('common:expand', 'Expand') : t('common:reduce', 'Reduce')}
+            </button>
+            <button
+              onClick={handleFullscreenToggle}
+              className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
+              title={isFullscreen ? t('common:exitFullscreen', 'Exit Fullscreen') : t('common:fullscreen', 'Fullscreen')}
+            >
+              {isFullscreen ? <FiMinimize2 className="w-4 h-4" /> : <FiMaximize2 className="w-4 h-4" />}
+            </button>
+            {isFacilityContext && (
+              <>
+                <div className="w-px h-6 bg-border mx-1" />
+                <Button
+                  onClick={() => setShowCreateRoleModal(true)}
+                  variant="primary"
+                  className="flex items-center gap-2"
+                >
+                  <FiPlus className="w-4 h-4" />
+                  {t('organization:facilityRoles.createRole', 'Create Role')}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
         <div className="pt-3 border-t border-border mb-4">
           <p className="text-sm text-muted-foreground">
@@ -623,123 +797,175 @@ const Organigram = ({ formData }) => {
           </p>
         </div>
       ) : (
-        <div className="relative w-full overflow-x-auto pb-8">
-          <div className="flex gap-6 min-w-max px-4" style={{ minHeight: '400px' }}>
+        <div
+          ref={containerRef}
+          className={cn(
+            "relative w-full overflow-hidden rounded-lg",
+            isFullscreen ? "h-[calc(100vh-200px)]" : isReducedView ? "h-[400px]" : "h-[600px]"
+          )}
+          onWheel={handleWheel}
+          style={{ 
+            cursor: isPanning ? 'grabbing' : 'grab',
+            backgroundColor: 'hsl(var(--background))',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, hsl(var(--border) / 0.2) 1px, transparent 1px),
+                linear-gradient(to bottom, hsl(var(--border) / 0.2) 1px, transparent 1px),
+                radial-gradient(circle at center, hsl(var(--border) / 0.5) 1.5px, transparent 1.5px)
+              `,
+              backgroundSize: '20px 20px, 20px 20px, 20px 20px',
+              backgroundPosition: `${(pan.x % 20)}px ${(pan.y % 20)}px, ${(pan.x % 20)}px ${(pan.y % 20)}px, ${(pan.x % 20)}px ${(pan.y % 20)}px`,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none'
+            }}
+          />
+          <div
+            ref={canvasRef}
+            className="absolute"
+            style={{
+              width: '10000px',
+              height: '10000px',
+              left: '50%',
+              top: '50%',
+              transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px)) scale(${zoom})`,
+              transformOrigin: 'center center',
+              transition: isPanning ? 'none' : 'transform 0.1s ease-out'
+            }}
+          >
             {filteredHierarchicalColumns.map((column, columnIndex) => (
-              <div
-                key={column.role}
-                className="flex flex-col gap-4 min-w-[280px]"
-              >
-                <div
-                  className="flex items-center gap-3 p-4 rounded-lg shadow-sm border border-border"
-                  style={{
-                    backgroundColor: column.color1 || 'var(--background-div-color)',
-                    borderColor: column.color || 'var(--border)'
-                  }}
-                >
-                  <div
-                    className="p-2 rounded-lg"
-                    style={{ backgroundColor: column.color || 'var(--color-logo-1)' }}
-                  >
-                    {column.level === 0 ? (
-                      <FiShield className="w-5 h-5 text-white" />
-                    ) : (
-                      <FiUsers className="w-5 h-5 text-white" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h3
-                      className="text-lg font-semibold"
-                      style={{ color: column.color || 'var(--color-logo-1)' }}
-                    >
-                      {column.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {column.members.length} {column.members.length === 1 ? t('organization:organigram.member', 'member') : t('organization:organigram.members', 'members')}
-                    </p>
-                  </div>
-                </div>
+              <React.Fragment key={column.role}>
+                {column.members.map((member, memberIndex) => {
+                  const position = nodePositions[member.uid];
+                  if (!position) return null;
+                  const isSelected = selectedEmployee?.uid === member.uid;
+                  const nodeX = position.x;
+                  const nodeY = position.y;
 
-                <div className="flex flex-col gap-3 flex-1">
-                  {column.members.map((member, memberIndex) => {
-                    const isSelected = selectedEmployee?.uid === member.uid;
-                    return (
-                      <div key={member.uid} className="relative">
-                        {columnIndex > 0 && memberIndex === 0 && (
-                          <div
-                            className="absolute -left-6 top-1/2 w-6 h-0.5 -translate-y-1/2"
-                            style={{ backgroundColor: column.color || 'var(--color-logo-1)' }}
-                          />
-                        )}
-                        <button
-                          onClick={() => handleEmployeeClick(member)}
-                          className={cn(
-                            "w-full bg-card rounded-xl border p-4 shadow-md transition-all text-left",
-                            "hover:shadow-lg hover:scale-[1.02]",
-                            isSelected && "ring-2 ring-offset-2",
-                            "focus:outline-none focus:ring-2 focus:ring-offset-2"
-                          )}
+                  return (
+                    <React.Fragment key={member.uid}>
+                      {columnIndex > 0 && memberIndex === 0 && (
+                        <svg
+                          className="absolute pointer-events-none"
                           style={{
-                            borderLeftWidth: '4px',
-                            borderLeftColor: member.color || column.color || 'var(--color-logo-1)',
-                            ...(isSelected && {
-                              ringColor: member.color || column.color || 'var(--color-logo-1)',
-                              borderColor: member.color || column.color || 'var(--color-logo-1)'
-                            })
+                            left: nodeX - 50,
+                            top: nodeY + (isReducedView ? 30 : 50),
+                            width: 50,
+                            height: 2,
+                            zIndex: 1
                           }}
                         >
-                          <div className="flex items-center gap-3">
-                            {member.photoURL ? (
-                              <img
-                                src={member.photoURL}
-                                alt={`${member.firstName} ${member.lastName}`}
-                                className="w-12 h-12 rounded-full object-cover shrink-0"
-                              />
-                            ) : (
-                              <div
-                                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shrink-0"
-                                style={{ backgroundColor: member.color || column.color || 'var(--color-logo-1)' }}
-                              >
-                                {member.firstName?.[0]?.toUpperCase() || member.lastName?.[0]?.toUpperCase() || '?'}
-                              </div>
-                            )}
+                          <line
+                            x1="0"
+                            y1="1"
+                            x2="50"
+                            y2="1"
+                            stroke={column.color || 'var(--color-logo-1)'}
+                            strokeWidth="2"
+                            strokeDasharray="4,4"
+                            opacity="0.6"
+                          />
+                        </svg>
+                      )}
+                      <div
+                        className={cn(
+                          "absolute bg-card rounded-lg border-2 shadow-lg transition-all cursor-pointer select-none",
+                          "hover:shadow-xl hover:border-primary/50",
+                          isSelected && "ring-2 ring-primary ring-offset-1"
+                        )}
+                        style={{
+                          left: nodeX,
+                          top: nodeY,
+                          width: isReducedView ? 180 : 240,
+                          minHeight: isReducedView ? 60 : 100,
+                          borderColor: isSelected 
+                            ? (member.color || column.color || 'var(--color-logo-1)')
+                            : 'hsl(var(--border))',
+                          backgroundColor: 'hsl(var(--card))',
+                          zIndex: isSelected ? 10 : 2
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEmployeeClick(member);
+                        }}
+                      >
+                        <div className="p-3 node-content">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 border-2 border-background shadow-sm"
+                              style={{ 
+                                backgroundColor: member.color || column.color || 'var(--color-logo-1)',
+                                borderColor: 'hsl(var(--card))'
+                              }}
+                            >
+                              {member.photoURL ? (
+                                <img
+                                  src={member.photoURL}
+                                  alt={`${member.firstName} ${member.lastName}`}
+                                  className="w-full h-full rounded-full object-cover"
+                                />
+                              ) : (
+                                member.firstName?.[0]?.toUpperCase() || member.lastName?.[0]?.toUpperCase() || '?'
+                              )}
+                            </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="font-semibold text-sm truncate">
+                              <div className="flex items-center gap-1.5">
+                                <p className="font-semibold text-sm truncate text-foreground">
                                   {`${member.firstName} ${member.lastName}`.trim() || 'Unknown'}
                                 </p>
                                 {member.isAdmin && (
-                                  <div
-                                    className="p-1 rounded-full shrink-0"
-                                    style={{ backgroundColor: 'var(--color-logo-1)' }}
-                                    title={t('organization:organigram.adminBadge', 'Administrator')}
-                                  >
-                                    <FiShield className="w-3 h-3 text-white" />
-                                  </div>
+                                  <FiShield className="w-3.5 h-3.5 text-primary shrink-0" />
                                 )}
                               </div>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {member.email}
-                              </p>
-                              {member.experienceYears > 0 && (
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {member.experienceYears} {member.experienceYears === 1 ? t('organization:organigram.year', 'year') : t('organization:organigram.years', 'years')} {t('organization:organigram.experience', 'experience')}
-                                </p>
+                              {!isReducedView && (
+                                <>
+                                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                    {member.email}
+                                  </p>
+                                  <div className="mt-1.5 pt-1.5 border-t border-border/50">
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                      {column.title}
+                                    </p>
+                                  </div>
+                                </>
                               )}
                             </div>
                           </div>
-                        </button>
-                        {columnIndex < filteredHierarchicalColumns.length - 1 && memberIndex === column.members.length - 1 && (
-                          <div
-                            className="absolute -right-6 top-1/2 w-6 h-0.5 -translate-y-1/2"
-                            style={{ backgroundColor: filteredHierarchicalColumns[columnIndex + 1]?.color || 'var(--color-logo-1)' }}
-                          />
-                        )}
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+                      {columnIndex < filteredHierarchicalColumns.length - 1 && memberIndex === column.members.length - 1 && (
+                        <svg
+                          className="absolute pointer-events-none"
+                          style={{
+                            left: nodeX + (isReducedView ? 180 : 240),
+                            top: nodeY + (isReducedView ? 30 : 50),
+                            width: 50,
+                            height: 2,
+                            zIndex: 1
+                          }}
+                        >
+                          <line
+                            x1="0"
+                            y1="1"
+                            x2="50"
+                            y2="1"
+                            stroke={filteredHierarchicalColumns[columnIndex + 1]?.color || 'var(--color-logo-1)'}
+                            strokeWidth="2"
+                            strokeDasharray="4,4"
+                            opacity="0.6"
+                          />
+                        </svg>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </React.Fragment>
             ))}
           </div>
         </div>

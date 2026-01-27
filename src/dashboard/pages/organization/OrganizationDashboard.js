@@ -67,10 +67,6 @@ const OrganizationDashboard = () => {
 
     const [selectedFacilityId, setSelectedFacilityId] = useState('all');
     const [facilitySearchQuery, setFacilitySearchQuery] = useState('');
-    const [employeesSubTab, setEmployeesSubTab] = useState(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('subTab') || 'employees';
-    });
 
     const getBasePath = useCallback(() => {
         const isOrganizationWorkspace = selectedWorkspace?.type === 'organization';
@@ -111,26 +107,46 @@ const OrganizationDashboard = () => {
         return 'directory';
     }, [location.pathname]);
 
+    const getActiveSubTabFromPath = useCallback(() => {
+        const pathParts = location.pathname.split('/').filter(Boolean);
+        const basePathIndex = pathParts.findIndex(part => part === 'organization' || part === 'facility');
+        
+        if (basePathIndex >= 0 && basePathIndex + 2 < pathParts.length) {
+            const subTabPath = pathParts[basePathIndex + 2];
+            if (['employees', 'organigram', 'hiring'].includes(subTabPath)) {
+                return subTabPath;
+            }
+        }
+        
+        return 'employees';
+    }, [location.pathname]);
+
     const activeTab = getActiveTabFromPath();
+    const activeSubTab = getActiveSubTabFromPath();
 
     useEffect(() => {
         const pathParts = location.pathname.split('/').filter(Boolean);
         const basePathIndex = pathParts.findIndex(part => part === 'organization' || part === 'facility');
         
-        if (basePathIndex >= 0 && basePathIndex < pathParts.length - 1) {
+        if (basePathIndex >= 0) {
+            if (basePathIndex === pathParts.length - 1) {
+                const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+                navigate(buildDashboardUrl(`/${basePath}/team/employees`, workspaceId), { replace: true });
+                return;
+            }
+            
             const tabPath = pathParts[basePathIndex + 1];
             if (tabPath === 'spend') {
                 const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                navigate(buildDashboardUrl(`/${basePath}/team`, workspaceId), { replace: true });
+                navigate(buildDashboardUrl(`/${basePath}/team/employees`, workspaceId), { replace: true });
+            }
+            
+            if (tabPath === 'team' && basePathIndex + 2 >= pathParts.length) {
+                const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+                navigate(buildDashboardUrl(`/${basePath}/team/employees`, workspaceId), { replace: true });
             }
         }
-
-        const urlParams = new URLSearchParams(location.search);
-        const subTabParam = urlParams.get('subTab');
-        if (subTabParam && ['employees', 'organigram', 'hiring'].includes(subTabParam)) {
-            setEmployeesSubTab(subTabParam);
-        }
-    }, [location.pathname, location.search, navigate, selectedWorkspace, basePath]);
+    }, [location.pathname, navigate, selectedWorkspace, basePath]);
 
     // Fetch organization data
     const fetchOrganization = useCallback(async () => {
@@ -434,18 +450,19 @@ const OrganizationDashboard = () => {
                                     <div className="shrink-0">
                                         <div className="flex gap-2 border-b border-border overflow-x-auto max-w-[1400px] mx-auto px-6">
                                             {[
-                                                { id: 'employees', label: t('organization:subTabs.employees', 'Employees'), icon: FiUserPlus },
-                                                { id: 'organigram', label: t('organization:tabs.organigram', 'Organigram'), icon: FiGitBranch },
-                                                { id: 'hiring', label: t('organization:subTabs.hiring', 'Hiring Processes'), icon: FiBriefcase }
+                                                { id: 'employees', label: t('organization:subTabs.employees', 'Employees'), icon: FiUserPlus, path: 'employees' },
+                                                { id: 'organigram', label: t('organization:tabs.organigram', 'Organigram'), icon: FiGitBranch, path: 'organigram' },
+                                                { id: 'hiring', label: t('organization:subTabs.hiring', 'Hiring Processes'), icon: FiBriefcase, path: 'hiring' }
                                             ].map((subTab) => {
                                                 const SubIcon = subTab.icon;
+                                                const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
                                                 return (
                                                     <button
                                                         key={subTab.id}
-                                                        onClick={() => setEmployeesSubTab(subTab.id)}
+                                                        onClick={() => navigate(buildDashboardUrl(`/${basePath}/team/${subTab.path}`, workspaceId))}
                                                         className={cn(
                                                             "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                                                            employeesSubTab === subTab.id
+                                                            activeSubTab === subTab.id
                                                                 ? "border-primary text-primary"
                                                                 : "border-transparent text-muted-foreground hover:text-foreground"
                                                         )}
@@ -459,18 +476,18 @@ const OrganizationDashboard = () => {
                                         </div>
                                     </div>
 
-                                    {employeesSubTab === 'employees' && (
+                                    {activeSubTab === 'employees' && (
                                         <GlobalDirectory 
                                             organization={organization}
                                             memberFacilities={allFacilities}
                                         />
                                     )}
 
-                                    {employeesSubTab === 'organigram' && (
+                                    {activeSubTab === 'organigram' && (
                                         <TeamOrganigram />
                                     )}
 
-                                    {employeesSubTab === 'hiring' && (
+                                    {activeSubTab === 'hiring' && (
                                         <HiringProcesses 
                                             organization={organization}
                                             memberFacilities={memberFacilities}

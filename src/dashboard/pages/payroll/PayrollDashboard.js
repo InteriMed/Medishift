@@ -7,11 +7,10 @@ import { functions } from '../../../services/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
-import { FiDollarSign, FiClock, FiCheckCircle, FiAlertCircle, FiRefreshCw, FiFileText, FiSend, FiGrid, FiList, FiSearch, FiArrowDown, FiSliders, FiCheck, FiUserPlus, FiUsers, FiBriefcase } from 'react-icons/fi';
+import { FiDollarSign, FiClock, FiCheckCircle, FiAlertCircle, FiRefreshCw, FiFileText, FiSend, FiUsers, FiBriefcase } from 'react-icons/fi';
 import { cn } from '../../../utils/cn';
 import PageHeader from '../../components/PageHeader/PageHeader';
-import DateField from '../../../components/BoxedInputFields/DateField';
-import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
+import FilterBar from '../../components/FilterBar/FilterBar';
 
 const statusConfig = {
     pending: { color: 'bg-transparent text-yellow-700 border-yellow-700', icon: FiClock, label: 'Pending' },
@@ -31,16 +30,12 @@ const PayrollDashboard = ({ hideHeader = false, hideStats = false }) => {
     const [payrollRequests, setPayrollRequests] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedRequest, setSelectedRequest] = useState(null);
-    const [activeTab, setActiveTab] = useState('team');
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('date');
-    const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [viewMode, setViewMode] = useState('list');
-    const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
-    const [justExpanded, setJustExpanded] = useState(false);
-    const [showActiveFilters, setShowActiveFilters] = useState(false);
     const [filters, setFilters] = useState({
         status: 'all',
+        source: 'all',
         fromDate: '',
         toDate: ''
     });
@@ -52,12 +47,6 @@ const PayrollDashboard = ({ hideHeader = false, hideStats = false }) => {
         paid: 0,
         totalAmount: 0
     });
-
-    const tabs = [
-        { id: 'team', label: t('payroll:tabs.team', 'Team'), icon: FiUsers },
-        { id: 'medishift', label: t('payroll:tabs.medishift', 'Medishift'), icon: FiBriefcase },
-        { id: 'all', label: t('payroll:tabs.all', 'All'), icon: FiGrid }
-    ];
 
     const statusOptions = [
         { value: 'all', label: t('payroll:filter.all', 'All') },
@@ -75,7 +64,14 @@ const PayrollDashboard = ({ hideHeader = false, hideStats = false }) => {
         }));
     }, []);
 
-    const activeCount = (filters.status !== 'all' ? 1 : 0) + (filters.fromDate ? 1 : 0) + (filters.toDate ? 1 : 0);
+    const handleClearFilters = useCallback(() => {
+        setFilters({
+            status: 'all',
+            source: 'all',
+            fromDate: '',
+            toDate: ''
+        });
+    }, []);
 
     const fetchPayrollRequests = useCallback(async () => {
         if (!currentUser) return;
@@ -153,10 +149,10 @@ const PayrollDashboard = ({ hideHeader = false, hideStats = false }) => {
     const filteredAndSortedRequests = useMemo(() => {
         let result = [...payrollRequests];
 
-        if (activeTab !== 'all') {
-            if (activeTab === 'team') {
+        if (filters.source !== 'all') {
+            if (filters.source === 'team') {
                 result = result.filter(req => req.source === 'team' || !req.source);
-            } else if (activeTab === 'medishift') {
+            } else if (filters.source === 'medishift') {
                 result = result.filter(req => req.source === 'medishift');
             }
         }
@@ -212,7 +208,7 @@ const PayrollDashboard = ({ hideHeader = false, hideStats = false }) => {
         }
 
         return result;
-    }, [payrollRequests, activeTab, searchTerm, filters, sortBy]);
+    }, [payrollRequests, searchTerm, filters, sortBy]);
 
     // Format currency
     const formatCurrency = (amount) => {
@@ -549,283 +545,60 @@ const PayrollDashboard = ({ hideHeader = false, hideStats = false }) => {
                 </div>
             )}
 
-            {/* Tabs */}
-            <div className="shrink-0">
-                <div className="flex gap-2 border-b border-border overflow-x-auto max-w-[1400px] mx-auto px-6">
-                    {tabs.map((tab) => {
-                        const TabIcon = tab.icon;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                                    "touch-manipulation active:scale-95",
-                                    activeTab === tab.id
-                                        ? "border-primary text-primary bg-primary/5"
-                                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                )}
-                                title={tab.label}
-                            >
-                                <TabIcon className="w-4 h-4 shrink-0" />
-                                <span className="text-xs sm:text-sm min-w-0">{tab.label}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Filter Section */}
             <div className="shrink-0 px-6 py-6">
-                <div 
-                    className={cn(
-                        "bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full payroll-filter-card",
-                        isFiltersExpanded ? 'px-6 py-3' : 'px-6 py-2'
-                    )}
-                    onMouseDown={(e) => {
-                        if (e.target.closest('button[title="Parameters"]')) {
-                            e.stopPropagation();
+                <FilterBar
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    onClearFilters={handleClearFilters}
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    searchPlaceholder={t('payroll:searchPlaceholder', 'Search by worker name or role...')}
+                    dropdownFields={[
+                        {
+                            key: 'status',
+                            label: t('payroll:filter.status', 'Status'),
+                            options: statusOptions,
+                            defaultValue: 'all'
+                        },
+                        {
+                            key: 'source',
+                            label: t('payroll:filter.source', 'Source'),
+                            options: [
+                                { value: 'all', label: t('payroll:tabs.all', 'All') },
+                                { value: 'team', label: t('payroll:tabs.team', 'Team') },
+                                { value: 'medishift', label: t('payroll:tabs.medishift', 'Medishift') }
+                            ],
+                            defaultValue: 'all'
                         }
-                    }}
-                >
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-base font-semibold text-foreground">
-                            {t('payroll:info.title', 'Payroll Management')}
-                        </h3>
-                        <button
-                            onClick={fetchPayrollRequests}
-                            disabled={isLoading}
-                            className={cn(
-                                "px-4 rounded-xl border-2 border-input bg-background text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 text-sm font-medium transition-all flex items-center gap-2 shrink-0",
-                                isLoading && "opacity-50 cursor-not-allowed"
-                            )}
-                            style={{ height: 'var(--boxed-inputfield-height)' }}
-                        >
-                            <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                            {t('common:refresh', 'Refresh')}
-                        </button>
-                    </div>
-                    <div className="pt-3 border-t border-border mb-4">
-                        <p className="text-sm text-muted-foreground">
-                            {t('payroll:info.description', 'Track and manage all payments and salaries.')}
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 w-full">
-                        <div className="relative flex-1 min-w-[200px]">
-                            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder={t('payroll:searchPlaceholder', 'Search by worker name or role...')}
-                                className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                                style={{
-                                    height: 'var(--boxed-inputfield-height)',
-                                    fontWeight: '500',
-                                    fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                    color: 'var(--boxed-inputfield-color-text)'
-                                }}
-                            />
-                        </div>
-
-                        <div className="relative shrink-0 w-[218px]">
-                            <DateField
-                                label="From"
-                                value={filters.fromDate ? new Date(filters.fromDate) : null}
-                                onChange={(date) => handleFilterChange('fromDate', date ? date.toISOString().split('T')[0] : '')}
-                                marginBottom="0"
-                                showClearButton={true}
-                            />
-                        </div>
-
-                        <div className="relative shrink-0 w-[218px]">
-                            <DateField
-                                label="To"
-                                value={filters.toDate ? new Date(filters.toDate) : null}
-                                onChange={(date) => handleFilterChange('toDate', date ? date.toISOString().split('T')[0] : '')}
-                                marginBottom="0"
-                                showClearButton={true}
-                            />
-                        </div>
-
-                        <div className="relative shrink-0">
-                            <button
-                                onClick={() => setShowSortDropdown(!showSortDropdown)}
-                                className="px-4 rounded-xl border-2 border-input bg-background text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 text-sm font-medium transition-all flex items-center gap-2 shrink-0"
-                                style={{ height: 'var(--boxed-inputfield-height)' }}
-                            >
-                                <FiArrowDown className="w-4 h-4" />
-                                {t('payroll:sortBy', 'Sort by')}
-                            </button>
-                            {showSortDropdown && (
-                                <>
-                                    <div 
-                                        className="fixed inset-0 z-10" 
-                                        onClick={() => setShowSortDropdown(false)}
-                                    />
-                                    <div className="absolute top-full mt-2 right-0 z-20 bg-card border border-border rounded-lg shadow-lg min-w-[180px]">
-                                        <button
-                                            onClick={() => {
-                                                setSortBy('date');
-                                                setShowSortDropdown(false);
-                                            }}
-                                            className={cn(
-                                                "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                                                sortBy === 'date' && "bg-muted"
-                                            )}
-                                        >
-                                            {t('payroll:sort.date', 'Date')}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setSortBy('name');
-                                                setShowSortDropdown(false);
-                                            }}
-                                            className={cn(
-                                                "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                                                sortBy === 'name' && "bg-muted"
-                                            )}
-                                        >
-                                            {t('payroll:sort.name', 'Name')}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setSortBy('amount');
-                                                setShowSortDropdown(false);
-                                            }}
-                                            className={cn(
-                                                "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                                                sortBy === 'amount' && "bg-muted"
-                                            )}
-                                        >
-                                            {t('payroll:sort.amount', 'Amount')}
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const willExpand = !isFiltersExpanded;
-                                setIsFiltersExpanded(willExpand);
-                                if (willExpand) {
-                                    setJustExpanded(true);
-                                    setTimeout(() => {
-                                        setJustExpanded(false);
-                                    }, 150);
-                                }
-                            }}
-                            onMouseDown={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }}
-                            className={cn(
-                                "flex items-center justify-center rounded-xl border-2 transition-all relative shrink-0",
-                                isFiltersExpanded
-                                    ? "bg-[var(--color-logo-1)] border-[var(--color-logo-1)] text-white"
-                                    : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
-                            )}
-                            style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
-                            title="Parameters"
-                        >
-                            <FiSliders className={`w-4 h-4 ${isFiltersExpanded ? 'text-white' : ''}`} />
-                            {activeCount > 0 && (
-                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-                                    {activeCount}
-                                </span>
-                            )}
-                        </button>
-
-                        <div className="flex items-center gap-1 border-2 border-input rounded-xl p-0.5 bg-background shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                            <button
-                                onClick={() => setViewMode('grid')}
-                                className={cn(
-                                    "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
-                                    viewMode === 'grid'
-                                        ? "bg-primary text-primary-foreground"
-                                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                                )}
-                                title={t('payroll:view.grid', 'Grid view')}
-                            >
-                                <FiGrid className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => setViewMode('list')}
-                                className={cn(
-                                    "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
-                                    viewMode === 'list'
-                                        ? "bg-primary text-primary-foreground"
-                                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                                )}
-                                title={t('payroll:view.list', 'List view')}
-                            >
-                                <FiList className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {isFiltersExpanded && (
-                            <div 
-                                className="mt-3 pt-3 border-t border-border animate-in slide-in-from-top-1 duration-200 w-full"
-                                style={{ pointerEvents: justExpanded ? 'none' : 'auto' }}
-                                onMouseDown={(e) => {
-                                    if (justExpanded) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        return;
-                                    }
-                                }}
-                            >
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 pb-1">
-                                    <SimpleDropdown
-                                        label={t('payroll:filter.status', 'Status')}
-                                        options={statusOptions}
-                                        value={filters.status}
-                                        onChange={(value) => handleFilterChange('status', value)}
-                                    />
-                                </div>
-                                {activeCount > 0 && (
-                                    <div className="mt-3 pt-3 border-t border-border w-full">
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                onClick={() => {
-                                                    setShowActiveFilters(!showActiveFilters);
-                                                }}
-                                                className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
-                                                style={{ height: 'var(--boxed-inputfield-height)' }}
-                                            >
-                                                <FiCheck className="w-4 h-4" />
-                                                {t('payroll:filter.apply', 'Apply Filters')}
-                                            </button>
-
-                                            {showActiveFilters && (
-                                                <div className="flex-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground animate-in fade-in slide-in-from-left-1 duration-200">
-                                                    {filters.status !== 'all' && (
-                                                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                            {t('payroll:filter.status', 'Status')}: {statusOptions.find(o => o.value === filters.status)?.label}
-                                                        </span>
-                                                    )}
-                                                    {filters.fromDate && (
-                                                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                            From: {new Date(filters.fromDate).toLocaleDateString()}
-                                                        </span>
-                                                    )}
-                                                    {filters.toDate && (
-                                                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                            To: {new Date(filters.toDate).toLocaleDateString()}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
+                    ]}
+                    dateFields={[
+                        {
+                            key: 'fromDate',
+                            label: t('payroll:filter.fromDate', 'From Date'),
+                            showClearButton: true
+                        },
+                        {
+                            key: 'toDate',
+                            label: t('payroll:filter.toDate', 'To Date'),
+                            showClearButton: true
+                        }
+                    ]}
+                    showViewToggle={true}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    sortOptions={[
+                        { value: 'date', label: t('payroll:sort.date', 'Date') },
+                        { value: 'name', label: t('payroll:sort.name', 'Name') },
+                        { value: 'amount', label: t('payroll:sort.amount', 'Amount') }
+                    ]}
+                    sortValue={sortBy}
+                    onSortChange={setSortBy}
+                    translationNamespace="payroll"
+                    title={t('payroll:info.title', 'Payroll Management')}
+                    description={t('payroll:info.description', 'Track and manage all payments and salaries.')}
+                    onRefresh={fetchPayrollRequests}
+                    isLoading={isLoading}
+                />
             </div>
 
             {/* Content */}

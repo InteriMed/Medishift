@@ -13,6 +13,7 @@ import PersonnalizedInputField from '../../../../components/BoxedInputFields/Per
 import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
 import Dialog from '../../../../components/Dialog/Dialog';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import PageHeader from '../../../components/PageHeader/PageHeader';
 import '../../../../styles/variables.css';
 
 const AdminManagement = () => {
@@ -319,18 +320,20 @@ const AdminManagement = () => {
   }
 
   return (
-    <div style={{ padding: 'var(--spacing-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: 'var(--font-size-xxxlarge)', fontWeight: 'var(--font-weight-large)', color: 'var(--text-color)', marginBottom: 0 }}>
-          Admin Management
-        </h1>
-        <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <PageHeader
+        title="Admin Management"
+        subtitle="Manage administrators and roles"
+        actions={
           <Button onClick={() => setShowInviteModal(true)} variant="primary">
             <UserPlus size={18} style={{ marginRight: '8px' }} />
             Invite Admin
           </Button>
-        </div>
-      </div>
+        }
+      />
+      
+      <div style={{ flex: 1, overflow: 'auto', padding: 'var(--spacing-lg)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
 
       <div style={{ display: 'flex', gap: 'var(--spacing-md)', borderBottom: '1px solid var(--grey-2)' }}>
         <button
@@ -641,6 +644,8 @@ const AdminManagement = () => {
           </div>
         </Dialog>
       )}
+        </div>
+      </div>
     </div>
   );
 };

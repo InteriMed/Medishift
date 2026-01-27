@@ -44,6 +44,9 @@
     },
     "filter": {
         "status": "Statut",
+        "source": "Source",
+        "fromDate": "Date de début",
+        "toDate": "Date de fin",
         "apply": "Appliquer les filtres"
     },
     "view": {
@@ -96,5 +99,10 @@
         "status": "Statut",
         "description": "Description",
         "descriptionPlaceholder": "Entrez la description du contrat"
+    },
+    "tabs": {
+        "team": "Équipe",
+        "medishift": "Medishift",
+        "all": "Tous"
     }
 }

@@ -57,7 +57,8 @@
     "start": "cross-env PORT=4000 craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "remove-legacy-translations": "node remove-legacy-from-report.js"
   },
   "eslintConfig": {
     "extends": [

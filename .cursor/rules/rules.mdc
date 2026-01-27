@@ -3,7 +3,7 @@ description: Interimed codebase conventions
 globs: 
 alwaysApply: true
 ---
-Your overall approach MUST emulate the design philosophy of Claude.
+Your overall approach MUST emulate the design philosophy of Claude. You must check the code and apply repairs as first intention, not generate lines of codes (AI slope content) when this can be avoided.
 
 ## STYLING
 Always use the styling variables stored in [variables.css](mdc:src/styles/variables.css).

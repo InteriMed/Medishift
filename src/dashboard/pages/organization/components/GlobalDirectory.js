@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
@@ -8,11 +7,9 @@ import { FiSearch, FiBriefcase, FiX, FiSliders, FiFilter, FiCheck } from 'react-
 import EmployeePopup from './EmployeePopup';
 import { cn } from '../../../../utils/cn';
 import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
-import DateField from '../../../../components/BoxedInputFields/DateField';
 
 const GlobalDirectory = ({ organization, memberFacilities = [] }) => {
     const { t } = useTranslation(['organization', 'common']);
-    const [searchParams, setSearchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState('');
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -21,8 +18,6 @@ const GlobalDirectory = ({ organization, memberFacilities = [] }) => {
     const [facilityFilter, setFacilityFilter] = useState('all');
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [fromDate, setFromDate] = useState('');
-    const [toDate, setToDate] = useState('');
     const [sortBy, setSortBy] = useState('name');
     const [showSortMenu, setShowSortMenu] = useState(false);
     const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
@@ -108,39 +103,6 @@ const GlobalDirectory = ({ organization, memberFacilities = [] }) => {
         }
     }, [memberFacilities, loadEmployees]);
 
-    useEffect(() => {
-        const modalParam = searchParams.get('modal');
-        const employeeId = searchParams.get('employeeId');
-        
-        if (modalParam === 'employee' && employeeId && employees.length > 0) {
-            const foundEmployee = employees.find(emp => emp.id === employeeId);
-            if (foundEmployee && !isPopupOpen) {
-                setSelectedEmployee(foundEmployee);
-                setIsPopupOpen(true);
-            }
-        }
-    }, [searchParams, employees, isPopupOpen]);
-
-    const handleOpenEmployeePopup = useCallback((employee) => {
-        setSelectedEmployee(employee);
-        setIsPopupOpen(true);
-        const newParams = new URLSearchParams(searchParams);
-        newParams.set('modal', 'employee');
-        if (employee?.id) {
-            newParams.set('employeeId', employee.id);
-        }
-        setSearchParams(newParams, { replace: true });
-    }, [searchParams, setSearchParams]);
-
-    const handleCloseEmployeePopup = useCallback(() => {
-        setIsPopupOpen(false);
-        setSelectedEmployee(null);
-        const newParams = new URLSearchParams(searchParams);
-        newParams.delete('modal');
-        newParams.delete('employeeId');
-        setSearchParams(newParams, { replace: true });
-    }, [searchParams, setSearchParams]);
-
     const availableRoles = useMemo(() => {
         const rolesSet = new Set();
         employees.forEach(emp => {
@@ -175,24 +137,6 @@ const GlobalDirectory = ({ organization, memberFacilities = [] }) => {
             filtered = filtered.filter(emp => emp.status === statusFilter);
         }
 
-        if (fromDate) {
-            const fromDateObj = new Date(fromDate);
-            filtered = filtered.filter(emp => {
-                if (!emp.hireDate) return false;
-                const hireDate = emp.hireDate instanceof Date ? emp.hireDate : new Date(emp.hireDate);
-                return hireDate >= fromDateObj;
-            });
-        }
-
-        if (toDate) {
-            const toDateObj = new Date(toDate);
-            filtered = filtered.filter(emp => {
-                if (!emp.hireDate) return false;
-                const hireDate = emp.hireDate instanceof Date ? emp.hireDate : new Date(emp.hireDate);
-                return hireDate <= toDateObj;
-            });
-        }
-
         const sorted = [...filtered].sort((a, b) => {
             switch (sortBy) {
                 case 'name':
@@ -213,17 +157,15 @@ const GlobalDirectory = ({ organization, memberFacilities = [] }) => {
         });
 
         return sorted;
-    }, [employees, searchTerm, facilityFilter, roleFilter, statusFilter, fromDate, toDate, sortBy]);
+    }, [employees, searchTerm, facilityFilter, roleFilter, statusFilter, sortBy]);
 
-    const hasActiveFilters = facilityFilter !== 'all' || roleFilter !== 'all' || statusFilter !== 'all' || fromDate || toDate;
-    const activeFilterCount = (facilityFilter !== 'all' ? 1 : 0) + (roleFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (fromDate ? 1 : 0) + (toDate ? 1 : 0);
+    const hasActiveFilters = facilityFilter !== 'all' || roleFilter !== 'all' || statusFilter !== 'all';
+    const activeFilterCount = (facilityFilter !== 'all' ? 1 : 0) + (roleFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0);
 
     const clearFilters = () => {
         setFacilityFilter('all');
         setRoleFilter('all');
         setStatusFilter('all');
-        setFromDate('');
-        setToDate('');
     };
 
     const sortOptions = [
@@ -262,28 +204,6 @@ const GlobalDirectory = ({ organization, memberFacilities = [] }) => {
                                 fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
                                 color: 'var(--boxed-inputfield-color-text)'
                             }}
-                        />
-                    </div>
-
-                    {/* Date From */}
-                    <div className="relative shrink-0 w-[218px]">
-                        <DateField
-                            label="From"
-                            value={fromDate ? new Date(fromDate) : null}
-                            onChange={(date) => setFromDate(date ? date.toISOString().split('T')[0] : '')}
-                            marginBottom="0"
-                            showClearButton={true}
-                        />
-                    </div>
-
-                    {/* Date To */}
-                    <div className="relative shrink-0 w-[218px]">
-                        <DateField
-                            label="To"
-                            value={toDate ? new Date(toDate) : null}
-                            onChange={(date) => setToDate(date ? date.toISOString().split('T')[0] : '')}
-                            marginBottom="0"
-                            showClearButton={true}
                         />
                     </div>
 
@@ -460,13 +380,16 @@ const GlobalDirectory = ({ organization, memberFacilities = [] }) => {
                     )}
                 </div>
             ) : (
-                <div className="space-y-3">
+                <div className="space-x-6">
                     {filteredAndSortedEmployees.map((employee) => (
                         <EmployeeCard 
                             key={employee.id} 
                             employee={employee}
                             viewMode="list"
-                            onClick={() => handleOpenEmployeePopup(employee)}
+                            onClick={() => {
+                                setSelectedEmployee(employee);
+                                setIsPopupOpen(true);
+                            }}
                         />
                     ))}
                 </div>
@@ -475,7 +398,10 @@ const GlobalDirectory = ({ organization, memberFacilities = [] }) => {
             <EmployeePopup
                 employee={selectedEmployee}
                 isOpen={isPopupOpen}
-                onClose={handleCloseEmployeePopup}
+                onClose={() => {
+                    setIsPopupOpen(false);
+                    setSelectedEmployee(null);
+                }}
             />
         </div>
     );
@@ -525,23 +451,29 @@ const EmployeeCard = ({ employee, onClick, viewMode = 'list' }) => {
                         </span>
                     </div>
                     <p className="text-sm text-muted-foreground truncate mb-2">{employee.email}</p>
-                    {employee.roles && employee.roles.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                            {employee.roles.slice(0, 3).map((role, idx) => (
-                                <span 
-                                    key={idx}
-                                    className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded"
-                                >
-                                    {role}
-                                </span>
-                            ))}
-                            {employee.roles.length > 3 && (
-                                <span className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded">
-                                    +{employee.roles.length - 3}
-                                </span>
-                            )}
+                    <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <FiBriefcase className="w-4 h-4 shrink-0" />
+                            <span className="truncate">{employee.facilityName}</span>
                         </div>
-                    )}
+                        {employee.roles && employee.roles.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                                {employee.roles.slice(0, 3).map((role, idx) => (
+                                    <span 
+                                        key={idx}
+                                        className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded"
+                                    >
+                                        {role}
+                                    </span>
+                                ))}
+                                {employee.roles.length > 3 && (
+                                    <span className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded">
+                                        +{employee.roles.length - 3}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

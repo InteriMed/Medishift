@@ -8,6 +8,8 @@ import { PERMISSIONS } from '../../utils/rbac';
 import { format } from 'date-fns';
 import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
+import PageHeader from '../../../components/PageHeader/PageHeader';
+import FilterBar from '../../../components/FilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const AuditLogs = () => {
@@ -108,42 +110,44 @@ const AuditLogs = () => {
     );
   }
 
+  const handleFilterChange = (key, value) => {
+    if (key === 'action') {
+      setActionFilter(value);
+    }
+  };
+
+  const filterBarDropdownFields = [
+    {
+      key: 'action',
+      label: 'Action Type',
+      options: actionOptions,
+      defaultValue: 'all'
+    }
+  ];
+
   return (
     <ProtectedRoute requiredPermission={PERMISSIONS.VIEW_AUDIT_LOGS}>
-      <div style={{ padding: 'var(--spacing-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--font-size-xxxlarge)', fontWeight: 'var(--font-weight-large)', color: 'var(--text-color)', marginBottom: 0 }}>
-            {t('admin:system.audit.title', 'Audit Logs')}
-          </h1>
-        </div>
-
-        <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-lg)', border: '1px solid var(--grey-2)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--spacing-md)' }}>
-            <h2 style={{ fontSize: 'var(--font-size-large)', fontWeight: 'var(--font-weight-medium)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-              <Filter size={20} />
-              {t('admin:system.audit.searchCriteria', 'Search Criteria')}
-            </h2>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
-            <div>
-              <PersonnalizedInputField
-                label="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                name="search"
-                placeholder={t('admin:system.audit.search', 'Search logs...')}
-              />
-            </div>
-            <div>
-              <DropdownField
-                options={actionOptions}
-                value={actionFilter}
-                onChange={(value) => setActionFilter(value)}
-              />
-            </div>
-          </div>
-        </div>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <PageHeader
+          title={t('admin:system.audit.title', 'Audit Logs')}
+          subtitle={t('admin:system.audit.description', 'View system activity and audit trail')}
+        />
+        
+        <div style={{ flex: 1, overflow: 'auto', padding: 'var(--spacing-lg)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+            <FilterBar
+              filters={{ action: actionFilter }}
+              onFilterChange={handleFilterChange}
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder={t('admin:system.audit.search', 'Search logs...')}
+              dropdownFields={filterBarDropdownFields}
+              translationNamespace="admin"
+              title={t('admin:system.audit.searchCriteria', 'Search Criteria')}
+              description={t('admin:system.audit.searchDescription', 'Filter audit logs by action type or search by user, action, or details')}
+              onRefresh={loadAuditLogs}
+              isLoading={loading}
+            />
 
         <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-md)', border: '1px solid var(--grey-2)', boxShadow: 'var(--shadow-sm)' }}>
 
@@ -199,7 +203,9 @@ const AuditLogs = () => {
               {t('admin:system.audit.noLogs', 'No audit logs found')}
             </div>
           )}
+          </div>
         </div>
+      </div>
       </div>
     </ProtectedRoute>
   );

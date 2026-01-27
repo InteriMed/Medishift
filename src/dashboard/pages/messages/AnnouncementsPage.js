@@ -53,7 +53,8 @@ const AnnouncementsPage = () => {
   const [pollData, setPollData] = useState({ 
     question: '', 
     itemType: 'multipleChoice',
-    options: ['', ''] 
+    options: ['', ''],
+    showResultsToEveryone: false
   });
   const threadsListener = useRef(null);
 
@@ -131,20 +132,23 @@ const AnnouncementsPage = () => {
   }, [loadThreads]);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('action') === 'create') {
+    const pathSegments = location.pathname.split('/');
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    if (lastSegment === 'new') {
       setIsCreateAnnouncementOpen(true);
+    } else {
+      setIsCreateAnnouncementOpen(false);
     }
 
     const handleOpenModal = (event) => {
       if (event.detail?.type === 'createAnnouncement') {
-        setIsCreateAnnouncementOpen(true);
+        navigate(buildDashboardUrl('/announcements/new', workspaceId));
       }
     };
 
     window.addEventListener('openModal', handleOpenModal);
     return () => window.removeEventListener('openModal', handleOpenModal);
-  }, []);
+  }, [location.pathname, navigate, workspaceId]);
 
   const handleCreateAnnouncement = async () => {
     if (!createFormData.title.trim() || !createFormData.description.trim()) {
@@ -198,6 +202,7 @@ const AnnouncementsPage = () => {
           poll: {
             question: pollData.question,
             itemType: pollData.itemType,
+            showResultsToEveryone: pollData.showResultsToEveryone || false,
             ...(pollData.itemType === 'multipleChoice' || pollData.itemType === 'multipleChoiceGrid' ? {
               options: pollData.options.filter(opt => opt.trim()).map(opt => ({
                 text: opt.trim(),
@@ -215,6 +220,7 @@ const AnnouncementsPage = () => {
       setCreateFormData({ title: '', description: '', urgency: 'warning', targetRoles: 'all', category: '', publishDate: null, displayUntilDate: null });
       setHasPoll(false);
       setPollData({ question: '', itemType: 'multipleChoice', options: ['', ''] });
+      navigate(buildDashboardUrl('/announcements', workspaceId));
       loadThreads();
     } catch (error) {
       console.error('Error creating announcement:', error);
@@ -388,7 +394,7 @@ const AnnouncementsPage = () => {
             setSearchQuery={setSearchQuery}
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
-            onCreateAnnouncement={() => setIsCreateAnnouncementOpen(true)}
+            onCreateAnnouncement={() => navigate(buildDashboardUrl('/announcements/new', workspaceId))}
           />
 
           <div className="w-full max-w-[1400px] mx-auto pt-6">
@@ -403,7 +409,7 @@ const AnnouncementsPage = () => {
                   <h3 className="text-lg font-semibold text-foreground mb-2">No announcements found</h3>
                   <p className="text-muted-foreground mb-6">Get started by creating a new announcement.</p>
                   <button
-                    onClick={() => setIsCreateAnnouncementOpen(true)}
+                    onClick={() => navigate(buildDashboardUrl('/announcements/new', workspaceId))}
                     className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
                   >
                     <FiPlus className="w-5 h-5" />
@@ -468,7 +474,8 @@ const AnnouncementsPage = () => {
               setIsCreateAnnouncementOpen(false);
               setCreateFormData({ title: '', description: '', urgency: 'warning', targetRoles: 'all', category: '', publishDate: null, displayUntilDate: null });
               setHasPoll(false);
-              setPollData({ question: '', itemType: 'multipleChoice', options: ['', ''] });
+              setPollData({ question: '', itemType: 'multipleChoice', options: ['', ''], showResultsToEveryone: false });
+              navigate(buildDashboardUrl('/announcements', workspaceId));
             }
           }}
           title={t('messages:createAnnouncement', 'New Announcement')}
@@ -484,6 +491,7 @@ const AnnouncementsPage = () => {
                     setCreateFormData({ title: '', description: '', urgency: 'warning', targetRoles: 'all', category: '', publishDate: null, displayUntilDate: null });
                     setHasPoll(false);
                     setPollData({ question: '', itemType: 'multipleChoice', options: ['', ''] });
+                    navigate(buildDashboardUrl('/announcements', workspaceId));
                   }
                 }}
                 disabled={isCreating}
@@ -762,6 +770,15 @@ const AnnouncementsPage = () => {
                     />
                   </div>
                 )}
+
+                <div className="mt-4">
+                  <BoxedSwitchField
+                    label={t('messages:showResultsToEveryone', 'Show results to everyone')}
+                    checked={pollData.showResultsToEveryone || false}
+                    onChange={(checked) => setPollData({ ...pollData, showResultsToEveryone: checked })}
+                    disabled={isCreating}
+                  />
+                </div>
 
                 {(pollData.itemType === 'multipleChoice' || pollData.itemType === 'multipleChoiceGrid') && (
                   <div>

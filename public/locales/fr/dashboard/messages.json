@@ -191,5 +191,10 @@
     "management": "Gestion des discussions"
   },
   "announcementPublishDate": "Date de publication",
-  "announcementDisplayUntil": "Afficher jusqu'au"
+  "announcementDisplayUntil": "Afficher jusqu'au",
+  "reporting": {
+    "submitReport": "Soumettre le rapport",
+    "noReports": "Aucun rapport",
+    "noReportsHint": "Commencez par créer un nouveau rapport."
+  }
 }

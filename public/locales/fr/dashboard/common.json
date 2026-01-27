@@ -93,5 +93,19 @@
   "contract": "Contrat",
   "message": "Message",
   "calendar": "Calendrier",
-  "profile": "Profil"
+  "profile": "Profil",
+  "filter": {
+    "title": "Filtres",
+    "description": "Filtrer et rechercher vos données",
+    "fromDate": "De",
+    "toDate": "À",
+    "search": "Rechercher...",
+    "sortBy": "Trier par",
+    "apply": "Appliquer les filtres",
+    "clear": "Effacer",
+    "show": "Afficher les filtres",
+    "hide": "Masquer",
+    "noFiltersApplied": "Aucun filtre appliqué",
+    "activeFilterCount": "{{count}} filtre{{count, plural, one {} other {s}}} actif{{count, plural, one {} other {s}}}"
+  }
 }

@@ -44,6 +44,9 @@
     "confirmed": "Confirmé",
     "paid": "Payé",
     "status": "Statut",
+    "source": "Source",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
     "apply": "Appliquer les filtres"
   },
   "table": {

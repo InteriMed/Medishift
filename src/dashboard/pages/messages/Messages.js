@@ -629,7 +629,13 @@ const Messages = () => {
                         {t('messages:noConversationsHint', 'Start new conversation')}
                       </p>
                       <button
-                        onClick={() => setShowStartNewCommunication(true)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!showStartNewCommunication) {
+                            setShowStartNewCommunication(true);
+                          }
+                        }}
                         className="bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors flex items-center justify-center"
                         style={{ 
                           fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
@@ -882,6 +888,7 @@ const Messages = () => {
       )}
 
       <StartNewCommunicationModal
+        key="start-new-communication-modal"
         isOpen={showStartNewCommunication}
         onClose={() => setShowStartNewCommunication(false)}
         onSelectTeamMember={(member) => {

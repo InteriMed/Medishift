@@ -135,11 +135,11 @@ const MessagesPage = () => {
     const actionParam = searchParams.get('action');
     
     if (modalParam === 'startCommunication' || actionParam === 'startCommunication') {
-      if (!showStartNewCommunication) {
-        setShowStartNewCommunication(true);
-      }
+      setShowStartNewCommunication(true);
+    } else if (showStartNewCommunication) {
+      setShowStartNewCommunication(false);
     }
-  }, [searchParams, showStartNewCommunication]);
+  }, [searchParams]);
 
   const handleCloseStartNewCommunication = useCallback(() => {
     setShowStartNewCommunication(false);
@@ -150,7 +150,6 @@ const MessagesPage = () => {
   }, [searchParams, setSearchParams]);
 
   const handleOpenStartNewCommunication = useCallback(() => {
-    setShowStartNewCommunication(true);
     const newParams = new URLSearchParams(searchParams);
     newParams.set('modal', 'startCommunication');
     setSearchParams(newParams, { replace: true });
@@ -230,6 +229,20 @@ const MessagesPage = () => {
     }
   }, [navigate, selectedWorkspace]);
 
+  const handleNavigateToInternalTicket = useCallback(() => {
+    if (selectedWorkspace) {
+      const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+      navigate(buildDashboardUrl('/internal-ticket', workspaceId));
+    }
+  }, [navigate, selectedWorkspace]);
+
+  const handleNavigateToReporting = useCallback(() => {
+    if (selectedWorkspace) {
+      const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+      navigate(buildDashboardUrl('/reporting', workspaceId));
+    }
+  }, [navigate, selectedWorkspace]);
+
   if (isLoading && conversations.length === 0) return <LoadingSpinner />;
 
   const tabs = [
@@ -258,11 +271,9 @@ const MessagesPage = () => {
                     if (tab.id === 'announcements') {
                       handleNavigateToAnnouncements();
                     } else if (tab.id === 'internalTicket') {
-                      const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                      navigate(buildDashboardUrl('/internal-ticket', workspaceId));
+                      handleNavigateToInternalTicket();
                     } else if (tab.id === 'reporting') {
-                      const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                      navigate(buildDashboardUrl('/reporting', workspaceId));
+                      handleNavigateToReporting();
                     }
                   }}
                   className={cn(

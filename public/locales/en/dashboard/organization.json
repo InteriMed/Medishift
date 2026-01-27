@@ -338,6 +338,8 @@
     "filters": {
       "facility": "Facility",
       "role": "Role",
+      "fromDate": "From Date",
+      "toDate": "To Date",
       "status": "Status",
       "sortBy": "Sort By",
       "name": "Name",

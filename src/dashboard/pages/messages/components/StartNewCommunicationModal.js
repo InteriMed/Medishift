@@ -127,8 +127,6 @@ const StartNewCommunicationModal = ({ isOpen, onClose, onSelectTeamMember }) => 
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
     <Dialog
       isOpen={isOpen}

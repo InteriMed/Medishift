@@ -31,12 +31,26 @@ const CalendarHeader = ({
   const { t } = useTranslation();
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const categoryDropdownRef = useRef(null);
+  const [showViewDropdown, setShowViewDropdown] = useState(false);
+  const viewDropdownRef = useRef(null);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
-  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
         setShowCategoryDropdown(false);
+      }
+      if (viewDropdownRef.current && !viewDropdownRef.current.contains(event.target)) {
+        setShowViewDropdown(false);
       }
     };
 
@@ -64,11 +78,11 @@ const CalendarHeader = ({
             "flex items-center justify-center rounded-xl transition-all",
             showMiniCalendar ? "bg-primary/10 text-primary" : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
           )}
-          style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
+          style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)', minWidth: 'var(--boxed-inputfield-height)' }}
           onClick={() => setShowMiniCalendar(!showMiniCalendar)}
           title={showMiniCalendar ? "Hide calendar" : "Show calendar"}
         >
-          <FiCalendar className="w-4 h-4" />
+          <FiCalendar className="w-4 h-4" style={{ width: '16px', height: '16px' }} />
         </button>
 
         {/* Upcoming Events Toggle */}
@@ -105,33 +119,84 @@ const CalendarHeader = ({
         <>
           <div className="h-6 w-px bg-border/50 hidden md:block" />
 
-          {/* View Toggle - Show in both calendar and team modes */}
-          <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
-            <button
-              className={cn(
-                "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
-                view === 'day'
-                  ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
+          {/* View Toggle - Show dropdown at >= 1200px, buttons otherwise */}
+          {windowWidth >= 1200 ? (
+            <div className="relative" ref={viewDropdownRef}>
+              <button
+                className={cn(
+                  "flex items-center gap-2 px-4 text-sm font-medium rounded-xl transition-all border-2",
+                  "bg-background border-input text-foreground hover:border-muted-foreground/30",
+                  showViewDropdown && "border-primary/60"
+                )}
+                style={{ height: 'var(--boxed-inputfield-height)' }}
+                onClick={() => setShowViewDropdown(!showViewDropdown)}
+              >
+                <span>{view === 'day' ? t('calendar:dayView') : t('calendar:weekView')}</span>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {showViewDropdown && (
+                <div className="absolute left-0 top-full mt-2 w-40 bg-card rounded-lg shadow-xl border border-border p-2 z-30 animate-in fade-in zoom-in-95 duration-200">
+                  <button
+                    className={cn(
+                      "w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-left",
+                      view === 'day'
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-muted/50"
+                    )}
+                    onClick={() => {
+                      setView('day');
+                      setShowViewDropdown(false);
+                    }}
+                  >
+                    {t('calendar:dayView')}
+                  </button>
+                  <button
+                    className={cn(
+                      "w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-left",
+                      view === 'week'
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-muted/50"
+                    )}
+                    onClick={() => {
+                      setView('week');
+                      setShowViewDropdown(false);
+                    }}
+                  >
+                    {t('calendar:weekView')}
+                  </button>
+                </div>
               )}
-              onClick={() => {
-                setView('day');
-              }}
-            >
-              {t('calendar:dayView')}
-            </button>
-            <button
-              className={cn(
-                "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
-                view === 'week'
-                  ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
-              )}
-              onClick={() => setView('week')}
-            >
-              {t('calendar:weekView')}
-            </button>
-          </div>
+            </div>
+          ) : (
+            <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
+              <button
+                className={cn(
+                  "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
+                  view === 'day'
+                    ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
+                )}
+                onClick={() => {
+                  setView('day');
+                }}
+              >
+                {t('calendar:dayView')}
+              </button>
+              <button
+                className={cn(
+                  "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
+                  view === 'week'
+                    ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
+                )}
+                onClick={() => setView('week')}
+              >
+                {t('calendar:weekView')}
+              </button>
+            </div>
+          )}
         </>
       </div>
 
@@ -176,11 +241,11 @@ const CalendarHeader = ({
             "flex items-center justify-center rounded-xl transition-all",
             nightView ? "bg-primary/10 text-primary" : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
           )}
-          style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
+          style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)', minWidth: 'var(--boxed-inputfield-height)' }}
           onClick={() => setNightView(!nightView)}
           title={nightView ? "Day View" : "Night View"}
         >
-          <FiMoon className="w-4 h-4" />
+          <FiMoon className="w-4 h-4" style={{ width: '16px', height: '16px' }} />
         </button>
 
         {/* Category Filter - Show in both calendar and team modes */}
@@ -192,11 +257,11 @@ const CalendarHeader = ({
                 ? "bg-primary/10 text-primary"
                 : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
             )}
-            style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
+            style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)', minWidth: 'var(--boxed-inputfield-height)' }}
             onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
             title={t('calendar:filterCategories')}
           >
-            <FiSliders className="w-4 h-4" />
+            <FiSliders className="w-4 h-4" style={{ width: '16px', height: '16px' }} />
           </button>
 
           {showCategoryDropdown && (

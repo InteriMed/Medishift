@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     FiMessageSquare,
     FiBarChart2,
@@ -25,6 +25,12 @@ import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field'
 import BoxedSwitchField from '../../../components/BoxedInputFields/BoxedSwitchField';
 import { cn } from '../../../utils/cn';
 import { FiMessageSquare as FiMessageSquareIcon, FiBell } from 'react-icons/fi';
+import {
+    getInitialReportingFormData,
+    resetReportingFormData,
+    handleCloseReportingPopup,
+    isFormValid
+} from './utils/ticketPopupUtils';
 
 const categoryLabels = {
     feedback: 'Feedback',
@@ -43,37 +49,36 @@ const ReportingPage = () => {
     const { showError, showSuccess } = useNotification();
     const { user, selectedWorkspace } = useDashboard();
     const navigate = useNavigate();
+    const location = useLocation();
     const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
 
     const [tickets, setTickets] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [selectedTicketId, setSelectedTicketId] = useState(null);
 
     const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
-    const [createFormData, setCreateFormData] = useState({
-        subject: '',
-        message: '',
-        category: 'general',
-        priority: 'medium',
-        isAnonymous: false
-    });
+    const [createFormData, setCreateFormData] = useState(getInitialReportingFormData());
     const [isCreating, setIsCreating] = useState(false);
     const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
     const filterDropdownRef = useRef(null);
 
     const loadTickets = useCallback(async () => {
+        if (!user?.uid) {
+            setTickets([]);
+            setIsLoading(false);
+            return;
+        }
+        
         try {
             setIsLoading(true);
-            if (user?.uid) {
-                const data = await supportTicketService.LIST_MY_TICKETS(user.uid);
-                setTickets(data.filter(ticket => ticket.isAnonymous === true));
-            }
+            const data = await supportTicketService.LIST_MY_TICKETS(user.uid);
+            setTickets(data.filter(ticket => ticket.isAnonymous === true));
+            setIsLoading(false);
         } catch (error) {
             console.error('Error loading tickets:', error);
             showError('Failed to load reports');
-        } finally {
             setIsLoading(false);
         }
     }, [user, showError]);
@@ -99,23 +104,26 @@ const ReportingPage = () => {
     }, [showFiltersOverlay]);
 
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('action') === 'create') {
+        const pathSegments = location.pathname.split('/');
+        const lastSegment = pathSegments[pathSegments.length - 1];
+        if (lastSegment === 'new') {
             setIsCreateTicketOpen(true);
+        } else {
+            setIsCreateTicketOpen(false);
         }
 
         const handleOpenModal = (event) => {
             if (event.detail?.type === 'createTicket' || event.detail?.action === 'create') {
-                setIsCreateTicketOpen(true);
+                navigate(buildDashboardUrl('/reporting/new', workspaceId));
             }
         };
 
         window.addEventListener('openModal', handleOpenModal);
         return () => window.removeEventListener('openModal', handleOpenModal);
-    }, []);
+    }, [location.pathname, navigate, workspaceId]);
 
     const handleCreateTicket = async () => {
-        if (!createFormData.subject.trim() || !createFormData.message.trim()) {
+        if (!isFormValid(createFormData)) {
             showError('Please fill in all required fields');
             return;
         }
@@ -136,7 +144,8 @@ const ReportingPage = () => {
             await supportTicketService.CREATE_TICKET(ticketData, user);
             showSuccess('Ticket created successfully');
             setIsCreateTicketOpen(false);
-            setCreateFormData({ subject: '', message: '', category: 'general', priority: 'medium', isAnonymous: false });
+            resetReportingFormData(setCreateFormData);
+            navigate(buildDashboardUrl('/reporting', workspaceId));
             loadTickets();
         } catch (error) {
             console.error('Error creating ticket:', error);
@@ -189,8 +198,8 @@ const ReportingPage = () => {
     const tabs = [
         { id: 'messages', path: 'messages', label: t('messages:tabs.messages', 'Messages'), icon: FiMessageSquareIcon },
         { id: 'announcements', path: 'announcements', label: t('messages:tabs.announcements', 'Announcements'), icon: FiBell },
-        { id: 'internalTicket', path: 'internal-ticket', label: t('messages:tabs.internalTicket', 'Internal Ticket'), icon: FiFileText },
-        { id: 'reporting', path: 'reporting', label: t('messages:tabs.reporting', 'Reporting'), icon: FiShield },
+        { id: 'internalTicket', path: 'internal-ticket', label: t('messages:tabs.internalTicket', 'Support Tickets'), icon: FiFileText },
+        { id: 'reporting', path: 'reporting', label: t('messages:tabs.reporting', 'Anonymous Reports'), icon: FiShield },
     ];
 
     return (
@@ -236,17 +245,25 @@ const ReportingPage = () => {
             </div>
 
             <div className="flex-1 overflow-auto">
-                <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col">
-                    <div className="max-w-[1400px] mx-auto w-full p-6">
+                <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col pt-6">
+                    <div className="max-w-[1400px] mx-auto w-full px-6">
                         <div className="bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full">
                             <div className="flex items-center justify-between mb-4 px-6 pt-6">
                                 <h3 className="text-base font-semibold text-foreground">
-                                    {t('messages:reporting.title', 'Anonymous Reporting')}
+                                    {t('messages:reporting.title', 'Anonymous Reports')}
                                 </h3>
+                                <button
+                                    onClick={() => navigate(buildDashboardUrl('/reporting/new', workspaceId))}
+                                    className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
+                                    style={{ height: 'var(--boxed-inputfield-height)' }}
+                                >
+                                    <FiPlus className="w-4 h-4" />
+                                    <span>{t('messages:reporting.submitReport', 'Submit Report')}</span>
+                                </button>
                             </div>
                             <div className="pt-3 border-t border-border mb-4 px-6">
                                 <p className="text-sm text-muted-foreground">
-                                    {t('messages:reporting.description', 'Submit anonymous reports. Your identity will be kept confidential.')}
+                                    {t('messages:reporting.description', 'Submit confidential reports. Your identity will remain anonymous.')}
                                 </p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 w-full px-6 pb-6">
@@ -318,22 +335,13 @@ const ReportingPage = () => {
                                         </div>
                                     )}
                                 </div>
-
-                                    <button
-                                        onClick={() => setIsCreateTicketOpen(true)}
-                                        className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
-                                        style={{ height: 'var(--boxed-inputfield-height)' }}
-                                    >
-                                        <FiPlus className="w-4 h-4" />
-                                        <span>{t('messages:reporting.submitReport', 'Submit Report')}</span>
-                                    </button>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-muted/5">
-                        <div className="max-w-[1400px] mx-auto space-y-4 mt-4">
-                            {isLoading ? (
+                    <div className="w-full max-w-[1400px] mx-auto pt-6">
+                        <div className="space-y-4 px-6">
+                            {isLoading && tickets.length === 0 ? (
                                 <LoadingSpinner />
                             ) : filteredTickets.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -347,7 +355,7 @@ const ReportingPage = () => {
                                         {t('messages:reporting.noReportsHint', 'Get started by submitting an anonymous report.')}
                                     </p>
                                     <button
-                                        onClick={() => setIsCreateTicketOpen(true)}
+                                        onClick={() => navigate(buildDashboardUrl('/reporting/new', workspaceId))}
                                         className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
                                     >
                                         <FiPlus className="w-5 h-5" />
@@ -406,107 +414,105 @@ const ReportingPage = () => {
                             )}
                         </div>
                     </div>
-
-                    <Dialog
-                        isOpen={isCreateTicketOpen}
-                        onClose={() => {
-                            if (!isCreating) {
-                                setIsCreateTicketOpen(false);
-                                setCreateFormData({ subject: '', message: '', category: 'general', priority: 'medium', isAnonymous: false });
-                            }
-                        }}
-                        title={t('messages:reporting.submitReport', 'Submit Anonymous Report')}
-                        size="small"
-                        closeOnBackdropClick={!isCreating}
-                        actions={
-                            <div className="flex justify-between gap-3 w-full">
-                                <button
-                                    onClick={() => {
-                                        if (!isCreating) {
-                                            setIsCreateTicketOpen(false);
-                                            setCreateFormData({ subject: '', message: '', category: 'general', priority: 'medium', isAnonymous: false });
-                                        }
-                                    }}
-                                    disabled={isCreating}
-                                    className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {t('common:cancel', 'Cancel')}
-                                </button>
-                                <button
-                                    onClick={handleCreateTicket}
-                                    disabled={!createFormData.subject.trim() || !createFormData.message.trim() || isCreating}
-                                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isCreating
-                                        ? t('common:creating', 'Submitting...')
-                                        : t('messages:reporting.submitReport', 'Submit Report')}
-                                </button>
-                            </div>
-                        }
-                    >
-                        <div className="space-y-4">
-                            <BoxedSwitchField
-                                label={t('messages:reporting.anonymousReporting', 'Submit as Anonymous Report')}
-                                checked={createFormData.isAnonymous}
-                                onChange={(checked) => setCreateFormData({ ...createFormData, isAnonymous: checked })}
-                                disabled={isCreating}
-                            />
-
-                            <InputField
-                                label={t('messages:reporting.subject', 'Subject')}
-                                value={createFormData.subject}
-                                onChange={(e) => setCreateFormData({ ...createFormData, subject: e.target.value })}
-                                placeholder={t('messages:reporting.subjectPlaceholder', 'Enter ticket subject...')}
-                                required
-                                disabled={isCreating}
-                                name="ticketSubject"
-                            />
-
-                            <SimpleDropdown
-                                label={t('messages:reporting.category', 'Category')}
-                                options={[
-                                    { value: 'general', label: categoryLabels.general },
-                                    { value: 'support', label: categoryLabels.support },
-                                    { value: 'bug_report', label: categoryLabels.bug_report },
-                                    { value: 'feature_request', label: categoryLabels.feature_request },
-                                    { value: 'reporting', label: categoryLabels.reporting },
-                                    { value: 'incident', label: categoryLabels.incident },
-                                    { value: 'compliance', label: categoryLabels.compliance },
-                                    { value: 'question', label: categoryLabels.question },
-                                    { value: 'feedback', label: categoryLabels.feedback },
-                                ]}
-                                value={createFormData.category}
-                                onChange={(value) => setCreateFormData({ ...createFormData, category: value })}
-                                disabled={isCreating}
-                            />
-
-                            <SimpleDropdown
-                                label={t('messages:reporting.priority', 'Priority')}
-                                options={[
-                                    { value: 'low', label: t('messages:reporting.priority.low', 'Low') },
-                                    { value: 'medium', label: t('messages:reporting.priority.medium', 'Medium') },
-                                    { value: 'high', label: t('messages:reporting.priority.high', 'High') },
-                                    { value: 'urgent', label: t('messages:reporting.priority.urgent', 'Urgent') },
-                                ]}
-                                value={createFormData.priority}
-                                onChange={(value) => setCreateFormData({ ...createFormData, priority: value })}
-                                disabled={isCreating}
-                            />
-
-                            <InputFieldParagraph
-                                label={t('messages:reporting.message', 'Message')}
-                                value={createFormData.message}
-                                onChange={(e) => setCreateFormData({ ...createFormData, message: e.target.value })}
-                                placeholder={t('messages:reporting.messagePlaceholder', 'Describe your issue or report...')}
-                                rows={5}
-                                disabled={isCreating}
-                                name="ticketMessage"
-                                required
-                            />
-                        </div>
-                    </Dialog>
                 </div>
             </div>
+
+            <Dialog
+                isOpen={isCreateTicketOpen}
+                onClose={() => {
+                    handleCloseReportingPopup(setIsCreateTicketOpen, setCreateFormData, isCreating);
+                    navigate(buildDashboardUrl('/reporting', workspaceId));
+                }}
+                title={t('messages:reporting.submitReport', 'Submit Anonymous Report')}
+                size="small"
+                closeOnBackdropClick={!isCreating}
+                actions={
+                    <div className="flex justify-between gap-3 w-full">
+                        <button
+                            onClick={() => {
+                                handleCloseReportingPopup(setIsCreateTicketOpen, setCreateFormData, isCreating);
+                                navigate(buildDashboardUrl('/reporting', workspaceId));
+                            }}
+                            disabled={isCreating}
+                            className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {t('common:cancel', 'Cancel')}
+                        </button>
+                        <button
+                            onClick={handleCreateTicket}
+                            disabled={!isFormValid(createFormData) || isCreating}
+                            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isCreating
+                                ? t('common:creating', 'Submitting...')
+                                : t('messages:reporting.submitReport', 'Submit Report')}
+                        </button>
+                    </div>
+                }
+            >
+                <div className="space-y-4">
+                    <BoxedSwitchField
+                        label={t('messages:reporting.anonymousReporting', 'Submit as Anonymous Report')}
+                        checked={createFormData.isAnonymous}
+                        onChange={(checked) => setCreateFormData({ ...createFormData, isAnonymous: checked })}
+                        disabled={isCreating}
+                    />
+
+                    <div className="mt-4">
+                        <InputField
+                            label={t('messages:reporting.subject', 'Subject')}
+                            value={createFormData.subject}
+                            onChange={(e) => setCreateFormData({ ...createFormData, subject: e.target.value })}
+                            placeholder={t('messages:reporting.subjectPlaceholder', 'Enter ticket subject...')}
+                            required
+                            disabled={isCreating}
+                            name="ticketSubject"
+                        />
+                    </div>
+
+                    <SimpleDropdown
+                        label={t('messages:reporting.category', 'Category')}
+                        options={[
+                            { value: 'general', label: categoryLabels.general },
+                            { value: 'support', label: categoryLabels.support },
+                            { value: 'bug_report', label: categoryLabels.bug_report },
+                            { value: 'feature_request', label: categoryLabels.feature_request },
+                            { value: 'reporting', label: categoryLabels.reporting },
+                            { value: 'incident', label: categoryLabels.incident },
+                            { value: 'compliance', label: categoryLabels.compliance },
+                            { value: 'question', label: categoryLabels.question },
+                            { value: 'feedback', label: categoryLabels.feedback },
+                        ]}
+                        value={createFormData.category}
+                        onChange={(value) => setCreateFormData({ ...createFormData, category: value })}
+                        disabled={isCreating}
+                    />
+
+                    <SimpleDropdown
+                        label={t('messages:reporting.priority', 'Priority')}
+                        options={[
+                            { value: 'low', label: t('messages:reporting.priority.low', 'Low') },
+                            { value: 'medium', label: t('messages:reporting.priority.medium', 'Medium') },
+                            { value: 'high', label: t('messages:reporting.priority.high', 'High') },
+                            { value: 'urgent', label: t('messages:reporting.priority.urgent', 'Urgent') },
+                        ]}
+                        value={createFormData.priority}
+                        onChange={(value) => setCreateFormData({ ...createFormData, priority: value })}
+                        disabled={isCreating}
+                    />
+
+                    <InputFieldParagraph
+                        label={t('messages:reporting.message', 'Message')}
+                        value={createFormData.message}
+                        onChange={(e) => setCreateFormData({ ...createFormData, message: e.target.value })}
+                        placeholder={t('messages:reporting.messagePlaceholder', 'Describe your issue or report...')}
+                        rows={5}
+                        disabled={isCreating}
+                        name="ticketMessage"
+                        required
+                    />
+                </div>
+            </Dialog>
         </div>
     );
 };

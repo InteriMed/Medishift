@@ -8,7 +8,7 @@ import GlobalDirectory from '../components/GlobalDirectory';
 import FloatPoolManager from '../components/FloatPoolManager';
 import AgencySpendDashboard from '../components/AgencySpendDashboard';
 import PolicyLibrary from '../components/PolicyLibrary';
-import PayrollExport from '../../../admin/pages/payroll/PayrollExport';
+import ConsolidatedPayroll from '../../../admin/pages/payroll/ConsolidatedPayroll';
 
 const ChainHeadquarters = () => {
     const { t } = useTranslation(['organization']);
@@ -18,7 +18,7 @@ const ChainHeadquarters = () => {
         { id: 'directory', label: 'Global Directory', icon: FiUser, component: GlobalDirectory },
         { id: 'float_pool', label: 'Float Pool Manager', icon: FiUsers, component: FloatPoolManager },
         { id: 'spend', label: 'Agency Spend', icon: FiDollarSign, component: AgencySpendDashboard },
-        { id: 'payroll', label: 'Consolidated Payroll', icon: FiCreditCard, component: PayrollExport },
+        { id: 'payroll', label: 'Consolidated Payroll', icon: FiCreditCard, component: ConsolidatedPayroll },
         { id: 'policy', label: 'Policy Library', icon: FiFileText, component: PolicyLibrary },
     ];
 

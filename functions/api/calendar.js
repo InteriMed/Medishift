@@ -12,6 +12,12 @@ const db = require('../database/db');
 // Import centralized configuration
 const { FUNCTION_CONFIG, FUNCTION_CONFIG_REQUEST } = require('../config/keysDatabase');
 
+// Import scheduler engine
+const { SchedulerEngine, createEmployee, Role } = require('../scheduler');
+
+// Import scheduler engine
+const { SchedulerEngine, createEmployee, Role } = require('../scheduler');
+
 /**
  * EVENT PERMISSION HELPERS
  */
@@ -2369,4 +2375,378 @@ async function createUnavailableBlock(userId, startTime, endTime, reason) {
   } catch (error) {
     logger.error('Error creating unavailable block', error);
   }
-} 
+}
+
+/**
+ * AUTOMATED SCHEDULING API
+ * Resolves scheduling gaps using hard and soft constraint logic
+ */
+exports.autoScheduleShift = onCall(FUNCTION_CONFIG, async (request) => {
+  const data = request.data;
+  const context = { auth: request.auth };
+
+  if (!context.auth) {
+    throw new HttpsError(
+      'unauthenticated',
+      'You must be signed in to use automated scheduling'
+    );
+  }
+
+  try {
+    const {
+      facilityProfileId,
+      gapTime,
+      shiftDurationHours = 8,
+      requiredRole,
+      excludeEmployeeIds = []
+    } = data;
+
+    if (!facilityProfileId || !gapTime) {
+      throw new HttpsError(
+        'invalid-argument',
+        'facilityProfileId and gapTime are required'
+      );
+    }
+
+    const userRoles = await getUserRoles(context.auth.uid);
+    const isAdmin = await isFacilityAdmin(context.auth.uid, facilityProfileId);
+
+    if (!isAdmin) {
+      throw new HttpsError(
+        'permission-denied',
+        'Only facility admins can use automated scheduling'
+      );
+    }
+
+    const facilityDoc = await db.collection('facilityProfiles').doc(facilityProfileId).get();
+    if (!facilityDoc.exists) {
+      throw new HttpsError('not-found', 'Facility not found');
+    }
+
+    const facilityData = facilityDoc.data();
+    const employeesList = facilityData.employees || [];
+
+    const gapDate = new Date(gapTime);
+    const gapEnd = new Date(gapDate);
+    gapEnd.setHours(gapEnd.getHours() + shiftDurationHours);
+
+    const scheduleId = `${facilityProfileId}_${gapDate.getFullYear()}-${String(gapDate.getMonth() + 1).padStart(2, '0')}`;
+    const sevenDaysAgo = new Date(gapDate);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const availableEmployees = [];
+
+    for (const emp of employeesList) {
+      if (!emp.user_uid || excludeEmployeeIds.includes(emp.user_uid)) {
+        continue;
+      }
+
+      const userDoc = await db.collection('users').doc(emp.user_uid).get();
+      if (!userDoc.exists) continue;
+
+      const userData = userDoc.data();
+      let employeeRole = Role.ASSISTANT;
+
+      if (emp.roles && Array.isArray(emp.roles)) {
+        if (emp.roles.some(r => r.toLowerCase().includes('pharmacist') || r.toLowerCase().includes('apotheker'))) {
+          employeeRole = Role.PHARMACIST;
+        } else if (emp.roles.some(r => r.toLowerCase().includes('apprentice') || r.toLowerCase().includes('lehrling'))) {
+          employeeRole = Role.APPRENTICE;
+        }
+      }
+
+      if (requiredRole && employeeRole !== requiredRole) {
+        continue;
+      }
+
+      const shiftHistory = [];
+      try {
+        const shiftsRef = db.collection('teamSchedules').doc(scheduleId).collection('shifts');
+        const shiftsQuery = await shiftsRef
+          .where('userId', '==', emp.user_uid)
+          .where('startTime', '>=', admin.firestore.Timestamp.fromDate(sevenDaysAgo))
+          .orderBy('startTime', 'desc')
+          .limit(20)
+          .get();
+
+        shiftsQuery.forEach(doc => {
+          const shiftData = doc.data();
+          if (shiftData.startTime && shiftData.endTime) {
+            shiftHistory.push({
+              id: doc.id,
+              employeeId: emp.user_uid,
+              start: shiftData.startTime.toDate(),
+              end: shiftData.endTime.toDate(),
+              type: 'STANDARD'
+            });
+          }
+        });
+      } catch (error) {
+        logger.warn('Error fetching shift history', { userId: emp.user_uid, error: error.message });
+      }
+
+      shiftHistory.sort((a, b) => b.start.getTime() - a.start.getTime());
+
+      let contractTargetHours = 42;
+      let currentBalance = 0;
+
+      try {
+        const contractsQuery = await db.collection('contracts')
+          .where('parties.employer.profileId', '==', facilityProfileId)
+          .where('parties.professional.profileId', '==', emp.user_uid)
+          .where('statusLifecycle.currentStatus', '==', 'active')
+          .get();
+
+        if (!contractsQuery.empty) {
+          const contract = contractsQuery.docs[0].data();
+          const workPercentage = contract.workPercentage || 100;
+          contractTargetHours = (workPercentage / 100) * 42;
+
+          const monthStart = new Date(gapDate.getFullYear(), gapDate.getMonth(), 1);
+          const monthEnd = new Date(gapDate.getFullYear(), gapDate.getMonth() + 1, 0, 23, 59, 59);
+
+          let totalHoursWorked = 0;
+          const monthScheduleId = `${facilityProfileId}_${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}`;
+
+          try {
+            const monthShiftsQuery = await db.collection('teamSchedules').doc(monthScheduleId).collection('shifts')
+              .where('userId', '==', emp.user_uid)
+              .where('startTime', '>=', admin.firestore.Timestamp.fromDate(monthStart))
+              .where('startTime', '<=', admin.firestore.Timestamp.fromDate(monthEnd))
+              .get();
+
+            monthShiftsQuery.forEach(doc => {
+              const shiftData = doc.data();
+              if (shiftData.startTime && shiftData.endTime) {
+                const startTime = shiftData.startTime.toDate();
+                const endTime = shiftData.endTime.toDate();
+                const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+                totalHoursWorked += hours;
+              }
+            });
+          } catch (error) {
+            logger.warn('Error calculating monthly hours', { userId: emp.user_uid });
+          }
+
+          const expectedHours = (contractTargetHours / 4.33) * ((monthEnd.getDate() - monthStart.getDate() + 1) / 30);
+          currentBalance = totalHoursWorked - expectedHours;
+        }
+      } catch (error) {
+        logger.warn('Error fetching contract data', { userId: emp.user_uid });
+      }
+
+      const preferredDays = emp.preferredDays || [];
+
+      const employee = createEmployee({
+        id: emp.user_uid,
+        role: employeeRole,
+        contractTargetHours,
+        currentBalance,
+        preferredDays,
+        shiftHistory
+      });
+
+      availableEmployees.push(employee);
+    }
+
+    if (availableEmployees.length === 0) {
+      return {
+        valid: false,
+        error: 'No available employees found for this shift',
+        employee: null,
+        cost: null
+      };
+    }
+
+    const scheduler = new SchedulerEngine();
+    const result = scheduler.resolveGap(gapDate, availableEmployees, shiftDurationHours);
+
+    return result;
+
+  } catch (error) {
+    logger.error('Error in autoScheduleShift', error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError('internal', error.message);
+  }
+});
+
+/**
+ * VALIDATE SHIFT ASSIGNMENT
+ * Validates if a proposed shift assignment is legal and calculates cost
+ */
+exports.validateShiftAssignment = onCall(FUNCTION_CONFIG, async (request) => {
+  const data = request.data;
+  const context = { auth: request.auth };
+
+  if (!context.auth) {
+    throw new HttpsError(
+      'unauthenticated',
+      'You must be signed in to validate shift assignments'
+    );
+  }
+
+  try {
+    const {
+      facilityProfileId,
+      employeeId,
+      proposedShift
+    } = data;
+
+    if (!facilityProfileId || !employeeId || !proposedShift) {
+      throw new HttpsError(
+        'invalid-argument',
+        'facilityProfileId, employeeId, and proposedShift are required'
+      );
+    }
+
+    const isAdmin = await isFacilityAdmin(context.auth.uid, facilityProfileId);
+    if (!isAdmin) {
+      throw new HttpsError(
+        'permission-denied',
+        'Only facility admins can validate shift assignments'
+      );
+    }
+
+    const facilityDoc = await db.collection('facilityProfiles').doc(facilityProfileId).get();
+    if (!facilityDoc.exists) {
+      throw new HttpsError('not-found', 'Facility not found');
+    }
+
+    const facilityData = facilityDoc.data();
+    const employee = facilityData.employees?.find(emp => emp.user_uid === employeeId);
+    if (!employee) {
+      throw new HttpsError('not-found', 'Employee not found in facility');
+    }
+
+    const userDoc = await db.collection('users').doc(employeeId).get();
+    if (!userDoc.exists) {
+      throw new HttpsError('not-found', 'User not found');
+    }
+
+    const userData = userDoc.data();
+    let employeeRole = Role.ASSISTANT;
+    if (employee.roles && Array.isArray(employee.roles)) {
+      if (employee.roles.some(r => r.toLowerCase().includes('pharmacist') || r.toLowerCase().includes('apotheker'))) {
+        employeeRole = Role.PHARMACIST;
+      } else if (employee.roles.some(r => r.toLowerCase().includes('apprentice') || r.toLowerCase().includes('lehrling'))) {
+        employeeRole = Role.APPRENTICE;
+      }
+    }
+
+    const shiftStart = new Date(proposedShift.startTime || proposedShift.start);
+    const shiftEnd = new Date(proposedShift.endTime || proposedShift.end);
+
+    const scheduleId = `${facilityProfileId}_${shiftStart.getFullYear()}-${String(shiftStart.getMonth() + 1).padStart(2, '0')}`;
+    const sevenDaysAgo = new Date(shiftStart);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const shiftHistory = [];
+    try {
+      const shiftsRef = db.collection('teamSchedules').doc(scheduleId).collection('shifts');
+      const shiftsQuery = await shiftsRef
+        .where('userId', '==', employeeId)
+        .where('startTime', '>=', admin.firestore.Timestamp.fromDate(sevenDaysAgo))
+        .orderBy('startTime', 'desc')
+        .limit(20)
+        .get();
+
+      shiftsQuery.forEach(doc => {
+        const shiftData = doc.data();
+        if (shiftData.startTime && shiftData.endTime) {
+          shiftHistory.push({
+            id: doc.id,
+            employeeId: employeeId,
+            start: shiftData.startTime.toDate(),
+            end: shiftData.endTime.toDate(),
+            type: 'STANDARD'
+          });
+        }
+      });
+    } catch (error) {
+      logger.warn('Error fetching shift history for validation', { userId: employeeId });
+    }
+
+    shiftHistory.sort((a, b) => b.start.getTime() - a.start.getTime());
+
+    let contractTargetHours = 42;
+    let currentBalance = 0;
+
+    try {
+      const contractsQuery = await db.collection('contracts')
+        .where('parties.employer.profileId', '==', facilityProfileId)
+        .where('parties.professional.profileId', '==', employeeId)
+        .where('statusLifecycle.currentStatus', '==', 'active')
+        .get();
+
+      if (!contractsQuery.empty) {
+        const contract = contractsQuery.docs[0].data();
+        const workPercentage = contract.workPercentage || 100;
+        contractTargetHours = (workPercentage / 100) * 42;
+
+        const monthStart = new Date(shiftStart.getFullYear(), shiftStart.getMonth(), 1);
+        const monthEnd = new Date(shiftStart.getFullYear(), shiftStart.getMonth() + 1, 0, 23, 59, 59);
+
+        let totalHoursWorked = 0;
+        const monthScheduleId = `${facilityProfileId}_${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}`;
+
+        try {
+          const monthShiftsQuery = await db.collection('teamSchedules').doc(monthScheduleId).collection('shifts')
+            .where('userId', '==', employeeId)
+            .where('startTime', '>=', admin.firestore.Timestamp.fromDate(monthStart))
+            .where('startTime', '<=', admin.firestore.Timestamp.fromDate(monthEnd))
+            .get();
+
+          monthShiftsQuery.forEach(doc => {
+            const shiftData = doc.data();
+            if (shiftData.startTime && shiftData.endTime) {
+              const startTime = shiftData.startTime.toDate();
+              const endTime = shiftData.endTime.toDate();
+              const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+              totalHoursWorked += hours;
+            }
+          });
+        } catch (error) {
+          logger.warn('Error calculating monthly hours for validation', { userId: employeeId });
+        }
+
+        const expectedHours = (contractTargetHours / 4.33) * ((monthEnd.getDate() - monthStart.getDate() + 1) / 30);
+        currentBalance = totalHoursWorked - expectedHours;
+      }
+    } catch (error) {
+      logger.warn('Error fetching contract data for validation', { userId: employeeId });
+    }
+
+    const preferredDays = employee.preferredDays || [];
+
+    const employeeModel = createEmployee({
+      id: employeeId,
+      role: employeeRole,
+      contractTargetHours,
+      currentBalance,
+      preferredDays,
+      shiftHistory
+    });
+
+    const proposedShiftModel = {
+      id: 'validation',
+      employeeId: employeeId,
+      start: shiftStart,
+      end: shiftEnd,
+      type: 'STANDARD'
+    };
+
+    const scheduler = new SchedulerEngine();
+    const result = scheduler.validateAssignment(employeeModel, proposedShiftModel);
+
+    return result;
+
+  } catch (error) {
+    logger.error('Error in validateShiftAssignment', error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError('internal', error.message);
+  }
+});

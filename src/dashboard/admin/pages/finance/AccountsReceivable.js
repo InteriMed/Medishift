@@ -8,6 +8,8 @@ import { PERMISSIONS } from '../../utils/rbac';
 import Papa from 'papaparse';
 import DateField from '../../../../components/BoxedInputFields/DateField';
 import { format } from 'date-fns';
+import PageHeader from '../../../components/PageHeader/PageHeader';
+import FilterBar from '../../../components/FilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const AccountsReceivable = () => {
@@ -159,85 +161,77 @@ const AccountsReceivable = () => {
     );
   }
 
+  const handleFilterChange = (key, value) => {
+    if (key === 'fromDate') {
+      setDateFrom(value ? new Date(value) : getFirstDayOfMonth());
+    } else if (key === 'toDate') {
+      setDateTo(value ? new Date(value) : getLastDayOfMonth());
+    }
+  };
+
+  const filterBarDateFields = filterByDate ? [
+    {
+      key: 'fromDate',
+      label: t('admin:finance.from', 'From')
+    },
+    {
+      key: 'toDate',
+      label: t('admin:finance.to', 'To')
+    }
+  ] : [];
+
   return (
     <ProtectedRoute requiredPermission={PERMISSIONS.VIEW_FINANCE}>
-      <div style={{ padding: 'var(--spacing-xl)', maxWidth: '1400px', margin: '0 auto' }}>
-        <div style={{ marginBottom: 'var(--spacing-xl)' }}>
-          <h1 style={{ 
-            fontSize: 'var(--font-size-xxxlarge)', 
-            fontWeight: 'var(--font-weight-large)', 
-            color: 'var(--text-color)', 
-            marginBottom: 0,
-            letterSpacing: '-0.5px'
-          }}>
-            {t('admin:finance.ar.title', 'Accounts Receivable')}
-          </h1>
-        </div>
-
-        <div style={{ 
-          backgroundColor: 'var(--background-div-color)', 
-          borderRadius: 'var(--border-radius-md)', 
-          padding: 'var(--spacing-lg)', 
-          boxShadow: 'var(--shadow-sm)',
-          border: '1px solid var(--grey-2)',
-          marginBottom: 'var(--spacing-xl)'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 'var(--spacing-md)',
-            marginBottom: 'var(--spacing-md)',
-            flexWrap: 'wrap'
-          }}>
-            <Calendar style={{ color: 'var(--primary-color)' }} size={20} />
-            <h3 style={{ 
-              fontSize: 'var(--font-size-medium)', 
-              fontWeight: 'var(--font-weight-medium)', 
-              color: 'var(--text-color)',
-              marginRight: 'var(--spacing-lg)'
-            }}>
-              {t('admin:finance.filterByDate', 'Filter by Date Range')}
-            </h3>
-            <label style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 'var(--spacing-sm)',
-              cursor: 'pointer',
-              fontSize: 'var(--font-size-small)',
-              color: 'var(--text-color)'
-            }}>
-              <input
-                type="checkbox"
-                checked={filterByDate}
-                onChange={(e) => setFilterByDate(e.target.checked)}
-                style={{ cursor: 'pointer' }}
-              />
-              {t('admin:finance.enableDateFilter', 'Enable date filter')}
-            </label>
-          </div>
-          {filterByDate && (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <PageHeader
+          title={t('admin:finance.ar.title', 'Accounts Receivable')}
+          subtitle={t('admin:finance.ar.description', 'Track outstanding invoices and unpaid commissions')}
+        />
+        
+        <div style={{ flex: 1, overflow: 'auto', padding: 'var(--spacing-lg)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
             <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-              gap: 'var(--spacing-lg)'
+              backgroundColor: 'var(--background-div-color)', 
+              borderRadius: 'var(--border-radius-md)', 
+              padding: 'var(--spacing-lg)', 
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--grey-2)'
             }}>
-              <DateField
-                label={t('admin:finance.from', 'From')}
-                value={dateFrom}
-                onChange={(date) => setDateFrom(date)}
-                max={dateTo ? format(dateTo, 'yyyy-MM-dd') : undefined}
-              />
-              <DateField
-                label={t('admin:finance.to', 'To')}
-                value={dateTo}
-                onChange={(date) => setDateTo(date)}
-                min={dateFrom ? format(dateFrom, 'yyyy-MM-dd') : undefined}
-              />
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 'var(--spacing-sm)',
+                cursor: 'pointer',
+                fontSize: 'var(--font-size-small)',
+                color: 'var(--text-color)',
+                marginBottom: filterByDate ? 'var(--spacing-md)' : 0
+              }}>
+                <input
+                  type="checkbox"
+                  checked={filterByDate}
+                  onChange={(e) => setFilterByDate(e.target.checked)}
+                  style={{ cursor: 'pointer' }}
+                />
+                {t('admin:finance.enableDateFilter', 'Enable date filter')}
+              </label>
+              {filterByDate && (
+                <FilterBar
+                  filters={{
+                    fromDate: dateFrom ? dateFrom.toISOString().split('T')[0] : null,
+                    toDate: dateTo ? dateTo.toISOString().split('T')[0] : null
+                  }}
+                  onFilterChange={handleFilterChange}
+                  dateFields={filterBarDateFields}
+                  translationNamespace="admin"
+                  title={t('admin:finance.filterByDate', 'Filter by Date Range')}
+                  description={t('admin:finance.filterByDateDescription', 'Select date range to filter invoices')}
+                  onRefresh={loadARData}
+                  isLoading={loading}
+                />
+              )}
             </div>
-          )}
-        </div>
 
-        <div style={{ 
+          <div style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
           gap: 'var(--spacing-lg)',
@@ -542,6 +536,8 @@ const AccountsReceivable = () => {
               {t('admin:finance.ar.noInvoices', 'No outstanding invoices')}
             </div>
           )}
+          </div>
+        </div>
         </div>
       </div>
     </ProtectedRoute>

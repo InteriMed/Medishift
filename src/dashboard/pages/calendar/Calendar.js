@@ -54,6 +54,7 @@ const Calendar = ({ userData }) => {
   const [showUpcomingEvents, setShowUpcomingEvents] = useState(true);
   const [nightView, setNightView] = useState(getInitialNightView);
   const [openAddRoleModal, setOpenAddRoleModal] = useState(false);
+  const processedModalRef = useRef(null);
 
   const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || !!selectedWorkspace?.facilityId;
 
@@ -187,19 +188,35 @@ const Calendar = ({ userData }) => {
   useEffect(() => {
     const modalParam = searchParams.get('modal');
     const eventId = searchParams.get('eventId');
+    const currentModalKey = `${modalParam}-${eventId || ''}`;
+    
+    if (processedModalRef.current === currentModalKey) {
+      return;
+    }
     
     if (modalParam === 'event' && eventId && events.length > 0) {
       const event = events.find(e => e.id === eventId);
       if (event && !selectedEvent) {
         handleEventClick(event);
+        processedModalRef.current = currentModalKey;
       }
     } else if (modalParam === 'addRole') {
       if (!openAddRoleModal) {
         setOpenAddRoleModal(true);
+        processedModalRef.current = currentModalKey;
       }
     } else if (modalParam === 'filters') {
       if (!showFiltersOverlay) {
         setShowFiltersOverlay(true);
+        processedModalRef.current = currentModalKey;
+      }
+    } else if (!modalParam) {
+      processedModalRef.current = null;
+      if (openAddRoleModal) {
+        setOpenAddRoleModal(false);
+      }
+      if (showFiltersOverlay) {
+        setShowFiltersOverlay(false);
       }
     }
   }, [searchParams, events, selectedEvent, openAddRoleModal, showFiltersOverlay, handleEventClick]);
@@ -238,9 +255,12 @@ const Calendar = ({ userData }) => {
 
   const handleOpenAddRoleModal = useCallback(() => {
     setOpenAddRoleModal(true);
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set('modal', 'addRole');
-    setSearchParams(newParams, { replace: true });
+    const modalParam = searchParams.get('modal');
+    if (modalParam !== 'addRole') {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('modal', 'addRole');
+      setSearchParams(newParams, { replace: true });
+    }
   }, [searchParams, setSearchParams]);
 
   const handleOpenFiltersOverlay = useCallback(() => {

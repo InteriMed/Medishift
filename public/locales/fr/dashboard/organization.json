@@ -195,8 +195,26 @@
   },
   "directory": {
     "title": "Répertoire des employés",
-    "searchPlaceholder": "Rechercher des employés...",
-    "emptyState": "Aucun employé trouvé"
+    "subtitle": "Rechercher et gérer les employés dans tous les établissements",
+    "searchPlaceholder": "Trouver une infirmière, un médecin ou un membre du personnel dans tous les emplacements...",
+    "emptyState": "Entrez un nom ou un rôle pour rechercher dans toute l'organisation.",
+    "noResults": "Aucun employé trouvé correspondant à votre recherche.",
+    "sort": "Trier",
+    "filters": {
+      "facility": "Établissement",
+      "role": "Rôle",
+      "status": "Statut",
+      "name": "Nom",
+      "fromDate": "Date de début",
+      "toDate": "Date de fin",
+      "allFacilities": "Tous les établissements",
+      "allRoles": "Tous les rôles",
+      "allStatuses": "Tous les statuts",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "pending": "En attente",
+      "clearAll": "Effacer tous les filtres"
+    }
   },
   "policy": {
     "title": "Bibliothèque de politiques standardisées",

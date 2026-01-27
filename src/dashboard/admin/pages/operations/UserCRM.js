@@ -13,6 +13,8 @@ import PersonnalizedInputField from '../../../../components/BoxedInputFields/Per
 import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
 import Dialog from '../../../../components/Dialog/Dialog';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import PageHeader from '../../../components/PageHeader/PageHeader';
+import FilterBar from '../../../components/FilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const UserCRM = () => {
@@ -975,43 +977,90 @@ const UserCRM = () => {
     );
   }
 
-  return (
-    <div style={{ padding: 'var(--spacing-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-      {/* Title & Filter Section */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 'var(--font-size-xxxlarge)', fontWeight: 'var(--font-weight-large)', color: 'var(--text-color)', marginBottom: 0 }}>
-          {t('admin:users.crm', 'User CRM')}
-        </h1>
-      </div>
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
-      <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-lg)', border: '1px solid var(--grey-2)', boxShadow: 'var(--shadow-sm)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--spacing-md)' }}>
-          <h2 style={{ fontSize: 'var(--font-size-large)', fontWeight: 'var(--font-weight-medium)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-            <Filter size={20} /> Search Criteria
-          </h2>
-          <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-            <button onClick={resetFilters} style={{ padding: '8px', border: '1px solid var(--grey-2)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}><X size={14} /></button>
-            <button onClick={handleSearch} style={{ padding: '8px 16px', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><Check size={14} /> Search</button>
-          </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
-          <DropdownField options={[{ value: 'professional', label: 'Professional' }, { value: 'facility', label: 'Facility' }]} value={filters.accountType} onChange={v => setFilters(p => ({ ...p, accountType: v }))} />
-          {filters.accountType === 'professional' ? (
-            <>
-              <PersonnalizedInputField label="First Name" value={filters.firstName} onChange={e => setFilters(p => ({ ...p, firstName: e.target.value }))} placeholder="John" />
-              <PersonnalizedInputField label="Last Name" value={filters.lastName} onChange={e => setFilters(p => ({ ...p, lastName: e.target.value }))} placeholder="Doe" />
-            </>
-          ) : (
-            <div style={{ gridColumn: 'span 2' }}>
-              <PersonnalizedInputField label="Company Name" value={filters.companyName} onChange={e => setFilters(p => ({ ...p, companyName: e.target.value }))} placeholder="Medical Center" />
+  const handleApplyFilters = () => {
+    handleSearch();
+  };
+
+  const handleClearFilters = () => {
+    resetFilters();
+  };
+
+  const filterBarDropdownFields = [
+    {
+      key: 'accountType',
+      label: 'Account Type',
+      options: [
+        { value: 'professional', label: 'Professional' },
+        { value: 'facility', label: 'Facility' }
+      ],
+      defaultValue: 'professional'
+    }
+  ];
+
+  const filterBarDateFields = filters.accountType === 'professional' ? [
+    {
+      key: 'birthDate',
+      label: 'Birthdate'
+    }
+  ] : [];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <PageHeader
+        title={t('admin:users.crm', 'User CRM')}
+        subtitle={t('admin:users.crmDescription', 'Search and manage user profiles')}
+      />
+      
+      <div style={{ flex: 1, overflow: 'auto', padding: 'var(--spacing-lg)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+          <FilterBar
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onApplyFilters={handleApplyFilters}
+            onClearFilters={handleClearFilters}
+            searchValue={filters.email}
+            onSearchChange={(value) => handleFilterChange('email', value)}
+            searchPlaceholder={t('admin:users.searchEmail', 'Search by email...')}
+            dropdownFields={filterBarDropdownFields}
+            dateFields={filterBarDateFields}
+            translationNamespace="admin"
+            title={t('admin:users.searchCriteria', 'Search Criteria')}
+            description={t('admin:users.searchDescription', 'Filter users by account type, name, email, or birthdate')}
+          />
+
+          {filters.accountType === 'professional' && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
+              <PersonnalizedInputField 
+                label="First Name" 
+                value={filters.firstName} 
+                onChange={e => handleFilterChange('firstName', e.target.value)} 
+                placeholder="John" 
+              />
+              <PersonnalizedInputField 
+                label="Last Name" 
+                value={filters.lastName} 
+                onChange={e => handleFilterChange('lastName', e.target.value)} 
+                placeholder="Doe" 
+              />
             </div>
           )}
-          <PersonnalizedInputField label="Email" value={filters.email} onChange={e => setFilters(p => ({ ...p, email: e.target.value }))} placeholder="email@example.com" />
-          {filters.accountType === 'professional' && <PersonnalizedInputField label="Birthdate" type="date" value={filters.birthDate} onChange={e => setFilters(p => ({ ...p, birthDate: e.target.value }))} />}
-        </div>
-      </div>
 
-      {/* Main Content Grid */}
+          {filters.accountType === 'facility' && (
+            <div>
+              <PersonnalizedInputField 
+                label="Company Name" 
+                value={filters.companyName} 
+                onChange={e => handleFilterChange('companyName', e.target.value)} 
+                placeholder="Medical Center" 
+              />
+            </div>
+          )}
+
+          {/* Main Content Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.5fr', gap: 'var(--spacing-lg)' }}>
         {/* Left: User List */}
         <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', border: '1px solid var(--grey-2)', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', height: '650px' }}>
@@ -1711,6 +1760,8 @@ const UserCRM = () => {
           )}
         </div>
       </Dialog>
+        </div>
+      </div>
     </div>
   );
 };

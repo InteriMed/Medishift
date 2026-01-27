@@ -102,6 +102,10 @@ module.exports.calendarSync = calendarFunctions.calendarSync;
 module.exports.checkAndCreateEvent = calendarFunctions.checkAndCreateEvent;
 module.exports.checkAndCreateEventHTTP = calendarFunctions.checkAndCreateEventHTTP;
 
+// Export automated scheduling functions
+module.exports.autoScheduleShift = calendarFunctions.autoScheduleShift;
+module.exports.validateShiftAssignment = calendarFunctions.validateShiftAssignment;
+
 // ROLE SYNCHRONIZATION TRIGGERS - Export from triggers/roleSync.js
 const roleSyncTriggers = require('./triggers/roleSync');
 module.exports.syncAdminRoles = roleSyncTriggers.syncAdminRoles;

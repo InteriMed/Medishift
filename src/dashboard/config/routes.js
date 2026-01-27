@@ -3,13 +3,15 @@ import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
 import { RIGHTS as PERMISSIONS } from '../admin/utils/rbac';
 import { buildDashboardUrl } from '../utils/pathUtils';
 
+// Eagerly loaded components (frequently accessed, no loading delay)
+import MessagesPage from '../pages/messages/MessagesPage';
+import AnnouncementsPage from '../pages/messages/AnnouncementsPage';
+import InternalTicketPage from '../pages/messages/InternalTicketPage';
+import ReportingPage from '../pages/messages/ReportingPage';
+
 // Lazy-loaded components
 const PersonalDashboard = lazy(() => import('../pages/personalDashboard/PersonalDashboard'));
 const Calendar = lazy(() => import('../pages/calendar/Calendar'));
-const MessagesPage = lazy(() => import('../pages/messages/MessagesPage'));
-const AnnouncementsPage = lazy(() => import('../pages/messages/AnnouncementsPage'));
-const InternalTicketPage = lazy(() => import('../pages/messages/InternalTicketPage'));
-const ReportingPage = lazy(() => import('../pages/messages/ReportingPage'));
 const Profile = lazy(() => import('../pages/profile/Profile'));
 const Marketplace = lazy(() => import('../pages/marketplace/Marketplace'));
 const PayrollDashboard = lazy(() => import('../pages/payroll/PayrollDashboard'));
@@ -30,11 +32,11 @@ const BalanceSheet = lazy(() => import('../admin/pages/finance/BalanceSheet'));
 const AuditLogs = lazy(() => import('../admin/pages/system/AuditLogs'));
 const NotificationsCenter = lazy(() => import('../admin/pages/system/NotificationsCenter'));
 const RolesAndPermissions = lazy(() => import('../admin/pages/system/RolesAndPermissions'));
-const PayrollExport = lazy(() => import('../admin/pages/payroll/PayrollExport'));
+const ConsolidatedPayroll = lazy(() => import('../admin/pages/payroll/ConsolidatedPayroll'));
 const AdminManagement = lazy(() => import('../admin/pages/management/AdminManagement'));
 const LinkedInJobScraper = lazy(() => import('../admin/pages/operations/LinkedInJobScraper'));
-const GLNTestPage = lazy(() => import('../pages/glnTest/GLNTestPage'));
-const EmailCenter = lazy(() => import('../pages/admin/EmailCenter'));
+const GLNTestPage = lazy(() => import('../admin/GLNTestPage'));
+const EmailCenter = lazy(() => import('../admin/EmailCenter'));
 
 /**
  * Route access types
@@ -325,7 +327,7 @@ export const ADMIN_ROUTES = [
   {
     id: 'admin-payroll-export',
     path: 'payroll/export',
-    component: PayrollExport,
+    component: ConsolidatedPayroll,
     access: ACCESS_TYPES.ADMIN,
     permission: PERMISSIONS.EXPORT_PAYROLL,
     label: 'Payroll Export',

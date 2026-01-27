@@ -165,8 +165,8 @@ const getAdminSidebarItems = (t) => [
   {
     title: t('admin:sidebar.adminManagement', 'Admin Management'),
     icon: Shield,
-    path: '/dashboard/admin/management/employees',
-    permission: PERMISSIONS.MANAGE_EMPLOYEES
+    path: '/dashboard/admin/management/admins',
+    permission: PERMISSIONS.MANAGE_ADMINS
   }
 ];
 

@@ -683,5 +683,55 @@ service cloud.firestore {
       allow update: if canAccessOrganizationPolicy();
       allow delete: if canAccessOrganizationPolicy();
     }
+
+    // 14. Support Tickets (Internal tickets and anonymous reporting)
+    match /supportTickets/{ticketId} {
+      function isTicketOwner() {
+        return isAuthenticated() && resource.data.userId == request.auth.uid;
+      }
+      
+      function canCreateTicket() {
+        return isAuthenticated() && (
+          request.resource.data.userId == request.auth.uid ||
+          request.resource.data.userId == 'anonymous'
+        );
+      }
+      
+      allow read: if isAuthenticated() && (
+        isTicketOwner() ||
+        isAdmin()
+      );
+      allow create: if canCreateTicket();
+      allow update: if isAuthenticated() && (
+        isTicketOwner() ||
+        isAdmin()
+      );
+      allow delete: if false;
+    }
+
+    // 15. Support Tickets (Legacy collection name - support_tickets)
+    match /support_tickets/{ticketId} {
+      function isTicketOwner() {
+        return isAuthenticated() && resource.data.userId == request.auth.uid;
+      }
+      
+      function canCreateTicket() {
+        return isAuthenticated() && (
+          request.resource.data.userId == request.auth.uid ||
+          request.resource.data.userId == 'anonymous'
+        );
+      }
+      
+      allow read: if isAuthenticated() && (
+        isTicketOwner() ||
+        isAdmin()
+      );
+      allow create: if canCreateTicket();
+      allow update: if isAuthenticated() && (
+        isTicketOwner() ||
+        isAdmin()
+      );
+      allow delete: if false;
+    }
   }
 }

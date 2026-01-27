@@ -1,131 +1,467 @@
 .filterBar {
-  background: var(--background-div-color, white);
-  padding: 8px 16px;
+  background: var(--background-div-color, #ffffff);
   border-radius: 12px;
-  margin-bottom: 16px;
-  border: 1px solid var(--grey-1, #e0e0e0);
-  position: relative;
-  z-index: 10;
-  overflow: visible;
-  transition: all 0.3s ease-in-out;
+  border: 1px solid var(--border-color, #e5e7eb);
+  transition: all 0.2s ease;
+  width: 100%;
+  font-family: var(--font-family-text, Roboto, sans-serif);
 }
 
-.filterBarHeader {
+.filterBar:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.filterBar.expanded {
+  padding: 24px;
+}
+
+.filterBar:not(.expanded) {
+  padding: 16px 24px;
+}
+
+.filterHeader {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  cursor: pointer;
-  padding: 8px 0;
+  justify-content: space-between;
+  margin-bottom: 16px;
 }
 
 .filterTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-foreground, #111827);
+  margin: 0;
+}
+
+.refreshButton {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-family-text);
-  font-weight: var(--font-weight-medium);
-}
-
-.filterSummary {
-  flex: 1;
-  margin: 0 16px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--grey-2);
-  font-family: var(--font-family-text);
-  font-size: var(--font-size-small);
-}
-
-.expandButton {
-  background: none;
-  border: none;
-  font-size: var(--font-size-large);
-  color: var(--grey-3);
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 2px solid var(--input-border-color, #e5e7eb);
+  background: var(--background-color, #ffffff);
+  color: var(--text-muted-foreground, #6b7280);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
   cursor: pointer;
+  height: var(--boxed-inputfield-height, 40px);
+}
+
+.refreshButton:hover {
+  color: var(--text-foreground, #111827);
+  border-color: var(--text-muted-foreground, #9ca3af);
+}
+
+.refreshButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refreshIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.refreshIcon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.filterDescription {
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  margin-bottom: 16px;
+}
+
+.descriptionText {
+  font-size: 14px;
+  color: var(--text-muted-foreground, #6b7280);
+  margin: 0;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.searchContainer {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted-foreground, #6b7280);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 32px 8px 36px;
+  border-radius: 12px;
+  border: 2px solid var(--input-border-color, #e5e7eb);
+  background: var(--background-color, #ffffff);
+  font-size: 14px;
+  color: var(--text-foreground, #111827);
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: var(--font-family-text, Roboto, sans-serif);
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted-foreground, #6b7280);
+}
+
+.searchInput:hover {
+  border-color: var(--text-muted-foreground, #9ca3af);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.searchInput:focus {
+  border-color: var(--color-logo-1, #4f46e5);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.dateFieldContainer {
+  position: relative;
+  flex-shrink: 0;
+  width: 218px;
+}
+
+.sortContainer {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sortButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 2px solid var(--input-border-color, #e5e7eb);
+  background: var(--background-color, #ffffff);
+  color: var(--text-muted-foreground, #6b7280);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-family: var(--font-family-text, Roboto, sans-serif);
+}
+
+.sortButton:hover {
+  color: var(--text-foreground, #111827);
+  border-color: var(--text-muted-foreground, #9ca3af);
+}
+
+.sortIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.sortDropdownOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.sortDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  z-index: 20;
+  background: var(--background-div-color, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  min-width: 180px;
+}
+
+.sortOption {
+  width: 100%;
+  text-align: left;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--text-foreground, #111827);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: var(--font-family-text, Roboto, sans-serif);
+}
+
+.sortOption:hover {
+  background: var(--muted-color, #f3f4f6);
+}
+
+.sortOptionActive {
+  background: var(--muted-color, #f3f4f6);
+}
+
+.parametersButton {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.filterContent {
-  padding-top: 16px;
-  padding-bottom: 16px;
-  border-top: 1px solid var(--grey-1, #e0e0e0);
-}
-
-.filterGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.filterGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.filterGroup label {
-  font-family: var(--font-family-text);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
-}
-
-.filterGroup select, 
-.filterGroup input {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--grey-1);
-  background-color: var(--background-div-color);
-  font-family: var(--font-family-text);
-  font-size: var(--font-size-small);
-}
-
-.filterGroup select[multiple] {
-  height: 120px;
-}
-
-.filterActions {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.clearButton, 
-.applyButton {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-family: var(--font-family-text);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
+  border-radius: 12px;
+  border: 2px solid var(--input-border-color, #e5e7eb);
+  background: var(--background-color, #ffffff);
+  color: var(--text-muted-foreground, #6b7280);
+  transition: all 0.2s ease;
   cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
 }
 
-.clearButton {
-  background-color: var(--grey-1-light, #f8f8f8);
-  border: 1px solid var(--grey-1, #e0e0e0);
-  color: var(--grey-3, #555);
+.parametersButton:hover {
+  color: var(--text-foreground, #111827);
+  border-color: var(--text-muted-foreground, #9ca3af);
 }
 
-.applyButton {
-  background-color: var(--color-logo-1, #4a90e2);
-  border: none;
+.parametersButtonActive {
+  background: var(--color-logo-1, #4f46e5);
+  border-color: var(--color-logo-1, #4f46e5);
   color: white;
 }
 
-.clearButton:hover {
-  background-color: var(--grey-1, #e0e0e0);
+.parametersIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.parametersIconActive {
+  color: white;
+}
+
+.activeCountBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  height: 16px;
+  width: 16px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-logo-1, #4f46e5);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.viewToggleContainer {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 2px solid var(--input-border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 2px;
+  background: var(--background-color, #ffffff);
+  flex-shrink: 0;
+  height: var(--boxed-inputfield-height, 40px);
+}
+
+.viewToggleButton {
+  height: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted-foreground, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewToggleButton:hover {
+  color: var(--text-foreground, #111827);
+  background: var(--muted-color, #f3f4f6);
+}
+
+.viewToggleButtonActive {
+  background: var(--color-logo-1, #4f46e5);
+  color: white;
+}
+
+.viewToggleIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.expandedFilters {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  width: 100%;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.expandedFiltersGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding-bottom: 4px;
+}
+
+@media (min-width: 768px) {
+  .expandedFiltersGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .expandedFiltersGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .expandedFiltersGrid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.filterActionsSection {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  width: 100%;
+}
+
+.filterActionsRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.applyButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: var(--color-logo-1, #4f46e5);
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  font-family: var(--font-family-text, Roboto, sans-serif);
 }
 
 .applyButton:hover {
-  background-color: var(--color-logo-1-dark, #3a80d2);
+  background: rgba(79, 70, 229, 0.9);
+}
+
+.applyIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.activeFiltersDisplay {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted-foreground, #6b7280);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.activeFilterTag {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--muted-color, #f3f4f6);
+  border: 1px solid var(--border-color, #e5e7eb);
+  font-size: 14px;
 }
 
 @media (max-width: 768px) {
-  .filterGrid {
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchContainer {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .dateFieldContainer {
+    width: 100%;
+  }
+
+  .sortContainer {
+    width: 100%;
+  }
+
+  .viewToggleContainer {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .expandedFiltersGrid {
     grid-template-columns: 1fr;
   }
-} 
+
+  .filterActionsRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .applyButton {
+    width: 100%;
+  }
+
+  .activeFiltersDisplay {
+    width: 100%;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -9,12 +9,12 @@ import useContractsData from '../../hooks/useContractsData';
 import ContractDetails from './components/ContractDetails';
 import ContractPdfView from './components/ContractPdfView';
 import ContractStatusBadge from './components/ContractStatusBadge';
+import FilterBar from '../../components/FilterBar/FilterBar';
 import Dialog from '../../../components/Dialog/Dialog';
 import InputField from '../../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldParagraph from '../../../components/BoxedInputFields/TextareaField';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
-import { FiSearch, FiFileText, FiX, FiSliders, FiPlus, FiClock, FiEye, FiArrowDown, FiGrid, FiList, FiCheck, FiRefreshCw, FiCheckCircle, FiAlertCircle, FiSend, FiUsers, FiBriefcase } from 'react-icons/fi';
-import DateField from '../../../components/BoxedInputFields/DateField';
+import { FiFileText, FiPlus, FiClock, FiRefreshCw, FiCheckCircle, FiGrid } from 'react-icons/fi';
 import { cn } from '../../../utils/cn';
 import { createContract } from '../../../services/cloudFunctions';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
@@ -41,17 +41,12 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
     const [selectedContract, setSelectedContract] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isPdfView, setIsPdfView] = useState(false);
-    const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
-    const filterDropdownRef = useRef(null);
     const [isCreateContractModalOpen, setIsCreateContractModalOpen] = useState(false);
     const [sortBy, setSortBy] = useState('date');
     const [viewMode, setViewMode] = useState('list');
-    const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
-    const [showSortDropdown, setShowSortDropdown] = useState(false);
-    const [showActiveFilters, setShowActiveFilters] = useState(false);
-    const [justExpanded, setJustExpanded] = useState(false);
     const [filtersState, setFiltersState] = useState({
         status: filters.status || 'all',
+        source: 'all',
         fromDate: '',
         toDate: ''
     });
@@ -61,13 +56,6 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
         status: 'draft'
     });
     const [isCreatingContract, setIsCreatingContract] = useState(false);
-    const [activeTab, setActiveTab] = useState('team');
-
-    const tabs = [
-        { id: 'team', label: t('contracts:tabs.team', 'Team'), icon: FiUsers },
-        { id: 'medishift', label: t('contracts:tabs.medishift', 'Medishift'), icon: FiBriefcase },
-        { id: 'all', label: t('contracts:tabs.all', 'All'), icon: FiGrid }
-    ];
 
     const allContracts = useMemo(() => {
         return contracts;
@@ -76,22 +64,6 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
     const allFilteredContracts = useMemo(() => {
         return filteredContracts;
     }, [filteredContracts]);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
-                setShowFiltersOverlay(false);
-            }
-        };
-
-        if (showFiltersOverlay) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showFiltersOverlay]);
 
     const handleCloseDetails = useCallback(() => {
         setIsDetailsModalOpen(false);
@@ -156,8 +128,6 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
     const handleToggleView = () => {
         setIsPdfView(!isPdfView);
     };
-
-    const hasActiveFilters = filters.status !== 'all' || filters.dateRange || filters.searchTerm;
     
     const handleFilterChange = (key, value) => {
         setFiltersState(prev => ({
@@ -169,26 +139,34 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
         }
     };
 
-    const activeCount = (filtersState.status !== 'all' ? 1 : 0) + (filtersState.fromDate ? 1 : 0) + (filtersState.toDate ? 1 : 0);
+    const handleClearFilters = () => {
+        setFiltersState({
+            status: 'all',
+            source: 'all',
+            fromDate: '',
+            toDate: ''
+        });
+        updateFilters({ status: 'all' });
+    };
 
     const getContractTitle = useCallback((contract) => {
         return contract.title || contract.terms?.jobTitle || t('contracts:untitledContract', 'Untitled Contract');
     }, [t]);
 
     const filteredByTab = useMemo(() => {
-        if (activeTab === 'all') {
+        if (filtersState.source === 'all') {
             return filteredContracts;
         }
         return filteredContracts.filter(contract => {
-            if (activeTab === 'team') {
+            if (filtersState.source === 'team') {
                 return contract.parties?.employer?.profileId === selectedWorkspace?.facilityId;
             }
-            if (activeTab === 'medishift') {
+            if (filtersState.source === 'medishift') {
                 return contract.parties?.employer?.profileId !== selectedWorkspace?.facilityId;
             }
             return true;
         });
-    }, [filteredContracts, activeTab, selectedWorkspace?.facilityId]);
+    }, [filteredContracts, filtersState.source, selectedWorkspace?.facilityId]);
 
     const sortedContracts = useMemo(() => {
         let result = [...filteredByTab];
@@ -225,7 +203,7 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
         }
         
         return result;
-    }, [filteredContracts, sortBy, filtersState.fromDate, filtersState.toDate, getContractTitle]);
+    }, [filteredByTab, sortBy, filtersState.fromDate, filtersState.toDate, getContractTitle]);
 
     const stats = useMemo(() => {
         const total = allContracts.length;
@@ -382,8 +360,8 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
         className: PropTypes.string
     };
 
-    return (
-        <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
+        return (
+        <div className="h-full flex flex-col overflow-hidden">
             {!hideHeader && (
                 <PageHeader
                     title={t('contracts:title', 'Contracts')}
@@ -444,312 +422,135 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                 </div>
             )}
 
-            {hideStats && (
-                <div className="shrink-0">
-                    <div className="flex gap-2 border-b border-border overflow-x-auto max-w-[1400px] mx-auto px-6">
-                        {tabs.map((tab) => {
-                            const TabIcon = tab.icon;
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={cn(
-                                        "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                                        "touch-manipulation active:scale-95",
-                                        activeTab === tab.id
-                                            ? "border-primary text-primary bg-primary/5"
-                                            : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    )}
-                                    title={tab.label}
-                                >
-                                    <TabIcon className="w-4 h-4 shrink-0" />
-                                    <span className="text-xs sm:text-sm min-w-0">{tab.label}</span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-
-            <div className="flex-1 overflow-auto">
-                <div className="px-6 pb-6">
-            <div 
-                className={cn(
-                    "bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full mb-4",
-                    isFiltersExpanded ? 'px-6 py-3' : 'px-6 py-2'
-                )}
-                onMouseDown={(e) => {
-                    if (e.target.closest('button[title="Parameters"]')) {
-                        e.stopPropagation();
-                    }
-                }}
-            >
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-semibold text-foreground">
-                        {t('contracts:info.title', 'Contracts')}
-                    </h3>
-                    <button
-                        onClick={refreshContracts}
-                        disabled={isLoading}
-                        className={cn(
-                            "px-4 rounded-xl border-2 border-input bg-background text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 text-sm font-medium transition-all flex items-center gap-2 shrink-0",
-                            isLoading && "opacity-50 cursor-not-allowed"
-                        )}
-                        style={{ height: 'var(--boxed-inputfield-height)' }}
-                    >
-                        <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                        {t('common:refresh', 'Refresh')}
-                    </button>
-                </div>
-                <div className="pt-3 border-t border-border mb-4">
-                    <p className="text-sm text-muted-foreground">
-                        {t('contracts:info.description', 'Browse and search for contracts.')}
-                    </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 w-full">
-                    <div className="relative flex-1 min-w-[200px]">
-                        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                        <input
-                            type="text"
-                            value={filters.searchTerm || ''}
-                            onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                            placeholder={t('contracts:searchPlaceholder', 'Search contracts...')}
-                            className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                            style={{
-                                height: 'var(--boxed-inputfield-height)',
-                                fontWeight: '500',
-                                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                color: 'var(--boxed-inputfield-color-text)'
-                            }}
-                        />
-                    </div>
-
-                    <div className="relative shrink-0 w-[218px]">
-                        <DateField
-                            label="From"
-                            value={filtersState.fromDate ? new Date(filtersState.fromDate) : null}
-                            onChange={(date) => handleFilterChange('fromDate', date ? date.toISOString().split('T')[0] : '')}
-                            marginBottom="0"
-                            showClearButton={true}
-                        />
-                    </div>
-
-                    <div className="relative shrink-0 w-[218px]">
-                        <DateField
-                            label="To"
-                            value={filtersState.toDate ? new Date(filtersState.toDate) : null}
-                            onChange={(date) => handleFilterChange('toDate', date ? date.toISOString().split('T')[0] : '')}
-                            marginBottom="0"
-                            showClearButton={true}
-                        />
-                    </div>
-
-                    <div className="relative shrink-0">
-                        <button
-                            onClick={() => setShowSortDropdown(!showSortDropdown)}
-                            className="px-4 rounded-xl border-2 border-input bg-background text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 text-sm font-medium transition-all flex items-center gap-2 shrink-0"
-                            style={{ height: 'var(--boxed-inputfield-height)' }}
-                        >
-                            <FiArrowDown className="w-4 h-4" />
-                            {t('contracts:sortBy', 'Sort by')}
-                        </button>
-                        {showSortDropdown && (
-                            <>
-                                <div 
-                                    className="fixed inset-0 z-10" 
-                                    onClick={() => setShowSortDropdown(false)}
-                                />
-                                <div className="absolute top-full mt-2 right-0 z-20 bg-card border border-border rounded-lg shadow-lg min-w-[180px]">
-                                    <button
-                                        onClick={() => {
-                                            setSortBy('date');
-                                            setShowSortDropdown(false);
-                                        }}
-                                        className={cn(
-                                            "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                                            sortBy === 'date' && "bg-muted"
-                                        )}
-                                    >
-                                        {t('contracts:sort.date', 'Date')}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setSortBy('name');
-                                            setShowSortDropdown(false);
-                                        }}
-                                        className={cn(
-                                            "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                                            sortBy === 'name' && "bg-muted"
-                                        )}
-                                    >
-                                        {t('contracts:sort.name', 'Name')}
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const willExpand = !isFiltersExpanded;
-                            setIsFiltersExpanded(willExpand);
-                            if (willExpand) {
-                                setJustExpanded(true);
-                                setTimeout(() => {
-                                    setJustExpanded(false);
-                                }, 150);
-                            }
-                        }}
-                        onMouseDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                        }}
-                        className={cn(
-                            "flex items-center justify-center rounded-xl border-2 transition-all relative shrink-0",
-                            isFiltersExpanded
-                                ? "bg-[var(--color-logo-1)] border-[var(--color-logo-1)] text-white"
-                                : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
-                        )}
-                        style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
-                        title="Parameters"
-                    >
-                        <FiSliders className={`w-4 h-4 ${isFiltersExpanded ? 'text-white' : ''}`} />
-                        {activeCount > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-                                {activeCount}
-                            </span>
-                        )}
-                    </button>
-
-                    <div className="flex items-center gap-1 border-2 border-input rounded-xl p-0.5 bg-background shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={cn(
-                                "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
-                                viewMode === 'grid'
-                                    ? "bg-primary text-primary-foreground"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                            )}
-                            title={t('contracts:view.grid', 'Grid view')}
-                        >
-                            <FiGrid className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={cn(
-                                "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
-                                viewMode === 'list'
-                                    ? "bg-primary text-primary-foreground"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                            )}
-                            title={t('contracts:view.list', 'List view')}
-                        >
-                            <FiList className="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    {isFiltersExpanded && (
-                        <div 
-                            className="mt-3 pt-3 border-t border-border animate-in slide-in-from-top-1 duration-200 w-full"
-                            style={{ pointerEvents: justExpanded ? 'none' : 'auto' }}
-                            onClick={(e) => {
-                                if (justExpanded) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    return;
-                                }
-                            }}
-                            onMouseDown={(e) => {
-                                if (justExpanded) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    return;
-                                }
-                            }}
-                        >
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pb-1">
-                                <SimpleDropdown
-                                    label={t('contracts:filter.status', 'Status')}
-                                    options={statusOptions}
-                                    value={filtersState.status}
-                                    onChange={(value) => handleFilterChange('status', value)}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {activeCount > 0 && (
-                        <div className="mt-3 pt-3 border-t border-border w-full">
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => {
-                                        setShowActiveFilters(!showActiveFilters);
-                                    }}
-                                    className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
-                                    style={{ height: 'var(--boxed-inputfield-height)' }}
-                                >
-                                    <FiCheck className="w-4 h-4" />
-                                    {t('contracts:filter.apply', 'Apply Filters')}
-                                </button>
-                                
-                                {showActiveFilters && (
-                                    <div className="flex-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground animate-in fade-in slide-in-from-left-1 duration-200">
-                                        {filtersState.status !== 'all' && (
-                                            <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                {t('contracts:filter.status', 'Status')}: {statusOptions.find(o => o.value === filtersState.status)?.label || filtersState.status}
-                                            </span>
-                                        )}
-                                        {filtersState.fromDate && (
-                                            <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                From: {new Date(filtersState.fromDate).toLocaleDateString()}
-                                            </span>
-                                        )}
-                                        {filtersState.toDate && (
-                                            <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                                                To: {new Date(filtersState.toDate).toLocaleDateString()}
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
+            <div className="shrink-0 px-6 py-6">
+                <FilterBar
+                    filters={filtersState}
+                    onFilterChange={handleFilterChange}
+                    onClearFilters={handleClearFilters}
+                    searchValue={filters.searchTerm || ''}
+                    onSearchChange={(value) => updateFilters({ searchTerm: value })}
+                    searchPlaceholder={t('contracts:searchPlaceholder', 'Search contracts...')}
+                    dropdownFields={[
+                        {
+                            key: 'status',
+                            label: t('contracts:filter.status', 'Status'),
+                            options: statusOptions,
+                            defaultValue: 'all'
+                        },
+                        {
+                            key: 'source',
+                            label: t('contracts:filter.source', 'Source'),
+                            options: [
+                                { value: 'all', label: t('contracts:tabs.all', 'All') },
+                                { value: 'team', label: t('contracts:tabs.team', 'Team') },
+                                { value: 'medishift', label: t('contracts:tabs.medishift', 'Medishift') }
+                            ],
+                            defaultValue: 'all'
+                        }
+                    ]}
+                    dateFields={[
+                        {
+                            key: 'fromDate',
+                            label: t('contracts:filter.fromDate', 'From Date'),
+                            showClearButton: true
+                        },
+                        {
+                            key: 'toDate',
+                            label: t('contracts:filter.toDate', 'To Date'),
+                            showClearButton: true
+                        }
+                    ]}
+                    showViewToggle={true}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    sortOptions={[
+                        { value: 'date', label: t('contracts:sort.date', 'Date') },
+                        { value: 'name', label: t('contracts:sort.name', 'Name') }
+                    ]}
+                    sortValue={sortBy}
+                    onSortChange={setSortBy}
+                    translationNamespace="contracts"
+                    title={t('contracts:info.title', 'Contracts')}
+                    description={t('contracts:info.description', 'Browse and search for contracts.')}
+                    onRefresh={refreshContracts}
+                    isLoading={isLoading}
+                />
             </div>
 
-            {isLoading ? (
-                <div className="flex items-center justify-center py-12">
-                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-            ) : !hasAnyContracts ? (
-                <div className="dashboard-empty-state">
-                    <div className="dashboard-empty-state-card">
-                        <div className="dashboard-empty-state-icon">
-                            <FiFileText className="w-8 h-8" />
-                        </div>
-                        <h2 className="dashboard-empty-state-title">{t('contracts:empty.title', 'No contracts found')}</h2>
-                        <p className="dashboard-empty-state-description">
-                            {t('contracts:empty.description', 'No contracts available at the moment')}
-                        </p>
+            <div className={cn("flex-1 overflow-auto", hideHeader ? "" : "px-6 pb-6")}>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
-                </div>
-            ) : !hasContracts ? (
-                <div className="dashboard-empty-state">
-                    <div className="dashboard-empty-state-card">
-                        <div className="dashboard-empty-state-icon">
-                            <FiSearch className="w-8 h-8" />
+                ) : sortedContracts.length === 0 ? (
+                    <div className="dashboard-empty-state">
+                        <div className="dashboard-empty-state-card">
+                            <div className="dashboard-empty-state-icon">
+                                <FiFileText className="w-8 h-8" />
+                            </div>
+                            <h2 className="dashboard-empty-state-title">
+                                {t('contracts:empty.title', 'No contracts found')}
+                            </h2>
+                            <p className="dashboard-empty-state-description">
+                                {t('contracts:empty.description', 'No contracts available at the moment')}
+                            </p>
                         </div>
-                        <h2 className="dashboard-empty-state-title">{t('contracts:noMatches', 'No contracts match your search')}</h2>
-                        <p className="dashboard-empty-state-description">
-                            {t('contracts:noMatches.description', 'Try adjusting your filters to see more results')}
-                        </p>
                     </div>
-                </div>
-            ) : (
-                <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
-                    {sortedContracts.map((contract) => {
+                ) : viewMode === 'list' ? (
+                    <div className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow">
+                        <table className="w-full">
+                            <thead className="bg-muted/30">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
+                                        {t('contracts:table.title', 'Title')}
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
+                                        {t('contracts:table.company', 'Company')}
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
+                                        {t('contracts:table.status', 'Status')}
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
+                                        {t('contracts:table.created', 'Created')}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sortedContracts.map((contract) => {
+                                    const title = getContractTitle(contract);
+                                    const subtitle = getContractSubtitle(contract);
+                                    const date = formatDate(contract.createdAt || contract.statusLifecycle?.timestamps?.createdAt);
+                                    const status = contract.status || 'draft';
+                                    return (
+                                        <tr
+                                            key={contract.id}
+                                            className="border-b border-border hover:bg-muted/30 cursor-pointer transition-colors"
+                                            onClick={() => handleContractSelectWithURL(contract)}
+                                        >
+                                            <td className="px-4 py-3">
+                                                <div className="font-medium text-foreground">{title}</div>
+                                                {subtitle && (
+                                                    <div className="text-xs text-muted-foreground">{subtitle}</div>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="text-sm">{subtitle || 'N/A'}</div>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <ContractStatusBadge status={status} isActive={false} />
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-muted-foreground">
+                                                {date}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {sortedContracts.map((contract) => {
                             const title = getContractTitle(contract);
                             const subtitle = getContractSubtitle(contract);
                             const date = formatDate(contract.createdAt || contract.statusLifecycle?.timestamps?.createdAt);
@@ -758,69 +559,36 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                             return (
                                 <div
                                     key={contract.id}
-                                    className={cn(
-                                        "bg-background border border-border rounded-lg hover:border-primary/50 transition-colors group cursor-pointer",
-                                        viewMode === 'grid' ? "p-4 flex flex-col" : "flex items-center p-4"
-                                    )}
+                                    className="bg-card border border-border rounded-lg hover:border-primary/50 transition-colors p-4 cursor-pointer"
                                     onClick={() => handleContractSelectWithURL(contract)}
                                 >
-                                    <div className={cn(
-                                        "rounded-lg bg-primary/10 flex items-center justify-center shrink-0",
-                                        viewMode === 'grid' ? "w-12 h-12 mb-3" : "w-10 h-10 mr-4"
-                                    )}>
-                                        <FiFileText className="text-primary w-5 h-5" />
-                                    </div>
-                                    <div className={cn("flex-1 min-w-0", viewMode === 'grid' && "flex flex-col")}>
-                                        <div className={cn(
-                                            "flex items-start justify-between gap-2 mb-1",
-                                            viewMode === 'grid' && "flex-col"
-                                        )}>
-                                            <h4 className={cn(
-                                                "font-medium text-foreground group-hover:text-primary transition-colors",
-                                                viewMode === 'grid' ? "text-base mb-2" : "truncate flex-1"
-                                            )}>
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex-1">
+                                            <h4 className="font-medium text-foreground mb-1">
                                                 {title}
                                             </h4>
-                                            <ContractStatusBadge status={status} isActive={false} />
+                                            {subtitle && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    {subtitle}
+                                                </p>
+                                            )}
                                         </div>
-                                        {subtitle && (
-                                            <p className={cn(
-                                                "text-xs text-muted-foreground mb-1",
-                                                viewMode === 'grid' ? "line-clamp-2 mb-2" : "truncate"
-                                            )}>
-                                                {subtitle}
-                                            </p>
-                                        )}
+                                        <ContractStatusBadge status={status} isActive={false} />
+                                    </div>
+                                    <div className="space-y-2 text-sm">
                                         {date && (
-                                            <div className={cn(
-                                                "flex items-center text-xs text-muted-foreground",
-                                                viewMode === 'grid' && "mt-auto pt-2"
-                                            )}>
+                                            <div className="flex items-center text-xs text-muted-foreground">
                                                 <FiClock className="mr-1" />
                                                 {date}
                                             </div>
                                         )}
-                                    </div>
-                                    <div className={cn(
-                                        "flex items-center gap-2 shrink-0",
-                                        viewMode === 'grid' ? "mt-3 pt-3 border-t border-border justify-end" : "ml-2"
-                                    )}>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleContractSelectWithURL(contract);
-                                            }}
-                                            className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                            title={t('contracts:viewDetails', 'View Details')}
-                                        >
-                                            <FiEye className="w-4 h-4" />
-                                        </button>
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
                 )}
+            </div>
 
             <Dialog
                 isOpen={isDetailsModalOpen}
@@ -933,8 +701,6 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                     />
                 </div>
             </Dialog>
-                </div>
-            </div>
         </div>
     );
 };

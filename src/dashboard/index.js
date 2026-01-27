@@ -10,7 +10,6 @@ import ProtectedRoute from './admin/components/ProtectedRoute';
 import AdminLayout from './admin/components/AdminLayout';
 import { WORKSPACE_TYPES } from '../utils/sessionAuth';
 import { WorkspaceDefaultRedirect } from './components/WorkspaceAwareNavigate';
-import { buildDashboardUrl } from './utils/pathUtils';
 import {
   SHARED_ROUTES,
   PROFESSIONAL_ROUTES,
@@ -42,11 +41,15 @@ const Dashboard = () => {
 
   const workspaceType = selectedWorkspace?.type;
   const isAdminWorkspace = workspaceType === WORKSPACE_TYPES.ADMIN;
+  
+  // Check if URL indicates admin workspace (even if not selected yet)
+  const isAdminUrl = location.pathname.includes('/dashboard/admin');
+  const isAdminPathOnly = location.pathname === '/dashboard/admin' || location.pathname === '/dashboard/admin/';
 
   // Check if we're waiting for admin workspace to be set from URL
   const urlParams = new URLSearchParams(location.search);
   const requestedWorkspace = urlParams.get('workspace');
-  const isWaitingForAdminWorkspace = requestedWorkspace === 'admin' && !selectedWorkspace;
+  const isWaitingForAdminWorkspace = (requestedWorkspace === 'admin' || isAdminUrl) && !selectedWorkspace;
 
   return (
     <SidebarProvider>
@@ -59,19 +62,22 @@ const Dashboard = () => {
               <Routes>
                 {/* Default redirect - handle global routes explicitly at index */}
                 <Route index element={
-                  location.pathname.endsWith('/marketplace') ? (
+                  (isAdminWorkspace || isAdminPathOnly) ? (
+                    <Navigate to="/dashboard/admin/portal" replace />
+                  ) : location.pathname.endsWith('/marketplace') ? (
                     <RouteElement
                       route={SHARED_ROUTES.find(r => r.id === 'marketplace')}
                       userData={userData}
                     />
-                  ) : (
-                    // WorkspaceDefaultRedirect removed as it causes automatic rerouting
+                  ) : location.pathname.includes('/profile') ? (
                     null
+                  ) : (
+                    <WorkspaceDefaultRedirect />
                   )
                 } />
 
-                {/* Shared routes */}
-                {SHARED_ROUTES.map(route => (
+                {/* Shared routes - exclude when in admin workspace or admin URL */}
+                {!isAdminWorkspace && !isAdminUrl && SHARED_ROUTES.filter(r => r.id !== 'profile').map(route => (
                   <Route
                     key={route.id}
                     path={route.path}
@@ -84,8 +90,8 @@ const Dashboard = () => {
                   />
                 ))}
 
-                {/* Professional routes */}
-                {PROFESSIONAL_ROUTES.map(route => (
+                {/* Professional routes - exclude when in admin workspace or admin URL */}
+                {!isAdminWorkspace && !isAdminUrl && PROFESSIONAL_ROUTES.map(route => (
                   <Route
                     key={route.id}
                     path={route.path}
@@ -98,8 +104,8 @@ const Dashboard = () => {
                   />
                 ))}
 
-                {/* Facility routes */}
-                {FACILITY_ROUTES.map(route => (
+                {/* Facility routes - exclude when in admin workspace or admin URL */}
+                {!isAdminWorkspace && !isAdminUrl && FACILITY_ROUTES.map(route => (
                   <Route
                     key={route.id}
                     path={route.path}
@@ -130,8 +136,15 @@ const Dashboard = () => {
                   />
                 ))}
 
+                {/* Catch-all for unknown paths - exclude profile paths */}
                 <Route path="*" element={
-                  isWaitingForAdminWorkspace ? (
+                  location.pathname.includes('/profile') ? (
+                    null
+                  ) : (isAdminWorkspace || isAdminUrl) ? (
+                    <Navigate to={`/dashboard/admin/portal${location.search}`} replace />
+                  ) : isAdminPathOnly ? (
+                    <Navigate to={`/dashboard/admin/portal${location.search}`} replace />
+                  ) : isWaitingForAdminWorkspace ? (
                     <LoadingSpinner />
                   ) : (
                     <div>Path not found: {location.pathname}</div>

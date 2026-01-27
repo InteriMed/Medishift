@@ -180,7 +180,49 @@ const AddFacilityRoleModal = ({
     }
   }, []);
 
+  const validateAllFields = useCallback(() => {
+    const fieldErrors = {};
+    const workerErrors = {};
+    let isValid = true;
+    
+    if (!formData.workerType || formData.workerType === 'none') {
+      isValid = false;
+      fieldErrors.workerType = t('operations.workerTypeRequired', 'Role type is required');
+    }
+    
+    if (formData.workerType === 'other' && (!formData.workerTypeOther || !formData.workerTypeOther.trim())) {
+      isValid = false;
+      fieldErrors.workerTypeOther = t('operations.workerTypeOtherRequired', 'Custom role type is required');
+    }
+    
+    const workers = formData.assignedWorkers || [];
+    
+    if (workers.length === 0) {
+      isValid = false;
+      workerErrors._general = t('operations.atLeastOneWorkerRequired', 'At least one worker is required');
+    }
+    
+    workers.forEach(worker => {
+      const workerId = worker.workerId || '';
+      const placeholderName = worker.placeholderName || '';
+      
+      if (!workerId || workerId === '') {
+        isValid = false;
+        workerErrors[`${worker.id}_workerId`] = t('operations.workerSelectionRequired', 'Worker selection is required');
+      } else if (workerId === 'placeholder' && !placeholderName.trim()) {
+        isValid = false;
+        workerErrors[`${worker.id}_placeholderName`] = t('operations.placeholderNameRequired', 'Placeholder name is required');
+      }
+    });
+    
+    setFieldErrors(fieldErrors);
+    setWorkerErrors(workerErrors);
+    return isValid;
+  }, [formData, t]);
+
   const handleAddWorker = useCallback(() => {
+    validateAllFields();
+    
     const currentWorkers = formData.assignedWorkers || [];
     let workerColor;
     
@@ -206,7 +248,7 @@ const AddFacilityRoleModal = ({
       assignedWorkers: [...(prev.assignedWorkers || []), newWorker]
     }));
     setShowWorkerSelect(newWorker.id);
-  }, [formData.assignedWorkers, formData.workerType, formData.workerTypeOther, t]);
+  }, [formData, validateAllFields]);
 
   const handleRemoveWorker = useCallback((workerId) => {
     setFormData(prev => ({
@@ -361,7 +403,7 @@ const AddFacilityRoleModal = ({
       size="medium"
       closeOnBackdropClick={true}
       actions={
-        <>
+        <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-2">
             {editingRole && onDelete && (
               <Button
@@ -373,8 +415,6 @@ const AddFacilityRoleModal = ({
                 {t('common:delete', 'Delete')}
               </Button>
             )}
-          </div>
-          <div className="flex items-center gap-2">
             <Button
               onClick={onClose}
               variant="secondary"
@@ -382,15 +422,17 @@ const AddFacilityRoleModal = ({
             >
               {t('common:cancel', 'Cancel')}
             </Button>
+          </div>
+          <div className="flex items-center gap-2">
             <Button
               onClick={handleSave}
               variant="primary"
               type="button"
             >
-              {t('common.save', 'Save')}
+              {t('common:save', 'Save')}
             </Button>
           </div>
-        </>
+        </div>
       }
     >
       <div className="flex flex-col" style={{ minHeight: '500px' }}>
@@ -401,7 +443,7 @@ const AddFacilityRoleModal = ({
         </div>
 
         <div className="flex-1 space-y-6 overflow-y-auto">
-          <div className="space-y-4 mt-4">
+          <div className="mt-4">
             <DropdownField
               label={t('operations.workerType', 'Role Type')}
               options={getWorkerTypeOptions()}
@@ -427,18 +469,17 @@ const AddFacilityRoleModal = ({
 
           {formData.workerType && formData.workerType !== 'none' && (
             <>
-              <div className="border-t border-border pt-6"></div>
-              <div className="space-y-4">
-                {(() => {
-              const allWorkers = formData.assignedWorkers || [];
-              const assignedWorkers = allWorkers.filter(worker => worker.workerId || worker.placeholderName);
-              const newWorkers = allWorkers.filter(worker => !worker.workerId && !worker.placeholderName && showWorkerSelect === worker.id);
-              
-              return (
-                <>
-                  {assignedWorkers.length > 0 && (
-                    <div className="space-y-2 mb-4">
-                      {assignedWorkers.map((worker) => {
+              <div className="border-t border-border my-6"></div>
+              {(() => {
+                const allWorkers = formData.assignedWorkers || [];
+                const assignedWorkers = allWorkers.filter(worker => worker.workerId || worker.placeholderName);
+                const newWorkers = allWorkers.filter(worker => !worker.workerId && !worker.placeholderName && showWorkerSelect === worker.id);
+                
+                return (
+                  <>
+                    {assignedWorkers.length > 0 && (
+                      <div className="mb-4">
+                        {assignedWorkers.map((worker) => {
                         const workerName = worker.workerId && worker.workerId !== 'placeholder'
                           ? (() => {
                               const member = teamMembers.find(m => m.uid === worker.workerId);
@@ -490,17 +531,17 @@ const AddFacilityRoleModal = ({
                         });
                         
                         return (
-                          <div key={worker.id} className="space-y-2">
-                            <div 
-                              className="flex items-center gap-3 p-4 border border-border rounded-lg bg-card hover:border-primary/30 transition-colors"
-                            >
-                              <ColorPicker
-                                color={worker.color}
-                                color1={worker.color1}
-                                onChange={(color, color1) => handleUpdateWorker(worker.id, 'color', color)}
-                                size={32}
-                              />
-                              <div className="flex-1 space-y-2">
+                          <div 
+                            key={worker.id}
+                            className="flex items-center gap-3 p-4 border border-border rounded-lg bg-card hover:border-primary/30 transition-colors mb-2"
+                          >
+                            <ColorPicker
+                              color={worker.color}
+                              color1={worker.color1}
+                              onChange={(color, color1) => handleUpdateWorker(worker.id, 'color', color)}
+                              size={32}
+                            />
+                            <div className="flex-1">
                                 {showWorkerSelect === worker.id || (!worker.workerId && !worker.placeholderName) ? (
                                   <>
                                     <DropdownField
@@ -568,15 +609,13 @@ const AddFacilityRoleModal = ({
                                 >
                                   <FiTrash2 size={16} />
                                 </button>
-                              </div>
                             </div>
                           </div>
                         );
                       })}
-                    </div>
-                  )}
-                  
-                  <div className="space-y-2">
+                      </div>
+                    )}
+                    
                     {assignedWorkers.length === 0 && (!formData.assignedWorkers || formData.assignedWorkers.length === 0 || (formData.assignedWorkers.every(w => !w.workerId && !w.placeholderName) && !showWorkerSelect)) && (
                       <div className="py-8 text-center">
                         <p className="text-sm text-muted-foreground mb-2">
@@ -635,17 +674,17 @@ const AddFacilityRoleModal = ({
                       });
                       
                       return (
-                        <div key={worker.id} className="space-y-2">
-                          <div 
-                            className="flex items-center gap-3 p-4 border border-border rounded-lg bg-card hover:border-primary/30 transition-colors"
-                          >
-                            <ColorPicker
-                              color={worker.color}
-                              color1={worker.color1}
-                              onChange={(color, color1) => handleUpdateWorker(worker.id, 'color', color)}
-                              size={32}
-                            />
-                            <div className="flex-1 space-y-2">
+                        <div 
+                          key={worker.id}
+                          className="flex items-center gap-3 p-4 border border-border rounded-lg bg-card hover:border-primary/30 transition-colors mb-2"
+                        >
+                          <ColorPicker
+                            color={worker.color}
+                            color1={worker.color1}
+                            onChange={(color, color1) => handleUpdateWorker(worker.id, 'color', color)}
+                            size={32}
+                          />
+                          <div className="flex-1">
                               <DropdownField
                                 key={`${worker.id}-${allAssignedWorkerIds.size}-${availableTeamMembers.length}`}
                                 label={t('operations.selectWorkerOrPlaceholder', 'Select Worker or Placeholder')}
@@ -668,7 +707,9 @@ const AddFacilityRoleModal = ({
                                     handleUpdateWorker(worker.id, 'placeholderName', '');
                                     setShowWorkerSelect(null);
                                   } else {
-                                    handleRemoveWorker(worker.id);
+                                    handleUpdateWorker(worker.id, 'workerId', '');
+                                    handleUpdateWorker(worker.id, 'placeholderName', '');
+                                    setShowWorkerSelect(worker.id);
                                   }
                                 }}
                                 required={true}
@@ -687,22 +728,21 @@ const AddFacilityRoleModal = ({
                                   error={workerErrors[`${worker.id}_placeholderName`]}
                                 />
                               )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveWorker(worker.id)}
-                                className="p-1 text-destructive hover:bg-destructive/10 rounded transition-colors"
-                              >
-                                <FiTrash2 size={16} />
-                              </button>
-                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveWorker(worker.id)}
+                              className="p-1 text-destructive hover:bg-destructive/10 rounded transition-colors"
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
                           </div>
                         </div>
                       );
                     })}
                     
-                    <div className="mt-4 pt-4 border-t border-border">
+                    <div className="border-t border-border pt-6 mt-6">
                       <Button
                         onClick={handleAddWorker}
                         variant="secondary"
@@ -712,11 +752,9 @@ const AddFacilityRoleModal = ({
                         {t('operations.addWorker', 'Add Worker')}
                       </Button>
                     </div>
-                  </div>
-                </>
-              );
-            })()}
-              </div>
+                  </>
+                );
+              })()}
             </>
           )}
         </div>

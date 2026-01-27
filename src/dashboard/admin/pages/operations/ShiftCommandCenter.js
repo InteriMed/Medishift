@@ -19,6 +19,8 @@ import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogge
 import Button from '../../../../components/BoxedInputFields/Button';
 import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
+import PageHeader from '../../../components/PageHeader/PageHeader';
+import FilterBar from '../../../components/FilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const columnHelper = createColumnHelper();
@@ -360,44 +362,43 @@ const ShiftCommandCenter = () => {
     );
   }
 
+  const handleFilterChange = (key, value) => {
+    if (key === 'status') {
+      setStatusFilter(value);
+    }
+  };
+
+  const filterBarDropdownFields = [
+    {
+      key: 'status',
+      label: 'Status',
+      options: statusOptions,
+      defaultValue: 'all'
+    }
+  ];
+
   return (
-    <div style={{ padding: 'var(--spacing-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--font-size-xxxlarge)', fontWeight: 'var(--font-weight-large)', color: 'var(--text-color)', marginBottom: 0, textAlign: 'center' }}>
-            {t('admin:shifts.commandCenter', 'Command Center')}
-          </h1>
-        </div>
-      </div>
-
-      <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-lg)', border: '1px solid var(--grey-2)', boxShadow: 'var(--shadow-sm)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--spacing-md)' }}>
-          <h2 style={{ fontSize: 'var(--font-size-large)', fontWeight: 'var(--font-weight-medium)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-            <Filter size={20} />
-            {t('admin:shifts.searchCriteria', 'Search Criteria')}
-          </h2>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
-          <div>
-            <PersonnalizedInputField
-              label="Search"
-              value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              name="search"
-              placeholder={t('admin:shifts.search', 'Search shifts...')}
-            />
-          </div>
-          <div>
-            <DropdownField
-              options={statusOptions}
-              value={statusFilter}
-              onChange={(value) => setStatusFilter(value)}
-              placeholder={t('admin:shifts.allStatuses', 'All Statuses')}
-            />
-          </div>
-        </div>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <PageHeader
+        title={t('admin:shifts.commandCenter', 'Command Center')}
+        subtitle={t('admin:shifts.commandCenterDescription', 'Manage and monitor all shifts')}
+      />
+      
+      <div style={{ flex: 1, overflow: 'auto', padding: 'var(--spacing-lg)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+          <FilterBar
+            filters={{ status: statusFilter }}
+            onFilterChange={handleFilterChange}
+            searchValue={globalFilter}
+            onSearchChange={setGlobalFilter}
+            searchPlaceholder={t('admin:shifts.search', 'Search shifts...')}
+            dropdownFields={filterBarDropdownFields}
+            translationNamespace="admin"
+            title={t('admin:shifts.searchCriteria', 'Search Criteria')}
+            description={t('admin:shifts.searchDescription', 'Filter shifts by status or search by facility, role, or user')}
+            onRefresh={loadShifts}
+            isLoading={loading}
+          />
 
       <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-md)', border: '1px solid var(--grey-2)', boxShadow: 'var(--shadow-sm)' }}>
 
@@ -417,10 +418,11 @@ const ShiftCommandCenter = () => {
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           {flexRender(header.column.columnDef.header, header.getContext())}
-                          {{
-                            asc: ' ↑',
-                            desc: ' ↓'
-                          }[header.column.getIsSorted()] ?? null}
+                          {(() => {
+                            const sortOrder = header.column.getIsSorted();
+                            const sortSymbols = { asc: ' ↑', desc: ' ↓' };
+                            return sortSymbols[sortOrder] ?? null;
+                          })()}
                         </div>
                       )}
                     </th>
@@ -463,6 +465,8 @@ const ShiftCommandCenter = () => {
             </Button>
           </div>
         </div>
+        </div>
+      </div>
       </div>
 
       {forceAssignModal && (

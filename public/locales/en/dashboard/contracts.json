@@ -44,6 +44,9 @@
     },
     "filter": {
         "status": "Status",
+        "source": "Source",
+        "fromDate": "From Date",
+        "toDate": "To Date",
         "apply": "Apply Filters"
     },
     "view": {
