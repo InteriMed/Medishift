@@ -13,7 +13,6 @@ import useProfileData from '../../hooks/useProfileData';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
-import { ServiceSearchBar } from '../../../service_tree';
 import { useTutorial } from '../../contexts/TutorialContext';
 import ColorPicker from '../ColorPicker/ColorPicker';
 import { db } from '../../../services/firebase';
@@ -326,30 +325,21 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   return (
     <header
       className={cn(
-        "h-14 w-full",
+        "h-14 max-h-14 min-h-14 w-full",
         "flex items-center px-3 sm:px-4 md:px-5 fixed top-0 left-0 right-0 transition-all duration-200",
         "border-b border-white/10"
       )}
       style={{
         zIndex: workspaceSelectorOpen ? 20000 : 50,
         backgroundColor: headerColor,
-        color: '#ffffff'
+        color: '#ffffff',
+        height: '3.5rem',
+        maxHeight: '3.5rem',
+        minHeight: '3.5rem'
       }}
     >
-      {/* Left: Logo & Mobile Menu Button */}
+      {/* Left: Menu Button, Logo */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 min-w-0">
-        {/* Logo Section */}
-        <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
-          <img
-            src="/logo white.png"
-            alt={t('common:header.logoAlt', 'MediShift')}
-            className="h-5 sm:h-6 w-auto object-contain shrink-0"
-          />
-          <span className="text-sm sm:text-base font-medium text-white hidden md:block truncate">
-            {t('common:header.brandName', 'MediShift')}
-          </span>
-        </div>
-
         {/* Mobile: Back Button (when in detail view) or Menu Button */}
         {showBackButton && onBackButtonClick ? (
           <button
@@ -374,6 +364,18 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             </button>
           )
         )}
+
+        {/* Logo Section */}
+        <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
+          <img
+            src="/logo white.png"
+            alt={t('common:header.logoAlt', 'MediShift')}
+            className="h-5 sm:h-6 w-auto object-contain shrink-0"
+          />
+          <span className="text-sm sm:text-base font-medium text-white hidden md:block truncate">
+            {t('common:header.brandName', 'MediShift')}
+          </span>
+        </div>
       </div>
 
       {/* Left-Center: Workspace Selector */}
@@ -457,10 +459,17 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
       <div data-tutorial="header-right-actions" className="flex items-center gap-1 sm:gap-1.5 md:gap-2 flex-shrink-0">
         {/* Search - Desktop version */}
         <div className="relative hidden xl1200:block" ref={searchRef}>
-          <ServiceSearchBar
-            className="header-service-search"
-            placeholder={t('common:header.search', 'Search...')}
-          />
+          <button
+            onClick={() => setSearchOpen(!searchOpen)}
+            className={cn(
+              "h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center transition-all duration-150",
+              "hover:bg-white/30 active:bg-white/40",
+              searchOpen ? "bg-white/30" : ""
+            )}
+            aria-label={t('common:header.search', 'Search')}
+          >
+            <FiSearch className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+          </button>
         </div>
 
         {/* Search - Icon button (1200px and below) */}
@@ -472,8 +481,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           <FiSearch className="h-4 w-4" />
         </button>
 
-        {/* Notifications - Hidden on mobile, moved to profile menu */}
-        <div className="relative hidden md:block" ref={notificationsRef}>
+        {/* Notifications - Always visible in header */}
+        <div className="relative" ref={notificationsRef}>
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
             className="relative text-white/90 hover:text-white hover:bg-white/5 transition-all flex-shrink-0 flex items-center justify-center rounded-md p-2"
@@ -580,8 +589,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
               <div className="p-1">
                 {[
                   { code: 'en', name: 'English' },
-                  { code: 'fr', name: 'Français' },
-                  { code: 'de', name: 'Deutsch' }
+                  { code: 'fr', name: 'Français' }
                 ].map((lang) => {
                   const isActive = i18n.language === lang.code || i18n.language?.startsWith(lang.code);
                   return (
@@ -623,9 +631,6 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
               ) : (
                 <FiUser className="h-4 w-4 text-white" />
               )}
-              {unreadCount > 0 && (
-                <span className="md:hidden absolute top-0 right-0 h-1.5 w-1.5 rounded-full bg-red-400" />
-              )}
             </div>
             <FiChevronDown className={cn("w-3 h-3 text-white transition-transform hidden md:block", profileMenuOpen && "rotate-180")} />
           </button>
@@ -638,22 +643,6 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                 <div className="text-xs text-muted-foreground truncate mt-0.5">{user?.email}</div>
               </div>
               <div className="p-1">
-                {/* Mobile-only: Notifications */}
-                <div className="md:hidden">
-                  <button
-                    onClick={() => { setNotificationsOpen(true); setProfileMenuOpen(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground"
-                  >
-                    <FiBell className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <span className="truncate flex-1 text-left">{typeof t('dashboard.header.notifications.title') === 'object' ? t('dashboard.header.notifications.title').title : t('dashboard.header.notifications.title', 'Notifications')}</span>
-                    {unreadCount > 0 && (
-                      <span className="h-4 min-w-[18px] px-1.5 rounded-full bg-red-400 text-white text-xs font-medium flex items-center justify-center">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </button>
-                  <div className="my-1 h-px bg-border/50" />
-                </div>
 
                 {/* Mobile-only: Help */}
                 <button
@@ -691,8 +680,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                     <div className="ml-4 mt-1 mb-2 space-y-0.5">
                       {[
                         { code: 'en', name: 'English' },
-                        { code: 'fr', name: 'Français' },
-                        { code: 'de', name: 'Deutsch' }
+                        { code: 'fr', name: 'Français' }
                       ].map((lang) => {
                         const isActive = i18n.language === lang.code || i18n.language?.startsWith(lang.code);
                         return (
@@ -764,9 +752,11 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
                 <FiArrowLeft className="h-5 w-5" />
               </button>
               <div className="flex-1">
-                <ServiceSearchBar
-                  className="header-service-search mobile-search-bar"
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 rounded-lg bg-white/20 text-white placeholder-white/60 border border-white/20 focus:outline-none focus:border-white/40"
                   placeholder={t('common:header.search', 'Search...')}
+                  autoFocus
                 />
               </div>
             </div>

@@ -141,6 +141,7 @@
   "urgency.important": "Important",
   "urgency.informational": "Informatif",
   "urgency.actionRequired": "Action requise",
+  "urgency.emergency": "Urgence",
   "announcementRoles": "Rôles cibles",
   "category": "Catégorie",
   "category.none": "Aucune catégorie",
@@ -178,7 +179,9 @@
   },
   "announcements": {
     "title": "Annonces",
-    "description": "Parcourez et recherchez des annonces dans votre espace de travail."
+    "description": "Parcourez et recherchez des annonces dans votre espace de travail.",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin"
   },
   "searchPlaceholder": "Rechercher des annonces...",
   "management": {
@@ -192,9 +195,46 @@
   },
   "announcementPublishDate": "Date de publication",
   "announcementDisplayUntil": "Afficher jusqu'au",
+  "internalTicket": {
+    "title": "Tickets internes",
+    "description": "Créez et gérez des tickets de support internes.",
+    "searchPlaceholder": "Rechercher des tickets...",
+    "allCategories": "Toutes les catégories",
+    "filter": "Filtrer",
+    "categories": "Catégories",
+    "newTicket": "Nouveau ticket",
+    "noTickets": "Aucun ticket trouvé",
+    "noTicketsHint": "Commencez par créer un nouveau ticket.",
+    "createTicket": "Créer un ticket",
+    "subject": "Sujet",
+    "subjectPlaceholder": "Entrez le sujet du ticket...",
+    "category": "Catégorie",
+    "priority": "Priorité",
+    "priority.low": "Faible",
+    "priority.medium": "Moyenne",
+    "priority.high": "Élevée",
+    "priority.urgent": "Urgente",
+    "priority.emergency": "Urgence",
+    "message": "Message",
+    "messagePlaceholder": "Décrivez votre problème...",
+    "submitTicket": "Soumettre le ticket"
+  },
   "reporting": {
+    "title": "Signalements anonymes",
+    "description": "Soumettez des rapports confidentiels. Votre identité restera anonyme.",
     "submitReport": "Soumettre le rapport",
-    "noReports": "Aucun rapport",
-    "noReportsHint": "Commencez par créer un nouveau rapport."
+    "noReports": "Aucun rapport trouvé",
+    "noReportsHint": "Commencez par soumettre un rapport anonyme.",
+    "searchPlaceholder": "Rechercher des tickets...",
+    "allCategories": "Toutes les catégories",
+    "filter": "Filtrer",
+    "categories": "Catégories",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
+    "sort": {
+      "date": "Date",
+      "title": "Titre",
+      "priority": "Priorité"
+    }
   }
 }

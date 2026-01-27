@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiGrid, FiList, FiSearch, FiSliders, FiArrowDown, FiCheck, FiRefreshCw } from 'react-icons/fi';
+import { FiGrid, FiList, FiSearch, FiSliders, FiArrowDown, FiCheck, FiRefreshCw, FiPlus } from 'react-icons/fi';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import DateField from '../../../components/BoxedInputFields/DateField';
 import { cn } from '../../../utils/cn';
 import styles from './filterBar.module.css';
 
-const FilterBar = ({ 
+const FilterBar = ({
   filters = {},
   onFilterChange,
   onApplyFilters,
@@ -26,6 +26,9 @@ const FilterBar = ({
   title,
   description,
   onRefresh,
+  onAdd,
+  showAdd = true,
+  addLabel,
   isLoading = false
 }) => {
   const { t } = useTranslation([translationNamespace]);
@@ -33,7 +36,7 @@ const FilterBar = ({
   const [justExpanded, setJustExpanded] = useState(false);
   const [showActiveFilters, setShowActiveFilters] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  
+
   const toggleFilters = (e) => {
     if (e) {
       e.preventDefault();
@@ -75,15 +78,15 @@ const FilterBar = ({
     }
     setShowActiveFilters(false);
   };
-  
+
   const hasActiveFilters = () => {
     if (dropdownFields.some(field => {
       const value = filters[field.key];
       return field.multiple ? (value && value.length > 0) : (value && value !== field.defaultValue && value !== 'all');
     })) return true;
-    
+
     if (dateFields.some(field => filters[field.key])) return true;
-    
+
     return false;
   };
 
@@ -112,7 +115,7 @@ const FilterBar = ({
   };
 
   return (
-    <div 
+    <div
       className={cn(styles.filterBar, isFiltersExpanded ? styles.expanded : '')}
       onMouseDown={(e) => {
         if (e.target.closest('button[title="Parameters"]')) {
@@ -124,16 +127,28 @@ const FilterBar = ({
         <h3 className={styles.filterTitle}>
           {title || t('filter.title', 'Filters')}
         </h3>
-        {onRefresh && (
-          <button
-            onClick={onRefresh}
-            disabled={isLoading}
-            className={cn(styles.refreshButton, isLoading && styles.loading)}
-          >
-            <FiRefreshCw className={cn(styles.refreshIcon, isLoading && styles.spinning)} />
-            {t('refresh', 'Refresh')}
-          </button>
-        )}
+        <div className={styles.headerActions}>
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              disabled={isLoading}
+              className={cn(styles.refreshButton, isLoading && styles.loading)}
+            >
+              <FiRefreshCw className={cn(styles.refreshIcon, isLoading && styles.spinning)} />
+              {t('refresh', 'Refresh')}
+            </button>
+          )}
+          {showAdd && onAdd && (
+            <button
+              onClick={onAdd}
+              className={styles.addButton}
+              title={addLabel || t('add', 'Add')}
+            >
+              <FiPlus className={styles.addIcon} />
+              {addLabel || t('add', 'Add')}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className={styles.filterDescription}>
@@ -191,14 +206,14 @@ const FilterBar = ({
             <button
               onClick={() => setShowSortDropdown(!showSortDropdown)}
               className={styles.sortButton}
-              style={{ height: 'var(--boxed-inputfield-height)' }}
+              style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
+              title={getSortLabel()}
             >
               <FiArrowDown className={styles.sortIcon} />
-              {getSortLabel()}
             </button>
             {showSortDropdown && (
               <>
-                <div 
+                <div
                   className={styles.sortDropdownOverlay}
                   onClick={() => setShowSortDropdown(false)}
                 />
@@ -273,7 +288,7 @@ const FilterBar = ({
         )}
 
         {isFiltersExpanded && (
-          <div 
+          <div
             className={styles.expandedFilters}
             style={{ pointerEvents: justExpanded ? 'none' : 'auto' }}
             onMouseDown={(e) => {

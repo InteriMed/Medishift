@@ -12,12 +12,12 @@ export const pageConfig = {
     titleKey: 'dashboard.header.calendar.title',
     subtitleKey: 'dashboard.header.calendar.subtitle'
   },
-  '/dashboard/messages': {
+  '/dashboard/communications': {
     icon: FiMessageSquare,
     titleKey: 'dashboard.header.messages.title',
     subtitleKey: 'dashboard.header.messages.subtitle'
   },
-  '/dashboard/announcements': {
+  '/dashboard/communications/announcements': {
     icon: FiBell,
     titleKey: 'dashboard.header.announcements.title',
     subtitleKey: 'dashboard.header.announcements.subtitle'

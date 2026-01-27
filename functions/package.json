@@ -7,7 +7,9 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "generate-test-data": "node test/runTestDataGeneration.js",
+    "cleanup-test-data": "node test/runTestDataCleanup.js"
   },
   "engines": {
     "node": "20"

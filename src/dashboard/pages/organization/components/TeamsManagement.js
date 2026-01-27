@@ -24,7 +24,7 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
     const { t } = useTranslation(['organization', 'common']);
     const { currentUser } = useAuth();
     const { showNotification } = useNotification();
-    
+
     const [teams, setTeams] = useState([]);
     const [teamMembers, setTeamMembers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -138,7 +138,7 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
         return team.name.toLowerCase().includes(query) ||
-            team.members.some(m => 
+            team.members.some(m =>
                 `${m.firstName} ${m.lastName}`.toLowerCase().includes(query) ||
                 m.email?.toLowerCase().includes(query)
             );
@@ -191,7 +191,7 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                             { value: 'all', label: t('organization:teams.filters.allTeams', 'All Teams') },
                             ...teams.map(team => ({
                                 value: team.name,
-                                label: team.name === 'unassigned' 
+                                label: team.name === 'unassigned'
                                     ? t('organization:teams.unassigned', 'Unassigned')
                                     : team.name
                             }))
@@ -213,16 +213,14 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                 ]}
                 translationNamespace="organization"
                 onRefresh={loadTeamData}
+                onAdd={() => {
+                    showNotification(t('common:comingSoon', 'Coming Soon'), 'info');
+                }}
+                addLabel={t('organization:teams.createTeam', 'Create Team')}
                 isLoading={loading}
             />
 
             <div className="bg-card border border-border rounded-xl p-6">
-                <div className="flex items-center justify-end mb-6">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-                        <FiPlus className="w-4 h-4" />
-                        {t('organization:teams.createTeam', 'Create Team')}
-                    </button>
-                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-muted/30 border border-border rounded-lg p-4">
@@ -298,7 +296,7 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-foreground">
-                                                {team.name === 'unassigned' 
+                                                {team.name === 'unassigned'
                                                     ? t('organization:teams.unassigned', 'Unassigned')
                                                     : team.name}
                                             </h3>
@@ -310,8 +308,8 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {team.members.slice(0, 5).map((member) => (
-                                        <div 
-                                            key={member.id} 
+                                        <div
+                                            key={member.id}
                                             className="flex items-center gap-2 px-2 py-1 bg-muted/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
                                             onClick={() => {
                                                 setSelectedEmployee(member);
@@ -319,8 +317,8 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                                             }}
                                         >
                                             {member.photoURL ? (
-                                                <img 
-                                                    src={member.photoURL} 
+                                                <img
+                                                    src={member.photoURL}
                                                     alt={`${member.firstName} ${member.lastName}`}
                                                     className="w-6 h-6 rounded-full object-cover"
                                                 />
@@ -362,7 +360,7 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-foreground">
-                                                {team.name === 'unassigned' 
+                                                {team.name === 'unassigned'
                                                     ? t('organization:teams.unassigned', 'Unassigned')
                                                     : team.name}
                                             </h3>
@@ -374,8 +372,8 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {team.members.map((member) => (
-                                        <div 
-                                            key={member.id} 
+                                        <div
+                                            key={member.id}
                                             className="flex items-center gap-2 px-2 py-1 bg-muted/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
                                             onClick={() => {
                                                 setSelectedEmployee(member);
@@ -383,8 +381,8 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                                             }}
                                         >
                                             {member.photoURL ? (
-                                                <img 
-                                                    src={member.photoURL} 
+                                                <img
+                                                    src={member.photoURL}
                                                     alt={`${member.firstName} ${member.lastName}`}
                                                     className="w-6 h-6 rounded-full object-cover"
                                                 />
@@ -413,8 +411,8 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                 {activeView === 'members' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {filteredMembers.map((member) => (
-                            <div 
-                                key={member.id} 
+                            <div
+                                key={member.id}
                                 className="border border-border rounded-lg p-4 hover:bg-muted/10 transition-colors cursor-pointer"
                                 onClick={() => {
                                     setSelectedEmployee(member);
@@ -423,8 +421,8 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
                             >
                                 <div className="flex items-center gap-3">
                                     {member.photoURL ? (
-                                        <img 
-                                            src={member.photoURL} 
+                                        <img
+                                            src={member.photoURL}
                                             alt={`${member.firstName} ${member.lastName}`}
                                             className="w-12 h-12 rounded-full object-cover"
                                         />

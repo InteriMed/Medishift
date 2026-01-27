@@ -341,7 +341,11 @@ const ResourceGrid = ({
 
             {/* Main Grid Content - Scrollable */}
             <div className="flex-1 calendar-scroll-container overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }} ref={scrollContainerRef} onScroll={(e) => { if (headerScrollRef?.current) { headerScrollRef.current.scrollLeft = e.target.scrollLeft; } }}>
-                <div className="relative" style={{ minHeight: '400px', minWidth: `${dates.length * 200}px` }}>
+                <div className="relative" style={{ 
+                    minHeight: '400px',
+                    width: view === 'day' ? `${dates.length * 100}%` : `${dates.length * (100 / 7)}%`,
+                    minWidth: view === 'day' ? `${dates.length * 100}%` : `${dates.length * (100 / 7)}%`
+                }}>
                     {shouldShowLoading ? (
                         <div className="flex items-center justify-center h-full">
                             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -356,82 +360,11 @@ const ResourceGrid = ({
                         </div>
                     ) : (
                         <>
-                            {/* Day Headers with Morning/Afternoon Labels */}
-                            <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border" style={{ height: '80px' }}>
-                                <div className="flex h-full">
-                                    <div className="shrink-0 border-r border-border" style={{ width: '14rem' }} />
-                                    <div className="flex-1 relative">
-                                        {dates.map((dateInfo, dateIndex) => {
-                                            const date = dateInfo.date || dateInfo;
-                                            const isHalf = dateInfo.isHalf;
-                                            const side = dateInfo.side;
-                                            const isToday = isSameDay(date, new Date());
-                                            const dayWidth = 100 / dates.length;
-                                            const leftPercent = dateIndex * dayWidth;
-
-                                            return (
-                                                <div
-                                                    key={`${date.toISOString()}-${dateIndex}`}
-                                                    className="absolute border-r border-border"
-                                                    style={{
-                                                        left: `${leftPercent}%`,
-                                                        width: `${dayWidth}%`,
-                                                        height: '100%'
-                                                    }}
-                                                >
-                                                <div className={cn(
-                                                    "h-12 flex flex-col items-center justify-center border-b border-border",
-                                                    isToday && "bg-primary/5"
-                                                )}>
-                                                    <span className={cn(
-                                                        "text-xs font-medium uppercase tracking-wider",
-                                                        isToday ? "text-primary" : "text-muted-foreground"
-                                                    )}>
-                                                        {date.toLocaleDateString(undefined, { weekday: 'short' })}
-                                                    </span>
-                                                    <span className={cn(
-                                                        "text-sm font-semibold mt-0.5 w-7 h-7 flex items-center justify-center rounded-full",
-                                                        isToday ? "bg-primary text-primary-foreground" : "text-foreground"
-                                                    )}>
-                                                        {date.getDate()}
-                                                    </span>
-                                                </div>
-                                                <div className="h-8 flex">
-                                                    {nightView ? (
-                                                        <>
-                                                            <div className="flex-1 border-r border-border flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
-                                                                {t('calendar:pm', 'PM')}
-                                                            </div>
-                                                            <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
-                                                                {t('calendar:am', 'AM')}
-                                                            </div>
-                                                        </>
-                                                    ) : !isHalf ? (
-                                                        <>
-                                                            <div className="flex-1 border-r border-border flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
-                                                                {t('calendar:morning', 'Morning')}
-                                                            </div>
-                                                            <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
-                                                                {t('calendar:afternoon', 'Afternoon')}
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground bg-muted/20">
-                                                            {side === 'first' ? t('calendar:morning', 'Morning') : t('calendar:afternoon', 'Afternoon')}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    </div>
-                                </div>
-                            </div>
-
                             {/* Grid Rows */}
-                            {expandedFacilityRoles.map((role, roleIndex) => (
-                                <div key={role.uniqueKey} className="border-b border-border" style={{ height: '60px' }}>
-                                    {dates.map((dateInfo, dateIndex) => {
+                            <div className="relative w-full">
+                                {expandedFacilityRoles.map((role, roleIndex) => (
+                                    <div key={role.uniqueKey} className="flex border-b border-border" style={{ height: '60px' }}>
+                                        {dates.map((dateInfo, dateIndex) => {
                                         const date = dateInfo.date || dateInfo;
                                         const isHalf = dateInfo.isHalf || false;
                                         const side = dateInfo.side;
@@ -440,12 +373,11 @@ const ResourceGrid = ({
                                             const eventEnd = new Date(e.end);
 
                                             if (nightView) {
-                                                // Shift window: 12 PM Today to 12 PM Tomorrow
                                                 const shiftStart = new Date(date);
-                                                shiftStart.setHours(12, 0, 0, 0);
+                                                shiftStart.setHours(18, 0, 0, 0);
                                                 const shiftEnd = new Date(date);
                                                 shiftEnd.setDate(shiftEnd.getDate() + 1);
-                                                shiftEnd.setHours(12, 0, 0, 0);
+                                                shiftEnd.setHours(18, 0, 0, 0);
 
                                                 if (!(eventStart < shiftEnd && eventEnd > shiftStart)) return false;
                                             } else {
@@ -466,41 +398,66 @@ const ResourceGrid = ({
                                                 eventWorkerType === role.workerType ||
                                                 (role.workerType === 'other' && eventRole === role.workerTypeOther));
                                         });
-                                        const isToday = isSameDay(date, new Date());
-                                        const dayWidth = 100 / dates.length;
-                                        const leftPercent = dateIndex * dayWidth;
 
-                                        // Filter events by time period (morning/afternoon or PM/AM)
                                         const periodEvents = roleEvents.filter(event => {
                                             if (nightView) {
-                                                // Split into PM (12:00-00:00) and AM (00:00-12:00)
-                                                // This is used for morning/afternoon sub-columns if we still want them
-                                                // But ResourceGrid rows are 60px high, so maybe they are just lists?
-                                                // Actually, the current JSX (lines 535-575) splits into two flex-1 divs.
                                                 return true;
                                             }
                                             if (isHalf) {
                                                 const eventHour = new Date(event.start).getHours();
                                                 if (side === 'first') {
-                                                    return eventHour < 12; // Morning (0-11)
+                                                    return eventHour < 12;
                                                 } else {
-                                                    return eventHour >= 12; // Afternoon (12-23)
+                                                    return eventHour >= 12;
                                                 }
                                             }
-                                            return true; // Show all events if not half day
+                                            return true;
                                         });
 
                                         return (
                                             <div
                                                 key={`${date.toISOString()}-${dateIndex}`}
                                                 className={cn(
-                                                    "absolute border-r border-border p-1 flex relative group hover:bg-muted/30 transition-colors",
-                                                    isToday && "bg-primary/5 hover:bg-primary/10"
+                                                    "flex-1 flex relative group hover:bg-muted/20 transition-colors overflow-hidden",
+                                                    dateIndex < dates.length - 1 && "border-r border-border"
                                                 )}
-                                                style={{
-                                                    left: `${leftPercent}%`,
-                                                    width: `${dayWidth}%`,
-                                                    height: '100%'
+                                                style={{ 
+                                                    width: view === 'day' ? `${100 / dates.length}%` : `${100 / dates.length}%`,
+                                                    flexShrink: 0,
+                                                    minWidth: view === 'day' ? `${100 / dates.length}%` : `${100 / dates.length}%`,
+                                                    padding: 0
+                                                }}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    e.dataTransfer.dropEffect = 'move';
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    try {
+                                                        const eventData = e.dataTransfer.getData('text/plain');
+                                                        if (eventData) {
+                                                            const draggedEvent = JSON.parse(eventData);
+                                                            if (draggedEvent.start && typeof draggedEvent.start === 'string') {
+                                                                draggedEvent.start = new Date(draggedEvent.start);
+                                                            }
+                                                            if (draggedEvent.end && typeof draggedEvent.end === 'string') {
+                                                                draggedEvent.end = new Date(draggedEvent.end);
+                                                            }
+                                                            const originalStart = new Date(draggedEvent.start);
+                                                            const originalEnd = new Date(draggedEvent.end);
+                                                            const duration = originalEnd.getTime() - originalStart.getTime();
+                                                            const newStart = new Date(date);
+                                                            newStart.setHours(originalStart.getHours(), originalStart.getMinutes(), originalStart.getSeconds(), 0);
+                                                            const newEnd = new Date(newStart.getTime() + duration);
+                                                            if (onEventMove) {
+                                                                onEventMove(draggedEvent.id, newStart, newEnd, false);
+                                                            }
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error handling drop:', error);
+                                                    }
                                                 }}
                                                 onClick={() => {
                                                     const start = new Date(date);
@@ -534,79 +491,94 @@ const ResourceGrid = ({
                                                     onCreateEvent(newEvent, true);
                                                 }}
                                             >
-                                                {!isHalf ? (
-                                                    <>
-                                                        <div className="flex-1 border-r border-border p-0.5 flex flex-col gap-0.5">
-                                                            {periodEvents.filter(e => {
-                                                                const h = new Date(e.start).getHours();
-                                                                return nightView ? (h >= 12) : (h < 12);
-                                                            }).map(event => (
-                                                                <div
-                                                                    key={event.id}
-                                                                    className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
-                                                                    style={{
-                                                                        backgroundColor: event.color1 || role.color || '#e2e8f0',
-                                                                        borderColor: event.color || role.color || '#cbd5e1',
-                                                                        color: '#1e293b'
-                                                                    }}
-                                                                    onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
-                                                                >
-                                                                    <div className="font-medium truncate">{event.title || 'Assignment'}</div>
-                                                                    <div className="text-[9px] opacity-80">
-                                                                        {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        <div className="flex-1 p-0.5 flex flex-col gap-0.5">
-                                                            {periodEvents.filter(e => {
-                                                                const h = new Date(e.start).getHours();
-                                                                return nightView ? (h < 12) : (h >= 12);
-                                                            }).map(event => (
-                                                                <div
-                                                                    key={event.id}
-                                                                    className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
-                                                                    style={{
-                                                                        backgroundColor: event.color1 || role.color || '#e2e8f0',
-                                                                        borderColor: event.color || role.color || '#cbd5e1',
-                                                                        color: '#1e293b'
-                                                                    }}
-                                                                    onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
-                                                                >
-                                                                    <div className="font-medium truncate">{event.title || 'Assignment'}</div>
-                                                                    <div className="text-[9px] opacity-80">
-                                                                        {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="w-full p-0.5 flex flex-col gap-0.5">
-                                                        {periodEvents.map(event => (
+                                                <div className="w-full h-full flex relative">
+                                                    {/* Time divider lines */}
+                                                    <div className="absolute left-0 top-0 bottom-0 w-px border-l border-dashed border-border/30 pointer-events-none" style={{ left: '25%' }} />
+                                                    <div className="absolute left-0 top-0 bottom-0 w-px border-l border-border/50 pointer-events-none" style={{ left: '50%' }} />
+                                                    <div className="absolute left-0 top-0 bottom-0 w-px border-l border-dashed border-border/30 pointer-events-none" style={{ left: '75%' }} />
+                                                    
+                                                    {/* AM Events (or full day events if not splitting) */}
+                                                    <div className="flex-1 flex flex-col relative">
+                                                        {periodEvents.filter(e => {
+                                                            const h = new Date(e.start).getHours();
+                                                            return nightView ? (h >= 18 || h < 6) : (h < 12);
+                                                        }).map(event => (
                                                             <div
                                                                 key={event.id}
-                                                                className="text-[10px] p-1 rounded border shadow-sm cursor-pointer hover:shadow-md transition-all"
+                                                                className="h-full border-l-3 cursor-grab hover:brightness-95 active:cursor-grabbing transition-all relative group/event"
                                                                 style={{
                                                                     backgroundColor: event.color1 || role.color || '#e2e8f0',
-                                                                    borderColor: event.color || role.color || '#cbd5e1',
-                                                                    color: '#1e293b'
+                                                                    borderLeftWidth: '4px',
+                                                                    borderLeftColor: event.color || role.color || '#cbd5e1',
+                                                                    borderLeftStyle: 'solid'
+                                                                }}
+                                                                draggable
+                                                                onDragStart={(e) => {
+                                                                    e.dataTransfer.effectAllowed = 'move';
+                                                                    e.dataTransfer.setData('text/plain', JSON.stringify({
+                                                                        ...event,
+                                                                        start: event.start instanceof Date ? event.start.toISOString() : event.start,
+                                                                        end: event.end instanceof Date ? event.end.toISOString() : event.end
+                                                                    }));
                                                                 }}
                                                                 onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
                                                             >
-                                                                <div className="font-medium truncate">{event.title || 'Assignment'}</div>
-                                                                <div className="text-[9px] opacity-80">
-                                                                    {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                <div className="absolute inset-0 flex flex-col justify-center px-2">
+                                                                    <div className="font-semibold text-xs truncate" style={{ color: event.color || role.color || '#1e293b' }}>
+                                                                        {event.title || 'Assignment'}
+                                                                    </div>
+                                                                    <div className="text-[10px] opacity-70 truncate mt-0.5" style={{ color: event.color || role.color || '#1e293b' }}>
+                                                                        {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         ))}
                                                     </div>
-                                                )}
+                                                    
+                                                    {/* PM Events */}
+                                                    <div className="flex-1 flex flex-col relative">
+                                                        {periodEvents.filter(e => {
+                                                            const h = new Date(e.start).getHours();
+                                                            return nightView ? (h >= 6 && h < 18) : (h >= 12);
+                                                        }).map(event => (
+                                                            <div
+                                                                key={event.id}
+                                                                className="h-full border-l-3 cursor-grab hover:brightness-95 active:cursor-grabbing transition-all relative group/event"
+                                                                style={{
+                                                                    backgroundColor: event.color1 || role.color || '#e2e8f0',
+                                                                    borderLeftWidth: '4px',
+                                                                    borderLeftColor: event.color || role.color || '#cbd5e1',
+                                                                    borderLeftStyle: 'solid'
+                                                                }}
+                                                                draggable
+                                                                onDragStart={(e) => {
+                                                                    e.dataTransfer.effectAllowed = 'move';
+                                                                    e.dataTransfer.setData('text/plain', JSON.stringify({
+                                                                        ...event,
+                                                                        start: event.start instanceof Date ? event.start.toISOString() : event.start,
+                                                                        end: event.end instanceof Date ? event.end.toISOString() : event.end
+                                                                    }));
+                                                                }}
+                                                                onClick={(e) => { e.stopPropagation(); onEventClick(event, e); }}
+                                                            >
+                                                                <div className="absolute inset-0 flex flex-col justify-center px-2">
+                                                                    <div className="font-semibold text-xs truncate" style={{ color: event.color || role.color || '#1e293b' }}>
+                                                                        {event.title || 'Assignment'}
+                                                                    </div>
+                                                                    <div className="text-[10px] opacity-70 truncate mt-0.5" style={{ color: event.color || role.color || '#1e293b' }}>
+                                                                        {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
                                         );
                                     })}
-                                </div>
-                            ))}
+                                    </div>
+                                ))}
+                            </div>
                         </>
                     )}
                 </div>

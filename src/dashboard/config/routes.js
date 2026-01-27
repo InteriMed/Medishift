@@ -4,10 +4,7 @@ import { RIGHTS as PERMISSIONS } from '../admin/utils/rbac';
 import { buildDashboardUrl } from '../utils/pathUtils';
 
 // Eagerly loaded components (frequently accessed, no loading delay)
-import MessagesPage from '../pages/messages/MessagesPage';
-import AnnouncementsPage from '../pages/messages/AnnouncementsPage';
-import InternalTicketPage from '../pages/messages/InternalTicketPage';
-import ReportingPage from '../pages/messages/ReportingPage';
+import CommunicationsPage from '../pages/messages/CommunicationsPage';
 
 // Lazy-loaded components
 const PersonalDashboard = lazy(() => import('../pages/personalDashboard/PersonalDashboard'));
@@ -21,6 +18,7 @@ const SupportPage = lazy(() => import('../pages/support/SupportPage'));
 const ServicesPage = lazy(() => import('../pages/services/ServicesPage'));
 
 // Admin pages
+const AdminDashboardContainer = lazy(() => import('../admin/pages/AdminDashboardContainer'));
 const ExecutiveDashboard = lazy(() => import('../admin/pages/ExecutiveDashboard'));
 const UserVerificationQueue = lazy(() => import('../admin/UserVerificationQueue'));
 const UserCRM = lazy(() => import('../admin/pages/operations/UserCRM'));
@@ -131,39 +129,12 @@ export const PROFESSIONAL_ROUTES = [
     passUserData: true,
   },
   {
-    id: 'messages',
-    path: 'messages/*',
-    component: MessagesPage,
+    id: 'communications',
+    path: 'communications/*',
+    component: CommunicationsPage,
     access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
-    label: 'Messages',
+    label: 'Communications',
     icon: 'MessageSquare',
-    passUserData: true,
-  },
-  {
-    id: 'announcements',
-    path: 'announcements/*',
-    component: AnnouncementsPage,
-    access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
-    label: 'Announcements',
-    icon: 'Bell',
-    passUserData: true,
-  },
-  {
-    id: 'internal-ticket',
-    path: 'internal-ticket/*',
-    component: InternalTicketPage,
-    access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
-    label: 'Internal Ticket',
-    icon: 'Ticket',
-    passUserData: true,
-  },
-  {
-    id: 'reporting',
-    path: 'reporting/*',
-    component: ReportingPage,
-    access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
-    label: 'Reporting',
-    icon: 'Shield',
     passUserData: true,
   },
 ];
@@ -198,149 +169,14 @@ export const FACILITY_ROUTES = [
 
 export const ADMIN_ROUTES = [
   {
-    id: 'admin-portal',
-    path: 'portal',
-    component: ExecutiveDashboard,
+    id: 'admin-dashboard',
+    path: '*',
+    component: AdminDashboardContainer,
     access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VIEW_DASHBOARD,
-    label: 'Executive Dashboard',
+    permission: null,
+    label: 'Admin Dashboard',
     icon: 'LayoutDashboard',
     isDefault: true,
-  },
-  {
-    id: 'admin-verification',
-    path: 'verification',
-    component: UserVerificationQueue,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VERIFY_USERS,
-    label: 'Verification Queue',
-    icon: 'Users',
-  },
-  {
-    id: 'admin-crm',
-    path: 'operations/users',
-    component: UserCRM,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VIEW_USER_PROFILES,
-    label: 'Search - CRM',
-    icon: 'Search',
-  },
-  {
-    id: 'admin-shifts',
-    path: 'operations/shifts',
-    component: ShiftCommandCenter,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.MANAGE_SHIFTS,
-    label: 'Shift List',
-    icon: 'Calendar',
-  },
-  {
-    id: 'admin-job-scraper',
-    path: 'operations/job-scraper',
-    component: LinkedInJobScraper,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.MANAGE_SYSTEM,
-    label: 'LinkedIn Job Scraper',
-    icon: 'Briefcase',
-  },
-  {
-    id: 'admin-revenue',
-    path: 'finance/revenue',
-    component: RevenueAnalysis,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VIEW_REVENUE,
-    label: 'Revenue & Commissions',
-    icon: 'DollarSign',
-  },
-  {
-    id: 'admin-spendings',
-    path: 'finance/spendings',
-    component: SpendingsTracker,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VIEW_FINANCE,
-    label: 'Referral Payouts',
-    icon: 'DollarSign',
-  },
-  {
-    id: 'admin-ar',
-    path: 'finance/ar',
-    component: AccountsReceivable,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VIEW_FINANCE,
-    label: 'Invoices (SaaS)',
-    icon: 'FileText',
-  },
-  {
-    id: 'admin-balance-sheet',
-    path: 'finance/balance-sheet',
-    component: BalanceSheet,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VIEW_BALANCE_SHEET,
-    label: 'Balance Sheet',
-    icon: 'DollarSign',
-  },
-  {
-    id: 'admin-audit',
-    path: 'system/audit',
-    component: AuditLogs,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VIEW_AUDIT_LOGS,
-    label: 'Audit Logs',
-    icon: 'AlertCircle',
-  },
-  {
-    id: 'admin-roles-permissions',
-    path: 'system/roles-permissions',
-    component: RolesAndPermissions,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VIEW_AUDIT_LOGS,
-    label: 'Roles & Permissions',
-    icon: 'Shield',
-  },
-  {
-    id: 'admin-notifications',
-    path: 'system/notifications',
-    component: NotificationsCenter,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.SEND_NOTIFICATIONS,
-    label: 'Notifications',
-    icon: 'Bell',
-  },
-  {
-    id: 'admin-email',
-    path: 'email',
-    component: EmailCenter,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.SEND_NOTIFICATIONS,
-    label: 'Email Center',
-    icon: 'Mail',
-  },
-  {
-    id: 'admin-gln-test',
-    path: 'system/gln-test',
-    component: GLNTestPage,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.VIEW_AUDIT_LOGS,
-    label: 'GLN Test',
-    icon: 'FlaskConical',
-  },
-  {
-    id: 'admin-payroll-export',
-    path: 'payroll/export',
-    component: ConsolidatedPayroll,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.EXPORT_PAYROLL,
-    label: 'Payroll Export',
-    icon: 'FileText',
-  },
-  {
-    id: 'admin-management',
-    path: 'management/admins',
-    component: AdminManagement,
-    access: ACCESS_TYPES.ADMIN,
-    permission: PERMISSIONS.MANAGE_ADMINS,
-    label: 'Admin Management',
-    icon: 'Shield',
   },
 ];
 

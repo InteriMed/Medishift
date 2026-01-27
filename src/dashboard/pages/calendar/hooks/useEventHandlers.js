@@ -1,6 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { CALENDAR_COLORS } from '../utils/constants';
-import { 
+import {
   updateEvent,
   deleteEvent,
   saveEvent,
@@ -27,10 +27,13 @@ export const useEventInteractions = (userId, accountType) => {
 
   const handleEventClick = useCallback((event, e) => {
     console.log('Event click handler called with event:', event);
-    e.stopPropagation();
-    
+    if (e && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
+
     // Handle multi-selection with Ctrl/Cmd key
-    if (e.ctrlKey || e.metaKey) {
+    const isModifierPressed = e && (e.ctrlKey || e.metaKey);
+    if (isModifierPressed) {
       setMultiSelectedEvents(prevSelectedIds => {
         const isSelected = prevSelectedIds.includes(event.id);
         if (isSelected) {
@@ -41,23 +44,23 @@ export const useEventInteractions = (userId, accountType) => {
       });
       return;
     }
-    
+
     // Clear multi-selection when clicking without modifier keys
     if (selectedEventIds.length > 0) {
       clearMultiSelection();
     }
-    
+
     // Check if this was a click after a drag
     const timeSinceDragStart = dragStartTime ? Date.now() - dragStartTime : 0;
     const wasRecentDrag = isDragging || timeSinceDragStart < 200;
-    
+
     if (wasRecentDrag) {
       console.log('Event clicked after drag - not opening panel');
       return;
     }
-    
+
     console.log('Clean event click detected - opening event panel');
-    
+
     // Store original event position for potential restoration
     setOriginalEventPosition({
       id: event.id,
@@ -72,7 +75,7 @@ export const useEventInteractions = (userId, accountType) => {
       employees: event.employees,
       ...event
     });
-    
+
     // Open event panel
     setSelectedEventId(event.id);
     setSelectedEvent(event);
@@ -89,8 +92,10 @@ export const useEventInteractions = (userId, accountType) => {
 
   const handleEventDoubleClick = useCallback((event, e) => {
     console.log('Event double-clicked:', event.id, '- opening event panel');
-    e.stopPropagation();
-    
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
+
     // Store original event position for potential restoration
     setOriginalEventPosition({
       id: event.id,
@@ -105,18 +110,22 @@ export const useEventInteractions = (userId, accountType) => {
       employees: event.employees,
       ...event
     });
-    
+
     // Open event panel for detailed editing
     setSelectedEventId(event.id);
     setSelectedEvent(event);
   }, [setSelectedEvent, setSelectedEventId, setOriginalEventPosition]);
 
   const handleEventRightClick = useCallback((event, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
+
     showContextMenuAt(
-      { x: e.clientX, y: e.clientY },
+      { x: e?.clientX || 0, y: e?.clientY || 0 },
       event
     );
   }, [showContextMenuAt]);
@@ -143,7 +152,7 @@ export const useEventDragDrop = (userId, accountType) => {
 
   const handleEventMove = useCallback((eventId, newStartDate, newEndDate, isTemporary = false) => {
     const currentEvent = events.find(e => e.id === eventId);
-    
+
     if (!currentEvent) {
       console.error('Event not found:', eventId);
       return;
@@ -180,13 +189,13 @@ export const useEventDragDrop = (userId, accountType) => {
         end: newEnd,
         isBeingMoved: true
       };
-      
+
       setEvents(updatedEvents);
       return;
     }
 
     // Check if this is a recurring event
-    const isRecurringEvent = currentEvent.isRecurring || 
+    const isRecurringEvent = currentEvent.isRecurring ||
       String(eventId).includes('-') || String(eventId).includes('_');
 
     // Create common structure to store original and new dates for the dialog
@@ -194,7 +203,7 @@ export const useEventDragDrop = (userId, accountType) => {
       start: currentEvent.start instanceof Date ? currentEvent.start : new Date(currentEvent.start),
       end: currentEvent.end instanceof Date ? currentEvent.end : new Date(currentEvent.end)
     };
-    
+
     const newEventDatesObj = {
       start: newStart,
       end: newEnd
@@ -213,16 +222,16 @@ export const useEventDragDrop = (userId, accountType) => {
       end: newEnd,
       isBeingMoved: false
     };
-    
+
     setEvents(updatedEvents);
     addToHistory(updatedEvents);
-    
+
     // Mark for sync
     addPendingChange(eventId);
-    
+
     // Update in database if it's an existing event
     const isNewEvent = !currentEvent.isValidated && !currentEvent.fromDatabase;
-    
+
     if (userId && !isNewEvent) {
       const eventForUpdate = {
         id: eventId,
@@ -270,12 +279,12 @@ export const useEventDragDrop = (userId, accountType) => {
 
   const handleEventResize = useCallback((eventId, newStart, newEnd, isTemporary = false) => {
     const event = events.find(e => e.id === eventId);
-    
+
     if (!event) {
       console.error('Event not found:', eventId);
       return;
     }
-    
+
     // Track drag state for resize
     if (isTemporary) {
       setIsDragging(true);
@@ -285,15 +294,15 @@ export const useEventDragDrop = (userId, accountType) => {
         setIsDragging(false);
       }, 250);
     }
-    
+
     const updatedEvents = [...events];
     const eventIndex = updatedEvents.findIndex(e => e.id === eventId);
-    
+
     if (eventIndex === -1) {
       console.error('Event index not found:', eventId);
       return;
     }
-    
+
     if (isTemporary) {
       // Update visual position during resize
       updatedEvents[eventIndex] = {
@@ -302,31 +311,31 @@ export const useEventDragDrop = (userId, accountType) => {
         end: newEnd,
         isBeingResized: true
       };
-      
+
       setEvents(updatedEvents);
       return;
     }
-    
+
     // Check if this is a recurring event
-    const isRecurringEvent = event.isRecurring || 
+    const isRecurringEvent = event.isRecurring ||
       String(eventId).includes('-') || String(eventId).includes('_');
-    
+
     // If this is a recurring event, show confirmation dialog
     if (isRecurringEvent) {
       const originalEventDatesObj = {
         start: event.start instanceof Date ? event.start : new Date(event.start),
         end: event.end instanceof Date ? event.end : new Date(event.end)
       };
-      
+
       const newEventDatesObj = {
         start: newStart,
         end: newEnd
       };
-      
+
       showMoveDialog(event, originalEventDatesObj, newEventDatesObj);
       return;
     }
-    
+
     // For non-recurring events, proceed with the resize
     updatedEvents[eventIndex] = {
       ...updatedEvents[eventIndex],
@@ -334,10 +343,10 @@ export const useEventDragDrop = (userId, accountType) => {
       end: newEnd,
       isBeingResized: false
     };
-    
+
     setEvents(updatedEvents);
     addToHistory(updatedEvents);
-    
+
     // Mark for sync
     addPendingChange(eventId);
   }, [
@@ -369,43 +378,43 @@ export const useEventCRUD = (userId, accountType) => {
 
   const handleEventSave = useCallback(async (updatedEvent, shouldClose) => {
     console.log("Saving event:", updatedEvent);
-    
+
     // If shouldClose is true, immediately close the panel and show loading
     if (shouldClose) {
       console.log('Immediate panel close and showing loading spinner');
       clearSelectedEvent();
       setIsSaving(true);
     }
-    
+
     // Find the original event if it exists
     const originalEvent = events.find(e => e.id === updatedEvent.id);
-    
+
     // Check if this is a recurring event
     const hasRecurrenceRule = updatedEvent.rrule || (originalEvent && originalEvent.rrule);
     const isEditingExistingRecurring = originalEvent && hasRecurrenceRule;
     const isModifyingRecurring = isEditingExistingRecurring && (
-      (originalEvent.recurrenceId) || 
+      (originalEvent.recurrenceId) ||
       (typeof updatedEvent.id === 'string' && updatedEvent.id.includes('_')) ||
       (typeof originalEvent.id === 'string' && originalEvent.id.includes('_'))
     );
-    
+
     // For recurring events that need modification dialog
     if (isModifyingRecurring && shouldClose) {
       // This should be handled by the modification dialog
       console.log("Recurring event modification should be handled by dialog");
       return;
     }
-    
+
     // Continue with normal save
     return continueEventSave(updatedEvent, shouldClose);
   }, [events, clearSelectedEvent, setIsSaving]);
 
   const continueEventSave = useCallback(async (eventWithDates, shouldClose) => {
     let newEvents = [...events];
-    
+
     // If we're editing an existing event, replace it
     const existingEventIndex = newEvents.findIndex(e => e.id === eventWithDates.id);
-    
+
     if (existingEventIndex !== -1) {
       newEvents[existingEventIndex] = {
         ...newEvents[existingEventIndex],
@@ -415,25 +424,25 @@ export const useEventCRUD = (userId, accountType) => {
       // This is a new event, add it to events array
       newEvents.push(eventWithDates);
     }
-    
+
     // Handle recurring events
     if (eventWithDates.isRecurring && shouldClose && userId) {
       console.log('Saving recurring events to database');
-      
+
       const eventWithUserData = {
         ...eventWithDates,
         userId: userId
       };
-      
+
       try {
         const result = await saveRecurringEvents(eventWithUserData, userId);
         setIsSaving(false);
-        
+
         if (result.success) {
           console.log('Recurring events saved successfully', result);
           notificationStore.showNotification('Recurring events saved successfully', 'success');
           addValidatedEvent(result.recurrenceId);
-          
+
           // Update the UI with recurrence ID
           const updatedEvents = events.map(event => {
             if (String(event.id) === String(eventWithDates.id)) {
@@ -456,25 +465,25 @@ export const useEventCRUD = (userId, accountType) => {
         setIsSaving(false);
         notificationStore.showNotification('Error saving recurring events', 'error');
       }
-    } 
+    }
     // For non-recurring events
     else if (shouldClose && userId) {
       console.log('Saving regular (non-recurring) event to database');
-      
+
       const eventToSave = {
         ...eventWithDates,
         userId: userId,
         isAvailability: accountType === 'worker' ? true : eventWithDates.isAvailability
       };
-      
+
       try {
         const result = await saveEvent(eventToSave, userId);
         setIsSaving(false);
-        
+
         if (result.success) {
           console.log('Event saved successfully with ID:', result.id);
           addValidatedEvent(result.id);
-          
+
           // Update the event in state with the server ID
           const updatedEvents = events.map(event => {
             if (String(event.id) === String(eventWithDates.id)) {
@@ -487,7 +496,7 @@ export const useEventCRUD = (userId, accountType) => {
             }
             return event;
           });
-          
+
           setEvents(updatedEvents);
           notificationStore.showNotification('Event saved successfully', 'success');
         } else {
@@ -505,10 +514,10 @@ export const useEventCRUD = (userId, accountType) => {
         setIsSaving(false);
       }
     }
-    
+
     // Update UI state
     setEvents(newEvents);
-    
+
     if (shouldClose) {
       addToHistory(newEvents);
     }
@@ -530,8 +539,8 @@ export const useEventCRUD = (userId, accountType) => {
     if (deleteType === 'future' && (event.isRecurring || event.recurrenceId || String(event.id).includes('-'))) {
       console.log('Deleting this and all future occurrences from series');
       newEvents = events.filter(e => {
-        if (!String(e.id).startsWith(baseId) && 
-            !(e.recurrenceId && e.recurrenceId === event.recurrenceId)) {
+        if (!String(e.id).startsWith(baseId) &&
+          !(e.recurrenceId && e.recurrenceId === event.recurrenceId)) {
           return true;
         }
         const eventDate = new Date(e.start);
@@ -539,8 +548,8 @@ export const useEventCRUD = (userId, accountType) => {
       });
     } else if (deleteType === 'all' && (event.isRecurring || event.recurrenceId)) {
       console.log('Deleting all occurrences of the series');
-      newEvents = events.filter(e => 
-        !(String(e.id).startsWith(baseId) || 
+      newEvents = events.filter(e =>
+        !(String(e.id).startsWith(baseId) ||
           (e.recurrenceId && e.recurrenceId === event.recurrenceId))
       );
     } else {
@@ -550,7 +559,7 @@ export const useEventCRUD = (userId, accountType) => {
 
     setEvents(newEvents);
     addToHistory(newEvents);
-    
+
     // Delete from database
     if (userId) {
       try {
@@ -564,7 +573,7 @@ export const useEventCRUD = (userId, accountType) => {
         console.error('Error deleting event from database:', error);
       }
     }
-    
+
     clearSelectedEvent();
   }, [events, setEvents, addToHistory, clearSelectedEvent, userId, accountType]);
 
@@ -662,9 +671,9 @@ export const useTimeSlotInteractions = () => {
     const rect = timeGrid.getBoundingClientRect();
     const y = e.clientY - rect.top;
     const x = e.clientX - rect.left;
-    
+
     const hour = Math.floor(y / 50);
-    
+
     let startDate;
     if (view === 'day') {
       startDate = new Date(currentDate);
@@ -674,10 +683,10 @@ export const useTimeSlotInteractions = () => {
       startDate = new Date(currentDate);
       startDate.setDate(startDate.getDate() + day);
     }
-    
+
     startDate.setHours(hour);
     startDate.setMinutes(0);
-    
+
     const endDate = new Date(startDate);
     endDate.setHours(hour + 1);
     endDate.setMinutes(0);
@@ -704,13 +713,13 @@ export const useTimeSlotInteractions = () => {
       const newEvents = [...events, newEvent];
       setEvents(newEvents);
       addToHistory(newEvents);
-      
+
       setOriginalEventPosition({
         ...newEvent,
         start: new Date(startDate),
         end: new Date(endDate)
       });
-      
+
       setSelectedEvent(newEvent);
       setSelectedEventId(newEvent.id);
       return;
@@ -723,7 +732,7 @@ export const useTimeSlotInteractions = () => {
     }, 300));
 
     setClickCount(prev => prev + 1);
-    
+
     setDragStartPosition(startDate);
     setNewEventDates(startDate, endDate);
   }, [

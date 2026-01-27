@@ -18,18 +18,22 @@ const CalendarSidebar = ({
   visibleWeekEnd,
   showMiniCalendar = true,
   showUpcomingEvents = true,
-  highlightOnlyToday = false
+  highlightOnlyToday = false,
+  isOverlay = false
 }) => {
   const { t } = useTranslation();
 
-  if (isSidebarCollapsed) {
+  if (!isOverlay && isSidebarCollapsed) {
     return null;
   }
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   return (
-    <div className="h-full flex flex-col gap-4 calendar-sidebar-container" style={{ overflow: 'visible' }}>
+    <div className={cn(
+      "flex flex-col gap-4 calendar-sidebar-container",
+      isOverlay ? "h-full p-6" : "h-full"
+    )} style={{ overflow: 'visible' }}>
       {showMiniCalendar && (
         <MiniCalendar
           currentDate={currentDate}
@@ -117,7 +121,8 @@ CalendarSidebar.propTypes = {
   visibleWeekEnd: PropTypes.instanceOf(Date),
   showMiniCalendar: PropTypes.bool,
   showUpcomingEvents: PropTypes.bool,
-  highlightOnlyToday: PropTypes.bool
+  highlightOnlyToday: PropTypes.bool,
+  isOverlay: PropTypes.bool
 };
 
 export default CalendarSidebar;

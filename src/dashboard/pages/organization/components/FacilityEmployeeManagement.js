@@ -45,6 +45,7 @@ import PersonnalizedInputField from '../../../../components/BoxedInputFields/Per
 import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
 import Dialog from '../../../../components/Dialog/Dialog';
 import { ROLE_DEFINITIONS } from '../../../../config/roleDefinitions';
+import EmployeeCard from './EmployeeCard';
 
 const FacilityEmployeeManagement = () => {
   const { t } = useTranslation(['organization', 'common']);
@@ -67,6 +68,7 @@ const FacilityEmployeeManagement = () => {
   const [employeeDetails, setEmployeeDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [customRoles, setCustomRoles] = useState([]);
+  const [showEmployeeCard, setShowEmployeeCard] = useState(false);
 
   const [newEmployeeEmail, setNewEmployeeEmail] = useState('');
   const [newEmployeeRole, setNewEmployeeRole] = useState('employee');
@@ -165,6 +167,22 @@ const FacilityEmployeeManagement = () => {
 
     setLoadingDetails(true);
     try {
+      const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, employeeId);
+      const professionalRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, employeeId);
+      
+      const [userSnap, professionalSnap] = await Promise.all([
+        getDoc(userRef),
+        getDoc(professionalRef)
+      ]);
+
+      let profileData = {};
+      if (userSnap.exists()) {
+        profileData = { ...profileData, ...userSnap.data() };
+      }
+      if (professionalSnap.exists()) {
+        profileData = { ...profileData, ...professionalSnap.data() };
+      }
+
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
@@ -243,6 +261,7 @@ const FacilityEmployeeManagement = () => {
       }
 
       setEmployeeDetails({
+        ...profileData,
         contracts,
         activeContract,
         hours: {
@@ -739,6 +758,7 @@ const FacilityEmployeeManagement = () => {
                 onViewDetails={() => {
                   setSelectedEmployee(employee);
                   fetchEmployeeDetails(employee.id);
+                  setShowEmployeeCard(true);
                 }}
                 onEditRole={() => {
                   setSelectedEmployee(employee);
@@ -751,8 +771,6 @@ const FacilityEmployeeManagement = () => {
                 onViewProfile={() => navigate(`/dashboard/${selectedWorkspace?.id || 'personal'}/profile/professionals/${employee.id}`)}
                 onMessage={() => navigate(`/dashboard/${selectedWorkspace?.id || 'personal'}/messages?userId=${employee.id}`)}
                 onViewCalendar={() => navigate(`/dashboard/${selectedWorkspace?.id || 'personal'}/calendar?userId=${employee.id}`)}
-                employeeDetails={selectedEmployee?.id === employee.id ? employeeDetails : null}
-                loadingDetails={loadingDetails && selectedEmployee?.id === employee.id}
               />
             ))
           )}
@@ -822,6 +840,59 @@ const FacilityEmployeeManagement = () => {
           availablePermissions={availablePermissions}
         />
       )}
+
+      {showEmployeeCard && selectedEmployee && employeeDetails && !loadingDetails && (
+        <EmployeeCard
+          employee={{
+            ...selectedEmployee,
+            ...employeeDetails,
+            identity: employeeDetails.identity || {
+              firstName: employeeDetails.firstName || selectedEmployee.firstName,
+              lastName: employeeDetails.lastName || selectedEmployee.lastName,
+              permitType: employeeDetails.identity?.permitType,
+              permitExpiryDate: employeeDetails.identity?.permitExpiryDate
+            },
+            pharmacyLicense: employeeDetails.pharmacyLicense || {},
+            operational: employeeDetails.operational || {},
+            contract: {
+              jobTitle: employeeDetails.activeContract?.jobTitle || '',
+              contractType: employeeDetails.activeContract?.contractType || '',
+              startDate: employeeDetails.activeContract?.startDate,
+              endDate: employeeDetails.activeContract?.endDate,
+              fte: employeeDetails.activeContract?.workPercentage || 0,
+              hourlyRate: employeeDetails.activeContract?.hourlyRate || 0,
+              hourlyWage: employeeDetails.activeContract?.hourlyRate || 0
+            }
+          }}
+          hrMetrics={{
+            overtimeHours: employeeDetails.hours?.overtime || 0,
+            activeContract: {
+              ...employeeDetails.activeContract,
+              workPercentage: employeeDetails.activeContract?.workPercentage,
+              vacationRemaining: employeeDetails.contract?.vacationRemaining || 0
+            }
+          }}
+          onClose={() => {
+            setShowEmployeeCard(false);
+            setSelectedEmployee(null);
+            setEmployeeDetails(null);
+          }}
+          viewerIsAdmin={currentUser && selectedWorkspace?.admins?.includes(currentUser.uid)}
+          onFireEmployee={() => {
+            setShowEmployeeCard(false);
+            setShowFireModal(true);
+          }}
+          employeeId={selectedEmployee.id}
+        />
+      )}
+
+      {showEmployeeCard && loadingDetails && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-lg)', padding: 'var(--spacing-xl)' }}>
+            <div>Loading employee details...</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -833,11 +904,8 @@ const EmployeeRow = ({
   onFire,
   onViewProfile,
   onMessage,
-  onViewCalendar,
-  employeeDetails,
-  loadingDetails
+  onViewCalendar
 }) => {
-  const [expanded, setExpanded] = React.useState(false);
   const [showMenu, setShowMenu] = React.useState(false);
 
   return (
@@ -907,10 +975,11 @@ const EmployeeRow = ({
             <Calendar size={16} />
           </button>
           <button
-            onClick={() => setExpanded(!expanded)}
+            onClick={onViewDetails}
             style={{ padding: '8px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--grey-2)', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title="View Details"
           >
-            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <User size={16} />
           </button>
           <div style={{ position: 'relative' }}>
             <button
@@ -946,56 +1015,6 @@ const EmployeeRow = ({
           </div>
         </div>
       </div>
-      {expanded && (
-        <div style={{ padding: 'var(--spacing-md)', borderTop: '1px solid var(--grey-2)', backgroundColor: 'var(--grey-1-light)' }}>
-          {loadingDetails ? (
-            <div>Loading details...</div>
-          ) : employeeDetails ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
-              <div>
-                <div style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)', marginBottom: 'var(--spacing-xs)' }}>Hours This Month</div>
-                <div style={{ fontSize: 'var(--font-size-large)', fontWeight: 'bold' }}>{employeeDetails.hours?.total || 0}h</div>
-                <div style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)' }}>
-                  {employeeDetails.hours?.overtime || 0}h overtime
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)', marginBottom: 'var(--spacing-xs)' }}>Pay This Month</div>
-                <div style={{ fontSize: 'var(--font-size-large)', fontWeight: 'bold' }}>
-                  CHF {employeeDetails.pay?.total?.toFixed(2) || '0.00'}
-                </div>
-                <div style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)' }}>
-                  Rate: CHF {employeeDetails.pay?.hourlyRate?.toFixed(2) || '0.00'}/h
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)', marginBottom: 'var(--spacing-xs)' }}>Active Contract</div>
-                <div style={{ fontSize: 'var(--font-size-medium)', fontWeight: 'bold' }}>
-                  {employeeDetails.activeContract?.jobTitle || 'No contract'}
-                </div>
-                <div style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)' }}>
-                  {employeeDetails.activeContract?.contractType || ''}
-                </div>
-              </div>
-              <div>
-                <button
-                  onClick={onViewDetails}
-                  style={{ padding: '8px 16px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--primary-color)', backgroundColor: 'var(--primary-color)', color: 'var(--white)', cursor: 'pointer' }}
-                >
-                  View Full Details
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={onViewDetails}
-              style={{ padding: '8px 16px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--primary-color)', backgroundColor: 'var(--primary-color)', color: 'var(--white)', cursor: 'pointer' }}
-            >
-              Load Details
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 };

@@ -12,7 +12,7 @@ import ConversationView from './components/ConversationView';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import messagesService from '../../../services/messagesService';
 import { cn } from '../../../utils/cn';
-import { FiMessageSquare, FiBell, FiSearch, FiX, FiSliders, FiPlus, FiShield, FiFileText } from 'react-icons/fi';
+import { FiMessageSquare, FiBell, FiSearch, FiX, FiSliders, FiPlus, FiShield, FiFileText, FiInbox } from 'react-icons/fi';
 import StartNewCommunicationModal from './components/StartNewCommunicationModal';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
 import '../../../components/BoxedInputFields/styles/boxedInputFields.css';
@@ -22,7 +22,7 @@ const MESSAGE_CONTEXTS = {
   FACILITY: 'facility'
 };
 
-const MessagesPage = () => {
+const MessagesPage = ({ hideHeader }) => {
   const { t } = useTranslation(['messages']);
   const { showError } = useNotification();
   const { user, selectedWorkspace } = useDashboard();
@@ -225,74 +225,44 @@ const MessagesPage = () => {
   const handleNavigateToAnnouncements = useCallback(() => {
     if (selectedWorkspace) {
       const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-      navigate(buildDashboardUrl('/announcements', workspaceId));
+      navigate(buildDashboardUrl('/communications/announcements', workspaceId));
     }
   }, [navigate, selectedWorkspace]);
 
   const handleNavigateToInternalTicket = useCallback(() => {
     if (selectedWorkspace) {
       const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-      navigate(buildDashboardUrl('/internal-ticket', workspaceId));
+      navigate(buildDashboardUrl('/communications/internal-ticket', workspaceId));
     }
   }, [navigate, selectedWorkspace]);
 
   const handleNavigateToReporting = useCallback(() => {
     if (selectedWorkspace) {
       const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-      navigate(buildDashboardUrl('/reporting', workspaceId));
+      navigate(buildDashboardUrl('/communications/reporting', workspaceId));
+    }
+  }, [navigate, selectedWorkspace]);
+
+  const handleNavigateToPolicy = useCallback(() => {
+    if (selectedWorkspace) {
+      const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+      navigate(buildDashboardUrl('/communications/policy', workspaceId));
     }
   }, [navigate, selectedWorkspace]);
 
   if (isLoading && conversations.length === 0) return <LoadingSpinner />;
 
-  const tabs = [
-    { id: 'messages', path: 'messages', label: t('messages:tabs.messages', 'Messages'), icon: FiMessageSquare },
-    { id: 'announcements', path: 'announcements', label: t('messages:tabs.announcements', 'Announcements'), icon: FiBell },
-    { id: 'internalTicket', path: 'internal-ticket', label: t('messages:tabs.internalTicket', 'Internal Ticket'), icon: FiFileText },
-    { id: 'reporting', path: 'reporting', label: t('messages:tabs.reporting', 'Reporting'), icon: FiShield },
-  ];
-
   return (
     <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-      <div className="shrink-0 py-4 border-b border-border bg-card/30">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
-          <h1 className="text-xl font-semibold text-foreground mb-3">
-            {t('messages:title', 'Communications')}
-          </h1>
-          <div className="flex gap-1 sm:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-              const isActive = tab.id === 'messages';
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    if (tab.id === 'announcements') {
-                      handleNavigateToAnnouncements();
-                    } else if (tab.id === 'internalTicket') {
-                      handleNavigateToInternalTicket();
-                    } else if (tab.id === 'reporting') {
-                      handleNavigateToReporting();
-                    }
-                  }}
-                  className={cn(
-                    "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0",
-                    "touch-manipulation active:scale-95",
-                    isActive
-                      ? "border-primary text-primary bg-primary/5"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                  )}
-                  title={tab.label}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span className="text-xs sm:text-sm min-w-0">{tab.label}</span>
-                </button>
-              );
-            })}
+      {!hideHeader && (
+        <div className="shrink-0 pt-4 border-b border-border bg-card/30">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
+            <h1 className="text-xl font-semibold text-foreground mb-3">
+              {t('messages:title', 'Communications')}
+            </h1>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="flex-1 flex min-h-0 relative overflow-hidden">
         <div className={cn(

@@ -106,6 +106,15 @@
     "show": "Afficher les filtres",
     "hide": "Masquer",
     "noFiltersApplied": "Aucun filtre appliqué",
-    "activeFilterCount": "{{count}} filtre{{count, plural, one {} other {s}}} actif{{count, plural, one {} other {s}}}"
-  }
+    "activeFilterCount": "{{count}} filtre{{count, plural, one {} other {s}}} actif{{count, plural, one {} other {s}}}",
+    "view": {
+      "grid": "Vue en grille",
+      "list": "Vue en liste"
+    }
+  },
+  "all": "Tous",
+  "pending": "En attente",
+  "approved": "Approuvé",
+  "rejected": "Rejeté",
+  "actions": "Actions"
 }

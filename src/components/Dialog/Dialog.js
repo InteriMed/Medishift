@@ -147,13 +147,14 @@ const Dialog = ({
           )}
           style={{
             transform: combinedTransform,
-            opacity: isVisible ? 1 : 0
+            opacity: isVisible ? 1 : 0,
+            minHeight: '500px'
           }}
         >
           <div className={position ? "pl-6 pr-6 pb-6 pt-0" : "pl-8 pr-0 pb-8 pt-0"}>
             <div className={cn("flex items-start", centerTitle ? "flex-col" : "justify-between")}>
               {!centerTitle && (
-                <div className="flex-1 pt-6">
+                <div className="flex-1 pt-6" style={{ marginTop: '20px' }}>
                   <div className="flex items-center gap-3">
                     {getHeaderIcon()}
                     {title && (
@@ -249,6 +250,7 @@ const Dialog = ({
           accentClasses[messageType] || accentClasses.default,
           isVisible ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4"
         )}
+        style={{ minHeight: '500px' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="pl-8 pr-0 pb-8 pt-0">

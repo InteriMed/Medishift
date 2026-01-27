@@ -1,8 +1,8 @@
 export const getInitialReportingFormData = () => ({
     subject: '',
     message: '',
-    category: 'general',
-    priority: 'medium',
+    category: 'Schedule',
+    priority: 'Normal',
     isAnonymous: false
 });
 

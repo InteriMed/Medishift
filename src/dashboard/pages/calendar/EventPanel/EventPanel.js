@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiX, FiTrash2, FiClock, FiMapPin, FiFileText, FiRepeat, FiUser, FiCheck, FiAlignLeft, FiCalendar, FiAlertCircle } from 'react-icons/fi';
+import { useSearchParams } from 'react-router-dom';
+import { FiX, FiTrash2, FiClock, FiMapPin, FiFileText, FiRepeat, FiUser, FiCheck, FiAlignLeft, FiCalendar, FiAlertCircle, FiInfo } from 'react-icons/fi';
+import Button from '../../../../components/BoxedInputFields/Button';
 import { useDashboard } from '../../../contexts/DashboardContext';
+import { useAuth } from '../../../../contexts/AuthContext';
 import { cn } from '../../../../utils/cn';
 import WeekDaySelector from '../../../../components/BoxedInputFields/WeekDaySelector';
 import CustomDateInput from './CustomDateInput';
@@ -11,6 +14,12 @@ import Dialog from '../../../../components/Dialog/Dialog';
 import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldParagraph from '../../../../components/BoxedInputFields/TextareaField';
 import BoxedSwitchField from '../../../../components/BoxedInputFields/BoxedSwitchField';
+import DateField from '../../../../components/BoxedInputFields/DateField';
+import DropdownTime from '../../../../components/BoxedInputFields/Dropdown-Time';
+import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
+import { db } from '../../../../services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 
 // Helper component for label with icon
 const Label = ({ icon: Icon, children }) => (
@@ -19,6 +28,36 @@ const Label = ({ icon: Icon, children }) => (
     {children}
   </label>
 );
+
+// Helper to get priority styling
+const getPriorityStyles = (priority) => {
+  switch (priority) {
+    case 'Emergency':
+      return {
+        className: 'text-red-600 bg-red-50 border-red-200',
+        icon: FiAlertCircle,
+        iconColor: 'text-red-600'
+      };
+    case 'Urgent':
+      return {
+        className: 'text-orange-600 bg-orange-50 border-orange-200',
+        icon: FiAlertCircle,
+        iconColor: 'text-orange-600'
+      };
+    case 'Normal':
+      return {
+        className: 'text-blue-600 bg-blue-50 border-blue-200',
+        icon: FiInfo,
+        iconColor: 'text-blue-600'
+      };
+    default:
+      return {
+        className: 'text-gray-600 bg-gray-50 border-gray-200',
+        icon: FiInfo,
+        iconColor: 'text-gray-600'
+      };
+  }
+};
 
 // Helper for clean input styling
 const inputClasses = "flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:bg-background";
@@ -56,7 +95,9 @@ const EventPanel = ({
   const mountTimeRef = useRef(Date.now());
 
   const { t, i18n } = useTranslation('calendar');
-  const { selectedWorkspace } = useDashboard();
+  const { selectedWorkspace, workspaces } = useDashboard();
+  const { currentUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const getFullDayNames = (language) => {
     const mondayDate = new Date(2000, 0, 3);
@@ -71,9 +112,15 @@ const EventPanel = ({
     title: '',
     start: new Date(),
     end: new Date(),
+    startTime: null,
+    endTime: null,
     location: '',
     notes: '',
+    showNotes: false,
     employee: '',
+    category: 'Schedule',
+    facilityId: null,
+    organizationId: null,
     isRecurring: false,
     repeatValue: 'Every Week',
     endRepeatValue: 'After',
@@ -84,8 +131,15 @@ const EventPanel = ({
     monthlyType: 'day',
     monthlyDay: 1,
     monthlyWeek: 'first',
-    monthlyDayOfWeek: 0
+    monthlyDayOfWeek: 0,
+    matchFacilityHours: false
   });
+
+  const [facilities, setFacilities] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+  const [facilityOpeningHours, setFacilityOpeningHours] = useState(null);
 
   const [validationErrors, setValidationErrors] = useState([]);
   const [isValidating, setIsValidating] = useState(false);
@@ -125,6 +179,47 @@ const EventPanel = ({
 
   const calculatedEndDate = calculateEndDate();
 
+  const formatTimeForInput = (d) => {
+    if (!d) return '';
+    try {
+      const date = d instanceof Date ? d : new Date(d);
+      if (isNaN(date.getTime())) return '';
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      if (hours === 0 && minutes === 0) return null;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    } catch (e) {
+      return '';
+    }
+  };
+
+  useEffect(() => {
+    if (event) {
+      const eventId = event.id || 'new';
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('event', eventId);
+        return newParams;
+      });
+    } else {
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('event');
+        return newParams;
+      });
+    }
+  }, [event, setSearchParams]);
+
+  useEffect(() => {
+    return () => {
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('event');
+        return newParams;
+      });
+    };
+  }, [setSearchParams]);
+
   // Initialize
   useEffect(() => {
     if (event && event.start && event.end) {
@@ -140,14 +235,23 @@ const EventPanel = ({
       const defaultWeeklyDays = [false, false, false, false, false, false, false];
       defaultWeeklyDays[mondayIndex] = true;
 
+      const startTimeStr = formatTimeForInput(startDate);
+      const endTimeStr = formatTimeForInput(endDate);
+
       setFormData({
         id: event.id,
         title: event.title || '',
         start: startDate,
         end: endDate,
+        startTime: startTimeStr || null,
+        endTime: endTimeStr || null,
         location: event.location || '',
         notes: event.notes || '',
+        showNotes: !!event.notes,
         employee: event.employee || '',
+        category: event.category || 'Schedule',
+        facilityId: event.facilityId || null,
+        organizationId: event.organizationId || null,
         isRecurring: event.isRecurring || false,
         repeatValue: event.repeatValue || 'Every Week',
         endRepeatValue: event.endRepeatValue || 'After',
@@ -158,7 +262,8 @@ const EventPanel = ({
         monthlyType: event.monthlyType || 'day',
         monthlyDay: event.monthlyDay || startDate.getDate(),
         monthlyWeek: event.monthlyWeek || 'first',
-        monthlyDayOfWeek: event.monthlyDayOfWeek !== undefined ? event.monthlyDayOfWeek : mondayIndex
+        monthlyDayOfWeek: event.monthlyDayOfWeek !== undefined ? event.monthlyDayOfWeek : mondayIndex,
+        matchFacilityHours: event.matchFacilityHours || false
       });
     } else if (!event) {
       const now = new Date();
@@ -176,9 +281,14 @@ const EventPanel = ({
         title: '',
         start,
         end,
+        startTime: null,
+        endTime: null,
         location: '',
         notes: '',
         employee: '',
+        category: 'Schedule',
+        facilityId: null,
+        organizationId: null,
         isRecurring: false,
         repeatValue: 'Every Week',
         endRepeatValue: 'After',
@@ -189,63 +299,313 @@ const EventPanel = ({
         monthlyType: 'day',
         monthlyDay: start.getDate(),
         monthlyWeek: 'first',
-        monthlyDayOfWeek: mondayIndex
+        monthlyDayOfWeek: mondayIndex,
+        matchFacilityHours: false
       });
     }
   }, [event]);
+
+  useEffect(() => {
+    const fetchFacilitiesAndOrganizations = async () => {
+      if (!currentUser || !workspaces) return;
+
+      const facilitiesList = [];
+      const organizationsList = [];
+
+      for (const workspace of workspaces) {
+        if (workspace.type === 'facility' && workspace.facilityId) {
+          try {
+            const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, workspace.facilityId);
+            const facilitySnap = await getDoc(facilityRef);
+            if (facilitySnap.exists()) {
+              const facilityData = facilitySnap.data();
+              facilitiesList.push({
+                id: facilitySnap.id,
+                name: facilityData.facilityName || facilityData.companyName || 'Unknown Facility'
+              });
+            }
+          } catch (error) {
+            console.error(`Error fetching facility ${workspace.facilityId}:`, error);
+          }
+        } else if (workspace.type === 'organization' && workspace.organizationId) {
+          try {
+            const orgRef = doc(db, FIRESTORE_COLLECTIONS.ORGANIZATIONS, workspace.organizationId);
+            const orgSnap = await getDoc(orgRef);
+            if (orgSnap.exists()) {
+              const orgData = orgSnap.data();
+              organizationsList.push({
+                id: orgSnap.id,
+                name: orgData.organizationName || orgData.name || 'Unknown Organization'
+              });
+            }
+          } catch (error) {
+            console.error(`Error fetching organization ${workspace.organizationId}:`, error);
+          }
+        }
+      }
+
+      setFacilities(facilitiesList);
+      setOrganizations(organizationsList);
+    };
+
+    fetchFacilitiesAndOrganizations();
+  }, [currentUser, workspaces]);
+
+  useEffect(() => {
+    const fetchFacilityOpeningHours = async () => {
+      if (!formData.facilityId) {
+        setFacilityOpeningHours(null);
+        return;
+      }
+
+      try {
+        const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, formData.facilityId);
+        const facilitySnap = await getDoc(facilityRef);
+        if (facilitySnap.exists()) {
+          const facilityData = facilitySnap.data();
+          const hours = facilityData?.operationalSettings?.standardOpeningHours || null;
+          setFacilityOpeningHours(hours);
+        }
+      } catch (error) {
+        console.error(`Error fetching facility opening hours:`, error);
+        setFacilityOpeningHours(null);
+      }
+    };
+
+    fetchFacilityOpeningHours();
+  }, [formData.facilityId]);
+
+  useEffect(() => {
+    if (formData.matchFacilityHours && facilityOpeningHours && formData.start) {
+      const dayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const startDate = new Date(formData.start);
+      const dayOfWeek = startDate.getDay();
+      const dayKey = dayMap[dayOfWeek];
+      
+      const dayHours = facilityOpeningHours[dayKey];
+      
+      if (dayHours && dayHours !== 'closed' && dayHours.includes('-')) {
+        const [openTime, closeTime] = dayHours.split('-').map(t => t.trim());
+        
+        setFormData(prev => ({
+          ...prev,
+          startTime: openTime,
+          endTime: closeTime
+        }));
+      }
+    }
+  }, [formData.matchFacilityHours, facilityOpeningHours, formData.start]);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      const isTeamWorkspace = selectedWorkspace?.type === 'facility' || selectedWorkspace?.type === 'organization' || !!selectedWorkspace?.facilityId;
+      const shouldLoadEmployees = formData.facilityId || formData.organizationId || (isTeamWorkspace && !formData.facilityId && !formData.organizationId);
+
+      if (!shouldLoadEmployees) {
+        setEmployees([]);
+        return;
+      }
+
+      setLoadingEmployees(true);
+      try {
+        const employeesList = [];
+        const processedUserIds = new Set();
+
+        let facilityIdToUse = formData.facilityId;
+        let organizationIdToUse = formData.organizationId;
+
+        if (!facilityIdToUse && !organizationIdToUse && isTeamWorkspace) {
+          if (selectedWorkspace?.facilityId) {
+            facilityIdToUse = selectedWorkspace.facilityId;
+          } else if (selectedWorkspace?.organizationId) {
+            organizationIdToUse = selectedWorkspace.organizationId;
+          }
+        }
+
+        if (facilityIdToUse) {
+          try {
+            const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facilityIdToUse);
+            const facilitySnap = await getDoc(facilityRef);
+            if (facilitySnap.exists()) {
+              const facilityData = facilitySnap.data();
+              const employeesData = facilityData.employees || [];
+
+              for (const emp of employeesData) {
+                const userId = emp.user_uid || emp.uid;
+                if (!userId || processedUserIds.has(userId)) continue;
+                processedUserIds.add(userId);
+
+                try {
+                  const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
+                  const userSnap = await getDoc(userRef);
+                  if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    employeesList.push({
+                      id: userId,
+                      name: `${userData.firstName || userData.identity?.firstName || ''} ${userData.lastName || userData.identity?.lastName || ''}`.trim() || userData.email || 'Unknown',
+                      email: userData.email || ''
+                    });
+                  }
+                } catch (error) {
+                  console.error(`Error fetching user ${userId}:`, error);
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching facility ${facilityIdToUse}:`, error);
+          }
+        } else if (organizationIdToUse) {
+          try {
+            const orgRef = doc(db, FIRESTORE_COLLECTIONS.ORGANIZATIONS, organizationIdToUse);
+            const orgSnap = await getDoc(orgRef);
+            if (orgSnap.exists()) {
+              const orgData = orgSnap.data();
+
+              const internalTeamEmployees = orgData.internalTeam?.employees || [];
+              const sharedTeamEmployees = orgData.sharedTeam?.employees || [];
+              const memberFacilityIds = orgData.memberFacilityIds || [];
+
+              const processEmployee = async (emp) => {
+                const userId = emp.user_uid || emp.uid;
+                if (!userId || processedUserIds.has(userId)) return;
+                processedUserIds.add(userId);
+
+                try {
+                  const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
+                  const userSnap = await getDoc(userRef);
+                  if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    employeesList.push({
+                      id: userId,
+                      name: `${userData.firstName || userData.identity?.firstName || ''} ${userData.lastName || userData.identity?.lastName || ''}`.trim() || userData.email || 'Unknown',
+                      email: userData.email || ''
+                    });
+                  }
+                } catch (error) {
+                  console.error(`Error fetching user ${userId}:`, error);
+                }
+              };
+
+              for (const emp of internalTeamEmployees) {
+                await processEmployee(emp);
+              }
+
+              for (const emp of sharedTeamEmployees) {
+                await processEmployee(emp);
+              }
+
+              for (const facilityId of memberFacilityIds) {
+                try {
+                  const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facilityId);
+                  const facilitySnap = await getDoc(facilityRef);
+                  if (facilitySnap.exists()) {
+                    const facilityData = facilitySnap.data();
+                    const employeesData = facilityData.employees || [];
+
+                    for (const emp of employeesData) {
+                      await processEmployee(emp);
+                    }
+                  }
+                } catch (error) {
+                  console.error(`Error fetching facility ${facilityId}:`, error);
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching organization ${organizationIdToUse}:`, error);
+          }
+        }
+
+        setEmployees(employeesList);
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      } finally {
+        setLoadingEmployees(false);
+      }
+    };
+
+    fetchEmployees();
+  }, [formData.facilityId, formData.organizationId, selectedWorkspace]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleDateTimeChange = (field, value) => {
-    if (field.includes('Date')) {
-      const key = field === 'startDate' ? 'start' : 'end';
-      const current = new Date(formData[key]);
-
-      if (!value || value.trim() === '') {
-        return;
-      }
-
-      const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-      if (!datePattern.test(value)) {
-        return;
-      }
-
-      const dateValue = new Date(value);
-      if (isNaN(dateValue.getTime())) {
-        return;
-      }
-
-      const newDate = new Date(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate(), current.getHours(), current.getMinutes());
-      if (!isNaN(newDate.getTime())) {
-        setFormData(prev => ({ ...prev, [key]: newDate }));
-      }
+  const handleDateChange = (field, value) => {
+    const key = field === 'startDate' ? 'start' : 'end';
+    const current = new Date(formData[key]);
+    
+    if (!value) {
+      const newDate = new Date();
+      newDate.setHours(0, 0, 0, 0);
+      setFormData(prev => ({ ...prev, [key]: newDate }));
+      return;
     }
-    if (field.includes('Time')) {
-      if (!value || value.trim() === '') {
-        return;
-      }
 
-      const key = field === 'startTime' ? 'start' : 'end';
-      const timeParts = value.split(':');
-      if (timeParts.length !== 2) {
-        return;
-      }
+    const dateValue = value instanceof Date ? value : new Date(value);
+    if (isNaN(dateValue.getTime())) {
+      return;
+    }
 
-      const h = parseInt(timeParts[0], 10);
-      const m = parseInt(timeParts[1], 10);
-
-      if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
-        return;
-      }
-
-      const current = new Date(formData[key]);
-      const newDate = new Date(current.getFullYear(), current.getMonth(), current.getDate(), h, m);
-      if (!isNaN(newDate.getTime())) {
+    if (formData[field === 'startDate' ? 'startTime' : 'endTime']) {
+      const timeParts = formData[field === 'startDate' ? 'startTime' : 'endTime'].split(':');
+      if (timeParts.length >= 2) {
+        let h = parseInt(timeParts[0], 10);
+        let m = parseInt(timeParts[1], 10);
+        if (timeParts.length === 3 && timeParts[2].includes(' ')) {
+          const period = timeParts[2].trim().split(' ')[1];
+          if (period === 'PM' && h !== 12) h += 12;
+          if (period === 'AM' && h === 12) h = 0;
+        }
+        const newDate = new Date(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate(), h, m);
+        if (!isNaN(newDate.getTime())) {
+          setFormData(prev => ({ ...prev, [key]: newDate }));
+        }
+      } else {
+        const newDate = new Date(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate(), 0, 0);
         setFormData(prev => ({ ...prev, [key]: newDate }));
       }
+    } else {
+      const newDate = new Date(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate(), 0, 0);
+      setFormData(prev => ({ ...prev, [key]: newDate }));
+    }
+  };
+
+  const handleTimeChange = (field, value) => {
+    const key = field === 'startTime' ? 'start' : 'end';
+    const current = new Date(formData[key]);
+
+    if (!value || value.trim() === '') {
+      setFormData(prev => ({ 
+        ...prev, 
+        [field]: null,
+        [key]: new Date(current.getFullYear(), current.getMonth(), current.getDate(), 0, 0)
+      }));
+      return;
+    }
+
+    let h, m;
+    if (value.includes('AM') || value.includes('PM')) {
+      const [timePart, period] = value.split(' ');
+      const timeParts = timePart.split(':');
+      h = parseInt(timeParts[0], 10);
+      m = parseInt(timeParts[1], 10);
+      if (period === 'PM' && h !== 12) h += 12;
+      if (period === 'AM' && h === 12) h = 0;
+    } else {
+      const timeParts = value.split(':');
+      h = parseInt(timeParts[0], 10);
+      m = parseInt(timeParts[1], 10);
+    }
+
+    if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
+      return;
+    }
+
+    const newDate = new Date(current.getFullYear(), current.getMonth(), current.getDate(), h, m);
+    if (!isNaN(newDate.getTime())) {
+      setFormData(prev => ({ ...prev, [key]: newDate, [field]: value }));
     }
   };
 
@@ -278,16 +638,6 @@ const EventPanel = ({
     return dateValue;
   };
 
-  const formatTimeForInput = (d) => {
-    if (!d) return '';
-    try {
-      const date = d instanceof Date ? d : new Date(d);
-      if (isNaN(date.getTime())) return '';
-      return date.toTimeString().slice(0, 5);
-    } catch (e) {
-      return '';
-    }
-  };
 
   const handleSaveWrapper = () => {
     // Prevent phantom clicks (immediate submission) by ignoring clicks within 500ms of mount
@@ -319,31 +669,40 @@ const EventPanel = ({
     }, 400);
   };
 
+  const handleClose = () => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.delete('event');
+      return newParams;
+    });
+    onClose();
+  };
+
   return (
     <Dialog
       isOpen={true}
-      onClose={onClose}
-      title={event && event.id ? t('editEvent', 'Edit Event') : t('createEvent', 'Create Event')}
+      onClose={handleClose}
+      title="Title"
       size={formData.isRecurring ? 'xlarge' : 'small'}
       closeOnBackdropClick={true}
       actions={
         <div className="flex items-center justify-between w-full gap-3">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('cancel', 'Cancel')}
           </button>
           <div className="flex items-center gap-3 flex-1 justify-center">
             {event && event.id && onDelete && (
-              <button
+              <Button
                 onClick={onDelete}
-                className="px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors flex items-center gap-2 mt-4"
-                title="Delete"
+                variant="danger"
+                type="button"
               >
                 <FiTrash2 className="w-4 h-4" />
                 {t('delete', 'Delete')}
-              </button>
+              </Button>
             )}
           </div>
           <button
@@ -376,6 +735,7 @@ const EventPanel = ({
           <>
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-4">
+
                 <InputField
                   label={t('title', 'Title')}
                   name="title"
@@ -383,43 +743,129 @@ const EventPanel = ({
                   value={formData.title}
                   onChange={handleChange}
                   placeholder="Add title"
+                  marginTop="20px"
                 />
 
+                <SimpleDropdown
+                  label="Category"
+                  options={[
+                    { value: 'Leave Request', label: 'Leave Request' },
+                    { value: 'Sick Leave', label: 'Sick Leave' },
+                    { value: 'Appointment', label: 'Appointment' },
+                    { value: 'Meeting', label: 'Meeting' },
+                    { value: 'Schedule', label: 'Schedule' },
+                    { value: 'Other', label: 'Other' }
+                  ]}
+                  value={formData.category}
+                  onChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                  placeholder="Select category"
+                  marginTop="16px"
+                />
+
+                {((formData.category === 'Meeting' || formData.category === 'Leave Request') || formData.facilityId || formData.organizationId || selectedWorkspace?.type === 'facility' || selectedWorkspace?.type === 'organization' || selectedWorkspace?.facilityId) && (
+                  <SimpleDropdown
+                    label="Employee"
+                    options={employees.map(emp => ({ value: emp.id, label: emp.name }))}
+                    value={formData.employee}
+                    onChange={(value) => setFormData(prev => ({ ...prev, employee: value }))}
+                    placeholder={loadingEmployees ? "Loading employees..." : "Select employee"}
+                    searchable={true}
+                  />
+                )}
+
+                <SimpleDropdown
+                  label="Location"
+                  options={[
+                    { value: '', label: 'None' },
+                    ...facilities.map(facility => ({ value: facility.id, label: facility.name })),
+                    ...organizations.map(org => ({ value: `org_${org.id}`, label: org.name }))
+                  ]}
+                  value={formData.facilityId || formData.organizationId ? (formData.organizationId ? `org_${formData.organizationId}` : formData.facilityId) : ''}
+                  onChange={(value) => {
+                    if (value.startsWith('org_')) {
+                      const orgId = value.replace('org_', '');
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        organizationId: orgId,
+                        facilityId: null,
+                        employee: '',
+                        matchFacilityHours: false
+                      }));
+                    } else {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        facilityId: value || null,
+                        organizationId: null,
+                        employee: '',
+                        matchFacilityHours: false
+                      }));
+                    }
+                  }}
+                  placeholder="Select location"
+                />
+
+                {formData.facilityId && selectedWorkspace?.type !== 'personal' && (
+                  <BoxedSwitchField
+                    label="Match Facility Opening Hours"
+                    checked={formData.matchFacilityHours}
+                    onChange={(checked) => setFormData(p => ({ ...p, matchFacilityHours: checked }))}
+                  />
+                )}
+
                 <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label icon={FiClock}>Start</Label>
-                    <div className="grid grid-cols-[3fr_2fr] gap-2">
-                      <CustomDateInput value={formatDateForInput(formData.start)} onChange={(val) => handleDateTimeChange('startDate', val)} className={inputClasses} />
-                      <PersonnalizedInputField
-                        type="time"
-                        value={formatTimeForInput(formData.start)}
-                        onChange={(e) => handleDateTimeChange('startTime', e.target.value)}
-                        name="startTime"
+                  <div className="">
+                    <div className="flex items-center gap-2">
+                      <Label icon={FiClock}>Start Date & Time</Label>
+                      <div className="group relative">
+                        <FiInfo className="w-4 h-4 text-muted-foreground cursor-help" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                          No time set by default = all day event
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-[1fr_1fr] gap-2">
+                      <DateField
+                        value={formData.start}
+                        onChange={(value) => handleDateChange('startDate', value)}
+                        marginBottom="0"
                       />
+                      {!formData.matchFacilityHours && (
+                        <DropdownTime
+                          value={formData.startTime || ''}
+                          onChange={(value) => handleTimeChange('startTime', value)}
+                          is24Hour={true}
+                          marginBottom="0"
+                        />
+                      )}
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label icon={FiClock}>End</Label>
-                    <div className="grid grid-cols-[3fr_2fr] gap-2">
-                      <CustomDateInput value={formatDateForInput(formData.end)} onChange={(val) => handleDateTimeChange('endDate', val)} className={inputClasses} />
-                      <PersonnalizedInputField
-                        type="time"
-                        value={formatTimeForInput(formData.end)}
-                        onChange={(e) => handleDateTimeChange('endTime', e.target.value)}
-                        name="endTime"
+                  <div className="">
+                    <div className="flex items-center justify-between">
+                      <Label icon={FiClock}>End Date & Time</Label>
+                      <div className="group relative">
+                        <FiInfo className="w-4 h-4 text-muted-foreground cursor-help" />
+                        <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                          No time set by default = all day event
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-[1fr_1fr] gap-2">
+                      <DateField
+                        value={formData.end}
+                        onChange={(value) => handleDateChange('endDate', value)}
+                        marginBottom="0"
                       />
+                      {!formData.matchFacilityHours && (
+                        <DropdownTime
+                          value={formData.endTime || ''}
+                          onChange={(value) => handleTimeChange('endTime', value)}
+                          is24Hour={true}
+                          marginBottom="0"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
-
-                <InputField
-                  label={t('location', 'Location')}
-                  name="location"
-                  type="text"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="Add location"
-                />
 
                 <InputFieldParagraph
                   label={t('notes', 'Description')}
@@ -439,87 +885,53 @@ const EventPanel = ({
               </div>
 
               <div className="space-y-5 bg-gradient-to-br from-primary/8 via-primary/5 to-primary/8 border-2 border-primary/25 p-6 rounded-xl shadow-lg backdrop-blur-sm">
-                <div className="flex items-center gap-2 mb-2 pb-3 border-b border-primary/20">
-                  <FiRepeat className="w-5 h-5 text-primary" />
-                  <h3 className="text-lg font-semibold text-foreground">Repeat Settings</h3>
-                </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label icon={FiRepeat}>Repeat</Label>
-                    <div className="relative">
-                      <select
-                        name="repeatValue"
-                        value={formData.repeatValue}
-                        onChange={handleChange}
-                        className={cn(selectClasses, "bg-background/80 hover:bg-background focus:bg-background")}
-                      >
-                        <option value="Every Day">Every Day</option>
-                        <option value="Every Week">Every Week</option>
-                        <option value="Every Month">Every Month</option>
-                      </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
+                  <SimpleDropdown
+                    label="Repeat"
+                    options={[
+                      { value: 'Every Day', label: 'Every Day' },
+                      { value: 'Every Week', label: 'Every Week' },
+                      { value: 'Every Month', label: 'Every Month' }
+                    ]}
+                    value={formData.repeatValue}
+                    onChange={(value) => setFormData(prev => ({ ...prev, repeatValue: value }))}
+                    placeholder="Select repeat"
+                  />
 
-                  <div className="space-y-1.5">
-                    <Label>End Repeat</Label>
-                    <div className="relative">
-                      <select
-                        name="endRepeatValue"
-                        value={formData.endRepeatValue}
-                        onChange={handleChange}
-                        className={cn(selectClasses, "bg-background/80 hover:bg-background focus:bg-background")}
-                      >
-                        <option value="After">After</option>
-                        <option value="On Date">On Date</option>
-                        <option value="Never">Never</option>
-                      </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
+                  <SimpleDropdown
+                    label="End Repeat"
+                    options={[
+                      { value: 'After', label: 'After' },
+                      { value: 'On Date', label: 'On Date' },
+                      { value: 'Never', label: 'Never' }
+                    ]}
+                    value={formData.endRepeatValue}
+                    onChange={(value) => setFormData(prev => ({ ...prev, endRepeatValue: value }))}
+                    placeholder="Select end repeat"
+                  />
                 </div>
 
                 {formData.repeatValue === 'Every Week' && (
                   <div className="space-y-2 pt-2">
-                    <Label icon={FiCalendar}>{t('repeatDays', 'Repeat on days')}</Label>
-                    <div className="bg-background/50 rounded-lg p-3 border border-border/50">
-                      <WeekDaySelector
-                        selectedDays={formData.weeklyDays}
-                        onChange={(days) => setFormData(p => ({ ...p, weeklyDays: days }))}
-                      />
-                    </div>
+                    <WeekDaySelector
+                      selectedDays={formData.weeklyDays}
+                      onChange={(days) => setFormData(p => ({ ...p, weeklyDays: days }))}
+                    />
                   </div>
                 )}
 
                 {formData.repeatValue === 'Every Month' && (
                   <div className="space-y-4 pt-2">
-                    <div className="space-y-1.5">
-                      <Label>Repeat on</Label>
-                      <div className="relative">
-                        <select
-                          name="monthlyType"
-                          value={formData.monthlyType}
-                          onChange={handleChange}
-                          className={cn(selectClasses, "bg-background/80 hover:bg-background focus:bg-background")}
-                        >
-                          <option value="day">Day of month</option>
-                          <option value="weekday">Day of week</option>
-                        </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
+                    <SimpleDropdown
+                      label="Repeat on"
+                      options={[
+                        { value: 'day', label: 'Day of month' },
+                        { value: 'weekday', label: 'Day of week' }
+                      ]}
+                      value={formData.monthlyType}
+                      onChange={(value) => setFormData(prev => ({ ...prev, monthlyType: value }))}
+                      placeholder="Select type"
+                    />
 
                     {formData.monthlyType === 'day' && (
                       <PersonnalizedInputField
@@ -535,29 +947,20 @@ const EventPanel = ({
 
                     {formData.monthlyType === 'weekday' && (
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <Label>Week</Label>
-                          <div className="relative">
-                            <select
-                              name="monthlyWeek"
-                              value={formData.monthlyWeek}
-                              onChange={handleChange}
-                              className={selectClasses}
-                            >
-                              <option value="first">First</option>
-                              <option value="second">Second</option>
-                              <option value="third">Third</option>
-                              <option value="fourth">Fourth</option>
-                              <option value="last">Last</option>
-                            </select>
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                              <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="space-y-1.5">
+                        <SimpleDropdown
+                          label="Week"
+                          options={[
+                            { value: 'first', label: 'First' },
+                            { value: 'second', label: 'Second' },
+                            { value: 'third', label: 'Third' },
+                            { value: 'fourth', label: 'Fourth' },
+                            { value: 'last', label: 'Last' }
+                          ]}
+                          value={formData.monthlyWeek}
+                          onChange={(value) => setFormData(prev => ({ ...prev, monthlyWeek: value }))}
+                          placeholder="Select week"
+                        />
+                        <div className="">
                           <Label>Day of week</Label>
                           <div className="flex flex-wrap gap-2">
                             {getFullDayNames(i18n.language).map((dayName, index) => (
@@ -598,19 +1001,12 @@ const EventPanel = ({
                     )}
 
                     {formData.endRepeatValue === 'On Date' && (
-                      <div className="space-y-1.5">
-                        <Label icon={FiCalendar}>End Date</Label>
-                        <CustomDateInput
-                          value={formData.endRepeatDate ? formatDateForInput(formData.endRepeatDate) : ''}
-                          onChange={(val) => {
-                            const parsedDate = parseDateSafely(val);
-                            if (parsedDate !== null || val === '') {
-                              setFormData(p => ({ ...p, endRepeatDate: parsedDate }));
-                            }
-                          }}
-                          className={cn(inputClasses, "bg-background/80 hover:bg-background focus:bg-background")}
-                        />
-                      </div>
+                      <DateField
+                        label="End Date"
+                        value={formData.endRepeatDate}
+                        onChange={(value) => setFormData(prev => ({ ...prev, endRepeatDate: value }))}
+                        marginBottom="0"
+                      />
                     )}
                   </div>
                 )}
@@ -640,6 +1036,7 @@ const EventPanel = ({
           </>
           ) : (
             <>
+
               <InputField
                 label={t('title', 'Title')}
                 name="title"
@@ -647,52 +1044,147 @@ const EventPanel = ({
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="Add title"
+                marginTop="20px"
               />
 
+              <SimpleDropdown
+                label="Category"
+                options={[
+                  { value: 'Leave Request', label: 'Leave Request' },
+                  { value: 'Sick Leave', label: 'Sick Leave' },
+                  { value: 'Appointment', label: 'Appointment' },
+                  { value: 'Meeting', label: 'Meeting' },
+                  { value: 'Schedule', label: 'Schedule' },
+                  { value: 'Other', label: 'Other' }
+                ]}
+                value={formData.category}
+                onChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                placeholder="Select category"
+                marginTop="16px"
+              />
+
+              {((formData.category === 'Meeting' || formData.category === 'Leave Request') || formData.facilityId || selectedWorkspace?.type === 'facility' || selectedWorkspace?.type === 'organization' || selectedWorkspace?.facilityId) && (
+                <SimpleDropdown
+                  label="Employee"
+                  options={employees.map(emp => ({ value: emp.id, label: emp.name }))}
+                  value={formData.employee}
+                  onChange={(value) => setFormData(prev => ({ ...prev, employee: value }))}
+                  placeholder={loadingEmployees ? "Loading employees..." : "Select employee"}
+                  searchable={true}
+                />
+              )}
+
+              <SimpleDropdown
+                label="Location"
+                options={[
+                  { value: '', label: 'None' },
+                  ...facilities.map(facility => ({ value: facility.id, label: facility.name }))
+                ]}
+                value={formData.facilityId || ''}
+                onChange={(value) => {
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    facilityId: value || null,
+                    employee: '',
+                    matchFacilityHours: false
+                  }));
+                }}
+                placeholder="Select location"
+              />
+
+              {formData.facilityId && selectedWorkspace?.type !== 'personal' && (
+                <BoxedSwitchField
+                  label="Match Facility Opening Hours"
+                  checked={formData.matchFacilityHours}
+                  onChange={(checked) => setFormData(p => ({ ...p, matchFacilityHours: checked }))}
+                />
+              )}
+
               <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label icon={FiClock}>Start</Label>
-                  <div className="grid grid-cols-[3fr_2fr] gap-2">
-                    <CustomDateInput value={formatDateForInput(formData.start)} onChange={(val) => handleDateTimeChange('startDate', val)} className={inputClasses} />
-                    <PersonnalizedInputField
-                      type="time"
-                      value={formatTimeForInput(formData.start)}
-                      onChange={(e) => handleDateTimeChange('startTime', e.target.value)}
-                      name="startTime"
+                <div className="">
+                  <div className="flex items-center justify-between">
+                    <Label icon={FiClock}>Start Date & Time</Label>
+                    <div className="group relative">
+                      <FiInfo className="w-4 h-4 text-muted-foreground cursor-help" />
+                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        No time set by default = all day event
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[1fr_1fr] gap-2">
+                    <DateField
+                      value={formData.start}
+                      onChange={(value) => handleDateChange('startDate', value)}
+                      marginBottom="0"
                     />
+                    {!formData.matchFacilityHours && (
+                      <DropdownTime
+                        value={formData.startTime || ''}
+                        onChange={(value) => handleTimeChange('startTime', value)}
+                        is24Hour={true}
+                        marginBottom="0"
+                      />
+                    )}
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label icon={FiClock}>End</Label>
-                  <div className="grid grid-cols-[3fr_2fr] gap-2">
-                    <CustomDateInput value={formatDateForInput(formData.end)} onChange={(val) => handleDateTimeChange('endDate', val)} className={inputClasses} />
-                    <PersonnalizedInputField
-                      type="time"
-                      value={formatTimeForInput(formData.end)}
-                      onChange={(e) => handleDateTimeChange('endTime', e.target.value)}
-                      name="endTime"
+                <div className="">
+                  <div className="flex items-center justify-between">
+                    <Label icon={FiClock}>End Date & Time</Label>
+                    <div className="group relative">
+                      <FiInfo className="w-4 h-4 text-muted-foreground cursor-help" />
+                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        No time set by default = all day event
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[1fr_1fr] gap-2">
+                    <DateField
+                      value={formData.end}
+                      onChange={(value) => handleDateChange('endDate', value)}
+                      marginBottom="0"
                     />
+                    {!formData.matchFacilityHours && (
+                      <DropdownTime
+                        value={formData.endTime || ''}
+                        onChange={(value) => handleTimeChange('endTime', value)}
+                        is24Hour={true}
+                        marginBottom="0"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
 
-              <InputField
-                label={t('location', 'Location')}
-                name="location"
-                type="text"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="Add location"
-              />
-
-              <InputFieldParagraph
-                label={t('notes', 'Description')}
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                placeholder="Add description..."
-                rows={3}
-              />
+                {formData.notes || formData.showNotes ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>{t('notes', 'Description')}</Label>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, notes: '', showNotes: false }))}
+                        className="text-sm text-muted-foreground hover:text-foreground"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <InputFieldParagraph
+                      name="notes"
+                      value={formData.notes || ''}
+                      onChange={handleChange}
+                      placeholder="Add description..."
+                      rows={3}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, showNotes: true }))}
+                    className="text-sm text-primary hover:text-primary/80 flex items-center gap-1"
+                  >
+                    <span>+</span>
+                    <span>Add a Note</span>
+                  </button>
+                )}
 
               <BoxedSwitchField
                 label={t('recurringEvent', 'Repeat this event')}
@@ -700,129 +1192,82 @@ const EventPanel = ({
                 onChange={(checked) => setFormData(p => ({ ...p, isRecurring: checked }))}
               />
 
-              {/* Recurring Configuration - Show when enabled */}
               {formData.isRecurring && (
                   <div className="pl-4 pr-4 py-4 rounded-lg border border-border bg-muted/5 space-y-4 animate-in slide-in-from-top-2 duration-200">
                     <div className="grid grid-cols-2 gap-4">
-                      {/* Repeat Frequency */}
-                      <div className="space-y-1.5">
-                        <Label icon={FiRepeat}>Repeat</Label>
-                        <div className="relative">
-                          <select
-                            name="repeatValue"
-                            value={formData.repeatValue}
-                            onChange={handleChange}
-                            className={selectClasses}
-                          >
-                            <option value="Every Day">Every Day</option>
-                            <option value="Every Week">Every Week</option>
-                            <option value="Every Month">Every Month</option>
-                          </select>
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
+                      <SimpleDropdown
+                        label="Repeat"
+                        options={[
+                          { value: 'Every Day', label: 'Every Day' },
+                          { value: 'Every Week', label: 'Every Week' },
+                          { value: 'Every Month', label: 'Every Month' }
+                        ]}
+                        value={formData.repeatValue}
+                        onChange={(value) => setFormData(prev => ({ ...prev, repeatValue: value }))}
+                        placeholder="Select repeat"
+                      />
 
-                      {/* End Repeat Option */}
-                      <div className="space-y-1.5">
-                        <Label>End Repeat</Label>
-                        <div className="relative">
-                          <select
-                            name="endRepeatValue"
-                            value={formData.endRepeatValue}
-                            onChange={handleChange}
-                            className={selectClasses}
-                          >
-                            <option value="After">After</option>
-                            <option value="On Date">On Date</option>
-                            <option value="Never">Never</option>
-                          </select>
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
+                      <SimpleDropdown
+                        label="End Repeat"
+                        options={[
+                          { value: 'After', label: 'After' },
+                          { value: 'On Date', label: 'On Date' },
+                          { value: 'Never', label: 'Never' }
+                        ]}
+                        value={formData.endRepeatValue}
+                        onChange={(value) => setFormData(prev => ({ ...prev, endRepeatValue: value }))}
+                        placeholder="Select end repeat"
+                      />
                     </div>
 
-                    {/* Weekly Day Selector */}
                     {formData.repeatValue === 'Every Week' && (
-                      <div className="space-y-1.5">
-                        <Label icon={FiCalendar}>{t('repeatDays', 'Repeat on days')}</Label>
-                        <WeekDaySelector
-                          selectedDays={formData.weeklyDays}
-                          onChange={(days) => setFormData(p => ({ ...p, weeklyDays: days }))}
-                        />
-                      </div>
+                      <WeekDaySelector
+                        selectedDays={formData.weeklyDays}
+                        onChange={(days) => setFormData(p => ({ ...p, weeklyDays: days }))}
+                      />
                     )}
 
-                    {/* Monthly Repeat Options */}
                     {formData.repeatValue === 'Every Month' && (
                       <div className="space-y-4">
-                        <div className="space-y-1.5">
-                          <Label>Repeat on</Label>
-                          <div className="relative">
-                            <select
-                              name="monthlyType"
-                              value={formData.monthlyType}
-                              onChange={handleChange}
-                              className={selectClasses}
-                            >
-                              <option value="day">Day of month</option>
-                              <option value="weekday">Day of week</option>
-                            </select>
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                              <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
+                        <SimpleDropdown
+                          label="Repeat on"
+                          options={[
+                            { value: 'day', label: 'Day of month' },
+                            { value: 'weekday', label: 'Day of week' }
+                          ]}
+                          value={formData.monthlyType}
+                          onChange={(value) => setFormData(prev => ({ ...prev, monthlyType: value }))}
+                          placeholder="Select type"
+                        />
 
                         {formData.monthlyType === 'day' && (
-                          <div className="space-y-1.5">
-                            <Label>Day number</Label>
-                            <input
-                              type="number"
-                              name="monthlyDay"
-                              value={formData.monthlyDay}
-                              onChange={handleChange}
-                              min="1"
-                              max="31"
-                              className={inputClasses}
-                            />
-                          </div>
+                          <PersonnalizedInputField
+                            label="Day number"
+                            name="monthlyDay"
+                            type="number"
+                            value={formData.monthlyDay}
+                            onChange={handleChange}
+                            min="1"
+                            max="31"
+                          />
                         )}
 
                         {formData.monthlyType === 'weekday' && (
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <Label>Week</Label>
-                              <div className="relative">
-                                <select
-                                  name="monthlyWeek"
-                                  value={formData.monthlyWeek}
-                                  onChange={handleChange}
-                                  className={selectClasses}
-                                >
-                                  <option value="first">First</option>
-                                  <option value="second">Second</option>
-                                  <option value="third">Third</option>
-                                  <option value="fourth">Fourth</option>
-                                  <option value="last">Last</option>
-                                </select>
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                  <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                  </svg>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="space-y-1.5">
+                            <SimpleDropdown
+                              label="Week"
+                              options={[
+                                { value: 'first', label: 'First' },
+                                { value: 'second', label: 'Second' },
+                                { value: 'third', label: 'Third' },
+                                { value: 'fourth', label: 'Fourth' },
+                                { value: 'last', label: 'Last' }
+                              ]}
+                              value={formData.monthlyWeek}
+                              onChange={(value) => setFormData(prev => ({ ...prev, monthlyWeek: value }))}
+                              placeholder="Select week"
+                            />
+                            <div className="">
                               <Label>Day of week</Label>
                               <div className="flex flex-wrap gap-2">
                                 {getFullDayNames(i18n.language).map((dayName, index) => (
@@ -848,52 +1293,48 @@ const EventPanel = ({
                       </div>
                     )}
 
-                    {/* Conditional Fields based on End Repeat */}
                     {(formData.endRepeatValue === 'After' || formData.endRepeatValue === 'On Date') && (
                       <div className="grid grid-cols-2 gap-4">
                         {formData.endRepeatValue === 'After' && (
-                          <div className="space-y-1.5">
-                            <Label>Number of occurrences</Label>
-                            <input
-                              type="number"
-                              name="endRepeatCount"
-                              value={formData.endRepeatCount}
-                              onChange={handleChange}
-                              min="1"
-                              max="365"
-                              className={inputClasses}
-                            />
-                          </div>
+                          <PersonnalizedInputField
+                            label="Number of occurrences"
+                            name="endRepeatCount"
+                            type="number"
+                            value={formData.endRepeatCount}
+                            onChange={handleChange}
+                            min="1"
+                            max="365"
+                          />
                         )}
 
                         {formData.endRepeatValue === 'On Date' && (
-                          <div className="space-y-1.5">
-                            <Label>End Date</Label>
-                            <CustomDateInput
-                              value={formData.endRepeatDate ? formatDateForInput(formData.endRepeatDate) : ''}
-                              onChange={(val) => {
-                                const parsedDate = parseDateSafely(val);
-                                if (parsedDate !== null || val === '') {
-                                  setFormData(p => ({ ...p, endRepeatDate: parsedDate }));
-                                }
-                              }}
-                              className={inputClasses}
-                            />
-                          </div>
+                          <DateField
+                            label="End Date"
+                            value={formData.endRepeatDate}
+                            onChange={(value) => setFormData(prev => ({ ...prev, endRepeatDate: value }))}
+                          />
                         )}
                       </div>
                     )}
 
-                    {/* Calculated End Date Display */}
                     {calculatedEndDate && (
-                      <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border">
-                        <FiCalendar className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          {t('calculatedEndDate', 'Calculated end date')}:
-                        </span>
-                        <span className="text-sm font-medium text-foreground">
-                          {calculatedEndDate.toLocaleDateString()}
-                        </span>
+                      <div className="flex items-center gap-2.5 p-4 rounded-lg bg-primary/10 border border-primary/30 backdrop-blur-sm">
+                        <div className="p-1.5 rounded-md bg-primary/20">
+                          <FiCalendar className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
+                            {t('calculatedEndDate', 'Calculated end date')}
+                          </div>
+                          <div className="text-sm font-semibold text-foreground">
+                            {calculatedEndDate.toLocaleDateString(i18n.language, { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>

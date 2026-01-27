@@ -297,11 +297,11 @@ export const TUTORIAL_STEP_DEFINITIONS = {
         },
         {
             id: 'messages-overview',
-            targetSelector: `a[href*="/dashboard/messages"]`,
+            targetSelector: `a[href*="/dashboard/communications"]`,
             targetArea: TARGET_AREAS.SIDEBAR,
             tooltipPosition: { top: '210px', left: 'calc(250px + 20px)' },
             highlightSidebarItem: DASHBOARD_ROUTE_IDS.MESSAGES,
-            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('messages') },
+            actionButton: { textKey: 'buttons.showMe', path: createDashboardPath('communications') },
             visualPreview: { type: 'sidebar_item', icon: 'message-square', textKey: 'dashboard.sidebar.communication' }
         },
         {
@@ -534,8 +534,8 @@ export const DASHBOARD_PATHS = {
     BASE: '/dashboard',
     OVERVIEW: '/dashboard/overview',
     PROFILE: '/dashboard/profile',
-    MESSAGES: '/dashboard/messages',
-    ANNOUNCEMENTS: '/dashboard/announcements',
+    MESSAGES: '/dashboard/communications',
+    ANNOUNCEMENTS: '/dashboard/communications/announcements',
     CONTRACTS: '/dashboard/contracts',
     CALENDAR: '/dashboard/calendar',
     MARKETPLACE: '/dashboard/marketplace',

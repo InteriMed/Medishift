@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiSliders, FiX, FiCalendar, FiClock, FiPlus, FiMoon } from 'react-icons/fi';
+import { FiSliders, FiX, FiCalendar, FiClock, FiPlus, FiMoon, FiChevronRight, FiChevronLeft, FiGrid } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 const CalendarHeader = ({
   currentDate,
@@ -27,12 +27,13 @@ const CalendarHeader = ({
   setShowUpcomingEvents,
   nightView,
   setNightView,
+  isBelow1200 = false,
+  isOverlayExpanded = false,
+  onToggleOverlay,
 }) => {
   const { t } = useTranslation();
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const categoryDropdownRef = useRef(null);
-  const [showViewDropdown, setShowViewDropdown] = useState(false);
-  const viewDropdownRef = useRef(null);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
   useEffect(() => {
@@ -49,9 +50,6 @@ const CalendarHeader = ({
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
         setShowCategoryDropdown(false);
       }
-      if (viewDropdownRef.current && !viewDropdownRef.current.contains(event.target)) {
-        setShowViewDropdown(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -64,46 +62,64 @@ const CalendarHeader = ({
 
   return (
     <div className={cn(
-      "flex flex-col md:flex-row items-center justify-between gap-4 w-full relative",
-      isTopBarMode && "h-full"
+      "flex flex-wrap items-center justify-between gap-3 w-full relative",
+      isTopBarMode && "min-h-[var(--boxed-inputfield-height)]"
     )}>
       {/* Left: Standardized Controls (Date Title + Filters) */}
       <div className={cn(
-        "flex items-center gap-3",
-        isTeamWorkspace ? "flex-1 min-w-0 pr-[140px] md:pr-[160px]" : "flex-1"
+        "flex items-center gap-1.5 flex-1 min-w-max"
       )}>
+        {/* Sidebar Toggle Button - Always visible on the left */}
+        {toggleSidebar && (
+          <button
+            className={cn(
+              "flex items-center justify-center rounded-xl transition-all shrink-0",
+              !isSidebarCollapsed ? "bg-primary/10 text-primary" : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
+            )}
+            style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)', minWidth: 'var(--boxed-inputfield-height)' }}
+            onClick={toggleSidebar}
+            title={isSidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+          >
+            {isSidebarCollapsed ? (
+              <FiChevronRight className="w-4 h-4" />
+            ) : (
+              <FiChevronLeft className="w-4 h-4" />
+            )}
+          </button>
+        )}
+
         {/* Mini Calendar Toggle */}
         <button
           className={cn(
-            "flex items-center justify-center rounded-xl transition-all",
+            "flex items-center justify-center rounded-xl transition-all shrink-0",
             showMiniCalendar ? "bg-primary/10 text-primary" : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
           )}
           style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)', minWidth: 'var(--boxed-inputfield-height)' }}
           onClick={() => setShowMiniCalendar(!showMiniCalendar)}
           title={showMiniCalendar ? "Hide calendar" : "Show calendar"}
         >
-          <FiCalendar className="w-4 h-4" style={{ width: '16px', height: '16px' }} />
+          <FiCalendar className="w-4 h-4" />
         </button>
 
         {/* Upcoming Events Toggle */}
         <button
           className={cn(
-            "flex items-center justify-center rounded-xl transition-all",
+            "flex items-center justify-center rounded-xl transition-all shrink-0",
             showUpcomingEvents ? "bg-primary/10 text-primary" : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
           )}
-          style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
+          style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)', minWidth: 'var(--boxed-inputfield-height)' }}
           onClick={() => setShowUpcomingEvents(!showUpcomingEvents)}
           title={showUpcomingEvents ? "Hide upcoming events" : "Show upcoming events"}
         >
           <FiClock className="w-4 h-4" />
         </button>
 
-        <div className="h-6 w-px bg-border/50 hidden md:block" />
+        <div className="h-6 w-px bg-border/50 hidden sm:block shrink-0" />
 
         {/* Today Button */}
         <button
           className={cn(
-            "flex items-center gap-2 px-4 text-sm font-medium rounded-xl transition-all border-2",
+            "flex items-center gap-2 px-3 sm:px-4 text-sm font-medium rounded-xl transition-all border-2 shrink-0",
             "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
           )}
           style={{ height: 'var(--boxed-inputfield-height)' }}
@@ -113,96 +129,43 @@ const CalendarHeader = ({
           }}
           title={t('calendar:today')}
         >
-          {t('calendar:today')}
+          <span className="hidden sm:inline">{t('calendar:today')}</span>
+          <span className="sm:hidden">{t('calendar:today')?.substring(0, 1) || 'T'}</span>
         </button>
 
-        <>
-          <div className="h-6 w-px bg-border/50 hidden md:block" />
+        <div className="h-6 w-px bg-border/50 hidden sm:block shrink-0" />
 
-          {/* View Toggle - Show dropdown at >= 1200px, buttons otherwise */}
-          {windowWidth >= 1200 ? (
-            <div className="relative" ref={viewDropdownRef}>
-              <button
-                className={cn(
-                  "flex items-center gap-2 px-4 text-sm font-medium rounded-xl transition-all border-2",
-                  "bg-background border-input text-foreground hover:border-muted-foreground/30",
-                  showViewDropdown && "border-primary/60"
-                )}
-                style={{ height: 'var(--boxed-inputfield-height)' }}
-                onClick={() => setShowViewDropdown(!showViewDropdown)}
-              >
-                <span>{view === 'day' ? t('calendar:dayView') : t('calendar:weekView')}</span>
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-              {showViewDropdown && (
-                <div className="absolute left-0 top-full mt-2 w-40 bg-card rounded-lg shadow-xl border border-border p-2 z-30 animate-in fade-in zoom-in-95 duration-200">
-                  <button
-                    className={cn(
-                      "w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-left",
-                      view === 'day'
-                        ? "bg-primary/10 text-primary"
-                        : "text-foreground hover:bg-muted/50"
-                    )}
-                    onClick={() => {
-                      setView('day');
-                      setShowViewDropdown(false);
-                    }}
-                  >
-                    {t('calendar:dayView')}
-                  </button>
-                  <button
-                    className={cn(
-                      "w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-left",
-                      view === 'week'
-                        ? "bg-primary/10 text-primary"
-                        : "text-foreground hover:bg-muted/50"
-                    )}
-                    onClick={() => {
-                      setView('week');
-                      setShowViewDropdown(false);
-                    }}
-                  >
-                    {t('calendar:weekView')}
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
-              <button
-                className={cn(
-                  "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
-                  view === 'day'
-                    ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
-                )}
-                onClick={() => {
-                  setView('day');
-                }}
-              >
-                {t('calendar:dayView')}
-              </button>
-              <button
-                className={cn(
-                  "px-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
-                  view === 'week'
-                    ? "bg-background text-foreground shadow-sm border-2 border-primary/60"
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
-                )}
-                onClick={() => setView('week')}
-              >
-                {t('calendar:weekView')}
-              </button>
-            </div>
-          )}
-        </>
+        <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
+          <button
+            className={cn(
+              "px-3 sm:px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
+              view === 'day'
+                ? "bg-background text-foreground shadow-sm border-2"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
+            )}
+            style={view === 'day' ? { borderColor: 'var(--color-logo-1)' } : {}}
+            onClick={() => setView('day')}
+          >
+            {t('calendar:dayView')}
+          </button>
+          <button
+            className={cn(
+              "px-3 sm:px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
+              view === 'week'
+                ? "bg-background text-foreground shadow-sm border-2"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50 border-2 border-transparent"
+            )}
+            style={view === 'week' ? { borderColor: 'var(--color-logo-1)' } : {}}
+            onClick={() => setView('week')}
+          >
+            {t('calendar:weekView')}
+          </button>
+        </div>
       </div>
 
-      {/* Center: Calendar/Team Toggle - Only show for team workspaces */}
-      {isTeamWorkspace && (
-        <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input absolute left-1/2 -translate-x-1/2 z-10 shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
+      {/* Center/Middle section (if team workspace) */}
+      {isTeamWorkspace && calendarMode && setCalendarMode && (
+        <div className="flex items-center px-0.5 py-0.5 bg-muted/50 rounded-xl border-2 border-input shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
           <button
             className={cn(
               "px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center focus:outline-none h-full shrink-0 select-none",
@@ -212,8 +175,9 @@ const CalendarHeader = ({
             )}
             style={calendarMode === 'calendar' ? { borderColor: 'var(--color-logo-1)' } : {}}
             onClick={() => setCalendarMode('calendar')}
+            title={t('calendar:calendarView', 'Calendar')}
           >
-            {t('calendar:calendarView', 'Calendar')}
+            <FiCalendar className="w-4 h-4" />
           </button>
           <button
             className={cn(
@@ -224,21 +188,21 @@ const CalendarHeader = ({
             )}
             style={calendarMode === 'team' ? { borderColor: 'var(--color-logo-1)' } : {}}
             onClick={() => setCalendarMode('team')}
+            title={t('calendar:blockView', 'Block')}
           >
-            {t('calendar:teamView', 'Team')}
+            <FiGrid className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {/* Right: Filters & Actions */}
       <div className={cn(
-        "flex items-center gap-2 justify-end",
-        isTeamWorkspace ? "flex-1 min-w-0 pl-[140px] md:pl-[160px]" : "flex-1"
+        "flex items-center justify-end gap-1.5 flex-1 min-w-max"
       )}>
         {/* Night View Button - Show in both calendar and team modes */}
         <button
           className={cn(
-            "flex items-center justify-center rounded-xl transition-all",
+            "flex items-center justify-center rounded-xl transition-all shrink-0",
             nightView ? "bg-primary/10 text-primary" : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
           )}
           style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)', minWidth: 'var(--boxed-inputfield-height)' }}
@@ -249,7 +213,7 @@ const CalendarHeader = ({
         </button>
 
         {/* Category Filter - Show in both calendar and team modes */}
-        <div className="relative" ref={categoryDropdownRef}>
+        <div className="relative shrink-0" ref={categoryDropdownRef}>
           <button
             className={cn(
               "flex items-center justify-center rounded-xl transition-all",
@@ -366,7 +330,10 @@ CalendarHeader.propTypes = {
   showUpcomingEvents: PropTypes.bool,
   setShowUpcomingEvents: PropTypes.func,
   nightView: PropTypes.bool,
-  setNightView: PropTypes.func
+  setNightView: PropTypes.func,
+  isBelow1200: PropTypes.bool,
+  isOverlayExpanded: PropTypes.bool,
+  onToggleOverlay: PropTypes.func
 };
 
 export default CalendarHeader; 

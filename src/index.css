@@ -602,4 +602,26 @@ input[readonly].banking-masked::placeholder,
   .profile-form-actions {
     @apply flex justify-end gap-4 w-full;
   }
+
+  .facility-tab-layout-container {
+    @apply w-full max-w-[1400px] mx-auto p-6;
+    container-type: inline-size;
+  }
+
+  .facility-tab-content-wrapper {
+    @apply w-full grid gap-6;
+    grid-template-columns: 1fr;
+    container-type: inline-size;
+  }
+
+  @container (min-width: 700px) {
+    .facility-tab-content-wrapper {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .facility-tab-content {
+    @apply w-full;
+    grid-column: 1 / -1;
+  }
 }

@@ -232,4 +232,8 @@ module.exports.getScraperSchedules = jobScraperScheduler.getScraperSchedules;
 module.exports.getScraperStatus = jobScraperScheduler.getScraperStatus;
 module.exports.runScheduledScraper = jobScraperScheduler.runScheduledScraper;
 
+// TEAM ORGANIGRAM ANALYZER - Export from api/teamOrganigram.js
+const teamOrganigram = require('./api/teamOrganigram');
+module.exports.analyzeTeamOrganigram = teamOrganigram.analyzeTeamOrganigram;
+
 

@@ -630,6 +630,21 @@
     "premiumFeatureRequired": "Premium subscription required for this feature",
     "premiumFeature": "Premium Feature"
   },
+  "preferenceDays": {
+    "title": "Preference Days",
+    "subtitle": "Set your preferred working days and times",
+    "hint": "These preferences will be applied to marketplace searches and will be visible to facility managers when they review your profile.",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+    "allDay": "All day",
+    "startTime": "Start Time",
+    "endTime": "End Time"
+  },
   "facility": {
     "title": "Facilities",
     "subtitle": "Manage your facility memberships",
@@ -687,6 +702,9 @@
     "usePlaceholderName": "Enter Placeholder Name",
     "noWorkersAssigned": "No workers assigned. Click \"Add Worker\" to assign.",
     "addWorker": "Add Worker",
-    "assignedWorkers": "Assigned Workers"
+    "assignedWorkers": "Assigned Workers",
+    "needMoreWorkers": "Need more workers?",
+    "viewWorkersList": "View workers list",
+    "inviteNewMembers": "Invite new members to your team"
   }
 }

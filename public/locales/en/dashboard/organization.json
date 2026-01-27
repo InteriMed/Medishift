@@ -25,7 +25,8 @@
     "employees": "Employees",
     "hiring": "Hiring Processes",
     "admin": "Admin",
-    "teams": "Teams"
+    "teams": "Teams",
+    "requests": "Requests"
   },
   "sections": {
     "info": "Organization Info",
@@ -687,6 +688,131 @@
     "errors": {
       "loadFailed": "Failed to load team data"
     }
+  },
+  "requests": {
+    "title": "Requests",
+    "subtitle": "Manage vacancy leave requests and clocked hours updates",
+    "vacancyRequests": "Vacancy Requests",
+    "clockedHoursUpdates": "Clocked Hours Updates",
+    "pending": "Pending",
+    "noRequests": "No requests found",
+    "type": "Type",
+    "employee": "Employee",
+    "details": "Details",
+    "date": "Date",
+    "status": "Status",
+    "vacancyRequest": "Vacancy Request",
+    "clockedHoursUpdate": "Clocked Hours Update",
+    "hours": "Hours",
+    "requestApproved": "Request approved",
+    "requestRejected": "Request rejected",
+    "errorApproving": "Error approving request",
+    "errorRejecting": "Error rejecting request",
+    "searchPlaceholder": "Search by employee, job title, or reason...",
+    "filterByStatus": "Filter by Status",
+    "filterByType": "Filter by Type"
+  },
+  "employees": {
+    "title": "Employees",
+    "subtitle": "Manage and track all employees",
+    "searchPlaceholder": "Search employees...",
+    "noEmployees": "No employees found",
+    "filterByStatus": "Filter by Status",
+    "filterByRole": "Filter by Role",
+    "filterByFacility": "Filter by Facility",
+    "unnamedFacility": "Unnamed Facility",
+    "sort": {
+      "name": "Name",
+      "date": "Date",
+      "facility": "Facility"
+    },
+    "table": {
+      "name": "Name",
+      "facility": "Facility",
+      "role": "Role",
+      "status": "Status",
+      "hired": "Hired"
+    }
+  },
+  "hiring": {
+    "title": "Hiring Processes",
+    "subtitle": "Manage and track all hiring processes",
+    "searchPlaceholder": "Search positions...",
+    "noPositions": "No positions found",
+    "applications": "applications",
+    "filterByStatus": "Filter by Status",
+    "filterByFacility": "Filter by Facility",
+    "unnamedFacility": "Unnamed Facility",
+    "sort": {
+      "date": "Date",
+      "name": "Name",
+      "facility": "Facility",
+      "applications": "Applications"
+    },
+    "table": {
+      "title": "Title",
+      "facility": "Facility",
+      "status": "Status",
+      "applications": "Applications",
+      "created": "Created"
+    }
+  },
+  "contracts": {
+    "title": "Contracts",
+    "subtitle": "Manage and track all contracts",
+    "searchPlaceholder": "Search contracts...",
+    "noContracts": "No contracts found",
+    "filterByStatus": "Filter by Status",
+    "filterBySource": "Filter by Source",
+    "team": "Team",
+    "medishift": "Medishift",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "sort": {
+      "date": "Date",
+      "name": "Name"
+    },
+    "table": {
+      "title": "Title",
+      "company": "Company",
+      "status": "Status",
+      "created": "Created"
+    }
+  },
+  "payroll": {
+    "title": "Payroll Management",
+    "subtitle": "Track and manage staff payment requests",
+    "searchPlaceholder": "Search by worker name or role...",
+    "noRequests": "No payroll requests found",
+    "filterByStatus": "Filter by Status",
+    "filterBySource": "Filter by Source",
+    "team": "Team",
+    "medishift": "Medishift",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "sort": {
+      "date": "Date",
+      "name": "Name",
+      "amount": "Amount"
+    },
+    "table": {
+      "worker": "Worker",
+      "shift": "Shift",
+      "hours": "Hours",
+      "amount": "Amount",
+      "status": "Status",
+      "created": "Created"
+    }
+  },
+  "policy": {
+    "filterByStatus": "Filter by Status",
+    "filterByType": "Filter by Type",
+    "filterByRole": "Filter by Role",
+    "filterByFacility": "Filter by Facility",
+    "filterByPriority": "Filter by Priority",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "noPolicies": "No policies found"
   },
   "facilityRoles": {
     "title": "Facility Roles",

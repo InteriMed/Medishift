@@ -15,9 +15,6 @@ const { FUNCTION_CONFIG, FUNCTION_CONFIG_REQUEST } = require('../config/keysData
 // Import scheduler engine
 const { SchedulerEngine, createEmployee, Role } = require('../scheduler');
 
-// Import scheduler engine
-const { SchedulerEngine, createEmployee, Role } = require('../scheduler');
-
 /**
  * EVENT PERMISSION HELPERS
  */

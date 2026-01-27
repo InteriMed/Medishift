@@ -8,11 +8,9 @@ import {
     FiPlus,
     FiX,
     FiShield,
-    FiAlertCircle,
-    FiSearch,
-    FiSliders,
     FiFileText
 } from 'react-icons/fi';
+import FilterBar from '../../components/FilterBar/FilterBar';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
@@ -33,18 +31,16 @@ import {
 } from './utils/ticketPopupUtils';
 
 const categoryLabels = {
-    feedback: 'Feedback',
-    bug_report: 'Bug Report',
-    feature_request: 'Feature Request',
-    support: 'Support',
-    question: 'Question',
-    general: 'General',
-    reporting: 'Reporting',
-    incident: 'Incident',
-    compliance: 'Compliance',
+    'Leave Request': 'Leave Request',
+    'Sick Leave': 'Sick Leave',
+    'Appointment': 'Appointment',
+    'Meeting': 'Meeting',
+    'Schedule': 'Schedule',
+    'Other': 'Other',
 };
 
-const ReportingPage = () => {
+
+const ReportingPage = ({ hideHeader }) => {
     const { t } = useTranslation(['messages']);
     const { showError, showSuccess } = useNotification();
     const { user, selectedWorkspace } = useDashboard();
@@ -57,12 +53,17 @@ const ReportingPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [selectedTicketId, setSelectedTicketId] = useState(null);
+    const [sortBy, setSortBy] = useState('date');
+    const [viewMode, setViewMode] = useState('list');
+    const [filters, setFilters] = useState({
+        category: 'all',
+        fromDate: '',
+        toDate: ''
+    });
 
     const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
     const [createFormData, setCreateFormData] = useState(getInitialReportingFormData());
     const [isCreating, setIsCreating] = useState(false);
-    const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
-    const filterDropdownRef = useRef(null);
 
     const loadTickets = useCallback(async () => {
         if (!user?.uid) {
@@ -87,21 +88,6 @@ const ReportingPage = () => {
         loadTickets();
     }, [loadTickets]);
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
-                setShowFiltersOverlay(false);
-            }
-        };
-
-        if (showFiltersOverlay) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showFiltersOverlay]);
 
     useEffect(() => {
         const pathSegments = location.pathname.split('/');
@@ -114,7 +100,7 @@ const ReportingPage = () => {
 
         const handleOpenModal = (event) => {
             if (event.detail?.type === 'createTicket' || event.detail?.action === 'create') {
-                navigate(buildDashboardUrl('/reporting/new', workspaceId));
+                navigate(buildDashboardUrl('/communications/reporting/new', workspaceId));
             }
         };
 
@@ -145,7 +131,7 @@ const ReportingPage = () => {
             showSuccess('Ticket created successfully');
             setIsCreateTicketOpen(false);
             resetReportingFormData(setCreateFormData);
-            navigate(buildDashboardUrl('/reporting', workspaceId));
+            navigate(buildDashboardUrl('/communications/reporting', workspaceId));
             loadTickets();
         } catch (error) {
             console.error('Error creating ticket:', error);
@@ -158,8 +144,8 @@ const ReportingPage = () => {
     const filteredTickets = useMemo(() => {
         let currentTickets = tickets;
 
-        if (selectedCategory !== 'all') {
-            currentTickets = currentTickets.filter(t => t.category === selectedCategory);
+        if (filters.category !== 'all') {
+            currentTickets = currentTickets.filter(t => t.category === filters.category);
         }
 
         if (searchQuery.trim()) {
@@ -171,171 +157,151 @@ const ReportingPage = () => {
             );
         }
 
+        if (filters.fromDate || filters.toDate) {
+            currentTickets = currentTickets.filter(t => {
+                const ticketDate = t.createdAt ? (t.createdAt.toDate ? t.createdAt.toDate() : new Date(t.createdAt)) : null;
+                if (!ticketDate) return false;
+                if (filters.fromDate) {
+                    const fromDate = new Date(filters.fromDate);
+                    fromDate.setHours(0, 0, 0, 0);
+                    if (ticketDate < fromDate) return false;
+                }
+                if (filters.toDate) {
+                    const toDate = new Date(filters.toDate);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (ticketDate > toDate) return false;
+                }
+                return true;
+            });
+        }
+
+        if (sortBy === 'date') {
+            currentTickets.sort((a, b) => {
+                const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
+                const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+                return dateB - dateA;
+            });
+        } else if (sortBy === 'title') {
+            currentTickets.sort((a, b) => {
+                const titleA = (a.subject || '').toLowerCase();
+                const titleB = (b.subject || '').toLowerCase();
+                return titleA.localeCompare(titleB);
+            });
+        } else if (sortBy === 'priority') {
+            const priorityOrder = { Emergency: 0, Urgent: 1, Normal: 2, emergency: 0, urgent: 1, normal: 2, medium: 2 };
+            currentTickets.sort((a, b) => {
+                const priorityA = priorityOrder[a.priority] ?? 99;
+                const priorityB = priorityOrder[b.priority] ?? 99;
+                return priorityA - priorityB;
+            });
+        }
+
         return currentTickets;
-    }, [tickets, selectedCategory, searchQuery]);
+    }, [tickets, filters, searchQuery, sortBy]);
 
     const handleNavigateToMessages = useCallback(() => {
         if (selectedWorkspace) {
             const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl('/messages', workspaceId));
+            navigate(buildDashboardUrl('/communications/messages', workspaceId));
         }
     }, [navigate, selectedWorkspace]);
 
     const handleNavigateToAnnouncements = useCallback(() => {
         if (selectedWorkspace) {
             const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl('/announcements', workspaceId));
+            navigate(buildDashboardUrl('/communications/announcements', workspaceId));
         }
     }, [navigate, selectedWorkspace]);
 
     const handleNavigateToInternalTicket = useCallback(() => {
         if (selectedWorkspace) {
             const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl('/internal-ticket', workspaceId));
+            navigate(buildDashboardUrl('/communications/internal-ticket', workspaceId));
         }
     }, [navigate, selectedWorkspace]);
 
-    const tabs = [
-        { id: 'messages', path: 'messages', label: t('messages:tabs.messages', 'Messages'), icon: FiMessageSquareIcon },
-        { id: 'announcements', path: 'announcements', label: t('messages:tabs.announcements', 'Announcements'), icon: FiBell },
-        { id: 'internalTicket', path: 'internal-ticket', label: t('messages:tabs.internalTicket', 'Support Tickets'), icon: FiFileText },
-        { id: 'reporting', path: 'reporting', label: t('messages:tabs.reporting', 'Anonymous Reports'), icon: FiShield },
-    ];
-
     return (
         <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-            <div className="shrink-0 py-4 border-b border-border bg-card/30">
-                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
-                    <h1 className="text-xl font-semibold text-foreground mb-3">
-                        {t('messages:title', 'Communications')}
-                    </h1>
-                    <div className="flex gap-1 sm:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
-                        {tabs.map((tab) => {
-                            const Icon = tab.icon;
-                            const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                            const isActive = tab.id === 'reporting';
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => {
-                                        if (tab.id === 'messages') {
-                                            handleNavigateToMessages();
-                                        } else if (tab.id === 'announcements') {
-                                            handleNavigateToAnnouncements();
-                                        } else if (tab.id === 'internalTicket') {
-                                            handleNavigateToInternalTicket();
-                                        }
-                                    }}
-                                    className={cn(
-                                        "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0",
-                                        "touch-manipulation active:scale-95",
-                                        isActive
-                                            ? "border-primary text-primary bg-primary/5"
-                                            : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    )}
-                                    title={tab.label}
-                                >
-                                    <Icon className="w-4 h-4 shrink-0" />
-                                    <span className="text-xs sm:text-sm min-w-0">{tab.label}</span>
-                                </button>
-                            );
-                        })}
+            {!hideHeader && (
+                <div className="shrink-0 pt-4 border-b border-border bg-card/30">
+                    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
+                        <h1 className="text-xl font-semibold text-foreground mb-3">
+                            {t('messages:title', 'Communications')}
+                        </h1>
                     </div>
                 </div>
-            </div>
+            )}
 
             <div className="flex-1 overflow-auto">
                 <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col pt-6">
-                    <div className="max-w-[1400px] mx-auto w-full px-6">
-                        <div className="bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full">
-                            <div className="flex items-center justify-between mb-4 px-6 pt-6">
-                                <h3 className="text-base font-semibold text-foreground">
-                                    {t('messages:reporting.title', 'Anonymous Reports')}
-                                </h3>
-                                <button
-                                    onClick={() => navigate(buildDashboardUrl('/reporting/new', workspaceId))}
-                                    className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
-                                    style={{ height: 'var(--boxed-inputfield-height)' }}
-                                >
-                                    <FiPlus className="w-4 h-4" />
-                                    <span>{t('messages:reporting.submitReport', 'Submit Report')}</span>
-                                </button>
-                            </div>
-                            <div className="pt-3 border-t border-border mb-4 px-6">
-                                <p className="text-sm text-muted-foreground">
-                                    {t('messages:reporting.description', 'Submit confidential reports. Your identity will remain anonymous.')}
-                                </p>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3 w-full px-6 pb-6">
-                                <div className="relative flex-1 min-w-[200px]">
-                                    <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                                    <input
-                                        type="text"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder={t('messages:reporting.searchPlaceholder', 'Search tickets...')}
-                                        className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                                        style={{
-                                            height: 'var(--boxed-inputfield-height)',
-                                            fontWeight: '500',
-                                            fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                            color: 'var(--boxed-inputfield-color-text)'
-                                        }}
-                                    />
-                                </div>
-
-                                <div className="relative shrink-0" ref={filterDropdownRef}>
-                                    <button
-                                        onClick={() => setShowFiltersOverlay(!showFiltersOverlay)}
-                                        className={cn(
-                                            "px-4 rounded-xl border-2 transition-all flex items-center gap-2 shrink-0",
-                                            selectedCategory !== 'all' || showFiltersOverlay
-                                                ? "bg-primary/10 border-primary/20 text-primary"
-                                                : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
-                                        )}
-                                        style={{ height: 'var(--boxed-inputfield-height)' }}
-                                        title="Filter by Category"
-                                    >
-                                        <FiSliders className="w-4 h-4" />
-                                        <span className="text-sm font-medium">
-                                            {selectedCategory !== 'all' ? categoryLabels[selectedCategory] : t('messages:reporting.filter', 'Filter')}
-                                        </span>
-                                    </button>
-
-                                    {showFiltersOverlay && (
-                                        <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-popover shadow-lg p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
-                                            <div className="text-xs font-semibold text-muted-foreground px-2 py-1.5 mb-1">
-                                                {t('messages:reporting.categories', 'Categories')}
-                                            </div>
-                                            <button
-                                                onClick={() => { setSelectedCategory('all'); setShowFiltersOverlay(false); }}
-                                                className={cn(
-                                                    "w-full text-left px-2 py-1.5 rounded-lg text-sm transition-colors flex items-center gap-2",
-                                                    selectedCategory === 'all'
-                                                        ? "bg-primary/10 text-primary font-medium"
-                                                        : "text-foreground hover:bg-muted"
-                                                )}
-                                            >
-                                                <span>{t('messages:reporting.allCategories', 'All Categories')}</span>
-                                            </button>
-                                            {Object.keys(categoryLabels).map((cat) => (
-                                                <button
-                                                    key={cat}
-                                                    onClick={() => { setSelectedCategory(cat); setShowFiltersOverlay(false); }}
-                                                    className={cn(
-                                                        "w-full text-left px-2 py-1.5 rounded-lg text-sm transition-colors flex items-center gap-2",
-                                                        selectedCategory === cat
-                                                            ? "bg-primary/10 text-primary font-medium"
-                                                            : "text-foreground hover:bg-muted"
-                                                    )}
-                                                >
-                                                    <span>{categoryLabels[cat] || cat}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                    <div className="w-full max-w-[1400px] mx-auto px-6">
+                        <FilterBar
+                            filters={filters}
+                            onFilterChange={(key, value) => {
+                                setFilters(prev => ({ ...prev, [key]: value }));
+                                if (key === 'category') {
+                                    setSelectedCategory(value);
+                                }
+                            }}
+                            onClearFilters={() => {
+                                setFilters({ category: 'all', fromDate: '', toDate: '' });
+                                setSelectedCategory('all');
+                                setSearchQuery('');
+                            }}
+                            searchValue={searchQuery}
+                            onSearchChange={setSearchQuery}
+                            searchPlaceholder={t('messages:reporting.searchPlaceholder', 'Search tickets...')}
+                            dropdownFields={[
+                                {
+                                    key: 'category',
+                                    label: t('messages:reporting.filter', 'Filter by Category'),
+                                    options: [
+                                        { value: 'all', label: t('messages:reporting.allCategories', 'All Categories') },
+                                        ...Object.keys(categoryLabels).map(cat => ({
+                                            value: cat,
+                                            label: categoryLabels[cat]
+                                        }))
+                                    ],
+                                    defaultValue: 'all'
+                                }
+                            ]}
+                            dateFields={[
+                                {
+                                    key: 'fromDate',
+                                    label: t('messages:reporting.fromDate', 'From Date'),
+                                    showClearButton: true
+                                },
+                                {
+                                    key: 'toDate',
+                                    label: t('messages:reporting.toDate', 'To Date'),
+                                    showClearButton: true
+                                }
+                            ]}
+                            sortOptions={[
+                                { value: 'date', label: t('messages:reporting.sort.date', 'Date') },
+                                { value: 'title', label: t('messages:reporting.sort.title', 'Title') },
+                                { value: 'priority', label: t('messages:reporting.sort.priority', 'Priority') }
+                            ]}
+                            sortValue={sortBy}
+                            onSortChange={setSortBy}
+                            showViewToggle={true}
+                            viewMode={viewMode}
+                            onViewModeChange={setViewMode}
+                            title={t('messages:reporting.title', 'Anonymous Reports')}
+                            description={t('messages:reporting.description', 'Submit confidential reports. Your identity will remain anonymous.')}
+                            onRefresh={loadTickets}
+                            isLoading={isLoading}
+                            translationNamespace="messages"
+                        />
+                        <div className="flex justify-end mt-4">
+                            <button
+                                onClick={() => navigate(buildDashboardUrl('/communications/reporting/new', workspaceId))}
+                                className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
+                                style={{ height: 'var(--boxed-inputfield-height)' }}
+                            >
+                                <FiPlus className="w-4 h-4" />
+                                <span>{t('messages:reporting.submitReport', 'Submit Report')}</span>
+                            </button>
                         </div>
                     </div>
 
@@ -355,7 +321,7 @@ const ReportingPage = () => {
                                         {t('messages:reporting.noReportsHint', 'Get started by submitting an anonymous report.')}
                                     </p>
                                     <button
-                                        onClick={() => navigate(buildDashboardUrl('/reporting/new', workspaceId))}
+                                        onClick={() => navigate(buildDashboardUrl('/communications/reporting/new', workspaceId))}
                                         className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
                                     >
                                         <FiPlus className="w-5 h-5" />
@@ -384,7 +350,7 @@ const ReportingPage = () => {
                                                         )}
                                                     </div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        {ticket.createdAt ? new Date(ticket.createdAt.toDate?.() || ticket.createdAt).toLocaleDateString() : 'Just now'} · {categoryLabels[ticket.category] || ticket.category} · {ticket.status || 'open'}
+                                                        {ticket.createdAt ? new Date(ticket.createdAt.toDate?.() || ticket.createdAt).toLocaleDateString() : 'Just now'} · {categoryLabels[ticket.category] || ticket.category || 'Other'} · {ticket.status || 'open'}
                                                     </div>
                                                 </div>
                                             </div>
@@ -396,13 +362,12 @@ const ReportingPage = () => {
                                         <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
                                             <div className={cn(
                                                 "flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/50",
-                                                ticket.priority === 'urgent' && "text-red-500 bg-red-500/10",
-                                                ticket.priority === 'high' && "text-orange-500 bg-orange-500/10",
-                                                ticket.priority === 'medium' && "text-yellow-500 bg-yellow-500/10",
-                                                ticket.priority === 'low' && "text-blue-500 bg-blue-500/10"
+                                                (ticket.priority === 'Emergency' || ticket.priority === 'emergent') && "text-red-600 bg-red-500/10 border border-red-500/20",
+                                                (ticket.priority === 'Urgent' || ticket.priority === 'urgent') && "text-orange-500 bg-orange-500/10 border border-orange-500/20",
+                                                (ticket.priority === 'Normal' || ticket.priority === 'normal' || ticket.priority === 'medium') && "text-blue-500 bg-blue-500/10 border border-blue-500/20"
                                             )}>
                                                 <FiBarChart2 className="w-3.5 h-3.5" />
-                                                <span>{ticket.priority || 'medium'}</span>
+                                                <span>{ticket.priority || 'Normal'}</span>
                                             </div>
                                             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/50">
                                                 <FiMessageSquare className="w-3.5 h-3.5" />
@@ -421,7 +386,7 @@ const ReportingPage = () => {
                 isOpen={isCreateTicketOpen}
                 onClose={() => {
                     handleCloseReportingPopup(setIsCreateTicketOpen, setCreateFormData, isCreating);
-                    navigate(buildDashboardUrl('/reporting', workspaceId));
+                    navigate(buildDashboardUrl('/communications/reporting', workspaceId));
                 }}
                 title={t('messages:reporting.submitReport', 'Submit Anonymous Report')}
                 size="small"
@@ -431,7 +396,7 @@ const ReportingPage = () => {
                         <button
                             onClick={() => {
                                 handleCloseReportingPopup(setIsCreateTicketOpen, setCreateFormData, isCreating);
-                                navigate(buildDashboardUrl('/reporting', workspaceId));
+                                navigate(buildDashboardUrl('/communications/reporting', workspaceId));
                             }}
                             disabled={isCreating}
                             className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -451,53 +416,42 @@ const ReportingPage = () => {
                 }
             >
                 <div className="space-y-4">
-                    <BoxedSwitchField
-                        label={t('messages:reporting.anonymousReporting', 'Submit as Anonymous Report')}
-                        checked={createFormData.isAnonymous}
-                        onChange={(checked) => setCreateFormData({ ...createFormData, isAnonymous: checked })}
-                        disabled={isCreating}
-                    />
-
                     <div className="mt-4">
-                        <InputField
-                            label={t('messages:reporting.subject', 'Subject')}
-                            value={createFormData.subject}
-                            onChange={(e) => setCreateFormData({ ...createFormData, subject: e.target.value })}
-                            placeholder={t('messages:reporting.subjectPlaceholder', 'Enter ticket subject...')}
-                            required
+                        <SimpleDropdown
+                            label={t('messages:reporting.priority', 'Priority')}
+                            options={[
+                                { value: 'Emergency', label: 'Emergency' },
+                                { value: 'Urgent', label: 'Urgent' },
+                                { value: 'Normal', label: 'Normal' }
+                            ]}
+                            value={createFormData.priority}
+                            onChange={(value) => setCreateFormData({ ...createFormData, priority: value })}
                             disabled={isCreating}
-                            name="ticketSubject"
                         />
                     </div>
+
+                    <InputField
+                        label={t('messages:reporting.subject', 'Subject')}
+                        value={createFormData.subject}
+                        onChange={(e) => setCreateFormData({ ...createFormData, subject: e.target.value })}
+                        placeholder={t('messages:reporting.subjectPlaceholder', 'Enter ticket subject...')}
+                        required
+                        disabled={isCreating}
+                        name="ticketSubject"
+                    />
 
                     <SimpleDropdown
                         label={t('messages:reporting.category', 'Category')}
                         options={[
-                            { value: 'general', label: categoryLabels.general },
-                            { value: 'support', label: categoryLabels.support },
-                            { value: 'bug_report', label: categoryLabels.bug_report },
-                            { value: 'feature_request', label: categoryLabels.feature_request },
-                            { value: 'reporting', label: categoryLabels.reporting },
-                            { value: 'incident', label: categoryLabels.incident },
-                            { value: 'compliance', label: categoryLabels.compliance },
-                            { value: 'question', label: categoryLabels.question },
-                            { value: 'feedback', label: categoryLabels.feedback },
+                            { value: 'Leave Request', label: categoryLabels['Leave Request'] },
+                            { value: 'Sick Leave', label: categoryLabels['Sick Leave'] },
+                            { value: 'Appointment', label: categoryLabels['Appointment'] },
+                            { value: 'Meeting', label: categoryLabels['Meeting'] },
+                            { value: 'Schedule', label: categoryLabels['Schedule'] },
+                            { value: 'Other', label: categoryLabels['Other'] },
                         ]}
                         value={createFormData.category}
                         onChange={(value) => setCreateFormData({ ...createFormData, category: value })}
-                        disabled={isCreating}
-                    />
-
-                    <SimpleDropdown
-                        label={t('messages:reporting.priority', 'Priority')}
-                        options={[
-                            { value: 'low', label: t('messages:reporting.priority.low', 'Low') },
-                            { value: 'medium', label: t('messages:reporting.priority.medium', 'Medium') },
-                            { value: 'high', label: t('messages:reporting.priority.high', 'High') },
-                            { value: 'urgent', label: t('messages:reporting.priority.urgent', 'Urgent') },
-                        ]}
-                        value={createFormData.priority}
-                        onChange={(value) => setCreateFormData({ ...createFormData, priority: value })}
                         disabled={isCreating}
                     />
 
@@ -510,6 +464,13 @@ const ReportingPage = () => {
                         disabled={isCreating}
                         name="ticketMessage"
                         required
+                    />
+
+                    <BoxedSwitchField
+                        label={t('messages:reporting.anonymousReporting', 'Submit as Anonymous Report')}
+                        checked={createFormData.isAnonymous}
+                        onChange={(checked) => setCreateFormData({ ...createFormData, isAnonymous: checked })}
+                        disabled={isCreating}
                     />
                 </div>
             </Dialog>

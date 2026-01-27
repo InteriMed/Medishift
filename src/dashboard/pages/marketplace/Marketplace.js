@@ -1,18 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiSearch, FiX, FiFilter, FiCheck, FiInbox, FiGrid, FiList, FiAlertCircle, FiSettings, FiArrowDown, FiSliders } from 'react-icons/fi';
-import { useMobileView } from '../../hooks/useMobileView';
-import DropdownFieldAddListOriginal from '../../../components/BoxedInputFields/Dropdown-Field-AddList';
-import DateField from '../../../components/BoxedInputFields/DateField';
+import { 
+  FiInbox, 
+  FiAlertCircle,
+  FiMapPin,
+  FiCalendar,
+  FiBriefcase,
+  FiDollarSign,
+  FiClock
+} from 'react-icons/fi';
+import { 
+  Calendar,
+  MapPin,
+  Briefcase,
+  Eye
+} from 'lucide-react';
+import FilterBar from '../../components/FilterBar/FilterBar';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
-import ListingCard from '../../components/ListingCard/ListingCard';
 import DetailedCard from './components/detailed_card/DetailedCard';
 import { useMarketplaceData } from '../../hooks/useMarketplaceData';
-import { cn } from '../../../utils/cn';
+
+const styles = {
+  pageContainer: "flex flex-col gap-6 p-0 w-full max-w-[1400px] mx-auto",
+  headerCard: "bg-card rounded-xl border border-border px-6 py-4 hover:shadow-md transition-shadow w-full max-w-[1400px] mx-auto",
+  sectionTitle: "text-2xl font-semibold mb-0",
+  sectionTitleStyle: { fontSize: '18px', color: 'var(--text-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+  sectionSubtitle: "text-sm font-medium mt-1",
+  sectionSubtitleStyle: { color: 'var(--text-light-color)', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
+  contentWrapper: "w-full max-w-[1400px] mx-auto"
+};
 
 const Marketplace = () => {
   const { t } = useTranslation(['marketplace']);
-  const isMobile = useMobileView();
   const {
     listings,
     filteredListings,
@@ -25,64 +44,23 @@ const Marketplace = () => {
   } = useMarketplaceData();
 
   const [filters, setFilters] = useState({
-    canton: [],
-    city: [],
-    area: [],
-    experience: [],
-    software: [],
-    workAmount: [],
-    fromDate: '',
-    toDate: ''
+    canton: '',
+    city: '',
+    area: '',
+    experience: '',
+    software: '',
+    workAmount: '',
+    contractType: 'all',
+    fromDate: null,
+    toDate: null
   });
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [processedListings, setProcessedListings] = useState([]);
-  const [viewMode, setViewMode] = useState('grid');
-  const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [justExpanded, setJustExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('relevance');
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [showActiveFilters, setShowActiveFilters] = useState(false);
 
   useEffect(() => {
-      fetchListings({}, 'jobs');
+    fetchListings({}, 'jobs');
   }, [fetchListings]);
-
-  useEffect(() => {
-    let result = [...filteredListings];
-
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
-      result = result.filter(listing => {
-        const title = (listing.title || listing.jobTitle || '').toLowerCase();
-        const description = (listing.description || listing.notes || '').toLowerCase();
-        const city = (listing.location?.city || listing.locationPreference?.city || '').toLowerCase();
-        const canton = (listing.location?.canton || listing.locationPreference?.canton || '').toLowerCase();
-
-        return title.includes(searchLower) ||
-          description.includes(searchLower) ||
-          city.includes(searchLower) ||
-          canton.includes(searchLower);
-      });
-    }
-
-    if (sortBy === 'date') {
-      result.sort((a, b) => {
-        const dateA = new Date(a.createdAt || a.created || a.startTime || 0);
-        const dateB = new Date(b.createdAt || b.created || b.startTime || 0);
-        return dateB - dateA;
-      });
-    } else if (sortBy === 'title') {
-      result.sort((a, b) => {
-        const titleA = (a.title || a.jobTitle || '').toLowerCase();
-        const titleB = (b.title || b.jobTitle || '').toLowerCase();
-        return titleA.localeCompare(titleB);
-      });
-    }
-
-    setProcessedListings(result);
-  }, [filteredListings, searchTerm, sortBy]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({
@@ -91,25 +69,33 @@ const Marketplace = () => {
     }));
   };
 
-  const clearDateFilter = () => {
-    setFilters(prev => ({
-      ...prev,
-      fromDate: '',
-      toDate: ''
-    }));
-  };
-
-  const applyFilters = () => {
+  const handleApplyFilters = () => {
     const transformedFilters = {
       ...filters,
-      canton: filters.canton?.map(item => typeof item === 'object' ? item.value : item) || [],
-      city: filters.city?.map(item => typeof item === 'object' ? item.value : item) || [],
-      area: filters.area?.map(item => typeof item === 'object' ? item.value : item) || [],
-      experience: filters.experience?.map(item => typeof item === 'object' ? item.value : item) || [],
-      software: filters.software?.map(item => typeof item === 'object' ? item.value : item) || [],
-      workAmount: filters.workAmount?.map(item => typeof item === 'object' ? item.value : item) || []
+      canton: filters.canton === 'all' ? '' : filters.canton,
+      city: filters.city === 'all' ? '' : filters.city,
+      area: filters.area === 'all' ? '' : filters.area,
+      experience: filters.experience === 'all' ? '' : filters.experience,
+      software: filters.software === 'all' ? '' : filters.software,
+      workAmount: filters.workAmount === 'all' ? '' : filters.workAmount,
+      contractType: filters.contractType === 'all' ? '' : filters.contractType
     };
     applyFiltersHook(transformedFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      canton: 'all',
+      city: 'all',
+      area: 'all',
+      experience: 'all',
+      software: 'all',
+      workAmount: 'all',
+      contractType: 'all',
+      fromDate: null,
+      toDate: null
+    });
+    setSearchQuery('');
   };
 
   const handleListingClick = (listing) => {
@@ -124,433 +110,221 @@ const Marketplace = () => {
     }, 300);
   };
 
-  // ... (existing helper functions)
-
-  // Options for dropdowns (copied from FilterBar.js)
-  const cantons = ["Zurich", "Geneva", "Basel", "Bern", "Vaud", "Lucerne", "St. Gallen"];
-  const cities = ["Zurich", "Geneva", "Basel", "Bern", "Lausanne"];
-  const areas = ["5km", "10km", "20km", "50km", "100km"];
-  const experienceLevels = [
-    { value: "beginner", label: t('marketplace:experienceLevels.beginner') },
-    { value: "intermediate", label: t('marketplace:experienceLevels.intermediate') },
-    { value: "experienced", label: t('marketplace:experienceLevels.experienced') }
-  ];
-  const software = ["Golden Gate", "ABACUS", "Pharmatic", "ProPharma", "Tactil"];
-  const workAmounts = [
-    { value: "0-20", label: "0-20%" },
-    { value: "20-40", label: "20-40%" },
-    { value: "40-60", label: "40-60%" },
-    { value: "60-80", label: "60-80%" },
-    { value: "80-100", label: "80-100%" }
-  ];
-
-  const handleClearAllFilters = () => {
-    clearDateFilter();
-    handleFilterChange('canton', []);
-    handleFilterChange('city', []);
-    handleFilterChange('area', []);
-    handleFilterChange('experience', []);
-    handleFilterChange('software', []);
-    handleFilterChange('workAmount', []);
+  const handleRefresh = () => {
+    fetchListings({}, 'jobs');
   };
 
-  const activeCount = [
-    filters.canton?.length,
-    filters.city?.length,
-    filters.area?.length,
-    filters.experience?.length,
-    filters.software?.length,
-    filters.workAmount?.length,
-    filters.fromDate ? 1 : 0,
-    filters.toDate ? 1 : 0
-  ].reduce((a, b) => a + (b || 0), 0);
+  const filteredAndSortedListings = useMemo(() => {
+    let result = [...filteredListings];
 
-  return (
-    <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500 marketplace-page">
-      <div className="shrink-0 py-4 border-b border-border bg-card/30">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
-          <h1 className="text-xl font-semibold text-foreground mb-3">
-            {t('marketplace:title', 'Marketplace')}
-          </h1>
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(listing => {
+        const title = (listing.title || listing.jobTitle || '').toLowerCase();
+        const description = (listing.description || listing.notes || '').toLowerCase();
+        const city = (listing.location?.city || listing.locationPreference?.city || '').toLowerCase();
+        const canton = (listing.location?.canton || listing.locationPreference?.canton || '').toLowerCase();
+
+        return title.includes(query) ||
+          description.includes(query) ||
+          city.includes(query) ||
+          canton.includes(query);
+      });
+    }
+
+    result = [...result].sort((a, b) => {
+      let aValue, bValue;
+
+      switch (sortBy) {
+        case 'title':
+          aValue = (a.title || a.jobTitle || '').toLowerCase();
+          bValue = (b.title || b.jobTitle || '').toLowerCase();
+          break;
+        case 'date':
+          aValue = new Date(a.createdAt || a.created || a.startTime || 0).getTime();
+          bValue = new Date(b.createdAt || b.created || b.startTime || 0).getTime();
+          break;
+        case 'location':
+          aValue = (a.location?.city || a.locationPreference?.city || '').toLowerCase();
+          bValue = (b.location?.city || b.locationPreference?.city || '').toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+
+      return aValue > bValue ? 1 : -1;
+    });
+
+    return result;
+  }, [filteredListings, searchQuery, sortBy]);
+
+  const dropdownFields = [
+    {
+      key: 'canton',
+      label: t('marketplace:filters.canton', 'Canton'),
+      options: [
+        { value: 'all', label: t('marketplace:filters.all', 'All') },
+        { value: 'zurich', label: 'Zurich' },
+        { value: 'geneva', label: 'Geneva' },
+        { value: 'basel', label: 'Basel' },
+        { value: 'bern', label: 'Bern' },
+        { value: 'vaud', label: 'Vaud' },
+        { value: 'lucerne', label: 'Lucerne' },
+        { value: 'stgallen', label: 'St. Gallen' }
+      ],
+      defaultValue: 'all'
+    },
+    {
+      key: 'city',
+      label: t('marketplace:filters.city', 'City'),
+      options: [
+        { value: 'all', label: t('marketplace:filters.all', 'All') },
+        { value: 'zurich', label: 'Zurich' },
+        { value: 'geneva', label: 'Geneva' },
+        { value: 'basel', label: 'Basel' },
+        { value: 'bern', label: 'Bern' },
+        { value: 'lausanne', label: 'Lausanne' }
+      ],
+      defaultValue: 'all'
+    },
+    {
+      key: 'experience',
+      label: t('marketplace:filters.experience', 'Experience'),
+      options: [
+        { value: 'all', label: t('marketplace:filters.all', 'All') },
+        { value: 'beginner', label: t('marketplace:experienceLevels.beginner', 'Beginner') },
+        { value: 'intermediate', label: t('marketplace:experienceLevels.intermediate', 'Intermediate') },
+        { value: 'experienced', label: t('marketplace:experienceLevels.experienced', 'Experienced') }
+      ],
+      defaultValue: 'all'
+    },
+    {
+      key: 'software',
+      label: t('marketplace:filters.software', 'Software'),
+      options: [
+        { value: 'all', label: t('marketplace:filters.all', 'All') },
+        { value: 'goldengate', label: 'Golden Gate' },
+        { value: 'abacus', label: 'ABACUS' },
+        { value: 'pharmatic', label: 'Pharmatic' },
+        { value: 'propharma', label: 'ProPharma' },
+        { value: 'tactil', label: 'Tactil' }
+      ],
+      defaultValue: 'all'
+    },
+    {
+      key: 'workAmount',
+      label: t('marketplace:filters.workAmount', 'Work Amount'),
+      options: [
+        { value: 'all', label: t('marketplace:filters.all', 'All') },
+        { value: '0-20', label: '0-20%' },
+        { value: '20-40', label: '20-40%' },
+        { value: '40-60', label: '40-60%' },
+        { value: '60-80', label: '60-80%' },
+        { value: '80-100', label: '80-100%' }
+      ],
+      defaultValue: 'all'
+    },
+    {
+      key: 'contractType',
+      label: t('marketplace:filters.contractType', 'Contract Type'),
+      options: [
+        { value: 'all', label: t('marketplace:filters.all', 'All') },
+        { value: 'full-time', label: t('marketplace:contractTypes.fullTime', 'Full-Time') },
+        { value: 'part-time', label: t('marketplace:contractTypes.partTime', 'Part-Time') },
+        { value: 'temporary', label: t('marketplace:contractTypes.temporary', 'Temporary') },
+        { value: 'contract', label: t('marketplace:contractTypes.contract', 'Contract') }
+      ],
+      defaultValue: 'all'
+    }
+  ];
+
+  const dateFields = [
+    {
+      key: 'fromDate',
+      label: t('marketplace:filters.fromDate', 'From')
+    },
+    {
+      key: 'toDate',
+      label: t('marketplace:filters.toDate', 'To')
+    }
+  ];
+
+  const sortOptions = [
+    { value: 'relevance', label: t('marketplace:sort.relevance', 'Relevance') },
+    { value: 'date', label: t('marketplace:sort.date', 'Date') },
+    { value: 'title', label: t('marketplace:sort.title', 'Title') },
+    { value: 'location', label: t('marketplace:sort.location', 'Location') }
+  ];
+
+  if (isLoading) {
+    return (
+      <div className={styles.pageContainer} style={{ padding: 'var(--spacing-lg)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
+          <LoadingSpinner />
         </div>
       </div>
+    );
+  }
 
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-[1400px] mx-auto w-full p-6">
-          {/* ORGANIZATION INFO STYLED CARD WITH SEARCH BAR */}
-          <div 
-            className={cn(
-              "bg-card rounded-xl border border-border hover:shadow-md transition-shadow w-full mb-4",
-              isFiltersExpanded ? 'px-6 py-3' : 'px-6 py-2'
-            )}
-            onMouseDown={(e) => {
-              if (e.target.closest('button[title="Filters"]')) {
-                e.stopPropagation();
-              }
-            }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground">
-                {t('marketplace:info.title', 'Marketplace Info')}
-              </h3>
-            </div>
-            <div className="pt-3 border-t border-border mb-4">
-              <p className="text-sm text-muted-foreground">
-                {t('marketplace:info.description', 'Browse and search for available positions in the marketplace.')}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 w-full">
-            {/* Search Input */}
-            <div className="relative flex-1 min-w-[200px]">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t('marketplace:searchPlaceholder', 'Search positions...')}
-                className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                style={{
-                  height: 'var(--boxed-inputfield-height)',
-                  fontWeight: '500',
-                  fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                  color: 'var(--boxed-inputfield-color-text)'
-                }}
-              />
-            </div>
+  return (
+    <div className={styles.pageContainer} style={{ padding: 'var(--spacing-lg)' }}>
+      <div className={styles.headerCard}>
+        <h2 className={styles.sectionTitle} style={styles.sectionTitleStyle}>
+          {t('marketplace:title', 'Marketplace')}
+        </h2>
+        <p className={styles.sectionSubtitle} style={styles.sectionSubtitleStyle}>
+          {t('marketplace:subtitle', 'Browse and apply for available positions')}
+        </p>
+      </div>
 
-            {/* Date From */}
-            <div className="relative shrink-0 w-[218px]">
-              <DateField
-                label="From"
-                value={filters.fromDate ? new Date(filters.fromDate) : null}
-                onChange={(date) => handleFilterChange('fromDate', date ? date.toISOString().split('T')[0] : '')}
-                marginBottom="0"
-                showClearButton={true}
-              />
-            </div>
+      <div className={styles.contentWrapper}>
+        <FilterBar
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onApplyFilters={handleApplyFilters}
+          onClearFilters={handleClearFilters}
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={t('marketplace:searchPlaceholder', 'Search positions...')}
+          dropdownFields={dropdownFields}
+          dateFields={dateFields}
+          sortOptions={sortOptions}
+          sortValue={sortBy}
+          onSortChange={setSortBy}
+          translationNamespace="marketplace"
+          title={t('marketplace:filter.title', 'Filter Listings')}
+          description={t('marketplace:filter.description', 'Search and filter marketplace positions')}
+          onRefresh={handleRefresh}
+          isLoading={isLoading}
+        />
+      </div>
 
-            {/* Date To */}
-            <div className="relative shrink-0 w-[218px]">
-              <DateField
-                label="To"
-                value={filters.toDate ? new Date(filters.toDate) : null}
-                onChange={(date) => handleFilterChange('toDate', date ? date.toISOString().split('T')[0] : '')}
-                marginBottom="0"
-                showClearButton={true}
-              />
-            </div>
-
-            {/* Sort By Button */}
-            <div className="relative shrink-0">
-              <button
-                onClick={() => setShowSortDropdown(!showSortDropdown)}
-                className="px-4 rounded-xl border-2 border-input bg-background text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 text-sm font-medium transition-all flex items-center gap-2 shrink-0"
-                style={{ height: 'var(--boxed-inputfield-height)' }}
-              >
-                <FiArrowDown className="w-4 h-4" />
-                {t('marketplace:sortBy', 'Sort by')}
-              </button>
-              {showSortDropdown && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-10" 
-                    onClick={() => setShowSortDropdown(false)}
-                  />
-                  <div className="absolute top-full mt-2 right-0 z-20 bg-card border border-border rounded-lg shadow-lg min-w-[180px]">
-                    <button
-                      onClick={() => {
-                        setSortBy('relevance');
-                        setShowSortDropdown(false);
-                      }}
-                      className={cn(
-                        "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                        sortBy === 'relevance' && "bg-muted"
-                      )}
-                    >
-                      {t('marketplace:sort.relevance', 'Relevance')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSortBy('date');
-                        setShowSortDropdown(false);
-                      }}
-                      className={cn(
-                        "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                        sortBy === 'date' && "bg-muted"
-                      )}
-                    >
-                      {t('marketplace:sort.date', 'Date')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSortBy('title');
-                        setShowSortDropdown(false);
-                      }}
-                      className={cn(
-                        "w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors",
-                        sortBy === 'title' && "bg-muted"
-                      )}
-                    >
-                      {t('marketplace:sort.title', 'Title')}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Parameters/Settings Toggle */}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const willExpand = !isFiltersExpanded;
-                setIsFiltersExpanded(willExpand);
-                if (willExpand) {
-                  setJustExpanded(true);
-                  setTimeout(() => {
-                    setJustExpanded(false);
-                  }, 150);
-                }
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              className={cn(
-                "flex items-center justify-center rounded-xl border-2 transition-all relative shrink-0",
-                isFiltersExpanded
-                  ? "bg-[var(--color-logo-1)] border-[var(--color-logo-1)] text-white"
-                  : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
-              )}
-              style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
-              title="Parameters"
-            >
-              <FiSliders className={`w-4 h-4 ${isFiltersExpanded ? 'text-white' : ''}`} />
-              {activeCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-                  {activeCount}
-                </span>
-              )}
-            </button>
-
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 border-2 border-input rounded-xl p-0.5 bg-background shrink-0" style={{ height: 'var(--boxed-inputfield-height)' }}>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={cn(
-                  "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
-                  viewMode === 'grid'
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-                title={t('marketplace:view.grid', 'Grid view')}
-              >
-                <FiGrid className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={cn(
-                  "h-full aspect-square flex items-center justify-center rounded-lg transition-all",
-                  viewMode === 'list'
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-                title={t('marketplace:view.list', 'List view')}
-              >
-                <FiList className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Expanded Filters Area */}
-            {isFiltersExpanded && (
-              <div 
-                className="mt-3 pt-3 border-t border-border animate-in slide-in-from-top-1 duration-200 w-full"
-                style={{ pointerEvents: justExpanded ? 'none' : 'auto' }}
-                onClick={(e) => {
-                  if (justExpanded) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return;
-                  }
-                }}
-                onMouseDown={(e) => {
-                  if (justExpanded) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return;
-                  }
-                }}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 pb-1">
-                  <DropdownFieldAddListOriginal
-                    label={t('marketplace:filters.canton', 'Canton')}
-                    options={cantons}
-                    value={filters.canton}
-                    onChange={(value) => handleFilterChange('canton', value)}
-                  />
-                  <DropdownFieldAddListOriginal
-                    label={t('marketplace:filters.city', 'City')}
-                    options={cities}
-                    value={filters.city}
-                    onChange={(value) => handleFilterChange('city', value)}
-                  />
-                  <DropdownFieldAddListOriginal
-                    label={t('marketplace:filters.area', 'Area')}
-                    options={areas}
-                    value={filters.area}
-                    onChange={(value) => handleFilterChange('area', value)}
-                  />
-                  <DropdownFieldAddListOriginal
-                    label={t('marketplace:filters.experience', 'Experience')}
-                    options={experienceLevels}
-                    value={filters.experience}
-                    onChange={(value) => handleFilterChange('experience', value)}
-                  />
-                  <DropdownFieldAddListOriginal
-                    label={t('marketplace:filters.software', 'Software')}
-                    options={software}
-                    value={filters.software}
-                    onChange={(value) => handleFilterChange('software', value)}
-                  />
-                  <DropdownFieldAddListOriginal
-                    label={t('marketplace:filters.workAmount', 'Work Amount')}
-                    options={workAmounts}
-                    value={filters.workAmount}
-                    onChange={(value) => handleFilterChange('workAmount', value)}
-                  />
-                </div>
+      <div className={styles.contentWrapper}>
+        <div style={{ backgroundColor: 'var(--background-div-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--spacing-lg)', border: '1px solid var(--grey-2)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+            {error && (
+              <div style={{ backgroundColor: 'var(--red-1)', border: '1px solid var(--red-2)', borderRadius: 'var(--border-radius-sm)', padding: 'var(--spacing-md)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+                <FiAlertCircle size={20} style={{ color: 'var(--red-4)' }} />
+                <span style={{ color: 'var(--red-4)' }}>{error}</span>
               </div>
             )}
-
-            {/* Second Row - Apply Filters Button (only when filters are active) */}
-            {activeCount > 0 && (
-              <div className="mt-3 pt-3 border-t border-border w-full">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => {
-                      setShowActiveFilters(!showActiveFilters);
-                      applyFilters();
-                    }}
-                    className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
-                    style={{ height: 'var(--boxed-inputfield-height)' }}
-                  >
-                    <FiCheck className="w-4 h-4" />
-                    {t('marketplace:filter.apply', 'Apply Filters')}
-                  </button>
-                  
-                  {showActiveFilters && (
-                    <div className="flex-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground animate-in fade-in slide-in-from-left-1 duration-200">
-                      {filters.canton?.length > 0 && (
-                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                          {t('marketplace:filters.canton', 'Canton')}: {filters.canton.length}
-                        </span>
-                      )}
-                      {filters.city?.length > 0 && (
-                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                          {t('marketplace:filters.city', 'City')}: {filters.city.length}
-                        </span>
-                      )}
-                      {filters.area?.length > 0 && (
-                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                          {t('marketplace:filters.area', 'Area')}: {filters.area.length}
-                        </span>
-                      )}
-                      {filters.experience?.length > 0 && (
-                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                          {t('marketplace:filters.experience', 'Experience')}: {filters.experience.length}
-                        </span>
-                      )}
-                      {filters.software?.length > 0 && (
-                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                          {t('marketplace:filters.software', 'Software')}: {filters.software.length}
-                        </span>
-                      )}
-                      {filters.workAmount?.length > 0 && (
-                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                          {t('marketplace:filters.workAmount', 'Work Amount')}: {filters.workAmount.length}
-                        </span>
-                      )}
-                      {filters.fromDate && (
-                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                          From: {new Date(filters.fromDate).toLocaleDateString()}
-                        </span>
-                      )}
-                      {filters.toDate && (
-                        <span className="px-2 py-1 rounded-md bg-muted border border-border">
-                          To: {new Date(filters.toDate).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
+            
+            {filteredAndSortedListings.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 'var(--spacing-xxl)', color: 'var(--text-light-color)' }}>
+                <FiInbox size={48} style={{ margin: '0 auto', marginBottom: 'var(--spacing-md)', opacity: 0.3 }} />
+                <p>{t('marketplace:noResults.title', 'No listings found')}</p>
               </div>
+            ) : (
+              filteredAndSortedListings.map((listing) => (
+                <ListingRow
+                  key={listing.id}
+                  listing={listing}
+                  onViewDetails={() => handleListingClick(listing)}
+                  t={t}
+                />
+              ))
             )}
           </div>
-        </div>
-        {error && (
-          <div className="relative overflow-hidden p-5 bg-card border border-border rounded-xl hover:shadow-md transition-shadow flex gap-4 text-[var(--red-4)] shrink-0 mb-4 animate-in fade-in slide-in-from-bottom-2">
-            <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--red-2)]/20 flex items-center justify-center border border-border">
-              <FiAlertCircle className="w-5 h-5 text-[var(--red-4)]" />
-            </div>
-            <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-sm mb-1 text-[var(--red-4)]">Error</h4>
-              <p className="text-sm leading-relaxed text-[var(--red-4)]/90">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="h-full flex flex-col items-center justify-center p-8 gap-4">
-            <LoadingSpinner />
-            <p className="text-muted-foreground">{t('marketplace:loading', 'Loading positions...')}</p>
-          </div>
-        ) : listings.length === 0 ? (
-          <div className="dashboard-empty-state">
-            <div className="dashboard-empty-state-card">
-              <div className="dashboard-empty-state-icon">
-                <FiInbox className="w-8 h-8" />
-              </div>
-              <h2 className="dashboard-empty-state-title">{t('marketplace:noResults.title', 'No positions found')}</h2>
-              <p className="dashboard-empty-state-description">
-                {t('marketplace:noResults.empty', 'Start looking for positions in the marketplace')}
-              </p>
-            </div>
-          </div>
-        ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {processedListings.length > 0 ? processedListings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                onClick={() => handleListingClick(listing)}
-                viewMode="grid"
-              />
-            )) : !error && (
-              <div className="col-span-full flex flex-col items-center justify-center p-8 text-center">
-                <div className="text-4xl mb-4 opacity-60">🔍</div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{t('marketplace:noResults.title', 'No positions found')}</h3>
-                <p className="text-sm text-muted-foreground">{t('marketplace:noResults.withFilters', 'Try adjusting your filters to see more results')}</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3 pb-4">
-            {processedListings.length > 0 ? processedListings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                onClick={() => handleListingClick(listing)}
-                viewMode="list"
-              />
-            )) : !error && (
-              <div className="flex flex-col items-center justify-center p-8 text-center">
-                <div className="text-4xl mb-4 opacity-60">🔍</div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{t('marketplace:noResults.title', 'No positions found')}</h3>
-                <p className="text-sm text-muted-foreground">{t('marketplace:noResults.withFilters', 'Try adjusting your filters to see more results')}</p>
-              </div>
-            )}
-          </div>
-        )}
         </div>
       </div>
 
@@ -560,102 +334,121 @@ const Marketplace = () => {
           onClose={handleCloseDetail}
         />
       )}
+    </div>
+  );
+};
 
-      {/* Filters Overlay - Mobile Only */}
-      {isMobile && showFiltersOverlay && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setShowFiltersOverlay(false)}
-          />
-          <div className={cn(
-            "fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl shadow-2xl",
-            "animate-in slide-in-from-bottom duration-300"
-          )} style={{ height: '75vh' }}>
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <h3 className="text-lg font-semibold m-0">{t('marketplace:overlay.title')}</h3>
-              <button
-                onClick={() => setShowFiltersOverlay(false)}
-                className="p-2 hover:bg-muted rounded-lg transition-colors"
-              >
-                <FiX className="w-5 h-5" />
-              </button>
+const ListingRow = ({ listing, onViewDetails, t }) => {
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    const d = new Date(date);
+    return d.toLocaleDateString();
+  };
+
+  const getLocation = () => {
+    const city = listing.location?.city || listing.locationPreference?.city || '';
+    const canton = listing.location?.canton || listing.locationPreference?.canton || '';
+    if (city && canton) return `${city}, ${canton}`;
+    return city || canton || t('marketplace:location.notSpecified', 'Location not specified');
+  };
+
+  const getWorkAmount = () => {
+    const amount = listing.workAmount || listing.workPercentage || listing.fte;
+    if (amount) return `${amount}%`;
+    return 'N/A';
+  };
+
+  const getSalary = () => {
+    const salary = listing.salary || listing.hourlyRate || listing.compensation;
+    if (typeof salary === 'object') {
+      if (salary.amount) return `CHF ${salary.amount}`;
+      if (salary.hourlyRate) return `CHF ${salary.hourlyRate}/hr`;
+    }
+    if (salary) return `CHF ${salary}`;
+    return t('marketplace:salary.competitive', 'Competitive');
+  };
+
+  return (
+    <div style={{ backgroundColor: 'var(--white)', borderRadius: 'var(--border-radius-md)', border: '1px solid var(--grey-2)', overflow: 'hidden' }}>
+      <div style={{ padding: 'var(--spacing-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center', flex: 1 }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--primary-color-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', fontWeight: 'bold', fontSize: 'var(--font-size-large)' }}>
+            <Briefcase size={24} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+              <strong style={{ fontSize: 'var(--font-size-medium)' }}>
+                {listing.title || listing.jobTitle || t('marketplace:listing.untitled', 'Untitled Position')}
+              </strong>
+              {listing.urgent && (
+                <span style={{ fontSize: '10px', padding: '2px 6px', backgroundColor: 'var(--red-1)', color: 'var(--red-4)', borderRadius: '10px', fontWeight: 'bold' }}>
+                  {t('marketplace:listing.urgent', 'URGENT')}
+                </span>
+              )}
             </div>
-            <div className="overflow-y-auto p-4 space-y-4" style={{ height: 'calc(75vh - 73px)', scrollbarGutter: 'stable' }}>
-              <DateField
-                label="From"
-                value={filters.fromDate ? new Date(filters.fromDate) : null}
-                onChange={(date) => handleFilterChange('fromDate', date ? date.toISOString().split('T')[0] : '')}
-                marginBottom="0"
-                showClearButton={true}
-              />
-              <DateField
-                label="To"
-                value={filters.toDate ? new Date(filters.toDate) : null}
-                onChange={(date) => handleFilterChange('toDate', date ? date.toISOString().split('T')[0] : '')}
-                marginBottom="0"
-                showClearButton={true}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.canton')}
-                options={cantons}
-                value={filters.canton}
-                onChange={(value) => handleFilterChange('canton', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.city')}
-                options={cities}
-                value={filters.city}
-                onChange={(value) => handleFilterChange('city', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.area')}
-                options={areas}
-                value={filters.area}
-                onChange={(value) => handleFilterChange('area', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.experience')}
-                options={experienceLevels}
-                value={filters.experience}
-                onChange={(value) => handleFilterChange('experience', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.software')}
-                options={software}
-                value={filters.software}
-                onChange={(value) => handleFilterChange('software', value)}
-              />
-              <DropdownFieldAddListOriginal
-                label={t('marketplace:filters.workAmount')}
-                options={workAmounts}
-                value={filters.workAmount}
-                onChange={(value) => handleFilterChange('workAmount', value)}
-              />
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={() => {
-                    handleClearAllFilters();
-                    setShowFiltersOverlay(false);
-                  }}
-                  className="flex-1 h-9 rounded-lg border border-input bg-background text-sm font-medium hover:bg-muted transition-all"
-                >
-                  {t('marketplace:overlay.clearAll')}
-                </button>
-                <button
-                  onClick={() => {
-                    applyFilters();
-                    setShowFiltersOverlay(false);
-                  }}
-                  className="flex-1 h-9 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
-                >
-                  {t('marketplace:overlay.applyFilters')}
-                </button>
+            <div style={{ fontSize: 'var(--font-size-small)', color: 'var(--text-light-color)', marginTop: 'var(--spacing-xs)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', flexWrap: 'wrap' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
+                  <MapPin size={14} />
+                  {getLocation()}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
+                  <Calendar size={14} />
+                  {formatDate(listing.startDate || listing.createdAt)}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
+                  <FiClock size={14} />
+                  {getWorkAmount()}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
+                  <FiDollarSign size={14} />
+                  {getSalary()}
+                </span>
               </div>
             </div>
+            <div style={{ display: 'flex', gap: 'var(--spacing-xs)', marginTop: 'var(--spacing-xs)', flexWrap: 'wrap' }}>
+              {listing.type && (
+                <span
+                  style={{
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '10px',
+                    backgroundColor: 'var(--blue-1)',
+                    color: 'var(--blue-4)',
+                    fontWeight: '500'
+                  }}
+                >
+                  {listing.type}
+                </span>
+              )}
+              {listing.contractType && (
+                <span
+                  style={{
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '10px',
+                    backgroundColor: 'var(--green-1)',
+                    color: 'var(--green-4)',
+                    fontWeight: '500'
+                  }}
+                >
+                  {listing.contractType}
+                </span>
+              )}
+            </div>
           </div>
-        </>
-      )}
+        </div>
+        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+          <button
+            onClick={onViewDetails}
+            style={{ padding: '8px 16px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--primary-color)', backgroundColor: 'var(--primary-color)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)', fontWeight: '500' }}
+            title={t('marketplace:listing.viewDetails', 'View Details')}
+          >
+            <Eye size={16} />
+            {t('marketplace:listing.viewDetails', 'View Details')}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

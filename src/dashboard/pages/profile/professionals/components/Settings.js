@@ -4,7 +4,7 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiSettings, FiBell, FiShield, FiGlobe, FiClock, FiInfo, FiLock, FiZap, FiStar } from 'react-icons/fi';
+import { FiSettings, FiBell, FiShield, FiGlobe, FiClock, FiInfo, FiLock, FiZap, FiStar, FiCalendar } from 'react-icons/fi';
 
 import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
@@ -12,6 +12,7 @@ import InputField from '../../../../../components/BoxedInputFields/Personnalized
 import TextareaField from '../../../../../components/BoxedInputFields/TextareaField';
 import DateField from '../../../../../components/BoxedInputFields/DateField';
 import Switch from '../../../../../components/BoxedInputFields/Switch';
+import PreferenceDays from './PreferenceDays';
 
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
 import useAutoSave from '../../../../hooks/useAutoSave';
@@ -393,6 +394,24 @@ const Settings = ({
               </div>
             </div>
           )}
+
+          <div className={styles.sectionCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardIconWrapper}><FiCalendar className="w-4 h-4" style={styles.cardIconStyle} /></div>
+              <div className={styles.cardTitle}>
+                <h3 className={styles.cardTitleH3} style={styles.cardTitleH3Style}>{t('preferenceDays.title', 'Preference Days')}</h3>
+                <p className={styles.cardDescription} style={styles.cardDescriptionStyle}>
+                  {t('preferenceDays.subtitle', 'Set your preferred working days and times')}
+                </p>
+              </div>
+            </div>
+            <PreferenceDays
+              formData={formData}
+              onInputChange={onInputChange}
+              getNestedValue={getNestedValue}
+              errors={errors}
+            />
+          </div>
 
           {notesField && (
             <div className={styles.sectionCard}>

@@ -1,0 +1,49 @@
+{
+    "title": "Processus de recrutement",
+    "subtitle": "Gérez et suivez tous les processus de recrutement",
+    "errorMessage": "Échec du chargement des processus de recrutement",
+    "searchPlaceholder": "Rechercher des postes...",
+    "status": {
+        "all": "Tous les statuts",
+        "open": "Ouvert",
+        "interview": "Entretien",
+        "accepted": "Accepté",
+        "closed": "Fermé"
+    },
+    "empty": {
+        "title": "Aucun poste trouvé",
+        "description": "Aucun poste disponible pour le moment"
+    },
+    "info": {
+        "title": "Processus de recrutement",
+        "description": "Parcourez et recherchez des postes."
+    },
+    "sort": {
+        "date": "Date",
+        "name": "Nom",
+        "facility": "Établissement",
+        "applications": "Candidatures"
+    },
+    "filter": {
+        "status": "Statut",
+        "facility": "Établissement",
+        "allFacilities": "Tous les établissements",
+        "unnamedFacility": "Établissement sans nom"
+    },
+    "stats": {
+        "total": "Total des postes",
+        "open": "Ouvert",
+        "interview": "Entretien",
+        "closed": "Fermé"
+    },
+    "table": {
+        "title": "Titre",
+        "facility": "Établissement",
+        "status": "Statut",
+        "applications": "Candidatures",
+        "created": "Créé"
+    },
+    "untitledPosition": "Poste sans titre",
+    "applications": "candidatures"
+}
+

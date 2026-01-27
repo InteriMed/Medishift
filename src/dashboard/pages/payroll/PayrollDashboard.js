@@ -9,7 +9,6 @@ import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { FiDollarSign, FiClock, FiCheckCircle, FiAlertCircle, FiRefreshCw, FiFileText, FiSend, FiUsers, FiBriefcase } from 'react-icons/fi';
 import { cn } from '../../../utils/cn';
-import PageHeader from '../../components/PageHeader/PageHeader';
 import FilterBar from '../../components/FilterBar/FilterBar';
 
 const statusConfig = {
@@ -477,172 +476,99 @@ const PayrollDashboard = ({ hideHeader = false, hideStats = false }) => {
         onClose: PropTypes.func.isRequired
     };
 
-    // Empty State
-    const EmptyState = () => (
-        <div className="dashboard-empty-state">
-            <div className="dashboard-empty-state-card">
-                <div className="dashboard-empty-state-icon">
-                    <FiFileText className="w-8 h-8" />
-                </div>
-                <h2 className="dashboard-empty-state-title">
-                    {t('payroll:empty.title', 'No payroll requests yet')}
-                </h2>
-                <p className="dashboard-empty-state-description">
-                    {t('payroll:empty.description', 'When you confirm shifts with workers, payroll requests will appear here.')}
-                </p>
-            </div>
-        </div>
-    );
-
     return (
-        <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-            {!hideHeader && (
-                <PageHeader
-                    title={t('payroll:title', 'Payroll Management')}
-                    subtitle={t('payroll:subtitle', 'Track and manage staff payment requests')}
-                    actions={
-                        <button
-                            onClick={fetchPayrollRequests}
-                            disabled={isLoading}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg border border-border",
-                                "hover:bg-muted transition-colors",
-                                isLoading && "opacity-50 cursor-not-allowed"
-                            )}
-                        >
-                            <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                            {t('common:refresh', 'Refresh')}
-                        </button>
+        <div className="space-y-6">
+            <FilterBar
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClearFilters={handleClearFilters}
+                searchValue={searchTerm}
+                onSearchChange={setSearchTerm}
+                searchPlaceholder={t('organization:payroll.searchPlaceholder', 'Search by worker name or role...')}
+                dropdownFields={[
+                    {
+                        key: 'status',
+                        label: t('organization:payroll.filterByStatus', 'Filter by Status'),
+                        options: [
+                            { value: 'all', label: t('common:all', 'All') },
+                            ...statusOptions
+                        ],
+                        defaultValue: 'all'
+                    },
+                    {
+                        key: 'source',
+                        label: t('organization:payroll.filterBySource', 'Filter by Source'),
+                        options: [
+                            { value: 'all', label: t('common:all', 'All') },
+                            { value: 'team', label: t('organization:payroll.team', 'Team') },
+                            { value: 'medishift', label: t('organization:payroll.medishift', 'Medishift') }
+                        ],
+                        defaultValue: 'all'
                     }
-                />
-            )}
+                ]}
+                dateFields={[
+                    {
+                        key: 'fromDate',
+                        label: t('organization:payroll.fromDate', 'From Date'),
+                        showClearButton: true
+                    },
+                    {
+                        key: 'toDate',
+                        label: t('organization:payroll.toDate', 'To Date'),
+                        showClearButton: true
+                    }
+                ]}
+                showViewToggle={true}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                sortOptions={[
+                    { value: 'date', label: t('organization:payroll.sort.date', 'Date') },
+                    { value: 'name', label: t('organization:payroll.sort.name', 'Name') },
+                    { value: 'amount', label: t('organization:payroll.sort.amount', 'Amount') }
+                ]}
+                sortValue={sortBy}
+                onSortChange={setSortBy}
+                translationNamespace="organization"
+                title={t('organization:payroll.title', 'Payroll Management')}
+                description={t('organization:payroll.subtitle', 'Track and manage staff payment requests')}
+                onRefresh={fetchPayrollRequests}
+                isLoading={isLoading}
+            />
 
-            {!hideStats && (
-                <div className="shrink-0 p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard
-                            icon={FiFileText}
-                            label={t('payroll:stats.total', 'Total Requests')}
-                            value={stats.total}
-                        />
-                        <StatCard
-                            icon={FiClock}
-                            label={t('payroll:stats.pending', 'Pending')}
-                            value={stats.pending || 0}
-                        />
-                        <StatCard
-                            icon={FiSend}
-                            label={t('payroll:stats.sent', 'Sent to PayrollPlus')}
-                            value={stats.sent || 0}
-                        />
-                        <StatCard
-                            icon={FiDollarSign}
-                            label={t('payroll:stats.totalAmount', 'Total Amount')}
-                            value={formatCurrency(stats.totalAmount)}
-                            subValue={t('payroll:stats.allTime', 'All time')}
-                        />
-                    </div>
-                </div>
-            )}
-
-            <div className="shrink-0 px-6 py-6">
-                <FilterBar
-                    filters={filters}
-                    onFilterChange={handleFilterChange}
-                    onClearFilters={handleClearFilters}
-                    searchValue={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    searchPlaceholder={t('payroll:searchPlaceholder', 'Search by worker name or role...')}
-                    dropdownFields={[
-                        {
-                            key: 'status',
-                            label: t('payroll:filter.status', 'Status'),
-                            options: statusOptions,
-                            defaultValue: 'all'
-                        },
-                        {
-                            key: 'source',
-                            label: t('payroll:filter.source', 'Source'),
-                            options: [
-                                { value: 'all', label: t('payroll:tabs.all', 'All') },
-                                { value: 'team', label: t('payroll:tabs.team', 'Team') },
-                                { value: 'medishift', label: t('payroll:tabs.medishift', 'Medishift') }
-                            ],
-                            defaultValue: 'all'
-                        }
-                    ]}
-                    dateFields={[
-                        {
-                            key: 'fromDate',
-                            label: t('payroll:filter.fromDate', 'From Date'),
-                            showClearButton: true
-                        },
-                        {
-                            key: 'toDate',
-                            label: t('payroll:filter.toDate', 'To Date'),
-                            showClearButton: true
-                        }
-                    ]}
-                    showViewToggle={true}
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                    sortOptions={[
-                        { value: 'date', label: t('payroll:sort.date', 'Date') },
-                        { value: 'name', label: t('payroll:sort.name', 'Name') },
-                        { value: 'amount', label: t('payroll:sort.amount', 'Amount') }
-                    ]}
-                    sortValue={sortBy}
-                    onSortChange={setSortBy}
-                    translationNamespace="payroll"
-                    title={t('payroll:info.title', 'Payroll Management')}
-                    description={t('payroll:info.description', 'Track and manage all payments and salaries.')}
-                    onRefresh={fetchPayrollRequests}
-                    isLoading={isLoading}
-                />
-            </div>
-
-            {/* Content */}
-            <div className={cn("flex-1 overflow-auto", hideHeader ? "" : "px-6 pb-6")}>
+            <div>
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : filteredAndSortedRequests.length === 0 ? (
-                    <div className="dashboard-empty-state">
-                        <div className="dashboard-empty-state-card">
-                            <div className="dashboard-empty-state-icon">
-                                <FiFileText className="w-8 h-8" />
-                            </div>
-                            <h2 className="dashboard-empty-state-title">
-                                {t('payroll:empty.title', 'No payroll requests found')}
-                            </h2>
-                            <p className="dashboard-empty-state-description">
-                                {t('payroll:empty.description', 'No payroll requests available at the moment')}
-                            </p>
+                    <div className="bg-card rounded-xl border border-border overflow-hidden">
+                        <div className="p-12 text-center">
+                            <FiFileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                            <p className="text-muted-foreground">{t('organization:payroll.noRequests', 'No payroll requests found')}</p>
                         </div>
                     </div>
                 ) : viewMode === 'list' ? (
-                    <div className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="bg-card rounded-xl border border-border overflow-hidden">
                         <table className="w-full">
                             <thead className="bg-muted/30">
                                 <tr>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('payroll:table.worker', 'Worker')}
+                                        {t('organization:payroll.table.worker', 'Worker')}
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('payroll:table.shift', 'Shift')}
+                                        {t('organization:payroll.table.shift', 'Shift')}
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('payroll:table.hours', 'Hours')}
+                                        {t('organization:payroll.table.hours', 'Hours')}
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('payroll:table.amount', 'Amount')}
+                                        {t('organization:payroll.table.amount', 'Amount')}
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('payroll:table.status', 'Status')}
+                                        {t('organization:payroll.table.status', 'Status')}
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('payroll:table.created', 'Created')}
+                                        {t('organization:payroll.table.created', 'Created')}
                                     </th>
                                 </tr>
                             </thead>

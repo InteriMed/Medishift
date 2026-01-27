@@ -110,6 +110,8 @@
   },
   "hiring": {
     "create": "Créer",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
     "form": {
       "jobTitle": "Titre du poste",
       "jobTitlePlaceholder": "Entrez le titre du poste",
@@ -188,7 +190,22 @@
     "fromFacility": "From Facility",
     "fireWarning": "Fire Warning",
     "firePrompt": "Fire Prompt",
-    "toConfirm": "To Confirm"
+    "toConfirm": "To Confirm",
+    "filterByRole": "Filtrer par rôle",
+    "roles": "Rôles",
+    "dependencyDiagram": "Diagramme de dépendance",
+    "diagramDescription": "Visualisez la structure organisationnelle et les dépendances",
+    "adminRights": "Droits d'administrateur",
+    "rights": "Droits",
+    "legendAdmin": "Administrateur",
+    "legendRoles": "Rôles",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
+    "sort": {
+      "level": "Hiérarchie",
+      "name": "Nom",
+      "count": "Nombre d'employés"
+    }
   },
   "hq": {
     "tools": "Outils"
@@ -258,11 +275,6 @@
     "sort": {
       "date": "Date",
       "name": "Nom"
-    },
-    "filter": {
-      "status": "Statut",
-      "all": "Tous",
-      "apply": "Appliquer les filtres"
     },
     "view": {
       "grid": "Vue en grille",
@@ -347,5 +359,153 @@
   "success": {
     "policyUploaded": "Politique téléchargée avec succès",
     "policyDeleted": "Politique supprimée avec succès"
+  },
+  "subTabs": {
+    "employees": "Employés",
+    "hiring": "Processus de recrutement",
+    "admin": "Admin",
+    "teams": "Équipes",
+    "requests": "Demandes"
+  },
+  "requests": {
+    "title": "Demandes",
+    "subtitle": "Gérer les demandes de congé de vacance et les mises à jour des heures enregistrées",
+    "vacancyRequests": "Demandes de congé de vacance",
+    "clockedHoursUpdates": "Mises à jour des heures enregistrées",
+    "pending": "En attente",
+    "noRequests": "Aucune demande trouvée",
+    "type": "Type",
+    "employee": "Employé",
+    "details": "Détails",
+    "date": "Date",
+    "status": "Statut",
+    "vacancyRequest": "Demande de congé de vacance",
+    "clockedHoursUpdate": "Mise à jour des heures enregistrées",
+    "hours": "Heures",
+    "requestApproved": "Demande approuvée",
+    "requestRejected": "Demande rejetée",
+    "errorApproving": "Erreur lors de l'approbation de la demande",
+    "errorRejecting": "Erreur lors du rejet de la demande",
+    "searchPlaceholder": "Rechercher par employé, titre de poste ou raison...",
+    "filterByStatus": "Filtrer par statut",
+    "filterByType": "Filtrer par type",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
+    "sort": {
+      "date": "Date",
+      "employee": "Employé",
+      "status": "Statut"
+    }
+  },
+  "employees": {
+    "title": "Employés",
+    "subtitle": "Gérer et suivre tous les employés",
+    "searchPlaceholder": "Rechercher des employés...",
+    "noEmployees": "Aucun employé trouvé",
+    "filterByStatus": "Filtrer par statut",
+    "filterByRole": "Filtrer par rôle",
+    "filterByFacility": "Filtrer par établissement",
+    "unnamedFacility": "Établissement sans nom",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
+    "sort": {
+      "name": "Nom",
+      "date": "Date",
+      "facility": "Établissement"
+    },
+    "table": {
+      "name": "Nom",
+      "facility": "Établissement",
+      "role": "Rôle",
+      "status": "Statut",
+      "hired": "Embauché"
+    }
+  },
+  "hiring": {
+    "title": "Processus de recrutement",
+    "subtitle": "Gérer et suivre tous les processus de recrutement",
+    "searchPlaceholder": "Rechercher des postes...",
+    "noPositions": "Aucun poste trouvé",
+    "applications": "candidatures",
+    "filterByStatus": "Filtrer par statut",
+    "filterByFacility": "Filtrer par établissement",
+    "unnamedFacility": "Établissement sans nom",
+    "sort": {
+      "date": "Date",
+      "name": "Nom",
+      "facility": "Établissement",
+      "applications": "Candidatures"
+    },
+    "table": {
+      "title": "Titre",
+      "facility": "Établissement",
+      "status": "Statut",
+      "applications": "Candidatures",
+      "created": "Créé"
+    }
+  },
+  "contracts": {
+    "title": "Contrats",
+    "subtitle": "Gérer et suivre tous les contrats",
+    "searchPlaceholder": "Rechercher des contrats...",
+    "noContracts": "Aucun contrat trouvé",
+    "filterByStatus": "Filtrer par statut",
+    "filterBySource": "Filtrer par source",
+    "team": "Équipe",
+    "medishift": "Medishift",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
+    "sort": {
+      "date": "Date",
+      "name": "Nom"
+    },
+    "table": {
+      "title": "Titre",
+      "company": "Entreprise",
+      "status": "Statut",
+      "created": "Créé"
+    }
+  },
+  "payroll": {
+    "title": "Gestion de la paie",
+    "subtitle": "Suivre et gérer les demandes de paiement du personnel",
+    "searchPlaceholder": "Rechercher par nom de travailleur ou rôle...",
+    "noRequests": "Aucune demande de paie trouvée",
+    "filterByStatus": "Filtrer par statut",
+    "filterBySource": "Filtrer par source",
+    "team": "Équipe",
+    "medishift": "Medishift",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
+    "sort": {
+      "date": "Date",
+      "name": "Nom",
+      "amount": "Montant"
+    },
+    "table": {
+      "worker": "Travailleur",
+      "shift": "Poste",
+      "hours": "Heures",
+      "amount": "Montant",
+      "status": "Statut",
+      "created": "Créé"
+    }
+  },
+  "policy": {
+    "filterByStatus": "Filtrer par statut",
+    "filterByType": "Filtrer par type",
+    "filterByRole": "Filtrer par rôle",
+    "filterByFacility": "Filtrer par établissement",
+    "filterByPriority": "Filtrer par priorité",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
+    "noPolicies": "Aucune politique trouvée"
+  },
+  "refresh": "Actualiser",
+  "filter": {
+    "view": {
+      "grid": "Vue en grille",
+      "list": "Vue en liste"
+    }
   }
 }

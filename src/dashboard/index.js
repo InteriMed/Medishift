@@ -77,7 +77,7 @@ const Dashboard = () => {
                 } />
 
                 {/* Shared routes - exclude when in admin workspace or admin URL */}
-                {!isAdminWorkspace && !isAdminUrl && SHARED_ROUTES.filter(r => r.id !== 'profile').map(route => (
+                {!isAdminWorkspace && !isAdminUrl && SHARED_ROUTES.map(route => (
                   <Route
                     key={route.id}
                     path={route.path}

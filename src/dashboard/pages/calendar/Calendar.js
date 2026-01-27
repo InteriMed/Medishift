@@ -39,9 +39,13 @@ const Calendar = ({ userData }) => {
   const scrollContainerRef = useRef(null);
   const headerScrollRef = useRef(null);
 
+  const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || !!selectedWorkspace?.facilityId;
+
   const getInitialCalendarMode = () => {
     const mode = searchParams.get('mode');
-    return mode === 'team' ? 'team' : 'calendar';
+    if (mode === 'calendar') return 'calendar';
+    if (mode === 'team') return 'team';
+    return isTeamWorkspace ? 'team' : 'calendar';
   };
 
   const getInitialNightView = () => {
@@ -50,15 +54,95 @@ const Calendar = ({ userData }) => {
   };
 
   const [calendarMode, setCalendarMode] = useState(getInitialCalendarMode);
-  const [showMiniCalendar, setShowMiniCalendar] = useState(true);
-  const [showUpcomingEvents, setShowUpcomingEvents] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const isBelow1200Initial = typeof window !== 'undefined' ? window.innerWidth < 1200 : false;
+  const [showMiniCalendar, setShowMiniCalendar] = useState(!isBelow1200Initial);
+  const [showUpcomingEvents, setShowUpcomingEvents] = useState(!isBelow1200Initial);
   const [nightView, setNightView] = useState(getInitialNightView);
   const [openAddRoleModal, setOpenAddRoleModal] = useState(false);
   const processedModalRef = useRef(null);
-
-  const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || !!selectedWorkspace?.facilityId;
+  const [isOverlayExpanded, setIsOverlayExpanded] = useState(false);
 
   const { profileData, isLoading: isLoadingProfile, updateProfileData } = useProfileData();
+
+  useEffect(() => {
+    const handleResize = () => {
+      const newWidth = window.innerWidth;
+      setWindowWidth(newWidth);
+      if (newWidth >= 1200) {
+        setIsOverlayExpanded(false);
+        setShowMiniCalendar(true);
+        setShowUpcomingEvents(true);
+      } else {
+        setShowMiniCalendar(false);
+        setShowUpcomingEvents(false);
+        setIsOverlayExpanded(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isBelow1200 = windowWidth < 1200;
+
+  const handleToggleOverlay = () => {
+    if (isOverlayExpanded) {
+      setIsOverlayExpanded(false);
+      setShowMiniCalendar(false);
+      setShowUpcomingEvents(false);
+    } else {
+      setIsOverlayExpanded(true);
+      setShowMiniCalendar(true);
+      setShowUpcomingEvents(true);
+    }
+  };
+
+  const handleArrowToggle = () => {
+    const newCollapsedState = !isSidebarCollapsed;
+    setIsSidebarCollapsed(newCollapsedState);
+    
+    if (newCollapsedState) {
+      setShowMiniCalendar(false);
+      setShowUpcomingEvents(false);
+    } else {
+      setShowMiniCalendar(true);
+      setShowUpcomingEvents(true);
+    }
+  };
+
+  const handleMiniCalendarToggle = () => {
+    const newValue = !showMiniCalendar;
+    setShowMiniCalendar(newValue);
+    
+    if (newValue) {
+      setIsOverlayExpanded(true);
+      if (showUpcomingEvents || newValue) {
+        setIsSidebarCollapsed(false);
+      }
+    } else {
+      if (!showUpcomingEvents) {
+        setIsOverlayExpanded(false);
+        setIsSidebarCollapsed(true);
+      }
+    }
+  };
+
+  const handleUpcomingEventsToggle = () => {
+    const newValue = !showUpcomingEvents;
+    setShowUpcomingEvents(newValue);
+    
+    if (newValue) {
+      setIsOverlayExpanded(true);
+      if (showMiniCalendar || newValue) {
+        setIsSidebarCollapsed(false);
+      }
+    } else {
+      if (!showMiniCalendar) {
+        setIsOverlayExpanded(false);
+        setIsSidebarCollapsed(true);
+      }
+    }
+  };
 
   const getWorkspaceContext = () => {
     if (!selectedWorkspace) {
@@ -99,13 +183,14 @@ const Calendar = ({ userData }) => {
   const redo = useCalendarStore(state => state.redo);
   const syncPendingChanges = useCalendarStore(state => state.syncPendingChanges);
 
+  const calendarState = useCalendarState();
   const {
     currentDate, setCurrentDate, view, setView: setViewState,
-    categories, setCategories, isSidebarCollapsed, setIsSidebarCollapsed,
+    categories, setCategories, isSidebarCollapsed = false, setIsSidebarCollapsed,
     showHeaderDateDropdown, setShowHeaderDateDropdown, dropdownPosition,
     navigateDate, handleDayClick, handleUpcomingEventClick,
     handleCategoryToggle, handleHeaderDateClick, toggleSidebar
-  } = useCalendarState();
+  } = calendarState;
 
   const isUpdatingURL = useRef(false);
   const isReadingFromURL = useRef(false);
@@ -586,7 +671,7 @@ const Calendar = ({ userData }) => {
       )} style={{ overflow: 'visible' }}>
         {(
           <>
-            {(showMiniCalendar || showUpcomingEvents) && (
+            {!isBelow1200 && (showMiniCalendar || showUpcomingEvents) && (
               <div className={cn(
                 "dashboard-sidebar-container",
                 isMainSidebarCollapsed ? "flex" : (isSidebarCollapsed ? "hidden lg:flex w-0" : "flex"),
@@ -608,21 +693,61 @@ const Calendar = ({ userData }) => {
                     setShowHeaderDateDropdown={setShowHeaderDateDropdown}
                     handleHeaderDateClick={handleHeaderDateClick}
                     dropdownPosition={dropdownPosition}
-                    toggleSidebar={toggleSidebar}
+                    toggleSidebar={handleArrowToggle}
                     view={view}
                     visibleWeekStart={visibleWeekStart}
                     visibleWeekEnd={visibleWeekEnd}
                     showMiniCalendar={showMiniCalendar}
                     showUpcomingEvents={showUpcomingEvents}
+                    isOverlay={false}
                   />
                 </div>
               </div>
             )}
 
+            {isBelow1200 && isOverlayExpanded && (showMiniCalendar || showUpcomingEvents) && (
+              <>
+                <div
+                  className="fixed inset-0 bg-black/50 z-[45]"
+                  onClick={() => {
+                    setIsOverlayExpanded(false);
+                    setShowMiniCalendar(false);
+                    setShowUpcomingEvents(false);
+                  }}
+                />
+                <div className={cn(
+                  "fixed right-0 top-14 bottom-0 w-80 bg-card border-l border-border shadow-2xl z-[50] overflow-y-auto",
+                  "transform transition-transform duration-300 ease-in-out",
+                  isOverlayExpanded ? "translate-x-0" : "translate-x-full"
+                )}>
+                  <CalendarSidebar
+                    currentDate={currentDate}
+                    setCurrentDate={setCurrentDate}
+                    handleUpcomingEventClick={handleUpcomingEventClick}
+                    events={filteredEvents}
+                    isSidebarCollapsed={false}
+                    handleCreateEventClick={() => handleCreateEventClick(currentDate)}
+                    handleDayClick={handleDayClick}
+                    showHeaderDateDropdown={showHeaderDateDropdown}
+                    setShowHeaderDateDropdown={setShowHeaderDateDropdown}
+                    handleHeaderDateClick={handleHeaderDateClick}
+                    dropdownPosition={dropdownPosition}
+                    toggleSidebar={handleArrowToggle}
+                    view={view}
+                    visibleWeekStart={visibleWeekStart}
+                    visibleWeekEnd={visibleWeekEnd}
+                    showMiniCalendar={showMiniCalendar}
+                    showUpcomingEvents={showUpcomingEvents}
+                    isOverlay={true}
+                  />
+                </div>
+              </>
+            )}
+
             <div className={cn(
               "dashboard-main-content",
               "dashboard-main-content-desktop",
-              !(showMiniCalendar || showUpcomingEvents) && "flex-1"
+              (isSidebarCollapsed || !(showMiniCalendar || showUpcomingEvents)) && "flex-1"
             )}>
               <div className="dashboard-main-inner flex flex-col h-full">
                 <div className="shrink-0 w-full bg-card border-b border-border px-6 py-2" style={{ minHeight: 'var(--boxed-inputfield-height)' }}>
@@ -632,8 +757,8 @@ const Calendar = ({ userData }) => {
                     setView={setView}
                     navigateDate={navigateDate}
                     setCurrentDate={setCurrentDate}
-                    isSidebarCollapsed={false}
-                    toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    isSidebarCollapsed={isSidebarCollapsed}
+                    toggleSidebar={handleArrowToggle}
                     categories={categories}
                     handleCategoryToggle={handleCategoryToggle}
                     onResetCategories={handleResetCategories}
@@ -645,11 +770,14 @@ const Calendar = ({ userData }) => {
                     isTeamWorkspace={isTeamWorkspace}
                     handleCreateEventClick={() => handleCreateEventClick(currentDate)}
                     showMiniCalendar={showMiniCalendar}
-                    setShowMiniCalendar={setShowMiniCalendar}
+                    setShowMiniCalendar={handleMiniCalendarToggle}
                     showUpcomingEvents={showUpcomingEvents}
-                    setShowUpcomingEvents={setShowUpcomingEvents}
+                    setShowUpcomingEvents={handleUpcomingEventsToggle}
                     nightView={nightView}
                     setNightView={setNightViewWithURL}
+                    isBelow1200={isBelow1200}
+                    isOverlayExpanded={isOverlayExpanded}
+                    onToggleOverlay={handleToggleOverlay}
                   />
                 </div>
 
@@ -692,13 +820,14 @@ const Calendar = ({ userData }) => {
                         onEventDropOnDay={handleEventDropOnDay}
                         nightView={nightView}
                         isBottom={false}
+                        isTeamMode={calendarMode === 'team' && isTeamWorkspace}
                       />
                     </div>
                   </div>
 
                   <div className={cn(
                     "flex-1 time-slots bg-muted/5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-                    nightView && "pt-12"
+                    nightView && "pt-0"
                   )}>
                     <div className="relative min-h-full flex">
                       {calendarMode === 'team' && isTeamWorkspace ? (
@@ -738,13 +867,23 @@ const Calendar = ({ userData }) => {
                                     </div>
                                   );
                                 })}
-                                {Array.from({ length: 12 }, (_, i) => (
+                                {Array.from({ length: 11 }, (_, i) => (
                                   <div key={`next-${i}`} className="h-[60px] text-[10px] text-right pr-4 relative">
                                     <span className={cn("text-[10px] pb-1", i === 0 ? "text-red-500 font-semibold" : "text-muted-foreground")}>
                                       {i < 10 ? `0${i}:00` : `${i}:00`}
                                     </span>
                                   </div>
                                 ))}
+                                <div key="next-11" className="h-[60px] text-[10px] text-right pr-4 relative border-b-0">
+                                  <span className="text-[10px] pb-1 text-red-500 font-semibold">
+                                    11:00
+                                  </span>
+                                </div>
+                                <div key="next-12" className="h-[60px] text-[10px] text-right pr-4 relative border-b-0">
+                                  <span className="text-[10px] pb-1 text-red-500 font-semibold">
+                                    12:00
+                                  </span>
+                                </div>
                               </>
                             ) : (
                               Array.from({ length: 24 }, (_, i) => (

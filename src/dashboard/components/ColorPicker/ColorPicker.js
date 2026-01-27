@@ -62,8 +62,16 @@ const ColorPicker = ({
         const spaceBelow = window.innerHeight - buttonRect.bottom;
         const spaceAbove = buttonRect.top;
         
+        const isInModal = buttonRef.current.closest('[role="dialog"]') !== null;
+        
         let top = buttonRect.bottom + window.scrollY + 6;
-        let left = buttonRect.right + window.scrollX - popupWidth;
+        let left;
+        
+        if (isInModal) {
+          left = buttonRect.left + window.scrollX + (buttonRect.width / 2) - (popupWidth / 2);
+        } else {
+          left = buttonRect.right + window.scrollX - popupWidth;
+        }
         
         if (spaceBelow < popupHeight && spaceAbove > spaceBelow) {
           top = buttonRect.top + window.scrollY - popupHeight - 6;

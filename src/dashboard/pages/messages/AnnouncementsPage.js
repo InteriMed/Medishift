@@ -5,7 +5,7 @@ import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp 
 import { db } from '../../../services/firebase';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
-import { AnnouncementsToolbar } from './components/AnnouncementsToolbar';
+import FilterBar from '../../components/FilterBar/FilterBar';
 import { AnnouncementDetail } from './components/AnnouncementDetail';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import Dialog from '../../../components/Dialog/Dialog';
@@ -18,7 +18,7 @@ import { cn } from '../../../utils/cn';
 import { FiMessageSquare, FiBarChart2, FiHeart, FiPlus, FiX, FiBell, FiInfo, FiSettings, FiShield, FiFileText } from 'react-icons/fi';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
 
-const AnnouncementsPage = () => {
+const AnnouncementsPage = ({ hideHeader }) => {
   const { t } = useTranslation(['messages']);
   const { showError, showSuccess } = useNotification();
   const { user, selectedWorkspace } = useDashboard();
@@ -35,6 +35,13 @@ const AnnouncementsPage = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [sortBy, setSortBy] = useState('date');
+  const [viewMode, setViewMode] = useState('list');
+  const [filters, setFilters] = useState({
+    status: 'all',
+    fromDate: '',
+    toDate: ''
+  });
   const [isCreateAnnouncementOpen, setIsCreateAnnouncementOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -142,7 +149,7 @@ const AnnouncementsPage = () => {
 
     const handleOpenModal = (event) => {
       if (event.detail?.type === 'createAnnouncement') {
-        navigate(buildDashboardUrl('/announcements/new', workspaceId));
+        navigate(buildDashboardUrl('/communications/announcements/new', workspaceId));
       }
     };
 
@@ -220,7 +227,7 @@ const AnnouncementsPage = () => {
       setCreateFormData({ title: '', description: '', urgency: 'warning', targetRoles: 'all', category: '', publishDate: null, displayUntilDate: null });
       setHasPoll(false);
       setPollData({ question: '', itemType: 'multipleChoice', options: ['', ''] });
-      navigate(buildDashboardUrl('/announcements', workspaceId));
+      navigate(buildDashboardUrl('/communications/announcements', workspaceId));
       loadThreads();
     } catch (error) {
       console.error('Error creating announcement:', error);
@@ -233,10 +240,10 @@ const AnnouncementsPage = () => {
   const filteredThreads = useMemo(() => {
     let currentThreads = threads;
 
-    if (selectedFilter !== 'all') {
-      if (selectedFilter === 'unread') {
+    if (filters.status !== 'all') {
+      if (filters.status === 'unread') {
         currentThreads = currentThreads.filter(t => t.unreadCount > 0);
-      } else if (selectedFilter === 'unresponded') {
+      } else if (filters.status === 'unresponded') {
         currentThreads = currentThreads.filter(t =>
           t.lastMessage?.senderId !== user?.uid && t.unreadCount > 0
         );
@@ -252,8 +259,47 @@ const AnnouncementsPage = () => {
       );
     }
 
+    if (filters.fromDate || filters.toDate) {
+      currentThreads = currentThreads.filter(t => {
+        const threadDate = t.created_at ? new Date(t.created_at) : null;
+        if (!threadDate) return false;
+        if (filters.fromDate) {
+          const fromDate = new Date(filters.fromDate);
+          fromDate.setHours(0, 0, 0, 0);
+          if (threadDate < fromDate) return false;
+        }
+        if (filters.toDate) {
+          const toDate = new Date(filters.toDate);
+          toDate.setHours(23, 59, 59, 999);
+          if (threadDate > toDate) return false;
+        }
+        return true;
+      });
+    }
+
+    if (sortBy === 'date') {
+      currentThreads.sort((a, b) => {
+        const aTime = new Date(a.created_at);
+        const bTime = new Date(b.created_at);
+        return bTime - aTime;
+      });
+    } else if (sortBy === 'title') {
+      currentThreads.sort((a, b) => {
+        const titleA = (a.title || '').toLowerCase();
+        const titleB = (b.title || '').toLowerCase();
+        return titleA.localeCompare(titleB);
+      });
+    } else if (sortBy === 'urgency') {
+      const urgencyOrder = { danger: 0, warning: 1, info: 2, validation: 3 };
+      currentThreads.sort((a, b) => {
+        const urgencyA = urgencyOrder[a.urgency] ?? 99;
+        const urgencyB = urgencyOrder[b.urgency] ?? 99;
+        return urgencyA - urgencyB;
+      });
+    }
+
     return currentThreads;
-  }, [threads, selectedFilter, searchQuery, user]);
+  }, [threads, filters, searchQuery, user, sortBy]);
 
   useEffect(() => {
     if (isThreadDetail && threadIdFromUrl) {
@@ -270,7 +316,7 @@ const AnnouncementsPage = () => {
 
   const handleBack = () => {
     setSelectedThreadId(null);
-    navigate(buildDashboardUrl('/announcements', workspaceId));
+    navigate(buildDashboardUrl('/communications/announcements', workspaceId));
   };
 
   if (selectedThreadId) {
@@ -293,45 +339,15 @@ const AnnouncementsPage = () => {
   if (!canAccessThreads) {
     return (
       <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-        <div className="shrink-0 py-4 border-b border-border bg-card/30">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
-            <h1 className="text-xl font-semibold text-foreground mb-3">
-              {t('messages:title', 'Communications')}
-            </h1>
-            <div className="flex gap-1 sm:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                const isActive = tab.id === 'announcements';
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      if (tab.id === 'messages') {
-                        navigate(buildDashboardUrl('/messages', workspaceId));
-                      } else if (tab.id === 'internalTicket') {
-                        navigate(buildDashboardUrl('/internal-ticket', workspaceId));
-                      } else if (tab.id === 'reporting') {
-                        navigate(buildDashboardUrl('/reporting', workspaceId));
-                      }
-                    }}
-                    className={cn(
-                      "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0",
-                      "touch-manipulation active:scale-95",
-                      isActive
-                        ? "border-primary text-primary bg-primary/5"
-                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                    )}
-                    title={tab.label}
-                  >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span className="text-xs sm:text-sm min-w-0">{tab.label}</span>
-                  </button>
-                );
-              })}
+        {!hideHeader && (
+          <div className="shrink-0 pt-4 border-b border-border bg-card/30">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
+              <h1 className="text-xl font-semibold text-foreground mb-3">
+                {t('messages:title', 'Communications')}
+              </h1>
             </div>
           </div>
-        </div>
+        )}
         <div className="flex-1 overflow-auto">
           <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center p-8 text-center">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
@@ -347,55 +363,86 @@ const AnnouncementsPage = () => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-      <div className="shrink-0 py-4 border-b border-border bg-card/30">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
-          <h1 className="text-xl font-semibold text-foreground mb-3">
-            {t('messages:title', 'Communications')}
-          </h1>
-          <div className="flex gap-1 sm:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-              const isActive = tab.id === 'announcements';
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    if (tab.id === 'messages') {
-                      navigate(buildDashboardUrl('/messages', workspaceId));
-                    } else if (tab.id === 'internalTicket') {
-                      navigate(buildDashboardUrl('/internal-ticket', workspaceId));
-                    } else if (tab.id === 'reporting') {
-                      navigate(buildDashboardUrl('/reporting', workspaceId));
-                    }
-                  }}
-                  className={cn(
-                    "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0",
-                    "touch-manipulation active:scale-95",
-                    isActive
-                      ? "border-primary text-primary bg-primary/5"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                  )}
-                  title={tab.label}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span className="text-xs sm:text-sm min-w-0">{tab.label}</span>
-                </button>
-              );
-            })}
+      {!hideHeader && (
+        <div className="shrink-0 pt-4 border-b border-border bg-card/30">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
+            <h1 className="text-xl font-semibold text-foreground mb-3">
+              {t('messages:title', 'Communications')}
+            </h1>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="flex-1 overflow-auto">
         <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col pt-6">
-          <AnnouncementsToolbar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedFilter={selectedFilter}
-            setSelectedFilter={setSelectedFilter}
-            onCreateAnnouncement={() => navigate(buildDashboardUrl('/announcements/new', workspaceId))}
-          />
+          <div className="w-full max-w-[1400px] mx-auto px-6">
+            <FilterBar
+              filters={filters}
+              onFilterChange={(key, value) => {
+                setFilters(prev => ({ ...prev, [key]: value }));
+                if (key === 'status') {
+                  setSelectedFilter(value);
+                }
+              }}
+              onClearFilters={() => {
+                setFilters({ status: 'all', fromDate: '', toDate: '' });
+                setSelectedFilter('all');
+                setSearchQuery('');
+              }}
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder={t('messages:searchPlaceholder', 'Search announcements...')}
+              dropdownFields={[
+                {
+                  key: 'status',
+                  label: t('messages:filters.status', 'Status'),
+                  options: [
+                    { value: 'all', label: t('messages:filters.all', 'All Announcements') },
+                    { value: 'unread', label: t('messages:filters.unread', 'Unread') },
+                    { value: 'unresponded', label: t('messages:filters.unresponded', 'Unresponded') }
+                  ],
+                  defaultValue: 'all'
+                }
+              ]}
+              dateFields={[
+                {
+                  key: 'fromDate',
+                  label: t('messages:announcements.fromDate', 'From Date'),
+                  showClearButton: true
+                },
+                {
+                  key: 'toDate',
+                  label: t('messages:announcements.toDate', 'To Date'),
+                  showClearButton: true
+                }
+              ]}
+              sortOptions={[
+                { value: 'date', label: t('messages:sort.date', 'Date') },
+                { value: 'title', label: t('messages:sort.title', 'Title') },
+                { value: 'urgency', label: t('messages:sort.urgency', 'Urgency') }
+              ]}
+              sortValue={sortBy}
+              onSortChange={setSortBy}
+              showViewToggle={true}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              title={t('messages:announcements.title', 'Announcements')}
+              description={t('messages:announcements.description', 'Browse and search for announcements in your workspace.')}
+              onRefresh={loadThreads}
+              isLoading={isLoading}
+              translationNamespace="messages"
+            />
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => navigate(buildDashboardUrl('/communications/announcements/new', workspaceId))}
+                className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
+                style={{ height: 'var(--boxed-inputfield-height)' }}
+              >
+                <FiPlus className="w-4 h-4" />
+                {t('messages:newAnnouncement', 'New Announcement')}
+              </button>
+            </div>
+          </div>
 
           <div className="w-full max-w-[1400px] mx-auto pt-6">
             <div className="space-y-4 px-6">
@@ -409,7 +456,7 @@ const AnnouncementsPage = () => {
                   <h3 className="text-lg font-semibold text-foreground mb-2">No announcements found</h3>
                   <p className="text-muted-foreground mb-6">Get started by creating a new announcement.</p>
                   <button
-                    onClick={() => navigate(buildDashboardUrl('/announcements/new', workspaceId))}
+                    onClick={() => navigate(buildDashboardUrl('/communications/announcements/new', workspaceId))}
                     className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
                   >
                     <FiPlus className="w-5 h-5" />
@@ -475,7 +522,7 @@ const AnnouncementsPage = () => {
               setCreateFormData({ title: '', description: '', urgency: 'warning', targetRoles: 'all', category: '', publishDate: null, displayUntilDate: null });
               setHasPoll(false);
               setPollData({ question: '', itemType: 'multipleChoice', options: ['', ''], showResultsToEveryone: false });
-              navigate(buildDashboardUrl('/announcements', workspaceId));
+              navigate(buildDashboardUrl('/communications/announcements', workspaceId));
             }
           }}
           title={t('messages:createAnnouncement', 'New Announcement')}
@@ -491,7 +538,7 @@ const AnnouncementsPage = () => {
                     setCreateFormData({ title: '', description: '', urgency: 'warning', targetRoles: 'all', category: '', publishDate: null, displayUntilDate: null });
                     setHasPoll(false);
                     setPollData({ question: '', itemType: 'multipleChoice', options: ['', ''] });
-                    navigate(buildDashboardUrl('/announcements', workspaceId));
+                    navigate(buildDashboardUrl('/communications/announcements', workspaceId));
                   }
                 }}
                 disabled={isCreating}

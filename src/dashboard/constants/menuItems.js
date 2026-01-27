@@ -33,7 +33,7 @@ export const menuItems = [
   },
   {
     title: 'Messages',
-    path: 'messages',
+    path: 'communications',
     icon: FiMail,
     badge: 3
   },

@@ -1,12 +1,13 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { get } from 'lodash';
-import { FiUsers, FiPlus, FiTrash2, FiCalendar, FiX, FiAlertTriangle } from 'react-icons/fi';
+import { FiUsers, FiPlus, FiTrash2, FiCalendar, FiX, FiAlertTriangle, FiUserPlus, FiExternalLink } from 'react-icons/fi';
 import { CALENDAR_COLORS } from '../utils/constants';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { db } from '../../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../utils/pathUtils';
 
 import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import Button from '../../../../components/BoxedInputFields/Button';
@@ -72,30 +73,30 @@ const AddFacilityRoleModal = ({
   useEffect(() => {
     const fetchData = async () => {
       if (!selectedWorkspace?.facilityId) return;
-      
+
       setLoadingTeamMembers(true);
       try {
         const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
         const facilitySnap = await getDoc(facilityRef);
-        
+
         if (facilitySnap.exists()) {
           const facilityData = facilitySnap.data();
           const employeesList = facilityData.employees || [];
           const admins = employeesList.filter(emp => emp.roles?.includes('admin')).map(emp => emp.user_uid);
           const employees = employeesList.filter(emp => !emp.roles?.includes('admin')).map(emp => emp.user_uid);
           const allMemberIds = [...new Set([...admins, ...employees])];
-          
+
           const memberPromises = allMemberIds.map(async (userId) => {
             try {
               const professionalProfileRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
               const professionalProfileSnap = await getDoc(professionalProfileRef);
-              
+
               if (professionalProfileSnap.exists()) {
                 const professionalData = professionalProfileSnap.data();
                 const identity = professionalData.identity || {};
                 const firstName = identity.legalFirstName || identity.firstName || '';
                 const lastName = identity.legalLastName || identity.lastName || '';
-                
+
                 return {
                   uid: userId,
                   firstName: firstName,
@@ -105,7 +106,7 @@ const AddFacilityRoleModal = ({
               } else {
                 const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
                 const userSnap = await getDoc(userRef);
-                
+
                 if (userSnap.exists()) {
                   const userData = userSnap.data();
                   return {
@@ -121,7 +122,7 @@ const AddFacilityRoleModal = ({
             }
             return null;
           });
-          
+
           const members = (await Promise.all(memberPromises)).filter(m => m !== null);
           setTeamMembers(members);
         }
@@ -131,7 +132,7 @@ const AddFacilityRoleModal = ({
         setLoadingTeamMembers(false);
       }
     };
-    
+
     if (selectedWorkspace?.facilityId) {
       fetchData();
     }
@@ -139,6 +140,26 @@ const AddFacilityRoleModal = ({
 
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && editingRole) {
+      setFormData({
+        workerType: editingRole.workerType || 'none',
+        workerTypeOther: editingRole.workerTypeOther || '',
+        assignedWorkers: editingRole.assignedWorkers || [],
+        appliesToAllDays: editingRole.appliesToAllDays || false,
+        specificDays: editingRole.specificDays || []
+      });
+    } else if (isOpen && !editingRole) {
+      setFormData({
+        workerType: 'none',
+        workerTypeOther: '',
+        assignedWorkers: [],
+        appliesToAllDays: false,
+        specificDays: []
+      });
+    }
+  }, [isOpen, editingRole]);
 
   const handleUpdateField = useCallback((field, value) => {
     setFormData(prev => {
@@ -157,12 +178,29 @@ const AddFacilityRoleModal = ({
           return { ...prev, [field]: value, workerTypeOther: '', assignedWorkers: [] };
         }
         if (value !== 'other') {
+          const existingRole = (get(profileData, 'operationalSettings.workerRequirements') || []).find(role => {
+            if (value === 'other') {
+              return role.workerType === 'other';
+            }
+            return role.workerType === value && role.workerType !== 'other';
+          });
+
+          if (existingRole) {
+            return {
+              ...prev,
+              [field]: value,
+              workerTypeOther: existingRole.workerTypeOther || '',
+              assignedWorkers: existingRole.assignedWorkers || [],
+              appliesToAllDays: existingRole.appliesToAllDays || false,
+              specificDays: existingRole.specificDays || []
+            };
+          }
           return { ...prev, [field]: value, workerTypeOther: '' };
         }
       }
       return { ...prev, [field]: value };
     });
-    
+
     if (field === 'workerType') {
       setFieldErrors(prev => {
         const newErrors = { ...prev };
@@ -170,7 +208,7 @@ const AddFacilityRoleModal = ({
         return newErrors;
       });
     }
-    
+
     if (field === 'workerTypeOther') {
       setFieldErrors(prev => {
         const newErrors = { ...prev };
@@ -178,34 +216,34 @@ const AddFacilityRoleModal = ({
         return newErrors;
       });
     }
-  }, []);
+  }, [profileData]);
 
   const validateAllFields = useCallback(() => {
     const fieldErrors = {};
     const workerErrors = {};
     let isValid = true;
-    
+
     if (!formData.workerType || formData.workerType === 'none') {
       isValid = false;
       fieldErrors.workerType = t('operations.workerTypeRequired', 'Role type is required');
     }
-    
+
     if (formData.workerType === 'other' && (!formData.workerTypeOther || !formData.workerTypeOther.trim())) {
       isValid = false;
       fieldErrors.workerTypeOther = t('operations.workerTypeOtherRequired', 'Custom role type is required');
     }
-    
+
     const workers = formData.assignedWorkers || [];
-    
+
     if (workers.length === 0) {
       isValid = false;
       workerErrors._general = t('operations.atLeastOneWorkerRequired', 'At least one worker is required');
     }
-    
+
     workers.forEach(worker => {
       const workerId = worker.workerId || '';
       const placeholderName = worker.placeholderName || '';
-      
+
       if (!workerId || workerId === '') {
         isValid = false;
         workerErrors[`${worker.id}_workerId`] = t('operations.workerSelectionRequired', 'Worker selection is required');
@@ -214,18 +252,16 @@ const AddFacilityRoleModal = ({
         workerErrors[`${worker.id}_placeholderName`] = t('operations.placeholderNameRequired', 'Placeholder name is required');
       }
     });
-    
+
     setFieldErrors(fieldErrors);
     setWorkerErrors(workerErrors);
     return isValid;
   }, [formData, t]);
 
   const handleAddWorker = useCallback(() => {
-    validateAllFields();
-    
     const currentWorkers = formData.assignedWorkers || [];
     let workerColor;
-    
+
     if (currentWorkers.length > 0) {
       const lastWorker = currentWorkers[currentWorkers.length - 1];
       workerColor = {
@@ -235,7 +271,7 @@ const AddFacilityRoleModal = ({
     } else {
       workerColor = CALENDAR_COLORS[0];
     }
-    
+
     const newWorker = {
       id: Date.now().toString(),
       workerId: '',
@@ -248,7 +284,7 @@ const AddFacilityRoleModal = ({
       assignedWorkers: [...(prev.assignedWorkers || []), newWorker]
     }));
     setShowWorkerSelect(newWorker.id);
-  }, [formData, validateAllFields]);
+  }, [formData]);
 
   const handleRemoveWorker = useCallback((workerId) => {
     setFormData(prev => ({
@@ -281,7 +317,7 @@ const AddFacilityRoleModal = ({
         return worker;
       })
     }));
-    
+
     if (field === 'workerId' || field === 'placeholderName') {
       setWorkerErrors(prev => {
         const newErrors = { ...prev };
@@ -301,18 +337,18 @@ const AddFacilityRoleModal = ({
   const validateWorkers = useCallback(() => {
     const errors = {};
     let isValid = true;
-    
+
     const workers = formData.assignedWorkers || [];
-    
+
     if (workers.length === 0) {
       isValid = false;
       errors._general = t('operations.atLeastOneWorkerRequired', 'At least one worker is required');
     }
-    
+
     workers.forEach(worker => {
       const workerId = worker.workerId || '';
       const placeholderName = worker.placeholderName || '';
-      
+
       if (!workerId || workerId === '') {
         isValid = false;
         errors[`${worker.id}_workerId`] = t('operations.workerSelectionRequired', 'Worker selection is required');
@@ -321,7 +357,7 @@ const AddFacilityRoleModal = ({
         errors[`${worker.id}_placeholderName`] = t('operations.placeholderNameRequired', 'Placeholder name is required');
       }
     });
-    
+
     setWorkerErrors(errors);
     return isValid;
   }, [formData.assignedWorkers, t]);
@@ -340,33 +376,33 @@ const AddFacilityRoleModal = ({
     if (!validateWorkers()) {
       return;
     }
-    
+
     const currentRequirements = get(profileData, 'operationalSettings.workerRequirements') || [];
     let updated;
-    
+
     if (editingRole) {
-      updated = currentRequirements.map(req => 
-        req.id === editingRole.id 
+      updated = currentRequirements.map(req =>
+        req.id === editingRole.id
           ? { ...req, ...formData }
           : req
       );
     } else {
       const existingRoleIndex = currentRequirements.findIndex(role => {
         if (formData.workerType === 'other') {
-          return role.workerType === 'other' && 
-                 role.workerTypeOther === formData.workerTypeOther &&
-                 formData.workerTypeOther?.trim() !== '';
+          return role.workerType === 'other' &&
+            role.workerTypeOther === formData.workerTypeOther &&
+            formData.workerTypeOther?.trim() !== '';
         }
         return role.workerType === formData.workerType && role.workerType !== 'other';
       });
 
       if (existingRoleIndex >= 0) {
-        updated = currentRequirements.map((req, index) => 
+        updated = currentRequirements.map((req, index) =>
           index === existingRoleIndex
-            ? { 
-                ...req, 
-                ...formData
-              }
+            ? {
+              ...req,
+              ...formData
+            }
             : req
         );
       } else {
@@ -377,7 +413,7 @@ const AddFacilityRoleModal = ({
         updated = [...currentRequirements, newRequirement];
       }
     }
-    
+
     onSave(updated);
     onClose();
   }, [formData, profileData, onSave, onClose, editingRole, validateWorkers]);
@@ -474,76 +510,76 @@ const AddFacilityRoleModal = ({
                 const allWorkers = formData.assignedWorkers || [];
                 const assignedWorkers = allWorkers.filter(worker => worker.workerId || worker.placeholderName);
                 const newWorkers = allWorkers.filter(worker => !worker.workerId && !worker.placeholderName && showWorkerSelect === worker.id);
-                
+
                 return (
                   <>
                     {assignedWorkers.length > 0 && (
                       <div className="mb-4">
                         {assignedWorkers.map((worker) => {
-                        const workerName = worker.workerId && worker.workerId !== 'placeholder'
-                          ? (() => {
+                          const workerName = worker.workerId && worker.workerId !== 'placeholder'
+                            ? (() => {
                               const member = teamMembers.find(m => m.uid === worker.workerId);
                               return member ? `${member.firstName} ${member.lastName}`.trim() : 'Unknown';
                             })()
-                          : worker.placeholderName || t('operations.placeholder', 'Placeholder');
-                        
-                        const allExistingRoles = get(profileData, 'operationalSettings.workerRequirements') || [];
-                        const otherRoles = editingRole 
-                          ? allExistingRoles.filter(r => r.id !== editingRole.id)
-                          : allExistingRoles;
-                        
-                        const assignedWorkerIdsFromOtherRoles = new Set(
-                          otherRoles.flatMap(role => 
-                            (role.assignedWorkers || [])
-                              .filter(w => 
-                                w.workerId && 
-                                w.workerId !== '' && 
+                            : worker.placeholderName || t('operations.placeholder', 'Placeholder');
+
+                          const allExistingRoles = get(profileData, 'operationalSettings.workerRequirements') || [];
+                          const otherRoles = editingRole
+                            ? allExistingRoles.filter(r => r.id !== editingRole.id)
+                            : allExistingRoles;
+
+                          const assignedWorkerIdsFromOtherRoles = new Set(
+                            otherRoles.flatMap(role =>
+                              (role.assignedWorkers || [])
+                                .filter(w =>
+                                  w.workerId &&
+                                  w.workerId !== '' &&
+                                  w.workerId !== 'placeholder'
+                                )
+                                .map(w => String(w.workerId))
+                            )
+                          );
+
+                          const assignedWorkerIdsFromCurrentForm = new Set(
+                            (formData.assignedWorkers || [])
+                              .filter(w =>
+                                w.id !== worker.id &&
+                                w.workerId &&
+                                w.workerId !== '' &&
                                 w.workerId !== 'placeholder'
                               )
                               .map(w => String(w.workerId))
-                          )
-                        );
-                        
-                        const assignedWorkerIdsFromCurrentForm = new Set(
-                          (formData.assignedWorkers || [])
-                            .filter(w => 
-                              w.id !== worker.id && 
-                              w.workerId && 
-                              w.workerId !== '' && 
-                              w.workerId !== 'placeholder'
-                            )
-                            .map(w => String(w.workerId))
-                        );
-                        
-                        const allAssignedWorkerIds = new Set([
-                          ...assignedWorkerIdsFromOtherRoles,
-                          ...assignedWorkerIdsFromCurrentForm
-                        ]);
-                        
-                        const currentWorkerId = worker.workerId && worker.workerId !== 'placeholder' ? String(worker.workerId) : null;
-                        
-                        const availableTeamMembers = (teamMembers || []).filter(m => {
-                          if (!m || !m.uid) return false;
-                          const memberId = String(m.uid);
-                          const isAssigned = allAssignedWorkerIds.has(memberId);
-                          const isCurrent = memberId === currentWorkerId;
-                          return !isAssigned || isCurrent;
-                        });
-                        
-                        return (
-                          <div 
-                            key={worker.id}
-                            className="flex items-center gap-3 p-4 border border-border rounded-lg bg-card hover:border-primary/30 transition-colors mb-2"
-                          >
-                            <ColorPicker
-                              color={worker.color}
-                              color1={worker.color1}
-                              onChange={(color, color1) => handleUpdateWorker(worker.id, 'color', color)}
-                              size={32}
-                            />
-                            <div className="flex-1">
+                          );
+
+                          const allAssignedWorkerIds = new Set([
+                            ...assignedWorkerIdsFromOtherRoles,
+                            ...assignedWorkerIdsFromCurrentForm
+                          ]);
+
+                          const currentWorkerId = worker.workerId && worker.workerId !== 'placeholder' ? String(worker.workerId) : null;
+
+                          const availableTeamMembers = (teamMembers || []).filter(m => {
+                            if (!m || !m.uid) return false;
+                            const memberId = String(m.uid);
+                            const isAssigned = allAssignedWorkerIds.has(memberId);
+                            const isCurrent = memberId === currentWorkerId;
+                            return !isAssigned || isCurrent;
+                          });
+
+                          return (
+                            <div
+                              key={worker.id}
+                              className="flex items-center gap-3 p-4 border border-border rounded-lg bg-card hover:border-primary/30 transition-colors mb-2"
+                            >
+                              <ColorPicker
+                                color={worker.color}
+                                color1={worker.color1}
+                                onChange={(color, color1) => handleUpdateWorker(worker.id, 'color', color)}
+                                size={32}
+                              />
+                              <div className="flex-1">
                                 {showWorkerSelect === worker.id || (!worker.workerId && !worker.placeholderName) ? (
-                                  <>
+                                  <div className="space-y-2">
                                     <DropdownField
                                       key={`${worker.id}-${allAssignedWorkerIds.size}-${availableTeamMembers.length}`}
                                       label={t('operations.selectWorkerOrPlaceholder', 'Select Worker or Placeholder')}
@@ -558,15 +594,16 @@ const AddFacilityRoleModal = ({
                                       value={worker.workerId === 'placeholder' ? 'placeholder' : (worker.workerId || '')}
                                       onChange={(value) => {
                                         if (value === 'placeholder') {
+                                          const existingPlaceholders = (formData.assignedWorkers || []).filter(w => w.workerId === 'placeholder' && w.id !== worker.id);
+                                          const placeholderNumber = existingPlaceholders.length + 1;
+                                          const defaultPlaceholderName = `Worker ${placeholderNumber}`;
                                           handleUpdateWorker(worker.id, 'workerId', 'placeholder');
-                                          handleUpdateWorker(worker.id, 'placeholderName', '');
+                                          if (!worker.placeholderName) {
+                                            handleUpdateWorker(worker.id, 'placeholderName', defaultPlaceholderName);
+                                          }
                                           setShowWorkerSelect(worker.id);
-                                        } else if (value) {
+                                        } else if (value && value !== '') {
                                           handleUpdateWorker(worker.id, 'workerId', value);
-                                          handleUpdateWorker(worker.id, 'placeholderName', '');
-                                          setShowWorkerSelect(null);
-                                        } else {
-                                          handleUpdateWorker(worker.id, 'workerId', '');
                                           handleUpdateWorker(worker.id, 'placeholderName', '');
                                           setShowWorkerSelect(null);
                                         }
@@ -575,19 +612,21 @@ const AddFacilityRoleModal = ({
                                       error={workerErrors[`${worker.id}_workerId`]}
                                     />
                                     {worker.workerId === 'placeholder' && (
-                                      <InputField
-                                        label={t('operations.placeholderName', 'Placeholder Name')}
-                                        type="text"
-                                        value={worker.placeholderName || ''}
-                                        onChange={(e) => {
-                                          handleUpdateWorker(worker.id, 'placeholderName', e.target.value);
-                                        }}
-                                        placeholder={t('operations.placeholderNamePlaceholder', 'Enter name')}
-                                        required={true}
-                                        error={workerErrors[`${worker.id}_placeholderName`]}
-                                      />
+                                      <div className="mt-4">
+                                        <InputField
+                                          label={t('operations.placeholderName', 'Placeholder Name')}
+                                          type="text"
+                                          value={worker.placeholderName || ''}
+                                          onChange={(e) => {
+                                            handleUpdateWorker(worker.id, 'placeholderName', e.target.value);
+                                          }}
+                                          placeholder={t('operations.placeholderNamePlaceholder', 'Enter name')}
+                                          required={true}
+                                          error={workerErrors[`${worker.id}_placeholderName`]}
+                                        />
+                                      </div>
                                     )}
-                                  </>
+                                  </div>
                                 ) : (
                                   <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium">{workerName}</span>
@@ -609,15 +648,39 @@ const AddFacilityRoleModal = ({
                                 >
                                   <FiTrash2 size={16} />
                                 </button>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                       </div>
                     )}
-                    
+
                     {assignedWorkers.length === 0 && (!formData.assignedWorkers || formData.assignedWorkers.length === 0 || (formData.assignedWorkers.every(w => !w.workerId && !w.placeholderName) && !showWorkerSelect)) && (
                       <div className="py-8 text-center">
+                        <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg mb-4 max-w-md mx-auto">
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {t('operations.needMoreWorkers', 'Need more workers?')}
+                          </p>
+                          <div className="flex flex-col gap-2">
+                            <a
+                              href={buildDashboardUrl(`facility/team`, getWorkspaceIdForUrl(selectedWorkspace))}
+                              className="text-sm text-primary hover:text-primary/80 flex items-center justify-center gap-2 transition-colors"
+                              target="_self"
+                            >
+                              <FiUsers className="w-4 h-4" />
+                              {t('operations.viewWorkersList', 'View workers list')}
+                            </a>
+                            <a
+                              href={buildDashboardUrl(`facility/team/hiring`, getWorkspaceIdForUrl(selectedWorkspace))}
+                              className="text-sm text-primary hover:text-primary/80 flex items-center justify-center gap-2 transition-colors"
+                              target="_self"
+                            >
+                              <FiUserPlus className="w-4 h-4" />
+                              {t('operations.inviteNewMembers', 'Invite new members to your team')}
+                              <FiExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        </div>
                         <p className="text-sm text-muted-foreground mb-2">
                           {t('operations.noWorkersAssigned', 'No workers assigned. Click "Add Worker" to assign.')}
                         </p>
@@ -628,43 +691,43 @@ const AddFacilityRoleModal = ({
                         )}
                       </div>
                     )}
-                    
+
                     {newWorkers.map((worker) => {
                       const allExistingRoles = get(profileData, 'operationalSettings.workerRequirements') || [];
-                      const otherRoles = editingRole 
+                      const otherRoles = editingRole
                         ? allExistingRoles.filter(r => r.id !== editingRole.id)
                         : allExistingRoles;
-                      
+
                       const assignedWorkerIdsFromOtherRoles = new Set(
-                        otherRoles.flatMap(role => 
+                        otherRoles.flatMap(role =>
                           (role.assignedWorkers || [])
-                            .filter(w => 
-                              w.workerId && 
-                              w.workerId !== '' && 
+                            .filter(w =>
+                              w.workerId &&
+                              w.workerId !== '' &&
                               w.workerId !== 'placeholder'
                             )
                             .map(w => String(w.workerId))
                         )
                       );
-                      
+
                       const assignedWorkerIdsFromCurrentForm = new Set(
                         (formData.assignedWorkers || [])
-                          .filter(w => 
-                            w.id !== worker.id && 
-                            w.workerId && 
-                            w.workerId !== '' && 
+                          .filter(w =>
+                            w.id !== worker.id &&
+                            w.workerId &&
+                            w.workerId !== '' &&
                             w.workerId !== 'placeholder'
                           )
                           .map(w => String(w.workerId))
                       );
-                      
+
                       const allAssignedWorkerIds = new Set([
                         ...assignedWorkerIdsFromOtherRoles,
                         ...assignedWorkerIdsFromCurrentForm
                       ]);
-                      
+
                       const currentWorkerId = worker.workerId && worker.workerId !== 'placeholder' ? String(worker.workerId) : null;
-                      
+
                       const availableTeamMembers = (teamMembers || []).filter(m => {
                         if (!m || !m.uid) return false;
                         const memberId = String(m.uid);
@@ -672,9 +735,9 @@ const AddFacilityRoleModal = ({
                         const isCurrent = memberId === currentWorkerId;
                         return !isAssigned || isCurrent;
                       });
-                      
+
                       return (
-                        <div 
+                        <div
                           key={worker.id}
                           className="flex items-center gap-3 p-4 border border-border rounded-lg bg-card hover:border-primary/30 transition-colors mb-2"
                         >
@@ -685,6 +748,7 @@ const AddFacilityRoleModal = ({
                             size={32}
                           />
                           <div className="flex-1">
+                            <div className="space-y-2">
                               <DropdownField
                                 key={`${worker.id}-${allAssignedWorkerIds.size}-${availableTeamMembers.length}`}
                                 label={t('operations.selectWorkerOrPlaceholder', 'Select Worker or Placeholder')}
@@ -699,35 +763,39 @@ const AddFacilityRoleModal = ({
                                 value={worker.workerId === 'placeholder' ? 'placeholder' : (worker.workerId || '')}
                                 onChange={(value) => {
                                   if (value === 'placeholder') {
+                                    const existingPlaceholders = (formData.assignedWorkers || []).filter(w => w.workerId === 'placeholder' && w.id !== worker.id);
+                                    const placeholderNumber = existingPlaceholders.length + 1;
+                                    const defaultPlaceholderName = `Worker ${placeholderNumber}`;
                                     handleUpdateWorker(worker.id, 'workerId', 'placeholder');
-                                    handleUpdateWorker(worker.id, 'placeholderName', '');
+                                    if (!worker.placeholderName) {
+                                      handleUpdateWorker(worker.id, 'placeholderName', defaultPlaceholderName);
+                                    }
                                     setShowWorkerSelect(worker.id);
-                                  } else if (value) {
+                                  } else if (value && value !== '') {
                                     handleUpdateWorker(worker.id, 'workerId', value);
                                     handleUpdateWorker(worker.id, 'placeholderName', '');
                                     setShowWorkerSelect(null);
-                                  } else {
-                                    handleUpdateWorker(worker.id, 'workerId', '');
-                                    handleUpdateWorker(worker.id, 'placeholderName', '');
-                                    setShowWorkerSelect(worker.id);
                                   }
                                 }}
                                 required={true}
                                 error={workerErrors[`${worker.id}_workerId`]}
                               />
                               {worker.workerId === 'placeholder' && (
-                                <InputField
-                                  label={t('operations.placeholderName', 'Placeholder Name')}
-                                  type="text"
-                                  value={worker.placeholderName || ''}
-                                  onChange={(e) => {
-                                    handleUpdateWorker(worker.id, 'placeholderName', e.target.value);
-                                  }}
-                                  placeholder={t('operations.placeholderNamePlaceholder', 'Enter name')}
-                                  required={true}
-                                  error={workerErrors[`${worker.id}_placeholderName`]}
-                                />
+                                <div className="mt-4">
+                                  <InputField
+                                    label={t('operations.placeholderName', 'Placeholder Name')}
+                                    type="text"
+                                    value={worker.placeholderName || ''}
+                                    onChange={(e) => {
+                                      handleUpdateWorker(worker.id, 'placeholderName', e.target.value);
+                                    }}
+                                    placeholder={t('operations.placeholderNamePlaceholder', 'Enter name')}
+                                    required={true}
+                                    error={workerErrors[`${worker.id}_placeholderName`]}
+                                  />
+                                </div>
                               )}
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <button
@@ -741,7 +809,7 @@ const AddFacilityRoleModal = ({
                         </div>
                       );
                     })}
-                    
+
                     <div className="border-t border-border pt-6 mt-6">
                       <Button
                         onClick={handleAddWorker}

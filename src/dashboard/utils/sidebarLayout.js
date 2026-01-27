@@ -4,9 +4,9 @@ export const SIDEBAR_WIDTHS = {
 };
 
 export function getSidebarLayout({ viewportWidth, isAdminRoute, isCollapsed }) {
-  const isMobileMode = viewportWidth < 768;
-  const isOverlayMode = viewportWidth >= 768 && viewportWidth < 1200;
-  const isDockedSidebarMode = !isAdminRoute && !isMobileMode && !isOverlayMode;
+  const isMobileMode = viewportWidth < 770;
+  const isOverlayMode = false;
+  const isDockedSidebarMode = !isAdminRoute && !isMobileMode;
 
   const sidebarWidth = isDockedSidebarMode
     ? (isCollapsed ? SIDEBAR_WIDTHS.COLLAPSED : SIDEBAR_WIDTHS.EXPANDED)

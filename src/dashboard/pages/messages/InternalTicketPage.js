@@ -9,7 +9,7 @@ import {
     FiShield,
     FiAlertCircle,
     FiSearch,
-    FiSliders,
+    FiArrowDown,
     FiFileText
 } from 'react-icons/fi';
 import { useDashboard } from '../../contexts/DashboardContext';
@@ -37,12 +37,12 @@ const categoryLabels = {
     support: 'Support',
     question: 'Question',
     general: 'General',
-    technical: 'Technical',
     billing: 'Billing',
     account: 'Account',
+    hr: 'HR',
 };
 
-const InternalTicketPage = () => {
+const InternalTicketPage = ({ hideHeader }) => {
     const { t } = useTranslation(['messages']);
     const { showError, showSuccess } = useNotification();
     const { user, selectedWorkspace } = useDashboard();
@@ -96,7 +96,7 @@ const InternalTicketPage = () => {
 
         const handleOpenModal = (event) => {
             if (event.detail?.type === 'createTicket' || event.detail?.action === 'create') {
-                navigate(buildDashboardUrl('/internal-ticket/new', workspaceId));
+                navigate(buildDashboardUrl('/communications/internal-ticket/new', workspaceId));
             }
         };
 
@@ -143,7 +143,7 @@ const InternalTicketPage = () => {
             showSuccess('Ticket created successfully');
             setIsCreateTicketOpen(false);
             resetInternalTicketFormData(setCreateFormData);
-            navigate(buildDashboardUrl('/internal-ticket', workspaceId));
+            navigate(buildDashboardUrl('/communications/internal-ticket', workspaceId));
             loadTickets();
         } catch (error) {
             console.error('Error creating ticket:', error);
@@ -175,72 +175,35 @@ const InternalTicketPage = () => {
     const handleNavigateToMessages = useCallback(() => {
         if (selectedWorkspace) {
             const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl('/messages', workspaceId));
+            navigate(buildDashboardUrl('/communications/messages', workspaceId));
         }
     }, [navigate, selectedWorkspace]);
 
     const handleNavigateToAnnouncements = useCallback(() => {
         if (selectedWorkspace) {
             const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl('/announcements', workspaceId));
+            navigate(buildDashboardUrl('/communications/announcements', workspaceId));
         }
     }, [navigate, selectedWorkspace]);
 
     const handleNavigateToReporting = useCallback(() => {
         if (selectedWorkspace) {
             const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl('/reporting', workspaceId));
+            navigate(buildDashboardUrl('/communications/reporting', workspaceId));
         }
     }, [navigate, selectedWorkspace]);
 
-    const tabs = [
-        { id: 'messages', path: 'messages', label: t('messages:tabs.messages', 'Messages'), icon: FiMessageSquareIcon },
-        { id: 'announcements', path: 'announcements', label: t('messages:tabs.announcements', 'Announcements'), icon: FiBell },
-        { id: 'internalTicket', path: 'internal-ticket', label: t('messages:tabs.internalTicket', 'Support Tickets'), icon: FiFileText },
-        { id: 'reporting', path: 'reporting', label: t('messages:tabs.reporting', 'Anonymous Reports'), icon: FiShield },
-    ];
-
     return (
         <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-            <div className="shrink-0 py-4 border-b border-border bg-card/30">
-                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
-                    <h1 className="text-xl font-semibold text-foreground mb-3">
-                        {t('messages:title', 'Communications')}
-                    </h1>
-                    <div className="flex gap-1 sm:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
-                        {tabs.map((tab) => {
-                            const Icon = tab.icon;
-                            const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                            const isActive = tab.id === 'internalTicket';
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => {
-                                        if (tab.id === 'messages') {
-                                            handleNavigateToMessages();
-                                        } else if (tab.id === 'announcements') {
-                                            handleNavigateToAnnouncements();
-                                        } else if (tab.id === 'reporting') {
-                                            handleNavigateToReporting();
-                                        }
-                                    }}
-                                    className={cn(
-                                        "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0",
-                                        "touch-manipulation active:scale-95",
-                                        isActive
-                                            ? "border-primary text-primary bg-primary/5"
-                                            : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    )}
-                                    title={tab.label}
-                                >
-                                    <Icon className="w-4 h-4 shrink-0" />
-                                    <span className="text-xs sm:text-sm min-w-0">{tab.label}</span>
-                                </button>
-                            );
-                        })}
+            {!hideHeader && (
+                <div className="shrink-0 pt-4 border-b border-border bg-card/30">
+                    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
+                        <h1 className="text-xl font-semibold text-foreground mb-3">
+                            {t('messages:title', 'Communications')}
+                        </h1>
                     </div>
                 </div>
-            </div>
+            )}
 
             <div className="flex-1 overflow-auto">
                 <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col pt-6">
@@ -251,7 +214,7 @@ const InternalTicketPage = () => {
                                     {t('messages:internalTicket.title', 'Support Tickets')}
                                 </h3>
                                 <button
-                                    onClick={() => navigate(buildDashboardUrl('/internal-ticket/new', workspaceId))}
+                                    onClick={() => navigate(buildDashboardUrl('/communications/internal-ticket/new', workspaceId))}
                                     className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
                                     style={{ height: 'var(--boxed-inputfield-height)' }}
                                 >
@@ -294,7 +257,7 @@ const InternalTicketPage = () => {
                                         style={{ height: 'var(--boxed-inputfield-height)' }}
                                         title="Filter by Category"
                                     >
-                                        <FiSliders className="w-4 h-4" />
+                                        <FiArrowDown className="w-4 h-4" />
                                         <span className="text-sm font-medium">
                                             {selectedCategory !== 'all' ? categoryLabels[selectedCategory] : t('messages:internalTicket.filter', 'Filter')}
                                         </span>
@@ -353,7 +316,7 @@ const InternalTicketPage = () => {
                                         {t('messages:internalTicket.noTicketsHint', 'Get started by creating a new ticket.')}
                                     </p>
                                     <button
-                                        onClick={() => navigate(buildDashboardUrl('/internal-ticket/new', workspaceId))}
+                                        onClick={() => navigate(buildDashboardUrl('/communications/internal-ticket/new', workspaceId))}
                                         className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
                                     >
                                         <FiPlus className="w-5 h-5" />
@@ -389,13 +352,14 @@ const InternalTicketPage = () => {
                                         <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
                                             <div className={cn(
                                                 "flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/50",
+                                                ticket.priority === 'emergency' && "text-red-600 bg-red-600/20 border border-red-600/30",
                                                 ticket.priority === 'urgent' && "text-red-500 bg-red-500/10",
                                                 ticket.priority === 'high' && "text-orange-500 bg-orange-500/10",
                                                 ticket.priority === 'medium' && "text-yellow-500 bg-yellow-500/10",
                                                 ticket.priority === 'low' && "text-blue-500 bg-blue-500/10"
                                             )}>
                                                 <FiBarChart2 className="w-3.5 h-3.5" />
-                                                <span>{ticket.priority || 'medium'}</span>
+                                                <span>{ticket.priority === 'emergency' ? t('messages:internalTicket.priority.emergency', 'Emergency') : ticket.priority || 'medium'}</span>
                                             </div>
                                             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/50">
                                                 <FiMessageSquare className="w-3.5 h-3.5" />
@@ -414,7 +378,7 @@ const InternalTicketPage = () => {
                 isOpen={isCreateTicketOpen}
                 onClose={() => {
                     handleCloseInternalTicketPopup(setIsCreateTicketOpen, setCreateFormData, isCreating);
-                    navigate(buildDashboardUrl('/internal-ticket', workspaceId));
+                    navigate(buildDashboardUrl('/communications/internal-ticket', workspaceId));
                 }}
                 title={t('messages:internalTicket.createTicket', 'Create Support Ticket')}
                 size="small"
@@ -424,7 +388,7 @@ const InternalTicketPage = () => {
                         <button
                             onClick={() => {
                                 handleCloseInternalTicketPopup(setIsCreateTicketOpen, setCreateFormData, isCreating);
-                                navigate(buildDashboardUrl('/internal-ticket', workspaceId));
+                                navigate(buildDashboardUrl('/communications/internal-ticket', workspaceId));
                             }}
                             disabled={isCreating}
                             className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -445,25 +409,39 @@ const InternalTicketPage = () => {
             >
                 <div className="space-y-4">
                     <div className="mt-4">
-                        <InputField
-                            label={t('messages:internalTicket.subject', 'Subject')}
-                            value={createFormData.subject}
-                            onChange={(e) => setCreateFormData({ ...createFormData, subject: e.target.value })}
-                            placeholder={t('messages:internalTicket.subjectPlaceholder', 'Enter ticket subject...')}
-                            required
+                        <SimpleDropdown
+                            label={t('messages:internalTicket.priority', 'Priority')}
+                            options={[
+                                { value: 'low', label: t('messages:internalTicket.priority.low', 'Low') },
+                                { value: 'medium', label: t('messages:internalTicket.priority.medium', 'Medium') },
+                                { value: 'high', label: t('messages:internalTicket.priority.high', 'High') },
+                                { value: 'urgent', label: t('messages:internalTicket.priority.urgent', 'Urgent') },
+                                { value: 'emergency', label: t('messages:internalTicket.priority.emergency', 'Emergency') },
+                            ]}
+                            value={createFormData.priority}
+                            onChange={(value) => setCreateFormData({ ...createFormData, priority: value })}
                             disabled={isCreating}
-                            name="ticketSubject"
                         />
                     </div>
+
+                    <InputField
+                        label={t('messages:internalTicket.subject', 'Subject')}
+                        value={createFormData.subject}
+                        onChange={(e) => setCreateFormData({ ...createFormData, subject: e.target.value })}
+                        placeholder={t('messages:internalTicket.subjectPlaceholder', 'Enter ticket subject...')}
+                        required
+                        disabled={isCreating}
+                        name="ticketSubject"
+                    />
 
                     <SimpleDropdown
                         label={t('messages:internalTicket.category', 'Category')}
                         options={[
                             { value: 'general', label: categoryLabels.general },
+                            { value: 'hr', label: categoryLabels.hr },
                             { value: 'support', label: categoryLabels.support },
                             { value: 'bug_report', label: categoryLabels.bug_report },
                             { value: 'feature_request', label: categoryLabels.feature_request },
-                            { value: 'technical', label: categoryLabels.technical },
                             { value: 'billing', label: categoryLabels.billing },
                             { value: 'account', label: categoryLabels.account },
                             { value: 'question', label: categoryLabels.question },
@@ -471,19 +449,6 @@ const InternalTicketPage = () => {
                         ]}
                         value={createFormData.category}
                         onChange={(value) => setCreateFormData({ ...createFormData, category: value })}
-                        disabled={isCreating}
-                    />
-
-                    <SimpleDropdown
-                        label={t('messages:internalTicket.priority', 'Priority')}
-                        options={[
-                            { value: 'low', label: t('messages:internalTicket.priority.low', 'Low') },
-                            { value: 'medium', label: t('messages:internalTicket.priority.medium', 'Medium') },
-                            { value: 'high', label: t('messages:internalTicket.priority.high', 'High') },
-                            { value: 'urgent', label: t('messages:internalTicket.priority.urgent', 'Urgent') },
-                        ]}
-                        value={createFormData.priority}
-                        onChange={(value) => setCreateFormData({ ...createFormData, priority: value })}
                         disabled={isCreating}
                     />
 

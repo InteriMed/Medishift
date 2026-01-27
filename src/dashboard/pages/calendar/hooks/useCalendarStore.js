@@ -195,7 +195,7 @@ const useCalendarStore = create(
           const state = get();
 
           // Handle multi-selection logic if needed
-          if (e.ctrlKey || e.metaKey) {
+          if (e && (e.ctrlKey || e.metaKey)) {
             // ... multi-selection logic ...
             return;
           }

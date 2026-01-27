@@ -137,7 +137,6 @@ export const AnnouncementsToolbar = ({
                             style={{ height: 'var(--boxed-inputfield-height)' }}
                         >
                             <FiArrowDown className="w-4 h-4" />
-                            {t('messages:sortBy', 'Sort by')}
                         </button>
                         {showSortDropdown && (
                             <>

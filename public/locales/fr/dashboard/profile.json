@@ -575,6 +575,21 @@
     "autoRenewal": "Renouvellement automatique",
     "requiresApproval": "Nécessite une approbation"
   },
+  "preferenceDays": {
+    "title": "Jours de Préférence",
+    "subtitle": "Définissez vos jours et horaires de travail préférés",
+    "hint": "Ces préférences seront appliquées aux recherches du marketplace et seront visibles pour les gestionnaires d'établissements lors de l'examen de votre profil.",
+    "monday": "Lundi",
+    "tuesday": "Mardi",
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi",
+    "friday": "Vendredi",
+    "saturday": "Samedi",
+    "sunday": "Dimanche",
+    "allDay": "Toute la journée",
+    "startTime": "Heure de début",
+    "endTime": "Heure de fin"
+  },
   "account": {
     "title": "Compte & Abonnement",
     "subtitle": "Gérez votre abonnement, mot de passe et paramètres de compte.",
@@ -651,6 +666,34 @@
     "closed": "Fermé",
     "facilityRolesTitle": "Rôles de l'établissement",
     "noWorkerRequirements": "Aucune exigence de travailleur",
-    "addWorkerRequirement": "Ajouter une exigence de travailleur"
+    "addWorkerRequirement": "Ajouter une exigence de travailleur",
+    "workerType": "Type de rôle",
+    "workerTypeRequired": "Le type de rôle est requis",
+    "workerTypeOther": "Nom du type de rôle",
+    "workerTypeOtherRequired": "Le nom du type de rôle est requis",
+    "workerTypeOtherPlaceholder": "Entrez le nom du type de rôle",
+    "selectWorkerType": "Sélectionnez le type de rôle",
+    "workerTypes": {
+      "none": "Aucun",
+      "pharmacist": "Pharmacien",
+      "cashier": "Caissier",
+      "assistant": "Assistant",
+      "pharmacyTechnician": "Technicien en pharmacie",
+      "other": "Autre"
+    },
+    "atLeastOneWorkerRequired": "Au moins un travailleur est requis",
+    "workerSelectionRequired": "La sélection d'un travailleur est requise",
+    "placeholder": "Placeholder",
+    "placeholderName": "Nom du placeholder",
+    "placeholderNameRequired": "Le nom du placeholder est requis",
+    "placeholderNamePlaceholder": "Entrez le nom",
+    "selectWorkerOrPlaceholder": "Sélectionnez un travailleur ou un placeholder",
+    "usePlaceholderName": "Entrez le nom du placeholder",
+    "noWorkersAssigned": "Aucun travailleur assigné. Cliquez sur \"Ajouter un travailleur\" pour assigner.",
+    "addWorker": "Ajouter un travailleur",
+    "assignedWorkers": "Travailleurs assignés",
+    "needMoreWorkers": "Besoin de plus de travailleurs ?",
+    "viewWorkersList": "Voir la liste des travailleurs",
+    "inviteNewMembers": "Inviter de nouveaux membres à votre équipe"
   }
 }

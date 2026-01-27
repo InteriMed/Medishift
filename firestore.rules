@@ -402,11 +402,18 @@ service cloud.firestore {
     
     // Threads collection
     match /threads/{threadId} {
+      function hasFacilityProfile() {
+        return isAuthenticated() && 
+               exists(/databases/$(database)/documents/facilityProfiles/$(request.auth.uid));
+      }
       function isThreadParticipant() {
         return isAuthenticated() && (
           (resource.data.participantIds != null && request.auth.uid in resource.data.participantIds) ||
           (resource.data.participants != null && request.auth.uid in resource.data.participants)
         );
+      }
+      function canReadThread() {
+        return isThreadParticipant() || hasFacilityProfile();
       }
       function canCreateThread() {
         return isAuthenticated() && (
@@ -414,7 +421,7 @@ service cloud.firestore {
           (request.resource.data.participants != null && request.auth.uid in request.resource.data.participants)
         );
       }
-      allow read: if isThreadParticipant();
+      allow read: if canReadThread();
       allow create: if canCreateThread();
       allow update: if isThreadParticipant();
       allow delete: if isThreadParticipant();
@@ -428,8 +435,11 @@ service cloud.firestore {
             request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants)
           );
         }
-        allow read: if isThreadMessageParticipant();
-        allow create: if isThreadMessageParticipant() && request.resource.data.senderId == request.auth.uid;
+        function canReadThreadMessage() {
+          return isThreadMessageParticipant() || hasFacilityProfile();
+        }
+        allow read: if canReadThreadMessage();
+        allow create: if (isThreadMessageParticipant() || hasFacilityProfile()) && request.resource.data.senderId == request.auth.uid;
         allow update: if isThreadMessageParticipant() && (
           resource.data.senderId == request.auth.uid ||
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions', 'status'])
@@ -580,6 +590,7 @@ service cloud.firestore {
         return isAuthenticated() && (
           isFacilityAdmin(resource.data.facilityId) ||
           resource.data.assignedUserId == request.auth.uid ||
+          resource.data.userId == request.auth.uid ||
           // Organization-level access for chain admins
           (resource.data.organizationId != null && isOrgAdmin(resource.data.organizationId))
         );
@@ -589,6 +600,43 @@ service cloud.firestore {
       allow create: if isAuthenticated(); // Verified in Cloud Function
       allow update: if canAccessShift();
       allow delete: if isAuthenticated() && isFacilityAdmin(resource.data.facilityId);
+    }
+
+    // 6b. Team Schedules (Monthly schedules with shifts subcollection)
+    match /teamSchedules/{scheduleId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+      
+      match /shifts/{shiftId} {
+        function isShiftFacilityMember() {
+          return isAuthenticated() && resource.data.facilityId != null && (
+            isFacilityAdmin(resource.data.facilityId) ||
+            (exists(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityId)) &&
+             (request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityId)).data.admins ||
+              request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityId)).data.employees))
+          );
+        }
+        
+        function canAccessTeamShift() {
+          return isAuthenticated() && (
+            isShiftFacilityMember() ||
+            resource.data.assignedUserId == request.auth.uid ||
+            resource.data.userId == request.auth.uid
+          );
+        }
+        
+        allow read: if canAccessTeamShift();
+        allow create: if isAuthenticated();
+        allow update: if canAccessTeamShift();
+        allow delete: if isAuthenticated() && (
+          isFacilityAdmin(resource.data.facilityId) ||
+          (resource.data.facilityId != null && 
+           exists(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/facilityProfiles/$(resource.data.facilityId)).data.admins)
+        );
+      }
     }
 
     // 7. Leaves (Vacation, sick leave requests)

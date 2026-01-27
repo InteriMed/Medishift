@@ -23,7 +23,7 @@ export const navigationItems = [
   {
     id: 'messages',
     title: 'dashboard.sidebar.communication',
-    path: '/dashboard/messages',
+    path: '/dashboard/communications',
     icon: FiMessageSquare,
     badge: 'unreadMessages'
   },

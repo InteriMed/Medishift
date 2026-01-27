@@ -15,7 +15,6 @@ import InputFieldParagraph from '../../../../components/BoxedInputFields/Textare
 import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
 import DateField from '../../../../components/BoxedInputFields/DateField';
 import { cn } from '../../../../utils/cn';
-import PageHeader from '../../../components/PageHeader/PageHeader';
 import PropTypes from 'prop-types';
 
 const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
@@ -397,141 +396,117 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
     return (
         <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
             {!hideHeader && (
-                <PageHeader
-                    title={t('organization:policy.title', 'Policy Library')}
-                    subtitle={t('organization:policy.subtitle', 'Manage and distribute policies to all facilities instantly')}
-                    actions={
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setIsUploadModalOpen(true)}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground",
-                                    "hover:bg-primary/90 transition-colors"
-                                )}
-                            >
-                                <FiPlus className="w-4 h-4" />
-                                {t('organization:policy.uploadNew', 'Upload Policy')}
-                            </button>
-                            <button
-                                onClick={fetchPolicies}
-                                disabled={isLoading}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-2 rounded-lg border border-border",
-                                    "hover:bg-muted transition-colors",
-                                    isLoading && "opacity-50 cursor-not-allowed"
-                                )}
-                            >
-                                <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                                {t('common:refresh', 'Refresh')}
-                            </button>
-                        </div>
-                    }
-                />
+                <div className="shrink-0 pt-4 border-b border-border bg-card/30">
+                    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
+                        <h1 className="text-xl font-semibold text-foreground mb-3">
+                            {t('messages:title', 'Communications')}
+                        </h1>
+                    </div>
+                </div>
             )}
 
-            <div className="shrink-0 px-6 py-6">
-                <FilterBar
-                    filters={filters}
-                    onFilterChange={handleFilterChange}
-                    onClearFilters={handleClearFilters}
-                    searchValue={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    searchPlaceholder={t('organization:policy.searchPlaceholder', 'Search policies...')}
-                    dropdownFields={[
-                        {
-                            key: 'status',
-                            label: t('organization:policy.filter.status', 'Status'),
-                            options: [
-                                { value: 'all', label: t('organization:policy.filter.all', 'All') },
-                                ...statusOptions
-                            ],
-                            defaultValue: 'all'
-                        },
-                        {
-                            key: 'type',
-                            label: t('organization:policy.filter.type', 'Type'),
-                            options: [
-                                { value: 'all', label: t('organization:policy.filter.all', 'All') },
-                                ...policyTypes
-                            ],
-                            defaultValue: 'all'
-                        },
-                        {
-                            key: 'role',
-                            label: t('organization:policy.filter.role', 'Role'),
-                            options: availableRoles,
-                            defaultValue: 'all'
-                        },
-                        ...(isOrganizationWorkspace && memberFacilities.length > 0 ? [{
-                            key: 'facility',
-                            label: t('organization:policy.filter.facility', 'Facility'),
-                            options: [
-                                { value: 'all', label: t('organization:policy.filter.allFacilities', 'All Facilities') },
-                                ...memberFacilities.map(facility => ({
-                                    value: facility.id,
-                                    label: facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')
-                                }))
-                            ],
-                            defaultValue: 'all'
-                        }] : []),
-                        {
-                            key: 'priority',
-                            label: t('organization:policy.filter.priority', 'Priority'),
-                            options: [
-                                { value: 'all', label: t('organization:policy.filter.all', 'All') },
-                                ...priorityOptions
-                            ],
-                            defaultValue: 'all'
-                        }
-                    ]}
-                    dateFields={[
-                        {
-                            key: 'fromDate',
-                            showClearButton: true
-                        },
-                        {
-                            key: 'toDate',
-                            showClearButton: true
-                        }
-                    ]}
-                    showViewToggle={true}
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                    sortOptions={[
-                        { value: 'date', label: t('organization:policy.sort.date', 'Date') },
-                        { value: 'name', label: t('organization:policy.sort.name', 'Name') }
-                    ]}
-                    sortValue={sortBy}
-                    onSortChange={setSortBy}
-                    translationNamespace="organization"
-                    title={t('organization:policy.info.title', 'Policy Library')}
-                    description={t('organization:policy.info.description', 'Browse and search for policies in the library.')}
-                    onRefresh={fetchPolicies}
-                    isLoading={isLoading}
-                />
-            </div>
+            <div className="flex-1 overflow-auto">
+                <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col pt-6">
+                    <div className="w-full max-w-[1400px] mx-auto px-6">
+                        <FilterBar
+                            filters={filters}
+                            onFilterChange={handleFilterChange}
+                            onClearFilters={handleClearFilters}
+                            searchValue={searchTerm}
+                            onSearchChange={setSearchTerm}
+                            searchPlaceholder={t('organization:policy.searchPlaceholder', 'Search policies...')}
+                            dropdownFields={[
+                    {
+                        key: 'status',
+                        label: t('organization:policy.filterByStatus', 'Filter by Status'),
+                        options: [
+                            { value: 'all', label: t('common:all', 'All') },
+                            ...statusOptions
+                        ],
+                        defaultValue: 'all'
+                    },
+                    {
+                        key: 'type',
+                        label: t('organization:policy.filterByType', 'Filter by Type'),
+                        options: [
+                            { value: 'all', label: t('common:all', 'All') },
+                            ...policyTypes
+                        ],
+                        defaultValue: 'all'
+                    },
+                    {
+                        key: 'role',
+                        label: t('organization:policy.filterByRole', 'Filter by Role'),
+                        options: availableRoles,
+                        defaultValue: 'all'
+                    },
+                    ...(isOrganizationWorkspace && memberFacilities.length > 0 ? [{
+                        key: 'facility',
+                        label: t('organization:policy.filterByFacility', 'Filter by Facility'),
+                        options: [
+                            { value: 'all', label: t('common:all', 'All') },
+                            ...memberFacilities.map(facility => ({
+                                value: facility.id,
+                                label: facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')
+                            }))
+                        ],
+                        defaultValue: 'all'
+                    }] : []),
+                    {
+                        key: 'priority',
+                        label: t('organization:policy.filterByPriority', 'Filter by Priority'),
+                        options: [
+                            { value: 'all', label: t('common:all', 'All') },
+                            ...priorityOptions
+                        ],
+                        defaultValue: 'all'
+                    }
+                ]}
+                dateFields={[
+                    {
+                        key: 'fromDate',
+                        label: t('organization:policy.fromDate', 'From Date'),
+                        showClearButton: true
+                    },
+                    {
+                        key: 'toDate',
+                        label: t('organization:policy.toDate', 'To Date'),
+                        showClearButton: true
+                    }
+                ]}
+                showViewToggle={true}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                sortOptions={[
+                    { value: 'date', label: t('organization:policy.sort.date', 'Date') },
+                    { value: 'name', label: t('organization:policy.sort.name', 'Name') }
+                ]}
+                sortValue={sortBy}
+                onSortChange={setSortBy}
+                translationNamespace="organization"
+                title={t('organization:policy.title', 'Policy Library')}
+                description={t('organization:policy.subtitle', 'Manage and distribute policies to all facilities instantly')}
+                onRefresh={fetchPolicies}
+                onAdd={() => setIsUploadModalOpen(true)}
+                addLabel={t('organization:policy.uploadTitle', 'Upload New Policy')}
+                isLoading={isLoading}
+            />
+                    </div>
 
-            <div className={cn("flex-1 overflow-auto", hideHeader ? "" : "px-6 pb-6")}>
+                    <div className="w-full max-w-[1400px] mx-auto pt-6 px-6">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : sortedPolicies.length === 0 ? (
-                    <div className="dashboard-empty-state">
-                        <div className="dashboard-empty-state-card">
-                            <div className="dashboard-empty-state-icon">
-                                <FiFileText className="w-8 h-8" />
-                            </div>
-                            <h2 className="dashboard-empty-state-title">
-                                {t('organization:policy.empty.title', 'No policies found')}
-                            </h2>
-                            <p className="dashboard-empty-state-description">
-                                {t('organization:policy.empty.description', 'No policies available at the moment')}
-                            </p>
+                    <div className="bg-card rounded-xl border border-border overflow-hidden">
+                        <div className="p-12 text-center">
+                            <FiFileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                            <p className="text-muted-foreground">{t('organization:policy.noPolicies', 'No policies found')}</p>
                         </div>
                     </div>
                 ) : viewMode === 'list' ? (
-                    <div className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="bg-card rounded-xl border border-border overflow-hidden">
                         <table className="w-full">
                             <thead className="bg-muted/30">
                                 <tr>
@@ -1116,6 +1091,8 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
                     </div>
                 )}
             </Dialog>
+                </div>
+            </div>
         </div>
     );
 };

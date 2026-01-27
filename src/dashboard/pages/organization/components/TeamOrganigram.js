@@ -6,9 +6,11 @@ import { db, auth } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../utils/pathUtils';
-import { FiUsers, FiShield, FiUser, FiSearch, FiBriefcase } from 'react-icons/fi';
+import { FiUsers, FiShield, FiUser, FiSearch, FiBriefcase, FiGrid, FiLayers } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import EmployeeCard from './EmployeeCard';
+import FilterBar from '../../../components/FilterBar/FilterBar';
+import TeamOrganigramFlow from './TeamOrganigramFlow';
 
 const ROLE_HIERARCHY = {
   'admin': 0,
@@ -25,6 +27,15 @@ const TeamOrganigram = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isOrganizationWorkspace = selectedWorkspace?.type === 'organization';
+  
+  console.log('TeamOrganigram - Workspace Info:', {
+    selectedWorkspace,
+    type: selectedWorkspace?.type,
+    isOrganizationWorkspace,
+    facilityId: selectedWorkspace?.facilityId,
+    organizationId: selectedWorkspace?.organizationId
+  });
   const [facilityData, setFacilityData] = useState(null);
   const [roles, setRoles] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -34,6 +45,165 @@ const TeamOrganigram = () => {
   const [employeeDetails, setEmployeeDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [viewerIsAdmin, setViewerIsAdmin] = useState(false);
+  const [filters, setFilters] = useState({
+    role: 'all',
+    fromDate: '',
+    toDate: ''
+  });
+  const [sortBy, setSortBy] = useState('level');
+  const [viewMode, setViewMode] = useState('both');
+  const [organizationData, setOrganizationData] = useState(null);
+  const [floatPoolEmployees, setFloatPoolEmployees] = useState([]);
+  const [facilityManagers, setFacilityManagers] = useState([]);
+  const [organizationAdmins, setOrganizationAdmins] = useState([]);
+
+  const fetchOrganizationData = useCallback(async () => {
+    if (!isOrganizationWorkspace || !selectedWorkspace?.organizationId) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const orgRef = doc(db, FIRESTORE_COLLECTIONS.ORGANIZATIONS, selectedWorkspace.organizationId);
+      const orgSnap = await getDoc(orgRef);
+
+      if (orgSnap.exists()) {
+        const orgData = orgSnap.data();
+        setOrganizationData(orgData);
+
+        const sharedTeam = orgData.sharedTeam || {};
+        const internalTeam = orgData.internalTeam || {};
+        const orgAdmins = internalTeam.admins || [];
+
+        const allOrgMemberIds = new Set();
+        (sharedTeam.employees || []).forEach(emp => {
+          if (emp.user_uid || emp.uid) {
+            allOrgMemberIds.add(emp.user_uid || emp.uid);
+          }
+        });
+        (internalTeam.employees || []).forEach(emp => {
+          if (emp.user_uid || emp.uid) {
+            allOrgMemberIds.add(emp.user_uid || emp.uid);
+          }
+        });
+        orgAdmins.forEach(adminId => allOrgMemberIds.add(adminId));
+
+        const employeePromises = Array.from(allOrgMemberIds).map(async (userId) => {
+          try {
+            const professionalRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
+            const professionalSnap = await getDoc(professionalRef);
+
+            if (professionalSnap.exists()) {
+              const professionalData = professionalSnap.data();
+              const identity = professionalData.identity || {};
+              return {
+                uid: userId,
+                firstName: identity.legalFirstName || identity.firstName || '',
+                lastName: identity.legalLastName || identity.lastName || '',
+                email: professionalData.contact?.primaryEmail || '',
+                phone: professionalData.contact?.primaryPhone || '',
+                photoURL: professionalData.profileDisplay?.profilePictureUrl || '',
+                isOrgAdmin: orgAdmins.includes(userId),
+                profileType: professionalData.profileType || ''
+              };
+            }
+
+            const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              return {
+                uid: userId,
+                firstName: userData.firstName || '',
+                lastName: userData.lastName || '',
+                email: userData.email || '',
+                phone: '',
+                photoURL: userData.photoURL || '',
+                isOrgAdmin: orgAdmins.includes(userId),
+                profileType: ''
+              };
+            }
+
+            return null;
+          } catch (error) {
+            console.error(`Error fetching profile for user ${userId}:`, error);
+            return null;
+          }
+        });
+
+        const fetchedEmployees = (await Promise.all(employeePromises)).filter(Boolean);
+        
+        const floatPoolEmps = (sharedTeam.employees || []).map(emp => {
+          const employee = fetchedEmployees.find(e => e.uid === (emp.user_uid || emp.uid));
+          return employee ? {
+            ...employee,
+            facilities: emp.facilities || [],
+            roles: emp.roles || []
+          } : null;
+        }).filter(Boolean);
+
+        setFloatPoolEmployees(floatPoolEmps);
+        setOrganizationAdmins(fetchedEmployees.filter(emp => emp.isOrgAdmin));
+
+        const facilities = orgData.facilities || {};
+        const facilityManagerIds = new Set();
+        Object.values(facilities).forEach(facility => {
+          if (facility.roles?.includes('facility_manager')) {
+            const facilityData = facility;
+            const managerIds = facilityData.admins || [];
+            managerIds.forEach(id => facilityManagerIds.add(id));
+          }
+        });
+
+        const facilityManagerPromises = Array.from(facilityManagerIds).map(async (userId) => {
+          try {
+            const professionalRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
+            const professionalSnap = await getDoc(professionalRef);
+
+            if (professionalSnap.exists()) {
+              const professionalData = professionalSnap.data();
+              const identity = professionalData.identity || {};
+              return {
+                uid: userId,
+                firstName: identity.legalFirstName || identity.firstName || '',
+                lastName: identity.legalLastName || identity.lastName || '',
+                email: professionalData.contact?.primaryEmail || '',
+                photoURL: professionalData.profileDisplay?.profilePictureUrl || ''
+              };
+            }
+
+            const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              return {
+                uid: userId,
+                firstName: userData.firstName || '',
+                lastName: userData.lastName || '',
+                email: userData.email || '',
+                photoURL: userData.photoURL || ''
+              };
+            }
+
+            return null;
+          } catch (error) {
+            console.error(`Error fetching facility manager ${userId}:`, error);
+            return null;
+          }
+        });
+
+        const managers = (await Promise.all(facilityManagerPromises)).filter(Boolean);
+        setFacilityManagers(managers);
+      }
+    } catch (error) {
+      console.error('Error fetching organization data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [isOrganizationWorkspace, selectedWorkspace?.organizationId]);
 
   const fetchFacilityData = useCallback(async () => {
     if (!selectedWorkspace?.facilityId) {
@@ -209,8 +379,12 @@ const TeamOrganigram = () => {
   }, [selectedWorkspace?.facilityId, t]);
 
   useEffect(() => {
-    fetchFacilityData();
-  }, [fetchFacilityData]);
+    if (isOrganizationWorkspace) {
+      fetchOrganizationData();
+    } else {
+      fetchFacilityData();
+    }
+  }, [isOrganizationWorkspace, fetchOrganizationData, fetchFacilityData]);
 
   const fetchEmployeeDetails = useCallback(async (employeeId) => {
     if (!employeeId || !selectedWorkspace?.facilityId) return;
@@ -314,23 +488,65 @@ const TeamOrganigram = () => {
   }, [selectedWorkspace, location.pathname, navigate]);
 
   const filteredRoles = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return roles;
+    let filtered = roles;
+
+    if (filters.role && filters.role !== 'all') {
+      filtered = filtered.filter(role => role.workerType === filters.role);
     }
 
-    const query = searchQuery.toLowerCase().trim();
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.map(role => ({
+        ...role,
+        assignedEmployees: role.assignedEmployees.filter(employee =>
+          employee.firstName?.toLowerCase().includes(query) ||
+          employee.lastName?.toLowerCase().includes(query) ||
+          employee.email?.toLowerCase().includes(query) ||
+          `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(query)
+        )
+      })).filter(role => role.assignedEmployees.length > 0);
+    }
+
+    if (sortBy === 'level') {
+      filtered = [...filtered].sort((a, b) => a.level - b.level);
+    } else if (sortBy === 'name') {
+      filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === 'count') {
+      filtered = [...filtered].sort((a, b) => b.assignedEmployees.length - a.assignedEmployees.length);
+    }
+
+    return filtered;
+  }, [roles, searchQuery, filters, sortBy]);
+
+  const handleFilterChange = useCallback((key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleApplyFilters = useCallback(() => {
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setFilters({ role: 'all', fromDate: '', toDate: '' });
+    setSearchQuery('');
+  }, []);
+
+  const handleRefresh = useCallback(() => {
+    if (isOrganizationWorkspace) {
+      fetchOrganizationData();
+    } else {
+      fetchFacilityData();
+    }
+  }, [isOrganizationWorkspace, fetchOrganizationData, fetchFacilityData]);
+
+  const roleFilterOptions = useMemo(() => {
     return roles.map(role => ({
-      ...role,
-      assignedEmployees: role.assignedEmployees.filter(employee =>
-        employee.firstName?.toLowerCase().includes(query) ||
-        employee.lastName?.toLowerCase().includes(query) ||
-        employee.email?.toLowerCase().includes(query) ||
-        `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(query)
-      )
-    })).filter(role => role.assignedEmployees.length > 0);
-  }, [roles, searchQuery]);
+      value: role.workerType,
+      label: role.title
+    }));
+  }, [roles]);
 
   if (loading) {
+    console.log('TeamOrganigram - LOADING STATE');
     return (
       <div className="flex items-center justify-center py-16">
         <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-logo-1)' }} />
@@ -338,168 +554,248 @@ const TeamOrganigram = () => {
     );
   }
 
+  console.log('TeamOrganigram - RENDERING MAIN:', {
+    loading,
+    isOrganizationWorkspace,
+    filteredRolesLength: filteredRoles.length,
+    rolesLength: roles.length,
+    employeesLength: employees.length,
+    organizationAdminsLength: organizationAdmins.length,
+    facilityManagersLength: facilityManagers.length,
+    floatPoolEmployeesLength: floatPoolEmployees.length
+  });
+
   return (
-    <div className="space-y-6">
-      <div className="bg-card border border-border rounded-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <FiBriefcase className="w-5 h-5 text-primary" />
-            {t('organization:organigram.roles', 'Roles & Team Structure')}
-          </h3>
-        </div>
-        <div className="pt-3 border-t border-border mb-4">
-          <p className="text-sm text-muted-foreground">
-            {t('organization:organigram.description', 'View your team organized by roles. Click on any employee to see details.')}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 w-full">
-          <div className="relative flex-1 min-w-[200px]">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('organization:directory.searchPlaceholder', 'Search employees...')}
-              className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-              style={{
-                height: 'var(--boxed-inputfield-height)',
-                fontWeight: '500',
-                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                color: 'var(--boxed-inputfield-color-text)'
-              }}
-            />
+    <div className="w-full max-w-full overflow-x-hidden">
+      <div className="space-y-6 max-w-full">
+        <FilterBar
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onApplyFilters={handleApplyFilters}
+        onClearFilters={handleClearFilters}
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder={t('organization:directory.searchPlaceholder', 'Search employees...')}
+        dropdownFields={[
+          {
+            key: 'role',
+            label: t('organization:organigram.filterByRole', 'Filter by Role'),
+            options: [
+              { value: 'all', label: t('common:all', 'All') },
+              ...roleFilterOptions
+            ],
+            defaultValue: 'all'
+          }
+        ]}
+        dateFields={[
+          {
+            key: 'fromDate',
+            label: t('organization:organigram.fromDate', 'From Date'),
+            showClearButton: true
+          },
+          {
+            key: 'toDate',
+            label: t('organization:organigram.toDate', 'To Date'),
+            showClearButton: true
+          }
+        ]}
+        sortOptions={[
+          { value: 'level', label: t('organization:organigram.sort.level', 'Hierarchy') },
+          { value: 'name', label: t('organization:organigram.sort.name', 'Name') },
+          { value: 'count', label: t('organization:organigram.sort.count', 'Employee Count') }
+        ]}
+        sortValue={sortBy}
+        onSortChange={setSortBy}
+        title={t('organization:organigram.roles', 'Roles & Team Structure')}
+        description={t('organization:organigram.description', 'View your team organized by roles. Click on any employee to see details.')}
+        onRefresh={handleRefresh}
+        isLoading={loading}
+        translationNamespace="organization"
+      />
+
+      {!isOrganizationWorkspace && (
+        <div className="flex items-center gap-2 p-3 bg-card border border-border rounded-lg">
+          <span className="text-sm font-medium text-foreground">{t('organization:organigram.viewMode', 'View Mode')}:</span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setViewMode('roles')}
+              className={cn(
+                "px-3 py-1.5 text-sm rounded-lg transition-colors",
+                viewMode === 'roles'
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              <FiUsers className="inline w-4 h-4 mr-1.5" />
+              {t('organization:organigram.viewByRole', 'By Role')}
+            </button>
+            <button
+              onClick={() => setViewMode('admin')}
+              className={cn(
+                "px-3 py-1.5 text-sm rounded-lg transition-colors",
+                viewMode === 'admin'
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              <FiShield className="inline w-4 h-4 mr-1.5" />
+              {t('organization:organigram.viewByAdmin', 'By Admin Rights')}
+            </button>
+            <button
+              onClick={() => setViewMode('both')}
+              className={cn(
+                "px-3 py-1.5 text-sm rounded-lg transition-colors",
+                viewMode === 'both'
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              <FiGrid className="inline w-4 h-4 mr-1.5" />
+              {t('organization:organigram.viewBoth', 'Both')}
+            </button>
           </div>
         </div>
-      </div>
+      )}
 
-      {filteredRoles.length === 0 ? (
-        <div className="text-center py-16">
-          <FiUsers className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <p className="text-muted-foreground">
-            {searchQuery ? t('organization:directory.emptyState', 'No employees found') : t('organization:organigram.empty', 'No roles defined yet')}
-          </p>
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-logo-1)' }} />
         </div>
-      ) : (
-        <div className="space-y-8">
-          {filteredRoles.map((role, roleIndex) => (
-            <div key={role.id} className="relative">
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-                <div
-                  className="flex items-center gap-4 p-4 rounded-lg mb-6"
-                  style={{
-                    backgroundColor: role.color1 || 'var(--background-div-color)',
-                    borderColor: role.color || 'var(--border)',
-                    borderWidth: '2px',
-                    borderStyle: 'solid'
-                  }}
-                >
-                  <div
-                    className="p-3 rounded-lg shrink-0"
-                    style={{ backgroundColor: role.color || 'var(--color-logo-1)' }}
-                  >
-                    {role.workerType === 'admin' ? (
-                      <FiShield className="w-6 h-6 text-white" />
-                    ) : (
-                      <FiBriefcase className="w-6 h-6 text-white" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h3
-                      className="text-xl font-semibold mb-1"
-                      style={{ color: role.color || 'var(--color-logo-1)' }}
-                    >
-                      {role.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {role.assignedEmployees.length} {role.assignedEmployees.length === 1 ? t('organization:organigram.member', 'member') : t('organization:organigram.members', 'members')}
-                      {role.quantity > 1 && ` • ${t('organization:organigram.required', 'Required')}: ${role.quantity}`}
-                    </p>
-                  </div>
-                </div>
-
-                {role.assignedEmployees.length > 0 ? (
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {role.assignedEmployees.map((employee) => {
-                      const isSelected = selectedEmployee?.uid === employee.uid;
-                      const fullName = `${employee.firstName} ${employee.lastName}`.trim() || 'Unknown';
-                      return (
-                        <button
-                          key={employee.uid}
-                          onClick={() => handleEmployeeClick(employee)}
-                          className={cn(
-                            "bg-card rounded-xl border p-4 shadow-md transition-all text-left",
-                            "hover:shadow-lg hover:scale-[1.02]",
-                            isSelected && "ring-2 ring-offset-2",
-                            "focus:outline-none focus:ring-2 focus:ring-offset-2"
-                          )}
-                          style={{
-                            borderLeftWidth: '4px',
-                            borderLeftColor: employee.color || role.color || 'var(--color-logo-1)',
-                            ...(isSelected && {
-                              ringColor: employee.color || role.color || 'var(--color-logo-1)',
-                              borderColor: employee.color || role.color || 'var(--color-logo-1)'
-                            })
-                          }}
-                        >
-                          <div className="flex items-center gap-3">
-                            {employee.photoURL ? (
-                              <img
-                                src={employee.photoURL}
-                                alt={fullName}
-                                className="w-12 h-12 rounded-full object-cover shrink-0"
-                              />
-                            ) : (
-                              <div
-                                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shrink-0"
-                                style={{ backgroundColor: employee.color || role.color || 'var(--color-logo-1)' }}
-                              >
-                                {employee.firstName?.[0]?.toUpperCase() || employee.lastName?.[0]?.toUpperCase() || '?'}
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="font-semibold text-sm truncate">
-                                  {fullName}
-                                </p>
-                                {employee.isAdmin && (
-                                  <div
-                                    className="p-1 rounded-full shrink-0"
-                                    style={{ backgroundColor: 'var(--color-logo-1)' }}
-                                    title={t('organization:organigram.adminBadge', 'Administrator')}
-                                  >
-                                    <FiShield className="w-3 h-3 text-white" />
-                                  </div>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {employee.email}
-                              </p>
-                              {employee.experienceYears > 0 && (
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {employee.experienceYears} {employee.experienceYears === 1 ? t('organization:organigram.year', 'year') : t('organization:organigram.years', 'years')} {t('organization:organigram.experience', 'experience')}
-                                </p>
-                              )}
-                            </div>
+      ) : isOrganizationWorkspace ? (
+        <div className="space-y-6 w-full max-w-full">
+          {console.log('TeamOrganigram - Rendering: ORGANIZATION layout')}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
+            <div className="lg:col-span-2">
+              <div className="bg-card border border-border rounded-xl p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <FiShield className="w-5 h-5 text-primary" />
+                  {t('organization:organigram.orgAdmins', 'Organization Administrators')}
+                </h3>
+                {organizationAdmins.length > 0 ? (
+                  <div className="flex flex-wrap gap-3">
+                    {organizationAdmins.map(admin => (
+                      <div
+                        key={admin.uid}
+                        onClick={() => handleEmployeeClick(admin)}
+                        className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg cursor-pointer hover:bg-primary/20 transition-colors"
+                      >
+                        {admin.photoURL ? (
+                          <img src={admin.photoURL} alt={`${admin.firstName} ${admin.lastName}`} className="w-10 h-10 rounded-full" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                            {admin.firstName?.[0] || admin.lastName?.[0] || '?'}
                           </div>
-                        </button>
-                      );
-                    })}
+                        )}
+                        <div>
+                          <div className="font-medium text-sm">{admin.firstName} {admin.lastName}</div>
+                          <div className="text-xs text-muted-foreground">{admin.email}</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    {t('organization:organigram.noEmployeesInRole', 'No employees assigned to this role')}
-                  </div>
+                  <p className="text-muted-foreground text-sm">{t('organization:organigram.noOrgAdmins', 'No organization administrators')}</p>
                 )}
               </div>
 
-              {roleIndex < filteredRoles.length - 1 && (
-                <div className="flex justify-center my-4">
-                  <div className="w-0.5 h-8 bg-border" />
-                </div>
-              )}
+              <div className="bg-card border border-border rounded-xl p-6 mt-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <FiUsers className="w-5 h-5 text-primary" />
+                  {t('organization:organigram.facilityManagers', 'Facility Managers')}
+                </h3>
+                {facilityManagers.length > 0 ? (
+                  <div className="flex flex-wrap gap-3">
+                    {facilityManagers.map(manager => (
+                      <div
+                        key={manager.uid}
+                        onClick={() => handleEmployeeClick(manager)}
+                        className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                      >
+                        {manager.photoURL ? (
+                          <img src={manager.photoURL} alt={`${manager.firstName} ${manager.lastName}`} className="w-10 h-10 rounded-full" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground font-semibold">
+                            {manager.firstName?.[0] || manager.lastName?.[0] || '?'}
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-medium text-sm">{manager.firstName} {manager.lastName}</div>
+                          <div className="text-xs text-muted-foreground">{manager.email}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">{t('organization:organigram.noFacilityManagers', 'No facility managers')}</p>
+                )}
+              </div>
             </div>
-          ))}
+
+            <div className="lg:col-span-1">
+              <div className="bg-card border border-border rounded-xl p-6 sticky top-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <FiLayers className="w-5 h-5 text-primary" />
+                  {t('organization:organigram.floatPool', 'Float Pool')}
+                </h3>
+                {floatPoolEmployees.length > 0 ? (
+                  <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                    {floatPoolEmployees.map(emp => (
+                      <div
+                        key={emp.uid}
+                        onClick={() => handleEmployeeClick(emp)}
+                        className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                      >
+                        {emp.photoURL ? (
+                          <img src={emp.photoURL} alt={`${emp.firstName} ${emp.lastName}`} className="w-8 h-8 rounded-full" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-semibold">
+                            {emp.firstName?.[0] || emp.lastName?.[0] || '?'}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">{emp.firstName} {emp.lastName}</div>
+                          {emp.facilities && emp.facilities.length > 0 && (
+                            <div className="text-xs text-muted-foreground">{emp.facilities.length} {t('organization:organigram.facilities', 'facilities')}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">{t('organization:organigram.noFloatPool', 'No float pool employees')}</p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
+      ) : filteredRoles.length === 0 ? (
+        <>
+          {console.log('TeamOrganigram - Rendering: EMPTY STATE')}
+          <div className="text-center py-16">
+            <FiUsers className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground">
+              {searchQuery ? t('organization:directory.emptyState', 'No employees found') : t('organization:organigram.empty', 'No roles defined yet')}
+            </p>
+          </div>
+        </>
+      ) : (
+        <>
+          {console.log('TeamOrganigram - Rendering: DIAGRAM', {
+            filteredRolesCount: filteredRoles.length,
+            employeesCount: employees.length,
+            viewMode,
+            roles: filteredRoles.map(r => ({
+              id: r.id,
+              title: r.title,
+              employeesCount: r.assignedEmployees?.length || 0
+            }))
+          })}
+          <TeamOrganigramFlow
+            roles={filteredRoles}
+            employees={employees}
+            viewMode={viewMode}
+          />
+        </>
       )}
 
       {selectedEmployee && employeeDetails && !loadingDetails && (
@@ -565,6 +861,7 @@ const TeamOrganigram = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

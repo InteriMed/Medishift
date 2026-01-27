@@ -26,6 +26,12 @@
   margin-bottom: 16px;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .filterTitle {
   font-size: 16px;
   font-weight: 600;
@@ -59,6 +65,39 @@
   cursor: not-allowed;
 }
 
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-logo-1, #4f46e5);
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  height: var(--boxed-inputfield-height, 40px);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  margin-left: 8px;
+}
+
+.addButton:hover {
+  background: rgba(79, 70, 229, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.addButton:active {
+  transform: translateY(0);
+}
+
+.addIcon {
+  width: 16px;
+  height: 16px;
+}
+
 .refreshIcon {
   width: 16px;
   height: 16px;
@@ -72,6 +111,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -157,17 +197,15 @@
 .sortButton {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 16px;
+  justify-content: center;
   border-radius: 12px;
   border: 2px solid var(--input-border-color, #e5e7eb);
   background: var(--background-color, #ffffff);
   color: var(--text-muted-foreground, #6b7280);
-  font-size: 14px;
-  font-weight: 500;
   transition: all 0.2s ease;
   cursor: pointer;
-  font-family: var(--font-family-text, Roboto, sans-serif);
+  position: relative;
+  flex-shrink: 0;
 }
 
 .sortButton:hover {
@@ -324,6 +362,7 @@
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -410,6 +449,7 @@
     opacity: 0;
     transform: translateX(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);

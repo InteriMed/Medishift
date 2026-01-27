@@ -18,7 +18,6 @@ import { FiFileText, FiPlus, FiClock, FiRefreshCw, FiCheckCircle, FiGrid } from 
 import { cn } from '../../../utils/cn';
 import { createContract } from '../../../services/cloudFunctions';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
-import PageHeader from '../../components/PageHeader/PageHeader';
 import PropTypes from 'prop-types';
 
 const Contracts = ({ hideHeader = false, hideStats = false }) => {
@@ -114,7 +113,7 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
         const modalParam = searchParams.get('modal');
         const actionParam = searchParams.get('action');
         const contractId = searchParams.get('contractId');
-        
+
         if ((modalParam === 'create' || actionParam === 'create') && !isCreateContractModalOpen) {
             setIsCreateContractModalOpen(true);
         } else if (modalParam === 'details' && contractId && contracts.length > 0) {
@@ -128,7 +127,7 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
     const handleToggleView = () => {
         setIsPdfView(!isPdfView);
     };
-    
+
     const handleFilterChange = (key, value) => {
         setFiltersState(prev => ({
             ...prev,
@@ -170,7 +169,7 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
 
     const sortedContracts = useMemo(() => {
         let result = [...filteredByTab];
-        
+
         if (sortBy === 'date') {
             result.sort((a, b) => {
                 const dateA = new Date(a.createdAt || a.statusLifecycle?.timestamps?.createdAt || 0);
@@ -184,7 +183,7 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                 return titleA.localeCompare(titleB);
             });
         }
-        
+
         if (filtersState.fromDate || filtersState.toDate) {
             result = result.filter(contract => {
                 const contractDate = contract.createdAt?.toDate ? contract.createdAt.toDate() : new Date(contract.createdAt || contract.statusLifecycle?.timestamps?.createdAt);
@@ -201,7 +200,7 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                 return true;
             });
         }
-        
+
         return result;
     }, [filteredByTab, sortBy, filtersState.fromDate, filtersState.toDate, getContractTitle]);
 
@@ -329,189 +328,94 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
         );
     }
 
-    const hasContracts = sortedContracts.length > 0;
-    const hasAnyContracts = allContracts.length > 0;
-
-    const StatCard = ({ icon: Icon, label, value, subValue, className }) => (
-        <div className={cn(
-            "bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow",
-            className
-        )}>
-            <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
-                    <Icon className="w-5 h-5" />
-                </div>
-                <div>
-                    <p className="text-sm text-muted-foreground">{label}</p>
-                    <p className="text-2xl font-bold text-foreground">{value}</p>
-                    {subValue && (
-                        <p className="text-xs text-muted-foreground mt-0.5">{subValue}</p>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-
-    StatCard.propTypes = {
-        icon: PropTypes.elementType.isRequired,
-        label: PropTypes.string.isRequired,
-        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-        subValue: PropTypes.string,
-        className: PropTypes.string
-    };
-
-        return (
-        <div className="h-full flex flex-col overflow-hidden">
-            {!hideHeader && (
-                <PageHeader
-                    title={t('contracts:title', 'Contracts')}
-                    subtitle={t('contracts:subtitle', 'Manage and track all contracts')}
-                    actions={
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={handleOpenCreateModal}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground",
-                                    "hover:bg-primary/90 transition-colors"
-                                )}
-                            >
-                                <FiPlus className="w-4 h-4" />
-                                {t('contracts:createContract', 'Create Contract')}
-                            </button>
-                            <button
-                                onClick={refreshContracts}
-                                disabled={isLoading}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-2 rounded-lg border border-border",
-                                    "hover:bg-muted transition-colors",
-                                    isLoading && "opacity-50 cursor-not-allowed"
-                                )}
-                            >
-                                <FiRefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                                {t('common:refresh', 'Refresh')}
-                            </button>
-                        </div>
+    return (
+        <div className="space-y-6">
+            <FilterBar
+                filters={filtersState}
+                onFilterChange={handleFilterChange}
+                onClearFilters={handleClearFilters}
+                searchValue={filters.searchTerm || ''}
+                onSearchChange={(value) => updateFilters({ searchTerm: value })}
+                searchPlaceholder={t('organization:contracts.searchPlaceholder', 'Search contracts...')}
+                dropdownFields={[
+                    {
+                        key: 'status',
+                        label: t('organization:contracts.filterByStatus', 'Filter by Status'),
+                        options: [
+                            { value: 'all', label: t('common:all', 'All') },
+                            ...statusOptions
+                        ],
+                        defaultValue: 'all'
+                    },
+                    {
+                        key: 'source',
+                        label: t('organization:contracts.filterBySource', 'Filter by Source'),
+                        options: [
+                            { value: 'all', label: t('common:all', 'All') },
+                            { value: 'team', label: t('organization:contracts.team', 'Team') },
+                            { value: 'medishift', label: t('organization:contracts.medishift', 'Medishift') }
+                        ],
+                        defaultValue: 'all'
                     }
-                />
-            )}
+                ]}
+                dateFields={[
+                    {
+                        key: 'fromDate',
+                        label: t('organization:contracts.fromDate', 'From Date'),
+                        showClearButton: true
+                    },
+                    {
+                        key: 'toDate',
+                        label: t('organization:contracts.toDate', 'To Date'),
+                        showClearButton: true
+                    }
+                ]}
+                showViewToggle={true}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                sortOptions={[
+                    { value: 'date', label: t('organization:contracts.sort.date', 'Date') },
+                    { value: 'name', label: t('organization:contracts.sort.name', 'Name') }
+                ]}
+                sortValue={sortBy}
+                onSortChange={setSortBy}
+                translationNamespace="organization"
+                title={t('organization:contracts.title', 'Contracts')}
+                description={t('organization:contracts.subtitle', 'Manage and track all contracts')}
+                onRefresh={refreshContracts}
+                onAdd={handleOpenCreateModal}
+                addLabel={t('contracts:createContract', 'Create Contract')}
+                isLoading={isLoading}
+            />
 
-            {!hideStats && (
-                <div className="shrink-0 p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard
-                            icon={FiFileText}
-                            label={t('contracts:stats.total', 'Total Contracts')}
-                            value={stats.total}
-                        />
-                        <StatCard
-                            icon={FiCheckCircle}
-                            label={t('contracts:stats.active', 'Active')}
-                            value={stats.active || 0}
-                        />
-                        <StatCard
-                            icon={FiClock}
-                            label={t('contracts:stats.pending', 'Pending')}
-                            value={stats.pending || 0}
-                        />
-                        <StatCard
-                            icon={FiFileText}
-                            label={t('contracts:stats.draft', 'Draft')}
-                            value={stats.draft || 0}
-                        />
-                    </div>
-                </div>
-            )}
-
-            <div className="shrink-0 px-6 py-6">
-                <FilterBar
-                    filters={filtersState}
-                    onFilterChange={handleFilterChange}
-                    onClearFilters={handleClearFilters}
-                    searchValue={filters.searchTerm || ''}
-                    onSearchChange={(value) => updateFilters({ searchTerm: value })}
-                    searchPlaceholder={t('contracts:searchPlaceholder', 'Search contracts...')}
-                    dropdownFields={[
-                        {
-                            key: 'status',
-                            label: t('contracts:filter.status', 'Status'),
-                            options: statusOptions,
-                            defaultValue: 'all'
-                        },
-                        {
-                            key: 'source',
-                            label: t('contracts:filter.source', 'Source'),
-                            options: [
-                                { value: 'all', label: t('contracts:tabs.all', 'All') },
-                                { value: 'team', label: t('contracts:tabs.team', 'Team') },
-                                { value: 'medishift', label: t('contracts:tabs.medishift', 'Medishift') }
-                            ],
-                            defaultValue: 'all'
-                        }
-                    ]}
-                    dateFields={[
-                        {
-                            key: 'fromDate',
-                            label: t('contracts:filter.fromDate', 'From Date'),
-                            showClearButton: true
-                        },
-                        {
-                            key: 'toDate',
-                            label: t('contracts:filter.toDate', 'To Date'),
-                            showClearButton: true
-                        }
-                    ]}
-                    showViewToggle={true}
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                    sortOptions={[
-                        { value: 'date', label: t('contracts:sort.date', 'Date') },
-                        { value: 'name', label: t('contracts:sort.name', 'Name') }
-                    ]}
-                    sortValue={sortBy}
-                    onSortChange={setSortBy}
-                    translationNamespace="contracts"
-                    title={t('contracts:info.title', 'Contracts')}
-                    description={t('contracts:info.description', 'Browse and search for contracts.')}
-                    onRefresh={refreshContracts}
-                    isLoading={isLoading}
-                />
-            </div>
-
-            <div className={cn("flex-1 overflow-auto", hideHeader ? "" : "px-6 pb-6")}>
+            <div>
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : sortedContracts.length === 0 ? (
-                    <div className="dashboard-empty-state">
-                        <div className="dashboard-empty-state-card">
-                            <div className="dashboard-empty-state-icon">
-                                <FiFileText className="w-8 h-8" />
-                            </div>
-                            <h2 className="dashboard-empty-state-title">
-                                {t('contracts:empty.title', 'No contracts found')}
-                            </h2>
-                            <p className="dashboard-empty-state-description">
-                                {t('contracts:empty.description', 'No contracts available at the moment')}
-                            </p>
+                    <div className="bg-card rounded-xl border border-border overflow-hidden">
+                        <div className="p-12 text-center">
+                            <FiFileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                            <p className="text-muted-foreground">{t('organization:contracts.noContracts', 'No contracts found')}</p>
                         </div>
                     </div>
                 ) : viewMode === 'list' ? (
-                    <div className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="bg-card rounded-xl border border-border overflow-hidden">
                         <table className="w-full">
                             <thead className="bg-muted/30">
                                 <tr>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('contracts:table.title', 'Title')}
+                                        {t('organization:contracts.table.title', 'Title')}
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('contracts:table.company', 'Company')}
+                                        {t('organization:contracts.table.company', 'Company')}
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('contracts:table.status', 'Status')}
+                                        {t('organization:contracts.table.status', 'Status')}
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                                        {t('contracts:table.created', 'Created')}
+                                        {t('organization:contracts.table.created', 'Created')}
                                     </th>
                                 </tr>
                             </thead>

@@ -376,7 +376,7 @@ export const AnnouncementDetail = ({ threadId, onBack }) => {
                     </h1>
                     <div className="flex gap-1 sm:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
                         <button
-                            onClick={() => navigate(buildDashboardUrl('/messages', workspaceId))}
+                            onClick={() => navigate(buildDashboardUrl('/communications/messages', workspaceId))}
                             className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
                         >
                             <FiMessageSquare className="w-4 h-4 shrink-0" />

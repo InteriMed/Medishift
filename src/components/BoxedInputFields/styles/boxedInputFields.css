@@ -1,6 +1,6 @@
 :root {
-  --boxed-inputfield-height: 38px;
-  --boxed-inputfield-height-sm: 38px;
+  --boxed-inputfield-height: 42px;
+  --boxed-inputfield-height-sm: 42px;
   --boxed-inputfield-padding-x: 10px;
   --boxed-inputfield-padding: 18px;
   --boxed-inputfield-font-size: var(--font-size-small);

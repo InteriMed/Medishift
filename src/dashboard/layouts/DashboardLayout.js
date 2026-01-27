@@ -21,12 +21,12 @@ export function DashboardLayout({ children }) {
     });
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
         const vw = typeof window !== 'undefined' ? window.innerWidth : 1200;
-        return vw < 1200 ? true : isMainSidebarCollapsed;
+        return vw < 770 ? true : isMainSidebarCollapsed;
     });
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const isMobileMode = viewportWidth < 768;
-    const isOverlayMode = viewportWidth >= 768 && viewportWidth < 1200;
+    const isMobileMode = viewportWidth < 770;
+    const isOverlayMode = false;
     const { isDockedSidebarMode } = getSidebarLayout({
         viewportWidth,
         isAdminRoute,
@@ -37,9 +37,7 @@ export function DashboardLayout({ children }) {
         const handleResize = () => {
             const vw = window.innerWidth;
             setViewportWidth(vw);
-            if (vw < 768) {
-                setIsSidebarCollapsed(true);
-            } else if (vw < 1200) {
+            if (vw < 770) {
                 setIsSidebarCollapsed(true);
             } else {
                 setIsSidebarCollapsed(isMainSidebarCollapsed);
@@ -81,7 +79,7 @@ export function DashboardLayout({ children }) {
     return (
         <div className="dashboard-layout-wrapper">
             <div className="dashboard-layout-content h-screen text-foreground font-sans antialiased flex flex-col">
-                {/* Desktop Sidebar - Normal mode (viewport >= 1200px) - Hidden for admin routes */}
+                {/* Desktop Sidebar - Normal mode (viewport >= 770px) - Hidden for admin routes */}
                 {!isAdminRoute && !isOverlayMode && !isMobileMode && (
                     <Sidebar
                         collapsed={isSidebarCollapsed}

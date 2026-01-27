@@ -1,0 +1,428 @@
+.diagramContainer {
+  width: 100%;
+  max-width: 100%;
+  background: var(--background-div-color, #ffffff);
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 24px;
+  font-family: var(--font-family-text, Roboto, sans-serif);
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.diagramHeader {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.diagramTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-foreground, #111827);
+  margin: 0 0 8px 0;
+}
+
+.diagramDescription {
+  font-size: 14px;
+  color: var(--text-muted-foreground, #6b7280);
+  margin: 0;
+}
+
+.diagramContent {
+  display: flex;
+  gap: 32px;
+  min-height: 600px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.adminRightsColumn {
+  flex: 0 0 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.adminRightsHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--muted-color, #f3f4f6);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  color: var(--text-foreground, #111827);
+  font-size: 14px;
+}
+
+.headerIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-logo-1, #4f46e5);
+}
+
+.adminRightsFlow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.adminLevel {
+  display: flex;
+  flex-direction: column;
+}
+
+.adminLevelCard {
+  background: var(--background-color, #ffffff);
+  border: 2px solid;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.adminLevelCard:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.adminLevelHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.adminLevelIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.adminLevelIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.adminLevelInfo {
+  flex: 1;
+}
+
+.adminLevelName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-foreground, #111827);
+  margin: 0 0 4px 0;
+}
+
+.adminLevelRights {
+  font-size: 12px;
+  color: var(--text-muted-foreground, #6b7280);
+  margin: 0;
+}
+
+.adminEmployees {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.adminEmployeeBadge {
+  position: relative;
+}
+
+.adminEmployeeAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-color, #e5e7eb);
+  background: var(--muted-color, #f3f4f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-foreground, #111827);
+}
+
+.rightsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.rightItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.rightDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-logo-1, #4f46e5);
+  flex-shrink: 0;
+}
+
+.rightLabel {
+  color: var(--text-muted-foreground, #6b7280);
+  flex: 1;
+}
+
+.rightMore {
+  color: var(--text-muted-foreground, #6b7280);
+  font-style: italic;
+  font-size: 11px;
+}
+
+.flowArrow {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.arrowIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted-foreground, #9ca3af);
+}
+
+.rolesColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.rolesHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--muted-color, #f3f4f6);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  color: var(--text-foreground, #111827);
+  font-size: 14px;
+}
+
+.rolesFlow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.roleNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 200px;
+}
+
+.roleCard {
+  background: var(--background-color, #ffffff);
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-left-width: 4px;
+  border-radius: 12px;
+  padding: 16px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.roleCard:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.roleHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.roleIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.roleIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.roleInfo {
+  flex: 1;
+}
+
+.roleName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-foreground, #111827);
+  margin: 0 0 4px 0;
+}
+
+.roleCount {
+  font-size: 12px;
+  color: var(--text-muted-foreground, #6b7280);
+  margin: 0;
+}
+
+.roleEmployees {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.roleEmployeeBadge {
+  position: relative;
+}
+
+.roleEmployeeAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-color, #e5e7eb);
+  background: var(--muted-color, #f3f4f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.adminBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-logo-1, #4f46e5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+.adminBadge svg {
+  width: 8px;
+  height: 8px;
+  color: white;
+}
+
+.roleConnector {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  margin-top: 20px;
+}
+
+.connectorIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted-foreground, #9ca3af);
+}
+
+.diagramLegend {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted-foreground, #6b7280);
+}
+
+.legendColor {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
+  .diagramContent {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .adminRightsColumn {
+    flex: 1;
+    width: 100%;
+  }
+
+  .adminRightsFlow {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+
+  .adminLevel {
+    min-width: 280px;
+  }
+
+  .flowArrow {
+    transform: rotate(90deg);
+    padding: 0 8px;
+  }
+
+  .rolesColumn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .diagramContainer {
+    padding: 16px;
+  }
+
+  .rolesFlow {
+    flex-direction: column;
+  }
+
+  .roleNode {
+    width: 100%;
+  }
+
+  .roleConnector {
+    transform: rotate(90deg);
+    padding: 8px 0;
+  }
+}

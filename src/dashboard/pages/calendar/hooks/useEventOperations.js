@@ -93,10 +93,12 @@ export const useEventOperations = (userId, accountType, workspaceContext, curren
   // Event click handler
   const handleEventClick = useCallback((event, e, events, isDragging, dragStartTime) => {
     console.log('handleEventClick called with event:', event);
-    e.stopPropagation();
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
 
     // Handle multi-selection with Ctrl/Cmd key
-    if (e.ctrlKey || e.metaKey) {
+    if (e && (e.ctrlKey || e.metaKey)) {
       setSelectedEventIds(prevSelectedIds => {
         const isSelected = prevSelectedIds.includes(event.id);
         if (isSelected) {
@@ -151,7 +153,9 @@ export const useEventOperations = (userId, accountType, workspaceContext, curren
   // Event double-click handler
   const handleEventDoubleClick = useCallback((event, e, events) => {
     console.log('Event double-clicked:', event.id, '- opening event panel');
-    e.stopPropagation();
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
 
     // Find the full event data
     const clickedEvent = events.find(ev => ev.id === event.id) || event;

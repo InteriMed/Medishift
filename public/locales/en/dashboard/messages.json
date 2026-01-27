@@ -12,6 +12,7 @@
     "announcementsLocked": "Announcements are only available for facility members",
     "threadsLocked": "Communication is only available for facility members",
     "internalTicket": "Internal Ticket",
+    "policy": "Policy Library",
     "reporting": "Reporting"
   },
   "noConversations": "No Conversations",
@@ -75,7 +76,9 @@
   },
   "announcements": {
     "title": "Announcements",
-    "description": "Browse and search for announcements in your workspace."
+    "description": "Browse and search for announcements in your workspace.",
+    "fromDate": "From Date",
+    "toDate": "To Date"
   },
   "newAnnouncement": "New Announcement",
   "sortBy": "Sort by",
@@ -169,6 +172,7 @@
   "urgency.important": "Important",
   "urgency.informational": "Informational",
   "urgency.actionRequired": "Action Required",
+  "urgency.emergency": "Emergency",
   "announcementRoles": "Target Roles",
   "category": "Category",
   "category.none": "No Category",
@@ -198,6 +202,7 @@
     "priority.medium": "Medium",
     "priority.high": "High",
     "priority.urgent": "Urgent",
+    "priority.emergency": "Emergency",
     "message": "Message",
     "messagePlaceholder": "Describe your issue...",
     "submitTicket": "Submit Ticket"
@@ -225,6 +230,13 @@
     "message": "Message",
     "messagePlaceholder": "Describe your issue or report...",
     "submitTicket": "Submit Ticket",
-    "anonymousReporting": "Submit as Anonymous Report"
+    "anonymousReporting": "Submit as Anonymous Report",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "sort": {
+      "date": "Date",
+      "title": "Title",
+      "priority": "Priority"
+    }
   }
 }

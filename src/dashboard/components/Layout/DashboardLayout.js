@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../Sidebar/Sidebar';
-import Header from '../Header/Header';
+import { Header } from '../Header/Header';
 import { useLocation } from 'react-router-dom';
 import './DashboardLayout.css';
 

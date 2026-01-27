@@ -20,6 +20,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 import {
     FiUsers,
     FiSettings,
@@ -37,25 +38,30 @@ import {
     FiSearch,
     FiCreditCard,
     FiUser,
-    FiBriefcase
+    FiBriefcase,
+    FiInbox,
+    FiEye,
+    FiChevronUp,
+    FiChevronDown
 } from 'react-icons/fi';
 import { cn } from '../../../utils/cn';
 
 import OrganigramView from './tabs/OrganigramView';
 import GlobalDirectory from './components/GlobalDirectory';
-import PolicyLibrary from './components/PolicyLibrary';
 import PayrollDashboard from '../payroll/PayrollDashboard';
 import Profile from '../profile/Profile';
 import Contracts from '../contracts/Contracts';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import HiringProcesses from './components/HiringProcesses';
 import TeamOrganigram from './components/TeamOrganigram';
+import Employees from './components/Employees';
+import Hiring from './components/Hiring';
 
 
 const OrganizationDashboard = () => {
     const { t } = useTranslation(['organization', 'common']);
     const { currentUser } = useAuth();
-    const { selectedWorkspace, user } = useDashboard();
+    const { selectedWorkspace, user, workspaces, switchWorkspace } = useDashboard();
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const location = useLocation();
@@ -67,6 +73,7 @@ const OrganizationDashboard = () => {
 
     const [selectedFacilityId, setSelectedFacilityId] = useState('all');
     const [facilitySearchQuery, setFacilitySearchQuery] = useState('');
+    const [viewFacilityDropdownOpen, setViewFacilityDropdownOpen] = useState(false);
 
     const getBasePath = useCallback(() => {
         const isOrganizationWorkspace = selectedWorkspace?.type === 'organization';
@@ -83,7 +90,6 @@ const OrganizationDashboard = () => {
         { id: 'directory', path: 'team', label: t('organization:tabs.team', 'Team'), icon: FiUserPlus },
         { id: 'contracts', path: 'contracts', label: t('organization:tabs.contracts', 'Contracts'), icon: FiFileText },
         { id: 'payroll', path: 'payroll', label: t('organization:tabs.consolidatedPayroll', 'Consolidated Payroll'), icon: FiCreditCard },
-        { id: 'policy', path: 'policy', label: t('organization:tabs.policyLibrary', 'Policy Library'), icon: FiFileText },
         { id: 'profile', path: 'profile', label: t('organization:tabs.profile', 'Profile'), icon: FiUser },
     ];
 
@@ -91,7 +97,6 @@ const OrganizationDashboard = () => {
         'team': 'directory',
         'contracts': 'contracts',
         'payroll': 'payroll',
-        'policy': 'policy',
         'profile': 'profile'
     };
 
@@ -113,12 +118,12 @@ const OrganizationDashboard = () => {
         
         if (basePathIndex >= 0 && basePathIndex + 2 < pathParts.length) {
             const subTabPath = pathParts[basePathIndex + 2];
-            if (['employees', 'organigram', 'hiring'].includes(subTabPath)) {
+            if (['employees', 'organigram', 'hiring', 'requests'].includes(subTabPath)) {
                 return subTabPath;
             }
         }
         
-        return 'employees';
+        return 'requests';
     }, [location.pathname]);
 
     const activeTab = getActiveTabFromPath();
@@ -387,13 +392,80 @@ const OrganizationDashboard = () => {
 
 
 
+    const handleViewAsFacility = (facility) => {
+        const facilityWorkspace = workspaces?.find(w => 
+            w.type === WORKSPACE_TYPES.TEAM && w.facilityId === facility.id
+        );
+        
+        if (facilityWorkspace) {
+            switchWorkspace(facilityWorkspace);
+            setViewFacilityDropdownOpen(false);
+        } else {
+            showNotification(t('organization:errors.facilityWorkspaceNotFound', 'Facility workspace not found'), 'error');
+        }
+    };
+
+    const viewFacilityDropdownRef = React.useRef(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (viewFacilityDropdownRef.current && !viewFacilityDropdownRef.current.contains(event.target)) {
+                setViewFacilityDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     return (
         <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
-            <div className="shrink-0 py-4 border-b border-border bg-card/30">
+            <div className="shrink-0 pt-4 border-b border-border bg-card/30">
                 <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
-                    <h1 className="text-xl font-semibold text-foreground mb-3">
-                        {pageTitle}
-                    </h1>
+                    <div className="flex items-center justify-between mb-3">
+                        <h1 className="text-xl font-semibold text-foreground">
+                            {pageTitle}
+                        </h1>
+                        {isOrganizationWorkspace && memberFacilities.length > 0 && (
+                            <div className="relative" ref={viewFacilityDropdownRef}>
+                                <button
+                                    onClick={() => setViewFacilityDropdownOpen(!viewFacilityDropdownOpen)}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border-2 border-input bg-background text-foreground hover:border-muted-foreground/30 transition-all"
+                                    style={{ height: 'var(--boxed-inputfield-height)' }}
+                                >
+                                    <FiEye className="w-4 h-4" />
+                                    <span>{t('organization:viewAsFacility', 'View as facility')}</span>
+                                    {viewFacilityDropdownOpen ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}
+                                </button>
+                                {viewFacilityDropdownOpen && (
+                                    <div className="absolute right-0 top-full mt-2 w-64 bg-card rounded-lg shadow-xl border border-border z-30 animate-in fade-in zoom-in-95 duration-200 max-h-[400px] overflow-y-auto">
+                                        <div className="p-2">
+                                            {memberFacilities.map((facility) => (
+                                                <button
+                                                    key={facility.id}
+                                                    onClick={() => handleViewAsFacility(facility)}
+                                                    className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 text-sm text-foreground transition-colors text-left"
+                                                >
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 font-semibold text-xs">
+                                                        {(facility.facilityName || facility.companyName || 'F').charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-medium truncate">
+                                                            {facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')}
+                                                        </div>
+                                                        {facility.address?.city && (
+                                                            <div className="text-xs text-muted-foreground truncate">
+                                                                {facility.address.city}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                     <div className="flex gap-1 sm:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
@@ -421,12 +493,14 @@ const OrganizationDashboard = () => {
             </div>
 
             <div className="flex-1 overflow-auto">
-                <div className="max-w-[1400px] mx-auto w-full p-6">
-                    {isLoading ? (
+                {isLoading ? (
+                    <div className="max-w-[1400px] mx-auto w-full p-6">
                         <div className="flex items-center justify-center py-16">
                             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         </div>
-                    ) : !organization ? (
+                    </div>
+                ) : !organization ? (
+                    <div className="max-w-[1400px] mx-auto w-full p-6">
                         <div className="text-center py-16">
                             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
                                 <FiUsers className="w-10 h-10 text-primary" />
@@ -435,73 +509,96 @@ const OrganizationDashboard = () => {
                                 {t('organization:notFound', 'Organization not found')}
                             </h3>
                         </div>
-                    ) : (
-                        <>
-                            {activeTab === 'organigram' && (
-                                <OrganigramView 
-                                    organization={organization} 
-                                    memberFacilities={memberFacilities}
-                                    selectedFacilityId={selectedFacilityId}
-                                />
-                            )}
+                    </div>
+                ) : (
+                    <>
+                        {activeTab === 'organigram' && (
+                            <div className="facility-tab-layout-container">
+                                <div className="facility-tab-content-wrapper">
+                                    <div className="facility-tab-content">
+                                        <OrganigramView 
+                                            organization={organization} 
+                                            memberFacilities={memberFacilities}
+                                            selectedFacilityId={selectedFacilityId}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
-                            {activeTab === 'directory' && (
-                                <div className="space-y-6">
-                                    <div className="shrink-0">
-                                        <div className="flex gap-2 border-b border-border overflow-x-auto max-w-[1400px] mx-auto px-6">
-                                            {[
-                                                { id: 'employees', label: t('organization:subTabs.employees', 'Employees'), icon: FiUserPlus, path: 'employees' },
-                                                { id: 'organigram', label: t('organization:tabs.organigram', 'Organigram'), icon: FiGitBranch, path: 'organigram' },
-                                                { id: 'hiring', label: t('organization:subTabs.hiring', 'Hiring Processes'), icon: FiBriefcase, path: 'hiring' }
-                                            ].map((subTab) => {
-                                                const SubIcon = subTab.icon;
-                                                const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                                                return (
-                                                    <button
-                                                        key={subTab.id}
-                                                        onClick={() => navigate(buildDashboardUrl(`/${basePath}/team/${subTab.path}`, workspaceId))}
-                                                        className={cn(
-                                                            "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                                                            activeSubTab === subTab.id
-                                                                ? "border-primary text-primary"
-                                                                : "border-transparent text-muted-foreground hover:text-foreground"
-                                                        )}
-                                                        title={subTab.label}
-                                                    >
-                                                        <SubIcon className="w-4 h-4 shrink-0" />
-                                                        <span>{subTab.label}</span>
-                                                    </button>
-                                                );
-                                            })}
+                        {activeTab === 'directory' && (
+                            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                                <div className="shrink-0 pt-0">
+                                    <div className="flex gap-2 border-b border-border overflow-x-auto max-w-[1400px] mx-auto px-6">
+                                        {[
+                                            { id: 'employees', label: t('organization:subTabs.employees', 'Employees'), icon: FiUserPlus, path: 'employees' },
+                                            { id: 'organigram', label: t('organization:tabs.organigram', 'Organigram'), icon: FiGitBranch, path: 'organigram' },
+                                            { id: 'hiring', label: t('organization:subTabs.hiring', 'Hiring Processes'), icon: FiBriefcase, path: 'hiring' }
+                                        ].map((subTab) => {
+                                            const SubIcon = subTab.icon;
+                                            const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+                                            return (
+                                                <button
+                                                    key={subTab.id}
+                                                    onClick={() => navigate(buildDashboardUrl(`/${basePath}/team/${subTab.path}`, workspaceId))}
+                                                    className={cn(
+                                                        "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                                                        activeSubTab === subTab.id
+                                                            ? "border-primary text-primary"
+                                                            : "border-transparent text-muted-foreground hover:text-foreground"
+                                                    )}
+                                                    title={subTab.label}
+                                                >
+                                                    <SubIcon className="w-4 h-4 shrink-0" />
+                                                    <span>{subTab.label}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 overflow-auto">
+                                    <div className="facility-tab-layout-container">
+                                        <div className="facility-tab-content-wrapper">
+                                            <div className="facility-tab-content">
+                                                {activeSubTab === 'employees' && (
+                                                    <Employees hideHeader={true} hideStats={true} />
+                                                )}
+
+                                                {activeSubTab === 'organigram' && (
+                                                    <TeamOrganigram />
+                                                )}
+
+                                                {activeSubTab === 'hiring' && (
+                                                    <Hiring hideHeader={true} hideStats={true} />
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-
-                                    {activeSubTab === 'employees' && (
-                                        <GlobalDirectory 
-                                            organization={organization}
-                                            memberFacilities={allFacilities}
-                                        />
-                                    )}
-
-                                    {activeSubTab === 'organigram' && (
-                                        <TeamOrganigram />
-                                    )}
-
-                                    {activeSubTab === 'hiring' && (
-                                        <HiringProcesses 
-                                            organization={organization}
-                                            memberFacilities={memberFacilities}
-                                        />
-                                    )}
                                 </div>
-                            )}
-                            {activeTab === 'contracts' && <Contracts hideHeader={true} hideStats={true} />}
-                            {activeTab === 'payroll' && <PayrollDashboard hideHeader={true} hideStats={true} />}
-                            {activeTab === 'policy' && <PolicyLibrary hideHeader={true} hideStats={false} />}
-                            {activeTab === 'profile' && <Profile />}
-                        </>
-                    )}
-                </div>
+                            </div>
+                        )}
+                        {activeTab === 'contracts' && (
+                            <div className="facility-tab-layout-container">
+                                <div className="facility-tab-content-wrapper">
+                                    <div className="facility-tab-content">
+                                        <Contracts hideHeader={true} hideStats={true} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {activeTab === 'payroll' && (
+                            <div className="facility-tab-layout-container">
+                                <div className="facility-tab-content-wrapper">
+                                    <div className="facility-tab-content">
+                                        <PayrollDashboard hideHeader={true} hideStats={true} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {activeTab === 'profile' && <Profile />}
+                    </>
+                )}
             </div>
         </div>
     );

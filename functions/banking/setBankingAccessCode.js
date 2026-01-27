@@ -309,105 +309,110 @@ const requestBankingAccessCode = onCall(
           throw new HttpsError('failed-precondition', 'No email address found for your account.');
         }
       } else if (method === 'phone') {
-        const userPhone = userData.contact?.primaryPhone || userData.primaryPhone;
-        const phonePrefix = userData.contact?.primaryPhonePrefix || userData.primaryPhonePrefix || '+41';
+        // SMS CODE MUTED
+        console.log(`[Banking Access] SMS code generation requested but muted. Code: ${tempCode}`);
+        deliveryMethod = 'console';
+        deliverySuccess = true;
         
-        if (userPhone) {
-          let fullPhone = `${phonePrefix}${userPhone}`.replace(/\s+/g, '');
-          if (!fullPhone.startsWith('+')) {
-            fullPhone = `+${fullPhone}`;
-          }
-          if (fullPhone.startsWith('+0')) {
-            fullPhone = '+' + fullPhone.substring(2);
-          }
+        // const userPhone = userData.contact?.primaryPhone || userData.primaryPhone;
+        // const phonePrefix = userData.contact?.primaryPhonePrefix || userData.primaryPhonePrefix || '+41';
+        
+        // if (userPhone) {
+        //   let fullPhone = `${phonePrefix}${userPhone}`.replace(/\s+/g, '');
+        //   if (!fullPhone.startsWith('+')) {
+        //     fullPhone = `+${fullPhone}`;
+        //   }
+        //   if (fullPhone.startsWith('+0')) {
+        //     fullPhone = '+' + fullPhone.substring(2);
+        //   }
           
-          try {
-            const infobipApiKey = INFOBIP_API_KEY.value();
-            const infobipBaseUrl = 'api.infobip.com';
-            const infobipSender = 'MediShift';
+        //   try {
+        //     const infobipApiKey = INFOBIP_API_KEY.value();
+        //     const infobipBaseUrl = 'api.infobip.com';
+        //     const infobipSender = 'MediShift';
             
-            if (infobipApiKey) {
-              const https = require('https');
+        //     if (infobipApiKey) {
+        //       const https = require('https');
               
-              const postData = JSON.stringify({
-                messages: [
-                  {
-                    destinations: [{ to: fullPhone.substring(1) }],
-                    from: infobipSender,
-                    text: `Your MediShift banking access code is: ${tempCode}. Valid for 15 minutes. If you did not request this code, please contact support immediately.`
-                  }
-                ]
-              });
+        //       const postData = JSON.stringify({
+        //         messages: [
+        //           {
+        //             destinations: [{ to: fullPhone.substring(1) }],
+        //             from: infobipSender,
+        //             text: `Your MediShift banking access code is: ${tempCode}. Valid for 15 minutes. If you did not request this code, please contact support immediately.`
+        //           }
+        //         ]
+        //       });
 
-              const options = {
-                method: 'POST',
-                hostname: infobipBaseUrl,
-                path: '/sms/2/text/advanced',
-                headers: {
-                  'Authorization': `App ${infobipApiKey}`,
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                  'Content-Length': Buffer.byteLength(postData)
-                },
-                timeout: 10000
-              };
+        //       const options = {
+        //         method: 'POST',
+        //         hostname: infobipBaseUrl,
+        //         path: '/sms/2/text/advanced',
+        //         headers: {
+        //           'Authorization': `App ${infobipApiKey}`,
+        //           'Content-Type': 'application/json',
+        //           'Accept': 'application/json',
+        //           'Content-Length': Buffer.byteLength(postData)
+        //         },
+        //         timeout: 10000
+        //       };
 
-              await new Promise((resolve, reject) => {
-                const req = https.request(options, (res) => {
-                  const chunks = [];
+        //       await new Promise((resolve, reject) => {
+        //         const req = https.request(options, (res) => {
+        //           const chunks = [];
                   
-                  res.on('data', (chunk) => {
-                    chunks.push(chunk);
-                  });
+        //           res.on('data', (chunk) => {
+        //             chunks.push(chunk);
+        //           });
                   
-                  res.on('end', () => {
-                    const body = Buffer.concat(chunks).toString();
-                    const response = JSON.parse(body);
+        //           res.on('end', () => {
+        //             const body = Buffer.concat(chunks).toString();
+        //             const response = JSON.parse(body);
                     
-                    if (res.statusCode >= 200 && res.statusCode < 300) {
-                      console.log(`[Banking Access] SMS sent via Infobip to ${fullPhone}`, response);
-                      resolve(response);
-                    } else {
-                      console.error('[Banking Access] Infobip error:', response);
-                      reject(new Error(`Infobip API error: ${response.requestError?.serviceException?.text || 'Unknown error'}`));
-                    }
-                  });
-                });
+        //             if (res.statusCode >= 200 && res.statusCode < 300) {
+        //               console.log(`[Banking Access] SMS sent via Infobip to ${fullPhone}`, response);
+        //               resolve(response);
+        //             } else {
+        //               console.error('[Banking Access] Infobip error:', response);
+        //               reject(new Error(`Infobip API error: ${response.requestError?.serviceException?.text || 'Unknown error'}`));
+        //             }
+        //           });
+        //         });
                 
-                req.on('error', (error) => {
-                  console.error('[Banking Access] Infobip request error:', error);
-                  reject(error);
-                });
+        //         req.on('error', (error) => {
+        //           console.error('[Banking Access] Infobip request error:', error);
+        //           reject(error);
+        //         });
                 
-                req.on('timeout', () => {
-                  req.destroy();
-                  reject(new Error('Request timeout'));
-                });
+        //         req.on('timeout', () => {
+        //           req.destroy();
+        //           reject(new Error('Request timeout'));
+        //         });
                 
-                req.write(postData);
-                req.end();
-              });
+        //         req.write(postData);
+        //         req.end();
+        //       });
               
-              console.log(`[Banking Access] SMS sent to ${fullPhone}`);
-              deliveryMethod = 'sms';
-              deliverySuccess = true;
-            } else {
-              console.warn('[Banking Access] Infobip not configured. SMS delivery not available.');
-              throw new HttpsError(
-                'failed-precondition',
-                'SMS delivery is not configured. Please use email verification or contact support.'
-              );
-            }
-          } catch (smsError) {
-            console.error('[Banking Access] Failed to send SMS:', smsError);
-            if (smsError instanceof HttpsError) {
-              throw smsError;
-            }
-            throw new HttpsError('internal', 'Failed to send verification code via SMS. Please try email instead.');
-          }
-        } else {
-          throw new HttpsError('failed-precondition', 'No phone number found for your account.');
-        }
+        //       console.log(`[Banking Access] SMS sent to ${fullPhone}`);
+        //       deliveryMethod = 'sms';
+        //       deliverySuccess = true;
+        //     } else {
+        //       console.warn('[Banking Access] Infobip not configured. SMS delivery not available.');
+        //       throw new HttpsError(
+        //         'failed-precondition',
+        //         'SMS delivery is not configured. Please use email verification or contact support.'
+        //       );
+        //     }
+        //   } catch (smsError) {
+        //     console.error('[Banking Access] Failed to send SMS:', smsError);
+        //     if (smsError instanceof HttpsError) {
+        //       throw smsError;
+        //     }
+        //     throw new HttpsError('internal', 'Failed to send verification code via SMS. Please try email instead.');
+        //   }
+        // } else {
+        //   throw new HttpsError('failed-precondition', 'No phone number found for your account.');
+        // }
       }
 
       await db.collection('auditLogs').add({
@@ -423,6 +428,8 @@ const requestBankingAccessCode = onCall(
         success: true, 
         message: deliveryMethod === 'email' 
           ? 'Access code sent. Please check your email.'
+          : deliveryMethod === 'console'
+          ? 'SMS delivery is currently disabled. The code has been logged to console for testing.'
           : 'Access code sent. Please check your phone.',
         expiresIn: 15,
         method: deliveryMethod

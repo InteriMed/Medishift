@@ -1,0 +1,48 @@
+{
+    "title": "Employés",
+    "subtitle": "Gérez et suivez tous les employés",
+    "errorMessage": "Échec du chargement des employés",
+    "searchPlaceholder": "Rechercher des employés...",
+    "status": {
+        "all": "Tous les statuts",
+        "active": "Actif",
+        "inactive": "Inactif",
+        "pending": "En attente"
+    },
+    "empty": {
+        "title": "Aucun employé trouvé",
+        "description": "Aucun employé disponible pour le moment"
+    },
+    "info": {
+        "title": "Employés",
+        "description": "Parcourez et recherchez des employés."
+    },
+    "sort": {
+        "name": "Nom",
+        "date": "Date",
+        "facility": "Établissement"
+    },
+    "filter": {
+        "status": "Statut",
+        "role": "Rôle",
+        "facility": "Établissement",
+        "allRoles": "Tous les rôles",
+        "allFacilities": "Tous les établissements",
+        "unnamedFacility": "Établissement sans nom"
+    },
+    "stats": {
+        "total": "Total des employés",
+        "active": "Actif",
+        "inactive": "Inactif",
+        "pending": "En attente"
+    },
+    "table": {
+        "name": "Nom",
+        "facility": "Établissement",
+        "role": "Rôle",
+        "status": "Statut",
+        "hired": "Embauché"
+    },
+    "unknownEmployee": "Employé inconnu"
+}
+

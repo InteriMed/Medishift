@@ -96,6 +96,11 @@
     }
   },
   "refresh": "Refresh",
+  "all": "All",
+  "pending": "Pending",
+  "approved": "Approved",
+  "rejected": "Rejected",
+  "actions": "Actions",
   "filter": {
     "title": "Filters",
     "description": "Filter and search your data",
@@ -108,6 +113,10 @@
     "show": "Show Filters",
     "hide": "Hide",
     "noFiltersApplied": "No filters applied",
-    "activeFilterCount": "{{count}} filter{{count, plural, one {} other {s}}} active"
+    "activeFilterCount": "{{count}} filter{{count, plural, one {} other {s}}} active",
+    "view": {
+      "grid": "Grid view",
+      "list": "List view"
+    }
   }
 }

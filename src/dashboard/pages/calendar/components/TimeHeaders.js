@@ -1,17 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getMultipleWeeks, getMultipleDays, getShortDays, isSameDay } from '../utils/dateHelpers';
 import { cn } from '../../../../utils/cn';
 
-const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, handleDayClick, scrollContainerRef, numWeeks = 7, numDays = 30, setView, onEventDropOnDay, nightView = false }) => {
+const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, handleDayClick, scrollContainerRef, numWeeks = 7, numDays = 30, setView, onEventDropOnDay, nightView = false, isTeamMode = false, isBottom = false }) => {
   const { t, i18n } = useTranslation();
   const today = new Date();
   const referenceDate = propReferenceDate || currentDate;
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const showAllTimes = windowWidth >= 1000;
 
   // Generate days based on view type and night view
   let allDays;
-  if (nightView) {
+  if (nightView && isBottom) {
+    // Bottom header in night mode: Tuesday to Monday (shift each week by 1 day forward)
+    if (view === 'day') {
+      const monday = new Date(referenceDate);
+      const dayOfWeek = monday.getDay();
+      const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      monday.setDate(monday.getDate() + daysToMonday);
+      const tuesday = new Date(monday);
+      tuesday.setDate(monday.getDate() + 1);
+      allDays = [];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(tuesday);
+        date.setDate(tuesday.getDate() + i);
+        allDays.push(date);
+      }
+    } else {
+      const weeksBefore = numWeeks;
+      const weeksAfter = numWeeks;
+      const weeks = getMultipleWeeks(referenceDate, weeksBefore, weeksAfter);
+      allDays = weeks.map(week => {
+        const tuesday = new Date(week[1]);
+        const weekDays = [];
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(tuesday);
+          date.setDate(tuesday.getDate() + i);
+          weekDays.push(date);
+        }
+        return weekDays;
+      }).flat();
+    }
+  } else if (nightView) {
     // Night view: show previous day + next day for each date
     if (view === 'day') {
       const prevDay = new Date(referenceDate);
@@ -62,7 +103,10 @@ const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, hand
   return (
     <>
       <div
-        className="time-headers flex py-2"
+        className={cn(
+          "time-headers flex py-2",
+          isTeamMode && "border-b border-border"
+        )}
         style={{
           width: view === 'day' ? `${allDays.length * 100}%` : `${allDays.length * (100 / 7)}%`,
           minWidth: view === 'day' ? `${allDays.length * 100}%` : `${allDays.length * (100 / 7)}%`
@@ -119,6 +163,10 @@ const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, hand
             }
           };
 
+          const isBottomNightMode = nightView && isBottom;
+          const textColor = isBottomNightMode ? 'text-red-500' : 'text-muted-foreground';
+          const dayNumberColor = isBottomNightMode && (isToday || isCurrentDay) ? 'text-red-500' : '';
+
           return (
             <div
               key={index}
@@ -154,22 +202,29 @@ const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, hand
                 }
               }}
             >
-              <div className="uppercase tracking-wider mb-1 text-muted-foreground" style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
+              <div className={cn("uppercase tracking-wider mb-1", textColor)} style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
                 {shortDays[dayIndex]}
               </div>
               <div
                 className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-full transition-all",
-                  isToday
+                  isToday && !isBottomNightMode
                     ? 'bg-primary text-primary-foreground'
-                    : isCurrentDay
+                    : isCurrentDay && !isBottomNightMode
                       ? 'bg-muted text-foreground'
-                      : 'text-foreground'
+                      : dayNumberColor || 'text-foreground'
                 )}
                 style={{ fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)' }}
               >
                 {date.getDate()}
               </div>
+              {isTeamMode && (
+                <div className="flex items-end justify-between w-full px-1 mt-1 text-[9px] font-semibold text-muted-foreground" style={{ height: '14px' }}>
+                  {showAllTimes && <span>{nightView ? '18:00' : '06:00'}</span>}
+                  <span className={!showAllTimes ? 'mx-auto' : ''}>{nightView ? '00:00' : '12:00'}</span>
+                  {showAllTimes && <span>{nightView ? '06:00' : '18:00'}</span>}
+                </div>
+              )}
             </div>
           );
         })}

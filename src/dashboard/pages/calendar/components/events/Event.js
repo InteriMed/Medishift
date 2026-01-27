@@ -67,7 +67,7 @@ const Event = ({
   };
 
   const baseColor = color || '#2563eb'; // Blue fallback
-  const bgColor = isDraft ? hexToRgba(baseColor, 0.25) : hexToRgba(baseColor, 0.15);
+  const bgColor = isDraft ? hexToRgba(baseColor, 0.3) : hexToRgba(baseColor, 0.2);
   const borderColor = baseColor;
   const textColor = baseColor;
 
@@ -90,8 +90,9 @@ const Event = ({
     onClick?.({ id, start, end, title, color, color1, notes, location, employees, isRecurring }, e);
   }, [id, start, end, title, color, color1, notes, location, employees, isRecurring, onClick]);
 
-  // Use passed style or fallback
-  const positionStyle = style || { display: 'none' };
+  if (!style || !style.position) {
+    return null;
+  }
 
   return (
     <div
@@ -105,7 +106,7 @@ const Event = ({
         isDraft && "opacity-70 border-dashed"
       )}
       style={{
-        ...positionStyle,
+        ...style,
         backgroundColor: bgColor,
         borderLeft: `3px solid ${borderColor}`,
         boxShadow: isHovered ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
