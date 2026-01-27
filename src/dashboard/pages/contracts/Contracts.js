@@ -14,8 +14,7 @@ import Dialog from '../../../components/Dialog/Dialog';
 import InputField from '../../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldParagraph from '../../../components/BoxedInputFields/TextareaField';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
-import { FiFileText, FiPlus, FiClock, FiRefreshCw, FiCheckCircle, FiGrid } from 'react-icons/fi';
-import { cn } from '../../../utils/cn';
+import { FiFileText, FiClock } from 'react-icons/fi';
 import { createContract } from '../../../services/cloudFunctions';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 import PropTypes from 'prop-types';
@@ -56,13 +55,6 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
     });
     const [isCreatingContract, setIsCreatingContract] = useState(false);
 
-    const allContracts = useMemo(() => {
-        return contracts;
-    }, [contracts]);
-
-    const allFilteredContracts = useMemo(() => {
-        return filteredContracts;
-    }, [filteredContracts]);
 
     const handleCloseDetails = useCallback(() => {
         setIsDetailsModalOpen(false);
@@ -204,13 +196,6 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
         return result;
     }, [filteredByTab, sortBy, filtersState.fromDate, filtersState.toDate, getContractTitle]);
 
-    const stats = useMemo(() => {
-        const total = allContracts.length;
-        const active = allContracts.filter(c => c.status === 'active' || c.status === 'signed').length;
-        const pending = allContracts.filter(c => c.status === 'pending' || c.status === 'sent').length;
-        const draft = allContracts.filter(c => c.status === 'draft').length;
-        return { total, active, pending, draft };
-    }, [allContracts]);
 
     const statusOptions = [
         { value: 'all', label: t('contracts:status.all') },

@@ -34,7 +34,7 @@ const SpendingsTracker = () => {
     if (dateFrom && dateTo) {
       loadSpendingsData();
     }
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, loadSpendingsData]);
 
   const loadSpendingsData = async () => {
     if (!dateFrom || !dateTo) return;

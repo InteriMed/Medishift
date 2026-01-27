@@ -78,7 +78,7 @@ const Profile = () => {
         if (!baseProfileConfig || !userProfile) return baseProfileConfig;
 
         return baseProfileConfig;
-    }, [baseProfileConfig, userProfile, selectedWorkspace, formData]);
+    }, [baseProfileConfig, userProfile]);
 
     useEffect(() => {
         if (formData && profileConfig) {

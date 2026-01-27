@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
     FaCalendarAlt, FaShieldAlt, FaBolt, FaBuilding,
-    FaUserMd, FaArrowRight, FaCheckCircle, FaUsers, FaRegLightbulb,
-    FaUserPlus, FaStore, FaComments, FaFileContract, FaLock,
-    FaServer, FaCode, FaMousePointer, FaRocket, FaSearch
+    FaUserMd, FaArrowRight, FaCheckCircle, FaUsers,
+    FaFileContract, FaLock,
+    FaServer, FaCode, FaRocket, FaSearch
 } from 'react-icons/fa';
 
 import phoneAppMockup from '../assets/pages/homepage/HeroBannerRightPicture.png';

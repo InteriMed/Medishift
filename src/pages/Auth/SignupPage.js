@@ -2,16 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   updateProfile,
   RecaptchaVerifier,
   PhoneAuthProvider,
   sendEmailVerification,
-  linkWithCredential,
-  signInWithRedirect,
-  getRedirectResult,
-  GoogleAuthProvider
+  linkWithCredential
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth, loginWithGoogle } from '../../services/firebase';
@@ -100,7 +96,7 @@ function Signup() {
         recaptchaVerifier.clear();
       }
     };
-  }, [step, auth, recaptchaVerifier]);
+  }, [step, recaptchaVerifier]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -231,8 +227,6 @@ function Signup() {
         // Store the user temporarily
         setTemporaryUser(user);
 
-        const token = await user.getIdToken(true);
-
         // Redirect to VerificationSentPage
         handleNavigateToDashboard();
       } catch (error) {
@@ -284,8 +278,6 @@ function Signup() {
           tutorialPassed: false,
           isProfessionalProfileComplete: false,
         });
-
-        const token = await user.getIdToken(true);
 
         // Redirect to profile for onboarding
         navigate(`/${lang}/dashboard/profile`);
@@ -365,8 +357,6 @@ function Signup() {
           tutorialPassed: false,
           isProfessionalProfileComplete: false,
         });
-
-        const token = await user.getIdToken(true);
 
         // Redirect to profile for onboarding
         navigate(`/${lang}/dashboard/profile`);

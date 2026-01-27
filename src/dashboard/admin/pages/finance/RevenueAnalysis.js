@@ -35,7 +35,7 @@ const RevenueAnalysis = () => {
     if (dateFrom && dateTo) {
       loadRevenueData();
     }
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, loadRevenueData]);
 
   const loadRevenueData = async () => {
     if (!dateFrom || !dateTo) return;

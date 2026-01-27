@@ -62,7 +62,7 @@ const OrganizationDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const [selectedFacilityId, setSelectedFacilityId] = useState('all');
-    const [facilitySearchQuery, setFacilitySearchQuery] = useState('');
+    const [facilitySearchQuery] = useState('');
     const [viewFacilityDropdownOpen, setViewFacilityDropdownOpen] = useState(false);
 
     const getBasePath = useCallback(() => {
@@ -83,14 +83,13 @@ const OrganizationDashboard = () => {
         { id: 'profile', path: 'profile', label: t('organization:tabs.profile', 'Profile'), icon: FiUser },
     ];
 
-    const tabPathToId = {
-        'team': 'directory',
-        'contracts': 'contracts',
-        'payroll': 'payroll',
-        'profile': 'profile'
-    };
-
     const getActiveTabFromPath = useCallback(() => {
+        const tabPathToId = {
+            'team': 'directory',
+            'contracts': 'contracts',
+            'payroll': 'payroll',
+            'profile': 'profile'
+        };
         const pathParts = location.pathname.split('/').filter(Boolean);
         const basePathIndex = pathParts.findIndex(part => part === 'organization' || part === 'facility');
         
@@ -100,7 +99,7 @@ const OrganizationDashboard = () => {
         }
         
         return 'directory';
-    }, [location.pathname, tabPathToId]);
+    }, [location.pathname]);
 
     const getActiveSubTabFromPath = useCallback(() => {
         const pathParts = location.pathname.split('/').filter(Boolean);
@@ -281,17 +280,6 @@ const OrganizationDashboard = () => {
             setSelectedFacilityId('all');
         }
     }, [memberFacilities, selectedFacilityId]);
-
-    const filteredFacilitiesForDropdown = useMemo(() => {
-        if (!facilitySearchQuery.trim()) {
-            return memberFacilities;
-        }
-        const query = facilitySearchQuery.toLowerCase();
-        return memberFacilities.filter(facility => {
-            const name = (facility.facilityName || facility.companyName || '').toLowerCase();
-            return name.includes(query);
-        });
-    }, [memberFacilities, facilitySearchQuery]);
 
     // Remove facility from organization
     const handleRemoveFacility = async (facilityId) => {

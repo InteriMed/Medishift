@@ -5,24 +5,20 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNetwork } from '../../contexts/NetworkContext';
 import { db } from '../../services/firebase';
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot, updateDoc } from 'firebase/firestore';
-import Cookies from 'js-cookie';
 import { setWorkspaceCookie, getWorkspaceCookie, clearWorkspaceCookie } from '../../utils/cookieUtils';
 import {
   createWorkspaceSession,
-  validateWorkspaceSession,
   clearWorkspaceSession,
   getAvailableWorkspaces,
   WORKSPACE_TYPES
 } from '../../utils/sessionAuth';
-import { COLLECTIONS, isAdminSync } from '../../config/workspaceDefinitions';
+import { isAdminSync } from '../../config/workspaceDefinitions';
 import { buildDashboardUrl, getDefaultRouteForWorkspace, getRelativePathFromUrl, getWorkspaceIdForUrl, isPathValidForWorkspace } from '../../config/routeUtils';
 import Dialog from '../../components/Dialog/Dialog';
 import Button from '../../components/BoxedInputFields/Button';
-import { getCookieKey, COOKIE_CONFIG, FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
+import { COOKIE_CONFIG, FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 
 const DashboardContext = createContext(null);
-
-const COOKIE_EXPIRY_DAYS = COOKIE_CONFIG.PROFILE_TUTORIAL_EXPIRY_DAYS;
 
 export const DashboardProvider = ({ children }) => {
   const { currentUser } = useAuth();
@@ -59,20 +55,15 @@ export const DashboardProvider = ({ children }) => {
     // Cookie setting removed
   };
 
-  const getCookieValues = (userId) => {
-    return {};
-  };
-
   const clearCookieValues = (userId) => {
     // Cookie clearing removed
   };
 
-  const setTutorialComplete = async (isComplete = true) => {
+  const setTutorialComplete = useCallback(async (isComplete = true) => {
     return false;
-  };
+  }, []);
 
-  // Set profile completion status
-  const setProfileCompletionStatus = async (isComplete = true) => {
+  const setProfileCompletionStatus = useCallback(async (isComplete = true) => {
     if (!currentUser) return false;
 
     try {
@@ -96,7 +87,7 @@ export const DashboardProvider = ({ children }) => {
       console.error('Error updating profile completion status:', error);
       return false;
     }
-  };
+  }, [currentUser, selectedWorkspace, tutorialPassed]);
 
   // Helper function to check profile completeness
   const checkProfileCompleteness = (userData) => {
@@ -151,7 +142,7 @@ export const DashboardProvider = ({ children }) => {
     return null; // Profile is complete
   };
 
-  const refreshUserData = async () => {
+  const refreshUserData = useCallback(async () => {
     if (!currentUser) return;
 
     try {
@@ -203,7 +194,7 @@ export const DashboardProvider = ({ children }) => {
     }
 
     return null;
-  };
+  }, [currentUser, selectedWorkspace]);
 
   // Fetch user data and workspaces when currentUser changes
   useEffect(() => {
@@ -226,8 +217,6 @@ export const DashboardProvider = ({ children }) => {
         setIsLoading(false);
         return;
       }
-
-      let fetchedUser = null;
 
       try {
         setIsLoading(true);
@@ -258,7 +247,6 @@ export const DashboardProvider = ({ children }) => {
           };
 
           await setDoc(doc(db, 'users', currentUser.uid), basicUserData);
-          fetchedUser = basicUserData;
           setUser(basicUserData);
           setUserProfile(basicUserData);
           setProfileComplete(false);
@@ -332,7 +320,6 @@ export const DashboardProvider = ({ children }) => {
             adminDataIsActive: userWithId.adminData?.isActive
           });
 
-          fetchedUser = userWithId;
           setUser(userWithId);
           setUserProfile(userWithId);
           setProfileComplete(isProfileComplete);
@@ -443,7 +430,7 @@ export const DashboardProvider = ({ children }) => {
     }
   }, [user]);
 
-  const updateUserPreferences = async (newPrefs) => {
+  const updateUserPreferences = useCallback(async (newPrefs) => {
     if (!currentUser) return;
 
     try {
@@ -459,7 +446,7 @@ export const DashboardProvider = ({ children }) => {
       console.error('Error updating preferences in Firestore:', err);
       return false;
     }
-  };
+  }, [currentUser, userPreferences]);
 
   const refreshDashboardData = async () => {
     // Implement refresh logic with Firestore
@@ -668,16 +655,13 @@ export const DashboardProvider = ({ children }) => {
     if (dashboardIndex !== -1 && segments.length > dashboardIndex + 1) {
       const workspaceId = segments[dashboardIndex + 1];
 
-      const availableWs = getAvailableWorkspaces(userWithAdmin);
-      const wsFromUrl = availableWs.find(w => w.id === workspaceId);
+        const availableWs = getAvailableWorkspaces(userWithAdmin);
+        const wsFromUrl = availableWs.find(w => w.id === workspaceId);
 
-      if (wsFromUrl) {
-
-        let stateChanged = false;
-        if (!selectedWorkspace || selectedWorkspace.id !== wsFromUrl.id) {
+        if (wsFromUrl) {
+          if (!selectedWorkspace || selectedWorkspace.id !== wsFromUrl.id) {
           setSelectedWorkspace(wsFromUrl);
           setWorkspaceCookie(wsFromUrl);
-          stateChanged = true;
         }
 
         // Only update workspaces if they changed
@@ -685,7 +669,6 @@ export const DashboardProvider = ({ children }) => {
         const oldHash = JSON.stringify(workspaces);
         if (newHash !== oldHash) {
           setWorkspaces(availableWs);
-          stateChanged = true;
         }
 
         return;
@@ -781,10 +764,6 @@ export const DashboardProvider = ({ children }) => {
       if (stillAvailable) {
         // Only enforce workspace in URL if we are on a dashboard page
         if (location.pathname.includes('/dashboard')) {
-          const currentPath = location.pathname;
-          const segments = currentPath.split('/').filter(Boolean);
-          const dIdx = segments.indexOf('dashboard');
-
           // Aggressive URL rewriting removed to prevent feature redirect loops
           // The router will handle 404s if the path is invalid.
         }
@@ -891,7 +870,7 @@ export const DashboardProvider = ({ children }) => {
         console.log('[DashboardContext] Legacy workspace query param detected, but automatic cleanup redirection is disabled');
       }
     }
-  }, [user, switchWorkspace, selectedWorkspace, location, navigate]);
+  }, [user, switchWorkspace, selectedWorkspace, location, navigate, workspaces]);
 
   // Validate workspace session periodically
   useEffect(() => {

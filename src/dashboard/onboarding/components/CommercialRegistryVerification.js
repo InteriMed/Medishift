@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../contexts/AuthContext';
 import { commercialRegistrySearchAPI } from '../../../services/cloudFunctions';
-import { FiLoader, FiAlertCircle, FiFileText, FiCheckCircle, FiInfo, FiCheck, FiExternalLink } from 'react-icons/fi';
+import { FiLoader, FiAlertCircle, FiFileText, FiInfo, FiCheck, FiExternalLink } from 'react-icons/fi';
 import { DOCUMENT_TYPES } from '../constants/documentTypes';
 import { saveOrganizationProfile } from '../services/profileSavingService';
 import { processDocumentWithAI } from '../../../services/documentProcessingService';
@@ -40,7 +40,7 @@ const normalizeCommercialRegistryData = (source) => {
 };
 
 const CommercialRegistryVerification = React.memo(React.forwardRef(function CommercialRegistryVerification(props, ref) {
-    const { onComplete, onReadyChange, onProcessingChange, mode = 'full' } = props;
+    const { onComplete, onReadyChange, onProcessingChange } = props;
     const { t } = useTranslation(['dashboard', 'common', 'dashboardProfile']);
     const { currentUser } = useAuth();
 
@@ -58,7 +58,6 @@ const CommercialRegistryVerification = React.memo(React.forwardRef(function Comm
     const [billingProgress, setBillingProgress] = useState(0);
     const [showRegistryInfoDialog, setShowRegistryInfoDialog] = useState(false);
     const [isPreVerified, setIsPreVerified] = useState(false);
-    const [preVerifiedData, setPreVerifiedData] = useState(null);
 
     useEffect(() => {
         const checkVerificationStatus = async () => {
@@ -70,7 +69,6 @@ const CommercialRegistryVerification = React.memo(React.forwardRef(function Comm
                         const userData = userDoc.data();
                         if (userData.GLN_certified === true || userData.GLN_certified === 'ADMIN_OVERRIDE') {
                             setIsPreVerified(true);
-                            setPreVerifiedData(userData);
                         }
                     }
                 } catch (error) {
@@ -118,12 +116,12 @@ const CommercialRegistryVerification = React.memo(React.forwardRef(function Comm
             return handleVerifyAccount();
         },
         isReady
-    }), [isReady, commercialNumber, documentFile, documentType, billingFile, isPreVerified]);
+    }), [isReady, isPreVerified, onComplete, handleVerifyAccount]);
 
-    useEffect(() => { onReadyChange?.(isReady); }, [isReady]);
-    useEffect(() => { onProcessingChange?.(isProcessing); }, [isProcessing]);
+    useEffect(() => { onReadyChange?.(isReady); }, [isReady, onReadyChange]);
+    useEffect(() => { onProcessingChange?.(isProcessing); }, [isProcessing, onProcessingChange]);
 
-    const handleVerifyAccount = async () => {
+    const handleVerifyAccount = useCallback(async () => {
         const cleanNumber = commercialNumber.replace(/[^A-Z0-9.-]/g, '');
         const errors = {};
 
@@ -193,7 +191,7 @@ const CommercialRegistryVerification = React.memo(React.forwardRef(function Comm
         } finally {
             setIsProcessing(false);
         }
-    };
+    }, [commercialNumber, documentType, documentFile, billingFile, currentUser, t, onComplete, setIdentityProgress, setBillingProgress]);
 
     if (isPreVerified) {
         return (

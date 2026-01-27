@@ -1,4 +1,4 @@
-import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 

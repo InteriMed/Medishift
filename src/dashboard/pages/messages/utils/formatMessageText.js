@@ -8,18 +8,21 @@ const formatMessageText = (text) => {
     let lastIndex = 0;
     let boldRegex = /\*\*(.+?)\*\*/g;
     let italicRegex = /\*(.+?)\*/g;
-    let match;
 
     const allMatches = [];
     
-    while ((match = boldRegex.exec(str)) !== null) {
-      allMatches.push({ type: 'bold', start: match.index, end: match.index + match[0].length, content: match[1] });
+    let boldMatch;
+    while ((boldMatch = boldRegex.exec(str)) !== null) {
+      allMatches.push({ type: 'bold', start: boldMatch.index, end: boldMatch.index + boldMatch[0].length, content: boldMatch[1] });
     }
     
-    while ((match = italicRegex.exec(str)) !== null) {
-      const isBold = allMatches.some(m => m.start <= match.index && m.end >= match.index + match[0].length);
+    let italicMatch;
+    while ((italicMatch = italicRegex.exec(str)) !== null) {
+      const italicIndex = italicMatch.index;
+      const italicEnd = italicIndex + italicMatch[0].length;
+      const isBold = allMatches.some(m => m.start <= italicIndex && m.end >= italicEnd);
       if (!isBold) {
-        allMatches.push({ type: 'italic', start: match.index, end: match.index + match[0].length, content: match[1] });
+        allMatches.push({ type: 'italic', start: italicIndex, end: italicEnd, content: italicMatch[1] });
       }
     }
 
@@ -133,4 +136,3 @@ const formatMessageText = (text) => {
 };
 
 export default formatMessageText;
-

@@ -1,25 +1,21 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiAlertCircle, FiLoader } from 'react-icons/fi';
+import { FiAlertCircle } from 'react-icons/fi';
 import PersonnalizedInputField from '../components/BoxedInputFields/Personnalized-InputField';
 import SimpleDropdown from '../components/BoxedInputFields/Dropdown-Field';
 import UploadFile from '../components/BoxedInputFields/UploadFile';
 import Button from '../components/BoxedInputFields/Button';
 import { DOCUMENT_TYPES } from '../dashboard/onboarding/constants/documentTypes';
-import { useAuth } from '../contexts/AuthContext';
 
 const GLNTestVerifPage = () => {
     const { t } = useTranslation(['dashboard', 'common', 'dashboardProfile', 'pages']);
-    const { currentUser } = useAuth();
     const [gln, setGln] = useState('');
     const [profession, setProfession] = useState('');
     const [documentType, setDocumentType] = useState('');
     const [documentFile, setDocumentFile] = useState(null);
     const [fieldErrors, setFieldErrors] = useState({});
     const [verificationError, setVerificationError] = useState('');
-    const [verificationStatus, setVerificationStatus] = useState(null);
     const [testMode, setTestMode] = useState('professional');
-    const [simulatedError, setSimulatedError] = useState('');
 
     const handleTestValidation = () => {
         const glnString = gln.replace(/[^0-9]/g, '');
@@ -51,8 +47,6 @@ const GLNTestVerifPage = () => {
 
     const handleSimulateError = (errorType) => {
         setFieldErrors({});
-        setSimulatedError(errorType);
-        setVerificationStatus('error');
 
         if (errorType === 'api_limit') {
             setVerificationError(t('pages.glnTestVerif.errors.apiLimit'));
@@ -62,8 +56,6 @@ const GLNTestVerifPage = () => {
             setVerificationError(t('pages.glnTestVerif.errors.networkError'));
         } else if (errorType === 'clear') {
             setVerificationError('');
-            setVerificationStatus(null);
-            setSimulatedError('');
         }
     };
 

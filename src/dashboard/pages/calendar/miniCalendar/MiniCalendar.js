@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiChevronLeft, FiChevronRight, FiCheck } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { getShortDays, isSameDay, getWeekDates } from '../utils/dateHelpers';
 import { cn } from '../../../../utils/cn';
 
@@ -13,7 +13,7 @@ const MiniCalendar = ({
   visibleWeekEnd,
   highlightOnlyToday = false
 }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [calendarDate, setCalendarDate] = useState(new Date(currentDate));
   const [calendarDays, setCalendarDays] = useState([]);
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);

@@ -12,8 +12,6 @@ import InputFieldHideUnhide from '../../../../../components/BoxedInputFields/Inp
 
 import useAutoSave from '../../../../hooks/useAutoSave';
 
-const GOLDEN_COLOR = '#FFD700';
-
 const styles = {
   sectionContainer: "flex flex-col gap-6 p-0 w-full max-w-[1400px] mx-auto",
   sectionsWrapper: "account-sections-wrapper w-full max-w-[1400px] mx-auto",

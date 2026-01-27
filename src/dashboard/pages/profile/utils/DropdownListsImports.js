@@ -65,17 +65,17 @@ export const useDropdownOptions = () => {
   }, [dropdownTranslations]);
 
   const optionSets = {
-    workPermits: useMemo(() => createOptionsFromObject('workPermits'), [createOptionsFromObject, dropdownTranslations]),
-    countries: useMemo(() => createOptionsFromObject('countries'), [createOptionsFromObject, dropdownTranslations]),
-    cantons: useMemo(() => createOptionsFromObject('cantons'), [createOptionsFromObject, dropdownTranslations]),
-    education: useMemo(() => createOptionsFromObject('education'), [createOptionsFromObject, dropdownTranslations]),
-    contractTypes: useMemo(() => createOptionsFromObject('contractTypes'), [createOptionsFromObject, dropdownTranslations]),
-    availability: useMemo(() => createOptionsFromObject('availability'), [createOptionsFromObject, dropdownTranslations]),
-    jobRoles: useMemo(() => createOptionsFromObject('jobRoles'), [createOptionsFromObject, dropdownTranslations]),
-    skills: useMemo(() => createOptionsFromObject('skills'), [createOptionsFromObject, dropdownTranslations]),
-    languages: useMemo(() => createOptionsFromObject('languages'), [createOptionsFromObject, dropdownTranslations]),
-    jobPreferences: useMemo(() => createOptionsFromObject('jobPreferences'), [createOptionsFromObject, dropdownTranslations]),
-    facilityTypes: useMemo(() => createOptionsFromObject('facilityTypes'), [createOptionsFromObject, dropdownTranslations]),
+    workPermits: useMemo(() => createOptionsFromObject('workPermits'), [createOptionsFromObject]),
+    countries: useMemo(() => createOptionsFromObject('countries'), [createOptionsFromObject]),
+    cantons: useMemo(() => createOptionsFromObject('cantons'), [createOptionsFromObject]),
+    education: useMemo(() => createOptionsFromObject('education'), [createOptionsFromObject]),
+    contractTypes: useMemo(() => createOptionsFromObject('contractTypes'), [createOptionsFromObject]),
+    availability: useMemo(() => createOptionsFromObject('availability'), [createOptionsFromObject]),
+    jobRoles: useMemo(() => createOptionsFromObject('jobRoles'), [createOptionsFromObject]),
+    skills: useMemo(() => createOptionsFromObject('skills'), [createOptionsFromObject]),
+    languages: useMemo(() => createOptionsFromObject('languages'), [createOptionsFromObject]),
+    jobPreferences: useMemo(() => createOptionsFromObject('jobPreferences'), [createOptionsFromObject]),
+    facilityTypes: useMemo(() => createOptionsFromObject('facilityTypes'), [createOptionsFromObject]),
     phonePrefixes: useMemo(() => {
       const options = createOptionsFromObject('phonePrefixes');
       if (process.env.NODE_ENV !== 'production' && (!options || options.length === 0)) {
@@ -83,7 +83,7 @@ export const useDropdownOptions = () => {
         console.warn('⚠️ phonePrefixes translation object:', dropdownTranslations['phonePrefixes']);
       }
       return options;
-    }, [createOptionsFromObject, dropdownTranslations]),
+    }, [createOptionsFromObject]),
   };
 
   // Create a standardized options object with consistent naming

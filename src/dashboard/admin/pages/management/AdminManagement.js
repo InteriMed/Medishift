@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { db, firebaseApp } from '../../../../services/firebase';
 import { collection, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -18,7 +17,7 @@ import '../../../../styles/variables.css';
 
 const AdminManagement = () => {
   const { userProfile } = useAuth();
-  const { hasRight: checkRight, isSuperAdmin } = useAdminPermission();
+  const { hasRight: checkRight } = useAdminPermission();
   const [admins, setAdmins] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);

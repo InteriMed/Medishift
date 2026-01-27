@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
-    FaUserMd, FaArrowRight, FaCheckCircle, FaFileAlt, FaMagic, FaHistory,
+    FaUserMd, FaArrowRight, FaCheckCircle, FaMagic,
     FaFingerprint, FaClock, FaPassport, FaLaptopCode, FaCheckDouble
 } from 'react-icons/fa';
 

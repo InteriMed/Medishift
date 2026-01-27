@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { db, functions } from '../../services/firebase';
 import {
   collection,
@@ -19,10 +19,6 @@ export const useMarketplaceData = () => {
   const [selectedListing, setSelectedListing] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const getMockListings = useCallback(() => {
-    return [];
-  }, []);
 
 
 

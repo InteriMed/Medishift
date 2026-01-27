@@ -36,8 +36,7 @@ export const useTutorialActions = (state) => {
         lastRestoredStateRef,
         completingTutorialRef,
         setMaxAccessedProfileTab,
-        setTutorialComplete,
-        user
+        setTutorialComplete
     } = state;
 
     // 1. Save Progress
@@ -161,7 +160,7 @@ export const useTutorialActions = (state) => {
         } finally {
             setIsBusy(false);
         }
-    }, [isBusy, safelyUpdateTutorialState, currentUser, saveTutorialProgress, completedTutorials, accessLevelChoice, onboardingType, setIsBusy, setCompletedTutorials, setActiveTutorial, setCurrentStep, setIsTutorialActive, setShowFirstTimeModal, setMaxAccessedProfileTab]);
+    }, [isBusy, safelyUpdateTutorialState, currentUser, saveTutorialProgress, completedTutorials, accessLevelChoice, onboardingType, setIsBusy, setCompletedTutorials, setActiveTutorial, setCurrentStep, setIsTutorialActive, setShowFirstTimeModal, setMaxAccessedProfileTab, tutorialStoppedRef, lastRestoredStateRef]);
 
     // 3. Stop Tutorial
     const stopTutorial = useCallback(async (options = {}) => {
@@ -299,7 +298,7 @@ export const useTutorialActions = (state) => {
                 completingTutorialRef.current = null;
             }, 1000);
         }
-    }, [state.activeTutorial, state.isBusy, safelyUpdateTutorialState, currentUser, onboardingType, setTutorialComplete, accessLevelChoice, setCompletedTutorials, setIsTutorialActive, setActiveTutorial, setAccessLevelChoice, startTutorial]);
+    }, [state, safelyUpdateTutorialState, currentUser, onboardingType, setTutorialComplete, setCompletedTutorials, setIsTutorialActive, setActiveTutorial, setAccessLevelChoice, startTutorial, lastRestoredStateRef, completingTutorialRef]);
 
     // 5. Previous Step
     const prevStep = useCallback(() => {
@@ -375,25 +374,7 @@ export const useTutorialActions = (state) => {
         });
 
         tutorialCache.clean();
-    }, [state.isBusy, safelyUpdateTutorialState, currentUser, onboardingType, setIsPaused, setShowStopTutorialConfirm, setIsTutorialActive, setShowFirstTimeModal, setActiveTutorial, setCurrentStep]);
-
-    // 8. Restart Onboarding
-    const restartOnboarding = useCallback(async (type = 'professional') => {
-        if (isBusy || !currentUser) return;
-
-        if (state.isTutorialActive || state.showFirstTimeModal) {
-            const stopped = await stopTutorial();
-            if (!stopped) return;
-        }
-
-        // Logic for restarting...
-        // This is simplified to just start the tutorial for now as logic is complex and relies on navigation
-        // Ideally should be moved to a helper or kept in Main
-
-        // Due to complexity and "navigate" dependency which is usually in Component, 
-        // restartOnboarding might be better placed in the Context Component itself wrapping this.
-        // But for actions we can define it if we pass navigate.
-    }, [isBusy, currentUser, state.isTutorialActive, state.showFirstTimeModal, stopTutorial]);
+    }, [state, safelyUpdateTutorialState, currentUser, onboardingType, setIsPaused, setShowStopTutorialConfirm, setIsTutorialActive, setShowFirstTimeModal, setActiveTutorial, setCurrentStep, setStepData, setElementPosition, tutorialStoppedRef, lastRestoredStateRef]);
 
     return {
         saveTutorialProgress,

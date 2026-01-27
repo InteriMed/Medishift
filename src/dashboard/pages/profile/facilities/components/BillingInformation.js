@@ -1,22 +1,16 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import classNames from 'classnames';
-import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2, FiMail, FiZap, FiFileText, FiUser } from 'react-icons/fi';
+import { FiBriefcase, FiCreditCard, FiHome, FiShield, FiEdit2, FiFileText, FiUser } from 'react-icons/fi';
 import { httpsCallable } from 'firebase/functions';
 
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import DateField from '../../../../../components/BoxedInputFields/DateField';
 import Switch from '../../../../../components/BoxedInputFields/Switch';
-import Button from '../../../../../components/BoxedInputFields/Button';
-import Dialog from '../../../../../components/Dialog/Dialog';
 import BankingAccessModal from '../../components/BankingAccessModal';
 import useAutoSave from '../../../../hooks/useAutoSave';
 import { functions } from '../../../../../services/firebase';
-import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
-import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
-import { cn } from '../../../../../utils/cn';
 
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
 import { LOCALSTORAGE_KEYS } from '../../../../../config/keysDatabase';
@@ -71,8 +65,6 @@ const BillingInformation = ({
   t: tProp,
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
-  const isTutorialActive = false;
-  const stepData = null;
   const [showBankingAccessModal, setShowBankingAccessModal] = useState(false);
   const [hasBankingAccess, setHasBankingAccess] = useState(false);
 
@@ -214,12 +206,6 @@ const BillingInformation = ({
     disableLocalStorage: true
   });
 
-  const handleCancel = useCallback(() => {
-    if (onCancel) {
-      onCancel();
-    }
-    window.location.reload();
-  }, [onCancel]);
 
   const getDropdownOptions = useCallback((optionsKey) => {
     const mappedOptionsKey = optionsKey === 'educationLevels' ? 'education' : optionsKey;

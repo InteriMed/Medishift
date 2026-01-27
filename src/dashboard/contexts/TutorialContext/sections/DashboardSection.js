@@ -13,8 +13,7 @@ export const useDashboardSection = (state, actions) => {
     } = state;
 
     const {
-        completeTutorial,
-        showWarning
+        completeTutorial
     } = actions;
 
     useEffect(() => {

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiFileText, FiUploadCloud, FiClock, FiX, FiDownload, FiTrash2, FiInfo, FiPlus, FiRefreshCw } from 'react-icons/fi';
+import { FiFileText, FiUploadCloud, FiClock, FiDownload } from 'react-icons/fi';
 import FilterBar from '../../../components/FilterBar/FilterBar';
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';

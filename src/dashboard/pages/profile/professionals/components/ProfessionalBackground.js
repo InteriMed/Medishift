@@ -14,13 +14,9 @@ import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-
 import DateField from '../../../../../components/BoxedInputFields/DateField';
 import Button from '../../../../../components/BoxedInputFields/Button';
 import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxField';
-import Switch from '../../../../../components/BoxedInputFields/Switch';
 import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSwitchField';
 import Dialog from '../../../../../components/Dialog/Dialog';
-import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
-import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
-import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye, FiZap, FiFileText } from 'react-icons/fi';
-import { cn } from '../../../../../utils/cn';
+import { FiEdit, FiTrash2, FiAward, FiBookOpen, FiBriefcase, FiPlus, FiEye, FiFileText } from 'react-icons/fi';
 
 
 // Tailwind styles
@@ -118,16 +114,6 @@ const ProfessionalBackground = ({
       }
    }, [validateCurrentTabData, formData, config]);
 
-   // Handle cancel with page reload
-   const handleCancel = useCallback(() => {
-      // First call the original onCancel handler if provided
-      if (onCancel) {
-         onCancel();
-      }
-
-      // Then reload the page
-      window.location.reload();
-   }, [onCancel]);
 
    // --- Config Extraction ---
    const sectionConfig = useMemo(() => config?.fields?.professionalBackground || {}, [config]);
@@ -483,7 +469,7 @@ const ProfessionalBackground = ({
                <div style={{ padding: '1rem 0' }}>
                   <div className="space-y-4">
                      {itemSchema.map((fieldRule) => {
-                        const { name, labelKey, type, required, dependsOn, dependsOnValue, dependsOnValueExclude } = fieldRule;
+                        const { name, labelKey, required, dependsOn, dependsOnValue, dependsOnValueExclude } = fieldRule;
                         const value = get(itemData, name);
                         const label = t(labelKey, name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1'));
                         const formattedValue = formatFieldValue(value, fieldRule);
@@ -617,7 +603,6 @@ const ProfessionalBackground = ({
       const mainSectionPath = `professionalDetails.${sectionKey}`;
       const currentList = getNestedValue(formData, mainSectionPath) || [];
       const sectionErrors = get(errors, mainSectionPath);
-      const hasErrors = !!sectionErrors && (typeof sectionErrors === 'string' || (typeof sectionErrors === 'object' && Object.keys(sectionErrors).length > 0));
 
       const subsectionTitle = t(mainSectionRule.labelKey, sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1).replace(/([A-Z])/g, ' $1'));
 

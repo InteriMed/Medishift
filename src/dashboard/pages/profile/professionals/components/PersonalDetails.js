@@ -5,18 +5,14 @@ import { useAuth } from '../../../../../contexts/AuthContext';
 import useProfileData from '../../../../hooks/useProfileData';
 import useAutoSave from '../../../../hooks/useAutoSave';
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
-import { FiUser, FiMapPin, FiPhone, FiInfo, FiFileText, FiEdit2, FiEye, FiTrash2, FiX, FiZap } from 'react-icons/fi';
+import { FiUser, FiMapPin, FiPhone, FiInfo, FiX } from 'react-icons/fi';
 import { generateBasicProfilePicture, isGoogleUser } from '../../../../../utils/profilePictureUtils';
 import '../../../../../styles/modals.css';
 
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
-import TextareaField from '../../../../../components/BoxedInputFields/TextareaField';
 import DateField from '../../../../../components/BoxedInputFields/DateField';
 import Button from '../../../../../components/BoxedInputFields/Button';
-import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
-import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
-import { cn } from '../../../../../utils/cn';
 
 
 // Tailwind styles
@@ -62,7 +58,6 @@ const PersonalDetails = ({
   const { currentUser } = useAuth();
   const { uploadImageAndRetrieveURL } = useProfileData();
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
-  const [pictureError, setPictureError] = useState('');
   const fileInputRef = useRef(null);
   const [showStepGuide] = useState(true);
   const [showPicturePopup, setShowPicturePopup] = useState(false);
@@ -140,10 +135,6 @@ const PersonalDetails = ({
     }));
   }, [config]);
 
-  const handleCancel = useCallback(() => {
-    if (onCancel) onCancel();
-    else window.location.reload();
-  }, [onCancel]);
 
   const handleProfilePictureChange = async (e) => {
     const file = e.target.files[0];
@@ -151,17 +142,14 @@ const PersonalDetails = ({
 
     const fileSizeInMB = file.size / (1024 * 1024);
     if (fileSizeInMB > 2) {
-      setPictureError(t('accountBasics.errors.fileTooLarge'));
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      setPictureError(t('accountBasics.errors.invalidFileType'));
       return;
     }
 
     setIsUploadingPicture(true);
-    setPictureError('');
 
     try {
       const reader = new FileReader();
@@ -172,17 +160,7 @@ const PersonalDetails = ({
       };
       reader.readAsDataURL(file);
     } catch (error) {
-      // Error reading profile picture
-      setPictureError(t('accountBasics.errors.uploadFailed'));
       setIsUploadingPicture(false);
-    }
-  };
-
-  const handleViewPicture = (e) => {
-    e.stopPropagation();
-    if (profilePicture) {
-      setPopupImageSrc(profilePicture);
-      setShowPicturePopup(true);
     }
   };
 
@@ -204,39 +182,27 @@ const PersonalDetails = ({
             if (onSave) {
               await onSave();
             }
-            setPictureError('');
           } else {
             onInputChange('documents.profile_picture', null);
             onInputChange('profilePicture', null);
             if (onSave) {
               await onSave();
             }
-            setPictureError('');
           }
         } catch (error) {
-          // Error deleting profile picture
-          setPictureError(t('accountBasics.errors.uploadFailed'));
         } finally {
           setIsUploadingPicture(false);
         }
       } catch (error) {
-        // Error deleting profile picture
-        setPictureError(t('accountBasics.errors.uploadFailed'));
         setIsUploadingPicture(false);
       }
     }
-  };
-
-  const handleEditPicture = (e) => {
-    e.stopPropagation();
-    fileInputRef.current?.click();
   };
 
   const handleConfirmUpload = async () => {
     if (!popupImageSrc) return;
 
     setIsUploadingPicture(true);
-    setPictureError('');
 
     try {
       const photoURL = await uploadImageAndRetrieveURL(currentUser.uid, popupImageSrc);
@@ -249,8 +215,6 @@ const PersonalDetails = ({
       setPopupImageSrc(null);
       setIsUploadingPicture(false);
     } catch (error) {
-      // Error uploading profile picture
-      setPictureError(t('accountBasics.errors.uploadFailed'));
       setIsUploadingPicture(false);
     }
   };
@@ -277,7 +241,6 @@ const PersonalDetails = ({
     }
   };
 
-  const displayProfile = formData || currentUser || {};
   const profilePicture = getNestedValue(formData, 'documents.profile_picture') || getNestedValue(formData, 'profilePicture') || formData?.profilePicture || currentUser?.photoURL;
 
   const renderField = (fieldConfig, groupKey) => {

@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
   FiUser, FiPhone, FiMail, FiMessageCircle, FiClock, FiCalendar,
-  FiAlertTriangle, FiCheckCircle, FiShield, FiTrendingUp, FiMapPin,
-  FiFileText, FiX, FiActivity, FiDownload, FiStar, FiExternalLink, FiUserX, FiMessageSquare
+  FiCheckCircle, FiShield, FiTrendingUp, FiMapPin,
+  FiFileText, FiX, FiActivity, FiDownload, FiStar, FiUserX, FiMessageSquare
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import PublicEmployeeProfile from './PublicEmployeeProfile';

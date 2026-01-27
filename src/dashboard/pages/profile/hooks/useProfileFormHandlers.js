@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { get, set, cloneDeep, isEqual } from 'lodash';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { isTabCompleted, isTabAccessible } from '../utils/profileUtils';
+import { isTabCompleted } from '../utils/profileUtils';
 import { getLocalStorageKey } from '../../../../config/keysDatabase';
 
 export const useProfileFormHandlers = (
@@ -59,7 +59,7 @@ export const useProfileFormHandlers = (
             set(newErrors, name, undefined);
             return newErrors;
         });
-    }, [setFormData, setErrors, saveToLocalStorage, validateCurrentTabData, activeTab, profileConfig]);
+    }, [setFormData, setErrors, saveToLocalStorage, validateCurrentTabData, activeTab]);
 
     const handleArrayChange = useCallback((arrayName, newArray) => {
         setFormData(prev => ({ ...prev, [arrayName]: newArray }));

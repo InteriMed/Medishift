@@ -5,17 +5,14 @@ import { useNavigate } from 'react-router-dom';
 
 
 const SidebarHighlighter = () => {
-  const styles = {};
   const navigate = useNavigate();
   const {
     activeTutorial,
     currentStep,
     stepData,
     isTutorialActive,
-    nextStep,
-    isWaitingForSave
+    nextStep
   } = useTutorial();
-  const { tutorialPassed } = useDashboard();
 
   const [highlightBox, setHighlightBox] = useState(null);
   const [waitingForInteraction, setWaitingForInteraction] = useState(false);
@@ -537,28 +534,12 @@ const SidebarHighlighter = () => {
       isPositioningRef.current = false;
       isOpeningMenuRef.current = false; // Also reset menu opening flag
     }
-  }, [stepData?.id, isTutorialActive, cleanup, addInteractionListener]);
+  }, [stepData, isTutorialActive, cleanup, addInteractionListener]);
 
   // Create a resize handler function
   const handleResize = useCallback(() => {
     positionHighlightBox();
   }, [positionHighlightBox]);
-
-  // Handle click on the overlay - must be defined before early return
-  const handleOverlayClick = useCallback((e) => {
-    if (!waitingForInteraction || !targetElement) return;
-
-    e.stopPropagation();
-    e.preventDefault();
-
-    // Create and dispatch a click event on the target element
-    const clickEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      view: window
-    });
-    targetElement.dispatchEvent(clickEvent);
-  }, [waitingForInteraction, targetElement]);
 
   // Note: Sidebar link accessibility is now managed by Sidebar.js through conditional rendering
   // (locked items render as divs, unlocked as NavLinks). No DOM manipulation needed here.
@@ -592,10 +573,6 @@ const SidebarHighlighter = () => {
 
   const isUploadButton = !!stepData?.highlightUploadButton;
   const isProfileTab = !!stepData?.highlightTab;
-  const isSidebarItem = !!stepData?.highlightSidebarItem || !!stepData?.highlightSidebar;
-
-  // Use ref to check if the target element is inside a sidebar (more robust for mobile)
-  const isInSidebar = targetElement?.closest('aside');
   const requiresInteraction = stepData?.requiresInteraction !== undefined ? stepData.requiresInteraction : false;
 
   if (!highlightBox) {

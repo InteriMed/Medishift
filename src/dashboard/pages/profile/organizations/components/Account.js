@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiCreditCard, FiStar, FiCheck, FiZap, FiKey, FiUserX, FiSettings } from 'react-icons/fi';
+import { FiCreditCard, FiStar, FiCheck, FiKey, FiUserX } from 'react-icons/fi';
 import { auth } from '../../../../../services/firebase';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { useAuth } from '../../../../../contexts/AuthContext';

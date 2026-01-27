@@ -30,8 +30,8 @@ const OnboardingPage = () => {
     const { currentUser } = useAuth();
     const { onboardingType: contextOnboardingType } = useTutorial();
 
-    const query = new URLSearchParams(window.location.search);
-    const onboardingType = contextOnboardingType || query.get('type') || 'professional';
+    const urlQuery = new URLSearchParams(window.location.search);
+    const onboardingType = contextOnboardingType || urlQuery.get('type') || 'professional';
 
     const [step, setStep] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -43,8 +43,6 @@ const OnboardingPage = () => {
     const [isVerifying, setIsVerifying] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLoadingProgress, setIsLoadingProgress] = useState(true);
-    const [chainPhonePrefix, setChainPhonePrefix] = useState('');
-    const [chainPhoneNumber, setChainPhoneNumber] = useState('');
     const [showRestrictedServicesModal, setShowRestrictedServicesModal] = useState(false);
     const [isCreatingProfile, setIsCreatingProfile] = useState(false);
     const [showContactForm, setShowContactForm] = useState(false);
@@ -95,7 +93,7 @@ const OnboardingPage = () => {
                     const onboardingProgress = userData.onboardingProgress || {};
                     const typeProgress = onboardingProgress[onboardingType] || {};
 
-                    const forceRestart = query.get('restart') === 'true';
+                    const forceRestart = urlQuery.get('restart') === 'true';
                     if (typeProgress.completed && !forceRestart) {
                         navigate(`/${lang}/dashboard/profile`);
                         return;
@@ -110,8 +108,6 @@ const OnboardingPage = () => {
                         if (typeProgress.role) setRole(typeProgress.role);
                         if (typeProgress.belongsToFacility !== undefined) setBelongsToFacility(typeProgress.belongsToFacility);
                         if (typeProgress.legalConsiderationsConfirmed !== undefined) setLegalConsiderationsConfirmed(typeProgress.legalConsiderationsConfirmed);
-                        if (typeProgress.chainPhonePrefix) setChainPhonePrefix(typeProgress.chainPhonePrefix);
-                        if (typeProgress.chainPhoneNumber) setChainPhoneNumber(typeProgress.chainPhoneNumber);
                     }
 
                     if (isPhoneVerifiedInUserDoc) {
@@ -135,7 +131,7 @@ const OnboardingPage = () => {
             setIsLoadingProgress(false);
         };
         loadProgress();
-    }, [currentUser, onboardingType, navigate, lang, query]);
+    }, [currentUser, onboardingType, navigate, lang, urlQuery]);
 
     const saveProgress = async (data) => {
         if (!currentUser) return;

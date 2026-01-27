@@ -1,9 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useEffect } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
-import { isProfilePath, WORKSPACE_TYPES, getProfileTutorialForType } from '../config/tutorialSystem';
-import i18n from '../../../../i18n';
 
 export const useTutorialStatus = (state, actions) => {
     const {
@@ -15,10 +12,9 @@ export const useTutorialStatus = (state, actions) => {
         showFirstTimeModal,
         isBusy,
         isDashboardLoading,
-        selectedWorkspace,
         onboardingType,
         activeTutorial,
-        currentStep, // needed for restoration check
+        currentStep,
         lastRestoredStateRef,
         completingTutorialRef,
         tutorialStoppedRef,
@@ -30,12 +26,6 @@ export const useTutorialStatus = (state, actions) => {
         setCurrentStep,
         safelyUpdateTutorialState
     } = state;
-
-    const {
-        startTutorial
-    } = actions; // Note: startTutorial is not used in the effect directly, logic handles restoration manually to avoid recursion
-
-    const navigate = useNavigate();
     const location = window.location;
     const isInDashboard = location.pathname.includes('/dashboard');
 
@@ -72,13 +62,11 @@ export const useTutorialStatus = (state, actions) => {
 
                     const bypassedGLN = userData.bypassedGLN === true && userData.GLN_certified === false;
                     const isVerifiedProfile = !!userData.GLN_certified || !!userData.isVerified || bypassedGLN;
-                    const onboardingCompleted = userData._professionalProfileExists || userData.hasProfessionalProfile || isVerifiedProfile;
                     const isAdmin = !!(userData.adminData && userData.adminData.isActive !== false);
 
                     const hasProfessionalProfile = userData.hasProfessionalProfile || userData._professionalProfileExists;
                     const hasFacilityProfile = userData.hasFacilityProfile;
                     const hasEstablishedWorkspace = hasProfessionalProfile === true || hasFacilityProfile === true || isAdmin || isVerifiedProfile;
-                    const isProfilePage = isProfilePath(location.pathname);
 
                     if (isAdmin) {
                         setIsReady(true);
@@ -99,55 +87,6 @@ export const useTutorialStatus = (state, actions) => {
                     setIsReady(true);
                     return;
 
-                    // Restoration Logic
-                    const typeProgress = userData.tutorialProgress?.[onboardingType] || {};
-                    if (typeProgress.activeTutorial) {
-                        const savedTutorial = typeProgress.activeTutorial;
-                        if (tutorialStoppedRef.current) return;
-
-                        if (isTutorialActive && activeTutorial === savedTutorial) {
-                            const savedStep = typeProgress.currentStepIndex || 0;
-                            if (currentStep >= savedStep) return;
-                        }
-
-                        if (completingTutorialRef.current === savedTutorial) return;
-                        if (completedTutorials[savedTutorial] === true || typeProgress.tutorials?.[savedTutorial]?.completed) {
-                            if (isTutorialActive) {
-                                await safelyUpdateTutorialState([
-                                    [setIsTutorialActive, false]
-                                ]);
-                            }
-                            return;
-                        }
-
-                        if (typeProgress.completed) {
-                            try {
-                                const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
-                                const profileRef = doc(db, profileCollection, currentUser.uid);
-                                updateDoc(profileRef, {
-                                    [`tutorialProgress.${onboardingType}.activeTutorial`]: null
-                                });
-                            } catch (e) { }
-                            return;
-                        }
-
-                        const savedStep = typeProgress.currentStepIndex || 0;
-                        if (lastRestoredStateRef.current.tutorial === savedTutorial && lastRestoredStateRef.current.step === savedStep) {
-                            return;
-                        }
-
-                        lastRestoredStateRef.current = { tutorial: savedTutorial, step: savedStep };
-                        safelyUpdateTutorialState([
-                            [setActiveTutorial, savedTutorial],
-                            [setCurrentStep, savedStep],
-                            [setIsTutorialActive, true],
-                            [setShowFirstTimeModal, false]
-                        ]);
-                        return;
-                    }
-
-                    // Tutorial logic disabled - no checks needed
-
                 } else {
                     // Tutorial redirects disabled
                     setIsReady(true);
@@ -162,5 +101,5 @@ export const useTutorialStatus = (state, actions) => {
         };
 
         checkTutorialStatus();
-    }, [currentUser, tutorialPassed, isInDashboard, profileComplete, showFirstTimeModal, isTutorialActive, isBusy, user, isDashboardLoading, safelyUpdateTutorialState, completedTutorials, onboardingType, activeTutorial, currentStep]);
+    }, [currentUser, tutorialPassed, isInDashboard, profileComplete, showFirstTimeModal, isTutorialActive, isBusy, user, isDashboardLoading, safelyUpdateTutorialState, completedTutorials, onboardingType, activeTutorial, currentStep, completingTutorialRef, lastRestoredStateRef, tutorialStoppedRef, setIsReady, setShowFirstTimeModal, setIsTutorialActive, setActiveTutorial, setCurrentStep]);
 };

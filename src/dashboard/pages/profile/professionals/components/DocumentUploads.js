@@ -1,14 +1,10 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import classNames from 'classnames';
 
-import Button from '../../../../../components/BoxedInputFields/Button';
 import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
-import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
-import { FiEdit, FiTrash2, FiFileText, FiUploadCloud, FiCheckCircle, FiEye, FiDownload, FiZap } from 'react-icons/fi';
-import { cn } from '../../../../../utils/cn';
+import { FiEdit, FiTrash2, FiFileText, FiCheckCircle, FiEye } from 'react-icons/fi';
 
 // --- Import Storage Service ---
 import { uploadFile } from '../../../../../services/storageService';
@@ -154,12 +150,6 @@ const DocumentUploads = ({
         });
     }, [config, isSwiss]);
 
-    const handleCancel = useCallback(() => {
-        if (onCancel) {
-            onCancel();
-        }
-        window.location.reload();
-    }, [onCancel]);
 
     const educationList = useMemo(() => {
         return getNestedValue(formData, 'professionalDetails.education') || [];

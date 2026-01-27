@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiClock, FiInfo } from 'react-icons/fi';
+import { FiInfo } from 'react-icons/fi';
 
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSwitchField';
@@ -59,7 +59,6 @@ const PreferenceDays = ({
 
   const handleDayChange = useCallback((dayKey, field, value) => {
     const currentDays = getNestedValue(formData, 'platformSettings.preferenceDays') || {};
-    const dayData = preferenceDays.find(d => d.key === dayKey);
     const currentDayData = currentDays[dayKey] || {};
 
     let newDayData = { ...currentDayData };
@@ -91,7 +90,7 @@ const PreferenceDays = ({
     };
 
     onInputChange('platformSettings.preferenceDays', updatedDays);
-  }, [formData, preferenceDays, onInputChange, getNestedValue]);
+  }, [formData, onInputChange, getNestedValue]);
 
   return (
     <div className={styles.sectionContainer}>

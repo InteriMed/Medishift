@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiBriefcase, FiCreditCard, FiEdit2, FiFileText, FiHome, FiShield } from 'react-icons/fi';
+import { FiBriefcase, FiFileText, FiHome } from 'react-icons/fi';
 
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
@@ -50,7 +50,6 @@ const OrganizationBillingInformation = ({
   t: tProp,
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'common', 'validation']);
-  const isTutorialActive = false;
 
   const dropdownOptionsFromHook = useDropdownOptions();
 

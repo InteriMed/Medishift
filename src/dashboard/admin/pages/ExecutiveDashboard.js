@@ -62,7 +62,7 @@ const ExecutiveDashboard = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [loadDashboardData]);
 
   const loadDashboardData = async () => {
     setLoading(true);

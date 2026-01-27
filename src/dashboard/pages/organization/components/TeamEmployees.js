@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { useDashboard } from '../../../contexts/DashboardContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import useEmployeesData from '../../../hooks/useEmployeesData';
 import FilterBar from '../../../components/FilterBar/FilterBar';

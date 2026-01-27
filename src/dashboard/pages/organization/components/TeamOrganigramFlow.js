@@ -8,7 +8,7 @@ import ReactFlow, {
   MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { FiShield, FiUsers, FiBriefcase, FiUser } from 'react-icons/fi';
+import { FiShield, FiUsers } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import TeamOrganigramGraphBuilder from './TeamOrganigramGraphBuilder';
 import { RIGHTS, ALL_RIGHTS } from '../../../admin/utils/rbac';

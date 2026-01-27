@@ -1,6 +1,6 @@
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { firebaseApp as app } from '../../../services/firebaseService';
-import { extractStreetName, extractHouseNumber, convertPermitTypeToProfileFormat, formatPhoneNumber } from '../utils/glnVerificationUtils';
+import { extractStreetName, extractHouseNumber, formatPhoneNumber } from '../utils/glnVerificationUtils';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 
 const functions = getFunctions(app, 'europe-west6');
@@ -11,7 +11,6 @@ export const saveWorkerProfile = async (extracted, bag, documentMetadata, glnVal
   const address = extracted.personalDetails?.address || {};
   const contact = extracted.personalDetails?.contact || {};
   const additionalInfo = extracted.additionalInfo || {};
-  const professionalBackground = extracted.professionalBackground || {};
   
 
   const extractedLegalFirstName = identity.legalFirstName || identity.firstName || identity.givenName || '';
@@ -281,7 +280,7 @@ export const saveFacilityProfile = async (bag, billingInfo, documentMetadata, gl
 
   
   try {
-    const { doc, getDoc, updateDoc, deleteField } = await import('firebase/firestore');
+    const { doc, updateDoc } = await import('firebase/firestore');
     const { db } = await import('../../../services/firebase');
 
     await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {
@@ -545,7 +544,7 @@ export const saveOrganizationProfile = async (bag, billingInfo, documentMetadata
 
   
   try {
-    const { doc, getDoc, updateDoc, serverTimestamp } = await import('firebase/firestore');
+    const { doc, updateDoc } = await import('firebase/firestore');
     const { db } = await import('../../../services/firebase');
 
     await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {

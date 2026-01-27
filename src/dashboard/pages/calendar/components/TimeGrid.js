@@ -1,7 +1,6 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import Event from './events/Event';
-import { getWeekDates, getMultipleWeeks, getMultipleDays, getWeekIndexForDate, isSameDay, getMondayBasedDayIndex } from '../utils/dateHelpers';
-import { cn } from '../../../../utils/cn';
+import { getMultipleWeeks, getMultipleDays } from '../utils/dateHelpers';
 
 /**
  * TimeGrid Component
@@ -36,7 +35,6 @@ const TimeGrid = ({
   const scrollContainerRef = externalScrollContainerRef || internalScrollContainerRef;
 
   // Drag-to-create state
-  const [isCreating, setIsCreating] = useState(false);
   const [draftEvent, setDraftEvent] = useState(null);
   const initialMouseY = useRef(0);
   const initialStartTime = useRef(null);
@@ -585,7 +583,6 @@ const TimeGrid = ({
     latestDraftRef.current = draft;
 
     setDraftEvent(draft);
-    setIsCreating(true);
 
     const handleMouseMove = (moveEvent) => {
       const currentY = moveEvent.clientY - gridRect.top;
@@ -664,7 +661,6 @@ const TimeGrid = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
 
-      setIsCreating(false);
       setDraftEvent(null);
 
       if (hasMovedRef.current) {
@@ -689,7 +685,7 @@ const TimeGrid = ({
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [currentDate, getDayFromX, getTimeFromY, snapToInterval, onCreateEvent]);
+  }, [currentDate, getDayFromX, getTimeFromY, snapToInterval, onCreateEvent, allDays, nightView]);
 
   /**
    * Handle grid double click - create event immediately
@@ -722,7 +718,7 @@ const TimeGrid = ({
     };
 
     onCreateEvent?.(newEvent, true); // true = open panel
-  }, [currentDate, getDayFromX, getTimeFromY, onCreateEvent]);
+  }, [getDayFromX, getTimeFromY, onCreateEvent]);
 
   const renderEvents = () => {
     let eventsToRender = [];

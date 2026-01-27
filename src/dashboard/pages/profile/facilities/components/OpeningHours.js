@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { get } from 'lodash';
 import { FiClock } from 'react-icons/fi';
 
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
@@ -79,7 +78,6 @@ const OpeningHours = ({
   }, [formData, getNestedValue]);
 
   const handleDayHoursChange = useCallback((dayKey, field, value) => {
-    const currentHours = getNestedValue(formData, 'operationalSettings.standardOpeningHours') || {};
     const dayData = openingHours.find(d => d.key === dayKey);
 
     if (field === 'isClosed') {
@@ -91,7 +89,7 @@ const OpeningHours = ({
       const newValue = dayData.isClosed ? 'closed' : `${newOpeningTime}-${newClosingTime}`;
       onInputChange(`operationalSettings.standardOpeningHours.${dayKey}`, newValue);
     }
-  }, [formData, openingHours, onInputChange, getNestedValue]);
+  }, [openingHours, onInputChange]);
 
   return (
     <div className={styles.sectionContainer}>

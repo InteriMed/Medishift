@@ -44,7 +44,7 @@ const ReportingPage = ({ hideHeader }) => {
     const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
 
     const [tickets, setTickets] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [, setSelectedCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [sortBy, setSortBy] = useState('date');

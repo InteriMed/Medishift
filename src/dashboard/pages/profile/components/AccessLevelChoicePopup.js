@@ -6,14 +6,14 @@ import Dialog from '../../../../components/Dialog/Dialog';
 import { FiUsers, FiBriefcase } from 'react-icons/fi';
 import { useTutorial } from '../../../contexts/TutorialContext';
 import { useDashboard } from '../../../contexts/DashboardContext';
-import { TUTORIAL_IDS, getProfileTutorialForType, ONBOARDING_TYPES } from '../../../contexts/TutorialContext/config/tutorialSystem';
+import { getProfileTutorialForType, ONBOARDING_TYPES } from '../../../contexts/TutorialContext/config/tutorialSystem';
 import { WORKSPACE_TYPES } from '../../../../utils/sessionAuth';
 
 const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelectTeamAccess, glnVerified = false, allowClose = true }) => {
     const { t, i18n } = useTranslation('dashboardProfile');
     const navigate = useNavigate();
     const location = useLocation();
-    const { isTutorialActive, startTutorial, setAccessLevelChoice, resetProfileTabAccess, setMaxAccessedProfileTab, stopTutorial } = useTutorial();
+    const { isTutorialActive, startTutorial, resetProfileTabAccess, setMaxAccessedProfileTab, stopTutorial } = useTutorial();
     const { user, selectedWorkspace } = useDashboard();
 
     const handleContinueOnboarding = async () => {

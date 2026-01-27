@@ -3,9 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { 
   FiInbox, 
   FiAlertCircle,
-  FiMapPin,
-  FiCalendar,
-  FiBriefcase,
   FiDollarSign,
   FiClock
 } from 'react-icons/fi';
@@ -33,7 +30,6 @@ const styles = {
 const Marketplace = () => {
   const { t } = useTranslation(['marketplace']);
   const {
-    listings,
     filteredListings,
     selectedListing,
     isLoading,

@@ -713,8 +713,6 @@ export const isOnCorrectPage = (currentPath, requiredPath) => {
 };
 
 export const isProfileTabAccessible = (tabId, context) => {
-    const { accessMode, onboardingType } = context;
-
     // Default: All tabs are accessible
     return true;
 };

@@ -1,5 +1,5 @@
-import { collection, getDocs, query, where, orderBy, Timestamp, onSnapshot } from 'firebase/firestore';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { collection, getDocs, query, where, Timestamp, onSnapshot } from 'firebase/firestore';
+import { useState, useEffect, useRef } from 'react';
 import { db, auth, firebaseApp } from '../../../../services/firebase';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { DEFAULT_VALUES } from '../../../../config/keysDatabase';
@@ -696,10 +696,6 @@ export const useCalendarEvents = (userId, accountType = "worker") => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const eventsRef = useRef({ availability: [], events: [], contracts: [] });
-
-  const getMockEvents = useCallback(() => {
-    return [];
-  }, []);
 
   useEffect(() => {
     if (!userId) {

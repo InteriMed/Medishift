@@ -23,8 +23,6 @@ const AccountsReceivable = () => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   };
-  const [startDate, setStartDate] = useState(getFirstDayOfMonth());
-  const [endDate, setEndDate] = useState(new Date());
 
   const getLastDayOfMonth = () => {
     const now = new Date();
@@ -35,7 +33,7 @@ const AccountsReceivable = () => {
 
   useEffect(() => {
     loadARData();
-  }, [filterByDate, dateFrom, dateTo]);
+  }, [filterByDate, dateFrom, dateTo, loadARData]);
 
   const loadARData = async () => {
     setLoading(true);

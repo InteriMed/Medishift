@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useTutorial } from '../contexts/TutorialContext';
 import { useDashboard } from '../contexts/DashboardContext';
 import HighlightTooltip from '../onboarding/components/HighlightTooltip';
 import AccessLevelChoicePopup from '../pages/profile/components/AccessLevelChoicePopup';
 import StopTutorialConfirmModal from '../components/modals/StopTutorialConfirmModal';
 import TutorialSelectionModal from '../components/modals/TutorialSelectionModal';
-import { useTranslation } from 'react-i18next';
 import { TUTORIAL_IDS } from '../contexts/TutorialContext/config/tutorialSystem';
 
 
@@ -20,9 +19,7 @@ const styles = {};
  */
 const Tutorial = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { i18n } = useTranslation();
   const {
     isTutorialActive,
     showFirstTimeModal,
@@ -44,9 +41,7 @@ const Tutorial = () => {
     setShowStopTutorialConfirm,
     setAccessMode,
     accessLevelChoice,
-    allowAccessLevelModalClose,
-    resetProfileTabAccess,
-    tutorialSteps
+    allowAccessLevelModalClose
   } = useTutorial();
 
   const { profileComplete, tutorialPassed, user } = useDashboard();

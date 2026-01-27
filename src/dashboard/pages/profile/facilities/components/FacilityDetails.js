@@ -1,13 +1,9 @@
 import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiUser, FiMapPin, FiInfo, FiFileText, FiBriefcase, FiCreditCard, FiHome, FiZap } from 'react-icons/fi';
+import { FiUser, FiMapPin, FiInfo, FiFileText, FiBriefcase, FiCreditCard, FiHome } from 'react-icons/fi';
 
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
-import Button from '../../../../../components/BoxedInputFields/Button';
-import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
-import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
-import { cn } from '../../../../../utils/cn';
 
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
 import useAutoSave from '../../../../hooks/useAutoSave';
@@ -63,7 +59,6 @@ const FacilityDetails = ({
   t: tProp,
 }) => {
   const { t, i18n } = useTranslation(['dashboardProfile', 'dropdowns', 'validation', 'common']);
-  const isTutorialActive = false;
 
   const dropdownOptionsFromHook = useDropdownOptions();
 

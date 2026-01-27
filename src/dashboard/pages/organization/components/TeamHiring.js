@@ -10,7 +10,6 @@ import PropTypes from 'prop-types';
 const Hiring = ({ hideHeader = false, hideStats = false }) => {
     const { t } = useTranslation(['dashboard', 'hiring', 'common']);
     const {
-        positions,
         applications,
         filteredPositions,
         isLoading,

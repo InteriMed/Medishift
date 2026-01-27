@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -97,7 +96,7 @@ const UserVerificationQueue = () => {
   useEffect(() => {
     loadPendingUsers();
     loadHistoryUsers();
-  }, []);
+  }, [loadPendingUsers]);
 
   const loadPendingUsers = async () => {
     setLoading(true);

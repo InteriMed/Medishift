@@ -1,8 +1,7 @@
-import React, { useEffect, useCallback } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiX, FiTrash2, FiAlertTriangle } from 'react-icons/fi';
+import { FiTrash2, FiAlertTriangle } from 'react-icons/fi';
 import Dialog from '../../../../components/Dialog/Dialog';
-import { cn } from '../../../../utils/cn';
 
 const DeleteConfirmationDialog = ({ event, currentDate, onConfirm, onCancel }) => {
   const { t } = useTranslation(['calendar', 'common']);

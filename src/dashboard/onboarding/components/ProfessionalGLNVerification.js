@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../contexts/AuthContext';
 import { healthRegistryAPI, gesRegAPI } from '../../../services/cloudFunctions';
-import { FiLoader, FiAlertCircle, FiFileText, FiCheckCircle, FiInfo, FiCheck } from 'react-icons/fi';
+import { FiLoader, FiAlertCircle, FiInfo, FiCheck } from 'react-icons/fi';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import { DOCUMENT_TYPES } from '../constants/documentTypes';
@@ -19,7 +19,7 @@ import { FIRESTORE_COLLECTIONS, SESSIONSTORAGE_KEYS } from '../../../config/keys
 
 
 const ProfessionalGLNVerification = React.memo(React.forwardRef(function ProfessionalGLNVerification(props, ref) {
-    const { onComplete, onReadyChange, onProcessingChange, t: tProp, allowBypass = false } = props;
+    const { onComplete, onReadyChange, onProcessingChange, allowBypass = false } = props;
     const { t, i18n, ready } = useTranslation(['dashboard', 'common', 'dashboardProfile', 'dropdowns']);
     const { currentUser } = useAuth();
 
@@ -57,7 +57,6 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
     const [showGLNInfoDialog, setShowGLNInfoDialog] = useState(false);
     const [glnInfoProfession, setGlnInfoProfession] = useState('');
     const [isPreVerified, setIsPreVerified] = useState(false);
-    const [preVerifiedData, setPreVerifiedData] = useState(null);
 
     const hasCompanyUIDInProfessionalProfile = useCallback((data) => {
         if (!data || typeof data !== 'object') return false;
@@ -84,7 +83,6 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
                     const userData = userDoc.data();
                     if (userData.GLN_certified === true || userData.GLN_certified === 'ADMIN_OVERRIDE') {
                         setIsPreVerified(true);
-                        setPreVerifiedData(userData);
                         setGln(userData.gln || '');
                         setProfession(userData.profession || '');
                         setVerificationStatus('complete');
@@ -99,7 +97,6 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
                     const profileData = profileDoc.data();
                     if (profileData.verificationStatus === 'verified' || profileData.GLN_certified === true) {
                         setIsPreVerified(true);
-                        setPreVerifiedData(profileData);
                         setGln(profileData.gln || '');
                         setProfession(profileData.professionalDetails?.profession || profileData.profession || '');
                         setVerificationStatus('complete');
@@ -109,7 +106,6 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
                     // Specific check for UID based verification in professional profile
                     if (hasCompanyUIDInProfessionalProfile(profileData)) {
                         setIsPreVerified(true);
-                        setPreVerifiedData({ source: 'professionalProfiles.uid', profile: profileData });
                         setVerificationStatus('complete');
                         return;
                     }
@@ -124,7 +120,6 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
                         const legacyData = legacyProfDoc.data();
                         if (legacyData.gln_verified || legacyData.verificationStatus === 'verified') {
                             setIsPreVerified(true);
-                            setPreVerifiedData(legacyData);
                             setGln(legacyData.gln || '');
                             setProfession(legacyData.profession || '');
                             setVerificationStatus('complete');
@@ -178,12 +173,12 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
             return bypassMode ? handleBypassVerification() : handleVerifyAccount();
         },
         isReady: isReadyForStep
-    }), [isReadyForStep, gln, profession, documentType, documentFile, bypassMode, isPreVerified]);
+    }), [isReadyForStep, gln, profession, documentType, documentFile, bypassMode, isPreVerified, handleBypassVerification, handleVerifyAccount, onComplete]);
 
-    useEffect(() => { onReadyChange?.(isReadyForStep); }, [isReadyForStep]);
-    useEffect(() => { onProcessingChange?.(isProcessing); }, [isProcessing]);
+    useEffect(() => { onReadyChange?.(isReadyForStep); }, [isReadyForStep, onReadyChange]);
+    useEffect(() => { onProcessingChange?.(isProcessing); }, [isProcessing, onProcessingChange]);
 
-    const handleBypassVerification = async () => {
+    const handleBypassVerification = useCallback(async () => {
         const errors = {};
 
         if (!profession) {
@@ -267,9 +262,9 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
         } finally {
             setIsProcessing(false);
         }
-    };
+    }, [profession, currentUser, t, onComplete]);
 
-    const handleVerifyAccount = async () => {
+    const handleVerifyAccount = useCallback(async () => {
         const glnString = gln.replace(/[^0-9]/g, '');
         const errors = {};
 
@@ -346,7 +341,7 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
         } finally {
             setIsProcessing(false);
         }
-    };
+    }, [gln, profession, documentType, documentFile, currentUser, t, onComplete]);
 
     if (isPreVerified) {
         return (

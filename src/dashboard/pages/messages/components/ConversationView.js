@@ -5,7 +5,7 @@ import { db } from '../../../../services/firebase';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import PropTypes from 'prop-types';
 import { cn } from '../../../../utils/cn';
-import { FiSend, FiUser, FiX, FiCheck, FiUserPlus, FiMessageSquare } from 'react-icons/fi';
+import { FiSend, FiUser, FiX, FiCheck, FiMessageSquare } from 'react-icons/fi';
 import formatMessageText from '../utils/formatMessageText';
 import AddParticipantModal from './AddParticipantModal';
 import StartNewCommunicationModal from './StartNewCommunicationModal';
@@ -233,11 +233,6 @@ const ConversationView = ({
 
   // Header Logic for Team Chats
   const isTeamChat = conversation.isTeamChat || conversation.type === 'internal_team' || conversation.participantIds?.length > 2;
-  const conversationTitle = conversation.displayName || (isTeamChat ? 'Team Chat' : t('messages:status.unknownUser'));
-
-  // Logic to check if user can add participants (e.g. is facility admin or team chat)
-  // For MVP, enable for all facility context chats
-  const canAddParticipants = messageContext === 'facility' || isTeamChat;
 
   return (
     <div className="h-full flex flex-col bg-background relative">

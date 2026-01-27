@@ -1,12 +1,10 @@
 
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { FiCheck, FiX, FiStar, FiZap, FiLayout, FiTrendingUp } from 'react-icons/fi';
+import { FiCheck, FiX, FiStar, FiZap } from 'react-icons/fi';
 import { cn } from '../../../utils/cn';
 import Button from '../../../components/BoxedInputFields/Button';
 
 const PricingPage = () => {
-    const { t } = useTranslation(['common']);
     const [billingCycle, setBillingCycle] = useState('yearly'); // 'monthly' | 'yearly'
 
     const plans = [

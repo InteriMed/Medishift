@@ -1,10 +1,8 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useDashboard } from '../../DashboardContext';
 import { useSidebar } from '../../SidebarContext';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
-import { TUTORIAL_IDS, WORKSPACE_TYPES, getProfileTutorialForType } from '../config/tutorialSystem';
+import { TUTORIAL_IDS } from '../config/tutorialSystem';
 import { DEFAULT_SIDEBAR_WIDTH } from '../constants';
 import tutorialCache from '../utils/tutorialCache';
 
@@ -132,7 +130,6 @@ export const useTutorialState = () => {
         setTutorialComplete,
         isDashboardLoading,
         selectedWorkspace,
-        isMainSidebarCollapsed,
         isMainSidebarCollapsed,
         setIsMainSidebarCollapsed,
         sidebarWidth,

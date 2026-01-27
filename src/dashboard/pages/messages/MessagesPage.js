@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import { useDashboard } from '../../contexts/DashboardContext';
@@ -14,7 +14,6 @@ import messagesService from '../../../services/messagesService';
 import { cn } from '../../../utils/cn';
 import { FiMessageSquare, FiSearch, FiX, FiSliders, FiPlus } from 'react-icons/fi';
 import StartNewCommunicationModal from './components/StartNewCommunicationModal';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import '../../../components/BoxedInputFields/styles/boxedInputFields.css';
 
 const MESSAGE_CONTEXTS = {
@@ -28,7 +27,6 @@ const MessagesPage = ({ hideHeader }) => {
   const { user, selectedWorkspace } = useDashboard();
   const isMobile = useMobileView();
   const pageMobileContext = usePageMobile();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const setPageMobileStateRef = useRef(pageMobileContext?.setPageMobileState || (() => { }));
 

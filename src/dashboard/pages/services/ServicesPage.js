@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import serviceRequestService from '../../../services/serviceRequestService';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
-import { FiPlus, FiList, FiFileText, FiX } from 'react-icons/fi';
+import { FiPlus, FiList, FiX } from 'react-icons/fi';
 
 const ServicesPage = () => {
   const { t } = useTranslation(['common']);
   const { user } = useDashboard();
   const { showError, showSuccess } = useNotification();
   const location = useLocation();
-  const navigate = useNavigate();
 
   const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,9 +26,24 @@ const ServicesPage = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [availableServices] = useState(serviceRequestService.GET_AVAILABLE_SERVICES());
 
+  const loadRequests = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      if (user?.uid) {
+        const data = await serviceRequestService.LIST_SERVICE_REQUESTS({ userId: user.uid });
+        setRequests(data);
+      }
+    } catch (error) {
+      console.error('Error loading service requests:', error);
+      showError('Failed to load service requests');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, showError]);
+
   useEffect(() => {
     loadRequests();
-  }, [user]);
+  }, [loadRequests]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -46,21 +60,6 @@ const ServicesPage = () => {
     window.addEventListener('openModal', handleOpenModal);
     return () => window.removeEventListener('openModal', handleOpenModal);
   }, [location.search]);
-
-  const loadRequests = async () => {
-    try {
-      setIsLoading(true);
-      if (user?.uid) {
-        const data = await serviceRequestService.LIST_SERVICE_REQUESTS({ userId: user.uid });
-        setRequests(data);
-      }
-    } catch (error) {
-      console.error('Error loading service requests:', error);
-      showError('Failed to load service requests');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleCreateRequest = async () => {
     if (!createFormData.title.trim() || !createFormData.description.trim()) {

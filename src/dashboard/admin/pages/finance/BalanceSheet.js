@@ -36,7 +36,7 @@ const BalanceSheet = () => {
     if (dateFrom && dateTo) {
       loadPnlData();
     }
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, loadPnlData]);
 
   const loadPnlData = async () => {
     if (!dateFrom || !dateTo) return;

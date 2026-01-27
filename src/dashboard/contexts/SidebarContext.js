@@ -1,9 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 
 const SidebarContext = createContext(null);
-
-const SIDEBAR_COLLAPSED_KEY = 'dashboard_sidebar_collapsed';
 
 export const SidebarProvider = ({ children }) => {
   const [isMainSidebarCollapsed, setIsMainSidebarCollapsed] = useState(false);

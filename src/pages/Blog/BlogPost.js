@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
-import { FaCalendarAlt, FaUser, FaTag, FaArrowLeft, FaShare } from 'react-icons/fa';
+import { FaCalendarAlt, FaTag, FaArrowLeft, FaShare } from 'react-icons/fa';
 import './styles/BlogPost.css';
 
 const BlogPost = () => {

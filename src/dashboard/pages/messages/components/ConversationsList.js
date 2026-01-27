@@ -3,22 +3,12 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 import { cn } from '../../../../utils/cn';
-import { FiMessageSquare, FiChevronRight } from 'react-icons/fi';
 
 /**
  * Conversation item matching contracts sidebar layout
  */
 const ConversationItem = ({ conversation, isSelected, onClick }) => {
   const { t } = useTranslation(['messages']);
-  const formatDate = (timestamp) => {
-    if (!timestamp) return '';
-    try {
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return format(date, 'MMM d, yyyy');
-    } catch (error) {
-      return '';
-    }
-  };
 
   const getTimeDisplay = (timestamp) => {
     if (!timestamp) return '';
@@ -38,7 +28,6 @@ const ConversationItem = ({ conversation, isSelected, onClick }) => {
 
   const displayName = conversation.displayName || t('messages:placeholders.unknown');
   const lastMessage = conversation.lastMessage?.text || t('messages:placeholders.noMessages');
-  const date = formatDate(conversation.lastMessageTimestamp || conversation.createdAt);
   const timeDisplay = getTimeDisplay(conversation.lastMessageTimestamp);
 
   return (

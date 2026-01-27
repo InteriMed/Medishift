@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import Dialog from '../../../../components/Dialog/Dialog';
 import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import Button from '../../../../components/BoxedInputFields/Button';
-import { FiLock, FiUnlock, FiMail, FiPhone, FiShield, FiArrowLeft } from 'react-icons/fi';
+import { FiLock, FiMail, FiPhone, FiShield, FiArrowLeft } from 'react-icons/fi';
 import SpinnerLoader from '../../../../components/LoadingAnimations/SpinnerLoader';
 import { LOCALSTORAGE_KEYS } from '../../../../config/keysDatabase';
 

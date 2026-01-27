@@ -169,14 +169,14 @@ function AppContent() {
     }
 
     setIsLanguageSetup(true);
-  }, [location.pathname, i18n, navigate, isLanguageSetup]);
+  }, [location.pathname, i18n, navigate, isLanguageSetup, DEFAULT_LANGUAGE]);
 
   // Wait for both auth and language setup to complete before showing content
   useEffect(() => {
     if (!authLoading && isLanguageSetup && i18n.isInitialized) {
       setIsInitialLoad(false);
     }
-  }, [authLoading, isLanguageSetup, i18n.isInitialized, DEFAULT_LANG]);
+  }, [authLoading, isLanguageSetup, i18n.isInitialized]);
 
   // This effect runs on subsequent route changes after initial load
   useEffect(() => {

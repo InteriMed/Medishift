@@ -1,16 +1,9 @@
 // src/pages/Support.js
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, useParams } from 'react-router-dom';
 
 const Support = () => {
   const { t } = useTranslation(['support', 'common']);
-  const { lang } = useParams();
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
 
   return (
     <div>

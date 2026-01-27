@@ -5,7 +5,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { FiUsers, FiShield, FiUser } from 'react-icons/fi';
-import { cn } from '../../../../utils/cn';
 import EmployeePopup from '../components/EmployeePopup';
 
 const OrganigramView = ({ organization, memberFacilities = [], selectedFacilityId = 'all' }) => {

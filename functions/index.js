@@ -36,6 +36,12 @@ const invitationFunctions = require('./api/invitations');
 // Import banking functions
 const bankingFunctions = require('./banking/index');
 
+// Import auth custom claims functions
+const customClaimsFunctions = require('./auth/customClaims');
+
+// Import notification fanout triggers
+const notificationTriggers = require('./triggers/notificationFanout');
+
 // Simplified functions - create basic endpoints
 
 // Health check endpoint
@@ -236,4 +242,22 @@ module.exports.runScheduledScraper = jobScraperScheduler.runScheduledScraper;
 const teamOrganigram = require('./api/teamOrganigram');
 module.exports.analyzeTeamOrganigram = teamOrganigram.analyzeTeamOrganigram;
 
+// =========================================================================
+//  🔐 CUSTOM CLAIMS & AUTH - Token Management
+// =========================================================================
+
+// CUSTOM CLAIMS - Export from auth/customClaims.js
+module.exports.setCustomClaimsOnUserCreation = customClaimsFunctions.setCustomClaimsOnUserCreation;
+module.exports.assignFacilityToUser = customClaimsFunctions.assignFacilityToUser;
+module.exports.updateUserTier = customClaimsFunctions.updateUserTier;
+module.exports.refreshUserToken = customClaimsFunctions.refreshUserToken;
+
+// =========================================================================
+//  📢 NOTIFICATION FANOUT - Announcement Broadcasting
+// =========================================================================
+
+// NOTIFICATION FANOUT - Export from triggers/notificationFanout.js
+module.exports.onAnnouncementCreated = notificationTriggers.onAnnouncementCreated;
+module.exports.broadcastNotification = notificationTriggers.broadcastNotification;
+module.exports.sendPushNotification = notificationTriggers.sendPushNotification;
 

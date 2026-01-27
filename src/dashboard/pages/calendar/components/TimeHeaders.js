@@ -4,7 +4,7 @@ import { getMultipleWeeks, getMultipleDays, getShortDays, isSameDay } from '../u
 import { cn } from '../../../../utils/cn';
 
 const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, handleDayClick, scrollContainerRef, numWeeks = 7, numDays = 30, setView, onEventDropOnDay, nightView = false, isTeamMode = false, isBottom = false }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const today = new Date();
   const referenceDate = propReferenceDate || currentDate;
   const [dragOverIndex, setDragOverIndex] = useState(null);

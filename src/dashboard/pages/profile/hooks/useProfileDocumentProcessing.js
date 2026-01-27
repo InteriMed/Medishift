@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { get, set, cloneDeep } from 'lodash';
+import { set, cloneDeep } from 'lodash';
 import { uploadFile } from '../../../../services/storageService';
 import { processDocumentWithAI, mergeExtractedData, getCachedExtractedData, saveCachedExtractedData } from '../../../../services/documentProcessingService';
 import { useDropdownOptions } from '../utils/DropdownListsImports';

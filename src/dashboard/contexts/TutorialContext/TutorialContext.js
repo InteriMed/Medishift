@@ -6,7 +6,6 @@ import {
     TUTORIAL_IDS,
     getTutorialSteps,
     isProfileTutorial,
-    PROFILE_TAB_IDS,
     getProfileTutorialForType
 } from './config/tutorialSystem';
 import tutorialCache from './utils/tutorialCache';
@@ -71,7 +70,7 @@ export const TutorialProvider = ({ children }) => {
     const startAllTutorials = useCallback(async () => {
         const firstTutorial = getProfileTutorialForType(state.onboardingType);
         await actions.startTutorial(firstTutorial);
-    }, [actions.startTutorial, state.onboardingType]);
+    }, [actions, state.onboardingType]);
 
     // Skip First Time Modal
     const skipFirstTimeModal = useCallback(() => {
@@ -87,7 +86,7 @@ export const TutorialProvider = ({ children }) => {
                 }
             }
         });
-    }, [state.isBusy, state.currentUser, state.safelyUpdateTutorialState, state.setTutorialComplete]);
+    }, [state]);
 
     // Skip Tutorial (Complete everything)
     const skipTutorial = useCallback(async () => {
@@ -169,7 +168,7 @@ export const TutorialProvider = ({ children }) => {
             }
             navigate(targetPath);
         }
-    }, [state.activeTutorial, state.currentStep, actions.completeTutorial, actions.nextStep, location.pathname, navigate, state.validationRef]);
+    }, [state, actions, location.pathname, navigate]);
 
     // Helpers
     const startFacilityOnboarding = useCallback(async () => {
@@ -178,7 +177,7 @@ export const TutorialProvider = ({ children }) => {
         await actions.startTutorial(firstTutorial);
         const lang = i18n.language || 'fr';
         navigate(`/${lang}/onboarding?type=facility`);
-    }, [state.setOnboardingType, actions.startTutorial, navigate]);
+    }, [state, actions, navigate]);
 
     const restartOnboarding = useCallback(async (type = 'professional') => {
         if (state.isBusy || !state.currentUser) return;
@@ -188,7 +187,7 @@ export const TutorialProvider = ({ children }) => {
         state.setOnboardingType(type);
         const lang = i18n.language || 'fr';
         navigate(`/${lang}/onboarding?type=${type}`);
-    }, [state.isBusy, state.currentUser, state.isTutorialActive, state.showFirstTimeModal, actions.stopTutorial, state.setOnboardingType, navigate]);
+    }, [state, actions, navigate]);
 
     // Reset Profile Tab Access
     const resetProfileTabAccess = useCallback(() => {

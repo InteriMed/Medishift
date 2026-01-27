@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiSliders, FiX, FiCalendar, FiClock, FiPlus, FiMoon, FiChevronRight, FiChevronLeft, FiGrid } from 'react-icons/fi';
+import { FiSliders, FiCalendar, FiClock, FiPlus, FiMoon, FiChevronRight, FiChevronLeft, FiGrid } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 const CalendarHeader = ({
   currentDate,
@@ -34,16 +34,6 @@ const CalendarHeader = ({
   const { t } = useTranslation();
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const categoryDropdownRef = useRef(null);
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

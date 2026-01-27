@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
@@ -12,9 +12,8 @@ import { useAuth } from '../../../contexts/AuthContext';
 import PersonnalizedInputField from '../../../components/BoxedInputFields/Personnalized-InputField';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import { useDropdownOptions } from '../../pages/profile/utils/DropdownListsImports';
-import { FiCheck, FiLoader, FiRefreshCw, FiMessageSquare } from 'react-icons/fi';
+import { FiCheck, FiRefreshCw, FiMessageSquare } from 'react-icons/fi';
 import { useNotification } from '../../../contexts/NotificationContext';
-import Button from '../../../components/BoxedInputFields/Button';
 import { formatPhoneNumber } from '../utils/glnVerificationUtils';
 import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
 
@@ -29,7 +28,7 @@ const PhoneVerificationStep = forwardRef(({
     initialPhoneNumber,
     initialPhonePrefix
 }, ref) => {
-    const { t, i18n } = useTranslation(['auth', 'dashboard', 'dashboardProfile']);
+    const { t } = useTranslation(['auth', 'dashboard', 'dashboardProfile']);
     const { showError, showSuccess } = useNotification();
     const { phonePrefixOptions } = useDropdownOptions();
     const { currentUser } = useAuth();
@@ -147,10 +146,9 @@ const PhoneVerificationStep = forwardRef(({
     const [recaptchaVerified, setRecaptchaVerified] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [countdown, setCountdown] = useState(0);
-    const [isVerified, setIsVerified] = useState(false);
-    const countdownTimerRef = useRef(null);
-    const pendingPhoneNumberRef = useRef(null);
-    const verificationCheckDoneRef = useRef(false);
+    const countdownTimerRef = React.useRef(null);
+    const pendingPhoneNumberRef = React.useRef(null);
+    const verificationCheckDoneRef = React.useRef(false);
 
     // Phone format check: at least 7 digits, allow leading +, spaces, hyphens, parentheses
     const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
@@ -200,7 +198,6 @@ const PhoneVerificationStep = forwardRef(({
 
                             setPhonePrefix(storedPrefix);
                             setPhoneNumber(storedNumber);
-                            setIsVerified(true);
                             setInternalStep(3);
                             onStepChange(3);
 
@@ -233,7 +230,6 @@ const PhoneVerificationStep = forwardRef(({
 
                                     setPhonePrefix(phonePrefix);
                                     setPhoneNumber(phoneNumber);
-                                    setIsVerified(true);
                                     setInternalStep(3);
                                     onStepChange(3);
 
@@ -307,14 +303,6 @@ const PhoneVerificationStep = forwardRef(({
         }
     }, [internalStep]);
 
-    useImperativeHandle(ref, () => ({
-        handleSendCode,
-        handleVerifyCode,
-        isLoading,
-        internalStep,
-        recaptchaVerified,
-        isValidPhone
-    }));
 
     useEffect(() => {
         return () => {
@@ -355,8 +343,8 @@ const PhoneVerificationStep = forwardRef(({
         }, 1000);
     };
 
-    const isInitializingRef = useRef(false);
-    const captchaSetupDoneRef = useRef(false);
+    const isInitializingRef = React.useRef(false);
+    const captchaSetupDoneRef = React.useRef(false);
 
     const setupRecaptcha = async () => {
         if (isInitializingRef.current) {
@@ -586,104 +574,8 @@ const PhoneVerificationStep = forwardRef(({
         }
     };
 
-    const proceedWithPhoneVerification = async (fullNumber, verifier) => {
-        try {
 
-            const widgetIdFromVerifier = verifier._widgetId !== undefined ? verifier._widgetId : window.recaptchaWidgetId;
-            const actualWidgetId = widgetIdFromVerifier !== undefined && widgetIdFromVerifier !== null ? widgetIdFromVerifier : window.recaptchaWidgetId;
-
-
-            if (actualWidgetId === undefined || actualWidgetId === null) {
-                let attempts = 0;
-                const maxAttempts = 10;
-                while ((window.recaptchaWidgetId === undefined || window.recaptchaWidgetId === null) && attempts < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    attempts++;
-                }
-
-                if (window.recaptchaWidgetId === undefined && window.recaptchaWidgetId !== 0) {
-                }
-            }
-
-            if (!window.grecaptcha) {
-                throw new Error('reCAPTCHA library not loaded. Please check your internet connection and refresh the page.');
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 200));
-
-            const finalWidgetId = verifier._widgetId !== undefined ? verifier._widgetId : window.recaptchaWidgetId;
-
-
-            if (!verifier || typeof verifier.verify !== 'function') {
-                throw new Error('reCAPTCHA verifier is not properly initialized');
-            }
-
-            const checkWidgetId = verifier._widgetId !== undefined ? verifier._widgetId : window.recaptchaWidgetId;
-
-
-            if (!auth || !auth.config) {
-                throw new Error('Firebase Auth is not properly initialized');
-            }
-
-            if (window.grecaptcha && finalWidgetId !== undefined && finalWidgetId !== null) {
-                try {
-                    const recaptchaResponse = window.grecaptcha.getResponse(finalWidgetId);
-                } catch (e) {
-                }
-            }
-
-
-            const phoneProvider = new PhoneAuthProvider(auth);
-
-            try {
-                const vid = await Promise.race([
-                    phoneProvider.verifyPhoneNumber(fullNumber, verifier).catch((error) => {
-                        if (error?.message?.includes('Timeout') || error?.name === 'TimeoutError') {
-                            console.warn('⚠️ Phone verification timeout from Firebase (non-critical)');
-                            const timeoutError = new Error('Verification request timed out. Please try again.');
-                            timeoutError.name = 'TimeoutError';
-                            timeoutError.isTimeout = true;
-                            throw timeoutError;
-                        }
-                        throw error;
-                    }),
-                    new Promise((_, reject) => {
-                        setTimeout(() => {
-                            const timeoutError = new Error('Phone verification timeout');
-                            timeoutError.name = 'TimeoutError';
-                            timeoutError.isTimeout = true;
-                            reject(timeoutError);
-                        }, 30000);
-                    })
-                ]).catch((error) => {
-                    if (error.message?.includes('Timeout') || error.name === 'TimeoutError' || error.message === 'Phone verification timeout') {
-                        console.warn('⚠️ Phone verification timeout (non-critical)');
-                        const timeoutError = new Error('Verification request timed out. Please try again.');
-                        timeoutError.name = 'TimeoutError';
-                        timeoutError.isTimeout = true;
-                        throw timeoutError;
-                    }
-                    throw error;
-                });
-
-
-                setPhoneVerificationId(vid);
-                setInternalStep(2);
-                onStepChange(2);
-                startCountdown();
-                showSuccess(t('auth.success.codeSent', 'Verification code sent to your phone.'));
-            } catch (verifyError) {
-                if (verifyError?.message?.includes('timeout') || verifyError?.message?.includes('Timeout')) {
-                } else {
-                }
-                throw verifyError;
-            }
-        } catch (error) {
-            throw error;
-        }
-    };
-
-    const handleSendCode = async () => {
+    const handleSendCode = useCallback(async () => {
         if (!isValidPhone) {
             return Promise.resolve();
         }
@@ -727,9 +619,6 @@ const PhoneVerificationStep = forwardRef(({
             if (!window.grecaptcha) {
                 throw new Error('reCAPTCHA library not loaded');
             }
-
-            const widgetId = verifier._widgetId !== undefined ? verifier._widgetId : window.recaptchaWidgetId;
-
 
             const phoneProvider = new PhoneAuthProvider(auth);
 
@@ -789,7 +678,7 @@ const PhoneVerificationStep = forwardRef(({
 
                 if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
                     try {
-                        const response = window.grecaptcha.getResponse(window.recaptchaWidgetId);
+                        window.grecaptcha.getResponse(window.recaptchaWidgetId);
                     } catch (e) {
                     }
                 }
@@ -832,9 +721,9 @@ const PhoneVerificationStep = forwardRef(({
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [isValidPhone, phoneNumber, phonePrefix, recaptchaVerifier, captchaSetupDoneRef, onStepChange, showError, showSuccess, t, currentUser, auth]);
 
-    const handleVerifyCode = async () => {
+    const handleVerifyCode = useCallback(async () => {
         if (!verificationCode || verificationCode.length < 6) {
             showError(t('auth.errors.invalidCode', 'Please enter a valid 6-digit code.'));
             return Promise.resolve();
@@ -849,7 +738,7 @@ const PhoneVerificationStep = forwardRef(({
 
         setIsLoading(true);
         try {
-            const { cleanNumber, cleanPrefix, fullNumber: e164Number } = formatPhoneNumber(phoneNumber, phonePrefix);
+            const { cleanNumber, cleanPrefix } = formatPhoneNumber(phoneNumber, phonePrefix);
             const fullPhoneNumber = `${cleanPrefix} ${cleanNumber}`;
 
             const phoneCredential = PhoneAuthProvider.credential(verificationId, verificationCode);
@@ -894,7 +783,6 @@ const PhoneVerificationStep = forwardRef(({
 
             localStorage.setItem(PHONE_VERIFICATION_STORAGE_KEY, JSON.stringify(verificationData));
 
-            setIsVerified(true);
             setInternalStep(3);
             onStepChange(3);
 
@@ -906,7 +794,6 @@ const PhoneVerificationStep = forwardRef(({
             showSuccess(t('auth.success.phoneVerified', 'Phone number verified successfully!'));
         } catch (error) {
             console.error('Error verifying code:', error);
-            setIsVerified(false);
             
             if (error.code === 'auth/invalid-verification-code') {
                 showError(t('auth.errors.invalidPhoneCode', 'Invalid verification code. Please check and try again.'));
@@ -920,7 +807,16 @@ const PhoneVerificationStep = forwardRef(({
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [verificationCode, verificationId, phoneNumber, phonePrefix, currentUser, onStepChange, showError, showSuccess, t, onComplete]);
+
+    useImperativeHandle(ref, () => ({
+        handleSendCode,
+        handleVerifyCode,
+        isLoading,
+        internalStep,
+        recaptchaVerified,
+        isValidPhone
+    }), [handleSendCode, handleVerifyCode, isLoading, internalStep, recaptchaVerified, isValidPhone, onComplete]);
 
     const iconColor = 'var(--color-logo-1)';
     

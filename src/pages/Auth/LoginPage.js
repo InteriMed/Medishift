@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, sendPasswordResetEmail, signOut } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import InputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldHideUnhide from '../../components/BoxedInputFields/InputFieldHideUnhide';
 import PersonnalizedInputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import TextareaField from '../../components/BoxedInputFields/TextareaField';
-import SimpleDropdown from '../../components/BoxedInputFields/Dropdown-Field';
 import Button from '../../components/BoxedInputFields/Button';
 import UnderlinedLink from '../../components/Links/UnderlinedLink';
 import { FcGoogle } from 'react-icons/fc';
 import { ShieldAlert, X } from 'lucide-react';
-import { auth, firebaseApp, db, loginWithGoogle, functions } from '../../services/firebase';
+import { auth, db, loginWithGoogle, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useNotification } from '../../contexts/NotificationContext';
 import PasswordResetModal from '../../components/PasswordResetModal/PasswordResetModal';
@@ -91,17 +90,6 @@ function Login() {
 
       const user = result.user;
 
-      // Get token (use cached token if offline, don't force refresh)
-      let token;
-      try {
-        token = await user.getIdToken(true);
-      } catch (tokenError) {
-        if (tokenError.code === 'unavailable' || (tokenError.message && tokenError.message.includes('offline'))) {
-          token = await user.getIdToken(false);
-        } else {
-          throw tokenError;
-        }
-      }
 
 
       // Get additional user profile data directly from Firestore
@@ -213,8 +201,6 @@ function Login() {
       // Let the existing logic in handleRedirectResult (or a new effect) handle the user state?
       // Actually, since we use popup now, we get the user immediately here.
       // We should handle the post-login logic right here.
-
-      const token = await user.getIdToken();
 
       // Retry helper for checking user existence
       const getDocWithRetry = async (docRef, retries = 3, delay = 1000) => {

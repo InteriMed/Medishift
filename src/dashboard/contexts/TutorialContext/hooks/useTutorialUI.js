@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { debounce } from '../../../../utils/debounce';
-import { isProfileTutorial, PROFILE_TAB_IDS } from '../config/tutorialSystem';
+import { isProfileTutorial } from '../config/tutorialSystem';
 
 export const useTutorialUI = (state) => {
     const {
@@ -16,8 +16,7 @@ export const useTutorialUI = (state) => {
         isMainSidebarCollapsed,
         setIsMainSidebarCollapsed,
         updateElementPositionRef,
-        maxAccessedProfileTab,
-        actions // Need pauseTutorial
+        maxAccessedProfileTab
     } = state;
 
     // 1. Force sidebar open
@@ -60,7 +59,7 @@ export const useTutorialUI = (state) => {
         } else {
             setStepData(null);
         }
-    }, [currentStep, activeTutorial, isTutorialActive, tutorialSteps, maxAccessedProfileTab, setStepData, state.pauseTutorial]);
+    }, [currentStep, activeTutorial, isTutorialActive, tutorialSteps, maxAccessedProfileTab, setStepData, state]);
 
     // 3. Element Positioning
     useEffect(() => {

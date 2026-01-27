@@ -27,8 +27,6 @@ const CalendarSidebar = ({
     return null;
   }
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
   return (
     <div className={cn(
       "flex flex-col gap-4 calendar-sidebar-container",

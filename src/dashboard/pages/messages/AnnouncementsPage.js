@@ -14,7 +14,7 @@ import InputFieldParagraph from '../../../components/BoxedInputFields/TextareaFi
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import DateField from '../../../components/BoxedInputFields/DateField';
 import { cn } from '../../../utils/cn';
-import { FiMessageSquare, FiBarChart2, FiHeart, FiPlus, FiX, FiBell, FiInfo, FiFileText } from 'react-icons/fi';
+import { FiMessageSquare, FiBarChart2, FiHeart, FiPlus, FiX, FiBell, FiInfo } from 'react-icons/fi';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 
 const AnnouncementsPage = ({ hideHeader }) => {

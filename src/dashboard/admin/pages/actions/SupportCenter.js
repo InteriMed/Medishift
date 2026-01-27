@@ -16,7 +16,7 @@ const SupportCenter = () => {
 
     useEffect(() => {
         loadTickets();
-    }, [statusFilter]);
+    }, [statusFilter, loadTickets]);
 
     const loadTickets = async () => {
         setLoading(true);

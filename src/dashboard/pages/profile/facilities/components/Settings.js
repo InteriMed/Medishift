@@ -1,11 +1,8 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { get } from 'lodash';
 import classNames from 'classnames';
-import { FiSettings, FiClock, FiFileText, FiLock } from 'react-icons/fi';
-
-import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxField';
-import DropdownField from '../../../../../components/BoxedInputFields/Dropdown-Field';
+import { FiSettings, FiClock, FiFileText } from 'react-icons/fi';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import TextareaField from '../../../../../components/BoxedInputFields/TextareaField';
@@ -72,8 +69,6 @@ const Settings = ({
       'classic';
     return subscription === 'premium' ? 'premium' : 'classic';
   }, [formData]);
-
-  const isPremium = currentSubscription === 'premium';
 
   useAutoSave({
     formData,

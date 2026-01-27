@@ -231,7 +231,6 @@ const useCalendarStore = create(
           if (originalEventPosition && selectedEvent && originalEventPosition.id === selectedEvent.id) {
             const currentEventIndex = events.findIndex(e => e.id === selectedEvent.id);
             if (currentEventIndex !== -1) {
-              const currentEvent = events[currentEventIndex];
               // ... simple check for modification ...
             }
           }

@@ -42,11 +42,12 @@ const PersonalDashboard = () => {
   const workspaceContext = getWorkspaceContext();
 
   // Initialize Store Context
+  const workspaceContextString = JSON.stringify(workspaceContext);
   useEffect(() => {
     if (userId) {
       useCalendarStore.getState().setContext(userId, accountType, workspaceContext);
     }
-  }, [userId, accountType, JSON.stringify(workspaceContext)]);
+  }, [userId, accountType, workspaceContextString, workspaceContext]);
 
   const { stats, loading: isStatsLoading, error: statsError } = useProfessionalStats();
 

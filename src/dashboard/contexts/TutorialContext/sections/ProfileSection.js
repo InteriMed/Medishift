@@ -3,11 +3,9 @@ import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import {
     isProfileTutorial,
-    isProfilePath,
     normalizePathForComparison,
     TUTORIAL_IDS,
     PROFILE_TAB_IDS,
-    getProfileTutorialForType,
     getTabOrder,
     isProfileTabAccessible
 } from '../config/tutorialSystem';
@@ -16,7 +14,6 @@ import { isTabCompleted } from '../../../pages/profile/utils/profileUtils';
 export const useProfileSection = (state, actions) => {
     const {
         currentUser,
-        user,
         onboardingType,
         accessLevelChoice, setAccessLevelChoice,
         maxAccessedProfileTab, setMaxAccessedProfileTab,
@@ -26,23 +23,17 @@ export const useProfileSection = (state, actions) => {
         stepData,
         isBusy,
         syncTimestampRef,
-        isMainSidebarCollapsed, setIsMainSidebarCollapsed,
-        completedTutorials,
         showAccessLevelModal, setShowAccessLevelModal,
         setAllowAccessLevelModalClose,
         setIsWaitingForSave,
         tutorialSteps,
-        navigate,
         location,
         safelyUpdateTutorialState
     } = state;
 
     const {
         saveTutorialProgress,
-        completeTutorial,
-        nextStep,
-        pauseTutorial, // Need to make sure this is available in actions
-        showWarning
+        nextStep
     } = actions;
 
     // 1. Load Access Mode
@@ -78,7 +69,7 @@ export const useProfileSection = (state, actions) => {
         };
 
         loadAccessMode();
-    }, [currentUser, onboardingType]);
+    }, [currentUser, onboardingType, accessLevelChoice, setAccessLevelChoice]);
 
     // 2. Set Access Mode
     const setAccessMode = useCallback(async (mode) => {
@@ -175,8 +166,8 @@ export const useProfileSection = (state, actions) => {
         }
     }, [
         isTutorialActive, activeTutorial, onboardingType, maxAccessedProfileTab, stepData,
-        nextStep, currentUser, accessLevelChoice, setAccessMode, setMaxAccessedProfileTab,
-        setAccessLevelChoice, setIsWaitingForSave, state.setTabsProgress
+        nextStep, currentUser, accessLevelChoice, setMaxAccessedProfileTab,
+        setAccessLevelChoice, setIsWaitingForSave, state.setTabsProgress, state
     ]);
 
     // 4. Auto-Sync Logic (Specific to Profile)
@@ -299,12 +290,11 @@ export const useProfileSection = (state, actions) => {
             }
         }
 
-        const path = location.pathname;
         // Logic for leaving profile area (Access Level Modal) - REMOVED for simplification
         // Users are now free to navigate away from the profile section even during the tutorial.
 
 
-    }, [isTutorialActive, activeTutorial, location.pathname, accessLevelChoice, currentStep, stepData, showAccessLevelModal, state.selectedWorkspace, navigate, setAllowAccessLevelModalClose, setShowAccessLevelModal, tutorialSteps]);
+    }, [isTutorialActive, activeTutorial, location.pathname, accessLevelChoice, currentStep, stepData, showAccessLevelModal, setAllowAccessLevelModalClose, setShowAccessLevelModal, tutorialSteps, isBusy, maxAccessedProfileTab, onboardingType, safelyUpdateTutorialState, saveTutorialProgress, setCurrentStep, syncTimestampRef]);
 
 
     const syncProfileInitialState = useCallback((formData, profileConfig) => {

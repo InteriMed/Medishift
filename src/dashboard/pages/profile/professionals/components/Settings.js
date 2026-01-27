@@ -1,12 +1,10 @@
 // FILE: /src/pages/dashboard/profile/professionals/components/Settings.js
 // VERSION: Config-Driven - Updated for Firebase Database Organization
 
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { FiSettings, FiBell, FiShield, FiGlobe, FiClock, FiInfo, FiLock, FiZap, FiStar, FiCalendar } from 'react-icons/fi';
-
-import CheckboxField from '../../../../../components/BoxedInputFields/CheckboxField';
+import { FiSettings, FiBell, FiShield, FiGlobe, FiClock, FiInfo, FiZap, FiStar, FiCalendar } from 'react-icons/fi';
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import TextareaField from '../../../../../components/BoxedInputFields/TextareaField';

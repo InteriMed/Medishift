@@ -1,13 +1,10 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
-import classNames from 'classnames';
-import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEye, FiEdit2, FiMail, FiZap } from 'react-icons/fi';
+import { FiBriefcase, FiCreditCard, FiDollarSign, FiHome, FiShield, FiEdit2 } from 'react-icons/fi';
 import { httpsCallable } from 'firebase/functions';
 
 import SimpleDropdown from '../../../../../components/BoxedInputFields/Dropdown-Field';
-
 import InputField from '../../../../../components/BoxedInputFields/Personnalized-InputField';
 import DateField from '../../../../../components/BoxedInputFields/DateField';
 import Switch from '../../../../../components/BoxedInputFields/Switch';
@@ -16,9 +13,6 @@ import Dialog from '../../../../../components/Dialog/Dialog';
 import BankingAccessModal from '../../components/BankingAccessModal';
 import useAutoSave from '../../../../hooks/useAutoSave';
 import { functions } from '../../../../../services/firebase';
-import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';
-import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';
-import { cn } from '../../../../../utils/cn';
 
 import { useDropdownOptions } from '../../utils/DropdownListsImports';
 import { LOCALSTORAGE_KEYS } from '../../../../../config/keysDatabase';
@@ -125,19 +119,6 @@ const BillingInformation = ({
     return result;
   }, [onSave, sendBankingUpdateNotification]);
 
-  const handleTestEmail = useCallback(async () => {
-    try {
-      const notifyBankingUpdate = httpsCallable(functions, 'notifyBankingUpdate');
-      const ibanLast4 = formData?.banking?.iban ? formData.banking.iban.slice(-4) : 'XXXX';
-      await notifyBankingUpdate({
-        bankName: formData?.banking?.bankName || 'Test Bank',
-        ibanLast4
-      });
-      alert(t('billingInformation.testEmailSent', 'Test email sent successfully'));
-    } catch (error) {
-      alert(t('billingInformation.testEmailFailed', 'Failed to send test email'));
-    }
-  }, [formData?.banking, t]);
 
   const checkBankingAccess = useCallback(() => {
     const accessExpiry = localStorage.getItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED);
@@ -222,21 +203,6 @@ const BillingInformation = ({
     disableLocalStorage: true
   });
 
-  const hasExistingBillingInfo = useMemo(() => {
-    return formData && (
-      (formData.billingInformation && Object.keys(formData.billingInformation).length > 0) ||
-      (formData.payrollData && Object.keys(formData.payrollData).length > 0) ||
-      (formData.banking && Object.keys(formData.banking).length > 0)
-    );
-  }, [formData]);
-
-
-  const handleCancel = useCallback(() => {
-    if (onCancel) {
-      onCancel();
-    }
-    window.location.reload();
-  }, [onCancel]);
 
   const getDropdownOptions = useCallback((optionsKey) => {
     // Handle special cases for optionsKey mapping
@@ -445,22 +411,6 @@ const BillingInformation = ({
   }, [fieldsToRender]);
 
 
-  // Save and Continue handler that shows info dialog if hiring-required fields are missing
-  const handleSaveAndContinueClick = useCallback(() => {
-    try {
-      const missingHiring = fieldsToRender
-        .filter(f => f.requiredForHiring)
-        .filter(f => checkDependency(f))
-        .some(f => {
-          const v = getNestedValue(formData, f.name);
-          return v === undefined || v === null || v === '';
-        });
-      if (missingHiring) {
-        setShowHiringInfo(true);
-      }
-    } catch { }
-    onSaveAndContinue();
-  }, [fieldsToRender, formData, getNestedValue, onSaveAndContinue, checkDependency]);
 
   return (
     <>

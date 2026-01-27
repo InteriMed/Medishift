@@ -16,7 +16,6 @@ import ColorPicker from '../../../components/ColorPicker/ColorPicker';
 import Dialog from '../../../../components/Dialog/Dialog';
 
 const styles = {
-  sectionContainer: "flex flex-col gap-6 p-1 w-full max-w-[1000px] mx-auto",
   headerCard: "bg-card rounded-xl border border-border p-6 pb-4 shadow-md w-full max-w-[1000px] mx-auto",
   sectionTitle: "text-2xl font-semibold mb-2",
   sectionTitleStyle: { fontSize: '18px', color: 'hsl(var(--foreground))', fontFamily: 'var(--font-family-text, Roboto, sans-serif)' },
@@ -212,46 +211,6 @@ const AddFacilityRoleModal = ({
       });
     }
   }, [profileData]);
-
-  const validateAllFields = useCallback(() => {
-    const fieldErrors = {};
-    const workerErrors = {};
-    let isValid = true;
-
-    if (!formData.workerType || formData.workerType === 'none') {
-      isValid = false;
-      fieldErrors.workerType = t('operations.workerTypeRequired', 'Role type is required');
-    }
-
-    if (formData.workerType === 'other' && (!formData.workerTypeOther || !formData.workerTypeOther.trim())) {
-      isValid = false;
-      fieldErrors.workerTypeOther = t('operations.workerTypeOtherRequired', 'Custom role type is required');
-    }
-
-    const workers = formData.assignedWorkers || [];
-
-    if (workers.length === 0) {
-      isValid = false;
-      workerErrors._general = t('operations.atLeastOneWorkerRequired', 'At least one worker is required');
-    }
-
-    workers.forEach(worker => {
-      const workerId = worker.workerId || '';
-      const placeholderName = worker.placeholderName || '';
-
-      if (!workerId || workerId === '') {
-        isValid = false;
-        workerErrors[`${worker.id}_workerId`] = t('operations.workerSelectionRequired', 'Worker selection is required');
-      } else if (workerId === 'placeholder' && !placeholderName.trim()) {
-        isValid = false;
-        workerErrors[`${worker.id}_placeholderName`] = t('operations.placeholderNameRequired', 'Placeholder name is required');
-      }
-    });
-
-    setFieldErrors(fieldErrors);
-    setWorkerErrors(workerErrors);
-    return isValid;
-  }, [formData, t]);
 
   const handleAddWorker = useCallback(() => {
     const currentWorkers = formData.assignedWorkers || [];

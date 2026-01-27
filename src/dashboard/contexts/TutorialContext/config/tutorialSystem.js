@@ -3,6 +3,23 @@ export { LOCALSTORAGE_KEYS } from '../../../../config/keysDatabase';
 export * from './tutorialConfig';
 
 export { 
+    TUTORIAL_IDS,
+    TUTORIAL_MODES,
+    ACCESS_MODES,
+    ONBOARDING_TYPES,
+    WORKSPACE_TYPES,
+    PROFILE_TAB_IDS,
+    TUTORIAL_STEP_DEFINITIONS,
+    getTutorialSteps,
+    isProfileTutorial,
+    getMandatoryTutorials,
+    getProfileTutorialForType,
+    getTabOrder,
+    isProfilePath,
+    normalizePathForComparison,
+    isProfileTabAccessible,
+    isSidebarItemAccessible,
+    isLastStep,
     isOnCorrectPage,
     getPathForTutorial,
     getRouteForTutorial,
@@ -73,9 +90,11 @@ export const createTutorialContext = (context) => {
     };
 };
 
-export default {
+const tutorialSystem = {
     getTutorialStepWithTranslation,
     getTutorialStepsWithTranslations,
     getButtonText,
     createTutorialContext
 };
+
+export default tutorialSystem;

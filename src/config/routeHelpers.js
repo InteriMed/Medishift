@@ -1,6 +1,5 @@
-import { getRouteById, getRouteByPath, buildRoutePath, ALL_ROUTES } from './appRoutes';
+import { getRouteById, getRouteByPath } from './appRoutes';
 import { getRouteById as getDashboardRouteById, buildRouteUrl as buildDashboardRouteUrl } from '../dashboard/config/routes';
-import { getLocalizedRoute } from '../i18n';
 
 export const DEFAULT_LANGUAGE = 'fr';
 export const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'it'];

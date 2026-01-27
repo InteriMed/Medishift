@@ -1,8 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { get } from 'lodash';
-import { FiEdit, FiTrash2, FiFileText, FiUploadCloud, FiCheckCircle, FiXCircle, FiClock } from 'react-icons/fi';
+import { FiTrash2, FiFileText, FiCheckCircle, FiXCircle, FiClock } from 'react-icons/fi';
 
 import Button from '../../../../../components/BoxedInputFields/Button';
 import UploadFile from '../../../../../components/BoxedInputFields/UploadFile';

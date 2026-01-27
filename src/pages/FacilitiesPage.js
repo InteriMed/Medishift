@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
     FaBuilding, FaArrowRight, FaCheckCircle, FaUsers, FaRegLightbulb,
-    FaCalendarAlt, FaBriefcase, FaLayerGroup, FaChartLine, FaRobot, FaHandshake
+    FaCalendarAlt, FaBriefcase, FaLayerGroup, FaChartLine, FaHandshake
 } from 'react-icons/fa';
 
 import institutionalMockup from '../assets/pages/homepage/healthcareInstitutions.png';
