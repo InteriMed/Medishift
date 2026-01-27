@@ -6,7 +6,7 @@ import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firesto
 import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useDashboard } from '../../../contexts/DashboardContext';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
 import {
     FiFileText, FiMessageSquare, FiCalendar, FiUser,
     FiMapPin, FiMail

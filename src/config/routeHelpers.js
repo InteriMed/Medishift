@@ -96,7 +96,7 @@ export const DASHBOARD_ROUTE_IDS = {
   ADMIN_CRM: 'admin-crm'
 };
 
-export default {
+const exportedHelpers = {
   buildLocalizedPath,
   buildDashboardPath,
   getRoutePath,
@@ -109,4 +109,6 @@ export default {
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES
 };
+
+export default exportedHelpers;
 

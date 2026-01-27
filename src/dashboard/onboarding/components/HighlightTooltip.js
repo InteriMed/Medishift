@@ -15,7 +15,7 @@ import {
   isOnCorrectPage as isPageMatch,
   getPathForTutorial
 } from '../../contexts/TutorialContext/config/tutorialSystem';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import Dialog from '../../../components/Dialog/Dialog';
 import Button from '../../../components/BoxedInputFields/Button';
 import SidebarHighlighter from './SidebarHighlighter';

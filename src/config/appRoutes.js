@@ -292,7 +292,7 @@ export const buildRoutePath = (routeId, params = {}) => {
   return path;
 };
 
-export default {
+const exportedRoutes = {
   ROUTE_TYPES,
   PUBLIC_ROUTES,
   AUTH_ROUTES,
@@ -304,4 +304,6 @@ export default {
   getRoutesByType,
   buildRoutePath
 };
+
+export default exportedRoutes;
 

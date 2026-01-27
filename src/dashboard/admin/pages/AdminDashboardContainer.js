@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -14,7 +14,7 @@ import {
 } from 'react-icons/fi';
 import { FlaskConical } from 'lucide-react';
 import { cn } from '../../../utils/cn';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useAdminPermission } from '../hooks/useAdminPermission';
 import { RIGHTS as PERMISSIONS } from '../utils/rbac';
@@ -27,7 +27,6 @@ import ShiftCommandCenter from './operations/ShiftCommandCenter';
 import LinkedInJobScraper from './operations/LinkedInJobScraper';
 import RevenueAnalysis from './finance/RevenueAnalysis';
 import SpendingsTracker from './finance/SpendingsTracker';
-import AccountsReceivable from './finance/AccountsReceivable';
 import BalanceSheet from './finance/BalanceSheet';
 import AuditLogs from './system/AuditLogs';
 import RolesAndPermissions from './system/RolesAndPermissions';

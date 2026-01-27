@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import {
   TrendingUp,
   Users,
-  Calendar,
   DollarSign,
   AlertCircle,
   Activity,
@@ -14,7 +13,7 @@ import {
   UserPlus,
   Percent
 } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import '../../../styles/variables.css';
 
 // Simple Sparkline component

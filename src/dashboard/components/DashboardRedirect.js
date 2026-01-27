@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { getSavedDashboardRoute } from '../utils/routePersistence';
+import { getSavedDashboardRoute } from '../../config/routePersistence';
 import { useDashboard } from '../contexts/DashboardContext';
 
 const DashboardRedirect = () => {

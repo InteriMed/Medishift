@@ -65,12 +65,16 @@ const ResourceGrid = ({
     }, [currentDate, view, nightView]);
 
 
+    const safeEvents = useMemo(() => {
+        return Array.isArray(events) ? events : [];
+    }, [events]);
+
     // Group events by employee and date for efficient rendering
     const eventsByEmployee = useMemo(() => {
         const grouped = {};
-        if (!events) return grouped;
+        if (!safeEvents || safeEvents.length === 0) return grouped;
 
-        events.forEach(event => {
+        safeEvents.forEach(event => {
             // Find which employee this event belongs to
             // Logic: Check if event.workerId or event.employees (array) matches
             // For now assume event.workerId matches employee.id or event.employeeId
@@ -90,7 +94,7 @@ const ResourceGrid = ({
             }
         });
         return grouped;
-    }, [events]);
+    }, [safeEvents]);
 
     const handleCellClick = (employee, date) => {
         // Create a new event for this employee on this date
@@ -368,35 +372,44 @@ const ResourceGrid = ({
                                         const date = dateInfo.date || dateInfo;
                                         const isHalf = dateInfo.isHalf || false;
                                         const side = dateInfo.side;
-                                        const roleEvents = events.filter(e => {
-                                            const eventStart = new Date(e.start);
-                                            const eventEnd = new Date(e.end);
+                                        const roleEvents = safeEvents.filter(e => {
+                                            if (!e || !e.start || !e.end) return false;
+                                            
+                                            try {
+                                                const eventStart = new Date(e.start);
+                                                const eventEnd = new Date(e.end);
 
-                                            if (nightView) {
-                                                const shiftStart = new Date(date);
-                                                shiftStart.setHours(18, 0, 0, 0);
-                                                const shiftEnd = new Date(date);
-                                                shiftEnd.setDate(shiftEnd.getDate() + 1);
-                                                shiftEnd.setHours(18, 0, 0, 0);
+                                                if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) return false;
 
-                                                if (!(eventStart < shiftEnd && eventEnd > shiftStart)) return false;
-                                            } else {
-                                                if (!isSameDay(eventStart, date)) return false;
-                                            }
+                                                if (nightView) {
+                                                    const shiftStart = new Date(date);
+                                                    shiftStart.setHours(18, 0, 0, 0);
+                                                    const shiftEnd = new Date(date);
+                                                    shiftEnd.setDate(shiftEnd.getDate() + 1);
+                                                    shiftEnd.setHours(18, 0, 0, 0);
 
-                                            if (role.worker) {
-                                                if (role.worker.workerId && role.worker.workerId !== 'placeholder') {
-                                                    return (e.workerId === role.worker.workerId || e.employeeId === role.worker.workerId);
-                                                } else if (role.worker.placeholderName) {
-                                                    return (e.workerName === role.worker.placeholderName || e.employeeName === role.worker.placeholderName);
+                                                    if (!(eventStart < shiftEnd && eventEnd > shiftStart)) return false;
+                                                } else {
+                                                    if (!isSameDay(eventStart, date)) return false;
                                                 }
-                                            }
 
-                                            const eventRole = e.workerRole || e.employeeRole;
-                                            const eventWorkerType = e.workerType;
-                                            return (eventRole === role.workerType ||
-                                                eventWorkerType === role.workerType ||
-                                                (role.workerType === 'other' && eventRole === role.workerTypeOther));
+                                                if (role.worker) {
+                                                    if (role.worker.workerId && role.worker.workerId !== 'placeholder') {
+                                                        return (e.workerId === role.worker.workerId || e.employeeId === role.worker.workerId);
+                                                    } else if (role.worker.placeholderName) {
+                                                        return (e.workerName === role.worker.placeholderName || e.employeeName === role.worker.placeholderName);
+                                                    }
+                                                }
+
+                                                const eventRole = e.workerRole || e.employeeRole;
+                                                const eventWorkerType = e.workerType;
+                                                return (eventRole === role.workerType ||
+                                                    eventWorkerType === role.workerType ||
+                                                    (role.workerType === 'other' && eventRole === role.workerTypeOther));
+                                            } catch (error) {
+                                                console.error('Error filtering event:', error, e);
+                                                return false;
+                                            }
                                         });
 
                                         const periodEvents = roleEvents.filter(event => {

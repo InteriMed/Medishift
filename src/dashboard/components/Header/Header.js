@@ -8,7 +8,7 @@ import { cn } from '../../../utils/cn';
 import { getPageConfig } from '../../config/pageConfig';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useAuth } from '../../../contexts/AuthContext';
-import { normalizePathname, getWorkspaceIdForUrl, buildDashboardUrl } from '../../utils/pathUtils';
+import { normalizePathname, getWorkspaceIdForUrl, buildDashboardUrl } from '../../../config/routeUtils';
 import useProfileData from '../../hooks/useProfileData';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';

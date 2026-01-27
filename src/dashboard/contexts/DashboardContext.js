@@ -15,7 +15,7 @@ import {
   WORKSPACE_TYPES
 } from '../../utils/sessionAuth';
 import { COLLECTIONS, isAdminSync } from '../../config/workspaceDefinitions';
-import { buildDashboardUrl, getDefaultRouteForWorkspace, getRelativePathFromUrl, getWorkspaceIdForUrl, isPathValidForWorkspace } from '../utils/pathUtils';
+import { buildDashboardUrl, getDefaultRouteForWorkspace, getRelativePathFromUrl, getWorkspaceIdForUrl, isPathValidForWorkspace } from '../../config/routeUtils';
 import Dialog from '../../components/Dialog/Dialog';
 import Button from '../../components/BoxedInputFields/Button';
 import { getCookieKey, COOKIE_CONFIG, FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';

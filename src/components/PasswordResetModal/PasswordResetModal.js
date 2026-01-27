@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import Dialog from '../Dialog/Dialog';
 import InputField from '../BoxedInputFields/Personnalized-InputField';
-import Button from '../BoxedInputFields/Button';
 import { FiLock, FiMail, FiPhone, FiShield, FiArrowLeft } from 'react-icons/fi';
 import SpinnerLoader from '../LoadingAnimations/SpinnerLoader';
 import { sendPasswordResetEmail } from 'firebase/auth';

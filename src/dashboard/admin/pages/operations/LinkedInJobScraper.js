@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { db, firebaseApp } from '../../../../services/firebase';
-import { collection, query, where, getDocs, orderBy, limit as firestoreLimit } from 'firebase/firestore';
+import { firebaseApp } from '../../../../services/firebase';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { Search, Briefcase, MapPin, Calendar, ExternalLink, Play, Loader, CheckCircle, AlertCircle, Clock, Settings, Plus, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
@@ -14,7 +12,6 @@ import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Fiel
 import '../../../../styles/variables.css';
 
 const LinkedInJobScraper = () => {
-  const { t } = useTranslation(['admin']);
   const { userProfile } = useAuth();
   const [keywords, setKeywords] = useState('pharmacist');
   const [location, setLocation] = useState('Switzerland');

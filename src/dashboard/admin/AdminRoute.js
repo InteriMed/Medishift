@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useDashboard } from '../contexts/DashboardContext';
 import { isAdmin } from '../../utils/adminUtils';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
-import { buildDashboardUrl } from '../utils/pathUtils';
+import { buildDashboardUrl } from '../../config/routeUtils';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 
 const AdminRoute = ({ children }) => {

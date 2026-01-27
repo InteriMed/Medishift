@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate, useParams, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -35,9 +35,7 @@ import {
   PUBLIC_ROUTES,
   AUTH_ROUTES,
   PROTECTED_ROUTES,
-  TEST_ROUTES,
-  ROUTE_TYPES,
-  getRouteById
+  TEST_ROUTES
 } from './config/appRoutes';
 import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE as DEFAULT_LANG } from './config/routeHelpers';
 
@@ -178,7 +176,7 @@ function AppContent() {
     if (!authLoading && isLanguageSetup && i18n.isInitialized) {
       setIsInitialLoad(false);
     }
-  }, [authLoading, isLanguageSetup, i18n.isInitialized]);
+  }, [authLoading, isLanguageSetup, i18n.isInitialized, DEFAULT_LANG]);
 
   // This effect runs on subsequent route changes after initial load
   useEffect(() => {

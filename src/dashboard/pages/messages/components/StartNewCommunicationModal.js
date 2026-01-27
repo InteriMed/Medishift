@@ -6,7 +6,7 @@ import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import { buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../../../config/routeUtils';
 import Dialog from '../../../../components/Dialog/Dialog';
 import PropTypes from 'prop-types';
 

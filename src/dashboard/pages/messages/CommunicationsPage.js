@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import { FiMessageSquare, FiBell, FiInbox, FiFileText, FiShield } from 'react-icons/fi';
 import { useDashboard } from '../../contexts/DashboardContext';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import { cn } from '../../../utils/cn';
 import MessagesPage from './MessagesPage';
 import AnnouncementsPage from './AnnouncementsPage';

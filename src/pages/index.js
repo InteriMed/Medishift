@@ -11,4 +11,4 @@ export { default as TermsOfServicePage } from './TermsOfServicePage';
 export { default as SitemapPage } from './SitemapPage';
 export { default as NotFoundPage } from './NotFound';
 export { default as GLNTestVerifPage } from './GLNTestVerifPage';
-export { default as OnboardingPage } from './Onboarding/OnboardingPage';
+export { default as OnboardingPage } from '../dashboard/onboarding/OnboardingPage';

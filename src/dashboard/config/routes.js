@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
 import { RIGHTS as PERMISSIONS } from '../admin/utils/rbac';
-import { buildDashboardUrl } from '../utils/pathUtils';
+import { buildDashboardUrl } from '../../config/routeUtils';
 
 // Eagerly loaded components (frequently accessed, no loading delay)
 import CommunicationsPage from '../pages/messages/CommunicationsPage';

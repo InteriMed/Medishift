@@ -13,7 +13,7 @@ import {
 import FilterBar from '../../components/FilterBar/FilterBar';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import supportTicketService from '../../../services/supportTicketService';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import Dialog from '../../../components/Dialog/Dialog';
@@ -233,8 +233,8 @@ const ReportingPage = ({ hideHeader }) => {
             )}
 
             <div className="flex-1 overflow-auto">
-                <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col pt-6">
-                    <div className="w-full max-w-[1400px] mx-auto px-6">
+                <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col pt-6 px-6">
+                    <div className="space-y-6">
                         <FilterBar
                             filters={filters}
                             onFilterChange={(key, value) => {
@@ -290,25 +290,17 @@ const ReportingPage = ({ hideHeader }) => {
                             title={t('messages:reporting.title', 'Anonymous Reports')}
                             description={t('messages:reporting.description', 'Submit confidential reports. Your identity will remain anonymous.')}
                             onRefresh={loadTickets}
+                            onAdd={() => navigate(buildDashboardUrl('/communications/reporting/new', workspaceId))}
+                            addLabel={t('messages:reporting.submitReport', 'Submit Report')}
                             isLoading={isLoading}
                             translationNamespace="messages"
                         />
-                        <div className="flex justify-end mt-4">
-                            <button
-                                onClick={() => navigate(buildDashboardUrl('/communications/reporting/new', workspaceId))}
-                                className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
-                                style={{ height: 'var(--boxed-inputfield-height)' }}
-                            >
-                                <FiPlus className="w-4 h-4" />
-                                <span>{t('messages:reporting.submitReport', 'Submit Report')}</span>
-                            </button>
-                        </div>
-                    </div>
 
-                    <div className="w-full max-w-[1400px] mx-auto pt-6">
-                        <div className="space-y-4 px-6">
+                        <div>
                             {isLoading && tickets.length === 0 ? (
-                                <LoadingSpinner />
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                </div>
                             ) : filteredTickets.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-20 text-center">
                                     <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">

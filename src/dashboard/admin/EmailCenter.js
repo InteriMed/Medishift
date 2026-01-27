@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { httpsCallable } from 'firebase/functions';
-import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { functions, db } from '../../services/firebase';
 import { Mail, Send, Users, MessageSquare, Clock, CheckCircle, XCircle, ChevronDown, Inbox, ExternalLink } from 'lucide-react';
 import PageHeader from '../components/PageHeader/PageHeader';
@@ -131,8 +131,6 @@ const EmailCenter = () => {
   };
 
   const renderComposeForm = () => {
-    const template = EMAIL_TEMPLATES[emailType];
-
     return (
       <div className="space-y-6">
         <div className="flex gap-4 mb-6">

@@ -28,7 +28,7 @@ import {
   Building
 } from 'lucide-react';
 import { cn } from '../../../utils/cn';
-import { normalizePathname, buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../utils/pathUtils';
+import { normalizePathname, buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../../config/routeUtils';
 import { useDashboard } from '../../contexts/DashboardContext';
 import {
   isProfessionalSync,

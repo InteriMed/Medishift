@@ -142,6 +142,19 @@
   font-weight: var(--font-weight-medium);
 }
 
+.boxed-inputfield-title {
+  padding: 0 6px;
+  position: relative;
+  display: block;
+  font-size: calc(var(--boxed-inputfield-font-size) * 1.15);
+  color: var(--boxed-inputfield-color-text);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: 8px;
+  margin-top: 0;
+  background-color: transparent;
+  z-index: 10;
+}
+
 .boxed-inputfield-arrow,
 .boxed-dropdown-arrow {
   position: absolute;

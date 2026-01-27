@@ -6,7 +6,7 @@
  * Do NOT check roles, hasProfessionalProfile, etc. directly elsewhere.
  */
 
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { FIRESTORE_COLLECTIONS, WORKSPACE_TYPES as KEYS_WORKSPACE_TYPES } from './keysDatabase';
 
@@ -755,7 +755,7 @@ export const queryAdmins = async () => {
 };
 
 // Default export for convenience
-export default {
+const exportedWorkspace = {
   // Types
   WORKSPACE_TYPES,
   COLLECTIONS,
@@ -795,4 +795,6 @@ export default {
   queryFacilities,
   queryAdmins,
 };
+
+export default exportedWorkspace;
 

@@ -7,7 +7,7 @@ import { useDashboard } from '../../../contexts/DashboardContext';
 import { db } from '../../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
 
 import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import Button from '../../../../components/BoxedInputFields/Button';

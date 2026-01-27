@@ -48,7 +48,8 @@ const SimpleDropdown = ({
   marginTop,
   marginLeft,
   marginRight,
-  searchable = true
+  searchable = true,
+  labelAsTitle = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,9 +118,8 @@ const SimpleDropdown = ({
       ref={dropdownRef}
     >
       <div className={`boxed-dropdown-container ${error ? 'boxed-dropdown-container--error' : ''} ${isOpen ? 'boxed-dropdown-container--focused' : ''} ${isOptionHovered ? 'boxed-dropdown-container--option-hovered' : ''} ${hasValue ? 'has-value' : ''} ${!label ? 'no-label' : ''}`}>
-        {/* Floating label */}
         {label && (
-          <label className={`boxed-inputfield-label ${(isOpen || hasValue) ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}>
+          <label className={`${labelAsTitle ? 'boxed-inputfield-title' : 'boxed-inputfield-label'} ${(isOpen || hasValue) ? 'boxed-inputfield-label--focused' : ''} ${error ? 'boxed-inputfield-label--error' : ''}`}>
             {label || placeholder}
             {required && !hasRequiredIndicator(floatingLabel) && <span className="boxed-inputfield-required">*</span>}
           </label>

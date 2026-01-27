@@ -5,23 +5,23 @@ import { useAuth } from '../../contexts/AuthContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
-import { useTutorial } from '../../dashboard/contexts/TutorialContext';
+import { useTutorial } from '../contexts/TutorialContext';
 import {
     FiBriefcase, FiCheck, FiArrowRight, FiHome,
     FiLoader, FiArrowLeft, FiShield, FiUser,
     FiLink, FiHelpCircle, FiPhone, FiAlertTriangle
 } from 'react-icons/fi';
 import ContactFormPopup from '../../components/ContactFormPopup/ContactFormPopup';
-import ProfessionalGLNVerification from '../../dashboard/onboarding/components/ProfessionalGLNVerification';
-import FacilityGLNVerification from '../../dashboard/onboarding/components/FacilityGLNVerification';
-import CommercialRegistryVerification from '../../dashboard/onboarding/components/CommercialRegistryVerification';
-import PhoneVerificationStep from '../../dashboard/onboarding/components/PhoneVerificationStep';
+import ProfessionalGLNVerification from './components/ProfessionalGLNVerification';
+import FacilityGLNVerification from './components/FacilityGLNVerification';
+import CommercialRegistryVerification from './components/CommercialRegistryVerification';
+import PhoneVerificationStep from './components/PhoneVerificationStep';
 import SimpleDropdown from '../../components/BoxedInputFields/Dropdown-Field';
 import PersonnalizedInputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import Switch from '../../components/BoxedInputFields/Switch';
 import Checkbox from '../../components/BoxedInputFields/CheckboxField';
 import Button from '../../components/BoxedInputFields/Button';
-import { useDropdownOptions } from '../../dashboard/pages/profile/utils/DropdownListsImports';
+import { useDropdownOptions } from '../pages/profile/utils/DropdownListsImports';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import BarsLoader from '../../components/LoadingAnimations/BarsLoader';
 import Dialog from '../../components/Dialog/Dialog';

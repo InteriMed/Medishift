@@ -9,7 +9,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import useProfileData from '../../hooks/useProfileData';
 import { useDashboard } from '../../contexts/DashboardContext';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import Button from '../../../components/BoxedInputFields/Button';

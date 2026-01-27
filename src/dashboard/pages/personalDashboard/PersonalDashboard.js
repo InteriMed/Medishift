@@ -20,7 +20,7 @@ import useCalendarStore from '../calendar/hooks/useCalendarStore';
 import { useCalendarEvents } from '../calendar/utils/eventDatabase';
 import useProfessionalStats from '../../hooks/useProfessionalStats';
 import { cn } from '../../../utils/cn';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import styles from './personalDashboard.module.css';
 import DashboardMainContent from './components/DashboardMainContent';
 import CalendarSidebar from '../calendar/components/CalendarSidebar';

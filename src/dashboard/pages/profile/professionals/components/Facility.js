@@ -7,7 +7,7 @@ import { useDashboard } from '../../../../contexts/DashboardContext';
 import { db } from '../../../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIRESTORE_COLLECTIONS } from '../../../../../config/keysDatabase';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../../config/routeUtils';
 import { useNavigate } from 'react-router-dom';
 import { WORKSPACE_TYPES } from '../../../../../utils/sessionAuth';
 import LoadingSpinner from '../../../../../components/LoadingSpinner/LoadingSpinner';

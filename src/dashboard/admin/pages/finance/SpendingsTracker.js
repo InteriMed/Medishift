@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import { DollarSign, Gift, TrendingUp, Users, Calendar } from 'lucide-react';
+import { Gift, TrendingUp, Users, Calendar } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import DateField from '../../../../components/BoxedInputFields/DateField';

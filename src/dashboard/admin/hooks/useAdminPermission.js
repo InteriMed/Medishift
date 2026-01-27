@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useDashboard } from '../../contexts/DashboardContext';
-import { hasRight, hasAnyRight, hasAllRights, isSuperAdmin, isAdmin, getAdminRights, getAdminRole, RIGHTS, ADMIN_ROLES } from '../utils/rbac';
+import { hasRight, hasAnyRight, hasAllRights, isSuperAdmin, isAdmin, getAdminRights, getAdminRole, RIGHTS } from '../utils/rbac';
 
 export const useAdminPermission = () => {
   const { userProfile: authUserProfile } = useAuth();

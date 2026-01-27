@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useDashboard } from '../contexts/DashboardContext';
-import { buildDashboardUrl, getDefaultRouteForWorkspace, getWorkspaceIdForUrl } from '../utils/pathUtils';
+import { buildDashboardUrl, getDefaultRouteForWorkspace, getWorkspaceIdForUrl } from '../../config/routeUtils';
 
 export const WorkspaceAwareNavigate = ({ to, fallbackTo = null }) => {
   const { selectedWorkspace } = useDashboard();

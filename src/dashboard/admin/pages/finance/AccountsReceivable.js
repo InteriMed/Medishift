@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
-import { DollarSign, Mail, Calendar, AlertCircle } from 'lucide-react';
+import { DollarSign, Mail, AlertCircle } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import Papa from 'papaparse';
-import DateField from '../../../../components/BoxedInputFields/DateField';
-import { format } from 'date-fns';
 import PageHeader from '../../../components/PageHeader/PageHeader';
 import FilterBar from '../../../components/FilterBar/FilterBar';
 import '../../../../styles/variables.css';
@@ -25,6 +23,9 @@ const AccountsReceivable = () => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   };
+  const [startDate, setStartDate] = useState(getFirstDayOfMonth());
+  const [endDate, setEndDate] = useState(new Date());
+
   const getLastDayOfMonth = () => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);

@@ -18,7 +18,7 @@ import { useCalendarEvents } from './utils/eventDatabase';
 import { cn } from '../../../utils/cn';
 import { FiX, FiSettings, FiPlus } from 'react-icons/fi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import ResourceGrid from './components/ResourceGrid';
 import useProfileData from '../../hooks/useProfileData';
 import useCalendarStore from './hooks/useCalendarStore';

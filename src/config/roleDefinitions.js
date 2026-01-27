@@ -126,11 +126,13 @@ export const hasAllPermissions = (userRoles, requiredPermissions) => {
   return requiredPermissions.every(permission => hasPermission(userRoles, permission));
 };
 
-export default {
+const exportedRoles = {
   ROLE_DEFINITIONS,
   ROLE_SETUP_PRESETS,
   hasPermission,
   hasAnyPermission,
   hasAllPermissions
 };
+
+export default exportedRoles;
 

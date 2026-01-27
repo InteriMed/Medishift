@@ -406,8 +406,8 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
             )}
 
             <div className="flex-1 overflow-auto">
-                <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col pt-6">
-                    <div className="w-full max-w-[1400px] mx-auto px-6">
+                <div className="w-full max-w-[1400px] mx-auto flex-1 flex flex-col pt-6 px-6">
+                    <div className="space-y-6">
                         <FilterBar
                             filters={filters}
                             onFilterChange={handleFilterChange}
@@ -491,14 +491,13 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
                 addLabel={t('organization:policy.uploadTitle', 'Upload New Policy')}
                 isLoading={isLoading}
             />
-                    </div>
 
-                    <div className="w-full max-w-[1400px] mx-auto pt-6 px-6">
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    </div>
-                ) : sortedPolicies.length === 0 ? (
+                        <div>
+                            {isLoading ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                </div>
+                            ) : sortedPolicies.length === 0 ? (
                     <div className="bg-card rounded-xl border border-border overflow-hidden">
                         <div className="p-12 text-center">
                             <FiFileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -620,6 +619,9 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
                         ))}
                     </div>
                 )}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <Dialog
@@ -1091,8 +1093,6 @@ const PolicyLibrary = ({ hideHeader = false, hideStats = false }) => {
                     </div>
                 )}
             </Dialog>
-                </div>
-            </div>
         </div>
     );
 };

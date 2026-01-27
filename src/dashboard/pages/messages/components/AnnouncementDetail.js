@@ -16,7 +16,7 @@ import { db } from '../../../../services/firebase';
 import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
 import { cn } from '../../../../utils/cn';
 import { useDashboard } from '../../../contexts/DashboardContext';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
 
 function buildReplyTree(messages) {
     if (!messages || messages.length === 0) return [];

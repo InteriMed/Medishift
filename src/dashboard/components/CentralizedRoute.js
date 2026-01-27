@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { useDashboard } from '../contexts/DashboardContext';
-import { getAvailableWorkspaces } from '../../config/workspaceDefinitions';
-import { buildDashboardUrl, getWorkspaceIdForUrl, getDefaultRouteForWorkspace } from '../utils/pathUtils';
-import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
-import { isAdminSync } from '../../config/workspaceDefinitions';
+import { getAvailableWorkspaces, isAdminSync } from '../../config/workspaceDefinitions';
+import { buildDashboardUrl, getWorkspaceIdForUrl, getDefaultRouteForWorkspace } from '../../config/routeUtils';
+import { WORKSPACE_TYPES } from '../../config/keysDatabase';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { useTranslation } from 'react-i18next';
 

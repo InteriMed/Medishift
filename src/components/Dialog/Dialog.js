@@ -256,7 +256,7 @@ const Dialog = ({
         <div className="pl-8 pr-0 pb-8 pt-0">
           <div className={cn("flex items-start", centerTitle ? "flex-col" : "justify-between")}>
             {!centerTitle && (
-              <div className="flex-1 pt-6 pr-6">
+              <div className="flex-1 pt-8 pr-6">
                 <div className="flex items-center gap-3">
                   {getHeaderIcon()}
                   {title && (
@@ -269,7 +269,7 @@ const Dialog = ({
               </div>
             )}
             {centerTitle && (
-              <div className="w-full text-center relative pt-6 pr-6">
+              <div className="w-full text-center relative pt-8 pr-6">
                 <div className="flex flex-col items-center justify-center">
                   {getHeaderIcon()}
                   {title && (

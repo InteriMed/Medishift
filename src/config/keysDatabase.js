@@ -297,7 +297,7 @@ export const getCollectionName = (collectionName) => {
  * - ADMIN: Medishift admin workspace (determined by admins collection)
  */
 
-export default {
+const exportedKeys = {
   LOCALSTORAGE_KEYS,
   SESSIONSTORAGE_KEYS,
   COOKIE_KEYS,
@@ -317,4 +317,6 @@ export default {
   getEnvVar,
   getCollectionName
 };
+
+export default exportedKeys;
 

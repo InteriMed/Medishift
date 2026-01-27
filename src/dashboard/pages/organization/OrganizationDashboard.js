@@ -19,7 +19,7 @@ import { functions, db } from '../../../services/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import {
@@ -53,10 +53,9 @@ import PayrollDashboard from '../payroll/PayrollDashboard';
 import Profile from '../profile/Profile';
 import Contracts from '../contracts/Contracts';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
-import HiringProcesses from './components/HiringProcesses';
-import TeamOrganigram from './components/TeamOrganigram';
-import Employees from './components/Employees';
-import Hiring from './components/Hiring';
+import TeamOrganigramView from './components/TeamOrganigramView';
+import TeamEmployees from './components/TeamEmployees';
+import TeamHiring from './components/TeamHiring';
 
 
 const OrganizationDashboard = () => {
@@ -587,15 +586,15 @@ const OrganizationDashboard = () => {
                                         <div className="facility-tab-content-wrapper">
                                             <div className="facility-tab-content">
                                                 {activeSubTab === 'employees' && (
-                                                    <Employees hideHeader={true} hideStats={true} />
+                                                    <TeamEmployees hideHeader={true} hideStats={true} />
                                                 )}
 
                                                 {activeSubTab === 'organigram' && (
-                                                    <TeamOrganigram />
+                                                    <TeamOrganigramView />
                                                 )}
 
                                                 {activeSubTab === 'hiring' && (
-                                                    <Hiring hideHeader={true} hideStats={true} />
+                                                    <TeamHiring hideHeader={true} hideStats={true} />
                                                 )}
                                             </div>
                                         </div>

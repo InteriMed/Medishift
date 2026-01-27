@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { saveDashboardRoute } from '../utils/routePersistence';
+import { saveDashboardRoute } from '../../config/routePersistence';
 
 const RouteTracker = () => {
   const location = useLocation();

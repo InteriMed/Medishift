@@ -3,12 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { DollarSign, TrendingUp, Users, Percent, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { DollarSign, TrendingUp, Percent } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
-import DateField from '../../../../components/BoxedInputFields/DateField';
 import PageHeader from '../../../components/PageHeader/PageHeader';
 import FilterBar from '../../../components/FilterBar/FilterBar';
 import '../../../../styles/variables.css';
@@ -183,8 +181,6 @@ const RevenueAnalysis = () => {
       return 0;
     }
   };
-
-  const COLORS = ['var(--primary-color)', 'var(--green-4)', 'var(--yellow-3)', 'var(--red-3)', 'var(--purple-4)'];
 
   if (loading) {
     return (

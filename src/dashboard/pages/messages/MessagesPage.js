@@ -14,7 +14,7 @@ import messagesService from '../../../services/messagesService';
 import { cn } from '../../../utils/cn';
 import { FiMessageSquare, FiBell, FiSearch, FiX, FiSliders, FiPlus, FiShield, FiFileText, FiInbox } from 'react-icons/fi';
 import StartNewCommunicationModal from './components/StartNewCommunicationModal';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import '../../../components/BoxedInputFields/styles/boxedInputFields.css';
 
 const MESSAGE_CONTEXTS = {

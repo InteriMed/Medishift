@@ -5,13 +5,11 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../services/firebase';
-import { CheckCircle, XCircle, Eye, FileText, Image as ImageIcon, Search, RotateCw, Filter, ArrowUpDown, User, Building, History, Globe, Shield, Ban, Mail, Phone, MapPin, Calendar, Info } from 'lucide-react';
+import { XCircle, Eye, FileText, Image as ImageIcon, RotateCw, User, Building, History, Globe, Shield, Ban, Mail, Search } from 'lucide-react';
 import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
 import { Document, Page, pdfjs } from 'react-pdf';
 import Button from '../../components/BoxedInputFields/Button';
-import PersonnalizedInputField from '../../components/BoxedInputFields/Personnalized-InputField';
-import DropdownField from '../../components/BoxedInputFields/Dropdown-Field';
 import TextareaField from '../../components/BoxedInputFields/TextareaField';
 import Dialog from '../../components/Dialog/Dialog';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../utils/auditLogger';
@@ -23,7 +21,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 const UserVerificationQueue = () => {
   const { t } = useTranslation(['admin']);
-  const navigate = useNavigate();
   const { userProfile } = useAuth();
 
   // Data State
@@ -48,7 +45,7 @@ const UserVerificationQueue = () => {
 
   // Filters & Sort
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('date_asc');
+  const [sortBy] = useState('date_asc');
 
   useEffect(() => {
     let result = [...users];
@@ -101,7 +98,6 @@ const UserVerificationQueue = () => {
     loadPendingUsers();
     loadHistoryUsers();
   }, []);
-
 
   const loadPendingUsers = async () => {
     setLoading(true);

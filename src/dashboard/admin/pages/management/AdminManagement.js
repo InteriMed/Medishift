@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db, firebaseApp } from '../../../../services/firebase';
-import { collection, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, serverTimestamp, query, where } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { UserPlus, Shield, Mail, Search, Edit2, Save, X, Plus, Trash2, CheckCircle } from 'lucide-react';
+import { UserPlus, Shield, Search, Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
 import { useAdminPermission } from '../../hooks/useAdminPermission';
 import { RIGHTS, ADMIN_ROLES } from '../../utils/rbac';
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -17,7 +17,6 @@ import PageHeader from '../../../components/PageHeader/PageHeader';
 import '../../../../styles/variables.css';
 
 const AdminManagement = () => {
-  const { t } = useTranslation(['admin']);
   const { userProfile } = useAuth();
   const { hasRight: checkRight, isSuperAdmin } = useAdminPermission();
   const [admins, setAdmins] = useState([]);

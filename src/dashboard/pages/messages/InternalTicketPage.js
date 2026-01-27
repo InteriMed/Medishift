@@ -14,7 +14,7 @@ import {
 } from 'react-icons/fi';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
+import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import supportTicketService from '../../../services/supportTicketService';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import Dialog from '../../../components/Dialog/Dialog';
