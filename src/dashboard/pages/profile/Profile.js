@@ -287,9 +287,12 @@ const Profile = () => {
     const isLoading = isLoadingData || isLoadingConfig;
     const isProfessional = initialProfileData?.role === 'professional';
     const renderLoadingOrError = () => {
-        if (isLoading && !formData) return <LoadingSpinner />;
+        if (isLoading && !formData && !initialProfileData) return <LoadingSpinner />;
         if (profileError) return <div className="p-8 text-center text-red-500">{t('errors.loadingProfile')}: {profileError.message}</div>;
         if (!profileConfig && !isLoading && initialProfileData) return <div className="p-8 text-center text-red-500">{t('errors.loadingConfig')}</div>;
+        if (!initialProfileData && !isLoading && !profileError) {
+            return <div className="p-8 text-center text-red-500">{t('errors.loadingProfile', 'Failed to load profile data. Please refresh the page.')}</div>;
+        }
         const isAdmin = isAdminSync(userProfile);
         const validRoles = ['professional', 'facility', 'company', 'organization'];
         if (initialProfileData && initialProfileData.role && !validRoles.includes(initialProfileData.role) && !isAdmin) {

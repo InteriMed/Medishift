@@ -26,7 +26,7 @@ export const useProfileConfig = (initialProfileData) => {
                             configModule = await import(`../professionals/configs/professionals-${type}.json`);
                         } catch (err) {
                             try {
-                                configModule = await import(`../professionals/configs/professionals-doctor.json`);
+                                configModule = await import(`../professionals/configs/professionals-professional.json`);
                             } catch (fallbackErr) {
                                 throw new Error(`Could not load profile configuration for type: ${type} or fallback.`);
                             }

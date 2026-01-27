@@ -33,6 +33,7 @@ import AuditLogs from './system/AuditLogs';
 import RolesAndPermissions from './system/RolesAndPermissions';
 import NotificationsCenter from './system/NotificationsCenter';
 import GLNTestPage from '../GLNTestPage';
+import EmailCenter from '../EmailCenter';
 import ConsolidatedPayroll from './payroll/ConsolidatedPayroll';
 import AdminManagement from './management/AdminManagement';
 
@@ -183,6 +184,15 @@ const AdminDashboardContainer = () => {
                         component: NotificationsCenter
                     },
                     {
+                        id: 'email-center',
+                        path: 'email',
+                        fullPath: 'email',
+                        label: t('admin:sidebar.emailCenter', 'Email Center'),
+                        icon: FiBell,
+                        permission: PERMISSIONS.SEND_NOTIFICATIONS,
+                        component: EmailCenter
+                    },
+                    {
                         id: 'gln-test',
                         path: 'gln-test',
                         fullPath: 'system/gln-test',
@@ -235,19 +245,28 @@ const AdminDashboardContainer = () => {
             }
             
             const nextPart = pathParts[adminIndex + 1];
+            const secondPart = pathParts.length > adminIndex + 2 ? pathParts[adminIndex + 2] : null;
+            const fullPath = secondPart ? `${nextPart}/${secondPart}` : nextPart;
             
             for (const tab of tabs) {
-                if (tab.path === nextPart || location.pathname.includes(`/${tab.path}/`)) {
-                    return tab.id;
-                }
                 if (tab.subTabs) {
                     for (const subTab of tab.subTabs) {
                         const subPath = subTab.fullPath || `${tab.path}/${subTab.path}`;
                         if (location.pathname.includes(`/${subPath}`) || 
                             location.pathname.includes(`/${subTab.path}`) ||
-                            nextPart === subTab.path) {
+                            (nextPart === tab.path && secondPart === subTab.path)) {
                             return tab.id;
                         }
+                    }
+                    if (nextPart === tab.path) {
+                        return tab.id;
+                    }
+                } else {
+                    if (tab.path === fullPath || tab.path === nextPart || location.pathname.includes(`/${tab.path}`)) {
+                        return tab.id;
+                    }
+                    if (tab.path.includes('/') && (location.pathname.includes(`/${tab.path}`) || fullPath === tab.path)) {
+                        return tab.id;
                     }
                 }
             }
@@ -443,6 +462,7 @@ const AdminDashboardContainer = () => {
                                 {activeSubTab === 'audit' && <AuditLogs />}
                                 {activeSubTab === 'roles-permissions' && <RolesAndPermissions />}
                                 {activeSubTab === 'notifications' && <NotificationsCenter />}
+                                {activeSubTab === 'email-center' && <EmailCenter />}
                                 {activeSubTab === 'gln-test' && <GLNTestPage />}
                             </div>
                         </div>

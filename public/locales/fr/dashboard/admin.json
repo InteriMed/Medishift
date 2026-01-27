@@ -1,4 +1,6 @@
 {
+  "title": "Portail d'administration",
+  "refresh": "Actualiser",
   "dashboard": {
     "activeShifts": "Active Shifts",
     "unverifiedUsers": "Unverified Users",
@@ -62,7 +64,9 @@
     "unfilled": "Unfilled",
     "applied": "Applied",
     "commandCenter": "Command Center",
-    "searchCriteria": "Search Criteria"
+    "commandCenterDescription": "Gérer et surveiller tous les quarts de travail",
+    "searchCriteria": "Search Criteria",
+    "searchDescription": "Filtrer les quarts de travail par statut ou rechercher par établissement, rôle ou utilisateur"
   },
   "verification": {
     "title": "Title",
@@ -80,19 +84,28 @@
     "reject": "Reject"
   },
   "sidebar": {
-    "dashboard": "Dashboard",
-    "searchCRM": "Search C R M",
-    "verificationQueue": "Verification Queue",
-    "shiftList": "Shift List",
-    "revenueCommissions": "Revenue Commissions",
-    "referralPayouts": "Referral Payouts",
-    "invoices": "Invoices",
-    "balanceSheet": "Balance Sheet",
-    "auditLogs": "Audit Logs",
+    "dashboard": "Tableau de bord exécutif",
+    "searchCRM": "Recherche - CRM",
+    "verificationQueue": "File d'attente de vérification",
+    "shiftList": "Liste des quarts de travail",
+    "spendingsIncomes": "Dépenses et revenus",
+    "actions": "Actions",
+    "operations": "Opérations",
+    "finance": "Finance",
+    "revenueCommissions": "Revenus et commissions",
+    "referralPayouts": "Paiements de parrainage",
+    "invoices": "Factures (SaaS)",
+    "balanceSheet": "Bilans",
+    "system": "Système",
+    "auditLogs": "Journaux d'audit",
+    "rolesPermissions": "Rôles et permissions",
     "notifications": "Notifications",
-    "glnTest": "Gln Test",
-    "payrollExport": "Payroll Export",
-    "adminManagement": "Admin Management"
+    "supportCenter": "Centre de support",
+    "emailCenter": "Centre de messagerie",
+    "adminManagement": "Gestion des administrateurs",
+    "payrollExport": "Export de paie",
+    "linkedinJobScraper": "Scraper d'emplois LinkedIn",
+    "glnTest": "Test GLN"
   },
   "executive": {
     "title": "Title",
@@ -173,8 +186,12 @@
       "netProfit": "Net Profit"
     },
     "period": "Period",
+    "loadingSpendings": "Chargement des données de dépenses...",
+    "loadingRevenue": "Chargement des données de revenus...",
+    "periodDescription": "Sélectionner la plage de dates pour l'analyse des revenus",
     "revenue": {
       "title": "Title",
+      "description": "Analyser les revenus, commissions et marges",
       "totalCommissions": "Total Commissions",
       "saasMRR": "Saas M R R",
       "churnRate": "Churn Rate",
@@ -210,7 +227,11 @@
     "noEmployees": "No Employees"
   },
   "users": {
-    "crm": "Crm"
+    "crm": "Crm",
+    "crmDescription": "Rechercher et gérer les profils utilisateurs",
+    "searchEmail": "Rechercher par email...",
+    "searchCriteria": "Critères de recherche",
+    "searchDescription": "Filtrer les utilisateurs par type de compte, nom, email ou date de naissance"
   },
   "payroll": {
     "exportType": {
@@ -235,11 +256,15 @@
       "unexportedUsers": "Unexported Users"
     },
     "configuration": {
-      "title": "Title",
-      "exportType": "Export Type",
-      "startDate": "Start Date",
-      "endDate": "End Date",
-      "exportFormat": "Export Format"
+      "title": "Configuration d'export",
+      "exportType": "Type d'export",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "exportFormat": "Format d'export"
+    },
+    "filter": {
+      "exportType": "Type d'export",
+      "exportFormat": "Format d'export"
     },
     "tabs": {
       "shifts": "Shifts",
@@ -248,38 +273,45 @@
     "exporting": "Exporting",
     "exportButton": "Export Button",
     "info": {
-      "title": "Title",
-      "weekly": "Weekly",
-      "weeklyDesc": "Weekly Desc",
-      "monthly": "Monthly",
-      "monthlyDesc": "Monthly Desc",
-      "customPeriod": "Custom Period",
-      "customPeriodDesc": "Custom Period Desc",
-      "unexported": "Unexported",
-      "unexportedDesc": "Unexported Desc",
-      "unexportedUsers": "Unexported Users",
-      "unexportedUsersDesc": "Unexported Users Desc",
-      "allUsers": "All Users",
-      "allUsersDesc": "All Users Desc"
+      "title": "Informations sur l'export",
+      "description": "Exporter les données de paie pour les quarts de travail ou les utilisateurs dans différents formats.",
+      "weekly": "Hebdomadaire :",
+      "weeklyDesc": "Exporte les quarts de travail de la semaine en cours (lundi à dimanche)",
+      "monthly": "Mensuel :",
+      "monthlyDesc": "Exporte les quarts de travail du mois en cours",
+      "customPeriod": "Période personnalisée :",
+      "customPeriodDesc": "Exporte les quarts de travail dans votre plage de dates spécifiée",
+      "unexported": "Non exporté :",
+      "unexportedDesc": "Exporte tous les quarts de travail non précédemment exportés (les marque comme exportés après le téléchargement)",
+      "unexportedUsers": "Utilisateurs non exportés :",
+      "unexportedUsersDesc": "Exporte tous les profils utilisateurs avec informations de facturation qui n'ont pas encore été exportés (les marque comme exportés après le téléchargement)",
+      "allUsers": "Tous les utilisateurs :",
+      "allUsersDesc": "Exporte tous les profils utilisateurs avec informations de facturation indépendamment du statut d'export (ne les marque pas comme exportés)"
     }
+  },
+  "filter": {
+    "fromDate": "Date de début",
+    "toDate": "Date de fin"
   },
   "system": {
     "audit": {
-      "allActions": "All Actions",
-      "userApproved": "User Approved",
-      "userRejected": "User Rejected",
-      "shiftAssigned": "Shift Assigned",
-      "payRateChanged": "Pay Rate Changed",
-      "commissionChanged": "Commission Changed",
-      "title": "Title",
-      "searchCriteria": "Search Criteria",
-      "search": "Search",
-      "timestamp": "Timestamp",
+      "allActions": "Toutes les actions",
+      "userApproved": "Utilisateur approuvé",
+      "userRejected": "Utilisateur rejeté",
+      "shiftAssigned": "Quart de travail assigné",
+      "payRateChanged": "Taux de rémunération modifié",
+      "commissionChanged": "Commission modifiée",
+      "title": "Journaux d'audit",
+      "description": "Voir l'activité du système et la piste d'audit",
+      "searchCriteria": "Critères de recherche",
+      "searchDescription": "Filtrer les journaux d'audit par type d'action ou rechercher par utilisateur, action ou détails",
+      "search": "Rechercher",
+      "timestamp": "Horodatage",
       "action": "Action",
-      "user": "User",
-      "target": "Target",
-      "details": "Details",
-      "noLogs": "No Logs"
+      "user": "Utilisateur",
+      "target": "Cible",
+      "details": "Détails",
+      "noLogs": "Aucun journal trouvé"
     },
     "notifications": {
       "title": "Title",
@@ -296,5 +328,11 @@
       "geneva": "Geneva",
       "cancel": "Cancel"
     }
+  },
+  "supportCenter": {
+    "title": "Centre de support",
+    "subtitle": "Gérer et répondre aux tickets de support",
+    "search": "Rechercher des tickets...",
+    "selectTicket": "Sélectionner un ticket pour voir les détails"
   }
 }

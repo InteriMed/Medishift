@@ -57,6 +57,7 @@ const Marketplace = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('relevance');
+  const [viewMode, setViewMode] = useState('list');
 
   useEffect(() => {
     fetchListings({}, 'jobs');
@@ -296,6 +297,9 @@ const Marketplace = () => {
           description={t('marketplace:filter.description', 'Search and filter marketplace positions')}
           onRefresh={handleRefresh}
           isLoading={isLoading}
+          showViewToggle={true}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
       </div>
 
@@ -360,11 +364,14 @@ const ListingRow = ({ listing, onViewDetails, t }) => {
 
   const getSalary = () => {
     const salary = listing.salary || listing.hourlyRate || listing.compensation;
-    if (typeof salary === 'object') {
+    if (typeof salary === 'object' && salary !== null) {
       if (salary.amount) return `CHF ${salary.amount}`;
       if (salary.hourlyRate) return `CHF ${salary.hourlyRate}/hr`;
+      if (salary.price) return `CHF ${salary.price}`;
+      if (salary.title && salary.price) return `CHF ${salary.price}`;
+      return t('marketplace:salary.competitive', 'Competitive');
     }
-    if (salary) return `CHF ${salary}`;
+    if (salary && typeof salary !== 'object') return `CHF ${salary}`;
     return t('marketplace:salary.competitive', 'Competitive');
   };
 

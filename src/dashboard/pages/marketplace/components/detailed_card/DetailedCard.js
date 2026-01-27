@@ -98,6 +98,18 @@ const DetailedCard = ({ listing, onClose }) => {
     }
   };
 
+  const formatSalary = (salary) => {
+    if (!salary) return null;
+    if (typeof salary === 'object' && salary !== null) {
+      if (salary.amount) return `CHF ${salary.amount}/h`;
+      if (salary.hourlyRate) return `CHF ${salary.hourlyRate}/h`;
+      if (salary.price) return `CHF ${salary.price}/h`;
+      return null;
+    }
+    if (typeof salary !== 'object') return `CHF ${salary}/h`;
+    return null;
+  };
+
   const location = isJob
     ? String(formatLocation(listing.location) || '')
     : String(formatPreferredLocation(listing.preferred_location) || '');
@@ -180,7 +192,7 @@ const DetailedCard = ({ listing, onClose }) => {
                     <span className="text-xs font-medium">{t('marketplace:detailedCard.salary')}</span>
                   </div>
                   <p className="text-sm font-semibold text-foreground m-0 py-0" style={{ paddingLeft: 0, paddingRight: 0 }}>
-                    {listing.salary ? `CHF ${listing.salary}/h` : t('marketplace:detailedCard.negotiable')}
+                    {formatSalary(listing.salary) || t('marketplace:detailedCard.negotiable')}
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -213,7 +225,7 @@ const DetailedCard = ({ listing, onClose }) => {
                     <span className="text-xs font-medium">{t('marketplace:detailedCard.hourlyRate')}</span>
                   </div>
                   <p className="text-sm font-semibold text-foreground m-0 py-0" style={{ paddingLeft: 0, paddingRight: 0 }}>
-                    {listing.hourly_rate ? `CHF ${listing.hourly_rate}/h` : t('marketplace:detailedCard.negotiable')}
+                    {formatSalary(listing.hourly_rate) || t('marketplace:detailedCard.negotiable')}
                   </p>
                 </div>
                 <div className="space-y-1 col-span-2">

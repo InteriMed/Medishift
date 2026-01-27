@@ -3,6 +3,7 @@
   "facilityTitle": "Facility",
   "subtitle": "Manage your pharmacy chain",
   "noOrg": "Create or join an organization",
+  "notFound": "Organization not found",
   "tabs": {
     "overview": "Overview",
     "directory": "Global Directory",
@@ -721,6 +722,21 @@
     "filterByRole": "Filter by Role",
     "filterByFacility": "Filter by Facility",
     "unnamedFacility": "Unnamed Facility",
+    "addEmployee": "Add Employee",
+    "addEmployeeDescription": "Add a new employee to your facility",
+    "add": "Add",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "employee@example.com",
+      "facility": "Facility",
+      "role": "Role"
+    },
+    "roles": {
+      "employee": "Employee",
+      "scheduler": "Scheduler",
+      "recruiter": "Recruiter",
+      "admin": "Admin"
+    },
     "sort": {
       "name": "Name",
       "date": "Date",
@@ -882,6 +898,15 @@
         "administrator": "Administrator",
         "manager": "Manager"
       }
+    }
+  },
+  "refresh": "Refresh",
+  "filter": {
+    "title": "Filters",
+    "description": "Filter and search your data",
+    "view": {
+      "grid": "Grid view",
+      "list": "List view"
     }
   }
 }

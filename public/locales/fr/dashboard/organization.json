@@ -2,6 +2,7 @@
   "title": "Organisation",
   "subtitle": "Gérez votre chaîne de pharmacies",
   "noOrg": "Créer ou rejoindre une organisation",
+  "notFound": "Organisation introuvable",
   "tabs": {
     "chain": "Chaîne",
     "openingHours": "Heures d'ouverture",
@@ -406,6 +407,21 @@
     "filterByRole": "Filtrer par rôle",
     "filterByFacility": "Filtrer par établissement",
     "unnamedFacility": "Établissement sans nom",
+    "addEmployee": "Ajouter un employé",
+    "addEmployeeDescription": "Ajouter un nouvel employé à votre établissement",
+    "add": "Ajouter",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "employe@exemple.com",
+      "facility": "Établissement",
+      "role": "Rôle"
+    },
+    "roles": {
+      "employee": "Employé",
+      "scheduler": "Planificateur",
+      "recruiter": "Recruteur",
+      "admin": "Administrateur"
+    },
     "fromDate": "Date de début",
     "toDate": "Date de fin",
     "sort": {
@@ -503,6 +519,8 @@
   },
   "refresh": "Actualiser",
   "filter": {
+    "title": "Filtres",
+    "description": "Filtrer et rechercher vos données",
     "view": {
       "grid": "Vue en grille",
       "list": "Vue en liste"

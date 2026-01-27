@@ -39,7 +39,7 @@ const Calendar = ({ userData }) => {
   const scrollContainerRef = useRef(null);
   const headerScrollRef = useRef(null);
 
-  const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || !!selectedWorkspace?.facilityId;
+  const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || selectedWorkspace?.type === 'organization' || !!selectedWorkspace?.facilityId;
 
   const getInitialCalendarMode = () => {
     const mode = searchParams.get('mode');

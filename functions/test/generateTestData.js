@@ -53,16 +53,12 @@ const generateTestData = async () => {
     displayName: 'Demo User',
     photoURL: null,
     emailVerified: true,
-    onboardingStatus: 'completed',
-    profileCompleted: true,
     roles: [
       { facility_uid: facilityIds[0], roles: ['admin', 'scheduler'] },
       { organization_uid: organizationId, roles: ['org_admin', 'org_manager'], rights: ['manage_facilities', 'manage_shared_team'] }
     ],
     createdAt: timestamp,
-    updatedAt: timestamp,
-    verifiedAt: timestamp,
-    verifiedBy: 'system'
+    updatedAt: timestamp
   }, { merge: true });
   console.log('✓ User document created');
 
@@ -423,8 +419,6 @@ const generateTestData = async () => {
         lastName: `Demo${num}`,
         displayName: `${role.charAt(0).toUpperCase()}${role.slice(1)} Demo${num}`,
         emailVerified: true,
-        onboardingStatus: 'completed',
-        profileCompleted: true,
         roles: [
           { facility_uid: facility.id, roles: emp.roles }
         ],

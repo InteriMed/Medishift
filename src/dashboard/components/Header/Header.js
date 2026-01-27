@@ -44,7 +44,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
     setIsResetting(true);
     try {
       // Determine which profile to reset based on current workspace type
-      const isFacilityWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY;
+      const isFacilityWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || selectedWorkspace?.type === 'organization';
       const targetRole = isFacilityWorkspace ? 'facility' : 'professional';
       const targetProfileType = user?.profileType;
 

@@ -95,17 +95,13 @@ const AccountCreationTool = () => {
     const now = serverTimestamp();
     const timestamp = new Date();
 
-    // User document - minimal fields, profile existence determines access
     const userData = {
       uid: userId,
       email: email,
       firstName: firstName || email.split('@')[0],
       lastName: lastName || '',
       displayName: `${firstName || ''} ${lastName || ''}`.trim() || email.split('@')[0],
-      onboardingStatus: 'completed',
-      profileCompleted: true,
-      verifiedAt: now,
-      verifiedBy: 'admin',
+      emailVerified: true,
       createdAt: timestamp,
       updatedAt: timestamp,
       adminCreated: true,
@@ -122,6 +118,7 @@ const AccountCreationTool = () => {
       legalFirstName: firstName || email.split('@')[0],
       legalLastName: lastName || '',
       profileType: 'doctor',
+      tutorialAccessMode: 'disabled',
       profileVisibility: 'public',
       verification: {
         status: 'approved',
@@ -140,17 +137,16 @@ const AccountCreationTool = () => {
     const now = serverTimestamp();
     const timestamp = new Date();
 
-    // User document - minimal fields, facility membership determines access
     const userData = {
       uid: userId,
       email: email,
       firstName: firstName || email.split('@')[0],
       lastName: lastName || '',
       displayName: `${firstName || ''} ${lastName || ''}`.trim() || email.split('@')[0],
-      onboardingStatus: 'completed',
-      profileCompleted: true,
-      verifiedAt: now,
-      verifiedBy: 'admin',
+      emailVerified: true,
+      roles: [
+        { facility_uid: userId, roles: ['admin'] }
+      ],
       createdAt: timestamp,
       updatedAt: timestamp,
       adminCreated: true,
@@ -162,12 +158,13 @@ const AccountCreationTool = () => {
     const facilityProfileData = {
       userId: userId,
       email: email,
-      legalCompanyName: firstName || email.split('@')[0], // For backward compatibility/search
+      facilityProfileId: userId,
+      legalCompanyName: firstName || email.split('@')[0],
       profileType: 'pharmacy',
+      tutorialAccessMode: 'disabled',
 
-      // Standard Onboarding Structure
       facilityDetails: {
-        name: firstName || email.split('@')[0], // Using "Company Name" input as name
+        name: firstName || email.split('@')[0],
         additionalName: null,
         operatingAddress: {
           street: '',
@@ -181,7 +178,7 @@ const AccountCreationTool = () => {
       },
 
       responsiblePersonIdentity: {
-        firstName: 'Admin', // Placeholder or could ask for more inputs
+        firstName: 'Admin',
         lastName: 'Created',
         dateOfBirth: null,
         nationality: null,

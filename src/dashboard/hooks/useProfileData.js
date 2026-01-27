@@ -112,8 +112,18 @@ const useProfileData = () => {
       const userProfileType = userData.profileType || getDefaultProfileType(userRole);
 
       const profileCollection = getProfileCollectionName(userRole);
+      
+      let profileDocId = currentUser.uid;
+      
+      if (userRole === 'organization') {
+        if (selectedWorkspace?.facilityId) {
+          profileDocId = selectedWorkspace.facilityId;
+        } else if (selectedWorkspace?.organizationId) {
+          profileDocId = selectedWorkspace.organizationId;
+        }
+      }
 
-      const fetchProfileDoc = getDoc(doc(db, profileCollection, currentUser.uid));
+      const fetchProfileDoc = getDoc(doc(db, profileCollection, profileDocId));
       const profileTimeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_MS)
       );
@@ -146,7 +156,7 @@ const useProfileData = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser, getProfileCollectionName, getDefaultProfileType]);
+  }, [currentUser, selectedWorkspace, getProfileCollectionName, getDefaultProfileType]);
 
   useEffect(() => {
     if (currentUser) {
@@ -155,7 +165,7 @@ const useProfileData = () => {
       setProfileData(null);
       setIsLoading(false);
     }
-  }, [currentUser, fetchProfileData]);
+  }, [currentUser, selectedWorkspace, fetchProfileData]);
 
 
   const updateProfileData = async (dataToSave, options = {}) => {
@@ -174,6 +184,8 @@ const useProfileData = () => {
       if (selectedWorkspace) {
         if (selectedWorkspace.type === WORKSPACE_TYPES.TEAM) {
           currentRole = 'facility';
+        } else if (selectedWorkspace.type === 'organization') {
+          currentRole = 'organization';
         } else if (selectedWorkspace.type === WORKSPACE_TYPES.PERSONAL || selectedWorkspace.type === WORKSPACE_TYPES.ADMIN) {
           currentRole = 'professional';
         }
@@ -194,7 +206,17 @@ const useProfileData = () => {
 
       const profileCollection = getProfileCollectionName(currentRole);
       const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
-      const profileDocRef = doc(db, profileCollection, currentUser.uid);
+      
+      let profileDocId = currentUser.uid;
+      if (currentRole === 'organization') {
+        if (selectedWorkspace?.facilityId) {
+          profileDocId = selectedWorkspace.facilityId;
+        } else if (selectedWorkspace?.organizationId) {
+          profileDocId = selectedWorkspace.organizationId;
+        }
+      }
+      
+      const profileDocRef = doc(db, profileCollection, profileDocId);
 
       if (Object.keys(userFieldsToUpdate).length > 0) {
         userFieldsToUpdate.updatedAt = now;
