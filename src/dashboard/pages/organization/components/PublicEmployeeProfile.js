@@ -8,10 +8,6 @@ import {
 } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 
-/**
- * PublicEmployeeProfile - A marketplace-ready public profile view.
- * Designed to be safe for public sharing (no sensitive HR data).
- */
 const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
     const { t } = useTranslation(['common', 'organization']);
     const [profile, setProfile] = useState(null);
@@ -22,14 +18,12 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
             if (!employeeId || !isOpen) return;
             setLoading(true);
             try {
-                // Fetch professional profile
                 const profRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, employeeId);
                 const profSnap = await getDoc(profRef);
 
                 if (profSnap.exists()) {
                     setProfile({ id: profSnap.id, ...profSnap.data() });
                 } else {
-                    // Fallback to basic user data
                     const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, employeeId);
                     const userSnap = await getDoc(userRef);
                     if (userSnap.exists()) {
@@ -54,7 +48,6 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
                 className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header / Hero Section */}
                 <div className="relative h-48 bg-gradient-to-r from-indigo-600 to-purple-600 shrink-0">
                     <button
                         onClick={onClose}
@@ -88,7 +81,6 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
                     )}
                 </div>
 
-                {/* Content Section */}
                 {!loading && profile ? (
                     <div className="flex-1 overflow-y-auto pt-20 pb-8 px-8 custom-scrollbar">
                         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -125,7 +117,6 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
                             <div className="md:col-span-2 space-y-8">
-                                {/* About Bio */}
                                 <section>
                                     <h3 className="text-xl font-bold text-gray-900 mb-4">About</h3>
                                     <p className="text-gray-600 leading-relaxed whitespace-pre-line">
@@ -133,7 +124,6 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
                                     </p>
                                 </section>
 
-                                {/* Skills Section */}
                                 <section>
                                     <h3 className="text-xl font-bold text-gray-900 mb-4">Skills & Certifications</h3>
                                     <div className="flex flex-wrap gap-2">
@@ -141,7 +131,6 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
                                         {profile.operational?.injectionCert && <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-100">Injection Certified</span>}
                                         {profile.operational?.cardioTest && <span className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-100">CardioTest</span>}
 
-                                        {/* Fallback tags if operational data is sparse */}
                                         {['Vaccination', 'Medication Management', 'Inventory Control', 'Customer Service'].map(tag => (
                                             <span key={tag} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium border border-gray-200">
                                                 {tag}
@@ -150,7 +139,6 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
                                     </div>
                                 </section>
 
-                                {/* Simplified Experience Section */}
                                 <section>
                                     <h3 className="text-xl font-bold text-gray-900 mb-4">Experience</h3>
                                     <div className="space-y-6">
@@ -170,7 +158,6 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
                                 </section>
                             </div>
 
-                            {/* Right Sidebar Info */}
                             <div className="space-y-6">
                                 <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                                     <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -225,3 +212,4 @@ const PublicEmployeeProfile = ({ employeeId, isOpen, onClose }) => {
 };
 
 export default PublicEmployeeProfile;
+

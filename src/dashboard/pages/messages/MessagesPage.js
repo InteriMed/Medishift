@@ -12,7 +12,7 @@ import ConversationView from './components/ConversationView';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import messagesService from '../../../services/messagesService';
 import { cn } from '../../../utils/cn';
-import { FiMessageSquare, FiBell, FiSearch, FiX, FiSliders, FiPlus, FiShield, FiFileText, FiInbox } from 'react-icons/fi';
+import { FiMessageSquare, FiSearch, FiX, FiSliders, FiPlus } from 'react-icons/fi';
 import StartNewCommunicationModal from './components/StartNewCommunicationModal';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import '../../../components/BoxedInputFields/styles/boxedInputFields.css';
@@ -139,7 +139,7 @@ const MessagesPage = ({ hideHeader }) => {
     } else if (showStartNewCommunication) {
       setShowStartNewCommunication(false);
     }
-  }, [searchParams]);
+  }, [searchParams, showStartNewCommunication]);
 
   const handleCloseStartNewCommunication = useCallback(() => {
     setShowStartNewCommunication(false);
@@ -221,34 +221,6 @@ const MessagesPage = ({ hideHeader }) => {
       }
     }
   }, [allConversations, user, isMobile]);
-
-  const handleNavigateToAnnouncements = useCallback(() => {
-    if (selectedWorkspace) {
-      const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-      navigate(buildDashboardUrl('/communications/announcements', workspaceId));
-    }
-  }, [navigate, selectedWorkspace]);
-
-  const handleNavigateToInternalTicket = useCallback(() => {
-    if (selectedWorkspace) {
-      const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-      navigate(buildDashboardUrl('/communications/internal-ticket', workspaceId));
-    }
-  }, [navigate, selectedWorkspace]);
-
-  const handleNavigateToReporting = useCallback(() => {
-    if (selectedWorkspace) {
-      const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-      navigate(buildDashboardUrl('/communications/reporting', workspaceId));
-    }
-  }, [navigate, selectedWorkspace]);
-
-  const handleNavigateToPolicy = useCallback(() => {
-    if (selectedWorkspace) {
-      const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-      navigate(buildDashboardUrl('/communications/policy', workspaceId));
-    }
-  }, [navigate, selectedWorkspace]);
 
   if (isLoading && conversations.length === 0) return <LoadingSpinner />;
 

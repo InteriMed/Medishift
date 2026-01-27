@@ -1,20 +1,14 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useDashboard } from '../../../contexts/DashboardContext';
-import { useNotification } from '../../../../contexts/NotificationContext';
 import useHiringData from '../../../hooks/useHiringData';
 import FilterBar from '../../../components/FilterBar/FilterBar';
-import { FiBriefcase, FiPlus, FiRefreshCw, FiClock, FiUser, FiGrid } from 'react-icons/fi';
+import { FiBriefcase, FiClock, FiUser } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import PropTypes from 'prop-types';
 
 const Hiring = ({ hideHeader = false, hideStats = false }) => {
     const { t } = useTranslation(['dashboard', 'hiring', 'common']);
-    const { selectedWorkspace } = useDashboard();
-    const { showNotification } = useNotification();
-    const [searchParams, setSearchParams] = useSearchParams();
     const {
         positions,
         applications,
@@ -27,8 +21,6 @@ const Hiring = ({ hideHeader = false, hideStats = false }) => {
         memberFacilities
     } = useHiringData();
 
-    const [selectedPosition, setSelectedPosition] = useState(null);
-    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [sortBy, setSortBy] = useState('date');
     const [viewMode, setViewMode] = useState('list');
     const [filtersState, setFiltersState] = useState({
@@ -38,22 +30,8 @@ const Hiring = ({ hideHeader = false, hideStats = false }) => {
         toDate: filters.toDate || ''
     });
 
-    const allPositions = useMemo(() => {
-        return positions;
-    }, [positions]);
-
-    const allFilteredPositions = useMemo(() => {
-        return filteredPositions;
-    }, [filteredPositions]);
-
-    const handleCloseDetails = useCallback(() => {
-        setIsDetailsModalOpen(false);
-        setSelectedPosition(null);
-    }, []);
-
     const handlePositionSelect = useCallback((position) => {
-        setSelectedPosition(position);
-        setIsDetailsModalOpen(true);
+        // Position selection handler
     }, []);
 
     const handleFilterChange = (key, value) => {
@@ -132,14 +110,6 @@ const Hiring = ({ hideHeader = false, hideStats = false }) => {
 
         return result;
     }, [filteredByTab, sortBy, getPositionTitle, applications, filtersState.fromDate, filtersState.toDate]);
-
-    const stats = useMemo(() => {
-        const total = allPositions.length;
-        const open = allPositions.filter(p => p.status === 'open').length;
-        const interview = allPositions.filter(p => p.status === 'interview').length;
-        const closed = allPositions.filter(p => p.status === 'closed').length;
-        return { total, open, interview, closed };
-    }, [allPositions]);
 
     const statusOptions = [
         { value: 'all', label: t('hiring:status.all') },

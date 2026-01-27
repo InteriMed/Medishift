@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -10,7 +10,6 @@ import { useTutorial } from '../../contexts/TutorialContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import {
   isLastStep as checkIsLastStep,
-  TUTORIAL_IDS,
   TUTORIAL_STEP_DEFINITIONS as tutorialSteps,
   isOnCorrectPage as isPageMatch,
   getPathForTutorial
@@ -277,21 +276,13 @@ const HighlightTooltip = ({
   const navigate = useNavigate();
   const { t } = useTranslation(['tutorial', 'common']);
   const {
-    skipTutorial,
     elementPosition,
     isWaitingForSave,
     setWaitingForSave,
-    completedTutorials,
-    validationRef,
-    showWarning,
-    setAccessMode,
     activeTutorial,
-    currentStep,
-    navigateToFeature,
-    resetProfileTabAccess,
-    showAccessLevelModal
+    currentStep
   } = useTutorial();
-  const { userProfile, selectedWorkspace, user } = useDashboard();
+  const { selectedWorkspace, user } = useDashboard();
   const stepIndex = tutorialStep || 0;
   const featureKey = tutorialFeature || 'dashboard';
   const [tooltipContent, setTooltipContent] = useState({
@@ -304,7 +295,6 @@ const HighlightTooltip = ({
     }
   });
   const [isProcessingClick, setIsProcessingClick] = useState(false);
-  const [isReplicationReady, setIsReplicationReady] = useState(false);
 
   const getWorkspaceColor = () => {
     if (selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN) {
@@ -335,7 +325,7 @@ const HighlightTooltip = ({
     return () => {
       console.log(LOG_PREFIX, 'Unmount');
     };
-  }, []);
+  }, [featureKey, stepIndex, location.pathname, activeTutorial, currentStep, currentStepData?.id]);
 
 
   useEffect(() => {
@@ -348,16 +338,12 @@ const HighlightTooltip = ({
       requiresInteraction: currentStepData?.requiresInteraction,
       currentPath: location.pathname
     });
-  }, [stepIndex, featureKey, currentStepData?.id]);
+  }, [stepIndex, featureKey, currentStepData?.id, currentStepData?.navigationPath, currentStepData?.highlightTab, currentStepData?.requiresInteraction, location.pathname]);
 
   // Initialize visibility to true by default - will be controlled by effects
   // This ensures tooltips show immediately on reload
   const [isVisible, setIsVisible] = useState(true);
 
-  // Reset replication readiness when step changes
-  useEffect(() => {
-    setIsReplicationReady(false);
-  }, [stepIndex, featureKey]);
 
   // Track if we've successfully shown the tooltip for this step
   // This prevents the tooltip from closing during re-renders when currentStepData is temporarily null
@@ -515,7 +501,7 @@ const HighlightTooltip = ({
     }
   };
 
-  const buildFullPath = (targetPath) => {
+  const buildFullPath = useCallback((targetPath) => {
     if (!targetPath) return null;
 
     const pathParts = location.pathname.split('/').filter(Boolean);
@@ -529,7 +515,7 @@ const HighlightTooltip = ({
     fullPath += dashboardPath;
 
     return fullPath;
-  };
+  }, [location.pathname, selectedWorkspace]);
 
   const isLastStep = checkIsLastStep(featureKey, stepIndex);
   const requiresInteraction = currentStepData?.requiresInteraction || false;
@@ -564,7 +550,7 @@ const HighlightTooltip = ({
       navigationPath: currentStepData?.navigationPath,
       computedFullPath: fullPath
     });
-  }, [dialogIsOpen, isVisible, isWaitingForSave, isOnCorrectPage, currentStepData?.id, location.pathname]);
+  }, [dialogIsOpen, isVisible, isWaitingForSave, isOnCorrectPage, requiresInteraction, isLastStep, currentStepData?.id, currentStepData?.navigationPath, location.pathname, buildFullPath]);
 
   return (
     <>
@@ -661,7 +647,7 @@ const HighlightTooltip = ({
             workspaceColor={workspaceColor}
           />
         )}
-        <ReplicatedElement selector={currentStepData?.replicateSelector} onReady={setIsReplicationReady} />
+        <ReplicatedElement selector={currentStepData?.replicateSelector} onReady={() => {}} />
         <p className="leading-relaxed text-slate-700 m-0">{tooltipContent.description}</p>
       </Dialog>
     </>

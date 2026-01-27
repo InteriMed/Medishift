@@ -12,9 +12,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { functions, db } from '../../../services/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useDashboard } from '../../contexts/DashboardContext';
@@ -24,23 +24,15 @@ import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import {
     FiUsers,
-    FiSettings,
-    FiPlus,
-    FiLink,
     FiX,
     FiHome,
     FiShield,
-    FiRefreshCw,
-    FiCheck,
-    FiGrid,
     FiFileText,
     FiUserPlus,
     FiGitBranch,
-    FiSearch,
     FiCreditCard,
     FiUser,
     FiBriefcase,
-    FiInbox,
     FiEye,
     FiChevronUp,
     FiChevronDown
@@ -48,11 +40,9 @@ import {
 import { cn } from '../../../utils/cn';
 
 import OrganigramView from './tabs/OrganigramView';
-import GlobalDirectory from './components/GlobalDirectory';
 import PayrollDashboard from '../payroll/PayrollDashboard';
 import Profile from '../profile/Profile';
 import Contracts from '../contracts/Contracts';
-import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import TeamOrganigramView from './components/TeamOrganigramView';
 import TeamEmployees from './components/TeamEmployees';
 import TeamHiring from './components/TeamHiring';
@@ -110,7 +100,7 @@ const OrganizationDashboard = () => {
         }
         
         return 'directory';
-    }, [location.pathname]);
+    }, [location.pathname, tabPathToId]);
 
     const getActiveSubTabFromPath = useCallback(() => {
         const pathParts = location.pathname.split('/').filter(Boolean);
@@ -285,21 +275,6 @@ const OrganizationDashboard = () => {
         fetchUserFacilities();
     }, [fetchUserFacilities]);
 
-    const allFacilities = useMemo(() => {
-        const facilityMap = new Map();
-        
-        memberFacilities.forEach(facility => {
-            facilityMap.set(facility.id, facility);
-        });
-        
-        userFacilities.forEach(facility => {
-            if (!facilityMap.has(facility.id)) {
-                facilityMap.set(facility.id, facility);
-            }
-        });
-        
-        return Array.from(facilityMap.values());
-    }, [memberFacilities, userFacilities]);
 
     useEffect(() => {
         if (memberFacilities.length > 0 && selectedFacilityId === null) {
@@ -317,16 +292,6 @@ const OrganizationDashboard = () => {
             return name.includes(query);
         });
     }, [memberFacilities, facilitySearchQuery]);
-
-    const handleFacilitySearch = () => {
-        if (facilitySearchQuery.trim() && filteredFacilitiesForDropdown.length > 0) {
-            setSelectedFacilityId(filteredFacilitiesForDropdown[0].id);
-            setFacilitySearchQuery('');
-        }
-    };
-
-
-
 
     // Remove facility from organization
     const handleRemoveFacility = async (facilityId) => {
@@ -350,9 +315,6 @@ const OrganizationDashboard = () => {
             showNotification(error.message || t('organization:errors.removeFacilityFailed', 'Failed to remove facility'), 'error');
         }
     };
-
-    // Check if current user is org admin
-    const isOrgAdmin = organization?.admins?.includes(currentUser?.uid);
 
     // Facility Card Component
     const FacilityCard = ({ facility, canRemove }) => (

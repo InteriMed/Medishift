@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { get } from 'lodash';
-import { FiUsers, FiPlus, FiTrash2, FiCalendar, FiX, FiAlertTriangle, FiUserPlus, FiExternalLink } from 'react-icons/fi';
+import { FiUsers, FiPlus, FiTrash2, FiX, FiAlertTriangle, FiUserPlus, FiExternalLink } from 'react-icons/fi';
 import { CALENDAR_COLORS } from '../utils/constants';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { db } from '../../../../services/firebase';
@@ -57,7 +57,6 @@ const AddFacilityRoleModal = ({
   const { t } = useTranslation(['dashboardProfile', 'common']);
   const { selectedWorkspace } = useDashboard();
   const [teamMembers, setTeamMembers] = useState([]);
-  const [loadingTeamMembers, setLoadingTeamMembers] = useState(false);
   const [showWorkerSelect, setShowWorkerSelect] = useState(null);
   const [formData, setFormData] = useState({
     workerType: 'none',
@@ -68,13 +67,11 @@ const AddFacilityRoleModal = ({
   });
   const [workerErrors, setWorkerErrors] = useState({});
   const [fieldErrors, setFieldErrors] = useState({});
-  const [facilityCustomRoles, setFacilityCustomRoles] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!selectedWorkspace?.facilityId) return;
 
-      setLoadingTeamMembers(true);
       try {
         const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
         const facilitySnap = await getDoc(facilityRef);
@@ -128,8 +125,6 @@ const AddFacilityRoleModal = ({
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-      } finally {
-        setLoadingTeamMembers(false);
       }
     };
 

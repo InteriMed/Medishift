@@ -23,10 +23,10 @@ const EventPanel = ({
 }) => {
   const mountTimeRef = useRef(Date.now());
 
-  const { t, i18n } = useTranslation('calendar');
+  const { t } = useTranslation('calendar');
   const { selectedWorkspace, workspaces } = useDashboard();
   const { currentUser } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -254,7 +254,6 @@ const EventPanel = ({
 
   const handleDateChange = (field, value) => {
     const key = field === 'startDate' ? 'start' : 'end';
-    const current = new Date(formData[key]);
     
     if (!value) {
       const newDate = new Date();

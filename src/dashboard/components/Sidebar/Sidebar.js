@@ -25,7 +25,8 @@ import {
   Search,
   FlaskConical,
   Briefcase,
-  Building
+  Building,
+  Archive
 } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { normalizePathname, buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../../config/routeUtils';

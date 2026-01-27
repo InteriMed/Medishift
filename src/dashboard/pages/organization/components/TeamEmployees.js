@@ -1,12 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import useEmployeesData from '../../../hooks/useEmployeesData';
 import FilterBar from '../../../components/FilterBar/FilterBar';
-import { FiUser, FiPlus, FiRefreshCw, FiUsers, FiGrid, FiMail, FiShield, FiX } from 'react-icons/fi';
+import { FiUser, FiUsers } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import PropTypes from 'prop-types';
 import Dialog from '../../../../components/Dialog/Dialog';
@@ -18,9 +17,7 @@ import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 
 const Employees = ({ hideHeader = false, hideStats = false, organization, memberFacilities: propMemberFacilities = [] }) => {
     const { t } = useTranslation(['dashboard', 'employees', 'common']);
-    const { selectedWorkspace } = useDashboard();
     const { showNotification } = useNotification();
-    const [searchParams, setSearchParams] = useSearchParams();
     const {
         employees,
         filteredEmployees,
@@ -32,8 +29,6 @@ const Employees = ({ hideHeader = false, hideStats = false, organization, member
         memberFacilities
     } = useEmployeesData({ memberFacilities: propMemberFacilities });
 
-    const [selectedEmployee, setSelectedEmployee] = useState(null);
-    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [sortBy, setSortBy] = useState('name');
     const [viewMode, setViewMode] = useState('list');
     const [filtersState, setFiltersState] = useState({
@@ -59,22 +54,8 @@ const Employees = ({ hideHeader = false, hideStats = false, organization, member
         }
     }, [memberFacilities, inviteData.facilityId]);
 
-    const allEmployees = useMemo(() => {
-        return employees;
-    }, [employees]);
-
-    const allFilteredEmployees = useMemo(() => {
-        return filteredEmployees;
-    }, [filteredEmployees]);
-
-    const handleCloseDetails = useCallback(() => {
-        setIsDetailsModalOpen(false);
-        setSelectedEmployee(null);
-    }, []);
-
     const handleEmployeeSelect = useCallback((employee) => {
-        setSelectedEmployee(employee);
-        setIsDetailsModalOpen(true);
+        // Employee selection handler
     }, []);
 
     const handleFilterChange = (key, value) => {
@@ -237,14 +218,6 @@ const Employees = ({ hideHeader = false, hideStats = false, organization, member
 
         return result;
     }, [filteredByTab, sortBy, getEmployeeTitle, filtersState.fromDate, filtersState.toDate]);
-
-    const stats = useMemo(() => {
-        const total = allEmployees.length;
-        const active = allEmployees.filter(e => e.status === 'active').length;
-        const inactive = allEmployees.filter(e => e.status === 'inactive').length;
-        const pending = allEmployees.filter(e => e.status === 'pending').length;
-        return { total, active, inactive, pending };
-    }, [allEmployees]);
 
     const statusOptions = [
         { value: 'all', label: t('employees:status.all') },

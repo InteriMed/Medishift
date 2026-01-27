@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cloneDeep } from 'lodash';
-import { FiUpload, FiFileText, FiZap, FiAlertCircle, FiUser, FiBriefcase, FiCreditCard, FiSettings, FiHome } from 'react-icons/fi';
+import { FiFileText, FiZap, FiUser, FiBriefcase, FiCreditCard, FiSettings, FiHome } from 'react-icons/fi';
 
 import { useAuth } from '../../../contexts/AuthContext';
 import { useNotification } from '../../../contexts/NotificationContext';
@@ -35,7 +35,7 @@ import OrganizationVerification from './organizations/components/OrganizationVer
 import OrganizationAccount from './organizations/components/Account';
 import { cn } from '../../../utils/cn';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
-import { hasFacilityAccessSync, isAdminSync } from '../../../config/workspaceDefinitions';
+import { isAdminSync } from '../../../config/workspaceDefinitions';
 
 import { useProfileConfig } from './hooks/useProfileConfig';
 import { useProfileValidation } from './hooks/useProfileValidation';
@@ -51,7 +51,7 @@ const Profile = () => {
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const location = useLocation();
-    const { setProfileCompletionStatus, selectedWorkspace } = useDashboard();
+    const { selectedWorkspace } = useDashboard();
 
     const {
         profileData: initialProfileData,
@@ -62,7 +62,6 @@ const Profile = () => {
 
 
     const [activeTab, setActiveTab] = useState('');
-    const [subscriptionStatus, setSubscriptionStatus] = useState('free');
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [windowWidth, setWindowWidth] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -121,7 +120,6 @@ const Profile = () => {
         handleSave,
         handleSaveOnly,
         handleSaveAndContinue,
-        handleTabChange: originalHandleTabChange,
         handleCancelChanges,
         confirmCancelChanges,
         isFormModified
@@ -137,20 +135,6 @@ const Profile = () => {
         setErrors,
         setIsSubmitting
     );
-
-    const handleTabChange = useCallback((tabId) => {
-        if (tabId === activeTab) return;
-
-        if (isFormModified) {
-            handleSave({ navigateToNextTab: false }).then((saveSuccess) => {
-                if (saveSuccess) {
-                    setActiveTab(tabId);
-                }
-            });
-        } else {
-            setActiveTab(tabId);
-        }
-    }, [activeTab, isFormModified, handleSave, setActiveTab]);
 
     const documentProcessing = useProfileDocumentProcessing(
         formData,
@@ -198,32 +182,6 @@ const Profile = () => {
         }
     }, [formData, currentUser, setFormData]);
 
-    useEffect(() => {
-        const fetchSubscriptionStatus = () => {
-            if (formData) {
-                const subscription = formData.platformSubscriptionPlan ||
-                    formData.subscriptionTier ||
-                    formData.subscription?.tier ||
-                    'free';
-                const isPremium = subscription &&
-                    subscription !== 'free' &&
-                    subscription !== 'starter' &&
-                    subscription.toLowerCase() !== 'free';
-                setSubscriptionStatus(isPremium ? 'premium' : 'free');
-            } else if (initialProfileData) {
-                const subscription = initialProfileData.platformSubscriptionPlan ||
-                    initialProfileData.subscriptionTier ||
-                    initialProfileData.subscription?.tier ||
-                    'free';
-                const isPremium = subscription &&
-                    subscription !== 'free' &&
-                    subscription !== 'starter' &&
-                    subscription.toLowerCase() !== 'free';
-                setSubscriptionStatus(isPremium ? 'premium' : 'free');
-            }
-        };
-        fetchSubscriptionStatus();
-    }, [formData, initialProfileData]);
 
     useEffect(() => {
         if (!profileConfig || !formData || isLoadingConfig || isLoadingData) return;
@@ -246,10 +204,6 @@ const Profile = () => {
             }
         }
     }, [location.pathname, location.search, profileConfig, formData, isLoadingConfig, isLoadingData, activeTab]);
-
-    const hasInitializedRef = useRef(false);
-
-
 
     const handleCancelClick = () => {
         const shouldShowDialog = handleCancelChanges();
@@ -350,28 +304,6 @@ const Profile = () => {
     };
 
     const completionPercentage = useMemo(() => calculateProfileCompleteness(formData, profileConfig), [formData, profileConfig]);
-
-
-    const nextIncompleteTab = useMemo(() => {
-        if (!profileConfig || !formData) return null;
-        const tabs = profileConfig.tabs || [];
-        for (const tab of tabs) {
-            if (!isTabCompleted(formData, tab.id, profileConfig)) {
-                return tab.id;
-            }
-        }
-        return null;
-    }, [formData, profileConfig]);
-
-    const getNextTab = useCallback((currentTabId) => {
-        if (!profileConfig) return null;
-        const tabs = profileConfig.tabs || [];
-        const currentIndex = tabs.findIndex(t => t.id === currentTabId);
-        if (currentIndex >= 0 && currentIndex < tabs.length - 1) {
-            return tabs[currentIndex + 1].id;
-        }
-        return null;
-    }, [profileConfig]);
 
     const getIconForTab = useCallback((tabId) => {
         switch (tabId) {

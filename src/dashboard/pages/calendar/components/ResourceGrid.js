@@ -1,9 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getWeekDates, isSameDay } from '../utils/dateHelpers';
 import { cn } from '../../../../utils/cn';
 import { useTranslation } from 'react-i18next';
-import { FiSettings, FiPlus } from 'react-icons/fi';
+import { FiSettings } from 'react-icons/fi';
 import { get } from 'lodash';
 import AddFacilityRoleModal from './AddFacilityRoleModal';
 import { useDashboard } from '../../../contexts/DashboardContext';
@@ -30,7 +29,6 @@ const ResourceGrid = ({
     onAddRoleModalClose = null
 }) => {
     const { t } = useTranslation(['calendar', 'dashboard', 'dashboardProfile']);
-    const navigate = useNavigate();
     const { selectedWorkspace } = useDashboard();
     const [showAddRoleModal, setShowAddRoleModal] = useState(false);
     const [editingRole, setEditingRole] = useState(null);
@@ -68,53 +66,6 @@ const ResourceGrid = ({
     const safeEvents = useMemo(() => {
         return Array.isArray(events) ? events : [];
     }, [events]);
-
-    // Group events by employee and date for efficient rendering
-    const eventsByEmployee = useMemo(() => {
-        const grouped = {};
-        if (!safeEvents || safeEvents.length === 0) return grouped;
-
-        safeEvents.forEach(event => {
-            // Find which employee this event belongs to
-            // Logic: Check if event.workerId or event.employees (array) matches
-            // For now assume event.workerId matches employee.id or event.employeeId
-            const workerId = event.workerId || event.employeeId || event.userId;
-
-            if (workerId) {
-                if (!grouped[workerId]) {
-                    grouped[workerId] = [];
-                }
-                grouped[workerId].push(event);
-            } else if (event.employees && Array.isArray(event.employees)) {
-                // Handle array of employees if applicable
-                event.employees.forEach(empId => {
-                    if (!grouped[empId]) grouped[empId] = [];
-                    grouped[empId].push(event);
-                });
-            }
-        });
-        return grouped;
-    }, [safeEvents]);
-
-    const handleCellClick = (employee, date) => {
-        // Create a new event for this employee on this date
-        // Set time to default (e.g., 9 AM - 5 PM) or just the date
-        const start = new Date(date);
-        start.setHours(9, 0, 0, 0);
-        const end = new Date(date);
-        end.setHours(17, 0, 0, 0);
-
-        const newEvent = {
-            id: `temp-${Date.now()}`,
-            start,
-            end,
-            workerId: employee.id,
-            employeeName: `${employee.firstName} ${employee.lastName}`,
-            title: 'New Assignment',
-            // Pre-fill role/color based on employee if needed
-        };
-        onCreateEvent(newEvent, true);
-    };
 
     const facilityRoles = useMemo(() => {
         if (!profileData) return [];

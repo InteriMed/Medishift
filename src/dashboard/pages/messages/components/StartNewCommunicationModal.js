@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { FiX, FiUser, FiUsers, FiUserPlus, FiBriefcase } from 'react-icons/fi';
+import { FiUser, FiUserPlus, FiBriefcase } from 'react-icons/fi';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { useDashboard } from '../../../contexts/DashboardContext';

@@ -7,7 +7,6 @@ import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import FilterBar from '../../components/FilterBar/FilterBar';
 import { AnnouncementDetail } from './components/AnnouncementDetail';
-import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import Dialog from '../../../components/Dialog/Dialog';
 import BoxedSwitchField from '../../../components/BoxedInputFields/BoxedSwitchField';
 import InputField from '../../../components/BoxedInputFields/Personnalized-InputField';
@@ -15,7 +14,7 @@ import InputFieldParagraph from '../../../components/BoxedInputFields/TextareaFi
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import DateField from '../../../components/BoxedInputFields/DateField';
 import { cn } from '../../../utils/cn';
-import { FiMessageSquare, FiBarChart2, FiHeart, FiPlus, FiX, FiBell, FiInfo, FiSettings, FiShield, FiFileText } from 'react-icons/fi';
+import { FiMessageSquare, FiBarChart2, FiHeart, FiPlus, FiX, FiBell, FiInfo, FiFileText } from 'react-icons/fi';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 
 const AnnouncementsPage = ({ hideHeader }) => {
@@ -32,7 +31,6 @@ const AnnouncementsPage = ({ hideHeader }) => {
 
   const [threads, setThreads] = useState([]);
   const [selectedThreadId, setSelectedThreadId] = useState(isThreadDetail ? threadIdFromUrl : null);
-  const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState('date');
@@ -328,14 +326,6 @@ const AnnouncementsPage = ({ hideHeader }) => {
     );
   }
 
-  const tabs = [
-    { id: 'messages', path: 'messages', label: t('messages:tabs.messages', 'Messages'), icon: FiMessageSquare },
-    { id: 'announcements', path: 'announcements', label: t('messages:tabs.announcements', 'Announcements'), icon: FiBell },
-    { id: 'internalTicket', path: 'internal-ticket', label: t('messages:tabs.internalTicket', 'Internal Ticket'), icon: FiFileText },
-    { id: 'reporting', path: 'reporting', label: t('messages:tabs.reporting', 'Reporting'), icon: FiShield },
-  ];
-
-
   if (!canAccessThreads) {
     return (
       <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
@@ -380,13 +370,9 @@ const AnnouncementsPage = ({ hideHeader }) => {
               filters={filters}
               onFilterChange={(key, value) => {
                 setFilters(prev => ({ ...prev, [key]: value }));
-                if (key === 'status') {
-                  setSelectedFilter(value);
-                }
               }}
               onClearFilters={() => {
                 setFilters({ status: 'all', fromDate: '', toDate: '' });
-                setSelectedFilter('all');
                 setSearchQuery('');
               }}
               searchValue={searchQuery}

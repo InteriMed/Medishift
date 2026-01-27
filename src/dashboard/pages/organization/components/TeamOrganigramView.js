@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useDashboard } from '../../../contexts/DashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
-import { FiUsers, FiShield, FiUser, FiSearch, FiBriefcase, FiGrid, FiLayers } from 'react-icons/fi';
+import { FiUsers, FiShield, FiGrid, FiLayers } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import EmployeeCard from './EmployeeCard';
 import FilterBar from '../../../components/FilterBar/FilterBar';
@@ -26,7 +26,7 @@ const TeamOrganigram = () => {
   const { selectedWorkspace } = useDashboard();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const isOrganizationWorkspace = selectedWorkspace?.type === 'organization';
   
   console.log('TeamOrganigram - Workspace Info:', {
@@ -36,7 +36,6 @@ const TeamOrganigram = () => {
     facilityId: selectedWorkspace?.facilityId,
     organizationId: selectedWorkspace?.organizationId
   });
-  const [facilityData, setFacilityData] = useState(null);
   const [roles, setRoles] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +51,6 @@ const TeamOrganigram = () => {
   });
   const [sortBy, setSortBy] = useState('level');
   const [viewMode, setViewMode] = useState('both');
-  const [organizationData, setOrganizationData] = useState(null);
   const [floatPoolEmployees, setFloatPoolEmployees] = useState([]);
   const [facilityManagers, setFacilityManagers] = useState([]);
   const [organizationAdmins, setOrganizationAdmins] = useState([]);
@@ -70,7 +68,6 @@ const TeamOrganigram = () => {
 
       if (orgSnap.exists()) {
         const orgData = orgSnap.data();
-        setOrganizationData(orgData);
 
         const sharedTeam = orgData.sharedTeam || {};
         const internalTeam = orgData.internalTeam || {};
@@ -218,7 +215,6 @@ const TeamOrganigram = () => {
 
       if (facilitySnap.exists()) {
         const data = facilitySnap.data();
-        setFacilityData(data);
 
         const workerRequirements = data.operationalSettings?.workerRequirements || [];
         const employeesList = data.employees || [];

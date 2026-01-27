@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +9,7 @@ import { useDashboard } from '../../../contexts/DashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
 import {
     FiFileText, FiMessageSquare, FiCalendar, FiUser,
-    FiMapPin, FiMail
+    FiMail
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import Dialog from '../../../../components/Dialog/Dialog';
@@ -25,13 +25,7 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
 
     const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
 
-    useEffect(() => {
-        if (isOpen && employee) {
-            loadEmployeeData();
-        }
-    }, [isOpen, employee]);
-
-    const loadEmployeeData = async () => {
+    const loadEmployeeData = useCallback(async () => {
         if (!employee?.id) return;
         setLoading(true);
         try {
@@ -77,7 +71,13 @@ const EmployeePopup = ({ employee, isOpen, onClose }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [employee]);
+
+    useEffect(() => {
+        if (isOpen && employee) {
+            loadEmployeeData();
+        }
+    }, [isOpen, employee, loadEmployeeData]);
 
     const handleMessage = () => {
         if (employee?.id) {

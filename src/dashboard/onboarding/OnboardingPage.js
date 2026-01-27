@@ -8,20 +8,16 @@ import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import { useTutorial } from '../contexts/TutorialContext';
 import {
     FiBriefcase, FiCheck, FiArrowRight, FiHome,
-    FiLoader, FiArrowLeft, FiShield, FiUser,
-    FiLink, FiHelpCircle, FiPhone, FiAlertTriangle
+    FiLoader, FiArrowLeft, FiShield,
+    FiLink, FiHelpCircle
 } from 'react-icons/fi';
 import ContactFormPopup from '../../components/ContactFormPopup/ContactFormPopup';
 import ProfessionalGLNVerification from './components/ProfessionalGLNVerification';
 import FacilityGLNVerification from './components/FacilityGLNVerification';
 import CommercialRegistryVerification from './components/CommercialRegistryVerification';
 import PhoneVerificationStep from './components/PhoneVerificationStep';
-import SimpleDropdown from '../../components/BoxedInputFields/Dropdown-Field';
-import PersonnalizedInputField from '../../components/BoxedInputFields/Personnalized-InputField';
 import Switch from '../../components/BoxedInputFields/Switch';
-import Checkbox from '../../components/BoxedInputFields/CheckboxField';
 import Button from '../../components/BoxedInputFields/Button';
-import { useDropdownOptions } from '../pages/profile/utils/DropdownListsImports';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import BarsLoader from '../../components/LoadingAnimations/BarsLoader';
 import Dialog from '../../components/Dialog/Dialog';
@@ -33,7 +29,6 @@ const OnboardingPage = () => {
     const { t } = useTranslation(['dashboard', 'common', 'auth']);
     const { currentUser } = useAuth();
     const { onboardingType: contextOnboardingType } = useTutorial();
-    const { phonePrefixOptions } = useDropdownOptions();
 
     const query = new URLSearchParams(window.location.search);
     const onboardingType = contextOnboardingType || query.get('type') || 'professional';
@@ -48,7 +43,6 @@ const OnboardingPage = () => {
     const [isVerifying, setIsVerifying] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLoadingProgress, setIsLoadingProgress] = useState(true);
-    const [chainMessage, setChainMessage] = useState('');
     const [chainPhonePrefix, setChainPhonePrefix] = useState('');
     const [chainPhoneNumber, setChainPhoneNumber] = useState('');
     const [showRestrictedServicesModal, setShowRestrictedServicesModal] = useState(false);
@@ -62,7 +56,6 @@ const OnboardingPage = () => {
 
     const glnVerificationRef = useRef(null);
     const phoneVerificationRef = useRef(null);
-    const verifyHandlerRef = useRef(null);
 
     // Handle unhandled promise rejections during onboarding
     useEffect(() => {
@@ -142,7 +135,7 @@ const OnboardingPage = () => {
             setIsLoadingProgress(false);
         };
         loadProgress();
-    }, [currentUser, onboardingType, navigate, lang]);
+    }, [currentUser, onboardingType, navigate, lang, query]);
 
     const saveProgress = async (data) => {
         if (!currentUser) return;

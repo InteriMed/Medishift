@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,9 +8,7 @@ import {
   FiCalendar,
   FiSearch,
   FiAlertCircle,
-  FiCheckCircle,
-  FiArrowRight,
-  FiPlus
+  FiCheckCircle
 } from 'react-icons/fi';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useSidebar } from '../../contexts/SidebarContext';
@@ -21,7 +18,6 @@ import { useCalendarEvents } from '../calendar/utils/eventDatabase';
 import useProfessionalStats from '../../hooks/useProfessionalStats';
 import { cn } from '../../../utils/cn';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
-import styles from './personalDashboard.module.css';
 import DashboardMainContent from './components/DashboardMainContent';
 import CalendarSidebar from '../calendar/components/CalendarSidebar';
 
@@ -71,9 +67,9 @@ const PersonalDashboard = () => {
   }, [calendarEvents, setEvents]);
 
   const {
-    currentDate: calDate, setCurrentDate: setCalDate, view, setView,
-    isSidebarCollapsed, setIsSidebarCollapsed,
-    handleDayClick: originalHandleDayClick, handleUpcomingEventClick, toggleSidebar
+    currentDate: calDate, setCurrentDate: setCalDate, view,
+    isSidebarCollapsed,
+    handleUpcomingEventClick, toggleSidebar
   } = useCalendarState();
 
   const handleDayClickForOverview = useCallback((date) => {
@@ -83,7 +79,7 @@ const PersonalDashboard = () => {
   }, [navigate, selectedWorkspace]);
 
   // Track visible week for MiniCalendar highlighting
-  const [visibleWeekStart, setVisibleWeekStart] = useState(() => {
+  const [visibleWeekStart] = useState(() => {
     const start = new Date(calDate);
     const day = start.getDay();
     const diff = day === 0 ? -6 : 1 - day;
@@ -91,7 +87,7 @@ const PersonalDashboard = () => {
     start.setHours(0, 0, 0, 0);
     return start;
   });
-  const [visibleWeekEnd, setVisibleWeekEnd] = useState(() => {
+  const [visibleWeekEnd] = useState(() => {
     const end = new Date(calDate);
     const day = end.getDay();
     const diff = day === 0 ? 0 : 7 - day;
@@ -320,6 +316,5 @@ const StatCard = ({ title, value, icon: Icon, trend, color }) => {
   );
 };
 
-PersonalDashboard.propTypes = {};
 
 export default PersonalDashboard;

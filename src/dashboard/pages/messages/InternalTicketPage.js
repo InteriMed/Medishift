@@ -5,9 +5,6 @@ import {
     FiMessageSquare,
     FiBarChart2,
     FiPlus,
-    FiX,
-    FiShield,
-    FiAlertCircle,
     FiSearch,
     FiArrowDown,
     FiFileText
@@ -22,7 +19,6 @@ import InputField from '../../../components/BoxedInputFields/Personnalized-Input
 import InputFieldParagraph from '../../../components/BoxedInputFields/TextareaField';
 import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
 import { cn } from '../../../utils/cn';
-import { FiMessageSquare as FiMessageSquareIcon, FiBell } from 'react-icons/fi';
 import {
     getInitialInternalTicketFormData,
     resetInternalTicketFormData,
@@ -54,7 +50,6 @@ const InternalTicketPage = ({ hideHeader }) => {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedTicketId, setSelectedTicketId] = useState(null);
 
     const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
     const [createFormData, setCreateFormData] = useState(getInitialInternalTicketFormData());
@@ -171,27 +166,6 @@ const InternalTicketPage = ({ hideHeader }) => {
 
         return currentTickets;
     }, [tickets, selectedCategory, searchQuery]);
-
-    const handleNavigateToMessages = useCallback(() => {
-        if (selectedWorkspace) {
-            const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl('/communications/messages', workspaceId));
-        }
-    }, [navigate, selectedWorkspace]);
-
-    const handleNavigateToAnnouncements = useCallback(() => {
-        if (selectedWorkspace) {
-            const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl('/communications/announcements', workspaceId));
-        }
-    }, [navigate, selectedWorkspace]);
-
-    const handleNavigateToReporting = useCallback(() => {
-        if (selectedWorkspace) {
-            const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-            navigate(buildDashboardUrl('/communications/reporting', workspaceId));
-        }
-    }, [navigate, selectedWorkspace]);
 
     return (
         <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
@@ -327,7 +301,6 @@ const InternalTicketPage = ({ hideHeader }) => {
                                 filteredTickets.map(ticket => (
                                     <div
                                         key={ticket.id}
-                                        onClick={() => setSelectedTicketId(ticket.id)}
                                         className="group bg-card hover:bg-card/80 border border-border/50 hover:border-primary/20 rounded-2xl p-6 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
                                     >
                                         <div className="flex items-start justify-between gap-4 mb-4">

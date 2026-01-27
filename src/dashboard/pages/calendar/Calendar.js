@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useLayoutEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CALENDAR_COLORS } from './utils/constants';
 import { getMultipleWeeks } from './utils/dateHelpers';
@@ -16,9 +16,8 @@ import { useSidebar } from '../../contexts/SidebarContext';
 import { useCalendarState } from './hooks/useCalendarState';
 import { useCalendarEvents } from './utils/eventDatabase';
 import { cn } from '../../../utils/cn';
-import { FiX, FiSettings, FiPlus } from 'react-icons/fi';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
+import { FiX, FiPlus } from 'react-icons/fi';
+import { useSearchParams } from 'react-router-dom';
 import ResourceGrid from './components/ResourceGrid';
 import useProfileData from '../../hooks/useProfileData';
 import useCalendarStore from './hooks/useCalendarStore';
@@ -29,7 +28,6 @@ import PropTypes from 'prop-types';
 const Calendar = ({ userData }) => {
   const { t } = useTranslation(['dashboard', 'calendar', 'dashboardProfile']);
   const { selectedWorkspace } = useDashboard();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const accountType = getUserTypeFromData(userData);
@@ -144,21 +142,19 @@ const Calendar = ({ userData }) => {
     }
   };
 
-  const getWorkspaceContext = () => {
+  const workspaceContext = useMemo(() => {
     if (!selectedWorkspace) {
       return { type: 'personal', role: 'professional' };
     }
     let role = selectedWorkspace.role;
     if (role === 'admin') role = 'manager';
     return { type: selectedWorkspace.type, role: role };
-  };
-
-  const workspaceContext = getWorkspaceContext();
+  }, [selectedWorkspace]);
 
   // Initialize Store Context
   useEffect(() => {
     useCalendarStore.getState().setContext(userId, accountType, workspaceContext);
-  }, [userId, accountType, JSON.stringify(workspaceContext)]);
+  }, [userId, accountType, workspaceContext]);
 
   // Connect to Zustand Store
   const events = useCalendarStore(state => state.events);
@@ -178,7 +174,6 @@ const Calendar = ({ userData }) => {
   const setShowDeleteConfirmation = (show) => !show && useCalendarStore.getState().hideDeleteDialog();
   const setContextMenu = (val) => !val && useCalendarStore.getState().hideContextMenu();
   const handleCreateEventClick = useCalendarStore(state => state.handleCreateEventClick);
-  const addToHistory = useCalendarStore(state => state.addToHistory);
   const undo = useCalendarStore(state => state.undo);
   const redo = useCalendarStore(state => state.redo);
   const syncPendingChanges = useCalendarStore(state => state.syncPendingChanges);
@@ -189,7 +184,7 @@ const Calendar = ({ userData }) => {
     categories, setCategories, isSidebarCollapsed = false, setIsSidebarCollapsed,
     showHeaderDateDropdown, setShowHeaderDateDropdown, dropdownPosition,
     navigateDate, handleDayClick, handleUpcomingEventClick,
-    handleCategoryToggle, handleHeaderDateClick, toggleSidebar
+    handleCategoryToggle, handleHeaderDateClick
   } = calendarState;
 
   const isUpdatingURL = useRef(false);
@@ -386,7 +381,7 @@ const Calendar = ({ userData }) => {
   });
 
   const numWeeks = 0;
-  const [numDays, setNumDays] = useState(30);
+  const [numDays] = useState(30);
   const prevNumDays = useRef(numDays);
   const hasInitialScrolled = useRef(false);
 
@@ -495,7 +490,6 @@ const Calendar = ({ userData }) => {
   }, [syncPendingChanges]);
 
   const { events: calendarEvents } = useCalendarEvents(userId, accountType);
-  const prevCalendarEventsRef = useRef(null);
 
   // Merge Database Events with Local State
   useEffect(() => {
@@ -693,7 +687,6 @@ const Calendar = ({ userData }) => {
                     setShowHeaderDateDropdown={setShowHeaderDateDropdown}
                     handleHeaderDateClick={handleHeaderDateClick}
                     dropdownPosition={dropdownPosition}
-                    toggleSidebar={handleArrowToggle}
                     view={view}
                     visibleWeekStart={visibleWeekStart}
                     visibleWeekEnd={visibleWeekEnd}
@@ -732,7 +725,6 @@ const Calendar = ({ userData }) => {
                     setShowHeaderDateDropdown={setShowHeaderDateDropdown}
                     handleHeaderDateClick={handleHeaderDateClick}
                     dropdownPosition={dropdownPosition}
-                    toggleSidebar={handleArrowToggle}
                     view={view}
                     visibleWeekStart={visibleWeekStart}
                     visibleWeekEnd={visibleWeekEnd}
