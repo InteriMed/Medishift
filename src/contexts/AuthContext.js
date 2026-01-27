@@ -352,9 +352,6 @@ export const AuthProvider = ({ children }) => {
 
       await setDoc(profileDocRef, profileData);
 
-      // Verify the profile document was created
-      const verifyProfileDoc = await getDoc(profileDocRef);
-
       // Set cookies for onboarding status
       setCookieValues(user.uid, false, false);
 
@@ -526,7 +523,7 @@ export const AuthProvider = ({ children }) => {
 
   const startImpersonation = useCallback(async (targetUserId) => {
     try {
-      const { impersonateUser } = await import('../../utils/adminUtils');
+      const { impersonateUser } = await import('../utils/adminUtils');
       const result = await impersonateUser(targetUserId);
       
       if (result.success) {
@@ -565,7 +562,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const { stopImpersonation: stopImpersonationFn } = await import('../../utils/adminUtils');
+      const { stopImpersonation: stopImpersonationFn } = await import('../utils/adminUtils');
       await stopImpersonationFn(impersonationSession.sessionId);
       
       if (originalUserProfile) {
@@ -600,7 +597,7 @@ export const AuthProvider = ({ children }) => {
         return false;
       }
 
-      const { validateImpersonationSession: validateSession } = await import('../../utils/adminUtils');
+      const { validateImpersonationSession: validateSession } = await import('../utils/adminUtils');
       const result = await validateSession(sessionId);
       
       if (!result.isValid) {

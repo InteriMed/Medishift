@@ -78,14 +78,7 @@ const FacilityEmployeeManagement = () => {
 
   const facilityId = selectedWorkspace?.facilityId;
 
-  useEffect(() => {
-    if (facilityId) {
-      loadEmployees();
-      loadCustomRoles();
-    }
-  }, [facilityId]);
-
-  const loadEmployees = async () => {
+  const loadEmployees = useCallback(async () => {
     if (!facilityId) return;
 
     setLoading(true);
@@ -144,9 +137,9 @@ const FacilityEmployeeManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [facilityId, showNotification]);
 
-  const loadCustomRoles = async () => {
+  const loadCustomRoles = useCallback(async () => {
     if (!facilityId) return;
 
     try {
@@ -160,7 +153,14 @@ const FacilityEmployeeManagement = () => {
     } catch (error) {
       console.error('Error loading custom roles:', error);
     }
-  };
+  }, [facilityId]);
+
+  useEffect(() => {
+    if (facilityId) {
+      loadEmployees();
+      loadCustomRoles();
+    }
+  }, [facilityId, loadEmployees, loadCustomRoles]);
 
   const fetchEmployeeDetails = async (employeeId) => {
     if (!employeeId || !facilityId) return;

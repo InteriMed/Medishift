@@ -175,6 +175,11 @@ const getAdminSidebarItems = (t, hasRight) => [
         permission: PERMISSIONS.SEND_NOTIFICATIONS
       },
       {
+        title: t('admin:sidebar.emailCenter', 'Email Center'),
+        path: '/dashboard/admin/email',
+        permission: PERMISSIONS.SEND_NOTIFICATIONS
+      },
+      {
         title: t('admin:sidebar.glnTest', 'GLN Test'),
         path: '/dashboard/admin/system/gln-test',
         permission: PERMISSIONS.VIEW_AUDIT_LOGS
@@ -342,7 +347,7 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
           const isAdmin = isAdminSync(user);
 
           const isPersonalWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.PERSONAL;
-          const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || !!selectedWorkspace?.facilityId;
+          const isTeamWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.FACILITY || selectedWorkspace?.type === 'organization' || !!selectedWorkspace?.facilityId;
           
           const isFacilityProfileRoute = normalizedPathname.includes('facility') && normalizedPathname.includes('profile');
           const shouldUseFacilityIcon = isFacilityProfileRoute && item.path.includes('profile');

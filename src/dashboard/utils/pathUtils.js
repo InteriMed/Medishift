@@ -1,4 +1,5 @@
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
+import { getRouteByPath, canAccessRoute } from '../config/routes';
 
 const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'it'];
 
@@ -229,4 +230,24 @@ export const getOrganizationBasePath = (workspace) => {
   if (!workspace) return 'facility';
   const isOrganizationWorkspace = workspace.type === 'organization';
   return isOrganizationWorkspace ? 'organization' : 'facility';
+};
+
+/**
+ * Check if a relative path is valid for a given workspace type
+ * @param {string} relativePath - The relative path (e.g., 'profile', 'calendar', 'payroll')
+ * @param {string} workspaceType - The workspace type (WORKSPACE_TYPES.PERSONAL, WORKSPACE_TYPES.TEAM, WORKSPACE_TYPES.ADMIN)
+ * @returns {boolean} True if the path is accessible for the workspace type
+ */
+export const isPathValidForWorkspace = (relativePath, workspaceType) => {
+  if (!relativePath || !workspaceType) return false;
+  
+  if (workspaceType === WORKSPACE_TYPES.ADMIN) {
+    return true;
+  }
+  
+  const fullPath = relativePath.startsWith('/dashboard/') ? relativePath : `/dashboard/${relativePath}`;
+  const route = getRouteByPath(fullPath);
+  if (!route) return false;
+  
+  return canAccessRoute(route, workspaceType);
 };

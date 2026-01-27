@@ -188,7 +188,7 @@ export const getRoutesForWorkspace = (workspaceType) => {
 
   if (workspaceType === WORKSPACE_TYPES.PERSONAL) {
     routes.push(...PROFESSIONAL_ROUTES);
-  } else if (workspaceType === WORKSPACE_TYPES.TEAM) {
+  } else if (workspaceType === WORKSPACE_TYPES.TEAM || workspaceType === 'organization') {
     routes.push(...PROFESSIONAL_ROUTES.filter(r => r.access !== ACCESS_TYPES.PERSONAL));
     routes.push(...FACILITY_ROUTES);
   } else if (workspaceType === WORKSPACE_TYPES.ADMIN) {
@@ -212,11 +212,11 @@ export const canAccessRoute = (route, workspaceType) => {
     case ACCESS_TYPES.PERSONAL:
       return workspaceType === WORKSPACE_TYPES.PERSONAL;
     case ACCESS_TYPES.FACILITY:
-      return workspaceType === WORKSPACE_TYPES.FACILITY || workspaceType === WORKSPACE_TYPES.TEAM;
+      return workspaceType === WORKSPACE_TYPES.FACILITY || workspaceType === WORKSPACE_TYPES.TEAM || workspaceType === 'organization';
     case ACCESS_TYPES.ADMIN:
       return workspaceType === WORKSPACE_TYPES.ADMIN;
     case ACCESS_TYPES.PERSONAL_OR_FACILITY:
-      return workspaceType === WORKSPACE_TYPES.PERSONAL || workspaceType === WORKSPACE_TYPES.FACILITY || workspaceType === WORKSPACE_TYPES.TEAM;
+      return workspaceType === WORKSPACE_TYPES.PERSONAL || workspaceType === WORKSPACE_TYPES.FACILITY || workspaceType === WORKSPACE_TYPES.TEAM || workspaceType === 'organization';
     default:
       return false;
   }

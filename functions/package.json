@@ -9,7 +9,8 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "generate-test-data": "node test/runTestDataGeneration.js",
-    "cleanup-test-data": "node test/runTestDataCleanup.js"
+    "cleanup-test-data": "node test/runTestDataCleanup.js",
+    "cleanup-obsolete-fields": "node test/cleanupObsoleteUserFields.js"
   },
   "engines": {
     "node": "20"

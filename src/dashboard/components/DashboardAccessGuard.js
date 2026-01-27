@@ -1,17 +1,30 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useDashboard } from '../contexts/DashboardContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { isAdminSync } from '../../config/workspaceDefinitions';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE } from '../../config/routeHelpers';
+import { useTranslation } from 'react-i18next';
 
 const DashboardAccessGuard = ({ children }) => {
   const { user, isLoading } = useDashboard();
+  const { currentUser, loading: authLoading } = useAuth();
   const location = useLocation();
+  const { i18n } = useTranslation();
+  const lang = i18n.language || DEFAULT_LANGUAGE;
 
-  // Allow marketplace access without profile check
+  if (authLoading || isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!currentUser) {
+    return <Navigate to={buildLocalizedPath(ROUTE_IDS.LOGIN, lang)} replace />;
+  }
+
   const isMarketplace = location.pathname.includes('/marketplace');
 
-  if (isLoading || !user) {
+  if (!user) {
     return <LoadingSpinner />;
   }
 
@@ -43,8 +56,6 @@ const DashboardAccessGuard = ({ children }) => {
     // Rerouting removed as per user request to avoid automatic redirects
     console.warn('[DashboardAccessGuard] User lacks formal access but automatic rerouting is disabled');
   }
-
-  return children;
 
   return children;
 };

@@ -21,6 +21,7 @@ import { useDashboard } from '../../contexts/DashboardContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../utils/pathUtils';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import {
     FiUsers,
     FiSettings,
@@ -80,7 +81,7 @@ const OrganizationDashboard = () => {
         return isOrganizationWorkspace ? 'organization' : 'facility';
     }, [selectedWorkspace]);
 
-    const basePath = getBasePath();
+    const basePath = useMemo(() => getBasePath(), [getBasePath]);
     const isOrganizationWorkspace = selectedWorkspace?.type === 'organization';
     const pageTitle = isOrganizationWorkspace 
         ? t('organization:title', 'Organization')
@@ -133,23 +134,32 @@ const OrganizationDashboard = () => {
         const pathParts = location.pathname.split('/').filter(Boolean);
         const basePathIndex = pathParts.findIndex(part => part === 'organization' || part === 'facility');
         
-        if (basePathIndex >= 0) {
-            if (basePathIndex === pathParts.length - 1) {
-                const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                navigate(buildDashboardUrl(`/${basePath}/team/employees`, workspaceId), { replace: true });
-                return;
+        if (basePathIndex < 0) return;
+        
+        const currentPath = location.pathname;
+        const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
+        const targetPath = buildDashboardUrl(`/${basePath}/team/employees`, workspaceId);
+        
+        if (basePathIndex === pathParts.length - 1) {
+            if (currentPath !== targetPath) {
+                navigate(targetPath, { replace: true });
             }
-            
-            const tabPath = pathParts[basePathIndex + 1];
-            if (tabPath === 'spend') {
-                const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                navigate(buildDashboardUrl(`/${basePath}/team/employees`, workspaceId), { replace: true });
+            return;
+        }
+        
+        const tabPath = pathParts[basePathIndex + 1];
+        if (tabPath === 'spend') {
+            if (currentPath !== targetPath) {
+                navigate(targetPath, { replace: true });
             }
-            
-            if (tabPath === 'team' && basePathIndex + 2 >= pathParts.length) {
-                const workspaceId = getWorkspaceIdForUrl(selectedWorkspace);
-                navigate(buildDashboardUrl(`/${basePath}/team/employees`, workspaceId), { replace: true });
+            return;
+        }
+        
+        if (tabPath === 'team' && basePathIndex + 2 >= pathParts.length) {
+            if (currentPath !== targetPath) {
+                navigate(targetPath, { replace: true });
             }
+            return;
         }
     }, [location.pathname, navigate, selectedWorkspace, basePath]);
 
@@ -161,49 +171,64 @@ const OrganizationDashboard = () => {
 
         setIsLoading(true);
         try {
-            // STRATEGY: Always treat the current facility as the Organization (Group Head)
-            // If it's part of another group, we could show that, but the request implies 
-            // the facility ITSELF is the organization context here.
-
+            const isOrganizationWorkspace = selectedWorkspace?.type === 'organization';
+            const organizationId = selectedWorkspace?.organizationId || selectedWorkspace?.facilityId;
             const currentFacilityId = selectedWorkspace?.facilityId;
-            let groupHeadData = null;
-            let groupHeadId = null;
+            
+            let orgData = null;
+            let orgId = null;
 
-            if (currentFacilityId) {
-                const facilityDocRef = doc(db, 'facilityProfiles', currentFacilityId);
+            if (isOrganizationWorkspace && organizationId) {
+                const orgDocRef = doc(db, FIRESTORE_COLLECTIONS.ORGANIZATIONS, organizationId);
+                const orgSnap = await getDoc(orgDocRef);
+
+                if (orgSnap.exists()) {
+                    const data = orgSnap.data();
+                    orgData = {
+                        id: orgSnap.id,
+                        name: data.organizationName || data.organizationDetails?.name || data.name,
+                        type: 'organization',
+                        admins: data.internalTeam?.admins || data.admins || [],
+                        settings: data.organizationSettings || data.settings || {},
+                        memberFacilityIds: Object.keys(data.facilities || {}),
+                        ...data
+                    };
+                    orgId = orgSnap.id;
+                }
+            }
+
+            if (!orgData && currentFacilityId) {
+                const facilityDocRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, currentFacilityId);
                 const facilitySnap = await getDoc(facilityDocRef);
 
                 if (facilitySnap.exists()) {
                     const data = facilitySnap.data();
-                    groupHeadData = data;
-                    groupHeadId = facilitySnap.id;
+                    orgData = {
+                        id: facilitySnap.id,
+                        name: data.organizationName || data.facilityName || data.companyName,
+                        type: 'group',
+                        admins: data.admins || [],
+                        settings: data.organizationSettings || {},
+                        memberFacilityIds: data.memberFacilityIds || [facilitySnap.id],
+                        ...data
+                    };
+                    orgId = facilitySnap.id;
                 }
             }
 
-            if (groupHeadData) {
-                // normalize to organization object
-                const orgData = {
-                    id: groupHeadId,
-                    name: groupHeadData.organizationName || groupHeadData.facilityName || groupHeadData.companyName,
-                    type: 'group',
-                    admins: groupHeadData.admins,
-                    settings: groupHeadData.organizationSettings || {},
-                    memberFacilityIds: groupHeadData.memberFacilityIds || [groupHeadId],
-                    ...groupHeadData
-                };
+            if (orgData) {
                 setOrganization(orgData);
 
-                // Fetch members
                 if (orgData.memberFacilityIds?.length > 0) {
                     const facilitiesPromises = orgData.memberFacilityIds.map(async (fid) => {
-                        const fRef = doc(db, 'facilityProfiles', fid);
+                        const fRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, fid);
                         const fSnap = await getDoc(fRef);
                         return fSnap.exists() ? { id: fSnap.id, ...fSnap.data() } : null;
                     });
                     const facilities = (await Promise.all(facilitiesPromises)).filter(Boolean);
                     setMemberFacilities(facilities);
                 } else {
-                    setMemberFacilities([{ id: groupHeadId, ...groupHeadData }]);
+                    setMemberFacilities(orgId ? [{ id: orgId, ...orgData }] : []);
                 }
 
                 setIsLoading(false);

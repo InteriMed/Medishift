@@ -506,7 +506,31 @@ service cloud.firestore {
     // Audit logs
     match /audit_logs/{logId} {
       allow write: if false;
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+    
+    // Referrals collection (for referral payouts)
+    match /referrals/{referralId} {
+      allow read: if isAuthenticated() && (resource.data.referrerId == request.auth.uid || resource.data.referredId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && isAdmin();
+      allow delete: if false;
+    }
+    
+    // Marketing spend collection
+    match /marketingSpend/{spendId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow create: if isAuthenticated() && isAdmin();
+      allow update: if isAuthenticated() && isAdmin();
+      allow delete: if false;
+    }
+    
+    // Operational costs collection (server costs, SMS costs, fixed costs)
+    match /operationalCosts/{costId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow create: if isAuthenticated() && isAdmin();
+      allow update: if isAuthenticated() && isAdmin();
+      allow delete: if false;
     }
 
     // =========================================================================

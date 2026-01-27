@@ -15,7 +15,7 @@ import {
   WORKSPACE_TYPES
 } from '../../utils/sessionAuth';
 import { COLLECTIONS, isAdminSync } from '../../config/workspaceDefinitions';
-import { buildDashboardUrl, getDefaultRouteForWorkspace, getRelativePathFromUrl, getWorkspaceIdForUrl } from '../utils/pathUtils';
+import { buildDashboardUrl, getDefaultRouteForWorkspace, getRelativePathFromUrl, getWorkspaceIdForUrl, isPathValidForWorkspace } from '../utils/pathUtils';
 import Dialog from '../../components/Dialog/Dialog';
 import Button from '../../components/BoxedInputFields/Button';
 import { getCookieKey, COOKIE_CONFIG, FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
@@ -77,7 +77,7 @@ export const DashboardProvider = ({ children }) => {
 
     try {
       // Use profile collection instead of users
-      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? FIRESTORE_COLLECTIONS.FACILITY_PROFILES : FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES;
+      const collectionName = (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === 'organization') ? FIRESTORE_COLLECTIONS.FACILITY_PROFILES : FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES;
 
       // Update in database
       await updateDoc(doc(db, collectionName, currentUser.uid), {
@@ -157,7 +157,7 @@ export const DashboardProvider = ({ children }) => {
     try {
       const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
 
-      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? 'facilityProfiles' : 'professionalProfiles';
+      const collectionName = (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === 'organization') ? 'facilityProfiles' : 'professionalProfiles';
       const profileDoc = await getDoc(doc(db, collectionName, currentUser.uid));
 
       if (userDoc.exists()) {
@@ -276,7 +276,7 @@ export const DashboardProvider = ({ children }) => {
 
           const profDocData = profDoc.exists() ? profDoc.data() : {};
           const facDocData = facDoc.exists() ? facDoc.data() : {};
-          const profileData = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? facDocData : profDocData;
+          const profileData = (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === 'organization') ? facDocData : profDocData;
 
           let adminData = null;
           try {
@@ -392,7 +392,7 @@ export const DashboardProvider = ({ children }) => {
         }
       });
 
-      const collectionName = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? 'facilityProfiles' : 'professionalProfiles';
+      const collectionName = (selectedWorkspace?.type === WORKSPACE_TYPES.TEAM || selectedWorkspace?.type === 'organization') ? 'facilityProfiles' : 'professionalProfiles';
       const profileDocRef = doc(db, collectionName, currentUser.uid);
 
       unsubscribeProfile = onSnapshot(profileDocRef, (docSnapshot) => {
@@ -531,14 +531,22 @@ export const DashboardProvider = ({ children }) => {
 
       const newWorkspaceId = getWorkspaceIdForUrl(workspace);
       const relativePath = getRelativePathFromUrl(location.pathname);
+      const queryString = location.search || '';
       
-      if (relativePath) {
+      const wasInAdminWorkspace = selectedWorkspace?.type === WORKSPACE_TYPES.ADMIN || location.pathname.includes('/dashboard/admin');
+      const isSwitchingToAdmin = workspace.type === WORKSPACE_TYPES.ADMIN;
+      
+      if (wasInAdminWorkspace && !isSwitchingToAdmin) {
+        const defaultRoute = getDefaultRouteForWorkspace(workspace.type);
+        const defaultPath = buildDashboardUrl(defaultRoute, newWorkspaceId);
+        navigate(defaultPath + queryString, { replace: true });
+      } else if (relativePath && isPathValidForWorkspace(relativePath, workspace.type)) {
         const newPath = buildDashboardUrl(relativePath, newWorkspaceId);
-        navigate(newPath, { replace: true });
+        navigate(newPath + queryString, { replace: true });
       } else {
         const defaultRoute = getDefaultRouteForWorkspace(workspace.type);
         const defaultPath = buildDashboardUrl(defaultRoute, newWorkspaceId);
-        navigate(defaultPath, { replace: true });
+        navigate(defaultPath + queryString, { replace: true });
       }
 
     } catch (error) {

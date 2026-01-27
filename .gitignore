@@ -68,3 +68,6 @@ frontend/node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+
+functions/.service-account-key.jsonfunctions/service-account-key.json

@@ -6,8 +6,7 @@ import { db } from '../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import { useNotification } from '../../contexts/NotificationContext';
 
-const useEmployeesData = (config = {}) => {
-  const { memberFacilities: propMemberFacilities } = config;
+const useEmployeesData = () => {
   const { t } = useTranslation();
   const { user, selectedWorkspace } = useDashboard();
   const { showError } = useNotification();
@@ -16,7 +15,6 @@ const useEmployeesData = (config = {}) => {
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [filters, setFilters] = useState({
     status: 'all',
     role: 'all',
@@ -25,34 +23,19 @@ const useEmployeesData = (config = {}) => {
   });
 
   const memberFacilities = useMemo(() => {
-    if (propMemberFacilities && propMemberFacilities.length > 0) {
-      return propMemberFacilities;
-    }
-    const isAcceptedWorkspace = selectedWorkspace && (
-      selectedWorkspace.type === 'team' ||
-      selectedWorkspace.type === 'facility' ||
-      selectedWorkspace.type === 'organization'
-    );
-
-    if (!isAcceptedWorkspace) return [];
+    if (!selectedWorkspace || (selectedWorkspace.type !== 'team' && selectedWorkspace.type !== 'organization' && selectedWorkspace.type !== 'facility')) return [];
     const facilityId = selectedWorkspace.facilityId || selectedWorkspace.organizationId;
     if (!facilityId) return [];
-    return [{
-      id: facilityId,
+    return [{ 
+      id: facilityId, 
       facilityName: selectedWorkspace.facilityName || selectedWorkspace.companyName,
       companyName: selectedWorkspace.companyName,
-      ...selectedWorkspace
+      ...selectedWorkspace 
     }];
-  }, [selectedWorkspace, propMemberFacilities]);
+  }, [selectedWorkspace]);
 
   useEffect(() => {
-    const isAcceptedWorkspace = selectedWorkspace && (
-      selectedWorkspace.type === 'team' ||
-      selectedWorkspace.type === 'facility' ||
-      selectedWorkspace.type === 'organization'
-    );
-
-    if (!user || !isAcceptedWorkspace) {
+    if (!user || !selectedWorkspace || (selectedWorkspace.type !== 'team' && selectedWorkspace.type !== 'organization' && selectedWorkspace.type !== 'facility')) {
       setEmployees([]);
       setIsLoading(false);
       return;
@@ -136,7 +119,7 @@ const useEmployeesData = (config = {}) => {
     };
 
     loadEmployees();
-  }, [user, selectedWorkspace, memberFacilities, t, showError, refreshTrigger]);
+  }, [user, selectedWorkspace, memberFacilities, t, showError]);
 
   useEffect(() => {
     if (!employees.length) {
@@ -189,8 +172,10 @@ const useEmployeesData = (config = {}) => {
   }, []);
 
   const refreshEmployees = useCallback(() => {
-    setRefreshTrigger(prev => prev + 1);
-  }, []);
+    if (user && selectedWorkspace) {
+      setIsLoading(true);
+    }
+  }, [user, selectedWorkspace]);
 
   return {
     employees,
