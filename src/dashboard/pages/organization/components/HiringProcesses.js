@@ -12,10 +12,7 @@ import {
     FiPlus,
     FiMove,
     FiUser,
-    FiCalendar,
-    FiSearch,
-    FiFilter,
-    FiCheck
+    FiCalendar
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
@@ -24,6 +21,7 @@ import Dialog from '../../../../components/Dialog/Dialog';
 import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
 import InputFieldParagraph from '../../../../components/BoxedInputFields/TextareaField';
 import { useMarketplaceData } from '../../../hooks/useMarketplaceData';
+import FilterBar from '../../../components/FilterBar/FilterBar';
 
 const HiringProcesses = ({ organization, memberFacilities = [] }) => {
     const { t } = useTranslation(['organization', 'common']);
@@ -34,19 +32,18 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [facilityFilter, setFacilityFilter] = useState('all');
-    const [fromDate, setFromDate] = useState('');
-    const [toDate, setToDate] = useState('');
+    const [filters, setFilters] = useState({
+        status: 'all',
+        facility: 'all',
+        fromDate: null,
+        toDate: null
+    });
     const [sortBy, setSortBy] = useState('created');
-    const [showSortMenu, setShowSortMenu] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState(null);
     const [showCandidatePopup, setShowCandidatePopup] = useState(false);
     const [positionCandidates, setPositionCandidates] = useState([]);
     const [candidateSortBy, setCandidateSortBy] = useState('experience');
     const [candidateShowSortMenu, setCandidateShowSortMenu] = useState(false);
-    const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
-    const [justExpanded, setJustExpanded] = useState(false);
     const [isCreatePositionModalOpen, setIsCreatePositionModalOpen] = useState(false);
     const [positionFormData, setPositionFormData] = useState({
         jobTitle: '',
@@ -207,27 +204,27 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
             );
         }
 
-        if (facilityFilter !== 'all') {
+        if (filters.facility !== 'all') {
             filtered = filtered.filter(pos => {
-                const facility = memberFacilities.find(f => f.id === facilityFilter);
-                return facility && (pos.facilityProfileId === facilityFilter || pos.facilityName === (facility.facilityName || facility.companyName));
+                const facility = memberFacilities.find(f => f.id === filters.facility);
+                return facility && (pos.facilityProfileId === filters.facility || pos.facilityName === (facility.facilityName || facility.companyName));
             });
         }
 
-        if (statusFilter !== 'all') {
-            filtered = filtered.filter(pos => pos.status === statusFilter);
+        if (filters.status !== 'all') {
+            filtered = filtered.filter(pos => pos.status === filters.status);
         }
 
-        if (fromDate) {
-            const fromDateObj = new Date(fromDate);
+        if (filters.fromDate) {
+            const fromDateObj = new Date(filters.fromDate);
             filtered = filtered.filter(pos => {
                 const createdDate = pos.created?.toDate?.() || pos.created || new Date(0);
                 return createdDate >= fromDateObj;
             });
         }
 
-        if (toDate) {
-            const toDateObj = new Date(toDate);
+        if (filters.toDate) {
+            const toDateObj = new Date(filters.toDate);
             filtered = filtered.filter(pos => {
                 const createdDate = pos.created?.toDate?.() || pos.created || new Date(0);
                 return createdDate <= toDateObj;
@@ -254,7 +251,7 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
         });
 
         return sorted;
-    }, [positions, searchQuery, facilityFilter, statusFilter, fromDate, toDate, sortBy, memberFacilities, applications]);
+    }, [positions, searchQuery, filters, sortBy, memberFacilities, applications]);
 
     const sortedCandidates = useMemo(() => {
         const sorted = [...positionCandidates].sort((a, b) => {
@@ -276,14 +273,7 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
         return sorted;
     }, [positionCandidates, candidateSortBy]);
 
-    const hasActiveFilters = facilityFilter !== 'all' || statusFilter !== 'all' || fromDate || toDate;
-
-    const clearFilters = () => {
-        setFacilityFilter('all');
-        setStatusFilter('all');
-        setFromDate('');
-        setToDate('');
-    };
+    const hasActiveFilters = filters.facility !== 'all' || filters.status !== 'all' || filters.fromDate || filters.toDate;
 
     const handleCreatePosition = async () => {
         if (!positionFormData.jobTitle.trim() || !positionFormData.startTime || !positionFormData.endTime) {
@@ -348,6 +338,19 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
         { value: 'applications', label: t('organization:hiring.sort.applications', 'Applications') }
     ];
 
+    const handleFilterChange = (key, value) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleClearFilters = () => {
+        setFilters({
+            status: 'all',
+            facility: 'all',
+            fromDate: null,
+            toDate: null
+        });
+    };
+
     const candidateSortOptions = [
         { value: 'experience', label: t('organization:hiring.candidates.sort.experience', 'Experience') },
         { value: 'name', label: t('organization:hiring.candidates.sort.name', 'Name') },
@@ -380,20 +383,63 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
         );
     }
 
-    const activeFilterCount = (facilityFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (fromDate ? 1 : 0) + (toDate ? 1 : 0);
-
     return (
         <div className="space-y-6">
+            <FilterBar
+                title={t('organization:hiring.title', 'Hiring Processes')}
+                description={t('organization:hiring.subtitle', 'Manage job postings and review candidates')}
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder={t('organization:hiring.searchPlaceholder', 'Search positions...')}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClearFilters={handleClearFilters}
+                dropdownFields={[
+                    {
+                        key: 'facility',
+                        label: t('organization:hiring.filters.facility', 'Facility'),
+                        options: [
+                            { value: 'all', label: t('organization:hiring.filters.allFacilities', 'All Facilities') },
+                            ...memberFacilities.map(facility => ({
+                                value: facility.id,
+                                label: facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')
+                            }))
+                        ],
+                        defaultValue: 'all'
+                    },
+                    {
+                        key: 'status',
+                        label: t('organization:hiring.filters.status', 'Status'),
+                        options: [
+                            { value: 'all', label: t('organization:hiring.filters.allStatuses', 'All Statuses') },
+                            { value: 'open', label: t('organization:hiring.filters.open', 'Open') },
+                            { value: 'interview', label: t('organization:hiring.filters.interview', 'Interview') },
+                            { value: 'accepted', label: t('organization:hiring.filters.accepted', 'Accepted') },
+                            { value: 'closed', label: t('organization:hiring.filters.closed', 'Closed') }
+                        ],
+                        defaultValue: 'all'
+                    }
+                ]}
+                dateFields={[
+                    {
+                        key: 'fromDate',
+                        label: t('organization:hiring.filters.fromDate', 'From')
+                    },
+                    {
+                        key: 'toDate',
+                        label: t('organization:hiring.filters.toDate', 'To')
+                    }
+                ]}
+                sortOptions={sortOptions}
+                sortValue={sortBy}
+                onSortChange={setSortBy}
+                translationNamespace="organization"
+                onRefresh={loadPositions}
+                isLoading={loading}
+            />
+
             <div className="bg-card border border-border rounded-xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 className="text-lg font-semibold text-foreground">
-                            {t('organization:hiring.title', 'Hiring Processes')}
-                        </h2>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            {t('organization:hiring.subtitle', 'Manage job postings and review candidates')}
-                        </p>
-                    </div>
+                <div className="flex items-center justify-end mb-6">
                     <button 
                         onClick={() => setIsCreatePositionModalOpen(true)}
                         className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0" 
@@ -403,131 +449,6 @@ const HiringProcesses = ({ organization, memberFacilities = [] }) => {
                         {t('organization:hiring.createPosition', 'Create Position')}
                     </button>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-3 w-full mb-4">
-                    <div className="relative flex-1 min-w-[200px]">
-                        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder={t('organization:hiring.searchPlaceholder', 'Search positions...')}
-                            className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                            style={{
-                                height: 'var(--boxed-inputfield-height)',
-                                fontWeight: '500',
-                                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                color: 'var(--boxed-inputfield-color-text)'
-                            }}
-                        />
-                    </div>
-
-                    {/* Date From */}
-                    <div className="relative shrink-0 w-[218px]">
-                        <DateField
-                            label="From"
-                            value={fromDate ? new Date(fromDate) : null}
-                            onChange={(date) => setFromDate(date ? date.toISOString().split('T')[0] : '')}
-                            marginBottom="0"
-                            showClearButton={true}
-                        />
-                    </div>
-
-                    {/* Date To */}
-                    <div className="relative shrink-0 w-[218px]">
-                        <DateField
-                            label="To"
-                            value={toDate ? new Date(toDate) : null}
-                            onChange={(date) => setToDate(date ? date.toISOString().split('T')[0] : '')}
-                            marginBottom="0"
-                            showClearButton={true}
-                        />
-                    </div>
-
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const willExpand = !isFiltersExpanded;
-                                setIsFiltersExpanded(willExpand);
-                                if (willExpand) {
-                                    setJustExpanded(true);
-                                    setTimeout(() => {
-                                        setJustExpanded(false);
-                                    }, 150);
-                                }
-                            }}
-                            className={cn(
-                                "flex items-center justify-center rounded-xl border-2 transition-all relative shrink-0",
-                                isFiltersExpanded
-                                    ? "bg-[var(--color-logo-1)] border-[var(--color-logo-1)] text-white"
-                                    : "bg-background border-input text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
-                            )}
-                            style={{ height: 'var(--boxed-inputfield-height)', width: 'var(--boxed-inputfield-height)' }}
-                            title="Filters"
-                        >
-                            <FiFilter className={`w-4 h-4 ${isFiltersExpanded ? 'text-white' : ''}`} />
-                            {activeFilterCount > 0 && (
-                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-                                    {activeFilterCount}
-                                </span>
-                            )}
-                        </button>
-
-                        {activeFilterCount > 0 && (
-                            <button
-                                onClick={clearFilters}
-                                className="text-sm text-muted-foreground hover:text-foreground underline transition-colors shrink-0 whitespace-nowrap"
-                            >
-                                {t('organization:hiring.filters.clearAll', 'Remove settings')}
-                            </button>
-                        )}
-
-                        <button
-                            onClick={() => {}}
-                            className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 shrink-0"
-                            style={{ height: 'var(--boxed-inputfield-height)' }}
-                        >
-                            <FiCheck className="w-4 h-4" />
-                            {t('organization:hiring.filters.apply', 'Apply')}
-                        </button>
-                    </div>
-
-                {isFiltersExpanded && (
-                    <div 
-                        className="mt-3 pt-3 border-t border-border animate-in slide-in-from-top-1 duration-200"
-                        style={{ pointerEvents: justExpanded ? 'none' : 'auto' }}
-                    >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-1">
-                                <SimpleDropdown
-                                    label={t('organization:hiring.filters.facility', 'Facility')}
-                                    options={[
-                                        { value: 'all', label: t('organization:hiring.filters.allFacilities', 'All Facilities') },
-                                        ...memberFacilities.map(facility => ({
-                                            value: facility.id,
-                                            label: facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')
-                                        }))
-                                    ]}
-                                    value={facilityFilter}
-                                    onChange={setFacilityFilter}
-                                    placeholder={t('organization:hiring.filters.facility', 'Facility')}
-                                />
-                                <SimpleDropdown
-                                    label={t('organization:hiring.filters.status', 'Status')}
-                                    options={[
-                                        { value: 'all', label: t('organization:hiring.filters.allStatuses', 'All Statuses') },
-                                        { value: 'open', label: t('organization:hiring.filters.open', 'Open') },
-                                        { value: 'interview', label: t('organization:hiring.filters.interview', 'Interview') },
-                                        { value: 'accepted', label: t('organization:hiring.filters.accepted', 'Accepted') },
-                                        { value: 'closed', label: t('organization:hiring.filters.closed', 'Closed') }
-                                    ]}
-                                    value={statusFilter}
-                                    onChange={setStatusFilter}
-                                    placeholder={t('organization:hiring.filters.status', 'Status')}
-                                />
-                            </div>
-                        </div>
-                    )}
 
                 {positions.length > 0 && (
                     <p className="text-sm text-muted-foreground text-center mt-2">

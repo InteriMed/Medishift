@@ -1,37 +1,61 @@
-name: Deploy with Auto-Rollback
+name: 🚀 Deploy to Production
 on:
   push:
     branches: [ main ]
 
 jobs:
-  # 1. Build & Test (Same as before)
-  test-and-build:
+  # 1. TEST (Runs first)
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm install && npm test
+      - name: Install & Test
+        run: |
+          npm ci
+          npm test
 
-  # 2. Deploy (Same as before)
+  # 2. DEPLOY (Runs only if Test passes)
   deploy:
-    needs: test-and-build
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Sync files
+      
+      # A. INJECT PRODUCTION CONFIG
+      - name: Create Prod Config
+        run: echo "export const firebaseConfig = ${{ secrets.FIREBASE_CONFIG_PROD }};" > src/firebaseConfig.js
+
+      # B. BUILD REACT APP
+      - name: Install & Build
+        run: |
+          npm ci
+          npm run build
+
+      # C. DEPLOY FRONTEND (GoDaddy)
+      - name: 📂 Sync files to GoDaddy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./build/ # OR ./dist/ (Check your Vite/CRA settings)
+      
+      # D. DEPLOY BACKEND (Firebase)
+      - name: 🔥 Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions,firestore
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          PROJECT_ID: "interimed-620fd" # Your Production Project ID
 
-  # 3. Health Check
+  # 3. HEALTH CHECK
   verify:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
       - name: Check HTTP Status
         id: health_check
-        # Retry up to 3 times with 10s delay to allow server restart/cache clear
         run: |
           for i in {1..3}; do
             STATUS=$(curl -o /dev/null -s -w "%{http_code}" https://medishift.cloud)
@@ -39,47 +63,55 @@ jobs:
               echo "✅ Site is up!"
               exit 0
             fi
-            echo "⚠️ Attempt $i failed (Status: $STATUS). Retrying in 10s..."
+            echo "⚠️ Attempt $i failed. Retrying..."
             sleep 10
           done
           echo "❌ Site is down!"
           exit 1
 
-  # 4. 🚨 ROLLBACK JOB 🚨
+  # 4. ROLLBACK (Only if Verify fails)
   rollback:
     needs: verify
-    if: failure()  # <--- ONLY RUNS IF VERIFY FAILS
+    if: failure()
     runs-on: ubuntu-latest
     steps:
       - name: 🔙 Checkout Previous Commit
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # Fetch last 2 commits so we can go back 1
-          
+          fetch-depth: 2
+
       - name: Revert to HEAD~1
         run: git checkout HEAD~1
 
-      - name: 🚑 Emergency Re-Deploy
+      # MUST RE-BUILD THE OLD CODE BEFORE UPLOADING
+      - name: Create Prod Config (Old Version)
+        run: echo "export const firebaseConfig = ${{ secrets.FIREBASE_CONFIG_PROD }};" > src/firebaseConfig.js
+
+      - name: Build Old Version
+        run: |
+          npm ci
+          npm run build
+
+      - name: 🚑 Emergency Re-Deploy Frontend
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          
-      - name: Notify
-        run: echo "::error::Rollback completed. The site has been reverted to the previous version."
+          local-dir: ./build/
 
-      - name: Notify Discord of Failure
-        if: always() # Runs even if the rollback itself has issues
+      - name: 🚑 Emergency Re-Deploy Backend
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions,firestore
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          PROJECT_ID: "interimed-620fd"
+
+      - name: 🔔 Notify Discord
+        if: always()
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.NOTIFY_WEBHOOK }}
         with:
-          args: '🚨 **CRITICAL ALERT** 🚨 Deployment to GoDaddy failed. The site has been rolled back to the previous stable version. Please check the logs. ${{ steps.health_check.outputs.url }}'
-          
-      - name: Create Prod Environment Config
-        run: |
-          echo "export const firebaseConfig = ${{ secrets.FIREBASE_CONFIG_PROD }};" > src/firebaseConfig.js
-          
-      - name: Build
-        run: npm run build
+          args: '🚨 **CRITICAL ROLLBACK** 🚨 Production failed. Reverted to previous version.'

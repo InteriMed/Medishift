@@ -18,6 +18,7 @@ import {
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import EmployeePopup from './EmployeePopup';
+import FilterBar from '../../../components/FilterBar/FilterBar';
 
 const TeamsManagement = ({ organization, memberFacilities = [] }) => {
     const { t } = useTranslation(['organization', 'common']);
@@ -31,6 +32,10 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
     const [activeView, setActiveView] = useState('overview');
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [filters, setFilters] = useState({
+        team: 'all',
+        facility: 'all'
+    });
 
     const loadTeamData = useCallback(async () => {
         if (!organization || memberFacilities.length === 0) {
@@ -129,6 +134,7 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
     }, [loadTeamData]);
 
     const filteredTeams = teams.filter(team => {
+        if (filters.team !== 'all' && team.name !== filters.team) return false;
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
         return team.name.toLowerCase().includes(query) ||
@@ -139,6 +145,8 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
     });
 
     const filteredMembers = teamMembers.filter(member => {
+        if (filters.team !== 'all' && member.team !== filters.team) return false;
+        if (filters.facility !== 'all' && member.facilityId !== filters.facility) return false;
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
         return (
@@ -166,16 +174,50 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
 
     return (
         <div className="space-y-6">
+            <FilterBar
+                title={t('organization:teams.title', 'Teams Management')}
+                description={t('organization:teams.subtitle', 'Organize employees into teams and manage team structures')}
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder={t('organization:teams.searchPlaceholder', 'Search teams or members...')}
+                filters={filters}
+                onFilterChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
+                onClearFilters={() => setFilters({ team: 'all', facility: 'all' })}
+                dropdownFields={[
+                    {
+                        key: 'team',
+                        label: t('organization:teams.filters.team', 'Team'),
+                        options: [
+                            { value: 'all', label: t('organization:teams.filters.allTeams', 'All Teams') },
+                            ...teams.map(team => ({
+                                value: team.name,
+                                label: team.name === 'unassigned' 
+                                    ? t('organization:teams.unassigned', 'Unassigned')
+                                    : team.name
+                            }))
+                        ],
+                        defaultValue: 'all'
+                    },
+                    {
+                        key: 'facility',
+                        label: t('organization:teams.filters.facility', 'Facility'),
+                        options: [
+                            { value: 'all', label: t('organization:teams.filters.allFacilities', 'All Facilities') },
+                            ...memberFacilities.map(facility => ({
+                                value: facility.id,
+                                label: facility.facilityName || facility.companyName || t('organization:labels.unnamedFacility', 'Unnamed Facility')
+                            }))
+                        ],
+                        defaultValue: 'all'
+                    }
+                ]}
+                translationNamespace="organization"
+                onRefresh={loadTeamData}
+                isLoading={loading}
+            />
+
             <div className="bg-card border border-border rounded-xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 className="text-lg font-semibold text-foreground">
-                            {t('organization:teams.title', 'Teams Management')}
-                        </h2>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            {t('organization:teams.subtitle', 'Organize employees into teams and manage team structures')}
-                        </p>
-                    </div>
+                <div className="flex items-center justify-end mb-6">
                     <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
                         <FiPlus className="w-4 h-4" />
                         {t('organization:teams.createTeam', 'Create Team')}
@@ -244,24 +286,6 @@ const TeamsManagement = ({ organization, memberFacilities = [] }) => {
             </div>
 
             <div className="bg-card border border-border rounded-xl p-6">
-                <div className="flex flex-wrap items-center gap-3 w-full mb-4">
-                    <div className="relative flex-1 min-w-[200px]">
-                        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                        <input
-                            type="text"
-                            placeholder={t('organization:teams.searchPlaceholder', 'Search teams or members...')}
-                            className="w-full pl-9 pr-8 rounded-xl border-2 border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-0 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all hover:border-muted-foreground/30 hover:bg-muted/30"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{
-                                height: 'var(--boxed-inputfield-height)',
-                                fontWeight: '500',
-                                fontFamily: 'var(--font-family-text, Roboto, sans-serif)',
-                                color: 'var(--boxed-inputfield-color-text)'
-                            }}
-                        />
-                    </div>
-                </div>
 
                 {activeView === 'overview' && (
                     <div className="space-y-4">
