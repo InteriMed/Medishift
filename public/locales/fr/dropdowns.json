@@ -220,5 +220,14 @@
     "nursing_home": "Maison de retraite",
     "rehabilitation_center": "Centre de réadaptation",
     "other": "Autre"
+  },
+  "idDocumentTypes": {
+    "passport": "Passeport",
+    "id_card": "Carte d'identité",
+    "residency_permit": "Permis de séjour"
+  },
+  "profileDocumentTypes": {
+    "cv": "CV",
+    "billing_document": "Document de facturation"
   }
 } 

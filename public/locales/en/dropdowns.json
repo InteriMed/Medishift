@@ -235,5 +235,14 @@
     "nursing_home": "Nursing Home",
     "rehabilitation_center": "Rehabilitation Center",
     "other": "Other"
+  },
+  "idDocumentTypes": {
+    "passport": "Passport",
+    "id_card": "ID Card",
+    "residency_permit": "Residency Permit"
+  },
+  "profileDocumentTypes": {
+    "cv": "CV",
+    "billing_document": "Billing Document"
   }
 }

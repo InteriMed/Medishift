@@ -1,6 +1,8 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
+const db = require('../database/db');
+const { FIRESTORE_COLLECTIONS } = require('../config/keysDatabase');
 const { logAuditEvent, AUDIT_EVENT_TYPES } = require('../services/auditLog');
 const { verifyAdminAccess, ADMIN_PERMISSIONS } = require('../middleware/verifyAdminAccess');
 const { checkRateLimit } = require('../middleware/rateLimit');
@@ -37,10 +39,9 @@ exports.startImpersonation = onCall(async (request) => {
   }
 
   try {
-    const db = admin.firestore();
     const adminData = adminVerification.adminData;
 
-    const targetUserDoc = await db.collection('users').doc(targetUserId).get();
+    const targetUserDoc = await db.collection(FIRESTORE_COLLECTIONS.USERS).doc(targetUserId).get();
     if (!targetUserDoc.exists) {
       throw new HttpsError('not-found', 'Target user not found');
     }
@@ -121,7 +122,6 @@ exports.stopImpersonation = onCall(async (request) => {
   }
 
   try {
-    const db = admin.firestore();
     const sessionDoc = await db.collection('impersonation_sessions').doc(sessionId).get();
 
     if (!sessionDoc.exists) {
@@ -187,7 +187,6 @@ exports.getImpersonationSession = onCall(async (request) => {
   }
 
   try {
-    const db = admin.firestore();
     const sessionDoc = await db.collection('impersonation_sessions').doc(sessionId).get();
 
     if (!sessionDoc.exists) {
@@ -263,7 +262,6 @@ exports.validateImpersonationSession = onCall(async (request) => {
   }
 
   try {
-    const db = admin.firestore();
     const sessionDoc = await db.collection('impersonation_sessions').doc(sessionId).get();
 
     if (!sessionDoc.exists) {

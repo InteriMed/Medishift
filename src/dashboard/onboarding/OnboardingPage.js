@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/authContext';
+import { useResponsive } from '../../dashboard/contexts/responsiveContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
@@ -10,28 +11,27 @@ import { useFlow } from '../../services/flows/engine';
 import { OnboardingFlow } from '../../services/flows/catalog/onboarding';
 import { completeOnboarding } from '../../services/flows/catalog/onboarding/completion';
 import {
-    FiBriefcase, FiCheck, FiArrowRight, FiHome,
-    FiLoader, FiArrowLeft, FiShield,
-    FiLink, FiHelpCircle
+    FiCheck, FiArrowRight,
+    FiLoader, FiArrowLeft,
+    FiHelpCircle
 } from 'react-icons/fi';
 import ContactFormPopup from '../../components/modals/contactFormPopup';
-import ProfessionalGLNVerification from './components/professionalGLNVerification';
-import FacilityGLNVerification from './components/facilityGLNVerification';
-import CommercialRegistryVerification from './components/commercialRegistryVerification';
 import PhoneVerificationStep from './components/phoneVerificationStep';
-import Switch from '../../components/boxedInputFields/switch';
+import RoleSelectionStep from './components/RoleSelectionStep';
+import LegalConsiderationsStep from './components/LegalConsiderationsStep';
+import GLNVerificationStep from './components/GLNVerificationStep';
 import Button from '../../components/boxedInputFields/button';
 import LoadingSpinner from '../../components/loadingSpinner/loadingSpinner';
-import Modal from '../../components/modals/modals';
-import styles from './onboardingPage.module.css';
 
 const OnboardingPage = () => {
     const navigate = useNavigate();
     const { lang } = useParams();
     const { t } = useTranslation(['dashboard', 'common', 'auth']);
     const { currentUser } = useAuth();
+    const { isMobile, isTablet } = useResponsive();
     const urlQuery = new URLSearchParams(window.location.search);
     const onboardingType = urlQuery.get('type') || 'professional';
+    const urlStep = urlQuery.get('step');
 
     const {
         step,
@@ -46,8 +46,54 @@ const OnboardingPage = () => {
         back,
         updateField,
         setFormState,
+        jumpToStep,
         progress
     } = useFlow(OnboardingFlow);
+
+    useEffect(() => {
+        if (!hasInitializedRef.current) {
+            hasInitializedRef.current = true;
+            if (urlStep) {
+                const stepToJump = OnboardingFlow.steps.find(s => s.path === urlStep);
+                if (stepToJump && stepToJump.id !== step.id) {
+                    isNavigatingRef.current = true;
+                    jumpToStep(stepToJump.id);
+                    setTimeout(() => {
+                        isNavigatingRef.current = false;
+                    }, 500);
+                }
+            }
+            return;
+        }
+        if (urlSyncRef.current) {
+            urlSyncRef.current = false;
+            return;
+        }
+        if (urlStep && step.path !== urlStep && !isNavigatingRef.current) {
+            const stepToJump = OnboardingFlow.steps.find(s => s.path === urlStep);
+            if (stepToJump && stepToJump.id !== step.id) {
+                isNavigatingRef.current = true;
+                jumpToStep(stepToJump.id);
+                setTimeout(() => {
+                    isNavigatingRef.current = false;
+                }, 500);
+            }
+        }
+    }, [urlStep, step.path, step.id, jumpToStep]);
+
+    useEffect(() => {
+        if (!hasInitializedRef.current) return;
+        if (isNavigatingRef.current) return;
+        const newUrl = `/${lang}/onboarding?type=${onboardingType}&step=${step.path}`;
+        const currentUrl = window.location.pathname + window.location.search;
+        if (currentUrl !== newUrl) {
+            urlSyncRef.current = true;
+            window.history.replaceState({}, '', newUrl);
+            setTimeout(() => {
+                urlSyncRef.current = false;
+            }, 100);
+        }
+    }, [step.path, lang, onboardingType]);
 
     const [isVerifying, setIsVerifying] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -61,6 +107,9 @@ const OnboardingPage = () => {
 
     const glnVerificationRef = useRef(null);
     const phoneVerificationRef = useRef(null);
+    const isNavigatingRef = useRef(false);
+    const urlSyncRef = useRef(false);
+    const hasInitializedRef = useRef(false);
 
     useEffect(() => {
         const handleUnhandledRejection = (event) => {
@@ -161,9 +210,13 @@ const OnboardingPage = () => {
     };
 
     const handleNext = async () => {
+        if (isNavigatingRef.current || isProcessing || isTransitioning) return;
+        
         if (step.id === 'phone') {
             if (data.phoneVerified) {
+                isNavigatingRef.current = true;
                 const result = await next();
+                isNavigatingRef.current = false;
                 if (!result.complete) {
                     await saveProgress();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -196,7 +249,9 @@ const OnboardingPage = () => {
             }
         }
 
+        isNavigatingRef.current = true;
         const result = await next();
+        isNavigatingRef.current = false;
         if (!result.complete) {
             await saveProgress();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -206,6 +261,8 @@ const OnboardingPage = () => {
     };
 
     const handleBack = async () => {
+        if (isNavigatingRef.current || isProcessing || isTransitioning) return;
+        
         if (step.id === 'gln_professional' && data.phoneVerified) {
             setPhoneInternalStep(3);
         }
@@ -213,11 +270,16 @@ const OnboardingPage = () => {
             setPhoneInternalStep(1);
             return;
         }
+        
+        isNavigatingRef.current = true;
         back();
+        setTimeout(() => {
+            isNavigatingRef.current = false;
+        }, 100);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleComplete = async () => {
+    const handleComplete = useCallback(async () => {
         if (isProcessing) return;
         setIsProcessing(true);
         try {
@@ -357,7 +419,55 @@ const OnboardingPage = () => {
             console.error('Error completing onboarding:', err);
             setIsProcessing(false);
         }
-    };
+    }, [isProcessing, currentUser, data, onboardingType, navigate, lang]);
+
+    const handlePhoneComplete = useCallback(async (phoneData) => {
+        if (isNavigatingRef.current) return;
+        
+        const wasAlreadyVerified = data.phoneVerified;
+        updateField('phoneData', phoneData);
+        updateField('phoneVerified', true);
+
+        if (currentUser && phoneData.verified) {
+            try {
+                const phoneParts = phoneData.phoneNumber.split(' ');
+                const phonePrefix = phoneParts[0] || '';
+                const phoneNumber = phoneParts.slice(1).join(' ') || '';
+
+                const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
+                await updateDoc(userDocRef, {
+                    'contact.primaryPhonePrefix': phonePrefix,
+                    'contact.primaryPhone': phoneNumber,
+                    'primaryPhonePrefix': phonePrefix,
+                    'primaryPhone': phoneNumber,
+                    isPhoneVerified: true,
+                    phoneVerifiedAt: new Date(),
+                    updatedAt: new Date()
+                });
+            } catch (err) {
+                console.error('Error saving phone verification:', err);
+            }
+        }
+
+        await saveProgress({ phoneVerified: true, phoneData });
+
+        if (!wasAlreadyVerified && !isNavigatingRef.current) {
+            isNavigatingRef.current = true;
+            const result = await next();
+            isNavigatingRef.current = false;
+            if (result.complete) {
+                handleComplete();
+            }
+        }
+    }, [data.phoneVerified, currentUser?.uid, updateField, saveProgress, next, handleComplete]);
+
+    const handlePhoneStepChange = useCallback((step) => {
+        setPhoneInternalStep(step);
+    }, []);
+
+    const handlePhoneValidationChange = useCallback((isValid) => {
+        setIsPhoneValid(isValid);
+    }, []);
 
     if (isLoadingProgress) return <LoadingSpinner />;
 
@@ -376,13 +486,18 @@ const OnboardingPage = () => {
         return currentStepIndex + 1;
     };
 
+    const isTwoColumnLayout = step.id === 'gln_professional' || step.id === 'gln_facility' || step.id === 'commercial_registry';
+    const isOneColumnLayout = step.id === 'role' || step.id === 'phone';
+    const isRowLayout = step.id === 'legal';
+    const isFullScreen = isMobile || isTablet;
+
     return (
-        <div className={styles.container}>
+        <div className={`${isFullScreen ? 'h-screen bg-white' : 'min-h-screen bg-onboarding-healthcare'} ${isFullScreen ? 'p-0' : 'p-4 md:p-6 lg:p-8'}`}>
             {isCreatingProfile && (
-                <div className={styles.loadingOverlay}>
-                    <div className={styles.loadingContent}>
+                <div className="fixed inset-0 bg-white/95 backdrop-blur-md z-[100000] flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-4">
                         <LoadingSpinner size="medium" color="primary" />
-                        <p className={styles.loadingText}>
+                        <p className="text-base font-medium text-foreground animate-pulse">
                             Creating your profile...
                         </p>
                     </div>
@@ -391,7 +506,7 @@ const OnboardingPage = () => {
             
             <button
                 onClick={() => setShowContactForm(true)}
-                className={styles.helpButton}
+                className={`fixed z-50 p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all hover:scale-110 flex items-center justify-center ${isFullScreen ? 'top-2 right-2 p-2' : 'top-4 right-4'}`}
                 aria-label={t('common:header.help', 'Help')}
                 title={t('common:header.help', 'Help')}
             >
@@ -403,356 +518,93 @@ const OnboardingPage = () => {
                 onClose={() => setShowContactForm(false)}
             />
 
-            <div className={`${styles.content} ${(step.id === 'legal' || step.id === 'gln_professional' || step.id === 'gln_facility' || step.id === 'commercial_registry') ? styles.contentWide : ''} ${(step.id === 'role' || step.id === 'phone') ? styles.contentNarrow : ''}`}>
-                <div className={styles.stepIndicator}>
+            <div className={`w-full flex flex-col relative z-10 ${isFullScreen ? 'h-screen max-h-screen rounded-none border-0 p-4 bg-white' : 'max-h-[90vh] min-h-[90vh] rounded-3xl shadow-2xl hover:shadow-2xl transition-shadow p-6 md:p-8 lg:p-10'} ${isTwoColumnLayout ? 'max-w-6xl' : isOneColumnLayout ? 'max-w-2xl' : isRowLayout ? 'max-w-4xl' : 'max-w-4xl'} mx-auto overflow-hidden`}
+                 style={isFullScreen ? {} : {
+                     background: 'rgba(255, 255, 255, 0.85)',
+                     backdropFilter: 'blur(12px)',
+                     WebkitBackdropFilter: 'blur(12px)',
+                     border: '1px solid rgba(255, 255, 255, 0.9)',
+                     boxShadow: '0 20px 40px -10px rgba(30, 58, 138, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5)'
+                 }}>
+                <div className={`flex justify-center items-center gap-2 ${isFullScreen ? 'mb-4' : 'mb-8'} flex-shrink-0`}>
                     {Array.from({ length: totalSteps }, (_, i) => i + 1).map(s => (
-                        <div key={s} className="flex items-center gap-2">
+                        <div key={s} className="flex items-center gap-1.5">
                             <div
-                                className={`${styles.stepCircle} ${getStepNumber() >= s ? styles.stepCircleActive : styles.stepCircleInactive}`}
+                                className={`${isFullScreen ? 'w-6 h-6 text-xs' : 'w-8 h-8 md:w-10 md:h-10 text-sm'} rounded-full flex items-center justify-center font-semibold transition-all duration-500 ${
+                                    getStepNumber() >= s 
+                                        ? 'bg-primary text-primary-foreground shadow-md' 
+                                        : 'bg-gray-100 text-gray-400'
+                                }`}
                             >
-                                {getStepNumber() > s ? <FiCheck /> : s}
+                                {getStepNumber() > s ? <FiCheck className={isFullScreen ? "w-3 h-3" : "w-5 h-5"} /> : s}
                             </div>
                             {s < totalSteps && (
-                                <div className={`${styles.stepConnector} ${getStepNumber() > s ? styles.stepConnectorActive : styles.stepConnectorInactive}`} />
+                                <div className={`${isFullScreen ? 'w-8' : 'w-12'} h-1.5 rounded-full transition-all ${
+                                    getStepNumber() > s ? 'bg-primary' : 'bg-gray-200'
+                                }`} />
                             )}
                         </div>
                     ))}
                 </div>
 
-                <div className={`${styles.stepContent} ${isTransitioning ? styles.stepContentTransitioning : styles.stepContentVisible}`}>
+                <div className={`flex-grow transition-opacity duration-500 relative flex flex-col min-h-0 overflow-y-auto ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
                     {isVerifying && (
-                        <div className={styles.verifyingOverlay}>
-                            <div className={styles.verifyingSpinner} />
-                            <p className={styles.verifyingText}>
+                        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-xl gap-6">
+                            <div className="w-15 h-15 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
+                            <p className="text-base font-semibold text-primary">
                                 Verifying...
                             </p>
                         </div>
                     )}
                     
-                    {step.id === 'role' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className={styles.header}>
-                                <h1 className={styles.title}>{t('dashboard.onboarding.step2.title')}</h1>
-                                <p className={styles.description}>{t('dashboard.onboarding.step2.description')}</p>
-                            </header>
-
-                            <div className={styles.roleGrid}>
-                                {[
-                                    { id: 'worker', title: t('dashboard.onboarding.step2.professional'), desc: t('dashboard.onboarding.step2.professionalDescription'), icon: <FiBriefcase /> },
-                                    { id: 'company', title: t('dashboard.onboarding.step2.facility'), desc: t('dashboard.onboarding.step2.facilityDescription'), icon: <FiHome /> },
-                                    { id: 'chain', title: t('dashboard.onboarding.step2.organization'), desc: t('dashboard.onboarding.step2.organizationDescription'), icon: <FiLink /> }
-                                ].filter(r => onboardingType === 'facility' ? r.id !== 'worker' : true).map(r => (
-                                    <div
-                                        key={r.id}
-                                        onClick={async () => {
-                                            updateField('role', r.id);
-                                            await saveProgress({ role: r.id });
-                                        }}
-                                        className={`${styles.roleCard} ${data.role === r.id ? styles.roleCardSelected : styles.roleCardUnselected}`}
-                                    >
-                                        <div className={`${styles.roleIcon} ${data.role === r.id ? styles.roleIconSelected : styles.roleIconUnselected}`}>
-                                            {React.cloneElement(r.icon, { className: "w-8 h-8" })}
-                                        </div>
-                                        <div className={styles.roleContent}>
-                                            <h3 className={styles.roleTitle}>{r.title}</h3>
-                                            <p className={styles.roleDescription}>{r.desc}</p>
-                                        </div>
-                                        <div
-                                            className={`${styles.roleCheckbox} ${data.role === r.id ? styles.roleCheckboxSelected : styles.roleCheckboxUnselected}`}
-                                            style={{
-                                                width: '24px',
-                                                height: '24px',
-                                                minWidth: '24px',
-                                                minHeight: '24px',
-                                                maxWidth: '24px',
-                                                maxHeight: '24px',
-                                                aspectRatio: '1',
-                                                boxSizing: 'border-box'
-                                            }}
-                                        >
-                                            {data.role === r.id && <FiCheck className="text-primary-foreground w-4 h-4" />}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            {errors.role && <p className="text-red-500 mt-2">{errors.role}</p>}
-                        </div>
-                    )}
-
-                    {step.id === 'legal' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className={styles.header}>
-                                <h1 className={styles.title}>{t('dashboard.onboarding.step1.title')}</h1>
-                            </header>
-
-                            <div className={styles.legalGrid}>
-                                <div className={styles.legalInfoCard}>
-                                    {data.belongsToFacility ? (
-                                        <div className="space-y-4 animate-in fade-in duration-300">
-                                            <p className={styles.legalInfoTitle}>{t('dashboard.onboarding.step1.facilityLegalNotice')}</p>
-                                            <div className={styles.legalInfoText}>
-                                                <p>{t('dashboard.onboarding.step1.facilityLegalText1')}</p>
-                                                <p>{t('dashboard.onboarding.step1.facilityLegalText2')}</p>
-                                                <p>{t('dashboard.onboarding.step1.facilityLegalText3')}</p>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-4 animate-in fade-in duration-300">
-                                            <p className={styles.legalInfoTitle}>{t('dashboard.onboarding.step1.professionalLegalNotice')}</p>
-                                            <div className={styles.legalInfoText}>
-                                                <p>{t('dashboard.onboarding.step1.professionalLegalText1')}</p>
-                                                <p>{t('dashboard.onboarding.step1.professionalLegalText2')}</p>
-                                                <p>{t('dashboard.onboarding.step1.professionalLegalText3')}</p>
-                                                <p>{t('dashboard.onboarding.step1.professionalLegalText4')}</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className={styles.legalOptions}>
-                                    {data.role === 'worker' && (
-                                        <div
-                                            className={`${styles.legalOptionCard} ${data.belongsToFacility ? styles.legalOptionCardSelected : styles.legalOptionCardUnselected}`}
-                                            onClick={(e) => {
-                                                if (!e.target.closest('.switch-wrapper')) {
-                                                    updateField('belongsToFacility', !data.belongsToFacility);
-                                                }
-                                            }}
-                                        >
-                                            <div className={styles.legalOptionContent}>
-                                                <div 
-                                                    className={`${styles.legalOptionIcon} ${data.belongsToFacility ? styles.legalOptionIconSelected : styles.legalOptionIconUnselected}`}
-                                                >
-                                                    <FiHome className="w-7 h-7" />
-                                                </div>
-                                                <div>
-                                                    <h3 className={styles.legalOptionTitle}>{t('dashboard.onboarding.step1.areYouEmployed')}</h3>
-                                                    <p className={styles.legalOptionDescription}>{t('dashboard.onboarding.step1.areYouEmployedDescription')}</p>
-                                                </div>
-                                            </div>
-                                            <Switch
-                                                checked={data.belongsToFacility || false}
-                                                onChange={(val) => updateField('belongsToFacility', val)}
-                                                switchColor="var(--color-logo-1)"
-                                                marginBottom="0"
-                                            />
-                                        </div>
-                                    )}
-
-                                    <div
-                                        className={`${styles.legalOptionCard} ${data.legalConsiderationsConfirmed ? styles.legalOptionCardSelected : styles.legalOptionCardUnselected}`}
-                                        onClick={(e) => {
-                                            if (!e.target.closest('.switch-wrapper') && !e.target.closest('a')) {
-                                                updateField('legalConsiderationsConfirmed', !data.legalConsiderationsConfirmed);
-                                            }
-                                        }}
-                                    >
-                                        <div className={styles.legalOptionContent}>
-                                            <div 
-                                                className={`${styles.legalOptionIcon} ${data.legalConsiderationsConfirmed ? styles.legalOptionIconSelected : styles.legalOptionIconUnselected}`}
-                                            >
-                                                <FiShield className="w-7 h-7" />
-                                            </div>
-                                            <div>
-                                                <h3 className={styles.legalOptionTitle}>{t('dashboard.onboarding.step1.termsAcceptance')}</h3>
-                                                <p className={styles.legalOptionDescription}>
-                                                    {t('dashboard.onboarding.step1.termsAcceptanceText')}{' '}
-                                                    <a 
-                                                        href={`/${lang}/terms-of-service`} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer"
-                                                        className="text-primary hover:text-primary/80 underline font-medium"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        {t('dashboard.onboarding.step1.termsOfService')}
-                                                    </a>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <Switch
-                                            checked={data.legalConsiderationsConfirmed || false}
-                                            onChange={(val) => updateField('legalConsiderationsConfirmed', val)}
-                                            switchColor="var(--color-logo-1)"
-                                            marginBottom="0"
-                                        />
-                                    </div>
-
-                                    <div className={styles.legalNote}>
-                                        {t('dashboard.onboarding.step1.note')}
-                                    </div>
-                                </div>
+                    {isOneColumnLayout ? (
+                        <div className="flex items-center justify-center min-h-[400px] w-full py-8">
+                            <div className="w-full max-w-md">
+                                {step.id === 'role' && (
+                                    <RoleSelectionStep
+                                        data={data}
+                                        updateField={updateField}
+                                        saveProgress={saveProgress}
+                                        onboardingType={onboardingType}
+                                        errors={errors}
+                                    />
+                                )}
+                                {step.id === 'phone' && (
+                                    <PhoneVerificationStep
+                                        ref={phoneVerificationRef}
+                                        onComplete={handlePhoneComplete}
+                                        onStepChange={handlePhoneStepChange}
+                                        onValidationChange={handlePhoneValidationChange}
+                                        initialPhoneNumber={currentUser?.phoneNumber}
+                                        isVerified={data.phoneVerified || false}
+                                    />
+                                )}
                             </div>
                         </div>
-                    )}
-
-                    {step.id === 'phone' && (
-                        <PhoneVerificationStep
-                            ref={phoneVerificationRef}
-                            onComplete={async (phoneData) => {
-                                const wasAlreadyVerified = data.phoneVerified;
-                                updateField('phoneData', phoneData);
-                                updateField('phoneVerified', true);
-
-                                if (currentUser && phoneData.verified) {
-                                    try {
-                                        const phoneParts = phoneData.phoneNumber.split(' ');
-                                        const phonePrefix = phoneParts[0] || '';
-                                        const phoneNumber = phoneParts.slice(1).join(' ') || '';
-
-                                        const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
-                                        await updateDoc(userDocRef, {
-                                            'contact.primaryPhonePrefix': phonePrefix,
-                                            'contact.primaryPhone': phoneNumber,
-                                            'primaryPhonePrefix': phonePrefix,
-                                            'primaryPhone': phoneNumber,
-                                            isPhoneVerified: true,
-                                            phoneVerifiedAt: new Date(),
-                                            updatedAt: new Date()
-                                        });
-                                    } catch (err) {
-                                        console.error('Error saving phone verification:', err);
-                                    }
-                                }
-
-                                await saveProgress({ phoneVerified: true, phoneData });
-
-                                if (!wasAlreadyVerified) {
-                                    const result = await next();
-                                    if (result.complete) {
-                                        handleComplete();
-                                    }
-                                }
-                            }}
-                            onStepChange={setPhoneInternalStep}
-                            onValidationChange={setIsPhoneValid}
-                            initialPhoneNumber={currentUser?.phoneNumber}
-                            isVerified={data.phoneVerified || false}
-                        />
-                    )}
-
-                    {step.id === 'gln_professional' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className={styles.header}>
-                                <h1 className={styles.title}>{t('dashboard.onboarding.step4.title')}</h1>
-                            </header>
-
-                            <div className={styles.verificationGrid}>
-                                <div className={styles.verificationInfoCard}>
-                                    <div className="space-y-4 animate-in fade-in duration-300 text-left">
-                                        <p className={styles.verificationInfoTitle}>
-                                            {t('dashboard.onboarding.professional_gln.title')}
-                                        </p>
-                                        {data.role === 'company' || data.role === 'chain' ? (
-                                            <div className={styles.verificationInfoText}>
-                                                <p>{t('dashboard.onboarding.step4.company_description')}</p>
-                                            </div>
-                                        ) : data.role === 'worker' ? (
-                                            <div className={styles.verificationInfoText}>
-                                                <p>{t('dashboard.onboarding.professional_gln.text_new')}</p>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                </div>
-
-                                <div className={styles.verificationForm}>
-                                    <div className="pt-2">
-                                        <ProfessionalGLNVerification
-                                            ref={glnVerificationRef}
-                                            hideInfo={true}
-                                            onComplete={async () => {
-                                                if (data.role === 'company' || data.role === 'chain') {
-                                                    await saveProgress();
-                                                    const result = await next();
-                                                    if (result.complete) {
-                                                        handleComplete();
-                                                    }
-                                                } else {
-                                                    handleComplete();
-                                                }
-                                            }}
-                                            onReadyChange={(isReady) => {}}
-                                            onProcessingChange={(processing) => setIsVerifying(processing)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+                    ) : isRowLayout ? (
+                        <div className="w-full py-8">
+                            <LegalConsiderationsStep
+                                data={data}
+                                updateField={updateField}
+                            />
                         </div>
-                    )}
-
-                    {step.id === 'gln_facility' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className={styles.header}>
-                                <h1 className={styles.title}>{t('dashboard.onboarding.step5.title')}</h1>
-                            </header>
-
-                            <div className={styles.verificationGrid}>
-                                <div className={styles.verificationInfoCard}>
-                                    <div className="space-y-4 animate-in fade-in duration-300 text-left">
-                                        <p className={styles.verificationInfoTitle}>
-                                            {t('dashboard.onboarding.company_gln.title')}
-                                        </p>
-                                        <p className="text-foreground font-medium">{t('dashboard.onboarding.step5.description')}</p>
-                                        <div className={styles.verificationInfoText}>
-                                            <p>{t('dashboard.onboarding.company_gln.text1')}</p>
-                                            <p>{t('dashboard.onboarding.company_gln.text2')}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={styles.verificationForm}>
-                                    <div className="pt-2">
-                                        <FacilityGLNVerification
-                                            ref={glnVerificationRef}
-                                            mode="facilityInfo"
-                                            hideInfo={true}
-                                            onComplete={handleComplete}
-                                            onReadyChange={(isReady) => {}}
-                                            onProcessingChange={(processing) => setIsVerifying(processing)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {step.id === 'commercial_registry' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className={styles.header}>
-                                <h1 className={styles.title}>{t('dashboard.onboarding.step5.title')}</h1>
-                            </header>
-
-                            <div className={styles.verificationGrid}>
-                                <div className={styles.verificationInfoCard}>
-                                    <div className="space-y-4 animate-in fade-in duration-300 text-left">
-                                        <p className={styles.verificationInfoTitle}>
-                                            {t('dashboard.onboarding.commercial_registry.title', 'Commercial Registry Verification')}
-                                        </p>
-                                        <p className="text-foreground font-medium">{t('dashboard.onboarding.commercial_registry.description', 'Please provide your commercial registry number to verify your organization.')}</p>
-                                        <div className={styles.verificationInfoText}>
-                                            <p>{t('dashboard.onboarding.commercial_registry.text1', 'Please provide your commercial registry number (UID/CHE) to verify your organization.')}</p>
-                                            <p>{t('dashboard.onboarding.commercial_registry.text2', 'This number can be found in the Geneva commercial registry.')}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={styles.verificationForm}>
-                                    <div className="pt-2">
-                                        <CommercialRegistryVerification
-                                            ref={glnVerificationRef}
-                                            mode="organizationInfo"
-                                            hideInfo={true}
-                                            onComplete={handleComplete}
-                                            onReadyChange={(isReady) => {}}
-                                            onProcessingChange={(processing) => setIsVerifying(processing)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    ) : (
+                        <>
+                            {(step.id === 'gln_professional' || step.id === 'gln_facility' || step.id === 'commercial_registry') && (
+                                <GLNVerificationStep
+                                    ref={glnVerificationRef}
+                                    data={data}
+                                    saveProgress={saveProgress}
+                                    next={next}
+                                    handleComplete={handleComplete}
+                                    setIsVerifying={setIsVerifying}
+                                />
+                            )}
+                        </>
                     )}
                 </div>
 
-                <footer className={`${styles.footer} ${isTransitioning ? styles.footerHidden : ''}`}>
+                <footer className={`mt-auto pt-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-0 transition-opacity duration-300 flex-shrink-0 ${isTransitioning ? 'opacity-0 pointer-events-none' : ''}`}>
                     <Button
                         onClick={handleBack}
                         variant="secondary"

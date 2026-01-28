@@ -15,7 +15,7 @@
   padding: 0;
   position: relative;
   overflow: hidden;
-  background-color: transparent;
+  background-color: white;
 }
 
 .upload-form.drag-active {

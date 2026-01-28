@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../services/services/firebase';
+import Modal from './modals';
 import Button from '../boxedInputFields/button';
 import PersonnalizedInputField from '../boxedInputFields/personnalizedInputField';
 import TextareaField from '../boxedInputFields/textareaField';
 import SimpleDropdown from '../boxedInputFields/dropdownField';
-import { FiX } from 'react-icons/fi';
 import { FaArrowRight } from 'react-icons/fa';
 
 const ContactFormPopup = ({ isOpen, onClose }) => {
@@ -24,8 +24,6 @@ const ContactFormPopup = ({ isOpen, onClose }) => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-
-  if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -136,26 +134,16 @@ const ContactFormPopup = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-      <div
-        className="bg-card w-full max-w-2xl rounded-3xl border border-border shadow-2xl overflow-hidden animate-in zoom-in-95 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6 border-b border-border bg-gradient-to-r from-primary/5 to-primary/10">
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="text-2xl font-bold text-foreground">{t('contact.form.title', 'Contact Us')}</h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-muted rounded-full transition-colors"
-              aria-label={t('common:close', 'Close')}
-            >
-              <FiX className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
-          <p className="text-sm text-muted-foreground">{t('contact.form.subtitle', 'We\'re here to help. Send us a message and we\'ll get back to you soon.')}</p>
-        </div>
-
-        <div className="p-6 space-y-6">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t('contact.form.title', 'Contact Us')}
+      size="large"
+      blurred_background={true}
+      messageType="info"
+    >
+      <div className="space-y-6">
+        <p className="text-sm text-muted-foreground mb-4">{t('contact.form.subtitle', 'We\'re here to help. Send us a message and we\'ll get back to you soon.')}</p>
           {formSubmitted && (
             <div className="bg-green-50 border border-green-200 rounded-2xl p-6 flex items-start gap-4">
               <div className="bg-green-100 p-2 rounded-full text-green-600 mt-1">
@@ -306,9 +294,8 @@ const ContactFormPopup = ({ isOpen, onClose }) => {
               </div>
             </form>
           )}
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

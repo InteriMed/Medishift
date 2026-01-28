@@ -89,10 +89,10 @@
   },
   "auth": {
     "login": {
-      "button": "Log In"
+      "button": "Login"
     },
     "signup": {
-      "button": "Sign Up"
+      "button": "Register"
     }
   },
   "refresh": "Refresh",

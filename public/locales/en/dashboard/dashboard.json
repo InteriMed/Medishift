@@ -250,6 +250,7 @@
         "where_to_find": "Where to find your GLN?",
         "where_to_find_facility": "Where to find your facility GLN?",
         "registry_info": "You can find your GLN number in the official Swiss health registry:",
+        "cannot_find": "I cannot find my GLN or don't have a GLN",
         "facility_registry_info": "You can find your facility GLN number in the official Swiss business registry:",
         "medreg_registry": "Swiss Medical Registry (MEDREG)",
         "nareg_registry": "Swiss Pharmacist Registry (NAREG)",

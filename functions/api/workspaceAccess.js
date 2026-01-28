@@ -13,7 +13,7 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const db = require('../database/db');
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const { FUNCTION_CONFIG, FIRESTORE_COLLECTIONS } = require('../config/keysDatabase');
 
 /**
  * WORKSPACE.SWITCH ACTION
@@ -48,7 +48,7 @@ const switchWorkspace = onCall(FUNCTION_CONFIG, async (request) => {
   try {
     // PERSONAL WORKSPACE
     if (workspaceType === 'personal') {
-      const professionalProfileRef = db.collection('professionalProfiles').doc(userId);
+      const professionalProfileRef = db.collection(FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES).doc(userId);
       const profileSnap = await professionalProfileRef.get();
 
       if (!profileSnap.exists) {
@@ -81,7 +81,7 @@ const switchWorkspace = onCall(FUNCTION_CONFIG, async (request) => {
 
     // FACILITY WORKSPACE
     if (workspaceType === 'facility') {
-      const facilityRef = db.collection('facilityProfiles').doc(targetWorkspaceId);
+      const facilityRef = db.collection(FIRESTORE_COLLECTIONS.FACILITY_PROFILES).doc(targetWorkspaceId);
       const facilitySnap = await facilityRef.get();
 
       if (!facilitySnap.exists) {
@@ -160,7 +160,7 @@ const switchWorkspace = onCall(FUNCTION_CONFIG, async (request) => {
       
       if (!internalTeamAdmins.includes(userId)) {
         // Fallback: Check user's roles array
-        const userRef = db.collection('users').doc(userId);
+        const userRef = db.collection(FIRESTORE_COLLECTIONS.USERS).doc(userId);
         const userSnap = await userRef.get();
         
         if (!userSnap.exists) {
@@ -212,7 +212,7 @@ const switchWorkspace = onCall(FUNCTION_CONFIG, async (request) => {
 
     // ADMIN WORKSPACE
     if (workspaceType === 'admin') {
-      const adminRef = db.collection('admins').doc(userId);
+      const adminRef = db.collection(FIRESTORE_COLLECTIONS.ADMINS).doc(userId);
       const adminSnap = await adminRef.get();
 
       if (!adminSnap.exists) {
@@ -282,7 +282,7 @@ const checkWorkspaces = onCall(FUNCTION_CONFIG, async (request) => {
     const workspaces = [];
     
     // Check Professional Profile (Personal Workspace)
-    const professionalProfileSnap = await db.collection('professionalProfiles').doc(userId).get();
+    const professionalProfileSnap = await db.collection(FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES).doc(userId).get();
     if (professionalProfileSnap.exists) {
       workspaces.push({
         id: 'personal',
@@ -292,7 +292,7 @@ const checkWorkspaces = onCall(FUNCTION_CONFIG, async (request) => {
     }
 
     // Check Facility Access
-    const userSnap = await db.collection('users').doc(userId).get();
+    const userSnap = await db.collection(FIRESTORE_COLLECTIONS.USERS).doc(userId).get();
     if (userSnap.exists) {
       const userData = userSnap.data();
       const roles = userData.roles || [];
@@ -300,7 +300,7 @@ const checkWorkspaces = onCall(FUNCTION_CONFIG, async (request) => {
       // Find facility roles
       for (const roleEntry of roles) {
         if (roleEntry.facility_uid) {
-          const facilitySnap = await db.collection('facilityProfiles').doc(roleEntry.facility_uid).get();
+          const facilitySnap = await db.collection(FIRESTORE_COLLECTIONS.FACILITY_PROFILES).doc(roleEntry.facility_uid).get();
           if (facilitySnap.exists) {
             const facilityData = facilitySnap.data();
             workspaces.push({
@@ -329,7 +329,7 @@ const checkWorkspaces = onCall(FUNCTION_CONFIG, async (request) => {
     }
 
     // Check Admin Access
-    const adminSnap = await db.collection('admins').doc(userId).get();
+    const adminSnap = await db.collection(FIRESTORE_COLLECTIONS.ADMINS).doc(userId).get();
     if (adminSnap.exists && adminSnap.data().isActive !== false) {
       workspaces.push({
         id: 'admin',

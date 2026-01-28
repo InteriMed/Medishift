@@ -1,6 +1,7 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import Event from './events/Event';
 import { getMultipleWeeks, getMultipleDays } from '../utils/dateHelpers';
+import { cn } from '../../../../utils/cn';
 
 /**
  * TimeGrid Component
@@ -984,26 +985,28 @@ const TimeGrid = ({
       onDoubleClick={handleGridDoubleClick}
     >
       {/* Background Grid Lines (Horizontal for Time) - Absolutely Positioned */}
-      <div className="absolute left-0 right-0 top-0 pointer-events-none" style={{ height: '1440px', zIndex: 1 }}>
+      <div className="absolute left-0 right-0 top-0 pointer-events-none z-10" style={{ height: '1440px' }}>
         {Array.from({ length: 24 }, (_, index) => (
           <div
             key={index}
-            className="absolute left-0 right-0"
+            className={cn(
+              "absolute left-0 right-0",
+              nightView && index >= 21 ? "" : "border-b border-gray-200"
+            )}
             style={{
               top: `${index * 60}px`,
               height: '60px',
-              borderBottom: nightView && index >= 21 ? 'none' : '1px solid hsl(var(--border))'
             }}
           />
         ))}
       </div>
 
       {/* Vertical Grid Lines (for all days) - Overlay */}
-      <div className="absolute left-0 right-0 top-0 flex pointer-events-none" style={{ height: '1440px', zIndex: 2 }}>
+      <div className="absolute left-0 right-0 top-0 flex pointer-events-none z-20" style={{ height: '1440px' }}>
         {allDays.map((_, i) => (
           <div
             key={i}
-            className="border-l border-border h-full first:border-l-0"
+            className="border-l border-gray-200 h-full first:border-l-0"
             style={{ width: `${100 / allDays.length}%` }}
           />
         ))}

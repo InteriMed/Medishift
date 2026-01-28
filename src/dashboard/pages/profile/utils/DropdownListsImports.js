@@ -9,9 +9,17 @@ const DROPDOWN_FALLBACK = {
 };
 
 export const useDropdownOptions = () => {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation(['dropdowns']);
   
   const getDropdownData = (key) => {
+    try {
+      const data = t(key, { returnObjects: true });
+      if (data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length > 0) {
+        return data;
+      }
+    } catch (error) {
+      console.warn(`Failed to load dropdown data for key "${key}":`, error);
+    }
     return DROPDOWN_FALLBACK[key] || {};
   };
 
@@ -40,12 +48,33 @@ export const useDropdownOptions = () => {
     label
   }));
 
+  const idDocumentTypeData = getDropdownData('idDocumentTypes');
+  const idDocumentTypeOptions = Object.entries(idDocumentTypeData).map(([value, label]) => ({
+    value,
+    label
+  }));
+
+  const profileDocumentTypeData = getDropdownData('profileDocumentTypes');
+  const profileDocumentTypeOptions = Object.entries(profileDocumentTypeData).map(([value, label]) => ({
+    value,
+    label
+  }));
+
+  const medicalProfessionData = getDropdownData('medicalProfessions');
+  const medicalProfessionOptions = Object.entries(medicalProfessionData).map(([key, label]) => ({
+    value: label,
+    label: label
+  })).sort((a, b) => a.label.localeCompare(b.label));
+
   return {
     phonePrefixOptions,
     cantonOptions,
     nationalityOptions,
     genderOptions,
     facilityTypeOptions,
+    idDocumentTypeOptions,
+    profileDocumentTypeOptions,
+    medicalProfessionOptions,
     getDropdownData
   };
 };

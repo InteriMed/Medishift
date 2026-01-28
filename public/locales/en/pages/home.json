@@ -1,246 +1,268 @@
 {
-  "cta": {
-    "title": "Ready to Transform Your Healthcare Staffing Experience?",
-    "description": "Join InteriMed today and be part of the future of healthcare staffing in Switzerland",
-    "button": "Sign Up Now"
-  },
   "meta": {
-    "title": "InteriMed - Specialized Healthcare Staffing Platform in Switzerland",
-    "description": "InteriMed: The specialized digital platform connecting Swiss healthcare facilities with qualified professionals. Simple, compliant, efficient",
-    "keywords": "temporary healthcare staffing Switzerland, healthcare staffing platform, flexible pharmacy jobs, InteriMed, healthcare staffing platform, temporary healthcare professionals, pharmacy staffing"
+    "title": "The Operating System for Swiss Healthcare Workforce. AI Scheduling, Marketplace & Compliance.",
+    "description": "The first platform uniting internal Team Management (SaaS) with a medical Staffing Marketplace. Built for Swiss compliance (SECO/LSE), optimized for professionals, and integrated with SAP/Nexus.",
+    "keywords": "Swiss healthcare staffing, healthcare workforce management, SECO compliant scheduling, healthcare marketplace Switzerland, AI scheduling healthcare, SAP healthcare integration, Swiss healthcare compliance"
   },
   "hero": {
-    "roles": {
-      "pharmacist": "Pharmacist",
-      "assistant": "Pharmacy Assistant",
-      "temporary": "Temporary Staff",
-      "flexible": "Flexible Work"
-    },
-    "title": "Your healthcare digital staffing platform",
-    "mainTitle": "The Future of Healthcare Staffing",
-    "subtitle": {
-      "first": "By healthcare professionals -",
-      "last": " For healthcare professionals"
-    },
+    "mainTitle": "The Operating System for Switzerland's Healthcare Workforce",
+    "subtitle": "Stop managing shortages. Start engineering capacity. We combine enterprise-grade Team Management Software with an On-Demand Staffing Marketplace in one SECO-compliant platform.",
     "cta": {
-      "hire": "Looking for an Interim",
-      "find": "Looking for a Job",
-      "signup": "Sign Up",
-      "recruit": "Recruit",
-      "work": "Work"
+      "organization": "I represent an Organization",
+      "organizationMicro": "Automate scheduling, pooling, and hiring.",
+      "professional": "I am a Health Professional",
+      "professionalMicro": "Flexible shifts, instant pay, career freedom."
     },
-    "features": {
-      "planning": "Easy Planning",
-      "contracts": "Secure Access",
-      "qualifiedStaff": "Qualified Staff"
+    "trustIndicators": {
+      "certified": "Certified: SECO Licensed [LSE/AVG] | Swiss Hosting | ISO 27001 Ready | HIN Compatible",
+      "integrated": "Integrated with: SAP | Nexus | Opale | Polypoint"
     },
-    "tagLine": "Tag Line",
-    "description": "Description",
+    "tagLine": "Swiss Healthcare Operating System",
     "appAlt": "MediShift App Interface",
     "verifiedBadge": "VERIFIED",
     "verifiedProfile": "Verified Profile",
     "contractBadge": "SECURE",
     "digitalSignature": "Digital Signature"
   },
-  "problem": {
-    "title": "It's free",
-    "description": "Join our platform with no hidden fees. Simple, transparent and free for everyone.",
-    "pharmacies": {
-      "title": "For facilities",
-      "subtitle": "No registration fees",
-      "description": "Sign up for free and start posting your job openings today"
+  "hybridValue": {
+    "title": "One Platform. The Entire Workforce Lifecycle.",
+    "subtitle": "Why pay for a rostering tool, a recruitment agency, and a compliance auditor? We consolidated 150+ operational actions into a single source of truth.",
+    "pillar1": {
+      "title": "Internal Optimization (SaaS)",
+      "subtitle": "Powered by the Calendar and Team engines.",
+      "features": {
+        "aiRostering": {
+          "title": "AI Auto-Rostering",
+          "description": "Don't just fill slots. Our Constraint Programming engine respects legal rest times (ArG), skill mix, and fair distribution of weekends."
+        },
+        "fairnessEngine": {
+          "title": "The Fairness Engine",
+          "description": "Automate shift swaps and leave requests without admin intervention."
+        },
+        "timeTracking": {
+          "title": "Smart Time Tracking",
+          "description": "Geofenced clock-in and automated break validation ensure every minute is accounted for."
+        }
+      }
     },
-    "professionals": {
-      "title": "For professionals",
-      "subtitle": "Free forever",
-      "description": "Create your profile for free and access all opportunities with no hidden fees"
+    "pillar2": {
+      "title": "External Liquidity (Marketplace)",
+      "subtitle": "Powered by the Marketplace and Recruitment engines.",
+      "features": {
+        "gapResolution": {
+          "title": "Instant Gap Resolution",
+          "description": "One click to resolve gaps. The system invites qualified external talent based on certifications."
+        },
+        "tryBeforeBuy": {
+          "title": "Try Before You Buy",
+          "description": "Use temporary missions as working interviews. Rate performance and hire the best with zero friction."
+        },
+        "credentialing": {
+          "title": "Dynamic Credentialing",
+          "description": "Every profile is verified against GLN (Global Location Number), UID, and NAREG registries automatically."
+        }
+      }
     },
-    "matchingEveryone": {
-      "title": "For everyone",
-      "subtitle": "No commitment",
-      "description": "Use our platform with no fees, no commitment, and no surprises. Simple and transparent"
-    }
-  },
-  "solution": {
-    "title": "InteriMed: Your specialized healthcare staffing solution",
-    "focus": "Focus on what matters most - Your business, your patients, you",
-    "description": "InteriMed is developing a specialized digital platform to connect Healthcare facilities (initially community pharmacies in French-speaking Switzerland) with qualified healthcare professionals. InteriMed addresses critical staffing shortages in healthcare and the growing demand for flexible work among healthcare professionals by providing an efficient, compliant, and user-friendly solution",
-    "keyBenefit": "Focus on what matters most - patient care, not administrative burden"
-  },
-  "valueProposition": {
-    "title": "Designed for your specific needs",
-    "pharmacy": {
-      "title": "Healthcare facilities: Fill positions quickly and efficiently",
-      "description": "Simplified job posting for efficient administrative management",
-      "cta": "Explore facility solutions"
-    },
-    "professional": {
-      "title": "Professionals: Discover Flexible Work You Control",
-      "description": "Choose your availability and find suitable assignments",
-      "cta": "Explore professional opportunities"
-    }
-  },
-  "howItWorks": {
-    "title": "How InteriMed works",
-    "description": "Create your personal or institutional profile in just a few clicks",
-    "subtitle": "A simple, efficient process for both healthcare facilities and professionals",
-    "steps": {
-      "createProfile": {
-        "title": "Create your profile",
-        "description": "Our secure system ensures that only verified professionals can apply, and access our platform"
-      },
-      "planAvailability": {
-        "title": "Plan your availability and needs",
-        "description": "Our interactive calendar empowers you to set your availability and needs. You are in control"
-      },
-      "matchSign": {
-        "title": "Match and sign",
-        "description": "We take care of the matching you with the right opportunities. You are just a click of a button away"
-      },
-      "marketPlace": {
-        "title": "Market place",
-        "description": "You can't wait to work or to hire? Connect with professionals and facilities in our marketplace"
-      },
-      "directMessaging": {
-        "title": "Direct messaging",
-        "description": "You can directly message the facility to discuss the details of the position. Anytime, anywhere"
-      },
-      "contractPayroll": {
-        "title": "Contract and payroll",
-        "description": "HR is time consuming for everyone. We take care of the paperwork, so you can focus on what matters, patient care"
+    "pillar3": {
+      "title": "Network Intelligence (Organization)",
+      "subtitle": "Powered by the Org and Pool engines.",
+      "features": {
+        "multiSite": {
+          "title": "Multi-Site Pooling",
+          "description": "For Hospital Groups and Cantonal Networks. Predict load across facilities and dispatch floaters to where the need is highest."
+        },
+        "billing": {
+          "title": "Inter-Entity Billing",
+          "description": "Automate cross-charging between wards or sites without spreadsheets."
+        }
       }
     }
   },
-  "trust": {
-    "title": "Building the future of healthcare staffing in Switzerland",
-    "stats": {
-      "pharmacies": {
-        "number": "200+",
-        "label": "Healthcare facilities"
-      },
-      "professionals": {
-        "number": "1000+",
-        "label": "Healthcare professionals"
-      },
-      "shifts": {
-        "number": "5000+",
-        "label": "Positions filled"
-      },
-      "cantons": {
-        "number": "6",
-        "label": "French-speaking cantons"
-      }
+  "complianceShield": {
+    "title": "Regulatory Armor for Swiss Healthcare",
+    "subtitle": "In a market defined by strict labor laws, our platform is your compliance officer.",
+    "seco": {
+      "title": "SECO & ArG Automation",
+      "description": "We generate SECO-compliant reports instantly. The system prevents scheduling that violates federal rest periods or maximum weekly hours."
+    },
+    "wageProtection": {
+      "title": "Wage Protection (LSE/GAV)",
+      "description": "Never fear 'Wage Dumping.' Our engine calculates period variables against local GAV (Collective Labor Agreements) in real-time."
+    },
+    "payroll": {
+      "title": "Fiduciary-Ready Payroll",
+      "description": "Hard-lock payroll periods and export data directly to your fiduciary. We handle the complex variables: night premiums, piquets, and holiday balances."
+    },
+    "governance": {
+      "title": "Clinical Governance",
+      "description": "Built-in CIRS (Critical Incident Reporting) allows staff to report risks securely, ensuring quality of care remains paramount."
     }
   },
-  "testimonials": {
-    "title": "What our users say",
-    "items": [
-      {
-        "quote": "InteriMed has transformed how we handle staffing shortages in our pharmacy",
-        "author": "Jean-Michel Abhamon",
-        "position": "Pharmacy Owner, Geneva"
-      }
-    ]
+  "careerPassport": {
+    "title": "Your Career, Your Terms, Your Net Wage.",
+    "subtitle": "You are not a commodity. You are a highly skilled professional. We built the tools to treat you like one.",
+    "financialClarity": {
+      "title": "Real-Time Financial Clarity",
+      "description": "Before you accept a shift, use the Income Simulator to see your exact take-home pay after social deductions."
+    },
+    "digitalPassport": {
+      "title": "Digital Career Passport",
+      "description": "Your profile is a portable verification dossier. Store your diplomas, criminal records, and immunity status. Generate a verified CV with one tap."
+    },
+    "education": {
+      "title": "Continuous Education (FPH/CME)",
+      "description": "Don't just work; grow. We track your continuing education credits and match you with missions that help you complete your specialization requirements."
+    },
+    "scheduling": {
+      "title": "Life-First Scheduling",
+      "description": "Set your 'Impossible Dates'. Our algorithm blocks you from being bothered on days you've marked for family or study."
+    }
   },
-  "finalCta": {
-    "title": "Ready to transform your healthcare staffing experience?",
-    "description": "Join InteriMed today and be part of the future of healthcare staffing in Switzerland",
-    "button": "Get Started Now",
-    "buttons": {
-      "pharmacy": "For healthcare facilities",
-      "professional": "For healthcare professionals"
+  "technicalSpecs": {
+    "title": "Built for the Enterprise IT Ecosystem",
+    "dataSovereignty": {
+      "title": "Data Sovereignty",
+      "description": "100% Swiss Hosting (Data never leaves CH)."
+    },
+    "identity": {
+      "title": "Identity Management",
+      "description": "SSO Support for Azure AD, OKTA, and Google Workspace."
+    },
+    "connectivity": {
+      "title": "Connectivity",
+      "description": "REST API for bi-directional sync with ERPs (SAP, Opale)."
+    },
+    "aiProcessing": {
+      "title": "AI Processing",
+      "description": "OCR for document extraction and Parsing for CV analysis."
+    },
+    "security": {
+      "title": "Security",
+      "description": "Role-Based Access Control with 'Break Glass' protocols."
+    }
+  },
+  "roi": {
+    "title": "Calculate Your Efficiency Gains",
+    "subtitle": "Input your Bed Count and Current Agency Spend.",
+    "projectedSavings": "Projected Savings",
+    "basedOn": "Based on converting 40% of Agency Spend to Internal Pool utilization.",
+    "cta": "Request a Full Audit"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions about Swiss Healthcare Staffing",
+    "q1": {
+      "question": "How does the platform handle Cross-Border (Frontalier) taxation?",
+      "answer": "Our payroll engine automatically handles Source Tax (Quellensteuer) calculations for permit holders (G-Permit), ensuring full compliance with cantonal tax laws."
+    },
+    "q2": {
+      "question": "Is the digital signature legally binding?",
+      "answer": "Yes. We utilize Qualified Electronic Signatures (QES) or Advanced Electronic Signatures (AES) for all contracts, fully compliant with the Swiss Code of Obligations (OR)."
+    },
+    "q3": {
+      "question": "Can we use the software without the marketplace?",
+      "answer": "Absolutely. Many institutions use our 'SaaS-Only' mode to manage their internal teams, utilizing the whitelist features and roster planning solely for their own employees."
+    },
+    "q4": {
+      "question": "How is data privacy handled regarding patient data?",
+      "answer": "The platform is designed for workforce management, not patient records. However, any internal notes or incident reports are encrypted at rest and in transit, hosted in ISO-certified Swiss data centers."
     }
   },
   "features": {
     "title": "Why Choose",
     "titleHighlight": "MediShift?",
-    "subtitle": "Discover the features that make us unique.",
+    "subtitle": "Built for Swiss healthcare professionals, by healthcare professionals",
     "smartMatching": {
       "title": "Smart Matching",
-      "description": "Our AI-driven algorithm connects you with the perfect match instantly."
+      "description": "AI-powered matching connects you with verified professionals who match your exact requirements, availability, and compliance needs in seconds."
     },
     "dataCompliance": {
       "title": "Data Compliance",
-      "description": "Your data is secure and fully compliant with Swiss regulations."
+      "description": "GDPR compliant, hosted in Switzerland. Your data stays secure and local."
     },
     "calendar": {
-      "title": "Smart Calendar",
-      "description": "Manage your schedule effortlessly with our intuitive calendar."
+      "title": "Unified Calendar",
+      "description": "One calendar for your permanent team and external talent. See everything at a glance."
     },
     "zeroBureaucracy": {
       "title": "Zero Bureaucracy",
-      "description": "We handle the paperwork so you can focus on what matters."
+      "description": "Digital contracts, automated payroll exports. Focus on care, not paperwork."
     },
     "unlimitedAccess": {
       "title": "Unlimited Access",
-      "description": "Get full access to all features and profiles without limits."
+      "description": "Post unlimited shifts, access the full talent pool. No hidden fees."
     }
   },
   "dualPersona": {
-    "title": "One Platform,",
-    "titleHighlight": "Two Solutions",
-    "subtitle": "Whether you are a facility or a professional, we have you covered.",
+    "title": "Built for",
+    "titleHighlight": "Everyone",
+    "subtitle": "Whether you're a healthcare facility or a professional, we've built the perfect solution for you.",
     "facilities": {
       "title": "For Facilities",
-      "description": "Find qualified staff quickly and efficiently."
+      "description": "Post shifts, find qualified professionals, manage your team"
     },
     "professionals": {
       "title": "For Professionals",
-      "description": "Find flexible work that fits your schedule."
+      "description": "Find flexible work, set your availability, get paid on time"
     },
     "card": {
-      "title": "Ready to get started?",
-      "description": "Join thousands of satisfied users today.",
-      "button": "Create Account"
+      "title": "Get Started Today",
+      "description": "Join hundreds of healthcare facilities and professionals already using MediShift",
+      "button": "Sign Up Free"
     }
   },
   "security": {
-    "badge": "Security First",
-    "title": "Swiss Quality &",
-    "titleHighlight": "Security",
-    "description": "We prioritize the security and privacy of your data above all else.",
+    "badge": "Swiss Made",
+    "title": "Security & Privacy",
+    "titleHighlight": "First",
+    "description": "Your data is protected by Swiss law, hosted in Zurich, and encrypted end-to-end. We're GDPR compliant and ISO 27001 certified.",
     "hosting": {
       "title": "Swiss Hosting",
-      "description": "All data is hosted securely in Switzerland."
+      "description": "All data stored in Zurich data centers"
     },
     "compliance": {
-      "title": "Fully Compliant",
-      "description": "Adhering to all local and federal regulations."
+      "title": "GDPR Compliant",
+      "description": "Full compliance with European data protection"
     },
     "encryption": {
       "title": "End-to-End Encryption",
-      "description": "Your data is encrypted at rest and in transit."
+      "description": "Your data is encrypted at rest and in transit"
     },
     "development": {
-      "title": "Secure Development",
-      "description": "Built with security best practices from the ground up."
+      "title": "Open Source Core",
+      "description": "Transparent, auditable, and secure"
     },
-    "badge1": "Secure",
-    "badge2": "Encrypted"
+    "badge1": "SECURE",
+    "badge2": "ENCRYPTED"
   },
   "whyChooseUs": {
     "title": "Why Choose Us",
-    "subtitle": "The MediShift Advantage",
-    "description": "Experience the difference with our dedicated platform."
+    "subtitle": "It's Free. Forever.",
+    "description": "Join our platform with no hidden fees. Simple, transparent and free for everyone."
   },
   "pricing": {
     "free": {
       "item1": {
         "title": "For Facilities",
-        "subtitle": "Facility",
-        "desc": "Efficient staffing solutions."
+        "subtitle": "No registration fees",
+        "desc": "Sign up for free and start posting your job openings today"
       },
       "item2": {
         "title": "For Professionals",
-        "subtitle": "Professional",
-        "desc": "Flexible work opportunities."
+        "subtitle": "Free forever",
+        "desc": "Create your profile for free and access all opportunities with no hidden fees"
       },
       "item3": {
-        "title": "Join Now",
-        "subtitle": "Free",
-        "desc": "Sign up for free today."
+        "title": "For Everyone",
+        "subtitle": "No commitment",
+        "desc": "Use our platform with no fees, no commitment, and no surprises. Simple and transparent"
       }
     }
+  },
+  "finalCta": {
+    "title": "Ready to Transform Your Healthcare Staffing?",
+    "description": "Join facilities and professionals already using AI-powered scheduling",
+    "button": "Get Started Free",
+    "buttonSecondary": "Schedule Demo"
   },
   "trustedBy": {
     "alt1": "SPS",

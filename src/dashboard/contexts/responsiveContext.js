@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import '../styles/dashboard-layout.css';
+import '../pages/components/layout.css';
 
 const BREAKPOINTS = {
   mobile: 480,
@@ -22,6 +22,8 @@ export const ResponsiveProvider = ({ children }) => {
 
   const [showBackButton, setShowBackButton] = useState(false);
   const [onBackButtonClick, setOnBackButtonClick] = useState(null);
+  const [isMainSidebarCollapsed, setIsMainSidebarCollapsed] = useState(false);
+  const [isSecondarySidebarCollapsed, setIsSecondarySidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -50,6 +52,14 @@ export const ResponsiveProvider = ({ children }) => {
     setOnBackButtonClick(null);
   }, []);
 
+  const toggleMainSidebar = useCallback(() => {
+    setIsMainSidebarCollapsed(prev => !prev);
+  }, []);
+
+  const toggleSecondarySidebar = useCallback(() => {
+    setIsSecondarySidebarCollapsed(prev => !prev);
+  }, []);
+
   const contextValue = useMemo(() => ({
     windowWidth,
     windowHeight,
@@ -61,7 +71,13 @@ export const ResponsiveProvider = ({ children }) => {
     showBackButton,
     onBackButtonClick,
     setPageMobileState,
-    clearPageMobileState
+    clearPageMobileState,
+    isMainSidebarCollapsed,
+    setIsMainSidebarCollapsed,
+    toggleMainSidebar,
+    isSecondarySidebarCollapsed,
+    setIsSecondarySidebarCollapsed,
+    toggleSecondarySidebar
   }), [
     windowWidth,
     windowHeight,
@@ -72,7 +88,13 @@ export const ResponsiveProvider = ({ children }) => {
     showBackButton,
     onBackButtonClick,
     setPageMobileState,
-    clearPageMobileState
+    clearPageMobileState,
+    isMainSidebarCollapsed,
+    setIsMainSidebarCollapsed,
+    toggleMainSidebar,
+    isSecondarySidebarCollapsed,
+    setIsSecondarySidebarCollapsed,
+    toggleSecondarySidebar
   ]);
 
   return (
@@ -100,7 +122,13 @@ export const useResponsive = () => {
       showBackButton: false,
       onBackButtonClick: null,
       setPageMobileState: () => {},
-      clearPageMobileState: () => {}
+      clearPageMobileState: () => {},
+      isMainSidebarCollapsed: false,
+      setIsMainSidebarCollapsed: () => {},
+      toggleMainSidebar: () => {},
+      isSecondarySidebarCollapsed: false,
+      setIsSecondarySidebarCollapsed: () => {},
+      toggleSecondarySidebar: () => {}
     };
   }
   return context;

@@ -23,7 +23,7 @@ import {
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import EmployeePopup from './employeePopup';
-import Dialog from '../../../../components/Dialog/Dialog';
+import Modal from '../../../../components/modals/modals';
 import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import InputFieldParagraph from '../../../../components/boxedInputFields/textareaField';
 
@@ -590,7 +590,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                 )}
             </div>
 
-            <Dialog
+            <Modal
                 isOpen={showRoleModal}
                 onClose={() => {
                     setShowRoleModal(false);
@@ -693,7 +693,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                         </p>
                     </div>
                 </div>
-            </Dialog>
+            </Modal>
 
             <EmployeePopup
                 employee={selectedEmployee}

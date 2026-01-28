@@ -335,8 +335,8 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
     <header
       className={cn(
         "h-14 max-h-14 min-h-14 w-full",
-        "flex items-center px-3 sm:px-4 md:px-5 fixed top-0 left-0 right-0 transition-all duration-200",
-        "border-b border-white/10"
+        "flex items-center px-4 sm:px-6 md:px-8 fixed top-0 left-0 right-0 transition-all duration-200",
+        "border-b"
       )}
       style={{
         zIndex: workspaceSelectorOpen ? 20000 : 50,
@@ -344,7 +344,9 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         color: '#ffffff',
         height: '3.5rem',
         maxHeight: '3.5rem',
-        minHeight: '3.5rem'
+        minHeight: '3.5rem',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+        borderWidth: '0 0 1px 0'
       }}
     >
       {/* Left: Menu Button, Logo */}
@@ -353,35 +355,35 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         {showBackButton && onBackButtonClick ? (
           <button
             onClick={onBackButtonClick}
-            className="md:hidden p-1.5 rounded-md hover:bg-white/5 text-white transition-colors flex-shrink-0"
+            className="md:hidden p-2 rounded-lg hover:bg-white/10 text-white transition-all flex-shrink-0"
             aria-label={t('common:header.goBack', 'Go back')}
           >
-            <FiArrowLeft className="h-4 w-4" />
+            <FiArrowLeft className="h-4 w-4" strokeWidth={2.5} />
           </button>
         ) : (
           onMobileMenuToggle && (
             <button
               onClick={onMobileMenuToggle}
-              className="xl1200:hidden p-1.5 rounded-md hover:bg-white/5 text-white transition-colors flex-shrink-0"
+              className="xl1200:hidden p-2 rounded-lg hover:bg-white/10 text-white transition-all flex-shrink-0"
               aria-label={t('common:header.toggleMenu', 'Toggle menu')}
             >
               {isMobileMenuOpen ? (
-                <FiX className="h-4 w-4" />
+                <FiX className="h-4 w-4" strokeWidth={2.5} />
               ) : (
-                <FiMenu className="h-4 w-4" />
+                <FiMenu className="h-4 w-4" strokeWidth={2.5} />
               )}
             </button>
           )
         )}
 
         {/* Logo Section */}
-        <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
+        <div className="flex items-center gap-2.5 flex-shrink-0 min-w-0">
           <img
             src="/logo white.png"
             alt={t('common:header.logoAlt', 'MediShift')}
             className="h-5 sm:h-6 w-auto object-contain shrink-0"
           />
-          <span className="text-sm sm:text-base font-medium text-white hidden md:block truncate">
+          <span className="text-sm sm:text-base font-semibold text-white hidden md:block truncate tracking-tight">
             {t('common:header.brandName', 'MediShift')}
           </span>
         </div>
@@ -471,35 +473,35 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
           <button
             onClick={() => setSearchOpen(!searchOpen)}
             className={cn(
-              "h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center transition-all duration-150",
-              "hover:bg-white/30 active:bg-white/40",
-              searchOpen ? "bg-white/30" : ""
+              "h-9 w-9 rounded-lg flex items-center justify-center transition-all duration-200",
+              "hover:bg-white/10 active:bg-white/15",
+              searchOpen ? "bg-white/10" : ""
             )}
             aria-label={t('common:header.search', 'Search')}
           >
-            <FiSearch className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+            <FiSearch className="h-4 w-4" strokeWidth={2.5} />
           </button>
         </div>
 
         {/* Search - Icon button (1200px and below) */}
         <button
           onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-          className="xl1200:hidden relative text-white/90 hover:text-white hover:bg-white/5 transition-all flex-shrink-0 flex items-center justify-center rounded-md p-2"
+          className="xl1200:hidden relative text-white/90 hover:text-white hover:bg-white/10 transition-all flex-shrink-0 flex items-center justify-center rounded-lg p-2"
           aria-label={t('common:header.search', 'Search')}
         >
-          <FiSearch className="h-4 w-4" />
+          <FiSearch className="h-4 w-4" strokeWidth={2.5} />
         </button>
 
         {/* Notifications - Always visible in header */}
         <div className="relative" ref={notificationsRef}>
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative text-white/90 hover:text-white hover:bg-white/5 transition-all flex-shrink-0 flex items-center justify-center rounded-md p-2"
+            className="relative text-white/90 hover:text-white hover:bg-white/10 transition-all flex-shrink-0 flex items-center justify-center rounded-lg p-2"
             aria-label={t('common:header.notifications', 'Notifications')}
           >
-            <FiBell className="h-[22px] w-[22px]" strokeWidth={2} />
+            <FiBell className="h-[20px] w-[20px]" strokeWidth={2.5} />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-red-400" />
+              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-red-400 ring-2 ring-white/20" />
             )}
           </button>
 
@@ -541,12 +543,12 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         <div className="relative hidden md:block" ref={helpMenuRef}>
           <button
             data-tutorial="onboarding-help-button"
-            className="relative text-white/90 hover:text-white hover:bg-white/5 transition-all flex-shrink-0 flex items-center justify-center rounded-md p-2"
+            className="relative text-white/90 hover:text-white hover:bg-white/10 transition-all flex-shrink-0 flex items-center justify-center rounded-lg p-2"
             aria-label={t('common:header.help', 'Help')}
             onClick={handleTutorialButtonClick}
             title="Help"
           >
-            <FiHelpCircle className="h-[22px] w-[22px]" strokeWidth={2} />
+            <FiHelpCircle className="h-[20px] w-[20px]" strokeWidth={2.5} />
           </button>
 
           {helpMenuOpen && (
@@ -580,10 +582,10 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         <div className="relative hidden md:block" ref={languageRef}>
           <button
             onClick={() => setLanguageOpen(!languageOpen)}
-            className="flex items-center justify-center gap-1.5 text-white/90 hover:text-white hover:bg-white/5 transition-all rounded-md px-2.5 py-2"
+            className="flex items-center justify-center gap-1.5 text-white/90 hover:text-white hover:bg-white/10 transition-all rounded-lg px-2.5 py-2"
           >
-            <span className="text-xs font-medium uppercase text-white">{i18n.language?.slice(0, 2) || 'EN'}</span>
-            <FiChevronDown className={cn("h-[22px] w-[22px] text-white transition-transform", languageOpen && "rotate-180")} strokeWidth={2} />
+            <span className="text-xs font-semibold uppercase text-white tracking-wide">{i18n.language?.slice(0, 2) || 'EN'}</span>
+            <FiChevronDown className={cn("h-[18px] w-[18px] text-white transition-transform", languageOpen && "rotate-180")} strokeWidth={2.5} />
           </button>
 
           {languageOpen && (
@@ -623,18 +625,18 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
         <div className="relative" ref={profileMenuRef}>
           <button
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-            className="flex items-center gap-1.5 text-white/90 hover:text-white hover:bg-white/5 transition-all rounded-md px-1.5 py-1"
+            className="flex items-center gap-2 text-white/90 hover:text-white hover:bg-white/10 transition-all rounded-lg px-1.5 py-1"
           >
             <div
-              className="rounded-md flex items-center justify-center cursor-pointer transition-all flex-shrink-0 relative h-7 w-7"
+              className="rounded-lg flex items-center justify-center cursor-pointer transition-all flex-shrink-0 relative h-7 w-7 ring-1 ring-white/20"
             >
               {user?.photoURL ? (
-                <img src={user.photoURL} alt={t('common:header.profileAlt', 'Profile')} className="h-full w-full rounded-md object-cover" />
+                <img src={user.photoURL} alt={t('common:header.profileAlt', 'Profile')} className="h-full w-full rounded-lg object-cover" />
               ) : (
-                <FiUser className="h-4 w-4 text-white" />
+                <FiUser className="h-4 w-4 text-white" strokeWidth={2.5} />
               )}
             </div>
-            <FiChevronDown className={cn("w-3 h-3 text-white transition-transform hidden md:block", profileMenuOpen && "rotate-180")} />
+            <FiChevronDown className={cn("w-3.5 h-3.5 text-white transition-transform hidden md:block", profileMenuOpen && "rotate-180")} strokeWidth={2.5} />
           </button>
 
           {/* Profile Dropdown */}

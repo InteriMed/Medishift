@@ -33,6 +33,10 @@ const PhoneVerificationStep = forwardRef(({
     const { phonePrefixOptions } = useDropdownOptions();
     const { currentUser } = useAuth();
 
+    const effectivePhonePrefixOptions = phonePrefixOptions && phonePrefixOptions.length > 0
+        ? phonePrefixOptions
+        : [];
+
     useEffect(() => {
         const handleUnhandledRejection = (event) => {
             const reason = event.reason;
@@ -85,29 +89,10 @@ const PhoneVerificationStep = forwardRef(({
         };
     }, []);
 
-    const defaultPhonePrefixes = [
-        { value: '+41', label: 'Switzerland (+41)' },
-        { value: '+49', label: 'Germany (+49)' },
-        { value: '+33', label: 'France (+33)' },
-        { value: '+39', label: 'Italy (+39)' },
-        { value: '+43', label: 'Austria (+43)' },
-        { value: '+423', label: 'Liechtenstein (+423)' },
-        { value: '+352', label: 'Luxembourg (+352)' },
-        { value: '+32', label: 'Belgium (+32)' },
-        { value: '+31', label: 'Netherlands (+31)' },
-        { value: '+44', label: 'United Kingdom (+44)' },
-        { value: '+1', label: 'USA/Canada (+1)' }
-    ];
-
-    const effectivePhonePrefixOptions = phonePrefixOptions && phonePrefixOptions.length > 0
-        ? phonePrefixOptions
-        : defaultPhonePrefixes;
 
     useEffect(() => {
         if (!phonePrefixOptions || phonePrefixOptions.length === 0) {
-            console.warn('⚠️ phonePrefixOptions is empty, using fallback options');
-        } else {
-            console.debug('✅ phonePrefixOptions loaded:', phonePrefixOptions.length, 'options');
+            console.warn('⚠️ phonePrefixOptions is empty. Please check dropdowns.json translations.');
         }
     }, [phonePrefixOptions]);
 
@@ -120,7 +105,7 @@ const PhoneVerificationStep = forwardRef(({
                 if (initialPhoneNumber.startsWith(p)) return p;
             }
         }
-        return '+41';
+        return effectivePhonePrefixOptions.length > 0 ? effectivePhonePrefixOptions[0].value : '+41';
     });
 
     const [phoneNumber, setPhoneNumber] = useState(() => {
@@ -132,7 +117,7 @@ const PhoneVerificationStep = forwardRef(({
                     if (initialPhoneNumber.startsWith(p)) return p;
                 }
             }
-            return '+41';
+            return effectivePhonePrefixOptions.length > 0 ? effectivePhonePrefixOptions[0].value : '+41';
         })();
 
         if (initialPhoneNumber.startsWith(detectedPrefix)) {
@@ -155,9 +140,8 @@ const PhoneVerificationStep = forwardRef(({
     const isValidPhone = cleanPhone.length >= 7;
 
     useEffect(() => {
-        const isValid = isValidPhone;
-        onValidationChange(isValid);
-    }, [isValidPhone, onValidationChange, phoneNumber, phonePrefix, cleanPhone]);
+        onValidationChange(isValidPhone);
+    }, [isValidPhone, onValidationChange]);
 
     useEffect(() => {
         if (verificationCheckDoneRef.current) return;
@@ -259,94 +243,38 @@ const PhoneVerificationStep = forwardRef(({
         };
 
         checkPhoneVerificationStatus();
-    }, [currentUser, onComplete, onStepChange]);
-
-    useEffect(() => {
-        if (internalStep === 1 && !captchaSetupDoneRef.current) {
-            const initializeRecaptcha = async () => {
-                if (captchaSetupDoneRef.current) {
-                    console.log('⏭️ reCAPTCHA already initialized, skipping...');
-                    return;
-                }
-
-                const savedResponse = localStorage.getItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
-                if (savedResponse) {
-                    try {
-                        const responseData = JSON.parse(savedResponse);
-                        const savedAt = new Date(responseData.savedAt);
-                        const hoursSinceSaved = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
-
-                        if (hoursSinceSaved < 2 && responseData.response) {
-                            setRecaptchaVerified(true);
-                        } else {
-                            localStorage.removeItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
-                        }
-                    } catch (e) {
-                        localStorage.removeItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
-                    }
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 500));
-                if (!captchaSetupDoneRef.current) {
-                    try {
-                        await setupRecaptcha();
-                    } catch (error) {
-                        if (error?.message?.includes('Timeout') || error?.name === 'TimeoutError' || error?.isTimeout) {
-                        } else {
-                        }
-                    }
-                }
-            };
-            initializeRecaptcha();
-        } else if (internalStep !== 1) {
-            captchaSetupDoneRef.current = false;
-        }
-    }, [internalStep]);
-
-
-    useEffect(() => {
-        return () => {
-            if (recaptchaVerifier) {
-                try {
-                    recaptchaVerifier.clear();
-                } catch (e) {
-                    console.warn('Error clearing reCAPTCHA:', e);
-                }
-            }
-            if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-            if (window.recaptchaWidgetId !== undefined) {
-                try {
-                    window.grecaptcha?.reset(window.recaptchaWidgetId);
-                } catch (e) { }
-                window.recaptchaWidgetId = undefined;
-            }
-            captchaSetupDoneRef.current = false;
-
-            const container = document.getElementById('recaptcha-container-invisible');
-            if (container && container.parentNode) {
-                container.parentNode.removeChild(container);
-            }
-        };
-    }, [recaptchaVerifier]);
-
-    const startCountdown = () => {
-        setCountdown(60);
-        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-        countdownTimerRef.current = setInterval(() => {
-            setCountdown((prev) => {
-                if (prev <= 1) {
-                    clearInterval(countdownTimerRef.current);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-    };
+    }, [currentUser?.uid]);
 
     const isInitializingRef = React.useRef(false);
     const captchaSetupDoneRef = React.useRef(false);
 
-    const setupRecaptcha = async () => {
+    const safeClearRecaptcha = useCallback((verifier) => {
+        if (!verifier) return;
+        try {
+            if (typeof verifier.clear === 'function') {
+                const widgetId = verifier._widgetId !== undefined 
+                    ? verifier._widgetId 
+                    : window.recaptchaWidgetId;
+                if (widgetId !== undefined && widgetId !== null && window.grecaptcha) {
+                    try {
+                        if (typeof window.grecaptcha.reset === 'function') {
+                            window.grecaptcha.reset(widgetId);
+                        }
+                    } catch (resetErr) {
+                    }
+                }
+                verifier.clear();
+            }
+        } catch (e) {
+            if (e.code !== 'auth/internal-error' && 
+                !e.message?.includes('already been cleared') &&
+                !e.message?.includes('Invalid widget ID')) {
+                console.debug('Error clearing reCAPTCHA (non-critical):', e.message || e);
+            }
+        }
+    }, []);
+
+    const setupRecaptcha = useCallback(async () => {
         if (isInitializingRef.current) {
             return recaptchaVerifier;
         }
@@ -363,22 +291,8 @@ const PhoneVerificationStep = forwardRef(({
         }
 
         if (recaptchaVerifier) {
-            try {
-                try {
-                    recaptchaVerifier.clear();
-                } catch (clearErr) {
-                    console.warn('Error clearing verifier:', clearErr);
-                }
-                setRecaptchaVerifier(null);
-            } catch (e) {
-                console.warn('⚠️ Existing verifier invalid, clearing...', e);
-                try {
-                    recaptchaVerifier.clear();
-                } catch (clearErr) {
-                    console.warn('Error clearing verifier:', clearErr);
-                }
-                setRecaptchaVerifier(null);
-            }
+            safeClearRecaptcha(recaptchaVerifier);
+            setRecaptchaVerifier(null);
         }
 
         isInitializingRef.current = true;
@@ -405,13 +319,11 @@ const PhoneVerificationStep = forwardRef(({
                 'callback': (response) => {
                     setRecaptchaVerified(true);
 
-                    // Save reCAPTCHA response to localStorage (valid for 2 hours)
                     localStorage.setItem(RECAPTCHA_RESPONSE_STORAGE_KEY, JSON.stringify({
                         response: response,
                         savedAt: new Date().toISOString()
                     }));
 
-                    // Also save verification status (valid for 24 hours)
                     localStorage.setItem(RECAPTCHA_VERIFICATION_STORAGE_KEY, JSON.stringify({
                         verified: true,
                         verifiedAt: new Date().toISOString()
@@ -419,7 +331,7 @@ const PhoneVerificationStep = forwardRef(({
                 },
                 'expired-callback': () => {
                     if (verifier) {
-                        try { verifier.clear(); } catch (e) { }
+                        safeClearRecaptcha(verifier);
                     }
                     setRecaptchaVerifier(null);
                     setRecaptchaVerified(false);
@@ -430,7 +342,7 @@ const PhoneVerificationStep = forwardRef(({
                 },
                 'error-callback': (error) => {
                     if (verifier) {
-                        try { verifier.clear(); } catch (e) { }
+                        safeClearRecaptcha(verifier);
                     }
                     setRecaptchaVerifier(null);
                     setRecaptchaVerified(false);
@@ -463,13 +375,7 @@ const PhoneVerificationStep = forwardRef(({
                     ]).catch(async (error) => {
                         if (error.message === 'reCAPTCHA render timeout' || error.message?.includes('Timeout') || error.name === 'TimeoutError') {
                             console.warn('⚠️ reCAPTCHA render timeout, this is usually non-critical');
-                            try {
-                                if (verifier) {
-                                    verifier.clear();
-                                }
-                            } catch (clearErr) {
-                                console.warn('Error clearing verifier after timeout:', clearErr);
-                            }
+                            safeClearRecaptcha(verifier);
                             return null;
                         }
                         throw error;
@@ -547,7 +453,7 @@ const PhoneVerificationStep = forwardRef(({
             });
 
             if (recaptchaVerifier) {
-                try { recaptchaVerifier.clear(); } catch (e) { }
+                safeClearRecaptcha(recaptchaVerifier);
                 setRecaptchaVerifier(null);
             }
             window.recaptchaWidgetId = undefined;
@@ -572,6 +478,93 @@ const PhoneVerificationStep = forwardRef(({
         } finally {
             isInitializingRef.current = false;
         }
+    }, [safeClearRecaptcha, showError, t]);
+
+    useEffect(() => {
+        if (internalStep === 1 && !captchaSetupDoneRef.current) {
+            let isMounted = true;
+            const initializeRecaptcha = async () => {
+                if (captchaSetupDoneRef.current || !isMounted) {
+                    console.log('⏭️ reCAPTCHA already initialized, skipping...');
+                    return;
+                }
+
+                const savedResponse = localStorage.getItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
+                if (savedResponse) {
+                    try {
+                        const responseData = JSON.parse(savedResponse);
+                        const savedAt = new Date(responseData.savedAt);
+                        const hoursSinceSaved = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
+
+                        if (hoursSinceSaved < 2 && responseData.response) {
+                            setRecaptchaVerified(true);
+                        } else {
+                            localStorage.removeItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
+                        }
+                    } catch (e) {
+                        localStorage.removeItem(RECAPTCHA_RESPONSE_STORAGE_KEY);
+                    }
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+                if (!captchaSetupDoneRef.current && isMounted) {
+                    try {
+                        await setupRecaptcha();
+                    } catch (error) {
+                        if (error?.message?.includes('Timeout') || error?.name === 'TimeoutError' || error?.isTimeout) {
+                        } else {
+                        }
+                    }
+                }
+            };
+            initializeRecaptcha();
+            return () => {
+                isMounted = false;
+            };
+        } else if (internalStep !== 1) {
+            captchaSetupDoneRef.current = false;
+        }
+    }, [internalStep]);
+
+
+    useEffect(() => {
+        return () => {
+            if (recaptchaVerifier) {
+                safeClearRecaptcha(recaptchaVerifier);
+            }
+            if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+            if (window.recaptchaWidgetId !== undefined && window.recaptchaWidgetId !== null) {
+                try {
+                    if (window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
+                        window.grecaptcha.reset(window.recaptchaWidgetId);
+                    }
+                } catch (e) { }
+                window.recaptchaWidgetId = undefined;
+            }
+            captchaSetupDoneRef.current = false;
+
+            const container = document.getElementById('recaptcha-container-invisible');
+            if (container && container.parentNode) {
+                try {
+                    container.parentNode.removeChild(container);
+                } catch (e) {
+                }
+            }
+        };
+    }, [recaptchaVerifier, safeClearRecaptcha]);
+
+    const startCountdown = () => {
+        setCountdown(60);
+        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+        countdownTimerRef.current = setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(countdownTimerRef.current);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
     };
 
 
@@ -599,22 +592,31 @@ const PhoneVerificationStep = forwardRef(({
             return;
         }
 
-        console.log('📱 Phone Verification Request:', fullNumber);
-        console.log('🔍 Current domain:', window.location.hostname);
-        console.log('🔍 Current origin:', window.location.origin);
+        console.log('📱 Phone Verification Request:', {
+            fullNumber,
+            cleanNumber,
+            cleanPrefix,
+            formatted: fullNumber,
+            domain: window.location.hostname,
+            origin: window.location.origin,
+            hasRecaptcha: !!window.grecaptcha,
+            recaptchaWidgetId: window.recaptchaWidgetId,
+            captchaSetupDone: captchaSetupDoneRef.current
+        });
 
         try {
             let verifier = recaptchaVerifier;
 
             if (!verifier || window.recaptchaWidgetId === undefined || !captchaSetupDoneRef.current) {
+                console.log('🔄 Re-initializing reCAPTCHA...');
                 verifier = await setupRecaptcha();
                 if (!verifier) {
                     throw new Error('reCAPTCHA could not be initialized');
                 }
                 await new Promise(resolve => setTimeout(resolve, 300));
             } else {
+                console.log('✅ Using existing reCAPTCHA verifier');
             }
-
 
             if (!window.grecaptcha) {
                 throw new Error('reCAPTCHA library not loaded');
@@ -622,10 +624,22 @@ const PhoneVerificationStep = forwardRef(({
 
             const phoneProvider = new PhoneAuthProvider(auth);
 
+            console.log('📞 Calling verifyPhoneNumber with:', {
+                phoneNumber: fullNumber,
+                hasVerifier: !!verifier,
+                authDomain: auth?.config?.authDomain
+            });
+
             let vid;
             try {
                 vid = await Promise.race([
                     phoneProvider.verifyPhoneNumber(fullNumber, verifier).catch((error) => {
+                        console.error('❌ verifyPhoneNumber error:', {
+                            code: error.code,
+                            message: error.message,
+                            name: error.name,
+                            stack: error.stack
+                        });
                         if (error?.message?.includes('Timeout') || error?.name === 'TimeoutError') {
                             console.warn('⚠️ Phone verification timeout from Firebase (non-critical)');
                             const timeoutError = new Error('Verification request timed out. Please try again.');
@@ -668,13 +682,18 @@ const PhoneVerificationStep = forwardRef(({
             startCountdown();
             showSuccess(t('auth.success.codeSent', 'Verification code sent to your phone.'));
         } catch (error) {
+            console.error('📱 Phone verification error:', {
+                code: error.code,
+                message: error.message,
+                fullError: error,
+                phoneNumber: fullNumber
+            });
 
             let errorMessage = t('auth.errors.verificationFailed', 'Could not send verification code.');
 
             if (error.code === 'auth/internal-error-encountered' || error.code === 'auth/internal-error') {
                 const domain = window.location.hostname;
                 const isLocalhost = domain === 'localhost' || domain === '127.0.0.1';
-
 
                 if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
                     try {
@@ -690,22 +709,27 @@ const PhoneVerificationStep = forwardRef(({
                 }
 
             } else if (error.code === 'auth/invalid-phone-number') {
-                errorMessage = 'Invalid phone number format. Please check your entry.';
+                errorMessage = 'Invalid phone number format. Please check your entry. The number must be in international format (e.g., +41 79 123 45 67).';
             } else if (error.code === 'auth/too-many-requests') {
                 errorMessage = 'Too many verification attempts. Please wait a few minutes before requesting a new code. This helps prevent abuse.';
             } else if (error.code === 'auth/quota-exceeded') {
                 errorMessage = 'SMS quota exceeded. Please try again later or contact support.';
-            } else if (error.message && error.message.includes('reCAPTCHA')) {
+            } else if (error.code === 'auth/captcha-check-failed') {
                 errorMessage = 'Security verification failed. Please refresh the page and try again.';
+            } else if (error.code === 'auth/missing-phone-number') {
+                errorMessage = 'Phone number is required. Please enter a valid phone number.';
+            } else if (error.code === 'auth/invalid-verification-code') {
+                errorMessage = 'Invalid verification code. Please check and try again.';
+            } else if (error.message && (error.message.includes('reCAPTCHA') || error.message.includes('captcha'))) {
+                errorMessage = 'Security verification failed. Please refresh the page and try again.';
+            } else if (error.message && error.message.includes('400')) {
+                errorMessage = `Phone verification failed (400 Bad Request). This usually means:\n\n1. Phone authentication may not be enabled in Firebase Console\n2. Your Firebase project may have SMS quota restrictions\n3. The phone number format may be incorrect\n\nPlease check Firebase Console > Authentication > Settings > Phone numbers and ensure:\n- Phone authentication is enabled\n- Your domain is authorized\n- SMS quota is available\n\nError details: ${error.message}`;
             }
 
             showError(errorMessage);
 
             if (recaptchaVerifier) {
-                try {
-                    recaptchaVerifier.clear();
-                } catch (e) {
-                }
+                safeClearRecaptcha(recaptchaVerifier);
                 setRecaptchaVerifier(null);
             }
             if (window.recaptchaWidgetId !== undefined && window.recaptchaWidgetId !== null) {
@@ -721,7 +745,7 @@ const PhoneVerificationStep = forwardRef(({
         } finally {
             setIsLoading(false);
         }
-    }, [isValidPhone, phoneNumber, phonePrefix, recaptchaVerifier, captchaSetupDoneRef, onStepChange, showError, showSuccess, t, currentUser, auth]);
+    }, [isValidPhone, phoneNumber, phonePrefix, recaptchaVerifier, onStepChange, showError, showSuccess, t, setupRecaptcha]);
 
     const handleVerifyCode = useCallback(async () => {
         if (!verificationCode || verificationCode.length < 6) {
@@ -821,9 +845,9 @@ const PhoneVerificationStep = forwardRef(({
     const iconColor = 'var(--color-logo-1)';
     
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full flex flex-col items-center justify-center">
             {internalStep === 1 ? (
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     <div className="text-center space-y-4">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-sm onboarding-icon-no-transition" style={{ backgroundColor: iconColor, transition: 'none', WebkitTransition: 'none', MozTransition: 'none', OTransition: 'none', transitionProperty: 'none', transitionDuration: '0s', transitionDelay: '0s' }}>
                             <FiMessageSquare className="w-6 h-6" style={{ transition: 'none' }} />
@@ -855,7 +879,7 @@ const PhoneVerificationStep = forwardRef(({
                     </div>
                 </div>
             ) : internalStep === 2 ? (
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     <div className="text-center space-y-4">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-sm onboarding-icon-no-transition" style={{ backgroundColor: iconColor, transition: 'none', WebkitTransition: 'none', MozTransition: 'none', OTransition: 'none', transitionProperty: 'none', transitionDuration: '0s', transitionDelay: '0s' }}>
                             <FiCheck className="w-6 h-6" style={{ transition: 'none' }} />
@@ -878,7 +902,13 @@ const PhoneVerificationStep = forwardRef(({
                         <div className="flex flex-col items-center gap-4">
                             <div className="flex items-center gap-4">
                                 <button
-                                    onClick={handleSendCode}
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleSendCode().catch(err => {
+                                            console.error('Error sending code:', err);
+                                        });
+                                    }}
                                     disabled={isLoading || countdown > 0}
                                     className={`flex items-center gap-2 text-sm font-bold transition-all ${countdown > 0 ? 'text-muted-foreground cursor-not-allowed' : 'text-primary hover:text-primary/80'}`}
                                 >
@@ -900,7 +930,7 @@ const PhoneVerificationStep = forwardRef(({
                     </div>
                 </div>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     <div className="text-center space-y-4">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-sm onboarding-icon-no-transition" style={{ backgroundColor: iconColor, transition: 'none', WebkitTransition: 'none', MozTransition: 'none', OTransition: 'none', transitionProperty: 'none', transitionDuration: '0s', transitionDelay: '0s' }}>
                             <FiCheck className="w-6 h-6" style={{ transition: 'none' }} />

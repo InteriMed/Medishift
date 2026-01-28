@@ -5,7 +5,6 @@ import { AuthProvider, useAuth } from './contexts/authContext';
 import { NotificationProvider } from './contexts/notificationContext';
 import { NetworkProvider } from './contexts/networkContext';
 import { DashboardProvider } from './dashboard/contexts/dashboardContext';
-import { SidebarProvider } from './dashboard/onboarding/sidebarContext';
 import LoadingSpinner from './components/loadingSpinner/loadingSpinner';
 import GhostModeBanner from './components/ghostModeBanner/ghostModeBanner';
 import { useTranslation } from 'react-i18next';
@@ -64,12 +63,10 @@ const AppContainer = () => {
             <NotificationProvider>
               <NetworkProvider>
                 <DashboardProvider>
-                  <SidebarProvider>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <NetworkStatus />
-                      <AppContent />
-                    </Suspense>
-                  </SidebarProvider>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <NetworkStatus />
+                    <AppContent />
+                  </Suspense>
                 </DashboardProvider>
               </NetworkProvider>
             </NotificationProvider>

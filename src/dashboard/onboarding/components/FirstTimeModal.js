@@ -13,8 +13,7 @@ import { useDropdownOptions } from '../../../pages/profile/utils/DropdownListsIm
 import { useDashboard } from '../../contexts/dashboardContext';
 import { useTutorial } from '../../../TutorialContext/TutorialContext';
 import { FiBriefcase, FiSearch, FiCheck, FiArrowRight, FiHome, FiAlertTriangle, FiX, FiLink, FiHelpCircle, FiLoader } from 'react-icons/fi';
-import ProfessionalGLNVerification from './professionalGLNVerification';
-import FacilityGLNVerification from './facilityGLNVerification';
+import GLNVerificationStep from './GLNVerificationStep';
 import PhoneVerificationStep from './phoneVerificationStep';
 
 // Styles
@@ -922,12 +921,13 @@ ${chainMessage}
         {/* Verification Flow - Workers/Company Admin */}
         {(role === 'worker' || role === 'company') && (
           <div className="animate-in fade-in slide-in-from-top-4">
-            <ProfessionalGLNVerification
+            <GLNVerificationStep
               ref={glnVerificationRef}
-              onComplete={() => role === 'company' ? handleNext() : handleComplete()}
-              onReadyChange={(isReady) => setDocumentsReady(isReady)}
-              onProcessingChange={(processing) => setIsVerifying(processing)}
-              allowBypass={accessTeam === true}
+              data={{ role }}
+              saveProgress={async () => {}}
+              next={async () => ({ complete: false })}
+              handleComplete={() => role === 'company' ? handleNext() : handleComplete()}
+              setIsVerifying={setIsVerifying}
             />
           </div>
         )}
@@ -949,12 +949,13 @@ ${chainMessage}
 
       <div className="space-y-6 max-w-lg mx-auto">
         <div className="animate-in fade-in slide-in-from-top-4">
-          <FacilityGLNVerification
+          <GLNVerificationStep
             ref={glnVerificationRef}
-            mode="facilityInfo"
-            onComplete={() => handleComplete()}
-            onReadyChange={(isReady) => setDocumentsReady(isReady)}
-            onProcessingChange={(processing) => setIsVerifying(processing)}
+            data={{ role: 'company' }}
+            saveProgress={async () => {}}
+            next={async () => ({ complete: false })}
+            handleComplete={() => handleComplete()}
+            setIsVerifying={setIsVerifying}
           />
         </div>
       </div>

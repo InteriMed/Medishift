@@ -4,15 +4,13 @@ import { useLocation } from 'react-router-dom';
 import { Sidebar } from '../pages/components/sidebar/sidebar';
 import { Header } from '../pages/components/header/header';
 import { cn } from '../../utils/cn';
-import { useSidebar } from '../onboarding/sidebarContext';
 import { usePageMobile } from '../contexts/responsiveContext';
 import { getSidebarLayout } from '../utils/sidebarLayout';
 import './dashboardLayout';
 
 export function DashboardLayout({ children }) {
     const location = useLocation();
-    const { isMainSidebarCollapsed, setIsMainSidebarCollapsed } = useSidebar();
-    const { showBackButton, onBackButtonClick } = usePageMobile();
+    const { isMainSidebarCollapsed, setIsMainSidebarCollapsed, showBackButton, onBackButtonClick } = usePageMobile();
 
     const isAdminRoute = location.pathname.includes('/dashboard/admin');
     const isCalendarRoute = location.pathname.includes('/dashboard/calendar');
@@ -163,28 +161,33 @@ export function DashboardLayout({ children }) {
                     />
 
                     <main 
-                        className="animate-in fade-in slide-in-from-bottom-4 duration-500" 
+                        className="dashboard-main-content" 
                         style={{ 
                             position: 'relative', 
                             zIndex: 0,
                             height: 'calc(100vh - 3.5rem)',
-                            overflow: 'visible',
+                            overflow: 'hidden',
                             marginTop: '3.5rem',
                             padding: 0,
                             width: '100%',
-                            marginRight: !isCalendarRoute ? '1rem' : 0
+                            backgroundColor: 'var(--background-color, #ffffff)'
                         }} 
                         data-dashboard="true"
                     >
                         <div 
                             className={cn(
-                                "h-full w-full",
+                                "dashboard-content-wrapper",
                                 !isCalendarRoute && "dashboard-scrollable-content"
                             )}
                             style={{ 
                                 position: 'relative', 
                                 zIndex: 0,
-                                height: '100%'
+                                height: '100%',
+                                width: '100%',
+                                padding: isCalendarRoute ? 0 : 'var(--spacing-xl, 32px)',
+                                paddingTop: isCalendarRoute ? 0 : 'var(--spacing-lg, 24px)',
+                                maxWidth: '100%',
+                                margin: '0 auto'
                             }}
                         >
                             {children}

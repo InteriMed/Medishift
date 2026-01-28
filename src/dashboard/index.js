@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDashboard } from './contexts/dashboardContext';
-import { SidebarProvider } from './onboarding/sidebarContext';
 import { PageMobileProvider } from './contexts/PageMobileContext';
 import { DashboardLayout } from './layouts/dashboardLayout';
 import LoadingSpinner from '../components/loadingSpinner/loadingSpinner';
@@ -65,98 +64,96 @@ const Dashboard = () => {
   const isWaitingForAdminWorkspace = (requestedWorkspace === 'admin' || isAdminUrl) && !selectedWorkspace;
 
   return (
-    <SidebarProvider>
-      <PageMobileProvider>
-        <DashboardLayout>
-          <Suspense fallback={<LoadingSpinner />}>
-            {isLoading ? (
-              <LoadingSpinner />
-            ) : (
-              <Routes>
-                {/* Default redirect - handle global routes explicitly at index */}
-                <Route index element={
-                  (isAdminWorkspace || isAdminPathOnly) ? (
-                    <Navigate to="/dashboard/admin/portal" replace />
-                  ) : location.pathname.endsWith('/marketplace') ? (
+    <PageMobileProvider>
+      <DashboardLayout>
+        <Suspense fallback={<LoadingSpinner />}>
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <Routes>
+              {/* Default redirect - handle global routes explicitly at index */}
+              <Route index element={
+                (isAdminWorkspace || isAdminPathOnly) ? (
+                  <Navigate to="/dashboard/admin/portal" replace />
+                ) : location.pathname.endsWith('/marketplace') ? (
+                  <RouteElement
+                    route={SHARED_ROUTES.find(r => r.id === 'marketplace')}
+                    userData={userData}
+                  />
+                ) : location.pathname.includes('/profile') ? (
+                  null
+                ) : (
+                  <WorkspaceDefaultRedirect />
+                )
+              } />
+
+              {/* Shared routes - exclude when in admin workspace or admin URL */}
+              {!isAdminWorkspace && !isAdminUrl && SHARED_ROUTES.map(route => (
+                <Route
+                  key={route.id}
+                  path={route.path}
+                  element={
                     <RouteElement
-                      route={SHARED_ROUTES.find(r => r.id === 'marketplace')}
+                      route={route}
                       userData={userData}
                     />
-                  ) : location.pathname.includes('/profile') ? (
-                    null
-                  ) : (
-                    <WorkspaceDefaultRedirect />
-                  )
-                } />
+                  }
+                />
+              ))}
 
-                {/* Shared routes - exclude when in admin workspace or admin URL */}
-                {!isAdminWorkspace && !isAdminUrl && SHARED_ROUTES.map(route => (
-                  <Route
-                    key={route.id}
-                    path={route.path}
-                    element={
-                      <RouteElement
-                        route={route}
-                        userData={userData}
-                      />
-                    }
-                  />
-                ))}
+              {/* Professional routes - exclude when in admin workspace or admin URL */}
+              {!isAdminWorkspace && !isAdminUrl && PROFESSIONAL_ROUTES.map(route => (
+                <Route
+                  key={route.id}
+                  path={route.path}
+                  element={
+                    <RouteElement
+                      route={route}
+                      userData={userData}
+                    />
+                  }
+                />
+              ))}
 
-                {/* Professional routes - exclude when in admin workspace or admin URL */}
-                {!isAdminWorkspace && !isAdminUrl && PROFESSIONAL_ROUTES.map(route => (
-                  <Route
-                    key={route.id}
-                    path={route.path}
-                    element={
-                      <RouteElement
-                        route={route}
-                        userData={userData}
-                      />
-                    }
-                  />
-                ))}
+              {/* Facility routes - exclude when in admin workspace or admin URL */}
+              {!isAdminWorkspace && !isAdminUrl && FACILITY_ROUTES.map(route => (
+                <Route
+                  key={route.id}
+                  path={route.path}
+                  element={
+                    <RouteElement
+                      route={route}
+                      userData={userData}
+                    />
+                  }
+                />
+              ))}
 
-                {/* Facility routes - exclude when in admin workspace or admin URL */}
-                {!isAdminWorkspace && !isAdminUrl && FACILITY_ROUTES.map(route => (
-                  <Route
-                    key={route.id}
-                    path={route.path}
-                    element={
-                      <RouteElement
-                        route={route}
-                        userData={userData}
-                      />
-                    }
-                  />
-                ))}
+              {/* Admin routes - accessible from admin workspace only */}
+              {/* When workspace is 'admin', remaining path is already without 'admin/' prefix */}
+              {isAdminWorkspace && ADMIN_ROUTES.map(route => (
+                <Route
+                  key={route.id}
+                  path={route.path}
+                  element={
+                    <AdminRoute>
+                      <ProtectedRoute requiredRight={route.permission}>
+                        <AdminLayout>
+                          <route.component />
+                        </AdminLayout>
+                      </ProtectedRoute>
+                    </AdminRoute>
+                  }
+                />
+              ))}
 
-                {/* Admin routes - accessible from admin workspace only */}
-                {/* When workspace is 'admin', remaining path is already without 'admin/' prefix */}
-                {isAdminWorkspace && ADMIN_ROUTES.map(route => (
-                  <Route
-                    key={route.id}
-                    path={route.path}
-                    element={
-                      <AdminRoute>
-                        <ProtectedRoute requiredRight={route.permission}>
-                          <AdminLayout>
-                            <route.component />
-                          </AdminLayout>
-                        </ProtectedRoute>
-                      </AdminRoute>
-                    }
-                  />
-                ))}
-
-                {/* Catch-all for unknown paths - exclude profile paths */}
-                <Route path="*" element={<DashboardNotFound />} />
-              </Routes>
-            )}
-          </Suspense>
-        </DashboardLayout>
-      </PageMobileProvider>
-    </SidebarProvider>
+              {/* Catch-all for unknown paths - exclude profile paths */}
+              <Route path="*" element={<DashboardNotFound />} />
+            </Routes>
+          )}
+        </Suspense>
+      </DashboardLayout>
+    </PageMobileProvider>
   );
 };
 

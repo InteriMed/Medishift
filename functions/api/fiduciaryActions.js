@@ -1,5 +1,7 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
+const db = require('../database/db');
+const { FIRESTORE_COLLECTIONS } = require('../config/keysDatabase');
 const { verifyAdminAccess, ADMIN_PERMISSIONS } = require('../middleware/verifyAdminAccess');
 const { logAuditEvent, AUDIT_EVENT_TYPES } = require('../services/auditLog');
 const { checkRateLimit } = require('../middleware/rateLimit');
@@ -98,8 +100,6 @@ async function flagDiscrepancy(input, context) {
     throw new HttpsError('invalid-argument', 'Missing required fields');
   }
 
-  const db = admin.firestore();
-
   try {
     const discrepancyRef = db.collection('payroll_discrepancies').doc();
     await discrepancyRef.set({
@@ -163,10 +163,8 @@ async function getClientDashboard(input, context) {
     throw new HttpsError('invalid-argument', 'facilityIds array is required');
   }
 
-  const db = admin.firestore();
-
   try {
-    const userDoc = await db.collection('users').doc(context.userId).get();
+    const userDoc = await db.collection(FIRESTORE_COLLECTIONS.USERS).doc(context.userId).get();
     
     if (!userDoc.exists()) {
       throw new HttpsError('not-found', 'User not found');
@@ -203,7 +201,7 @@ async function getClientDashboard(input, context) {
         });
       });
 
-      const facilityDoc = await db.collection('facilityProfiles').doc(facilityId).get();
+      const facilityDoc = await db.collection(FIRESTORE_COLLECTIONS.FACILITY_PROFILES).doc(facilityId).get();
 
       dashboard.push({
         facilityId,

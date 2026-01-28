@@ -23,20 +23,21 @@
   },
   "auth": {
     "login": {
-      "button": "Se connecter"
+      "button": "Connexion"
     },
     "signup": {
-      "button": "S'inscrire"
+      "button": "Inscription"
     }
   },
   "common": {
-    "home": "Home",
-    "forFacilities": "For Facilities",
-    "forProfessionals": "For Professionals",
-    "aboutUs": "About Us",
+    "home": "Accueil",
+    "forFacilities": "Pour les établissements",
+    "forProfessionals": "Pour les professionnels",
+    "aboutUs": "À propos",
     "contact": "Contact",
     "blog": "Blog",
     "faq": "FAQ",
+    "support": "Support",
     "settings": "Paramètres"
   },
   "roles": {

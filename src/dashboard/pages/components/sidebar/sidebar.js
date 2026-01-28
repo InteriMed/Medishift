@@ -251,8 +251,8 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={cn(
-        "fixed left-0 bg-sidebar transition-all duration-200 ease-in-out overflow-x-hidden transform",
-        "border-r border-border/50",
+        "fixed left-0 transition-all duration-300 ease-in-out overflow-x-hidden transform",
+        "border-r",
         isOverlayMode && isOverlayExpanded ? "top-0 h-screen" : "top-14 h-[calc(100vh-3.5rem)]",
         isMobile ? "top-0 h-screen" : "",
         isOverlayMode ? (collapsed ? "w-[70px] min-w-[70px]" : "w-64 min-w-[256px]") : (collapsed ? "w-[70px] min-w-[70px]" : "w-64 min-w-[256px]"),
@@ -266,7 +266,9 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
             : "z-40 flex flex-col"
       )}
       style={{
-        backgroundColor: 'hsl(var(--sidebar-background))',
+        backgroundColor: 'var(--background-color, #ffffff)',
+        borderColor: 'var(--grey-1, #f0f0f0)',
+        borderWidth: '0 1px 0 0',
         zIndex: isMobile || isOverlayMode ? 60 : undefined,
         width: isOverlayMode ? (collapsed ? '70px' : '256px') : (collapsed ? '70px' : '256px'),
         minWidth: isOverlayMode ? (collapsed ? '70px' : '256px') : (collapsed ? '70px' : '256px')
@@ -311,9 +313,12 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
       {/* Navigation Items */}
       <nav 
         className={cn(
-          "flex-1 overflow-y-auto overflow-x-hidden flex flex-col gap-1",
-          "py-1 px-2"
+          "flex-1 overflow-y-auto overflow-x-hidden flex flex-col",
+          "py-3 px-3"
         )}
+        style={{
+          gap: '2px'
+        }}
       >
         {(isAdminWorkspace ? getAdminSidebarItems(t, hasRight) : REGULAR_SIDEBAR_ITEMS).map((item) => {
           let itemPath = item.path.startsWith('/dashboard') ? item.path.replace('/dashboard', '') : item.path;
@@ -398,10 +403,12 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                 const active = isActive || linkActive;
 
                 return cn(
-                  "group relative flex rounded-md hover:bg-muted/40 transition-all cursor-pointer",
-                  "p-2.5",
+                  "group relative flex rounded-lg transition-all cursor-pointer",
+                  "px-3 py-2.5",
                   collapsed ? "justify-center" : "",
-                  active && "bg-primary/5"
+                  active 
+                    ? "bg-primary/5 text-foreground" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                 );
               }}
             >
@@ -410,40 +417,31 @@ export function Sidebar({ collapsed, onToggle, isMobile = false, isOverlayMode =
                 return (
                   <>
                     <div className={cn(
-                      "w-0.5 h-full absolute left-0 top-0 bottom-0 rounded-r",
-                      active && "bg-primary"
+                      "w-1 h-6 absolute left-0 top-1/2 -translate-y-1/2 rounded-r-full transition-all",
+                      active ? "bg-primary opacity-100" : "bg-transparent opacity-0"
                     )} />
                     <div className={cn(
                       "w-full flex items-center",
-                      collapsed ? "justify-center" : "justify-between"
+                      collapsed ? "justify-center" : "gap-3"
                     )}>
                       <div className={cn(
-                        "flex items-center",
-                        collapsed ? "justify-center w-full" : "gap-3"
+                        "transition-colors shrink-0 flex items-center justify-center",
+                        "w-5 h-5",
+                        active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                       )}>
-                        <div className={cn(
-                          "transition-colors shrink-0 flex items-center justify-center",
-                          "w-5 h-5",
-                          active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                        )}>
-                          {shouldUseFacilityIcon ? (
-                            <Building className="w-5 h-5 shrink-0" />
-                          ) : (
-                            <item.icon className="w-5 h-5 shrink-0" />
-                          )}
-                        </div>
-                        {!collapsed && (
-                          <span className={cn(
-                            "text-sm font-normal truncate",
-                            active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                          )}>
-                            {t(dynamicTitle, dynamicTitle.split('.').pop())}
-                          </span>
+                        {shouldUseFacilityIcon ? (
+                          <Building className="w-5 h-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
+                        ) : (
+                          <item.icon className="w-5 h-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
                         )}
                       </div>
                       {!collapsed && (
-                        <div className="ml-2 shrink-0">
-                        </div>
+                        <span className={cn(
+                          "text-sm font-medium truncate transition-colors",
+                          active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                        )}>
+                          {t(dynamicTitle, dynamicTitle.split('.').pop())}
+                        </span>
                       )}
                     </div>
                     {collapsed && (

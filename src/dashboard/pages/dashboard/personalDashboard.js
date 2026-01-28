@@ -11,7 +11,7 @@ import {
   FiCheckCircle
 } from 'react-icons/fi';
 import { useDashboard } from '../../contexts/dashboardContext';
-import { useSidebar } from '../../onboarding/sidebarContext';
+import { useResponsive } from '../../contexts/responsiveContext';
 import { useCalendarState } from '../calendar/hooks/useCalendarState';
 import useCalendarStore from '../calendar/hooks/useCalendarStore';
 import { useCalendarEvents } from '../calendar/utils/eventDatabase';
@@ -25,7 +25,7 @@ const PersonalDashboard = () => {
   const { t } = useTranslation('dashboardPersonal');
   const navigate = useNavigate();
   const { isLoading: isDashboardLoading, user, selectedWorkspace } = useDashboard();
-  const { isMainSidebarCollapsed } = useSidebar();
+  const { isMainSidebarCollapsed } = useResponsive();
 
   const accountType = user?.role || 'professional';
   const userId = user?.uid;

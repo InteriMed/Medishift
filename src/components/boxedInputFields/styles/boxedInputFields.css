@@ -80,7 +80,7 @@
   height: var(--boxed-inputfield-height);
   text-align: left;
   border-radius: var(--boxed-inputfield-radius);
-  border: 2px solid var(--boxed-inputfield-border-color);
+  border: 1px solid var(--boxed-inputfield-border-color);
   padding: 0 var(--boxed-inputfield-padding);
   transition: var(--boxed-inputfield-transition);
 }
@@ -140,6 +140,7 @@
   background-color: var(--boxed-inputfield-background);
   color: var(--boxed-inputfield-color-text);
   font-weight: var(--font-weight-medium);
+  font-size: calc(var(--boxed-inputfield-font-size) * 0.85);
 }
 
 .boxed-inputfield-title {
@@ -174,7 +175,9 @@
 .boxed-dropdown-arrow:hover { color: var(--color-logo-1); }
 .boxed-inputfield-arrow--open { transform: translateY(-50%) rotate(0deg); color: var(--grey-3); }
 .has-selections .boxed-inputfield-arrow,
-.has-value .boxed-inputfield-arrow { color: var(--grey-3); }
+.has-value .boxed-inputfield-arrow { color: var(--black); }
+.has-selections .boxed-dropdown-arrow,
+.has-value .boxed-dropdown-arrow { color: var(--black); }
 
 .boxed-inputfield-clear {
   position: absolute;
@@ -226,7 +229,11 @@
 
 .boxed-inputfield-container--focused,
 .has-value { color: inherit; }
-.has-value .boxed-inputfield-input:not(:focus):not(.boxed-inputfield-input--error) { border-color: var(--boxed-inputfield-border-color); }
+.has-value .boxed-inputfield-input:not(:focus):not(.boxed-inputfield-input--error) { border-color: var(--black); }
+.has-value.boxed-dropdown-container:not(:focus):not(.boxed-dropdown-container--error) { border-color: var(--black); }
+.has-value .boxed-inputfield-arrow,
+.has-value .boxed-inputfield-clear { color: var(--black); }
+.has-value .boxed-inputfield-label--focused { color: var(--black); }
 
 .boxed-inputfield-error .boxed-inputfield-input,
 .boxed-inputfield-container--error .boxed-inputfield-input,
@@ -235,7 +242,7 @@
 .boxed-date-container--error,
 .boxed-multi-dropdown-container--error,
 .boxed-date-select--error,
-.boxed-date-selects--error .boxed-date-select { border: 2px solid var(--boxed-inputfield-error-color) !important; border-color: var(--boxed-inputfield-error-color) !important; }
+.boxed-date-selects--error .boxed-date-select { border: 1px solid var(--boxed-inputfield-error-color) !important; border-color: var(--boxed-inputfield-error-color) !important; }
 
 .boxed-inputfield-error .boxed-inputfield-input,
 .boxed-inputfield-container--error .boxed-inputfield-input { color: var(--boxed-inputfield-error-color); }
@@ -302,7 +309,7 @@
 
 .boxed-paragraph-container {
   padding: 12px var(--boxed-inputfield-padding);
-  border: 2px solid var(--boxed-inputfield-border-color);
+  border: 1px solid var(--boxed-inputfield-border-color);
   border-radius: var(--boxed-inputfield-radius-lg);
 }
 
@@ -338,7 +345,7 @@
 .has-value .boxed-inputfield-textarea,
 .boxed-inputfield-container--focused .boxed-inputfield-textarea { padding-top: 8px; }
 
-.boxed-inputfield-container--textarea { height: auto; min-height: 140px; align-items: flex-start; padding: var(--boxed-inputfield-padding); border: 2px solid var(--boxed-inputfield-border-color); }
+.boxed-inputfield-container--textarea { height: auto; min-height: 140px; align-items: flex-start; padding: var(--boxed-inputfield-padding); border: 1px solid var(--boxed-inputfield-border-color); }
 .boxed-inputfield-container--textarea .boxed-inputfield-label { top: 16px; }
 .boxed-inputfield-container--textarea .boxed-inputfield-label--focused { top: 0; }
 
@@ -410,11 +417,11 @@
 .boxed-dropdown-container--error.boxed-dropdown-container--option-hovered { border-color: var(--boxed-inputfield-error-color); box-shadow: var(--boxed-inputfield-error-shadow); }
 
 .boxed-inputfield-options--visible { display: block; visibility: visible; opacity: 1; }
-.boxed-inputfield-input--focused { border: 2px solid var(--boxed-inputfield-focus-border-color); }
+.boxed-inputfield-input--focused { border: 1px solid var(--boxed-inputfield-focus-border-color); }
 
 .boxed-dropdown-container {
   padding: 0 var(--boxed-inputfield-padding-x);
-  border: 2px solid var(--boxed-inputfield-border-color);
+  border: 1px solid var(--boxed-inputfield-border-color);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -478,7 +485,7 @@
 .boxed-checkbox-input {
   width: 20px;
   height: 20px;
-  border: 2px solid hsl(var(--border) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.6);
   border-radius: 4px;
   appearance: none;
   -webkit-appearance: none;
@@ -506,7 +513,7 @@
 .checkbox-wrapper { display: inline-block; vertical-align: middle; }
 .checkbox-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
 
-.checkmark { height: 24px; width: 24px; min-width: 24px; min-height: 24px; max-width: 24px; max-height: 24px; aspect-ratio: 1; border: 2px solid var(--grey-3, #ccc); border-radius: 50%; background-color: transparent; transition: var(--boxed-inputfield-transition); display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; box-sizing: border-box; overflow: hidden; }
+.checkmark { height: 24px; width: 24px; min-width: 24px; min-height: 24px; max-width: 24px; max-height: 24px; aspect-ratio: 1; border: 1px solid var(--grey-3, #ccc); border-radius: 50%; background-color: transparent; transition: var(--boxed-inputfield-transition); display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; box-sizing: border-box; overflow: hidden; }
 .checkbox-container:hover .checkmark { border-color: var(--color-logo-1); transform: scale(1.05); }
 .checkmark:after { content: ""; display: block; width: 6px; height: 12px; border: solid white; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); opacity: 0; transition: opacity 0.2s ease; margin-top: -2px; }
 .checkbox-container input:checked ~ .checkmark { background-color: var(--color-logo-1); border-color: var(--color-logo-1); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
@@ -522,7 +529,7 @@
 .boxed-date-container:hover { border-color: hsl(var(--border) / 0.6); }
 .boxed-date-selects { display: flex; gap: 0.5rem; }
 
-.boxed-date-select { flex: 1; padding: 0 var(--boxed-inputfield-padding); border: 2px solid var(--boxed-inputfield-border-color); border-radius: var(--boxed-inputfield-radius); background-color: var(--boxed-inputfield-background); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2rem; cursor: pointer; height: var(--boxed-inputfield-height); transition: var(--boxed-inputfield-transition-fast); }
+.boxed-date-select { flex: 1; padding: 0 var(--boxed-inputfield-padding); border: 1px solid var(--boxed-inputfield-border-color); border-radius: var(--boxed-inputfield-radius); background-color: var(--boxed-inputfield-background); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2rem; cursor: pointer; height: var(--boxed-inputfield-height); transition: var(--boxed-inputfield-transition-fast); }
 .boxed-date-select--error { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); }
 
 .boxed-multi-dropdown-container { background-color: var(--background-div-color); border: 1px solid hsl(var(--border) / 0.6); border-radius: var(--boxed-inputfield-radius-sm); transition: var(--boxed-inputfield-transition-fast); padding: 0 var(--boxed-inputfield-padding-x); height: var(--boxed-inputfield-height); min-height: var(--boxed-inputfield-height); cursor: pointer; display: flex; align-items: center; gap: 8px; }

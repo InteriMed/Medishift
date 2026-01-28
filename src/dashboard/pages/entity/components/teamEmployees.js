@@ -7,7 +7,7 @@ import FilterBar from '../../marketplace/components/filterbar';
 import { FiUser, FiUsers } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import PropTypes from 'prop-types';
-import Dialog from '../../../../components/Dialog/Dialog';
+import Modal from '../../../../components/modals/modals';
 import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
 import { useAction } from '../../../../services/actions/hook';
@@ -429,11 +429,11 @@ const Employees = ({ hideHeader = false, hideStats = false, organization, member
                     </div>
                 )}
             </div>
-            <Dialog
+            <Modal
                 isOpen={showAddModal}
                 onClose={() => !isInviting && setShowAddModal(false)}
                 title={t('organization:employees.addEmployee', 'Add Employee')}
-                description={t('organization:employees.addEmployeeDescription', 'Add an existing user to your facility staff.')}
+                size="medium"
                 actions={
                     <>
                         <button
@@ -453,7 +453,8 @@ const Employees = ({ hideHeader = false, hideStats = false, organization, member
                     </>
                 }
             >
-                <div className="space-y-4 pt-4">
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground mb-4">{t('organization:employees.addEmployeeDescription', 'Add an existing user to your facility staff.')}</p>
                     <InputField
                         label={t('organization:employees.form.email', 'User Email')}
                         value={inviteData.email}
@@ -488,7 +489,7 @@ const Employees = ({ hideHeader = false, hideStats = false, organization, member
                         disabled={isInviting}
                     />
                 </div>
-            </Dialog>
+            </Modal>
         </div>
     );
 };

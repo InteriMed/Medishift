@@ -14,6 +14,7 @@
     },
     "form": {
       "title": "Contactez-nous",
+      "subtitle": "Nous sommes là pour vous aider. Envoyez-nous un message et nous vous répondrons bientôt.",
       "description": "Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.",
       "name": "Nom",
       "namePlaceholder": "Entrez votre nom complet",
@@ -29,6 +30,7 @@
       "messagePlaceholder": "Entrez votre message ici...",
       "inquiryType": {
         "label": "Type de demande",
+        "placeholder": "Sélectionnez un type de demande",
         "options": {
           "general": "Demande générale",
           "professional": "Opportunités professionnelles",

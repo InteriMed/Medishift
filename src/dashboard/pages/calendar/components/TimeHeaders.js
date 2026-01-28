@@ -103,10 +103,7 @@ const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, hand
   return (
     <>
       <div
-        className={cn(
-          "time-headers flex py-2",
-          isTeamMode && "border-b border-border"
-        )}
+        className="flex py-2 bg-white"
         style={{
           width: view === 'day' ? `${allDays.length * 100}%` : `${allDays.length * (100 / 7)}%`,
           minWidth: view === 'day' ? `${allDays.length * 100}%` : `${allDays.length * (100 / 7)}%`
@@ -172,12 +169,16 @@ const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, hand
               key={index}
               data-date={date.toISOString()}
               data-day-index={index}
-              className={`flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 pb-2 ${dragOverIndex === index ? 'drag-over bg-primary/20' : ''}`}
+              className={cn(
+                "flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 py-2 transition-colors",
+                dragOverIndex === index && 'bg-blue-50 border-2 border-blue-200',
+                "border-r border-gray-200 last:border-r-0"
+              )}
               style={{
                 width: view === 'day' ? `${100 / allDays.length}%` : `${100 / allDays.length}%`,
                 flexShrink: 0,
                 minWidth: view === 'day' ? `${100 / allDays.length}%` : `${100 / allDays.length}%`,
-                minHeight: '3rem'
+                minHeight: '3.5rem'
               }}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -202,24 +203,25 @@ const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, hand
                 }
               }}
             >
-              <div className={cn("uppercase tracking-wider mb-1", textColor)} style={{ fontSize: 'var(--font-size-small)', fontWeight: 'var(--font-weight-medium)' }}>
+              <div className={cn("uppercase tracking-wider mb-1.5 text-xs font-medium", isBottomNightMode ? 'text-red-500' : 'text-gray-500')}>
                 {shortDays[dayIndex]}
               </div>
               <div
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-full transition-all",
+                  "flex items-center justify-center w-8 h-8 rounded-full transition-all text-sm font-medium",
                   isToday && !isBottomNightMode
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-blue-600 text-white'
                     : isCurrentDay && !isBottomNightMode
-                      ? 'bg-muted text-foreground'
-                      : dayNumberColor || 'text-foreground'
+                      ? 'bg-gray-100 text-gray-900'
+                      : isBottomNightMode && (isToday || isCurrentDay)
+                        ? 'text-red-500'
+                        : 'text-gray-900'
                 )}
-                style={{ fontSize: 'var(--font-size-medium)', fontWeight: 'var(--font-weight-medium)' }}
               >
                 {date.getDate()}
               </div>
               {isTeamMode && (
-                <div className="flex items-end justify-between w-full px-1 mt-1 text-[9px] font-semibold text-muted-foreground" style={{ height: '14px' }}>
+                <div className="flex items-end justify-between w-full px-1 mt-1 text-[9px] font-semibold text-gray-500" style={{ height: '14px' }}>
                   {showAllTimes && <span>{nightView ? '18:00' : '06:00'}</span>}
                   <span className={!showAllTimes ? 'mx-auto' : ''}>{nightView ? '00:00' : '12:00'}</span>
                   {showAllTimes && <span>{nightView ? '06:00' : '18:00'}</span>}

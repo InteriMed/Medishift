@@ -1,3 +1,7 @@
+/* LEGACY CSS - This file contains legacy modal styles for backward compatibility.
+   New modals should use the centralized Modal component from modals.js which uses Tailwind classes.
+   This CSS may still be referenced by older components but is not the primary styling method. */
+
 .modal-backdrop {
   position: fixed;
   top: 0;
