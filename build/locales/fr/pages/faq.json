@@ -1,0 +1,160 @@
+{
+  "meta": {
+    "title": "Foire Aux Questions | InteriMed",
+    "description": "Trouvez les réponses aux questions courantes concernant la plateforme de recrutement en santé d'InteriMed pour les établissements et les professionnels.",
+    "keywords": "FAQ InteriMed, questions recrutement santé, FAQ emplois santé, recrutement temporaire"
+  },
+  "title": "Foire Aux Questions",
+  "subtitle": "Trouvez les réponses aux questions courantes concernant notre plateforme de recrutement en santé.",
+  "allCategories": "Toutes les Catégories",
+  "introduction": "Trouvez les réponses aux questions courantes concernant notre plateforme de recrutement en santé.",
+  "searchPlaceholder": "Rechercher des questions...",
+  "searchResults": "Résultats de recherche pour",
+  "noResults": "Aucun résultat trouvé",
+  "categoryLabels": {
+    "general": "Général",
+    "pharmacies": "Pour les Établissements",
+    "professionals": "Pour les Professionnels",
+    "compliance": "Conformité & Réglementation",
+    "pricing": "Tarification & Facturation",
+    "technical": "Support Technique"
+  },
+  "contactCta": {
+    "title": "Vous avez encore des questions ?",
+    "description": "Notre équipe d'assistance est prête à vous aider pour toute question supplémentaire.",
+    "button": "Contacter le Support"
+  },
+  "categories": {
+    "general": {
+      "name": "Général",
+      "questions": {
+        "q1": {
+          "question": "Qu'est-ce qu'InteriMed ?",
+          "answer": "InteriMed est une plateforme numérique spécialisée qui connecte les établissements de santé avec des professionnels qualifiés pour du recrutement temporaire et permanent. Notre mission est de simplifier le processus de recrutement dans le secteur de la santé en Suisse."
+        },
+        "q2": {
+          "question": "Dans quelles régions InteriMed est-il disponible ?",
+          "answer": "Actuellement, InteriMed est disponible dans toute la Suisse romande. Nous prévoyons d'étendre nos services à d'autres régions de la Suisse prochainement."
+        },
+        "q3": {
+          "question": "Quels types d'établissements de santé peuvent utiliser InteriMed ?",
+          "answer": "InteriMed est conçu pour tous les types d'établissements de santé, notamment les pharmacies, les cabinets médicaux, les cliniques et les hôpitaux. Notre plateforme s'adapte aux besoins spécifiques de chaque type d'établissement."
+        }
+      }
+    },
+    "pharmacies": {
+      "name": "Pour les Établissements",
+      "questions": {
+        "q1": {
+          "question": "Comment InteriMed vérifie-t-il les professionnels ?",
+          "answer": "Nous effectuons une vérification approfondie de tous les professionnels sur notre plateforme, y compris la vérification des diplômes, la vérification des références et la validation de l'enregistrement professionnel. Nous nous assurons que tous les professionnels respectent les exigences réglementaires suisses."
+        },
+        "q2": {
+          "question": "Quels types de postes puis-je publier ?",
+          "answer": "Vous pouvez publier des postes temporaires (d'une seule journée à plusieurs semaines), des postes à temps partiel et des postes permanents. Notre plateforme répond à divers besoins de recrutement, de la couverture d'urgence aux embauches à long terme."
+        },
+        "q3": {
+          "question": "En combien de temps puis-je trouver du personnel pour un besoin urgent ?",
+          "answer": "De nombreux établissements trouvent des professionnels qualifiés dans les 24 heures pour les besoins urgents. Le délai exact dépend de votre emplacement, de vos exigences spécifiques et des professionnels disponibles dans votre région."
+        },
+        "q4": {
+          "question": "Quels sont les coûts pour les établissements de santé ?",
+          "answer": "Les établissements paient des frais d'abonnement en fonction de leur niveau d'utilisation, plus une petite commission de transaction pour chaque placement réussi. Notre tarification est transparente, sans frais cachés, et nettement inférieure à celle des agences de recrutement traditionnelles."
+        },
+        "q5": {
+          "question": "Comment puis-je définir mes besoins en personnel ?",
+          "answer": "Dans votre profil d'établissement, vous pouvez facilement créer des offres d'emploi en détaillant vos besoins spécifiques. Notre calendrier interactif vous permet de planifier vos besoins à l'avance ou de publier des demandes urgentes."
+        }
+      }
+    },
+    "professionals": {
+      "name": "Pour les Professionnels",
+      "questions": {
+        "q1": {
+          "question": "InteriMed est-il réservé aux pharmaciens ?",
+          "answer": "Non, InteriMed s'adresse à tous les professionnels de la santé, y compris les pharmaciens, les assistants en pharmacie, les techniciens en pharmacie et d'autres professionnels de la santé (selon les réglementations en vigueur)."
+        },
+        "q2": {
+          "question": "Comment puis-je définir mes disponibilités ?",
+          "answer": "Dans votre profil, vous pouvez définir vos disponibilités générales (jours/heures où vous travaillez habituellement) et également marquer des dates spécifiques sur notre fonction calendrier. Vous pouvez mettre à jour ces informations à tout moment en fonction de l'évolution de votre emploi du temps."
+        },
+        "q3": {
+          "question": "Comment et quand suis-je payé ?",
+          "answer": "Les conditions de paiement varient selon les établissements, mais notre plateforme prend en charge le traitement sécurisé des paiements. La plupart des missions temporaires sont payées dans un délai de 1 à 2 semaines après leur achèvement, tandis que les postes permanents suivent le calendrier de paie normal de l'établissement."
+        },
+        "q4": {
+          "question": "Dois-je payer pour utiliser InteriMed ?",
+          "answer": "Les profils de base pour les professionnels sont gratuits. Nous ne facturons qu'une petite commission de service lorsque vous obtenez un poste avec succès via notre plateforme."
+        },
+        "q5": {
+          "question": "Comment puis-je trouver des opportunités qui correspondent à mes compétences ?",
+          "answer": "Notre système de correspondance intelligente vous propose automatiquement des opportunités adaptées à votre profil, vos compétences et vos disponibilités. Vous pouvez également parcourir notre place de marché des emplois pour explorer toutes les opportunités disponibles."
+        }
+      }
+    },
+    "compliance": {
+      "name": "Conformité & Réglementation",
+      "questions": {
+        "q1": {
+          "question": "InteriMed est-il conforme aux réglementations suisses ?",
+          "answer": "Oui, InteriMed est entièrement conforme aux réglementations suisses en matière d'emploi et de protection des données. Nous travaillons en étroite collaboration avec des experts juridiques pour garantir que notre plateforme respecte toutes les exigences légales."
+        },
+        "q2": {
+          "question": "Comment InteriMed gère-t-il les contrats de travail ?",
+          "answer": "InteriMed facilite la création de contrats de travail conformes à la législation suisse. Selon le type de mission, nous proposons différents modèles de contrats adaptés aux besoins spécifiques des établissements et des professionnels."
+        },
+        "q3": {
+          "question": "Comment InteriMed protège-t-il mes données personnelles ?",
+          "answer": "Nous prenons très au sérieux la protection des données personnelles. Toutes les données sont stockées sur des serveurs sécurisés en Suisse, conformément à la loi fédérale sur la protection des données (LPD) et au RGPD. Nous n'utilisons vos données que pour les finalités spécifiées dans notre politique de confidentialité."
+        }
+      }
+    },
+    "pricing": {
+      "name": "Tarification & Facturation",
+      "questions": {
+        "q1": {
+          "question": "Quels sont les différents plans d'abonnement pour les établissements ?",
+          "answer": "Nous proposons plusieurs plans d'abonnement adaptés aux besoins des établissements de différentes tailles. Les plans varient en fonction du nombre de postes que vous pouvez publier et des fonctionnalités avancées disponibles. Contactez-nous pour obtenir une tarification personnalisée."
+        },
+        "q2": {
+          "question": "Y a-t-il des frais cachés ?",
+          "answer": "Non, notre politique de tarification est totalement transparente. Vous ne payez que les frais d'abonnement et les commissions de transaction clairement indiqués. Il n'y a pas de frais cachés ou de coûts supplémentaires."
+        },
+        "q3": {
+          "question": "Puis-je annuler mon abonnement à tout moment ?",
+          "answer": "Oui, vous pouvez annuler votre abonnement à tout moment. Les abonnements sont généralement facturés mensuellement, et vous pouvez les annuler avant le prochain cycle de facturation."
+        }
+      }
+    },
+    "technical": {
+      "name": "Support Technique",
+      "questions": {
+        "q1": {
+          "question": "Comment puis-je réinitialiser mon mot de passe ?",
+          "answer": "Sur la page de connexion, cliquez sur 'Mot de passe oublié' et suivez les instructions pour réinitialiser votre mot de passe. Un lien de réinitialisation sera envoyé à votre adresse email."
+        },
+        "q2": {
+          "question": "InteriMed est-il compatible avec tous les navigateurs ?",
+          "answer": "InteriMed est optimisé pour les versions récentes de Chrome, Firefox, Safari et Edge. Pour une expérience optimale, nous recommandons d'utiliser la dernière version de votre navigateur préféré."
+        },
+        "q3": {
+          "question": "Comment puis-je contacter le support technique ?",
+          "answer": "Vous pouvez contacter notre équipe de support technique par email à support@interimed.ai ou via le formulaire de contact sur notre site. Notre équipe est disponible du lundi au vendredi, de 9h à 18h."
+        }
+      }
+    }
+  },
+  "stillHaveQuestions": {
+    "title": "Vous n'avez pas trouvé ce que vous cherchiez ?",
+    "description": "Notre équipe d'assistance est prête à vous aider pour toute question supplémentaire.",
+    "buttonText": "Contacter le Support"
+  },
+  "hero": {
+    "badge": "Help Center",
+    "title": "Frequently Asked Questions"
+  },
+  "support": {
+    "title": "Need More Help?",
+    "description": "Our dedicated support team is available to assist you with any issues or inquiries you may have."
+  }
+}

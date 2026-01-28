@@ -6,7 +6,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { NetworkProvider } from './contexts/NetworkContext';
 import { TutorialProvider } from './dashboard/contexts/TutorialContext';
 import { DashboardProvider } from './dashboard/contexts/DashboardContext';
-import { SidebarProvider } from './dashboard/contexts/SidebarContext';
+import { SidebarProvider } from './dashboard/onboarding/sidebarContext';
 import NetworkStatus from './components/NetworkStatus';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
@@ -23,12 +23,12 @@ import './styles/app.css';
 import './styles/notifications.css';
 // import './styles/global.css';
 import './styles/variables.css';
-import DashboardRoot from './dashboard/DashboardRoot';
+import DashboardRoot from './dashboard/dashboardRoot';
 import CentralizedRoute from './dashboard/components/CentralizedRoute';
 import { testFirestoreConnection } from './utils/testFirestoreConnection';
 import { resetFirestoreCache } from './utils/resetFirestoreCache';
 import Footer from './components/Footer/Footer';
-import { NotFoundPage } from './pages';
+import { NotFoundPage } from './websitePages';
 import { getLocalizedRoute } from './i18n';
 
 import {

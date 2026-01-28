@@ -206,7 +206,7 @@ export const PROTECTED_ROUTES = [
   {
     id: 'dashboard',
     path: 'dashboard/*',
-    component: lazy(() => import('../dashboard/DashboardRoot')),
+    component: lazy(() => import('../dashboard/dashboardRoot')),
     type: ROUTE_TYPES.PROTECTED,
     label: 'Dashboard',
     requiresAuth: true,
@@ -231,14 +231,14 @@ export const WORKSPACE_TYPES = {
   ADMIN: 'admin'
 };
 
-const PersonalDashboard = lazy(() => import('../dashboard/pages/dashboard/PersonalDashboard'));
+const PersonalDashboard = lazy(() => import('../dashboard/pages/dashboard/personalDashboard'));
 const Calendar = lazy(() => import('../dashboards/shared/calendar/Calendar'));
-const Profile = lazy(() => import('../dashboard/pages/profile/Profile'));
-const Marketplace = lazy(() => import('../dashboard/pages/marketplace/Marketplace'));
+const Profile = lazy(() => import('../dashboard/pages/profile/profile'));
+const Marketplace = lazy(() => import('../dashboard/pages/marketplace/marketplace'));
 const PayrollDashboard = lazy(() => import('../dashboards/admin/payroll/PayrollDashboard'));
 const OrganizationDashboard = lazy(() => import('../dashboard/pages/organization/OrganizationDashboard'));
 const PricingPage = lazy(() => import('../dashboard/pages/pricing/PricingPage'));
-const DashboardSupportPage = lazy(() => import('../dashboards/shared/support/SupportPage'));
+const DashboardSupportPage = lazy(() => import('../dashboard/pages/support/supportPage'));
 const ServicesPage = lazy(() => import('../dashboard/pages/services/ServicesPage'));
 
 export const DASHBOARD_SHARED_ROUTES = [

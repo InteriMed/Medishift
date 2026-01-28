@@ -1,0 +1,120 @@
+{
+  "no": "Non",
+  "yes": "Oui",
+  "cancel": "Annuler",
+  "saveAndContinue": "Sauvegarder et continuer",
+  "discardChanges": "Ignorer les modifications",
+  "yesDiscard": "Oui, ignorer",
+  "collapse": "Réduire",
+  "header": {
+    "logoAlt": "MediShift",
+    "brandName": "MediShift",
+    "toggleMenu": "Basculer le menu",
+    "search": "Rechercher",
+    "notifications": "Notifications",
+    "startTutorial": "Démarrer le tutoriel",
+    "changeLanguage": "Changer de langue",
+    "language": "Langue",
+    "profileAlt": "Profil",
+    "stopTutorial": "Stop Tutorial",
+    "goBack": "Go back",
+    "help": "Aide",
+    "support": "Support"
+  },
+  "auth": {
+    "login": {
+      "button": "Se connecter"
+    },
+    "signup": {
+      "button": "S'inscrire"
+    }
+  },
+  "common": {
+    "home": "Home",
+    "forFacilities": "For Facilities",
+    "forProfessionals": "For Professionals",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "blog": "Blog",
+    "faq": "FAQ",
+    "settings": "Paramètres"
+  },
+  "roles": {
+    "admin": "Administrateur"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "Stay Updated",
+      "consent": "Subscribe to our newsletter to receive the latest news and updates.",
+      "placeholder": "Enter your email",
+      "subscribe": "Subscribe",
+      "submitting": "Submitting...",
+      "success": "Subscribed successfully!",
+      "error": "An error occurred. Please try again.",
+      "invalidEmail": "Please enter a valid email.",
+      "rateLimitExceeded": "Too many attempts. Please try again later."
+    },
+    "brand": {
+      "name": "Medi",
+      "highlight": "Shift",
+      "tagline": "Revolutionizing healthcare staffing in Switzerland."
+    },
+    "links": {
+      "companies": "For Facilities",
+      "pharmacy": "Pharmacies",
+      "soon": "Coming Soon",
+      "faqCompany": "FAQ for Facilities",
+      "tempWorkers": "For Professionals",
+      "pharmacyDoctor": "Pharmacists",
+      "pharmacyTechnician": "Pharmacy Technicians",
+      "faqCandidate": "FAQ for Professionals",
+      "practical": "Practical Info",
+      "about": "About Us",
+      "press": "Press / Blog",
+      "legalNotice": "Legal Notice",
+      "terms": "Terms of Service",
+      "contact": "Contact Us"
+    },
+    "copyright": "© 2026 InteriMed. All rights reserved."
+  },
+  "buttons": {
+    "continue": "Continue",
+    "autoFill": "Auto Fill",
+    "ok": "OK"
+  },
+  "ok": "OK",
+  "processing": "Traitement en cours",
+  "add": "Add",
+  "phone": "Phone",
+  "email": "Email",
+  "continue": "Continue",
+  "close": "Fermer",
+  "refresh": "Actualiser",
+  "contract": "Contrat",
+  "message": "Message",
+  "calendar": "Calendrier",
+  "profile": "Profil",
+  "filter": {
+    "title": "Filtres",
+    "description": "Filtrer et rechercher vos données",
+    "fromDate": "De",
+    "toDate": "À",
+    "search": "Rechercher...",
+    "sortBy": "Trier par",
+    "apply": "Appliquer les filtres",
+    "clear": "Effacer",
+    "show": "Afficher les filtres",
+    "hide": "Masquer",
+    "noFiltersApplied": "Aucun filtre appliqué",
+    "activeFilterCount": "{{count}} filtre{{count, plural, one {} other {s}}} actif{{count, plural, one {} other {s}}}",
+    "view": {
+      "grid": "Vue en grille",
+      "list": "Vue en liste"
+    }
+  },
+  "all": "Tous",
+  "pending": "En attente",
+  "approved": "Approuvé",
+  "rejected": "Rejeté",
+  "actions": "Actions"
+}

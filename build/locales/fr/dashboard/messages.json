@@ -1,0 +1,240 @@
+{
+  "tabs": {
+    "personal": "Messages personnels",
+    "personalDesc": "Messages liés à votre profil professionnel",
+    "facility": "Messages de l'établissement",
+    "facilityDesc": "Messages liés aux opérations de l'établissement",
+    "conversations": "Conversations",
+    "messages": "Messages",
+    "threads": "Communication",
+    "announcements": "Annonces",
+    "announcementsLocked": "Les annonces sont uniquement disponibles pour les membres d'un établissement",
+    "threadsLocked": "La communication est uniquement disponible pour les membres d'un établissement"
+  },
+  "noConversations": "Aucune conversation",
+  "noConversationsHint": "Démarrez des conversations via les interactions du marketplace",
+  "noFacilityConversationsHint": "Les conversations liées à l'établissement apparaîtront ici",
+  "selectConversation": {
+    "title": "Sélectionner une conversation",
+    "subtitle": "Choisissez une conversation dans la liste pour voir les messages"
+  },
+  "facilityMessagesInfo": "Ces messages sont liés aux opérations de l'établissement et à la gestion d'équipe",
+  "conversation": {
+    "typing": "En train d'écrire...",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "lastSeen": "Vu pour la dernière fois",
+    "sendMessage": "Envoyer un message",
+    "messagePlaceholder": "Tapez votre message..."
+  },
+  "errors": {
+    "loadingConversations": "Échec du chargement des conversations",
+    "loadingMessages": "Échec du chargement des messages",
+    "loadingThreads": "Échec du chargement de la communication",
+    "sendingMessage": "Échec de l'envoi du message",
+    "title": "Titre",
+    "description": "Description",
+    "retry": "Réessayer"
+  },
+  "actions": {
+    "markAsRead": "Marquer comme lu",
+    "deleteConversation": "Supprimer la conversation",
+    "blockUser": "Bloquer l'utilisateur"
+  },
+  "tutorial": {
+    "doctorName": "Nom du Docteur",
+    "doctorMessage": "Message du Docteur",
+    "hospitalName": "Nom de l'Hôpital",
+    "hospitalMessage": "Message de l'Hôpital",
+    "doctorMessage1": "Message du Docteur 1",
+    "doctorMessage2": "Message du Docteur 2",
+    "doctorMessage3": "Message du Docteur 3",
+    "hospitalMessage1": "Message de l'Hôpital 1",
+    "hospitalMessage2": "Message de l'Hôpital 2",
+    "hospitalMessage3": "Message de l'Hôpital 3"
+  },
+  "searchPlaceholder": "Rechercher...",
+  "filters": {
+    "all": "Tous",
+    "unreadOnly": "Uniquement non lus",
+    "unresponded": "Sans réponse",
+    "date": {
+      "all": "Toute la période",
+      "lastWeek": "La semaine dernière",
+      "lastMonth": "Le mois dernier",
+      "last3Months": "Les 3 derniers mois",
+      "lastYear": "L'année dernière"
+    }
+  },
+  "unread": "Non lu",
+  "empty": {
+    "noMessagesFound": "Aucun message trouvé",
+    "noConversationsYet": "Aucune conversation pour le moment",
+    "adjustFilters": "Ajuster les filtres",
+    "startConversation": "Démarrer une conversation",
+    "noMessagesInChat": "Aucun message dans le chat",
+    "startChatting": "Commencer à discuter",
+    "noConversationsFound": "Aucune conversation trouvée",
+    "noThreadsFound": "Aucune communication trouvée",
+    "noThreadsYet": "Aucune communication pour le moment",
+    "startThread": "Démarrer une nouvelle communication",
+    "threadsLocked": "Communication indisponible",
+    "threadsLockedDescription": "La communication est uniquement disponible pour les utilisateurs qui appartiennent à un établissement"
+  },
+  "status": {
+    "you": "Vous",
+    "unknownUser": "Utilisateur inconnu",
+    "sending": "Envoi en cours..."
+  },
+  "loading": "Chargement...",
+  "context": {
+    "facilityLabel": "Établissement",
+    "facility": "Établissement",
+    "contract": "Contrat",
+    "personal": "Personnel"
+  },
+  "placeholders": {
+    "typeMessage": "Taper un message",
+    "unknown": "Inconnu",
+    "noMessages": "Aucun message"
+  },
+  "time": {
+    "now": "Maintenant",
+    "minutes": "Minutes",
+    "hours": "Heures",
+    "days": "Jours"
+  },
+  "conversationCreated": "Conversation créée",
+  "errorCreatingConversation": "Erreur lors de la création de la conversation",
+  "noFacilityAccess": "Aucun accès à l'établissement",
+  "startNewCommunication": {
+    "button": "Démarrer une nouvelle communication"
+  },
+  "createAnnouncement": "Créer une annonce",
+  "createAnnouncementButton": "Créer une annonce",
+  "announcementTitle": "Titre de l'annonce",
+  "announcementTitlePlaceholder": "Entrez le titre de l'annonce",
+  "announcementContent": "Contenu de l'annonce",
+  "announcementContentPlaceholder": "Entrez le contenu de l'annonce",
+  "pollOptions": "Options du sondage",
+  "pollInfoTitle": "Informations sur le sondage",
+  "pollInfo": "Ajoutez un sondage à votre annonce pour recueillir des commentaires",
+  "includePoll": "Inclure un sondage",
+  "pollQuestion": "Question du sondage",
+  "pollQuestionPlaceholder": "Entrez votre question de sondage...",
+  "pollOptionsLabel": "Options du sondage",
+  "pollOptionPlaceholder": "Option {{index}}",
+  "addOption": "Ajouter une option",
+  "pollItemType": "Type d'élément",
+  "pollItemType.shortAnswer": "Réponse courte",
+  "pollItemType.longAnswer": "Réponse longue",
+  "pollItemType.multipleChoice": "Choix multiple",
+  "pollItemType.multipleChoiceGrid": "Grille de choix multiple",
+  "pollItemType.date": "Date",
+  "pollItemType.time": "Heure",
+  "announcementUrgency": "Urgence",
+  "urgency.danger": "Danger",
+  "urgency.warning": "Avertissement",
+  "urgency.info": "Information",
+  "urgency.validation": "Validation",
+  "urgency.critical": "Critique",
+  "urgency.important": "Important",
+  "urgency.informational": "Informatif",
+  "urgency.actionRequired": "Action requise",
+  "urgency.emergency": "Urgence",
+  "announcementRoles": "Rôles cibles",
+  "category": "Catégorie",
+  "category.none": "Aucune catégorie",
+  "category.createNew": "+ Créer une nouvelle catégorie",
+  "category.namePlaceholder": "Nom de la catégorie...",
+  "pollPreview": "Aperçu",
+  "pollShortAnswerPlaceholder": "Réponse courte...",
+  "pollLongAnswerPlaceholder": "Réponse longue...",
+  "roles": {
+    "all": "Tous les rôles",
+    "admin": "Administrateur",
+    "pharmacist": "Pharmacien",
+    "pharmacyTechnician": "Technicien en pharmacie",
+    "intern": "Stagiaire",
+    "scheduler": "Planificateur",
+    "recruiter": "Recruteur",
+    "employee": "Employé"
+  },
+  "view": {
+    "grid": "Vue grille",
+    "list": "Vue liste"
+  },
+  "sortBy": "Trier par",
+  "sort": {
+    "date": "Date",
+    "title": "Titre",
+    "urgency": "Urgence"
+  },
+  "filters": {
+    "all": "Toutes les annonces",
+    "unread": "Non lues",
+    "unresponded": "Sans réponse",
+    "status": "Statut",
+    "apply": "Appliquer les filtres"
+  },
+  "announcements": {
+    "title": "Annonces",
+    "description": "Parcourez et recherchez des annonces dans votre espace de travail.",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin"
+  },
+  "searchPlaceholder": "Rechercher des annonces...",
+  "management": {
+    "title": "Gestion des discussions",
+    "description": "Gérez et modérez toutes les discussions de votre établissement."
+  },
+  "tabs": {
+    "messages": "Messages",
+    "announcements": "Annonces",
+    "management": "Gestion des discussions"
+  },
+  "announcementPublishDate": "Date de publication",
+  "announcementDisplayUntil": "Afficher jusqu'au",
+  "internalTicket": {
+    "title": "Tickets internes",
+    "description": "Créez et gérez des tickets de support internes.",
+    "searchPlaceholder": "Rechercher des tickets...",
+    "allCategories": "Toutes les catégories",
+    "filter": "Filtrer",
+    "categories": "Catégories",
+    "newTicket": "Nouveau ticket",
+    "noTickets": "Aucun ticket trouvé",
+    "noTicketsHint": "Commencez par créer un nouveau ticket.",
+    "createTicket": "Créer un ticket",
+    "subject": "Sujet",
+    "subjectPlaceholder": "Entrez le sujet du ticket...",
+    "category": "Catégorie",
+    "priority": "Priorité",
+    "priority.low": "Faible",
+    "priority.medium": "Moyenne",
+    "priority.high": "Élevée",
+    "priority.urgent": "Urgente",
+    "priority.emergency": "Urgence",
+    "message": "Message",
+    "messagePlaceholder": "Décrivez votre problème...",
+    "submitTicket": "Soumettre le ticket"
+  },
+  "reporting": {
+    "title": "Signalements anonymes",
+    "description": "Soumettez des rapports confidentiels. Votre identité restera anonyme.",
+    "submitReport": "Soumettre le rapport",
+    "noReports": "Aucun rapport trouvé",
+    "noReportsHint": "Commencez par soumettre un rapport anonyme.",
+    "searchPlaceholder": "Rechercher des tickets...",
+    "allCategories": "Toutes les catégories",
+    "filter": "Filtrer",
+    "categories": "Catégories",
+    "fromDate": "Date de début",
+    "toDate": "Date de fin",
+    "sort": {
+      "date": "Date",
+      "title": "Titre",
+      "priority": "Priorité"
+    }
+  }
+}

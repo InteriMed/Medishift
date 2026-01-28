@@ -1,0 +1,351 @@
+{
+  "dashboard": {
+    "sidebar": {
+      "overview": "Overview",
+      "profile": "Profile",
+      "contracts": "Contracts",
+      "communication": "Communication",
+      "calendar": "Calendar",
+      "marketplace": "Marketplace",
+      "settings": "Settings",
+      "incompleteProfile": "Your profile is incomplete",
+      "completeProfileFirst": "Please complete your profile first",
+      "organization": "Organization",
+      "facility": "Facility",
+      "lockedDuringTutorial": "Locked during tutorial",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "payroll": "Payroll",
+      "employees": "Employee Management"
+    },
+    "header": {
+      "overview": {
+        "title": "Overview",
+        "subtitle": "Welcome to your dashboard"
+      },
+      "profile": {
+        "title": "Profile",
+        "subtitle": "Manage your personal information"
+      },
+      "messages": {
+        "title": "Messages",
+        "subtitle": "Communicate with facilities and professionals"
+      },
+      "announcements": {
+        "title": "Announcements",
+        "subtitle": "View and manage facility announcements"
+      },
+      "calendar": {
+        "title": "Calendar",
+        "subtitle": "Manage your schedule and appointments"
+      },
+      "contracts": {
+        "title": "Contracts",
+        "subtitle": "View and manage your contracts"
+      },
+      "marketplace": {
+        "title": "Marketplace",
+        "subtitle": "Find positions or professionals"
+      },
+      "payroll": {
+        "title": "Payroll",
+        "subtitle": "Manage employee payments and requests"
+      },
+      "organization": {
+        "title": "Organization",
+        "subtitle": "Manage your pharmacy chain or group"
+      },
+      "settings": {
+        "title": "Settings",
+        "subtitle": "Configure your account settings"
+      },
+      "search": "Search...",
+      "notifications": {
+        "title": "Notifications",
+        "markAllRead": "Mark all as read",
+        "noNotifications": "No notifications",
+        "newEvent": {
+          "title": "New Event",
+          "message": "Team meeting at 3 PM",
+          "time": "10m ago"
+        },
+        "confirmation": {
+          "title": "Confirmation",
+          "message": "Your shift transfer was approved",
+          "time": "1h ago"
+        },
+        "system": {
+          "title": "System",
+          "message": "Profile updated successfully",
+          "time": "2h ago"
+        }
+      },
+      "createBusiness": "Create a business",
+      "createBusinessDesc": "Set up your facility profile",
+      "createProfessional": "Create Professional Profile",
+      "createProfessionalDesc": "Switch to personal account",
+      "resetProfile": "Reset Profile",
+      "resetProfileTitle": "Reset Profile",
+      "resetProfileMessage": "Are you sure you want to reset your profile? This will remove all your data and set your account back to the initial onboarding state. This action cannot be undone.",
+      "resetConfirm": "Reset Profile",
+      "profileResetSuccess": "Profile reset successfully",
+      "profileResetError": "Failed to reset profile",
+      "logout": "Log out"
+    },
+    "loading": "Loading dashboard data...",
+    "error": "Error loading dashboard data",
+    "completeProfile": {
+      "completeProfileTitle": "Complete Your Profile",
+      "completeProfileDescription": "Welcome to InteriMed! To access all features of the platform, please complete your profile first.",
+      "completeProfileButton": "I understand, create my profile"
+    },
+    "overview": {
+      "title": "Welcome to InteriMed!",
+      "welcome": "Hello",
+      "welcomeTitle": "Welcome to InteriMed!",
+      "totalContracts": "Total Contracts",
+      "activeHours": "Active Hours",
+      "earnings": "Earnings",
+      "upcomingJobs": "Upcoming Jobs",
+      "recentActivity": "Recent Activity",
+      "noRecentActivity": "No recent activity to display"
+    },
+    "onboarding": {
+      "verify_account": "Verify Your Account",
+      "verify_intro": "Please provide your details below. We use secure AI verification to certify your account.",
+      "step1": {
+        "title": "Legal Considerations",
+        "facilityLegalNotice": "Legal Notice for Facilities",
+        "facilityLegalText1": "As a healthcare facility using InteriMed, you must ensure compliance with Swiss labor laws when engaging temporary staff.",
+        "facilityLegalText2": "You are responsible for verifying that temporary workers comply with maximum working hours, rest periods, and other legal requirements.",
+        "facilityLegalText3": "Please ensure all temporary staff have the necessary qualifications and work permits.",
+        "professionalLegalNotice": "Legal Notice for Professionals",
+        "professionalLegalText1": "For employees working 100% (typically 40-42 hours/week), it is nearly impossible to legally take additional shifts at another pharmacy.",
+        "professionalLegalText2": "Swiss labor law sets a strict maximum of 50 hours per week (45 hours in some retail contexts). A 100% employee typically works 42 hours, leaving only 8 hours maximum.",
+        "professionalLegalText3": "According to the Code of Obligations (Art. 321a), you must obtain written approval from your main employer to work for a competitor.",
+        "professionalLegalText4": "The law requires 11 consecutive hours of rest between shifts (can be reduced to 8 hours once per week).",
+        "agreementStatus": "Agreement Status",
+        "areYouEmployed": "Are you currently employed",
+        "areYouEmployedDescription": "Activate if you work for an organization",
+        "termsAcceptance": "Terms and Legal Considerations",
+        "termsAcceptanceDescription": "I understand and acknowledge the legal considerations and terms of service",
+        "termsAcceptanceText": "I understand and acknowledge the legal considerations and",
+        "termsOfService": "terms of service",
+        "note": "By proceeding, you acknowledge that you have read and understood the legal considerations applicable to your role.",
+        "restrictedServices": {
+          "title": "Create Profile for Internal Facility Services Only",
+          "description": "You will need to finish the onboarding verification later on to access the marketplace services",
+          "modal": {
+            "title": "Restricted Services - Internal Facility Access Only",
+            "intro": "By creating your profile with internal facility access only, you will __NOT__ have access to the following services:",
+            "interimServices": "Interim Services - You cannot take on replacement shifts or temporary assignments",
+            "jobPostulations": "Job Postulations - You cannot apply for job openings or positions",
+            "marketplaceAccess": "Marketplace Access - You cannot access the marketplace to find opportunities",
+            "willHaveAccess": "What you WILL have access to:",
+            "facilityInternal": "Facility internal services (calendar, team management, internal communications)",
+            "teamCollaboration": "Team collaboration features",
+            "internalScheduling": "Internal scheduling and time-off requests",
+            "note": "Note: To gain full access to all services, you must complete account verification through the full onboarding process.",
+            "cancel": "Cancel",
+            "createProfile": "Create Profile Now"
+          }
+        }
+      },
+      "gln_verified": {
+        "title": "GLN Verified",
+        "desc": "Your GLN {{gln}} has been recognized from your professional profile.",
+        "facility_desc": "Your account is already GLN certified. You can proceed with the onboarding.",
+        "status": "Identity Confirmed"
+      },
+      "step2": {
+        "title": "Select Your Role",
+        "description": "Choose the option that best describes your situation",
+        "professional": "Professional",
+        "professionalDescription": "I am a healthcare professional looking for work opportunities",
+        "facility": "Facility",
+        "facilityDescription": "I represent a company or facility looking for professionals",
+        "organization": "Organization",
+        "organizationDescription": "I represent a chain of establishments or organization"
+      },
+      "step3": {
+        "chain": {
+          "title": "Contact Information",
+          "description": "Please provide your contact details so we can assist you with setting up your organization account",
+          "phonePrefix": "Phone Prefix",
+          "phoneNumber": "Phone Number",
+          "phoneNumberPlaceholder": "Enter your phone number",
+          "messageToSupport": "Message to Support",
+          "messagePlaceholder": "Please describe your organization and your needs..."
+        }
+      },
+      "step4": {
+        "title": "GLN Verification",
+        "description": "Do you have a GLN (Global Location Number)?",
+        "hasGLN": "I have a GLN number",
+        "hasGLNDesc": "Has G L N Desc",
+        "company_description": "Please verify your identity as the responsible person for this facility."
+      },
+      "professional_gln": {
+        "title": "GLN information",
+        "text1": "Professional number required for certified medical professionals in Switzerland (pharmacists, dentists, doctors, etc.).",
+        "text2": "For other professions (nurses, assistants, etc.), this number is not mandatory.",
+        "text3": "Enable if you have your own GLN number.",
+        "text_new": "Professional number required for certified medical professionals in Switzerland (pharmacists, dentists, doctors, etc.). Enable if you have your own GLN number."
+      },
+      "company_gln": {
+        "title": "GLN information",
+        "text1": "The GLN (Global Location Number) is a unique identifier for your facility or company.",
+        "text2": "Providing your GLN helps us verify your business details automatically and speeds up the verification process.",
+        "text3": "This field is optional, but recommended for faster account verification."
+      },
+      "input": {
+        "professional_gln": "Professional GLN",
+        "company_gln": "Company GLN",
+        "professional_gln_optional": "Professional GLN (Optional)",
+        "company_gln_optional": "Company GLN (Optional)"
+      },
+      "docs": {
+        "title": "Verification Documents",
+        "facility_id": {
+          "label": "1. Responsible Person Identity Document",
+          "desc": "Upload ID card of a responsible person listed in the registry."
+        },
+        "facility_bill": {
+          "label": "2. Billing / Tax Document",
+          "desc": "Upload a recent bill or tax document for facility verification."
+        },
+        "select_id_type": "Select ID Type",
+        "internal_ref": "Internal Reference / PO Number (Optional)",
+        "professional_id": "Identity Document",
+        "select_doc_type": "Select document type",
+        "upload_id": "Upload Identity Document",
+        "upload_bill": "Upload Bill"
+      },
+      "errors": {
+        "service_high_demand": "Service High Demand",
+        "wait_message": "Please wait {{seconds}} seconds before trying again",
+        "can_try_again": "You can now try again.",
+        "verification_failed": "Verification Failed",
+        "review_inputs": "Please review your inputs. If you believe this is an error, contact our urgent support below.",
+        "contact_support": "Contact Urgent Support",
+        "report_issue": "Report Issue via Email",
+        "describe_issue": "Describe the issue you are facing...",
+        "gln_length": "GLN must be exactly 13 digits.",
+        "missing_document": "Missing verification document",
+        "missing_profession": "Please select your profession",
+        "missing_gln": "Missing_gln",
+        "missing_document_type": "Missing_document_type"
+      },
+      "success": {
+        "verified_title": "Account Successfully Verified!",
+        "professional_redirect": "Your professional profile is now active. Redirecting to complete your profile setup...",
+        "facility_redirect": "Your facility profile is now active. Redirecting to complete your profile setup...",
+        "modal_title": "Profile Verified",
+        "professional_message": "Your professional profile has been successfully verified. You can now access all platform features.",
+        "facility_message": "Your facility profile has been successfully verified. You can now access all platform features."
+      },
+      "gln_info": {
+        "title": "Where to find your GLN",
+        "facility_title": "Where to find your Facility GLN",
+        "where_to_find": "Where to find your GLN?",
+        "where_to_find_facility": "Where to find your facility GLN?",
+        "registry_info": "You can find your GLN number in the official Swiss health registry:",
+        "facility_registry_info": "You can find your facility GLN number in the official Swiss business registry:",
+        "medreg_registry": "Swiss Medical Registry (MEDREG)",
+        "nareg_registry": "Swiss Pharmacist Registry (NAREG)",
+        "uid_registry": "Swiss Business Registry (UID/CHE)"
+      },
+      "phone": {
+        "title": "Mobile Verification",
+        "subtitle": "Enter your phone number to receive a secure identity code.",
+        "secured_code": "Secured Code",
+        "sent_text": "We sent a verification code to {{prefix}} {{number}}.",
+        "verified_title": "Phone Verified",
+        "verified_text": "Your phone number {{prefix}} {{number}} has been successfully verified.",
+        "verification_complete": "Verification Complete",
+        "verify_continue": "Verify and continue",
+        "verifying": "Verifying...",
+        "resend": "Send code again",
+        "resend_wait": "Resend in {{seconds}}s",
+        "change_number": "Change number",
+        "verification_code_label": "Verification Code",
+        "sending": "Sending..."
+      },
+      "buttons": {
+        "back": "Back",
+        "nextStep": "Next Step",
+        "sendCode": "Send Code",
+        "validate": "Validate",
+        "contactAndFinish": "Contact & Finish",
+        "verifying": "Verifying...",
+        "completeAccount": "Complete Account",
+        "verify_account": "Verify Account"
+      },
+      "separateWorkerGLM": {
+        "title": "Title",
+        "description": "Description",
+        "complete": "Complete",
+        "completeMessage": "Complete Message",
+        "saving": "Saving",
+        "saveButton": "Save Button"
+      },
+      "profession": {
+        "title": "Title",
+        "select": "Select",
+        "locked_notice": "Locked_notice"
+      },
+      "step5": {
+        "title": "Facility Information",
+        "description": "Please provide the official GLN (Global Location Number) for your facility to verify your organization."
+      }
+    },
+    "navigation": {
+      "overview": "Overview",
+      "communication": "Communication",
+      "messages": "Messages",
+      "contracts": "Contracts",
+      "calendar": "Calendar",
+      "profile": "Profile",
+      "marketplace": "Marketplace",
+      "payroll": "Payroll",
+      "organization": "Organization",
+      "settings": "Settings"
+    },
+    "tutorial": {
+      "selectionTitle": "Choose Tutorial Mode",
+      "selectionSubtitle": "Select how you would like to explore the platform",
+      "currentPage": "Current Page",
+      "currentPageOnly": "Start tutorial for current page only",
+      "currentPageOnlyTitle": "Current Page Only",
+      "currentPageOnlyDesc": "Learn about the features on this page",
+      "allPages": "Start complete tutorial from the beginning",
+      "allPagesTitle": "Complete Tutorial",
+      "allPagesDesc": "Start from the beginning and explore all features",
+      "stopTitle": "Stop Tutorial?",
+      "stopDescription": "You can continue the tutorial anytime by clicking the help button in the header.",
+      "clickHere": "Click here",
+      "toContinue": "to continue later",
+      "keepGoing": "Keep Going",
+      "stopNow": "Stop Tutorial",
+      "setupRequiredTitle": "Setup Required",
+      "cannotExit": "Personal details are compulsory",
+      "setupRequiredDesc": "After completing your personal details, you will be able to choose Team Access to access facility team and HR features."
+    }
+  },
+  "userMenu": {
+    "profile": "My Profile",
+    "settings": "Settings",
+    "language": "Language",
+    "logout": "Log Out",
+    "user": "User"
+  },
+  "common": {
+    "cancel": "Cancel"
+  },
+  "personalDetails": {
+    "phonePrefix": "Phone Prefix",
+    "selectPhonePrefix": "Select Phone Prefix",
+    "phoneNumber": "Phone Number",
+    "phonePlaceholder": "Phone Placeholder"
+  }
+}

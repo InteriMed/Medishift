@@ -1,0 +1,116 @@
+{
+  "privacy": {
+    "title": "Privacy Policy",
+    "description": "This privacy policy outlines how we collect, use, and protect your personal data in compliance with Swiss data protection laws (nFADP) and, where applicable, the GDPR.",
+    "sections": {
+      "content": {
+        "document_title": "Privacy Policy",
+        "last_updated_full_text": "(Last updated: January 22, 2026)",
+        "date_of_last_update": "January 22, 2026",
+        "sections": [
+          {
+            "section_number": "1",
+            "full_title": "1. Preamble / Introduction",
+            "short_title": "Preamble / Introduction",
+            "content": [
+              "InteriMed (hereinafter \"the Platform\", \"we\", \"us\", \"our\") is committed to protecting the privacy and security of the personal data of individuals who use our services. This Privacy Policy aims to transparently inform you about how we collect, use, store, and protect your personal data, in accordance with applicable data protection laws.",
+              "Our practices comply with current Swiss legislation, notably the Federal Act on Data Protection (nFADP). Given our location in Geneva and the nature of our activities, which may involve interactions with individuals located in the European Economic Area (EEA), we also strive to respect the principles and requirements of the European Union's General Data Protection Regulation (GDPR) where applicable. This dual approach ensures a high level of protection for your personal data."
+            ]
+          },
+          {
+            "section_number": "2",
+            "full_title": "2. Identity and Contact Details of the Data Controller",
+            "short_title": "Identity and Contact Details of the Data Controller",
+            "content": [
+              "The data controller for your personal data is:",
+              "InteriMed",
+              "Geneva, Switzerland",
+              "For any questions regarding the protection of your personal data or to exercise your rights, you can contact us at:",
+              "Email: privacy@interimed.ai",
+              "Currently, the formal designation of a Data Protection Officer (DPO) is not required under the nFADP and GDPR for our specific context. This in no way affects our commitment to protecting your data."
+            ]
+          },
+          {
+            "section_number": "3",
+            "full_title": "3. Personal Data Collected",
+            "short_title": "Personal Data Collected",
+            "content": [
+              "We collect the following categories of personal data:",
+              "Identity Data: Full name, date of birth, gender, nationality.",
+              "Contact Data: Email address, phone number, residential address.",
+              "Professional Data: CVs, diplomas, work certificates, professional licenses (GLN/MedReg), employment history.",
+              "Financial Data: IBAN, AVS number, billing information.",
+              "Technical Data: IP address, login data, browser type, usage patterns.",
+              "We kindly ask you not to include sensitive personal data unless it is strictly necessary for your professional profile. Sensitive data includes information about religious beliefs, health, or criminal records, which require enhanced protection."
+            ]
+          },
+          {
+            "section_number": "4",
+            "full_title": "4. Purposes of Processing",
+            "short_title": "Purposes of Processing",
+            "content": [
+              "Your personal data is used for the following purposes:",
+              "Service Provision: Facilitating connections between healthcare facilities and professionals.",
+              "Profile Management: Creating and maintaining your professional or facility profile.",
+              "Contract Management: Facilitating the creation and signing of assignment contracts.",
+              "Compliance: Verifying professional qualifications and meeting legal obligations (e.g., LSE compliance).",
+              "Communication: Responding to inquiries and providing platform updates.",
+              "Security: Protecting the platform and users against fraud and unauthorized access."
+            ]
+          },
+          {
+            "section_number": "5",
+            "full_title": "5. Legal Bases for Processing",
+            "short_title": "Legal Bases for Processing",
+            "content": [
+              "The processing of your data is based on:",
+              "Contract Performance: Necessary to provide the services defined in our Terms of Service.",
+              "Legal Obligation: Required by Swiss law (e.g., labor laws, tax regulations).",
+              "Legitimate Interests: Improving our services and ensuring platform security.",
+              "Consent: When you explicitly agree to specific processing (e.g., newsletter subscription)."
+            ]
+          },
+          {
+            "section_number": "6",
+            "full_title": "6. Data Retention Period",
+            "short_title": "Data Retention Period",
+            "content": [
+              "We retain your data only as long as necessary:",
+              "Active Accounts: For the duration of your registration on the platform.",
+              "Legal Obligations: Business records and contracts are retained for 10 years as required by the Swiss Code of Obligations (Art. 958f).",
+              "Inactive Data: Non-essential data is deleted or anonymized after account closure, subject to legal retention requirements."
+            ]
+          },
+          {
+            "section_number": "7",
+            "full_title": "7. Data Sharing and International Transfers",
+            "short_title": "Data Sharing and International Transfers",
+            "content": [
+              "Internal Access: Limited to authorized staff on a need-to-know basis.",
+              "Service Providers: We use trusted partners for hosting, payments, and e-signatures. They are contractually bound to protect your data.",
+              "International Transfers: Data is primarily stored in Switzerland. If transferred abroad, we ensure an adequate level of protection through adequacy decisions or Standard Contractual Clauses (SCCs)."
+            ]
+          },
+          {
+            "section_number": "8",
+            "full_title": "8. Your Rights",
+            "short_title": "Your Rights",
+            "content": [
+              "You have the right to access, rectify, or erase your data. You may also object to processing, request data portability, or withdraw consent at any time.",
+              "To exercise your rights, contact us at privacy@interimed.ai.",
+              "You also have the right to lodge a complaint with the Federal Data Protection and Information Commissioner (FDPIC)."
+            ]
+          },
+          {
+            "section_number": "9",
+            "full_title": "9. Data Security",
+            "short_title": "Data Security",
+            "content": [
+              "We implement robust technical and organizational measures, including encryption (HTTPS/TLS) and strict access controls, to protect your data against unauthorized access or loss."
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

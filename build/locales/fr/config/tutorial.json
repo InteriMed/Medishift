@@ -1,0 +1,86 @@
+{
+  "tutorials": {
+    "dashboard": {
+      "name": "Aperçu du tableau de bord",
+      "description": "Découvrez votre tableau de bord et la navigation",
+      "steps": {
+        "onboarding-help-button": {
+          "title": "Aide à l'intégration",
+          "content": "Vous pouvez recommencer le tutoriel d'intégration à tout moment en cliquant sur ce bouton d'aide dans la barre supérieure. Cela vous guidera à travers toutes les fonctionnalités de MediShift."
+        },
+        "onboarding-intro": {
+          "title": "Bienvenue sur votre tableau de bord",
+          "content": "Ceci est votre centre de contrôle. Pour tirer le meilleur parti de MediShift, commençons par compléter les détails de votre profil."
+        }
+      }
+    },
+    "profileTabs": {
+      "name": "Configuration du profil professionnel",
+      "description": "Complétez votre profil professionnel étape par étape",
+      "steps": {
+        "personal-details-tab": {
+          "title": "Étape 1 : Détails personnels",
+          "content": "Commencez par remplir vos informations personnelles comme le nom, l'adresse et les coordonnées. Vous pouvez télécharger votre CV avec le bouton Auto Fill pour accélérer le processus, ou remplir manuellement."
+        },
+        "professional-background-tab": {
+          "title": "Étape 2 : Parcours professionnel",
+          "content": "Ajoutez vos qualifications, spécialités et expériences professionnelles. Vous pouvez utiliser le bouton Auto Fill pour accélérer le processus, ou remplir manuellement."
+        },
+        "billing-information-tab": {
+          "title": "Étape 3 : Informations de facturation",
+          "content": "Configurez vos informations de paiement pour être payé rapidement et en toute sécurité. Vous pouvez utiliser le bouton Auto Fill ou remplir manuellement."
+        },
+        "document-uploads-tab": {
+          "title": "Étape 4 : Téléchargement de documents",
+          "content": "Téléchargez vos documents professionnels tels que certificats, CV et lettres de recommandation."
+        },
+        "marketplace-tab": {
+          "title": "Étape 5 : Préférences Marketplace",
+          "content": "Configurez votre visibilité sur le marketplace et vos préférences de notification. Cela contrôle comment les recruteurs peuvent vous trouver pour des postes à long terme."
+        },
+        "profile-completion-info": {
+          "title": "Profil terminé !",
+          "content": "Félicitations ! Votre profil est maintenant complet. Vous avez accès à toutes les fonctionnalités de la plateforme. Passons à la section suivante."
+        },
+        "account-tab": {
+          "title": "Tutoriel du profil terminé !",
+          "content": "Excellent travail ! Vous avez terminé la configuration de votre profil. Vous avez maintenant accès à toutes les fonctionnalités de la plateforme. Passons à la section messages pour apprendre à communiquer avec les établissements."
+        },
+        "redirect-to-messages": {
+          "title": "Redirection...",
+          "content": "Vous allez maintenant être redirigé vers le tutoriel de messagerie."
+        }
+      }
+    },
+    "facilityProfileTabs": {
+      "name": "Configuration du profil d'établissement",
+      "description": "Complétez votre profil d'établissement étape par étape",
+      "steps": {
+        "facility-core-details-tab": {
+          "title": "Étape 1 : Détails principaux de l'établissement",
+          "content": "Commencez par remplir les informations de votre établissement comme le nom, le type, l'adresse et les coordonnées. Vous pouvez télécharger des documents avec le bouton Auto Fill pour accélérer le processus, ou remplir manuellement."
+        },
+        "facility-legal-billing-tab": {
+          "title": "Étape 2 : Informations légales et de facturation",
+          "content": "Ensuite, ajoutez les détails légaux de votre entreprise, les informations de facturation et la configuration des paiements. Vous pouvez utiliser le bouton Auto Fill pour accélérer le processus, ou remplir manuellement. C'est la dernière étape !"
+        },
+        "facility-profile-completion-info": {
+          "title": "Profil terminé !",
+          "content": "Félicitations ! Votre profil d'établissement est maintenant complet. Vous avez accès à toutes les fonctionnalités de la plateforme. Passons à la section suivante."
+        }
+      }
+    }
+  },
+  "buttons": {
+    "iUnderstood": "J'ai compris",
+    "showMe": "Montrez-moi",
+    "continueToMessages": "Continuer vers les messages",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "skip": "Passer",
+    "finish": "Terminer",
+    "restart": "Recommencer le tutoriel",
+    "startMessages": "Démarrer le tutoriel Messages"
+  }
+}
+

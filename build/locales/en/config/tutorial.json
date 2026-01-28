@@ -1,0 +1,247 @@
+{
+  "tutorials": {
+    "dashboard": {
+      "name": "Dashboard Overview",
+      "description": "Learn about your dashboard and navigation",
+      "steps": {
+        "onboarding-help-button": {
+          "title": "Onboarding Help",
+          "content": "You can restart the onboarding tutorial anytime by clicking this help button in the top bar. This will guide you through all the features of MediShift."
+        },
+        "onboarding-intro": {
+          "title": "Welcome to Your Dashboard",
+          "content": "This is your central hub. To get the most out of MediShift, let's start by completing your profile details."
+        },
+        "expand-sidebar": {
+          "title": "Navigation Menu",
+          "content": "This is the navigation menu. You can access all features of MediShift from here - your profile, messages, contracts, calendar, marketplace, and settings. If the menu is collapsed, click the expand button to see all options."
+        },
+        "navigate-to-profile": {
+          "title": "Let's Get Started with Your Profile",
+          "content": "To begin, please click on the Profile tab. This is where you'll complete your personal and professional information. We'll guide you through each step once you're there."
+        }
+      }
+    },
+    "profileTabs": {
+      "name": "Professional Profile Setup",
+      "description": "Complete your professional profile step by step",
+      "steps": {
+        "personal-details-tab": {
+          "title": "Step 1: Personal Details",
+          "content": "Start by filling out your personal information like name, address, and contact details. You can upload your CV using the Auto Fill button to speed up the process, or fill in the information manually."
+        },
+        "professional-background-tab": {
+          "title": "Step 2: Professional Background",
+          "content": "Next, add your qualifications, specialties, and work experience. You can use the Auto Fill button to speed up the process, or fill in the information manually. Complete this section to continue to the next step."
+        },
+        "billing-information-tab": {
+          "title": "Step 3: Billing Information",
+          "content": "Set up your payment details to get paid for your work quickly and securely. You can use the Auto Fill button to speed up the process, or fill in the information manually. Complete this section to continue."
+        },
+        "document-uploads-tab": {
+          "title": "Step 4: Document Uploads",
+          "content": "Upload your professional documents such as certificates, resume, and recommendation letters."
+        },
+        "full-access-unlocked": {
+          "title": "Full Access Unlocked!",
+          "content": "Congratulations! You've provided all required information. You now have full access to all platform features, including the marketplace and contract management."
+        },
+        "marketplace-tab": {
+          "title": "Step 5: Marketplace Preferences",
+          "content": "Configure your marketplace visibility and notification preferences. This controls how recruiters can find you for long-term positions."
+        },
+        "profile-completion-info": {
+          "title": "Documents Complete!",
+          "content": "Great! Your documents have been uploaded. You now have full access to all platform features. Let's continue to the next section."
+        },
+        "account-tab": {
+          "title": "Profile Tutorial Finished!",
+          "content": "Great job! You've completed your profile setup. You now have full access to all platform features. Let's continue to the messages section to learn how to communicate with facilities."
+        },
+        "redirect-to-messages": {
+          "title": "Redirecting...",
+          "content": "You will now be redirected to the messages tutorial."
+        }
+      }
+    },
+    "facilityProfileTabs": {
+      "name": "Facility Profile Setup",
+      "description": "Complete your facility profile step by step",
+      "steps": {
+        "facility-core-details-tab": {
+          "title": "Step 1: Facility Core Details",
+          "content": "Start by filling out your facility information like name, type, address, and contact details. You can upload documents using the Auto Fill button to speed up the process, or fill in the information manually."
+        },
+        "facility-legal-billing-tab": {
+          "title": "Step 2: Legal & Billing Information",
+          "content": "Next, add your legal company details, billing information, and payment setup. You can use the Auto Fill button to speed up the process, or fill in the information manually. This is the final step!"
+        },
+        "facility-profile-completion-info": {
+          "title": "Profile Complete!",
+          "content": "Congratulations! Your facility profile is now complete. You have access to all platform features. Let's continue to the next section."
+        }
+      }
+    },
+    "messages": {
+      "name": "Messaging",
+      "description": "Learn how to use the messaging feature",
+      "steps": {
+        "messages-overview": {
+          "title": "Messaging Feature",
+          "content": "The messaging feature allows you to communicate with employers and other professionals."
+        },
+        "messages-conversations": {
+          "title": "Your Conversations",
+          "content": "Here you can see all your active conversations. Click on any conversation to view and respond to messages."
+        },
+        "messages-compose": {
+          "title": "Start New Conversation",
+          "content": "Start a new conversation by clicking on the \"New Message\" button.",
+          "contentByRole": {
+            "professional": "You can start a conversation with the members of your team by clicking on New message, or contact any employer for your current contracts.",
+            "facility": "You can start a conversation with your team members or contact professionals you are working with by clicking on New message."
+          }
+        }
+      }
+    },
+    "contracts": {
+      "name": "Contracts",
+      "description": "Learn how to manage your contracts",
+      "steps": {
+        "contracts-overview": {
+          "title": "Contracts Feature",
+          "content": "The contracts feature allows you to manage all your employment contracts in one place."
+        },
+        "contracts-list": {
+          "title": "Your Contracts",
+          "content": "Here you can see all your active and past contracts. Click on any contract to view its details."
+        }
+      }
+    },
+    "calendar": {
+      "name": "Calendar",
+      "description": "Learn how to manage your schedule",
+      "steps": {
+        "calendar-overview": {
+          "title": "Calendar Feature",
+          "content": "The calendar feature helps you manage your schedule and appointments."
+        },
+        "calendar-view": {
+          "title": "Calendar View",
+          "content": "View your schedule in different formats - daily, weekly, or monthly."
+        },
+        "calendar-appointment": {
+          "title": "Creating Appointments",
+          "content": "Create new appointments by clicking on a time slot or using the \"New Appointment\" button."
+        }
+      }
+    },
+    "marketplace": {
+      "name": "Marketplace",
+      "description": "Learn how to find job opportunities",
+      "steps": {
+        "marketplace-overview": {
+          "title": "Marketplace Feature",
+          "content": "The marketplace allows you to discover job opportunities and connect with employers."
+        },
+        "marketplace-search": {
+          "title": "Searching Opportunities",
+          "content": "Search and filter job opportunities based on your preferences."
+        },
+        "marketplace-apply": {
+          "title": "Applying for Jobs",
+          "content": "Apply for job opportunities with a single click or save them for later."
+        }
+      }
+    },
+    "payroll": {
+      "name": "Payroll",
+      "description": "Learn how to manage payroll",
+      "steps": {
+        "payroll-overview": {
+          "title": "Payroll Feature",
+          "content": "The payroll feature allows you to manage payroll requests and track payment processing for your facility."
+        },
+        "payroll-requests": {
+          "title": "Payroll Requests",
+          "content": "View and manage all payroll requests. You can see the status of each request and track payments."
+        },
+        "payroll-status": {
+          "title": "Tracking Payroll Status",
+          "content": "Monitor the status of payroll requests from draft to completed. Filter by status to find specific requests."
+        }
+      }
+    },
+    "organization": {
+      "name": "Organization",
+      "description": "Learn how to manage your organization",
+      "steps": {
+        "organization-overview": {
+          "title": "Organization Feature",
+          "content": "The organization feature allows you to manage pharmacy chains or groups, including multiple facilities under one organization."
+        },
+        "organization-facilities": {
+          "title": "Managing Facilities",
+          "content": "View and manage all facilities that are part of your organization. You can add or remove facilities from the group."
+        },
+        "organization-settings": {
+          "title": "Organization Settings",
+          "content": "Configure organization-wide settings and manage administrators who have access to all facilities in the chain."
+        }
+      }
+    },
+    "settings": {
+      "name": "Settings",
+      "description": "Learn how to customize your account",
+      "steps": {
+        "settings-overview": {
+          "title": "Settings Feature",
+          "content": "The settings section allows you to customize your account preferences."
+        },
+        "settings-account": {
+          "title": "Account Settings",
+          "content": "Update your account information, change your password, and manage email preferences."
+        },
+        "settings-notifications": {
+          "title": "Notification Settings",
+          "content": "Customize your notification preferences to control what alerts you receive."
+        }
+      }
+    },
+    "profile": {
+      "name": "Profile",
+      "description": "Learn about your profile",
+      "steps": {
+        "profile-overview": {
+          "title": "Your Profile",
+          "content": "Your profile contains all your personal and professional information."
+        },
+        "profile-edit": {
+          "title": "Editing Your Profile",
+          "content": "You can update your profile information at any time through the different sections."
+        }
+      }
+    }
+  },
+  "buttons": {
+    "iUnderstood": "I understood",
+    "showMe": "Show me",
+    "continueToMessages": "Continue to Messages",
+    "next": "Next",
+    "previous": "Previous",
+    "skip": "Skip",
+    "finish": "Finish",
+    "restart": "Restart Tutorial",
+    "startMessages": "Start Messages Tutorial"
+  },
+  "accessLevel": {
+    "full": {
+      "title": "Full Access",
+      "description": "Complete all profile tabs to unlock all platform features"
+    },
+    "team": {
+      "title": "Team Access",
+      "description": "Quick access to team features without completing full profile"
+    }
+  }
+}

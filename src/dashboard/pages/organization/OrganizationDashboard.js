@@ -16,9 +16,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc } from 'firebase/firestore';
 import { functions, db } from '../../../services/firebase';
-import { useAuth } from '../../../contexts/authContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useDashboard } from '../../contexts/DashboardContext';
-import { useNotification } from '../../../contexts/notificationContext';
+import { useNotification } from '../../../contexts/NotificationContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
@@ -40,13 +40,12 @@ import {
 import { cn } from '../../../utils/cn';
 
 import OrganigramView from './tabs/OrganigramView';
-import PayrollDashboard from '../../../dashboards/admin/payroll/PayrollDashboard';
-import Profile from '../profile/Profile';
-import Contracts from '../../../dashboards/shared/contracts/Contracts';
+import PayrollDashboard from '../payroll/PayrollDashboard';
+import Profile from '../profile/profile';
+import Contracts from '../../shared/entity/components/Contracts';
 import TeamOrganigramView from './components/TeamOrganigramView';
 import TeamEmployees from './components/TeamEmployees';
 import TeamHiring from './components/TeamHiring';
-import OrganizationAdmin from './components/AdminManagementSystem';
 
 
 const OrganizationDashboard = () => {
@@ -108,7 +107,7 @@ const OrganizationDashboard = () => {
         
         if (basePathIndex >= 0 && basePathIndex + 2 < pathParts.length) {
             const subTabPath = pathParts[basePathIndex + 2];
-            if (['employees', 'organigram', 'admin', 'hiring', 'requests'].includes(subTabPath)) {
+            if (['employees', 'organigram', 'hiring', 'requests'].includes(subTabPath)) {
                 return subTabPath;
             }
         }
@@ -508,7 +507,6 @@ const OrganizationDashboard = () => {
                                         {[
                                             { id: 'employees', label: t('organization:subTabs.employees', 'Employees'), icon: FiUserPlus, path: 'employees' },
                                             { id: 'organigram', label: t('organization:tabs.organigram', 'Organigram'), icon: FiGitBranch, path: 'organigram' },
-                                            { id: 'admin', label: t('organization:subTabs.admin', 'Admin'), icon: FiShield, path: 'admin' },
                                             { id: 'hiring', label: t('organization:subTabs.hiring', 'Hiring Processes'), icon: FiBriefcase, path: 'hiring' }
                                         ].map((subTab) => {
                                             const SubIcon = subTab.icon;
@@ -543,10 +541,6 @@ const OrganizationDashboard = () => {
 
                                                 {activeSubTab === 'organigram' && (
                                                     <TeamOrganigramView />
-                                                )}
-
-                                                {activeSubTab === 'admin' && (
-                                                    <OrganizationAdmin organization={organization} memberFacilities={memberFacilities} />
                                                 )}
 
                                                 {activeSubTab === 'hiring' && (

@@ -1,0 +1,912 @@
+{
+  "title": "Organization",
+  "facilityTitle": "Facility",
+  "subtitle": "Manage your pharmacy chain",
+  "noOrg": "Create or join an organization",
+  "notFound": "Organization not found",
+  "tabs": {
+    "overview": "Overview",
+    "directory": "Global Directory",
+    "floatPool": "Float Pool Manager",
+    "agencySpend": "Agency Spend",
+    "consolidatedPayroll": "Consolidated Payroll",
+    "policyLibrary": "Policy Library",
+    "hiringATS": "Hiring & ATS",
+    "headquarters": "Headquarters",
+    "chain": "Chain",
+    "openingHours": "Opening Hours",
+    "facilityRoles": "Facility Roles",
+    "hrCore": "HR Core",
+    "organigram": "Organigram",
+    "team": "Team",
+    "contracts": "Contracts",
+    "profile": "Profile"
+  },
+  "subTabs": {
+    "employees": "Employees",
+    "hiring": "Hiring Processes",
+    "admin": "Admin",
+    "teams": "Teams",
+    "requests": "Requests"
+  },
+  "sections": {
+    "info": "Organization Info",
+    "facilities": "Member Facilities",
+    "admins": "Administrators",
+    "settings": "Settings"
+  },
+  "labels": {
+    "type": "Type",
+    "facilities": "Facilities",
+    "admins": "Admins",
+    "chainAdminsSynced": "Chain admins synced",
+    "group": "Group",
+    "unnamedFacility": "Unnamed Facility",
+    "selectFacility": "Select Facility",
+    "searchFacility": "Search Facility",
+    "searchFacilityPlaceholder": "Search by name...",
+    "allFacilities": "All"
+  },
+  "settings": {
+    "sharedStaff": "Shared Staff Pool",
+    "crossScheduling": "Cross-Facility Scheduling",
+    "consolidatedBilling": "Consolidated Billing"
+  },
+  "actions": {
+    "create": "Create Organization",
+    "addFacility": "Add Facility",
+    "removeFacility": "Remove Facility",
+    "remove": "Remove from organization",
+    "removeFromConsolidatedPayroll": "Remove from Consolidated payroll"
+  },
+  "create": {
+    "title": "Create Organization",
+    "subtitle": "Create a new pharmacy chain or group",
+    "nameLabel": "Organization Name",
+    "namePlaceholder": "e.g., Amavita Geneva Group",
+    "phoneVerificationRequired": "Please verify your mobile phone number first",
+    "phoneVerification": {
+      "title": "Verify Your Mobile Phone Number",
+      "description": "A mobile phone number is required to create an organization. We need to verify your phone number to secure your account.",
+      "mobileRequired": "⚠️ A mobile phone number must be used"
+    },
+    "phoneVerified": "Phone Verified!",
+    "phoneVerifiedDescription": "Your phone number has been verified. Now let's create your organization."
+  },
+  "empty": {
+    "title": "No Organization Yet",
+    "description": "Create an organization to manage multiple pharmacy locations, share staff, and consolidate billing."
+  },
+  "facilities": {
+    "empty": "No facilities in this organization yet."
+  },
+  "features": {
+    "internalInterim": {
+      "title": "Internal Interim",
+      "description": "Share staff between facilities. When understaffed, borrow workers from other locations in your organization first."
+    },
+    "crossReports": {
+      "title": "Cross-Facility Reports",
+      "description": "Track hours borrowed between locations. View consolidated reports for the entire organization."
+    }
+  },
+  "confirm": {
+    "removeFacility": "Remove this facility from the organization?",
+    "deletePolicy": "Are you sure you want to delete this policy?",
+    "removeFromConsolidatedPayroll": "Remove this organization from Consolidated Payroll? This will disable consolidated payroll processing for all facilities."
+  },
+  "errors": {
+    "fetchFailed": "Failed to load organization",
+    "createFailed": "Failed to create organization",
+    "addFacilityFailed": "Failed to add facility",
+    "removeFacilityFailed": "Failed to remove facility",
+    "removeFromConsolidatedPayrollFailed": "Failed to remove from Consolidated Payroll",
+    "nameRequired": "Organization name is required",
+    "fetchPoliciesFailed": "Failed to load policies",
+    "fileTooLarge": "File size must be less than 10MB",
+    "invalidFileType": "Only PDF and Word documents are allowed",
+    "missingFields": "Please fill in all required fields",
+    "uploadFailed": "Failed to upload policy",
+    "deleteFailed": "Failed to delete policy",
+    "updateFailed": "Failed to update profile"
+  },
+  "success": {
+    "created": "Organization created successfully!",
+    "facilityAdded": "Facility added successfully!",
+    "facilityRemoved": "Facility removed successfully!",
+    "removedFromConsolidatedPayroll": "Removed from Consolidated Payroll successfully!",
+    "policyUploaded": "Policy uploaded successfully",
+    "policyDeleted": "Policy deleted successfully",
+    "profileUpdated": "Profile updated successfully"
+  },
+  "policy": {
+    "title": "Standardized Policy Library",
+    "subtitle": "Manage and distribute policies to all facilities instantly.",
+    "uploadNew": "Upload Policy",
+    "uploadFirst": "Upload Your First Policy",
+    "empty": {
+      "title": "No policies found",
+      "description": "No policies available at the moment"
+    },
+    "uploadTitle": "Upload New Policy",
+    "policyName": "Policy Name",
+    "policyNamePlaceholder": "Enter policy name",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter policy description (optional)",
+    "file": "Policy File",
+    "selectFile": "Click to select a file or drag and drop",
+    "fileTypes": "PDF or Word documents only, max 10MB",
+    "upload": "Upload Policy",
+    "active": "Active",
+    "review": "Review",
+    "daysAgo": "{{count}} days ago",
+    "weeksAgo": "{{count}} week ago",
+    "monthsAgo": "{{count}} month ago",
+    "internalPolicy": "Internal Policy",
+    "interim": "Interim",
+    "createCommunication": "Create Communication",
+    "options": "Policy Options",
+    "switchesInfoTitle": "Policy Options",
+    "infoInternal": "Internal Policy: Only visible to organization members",
+    "infoInterim": "Interim: Temporary policies",
+    "infoCommunication": "Create Communication: Notify relevant parties when uploaded",
+    "info": {
+      "title": "Policy Library",
+      "description": "Browse and search for policies in the library."
+    },
+    "searchPlaceholder": "Search policies...",
+    "noMatches": "No policies match your search",
+    "noMatches.description": "Try adjusting your filters to see more results",
+    "sortBy": "Sort by",
+    "sort": {
+      "date": "Date",
+      "name": "Name"
+    },
+    "filter": {
+      "status": "Status",
+      "all": "All",
+      "apply": "Apply Filters"
+    },
+    "view": {
+      "grid": "Grid view",
+      "list": "List view"
+    },
+    "viewDetails": "View Details",
+    "details": "Policy Details",
+    "noDescription": "No description provided",
+    "uploadedAt": "Uploaded",
+    "fileName": "File Name",
+    "fileSize": "File Size",
+    "status": {
+      "active": "Active",
+      "review": "Review",
+      "archived": "Archived",
+      "draft": "Draft"
+    },
+    "types": {
+      "internal": "Internal Policy",
+      "shortTerm": "Short-term Contract Template",
+      "longTerm": "Long-term Contract Template",
+      "hr": "HR Policy",
+      "safety": "Safety & Compliance",
+      "operational": "Operational Procedure",
+      "training": "Training Material",
+      "legal": "Legal Document",
+      "other": "Other"
+    },
+    "roles": {
+      "all": "All Roles",
+      "pharmacist": "Pharmacist",
+      "pharmacyTechnician": "Pharmacy Technician",
+      "intern": "Intern",
+      "admin": "Admin",
+      "scheduler": "Scheduler",
+      "recruiter": "Recruiter",
+      "employee": "Employee"
+    },
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "filter": {
+      "status": "Status",
+      "type": "Type",
+      "role": "Role",
+      "facility": "Facility",
+      "priority": "Priority",
+      "all": "All",
+      "allFacilities": "All Facilities",
+      "apply": "Apply Filters"
+    },
+    "form": {
+      "status": "Status",
+      "type": "Type",
+      "priority": "Priority",
+      "effectiveDate": "Effective Date",
+      "expiryDate": "Expiry Date (Optional)",
+      "tags": "Tags (comma-separated)",
+      "tagsPlaceholder": "e.g., HR, Safety, Compliance",
+      "applicableRoles": "Applicable Roles",
+      "applicableFacilities": "Applicable Facilities",
+      "allRolesNote": "Leave empty to apply to all roles",
+      "allFacilitiesNote": "Leave empty to apply to all facilities",
+      "requiresAcknowledgment": "Requires Acknowledgment",
+      "immediate": "Immediate",
+      "noExpiry": "No expiry"
+    }
+  },
+  "hr": {
+    "title": "HR Core",
+    "subtitle": "Manage sick leave, job opportunities, and employee requests",
+    "sickLeave": "Sick Leave",
+    "vacancies": "Vacancies",
+    "totalPending": "Total Pending",
+    "pendingRequests": "Pending requests",
+    "requiresAction": "Requires action",
+    "overview": "Overview",
+    "recentSickLeave": "Recent Sick Leave Requests",
+    "recentVacancies": "Recent Vacancy Requests",
+    "allSickLeave": "All Sick Leave Requests",
+    "allVacancies": "All Vacancy Requests",
+    "noSickLeave": "No sick leave requests",
+    "noVacancies": "No vacancy requests",
+    "createJob": "Create Job Opportunity",
+    "approve": "Approve",
+    "reject": "Reject",
+    "requestApproved": "Request approved and postings created",
+    "requestRejected": "Request rejected",
+    "errorApproving": "Error approving request",
+    "errorRejecting": "Error rejecting request",
+    "jobCreated": "Job opportunity created successfully",
+    "errorCreating": "Error creating job opportunity",
+    "jobTitle": "Job Title",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "vacancyType": "Vacancy Type",
+    "urgency": "Urgency",
+    "notes": "Notes",
+    "temporary": "Temporary",
+    "permanent": "Permanent",
+    "replacement": "Replacement",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  },
+  "organigram": {
+    "title": "Organizational Chart",
+    "description": "View your team organized by hierarchy. Click on any employee to see details.",
+    "hqTitle": "Headquarters",
+    "admins": "Administrators",
+    "localAdmins": "Local Administrators",
+    "employees": "Employees",
+    "unassigned": "Unassigned",
+    "adminBadge": "Administrator",
+    "noMembers": "No members assigned to this function",
+    "empty": "No team members found",
+    "member": "member",
+    "members": "members",
+    "year": "year",
+    "years": "years",
+    "experience": "experience",
+    "employeeDetails": "Employee Details",
+    "address": "Address",
+    "contracts": "Contracts",
+    "specializations": "Specializations",
+    "skills": "Skills",
+    "activeContracts": "Active Contracts",
+    "contract": "Contract",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "bio": "Bio",
+    "noDetails": "No details available",
+    "seeProfile": "See Profile",
+    "hoursWorked": "Hours Worked (This Month)",
+    "ofContractHours": "of",
+    "contracted": "contracted",
+    "contractPercentage": "Contract Fulfillment",
+    "onTarget": "On target",
+    "belowTarget": "Below target",
+    "overtime": "Overtime",
+    "timeOff": "Time Off (This Month)",
+    "days": "days",
+    "pending": "pending",
+    "activeContract": "Active Contract",
+    "jobTitle": "Job Title",
+    "workPercentage": "Work Percentage",
+    "contractType": "Contract Type",
+    "allContracts": "All Contracts",
+    "fireSuccess": "Fire Success",
+    "fireError": "Fire Error",
+    "firemodalTitle": "Fire modal Title",
+    "fireConfirm": "Fire Confirm",
+    "fireMessage": "Fire Message",
+    "fromFacility": "From Facility",
+    "fireWarning": "Fire Warning",
+    "firePrompt": "Fire Prompt",
+    "toConfirm": "To Confirm"
+  },
+  "hq": {
+    "tools": "Tools"
+  },
+  "directory": {
+    "title": "Employee Directory",
+    "subtitle": "Search and manage employees across all facilities",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Find a nurse, doctor, or staff member across all locations...",
+    "emptyState": "Enter a name or role to search across the entire organization.",
+    "noResults": "No employees found matching your search.",
+    "sort": "Sort",
+    "filters": {
+      "facility": "Facility",
+      "role": "Role",
+      "fromDate": "From Date",
+      "toDate": "To Date",
+      "status": "Status",
+      "sortBy": "Sort By",
+      "name": "Name",
+      "allFacilities": "All Facilities",
+      "allRoles": "All Roles",
+      "allStatuses": "All Statuses",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "clearAll": "Clear All Filters"
+    }
+  },
+  "employee": {
+    "rightToWork": "Right to Work",
+    "pharmacyLicense": "Pharmacy License",
+    "contractPayroll": "Contract & Payroll",
+    "operational": "Operational",
+    "identityLayer": "Identity & Legal Information",
+    "fullLegalName": "Full Legal Name",
+    "ahvNumber": "AHV/AVS Number",
+    "dateOfBirth": "Date of Birth",
+    "nationality": "Nationality",
+    "permitType": "Permit Type",
+    "permitExpiry": "Permit Expiry Date",
+    "maritalStatus": "Marital Status",
+    "single": "Single",
+    "married": "Married",
+    "divorced": "Divorced",
+    "numberOfChildren": "Number of Children",
+    "privateAddress": "Private Address",
+    "street": "Street",
+    "houseNumber": "House Number",
+    "postalCode": "Postal Code",
+    "city": "City",
+    "pharmacyCredentials": "Pharmacy Credentials",
+    "gln": "GLN (Global Location Number)",
+    "cantonalAuthorization": "Cantonal Authorization",
+    "nareg": "NAREG / MedReg Entry",
+    "diploma": "Diploma",
+    "vaccinationStatus": "Vaccination Status (Hepatitis B)",
+    "vaccinated": "Vaccinated",
+    "pending": "Pending",
+    "notRequired": "Not Required",
+    "documents": "Documents",
+    "diplomaCopies": "Diploma copies should be uploaded in the document section",
+    "contractDetails": "Contract Details",
+    "fte": "FTE (Taux d'Activité)",
+    "contractType": "Contract Type",
+    "hourly": "Hourly (Auxiliary)",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "hourlyWage": "Hourly Wage",
+    "monthlyWage": "Monthly Wage (Brut)",
+    "payrollDetails": "Payroll Details",
+    "iban": "IBAN",
+    "lppDeduction": "LPP Deduction Plan",
+    "standard": "Standard",
+    "cadre": "Cadre",
+    "vacationBalance": "Vacation Balance (days/year)",
+    "vacationRemaining": "Vacation Remaining",
+    "softwareProficiency": "Software Proficiency",
+    "erpSoftware": "ERP Software",
+    "languages": "Spoken Languages",
+    "primaryLanguage": "Primary Language",
+    "additionalLanguages": "Additional Languages",
+    "mobility": "Mobility",
+    "mobilityZone": "Mobility Zone",
+    "riveGauche": "Rive Gauche only",
+    "allGeneva": "All Geneva",
+    "specific": "Specific areas",
+    "services": "Services & Certifications",
+    "injectionCert": "Injection Certification",
+    "cardioTest": "CardioTest",
+    "netCare": "NetCare (Triage)",
+    "viewPublicProfile": "View Public Profile",
+    "homeBranch": "Home Branch",
+    "remove": "Remove",
+    "unknown": "Unknown",
+    "jobTitle": "Job Title",
+    "workPercentage": "Work Percentage",
+    "salary": "Salary",
+    "status": "Status",
+    "noContract": "No contract information available",
+    "profile": "Profile Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "roles": "Roles",
+    "bio": "Bio",
+    "noProfile": "No profile information available",
+    "redirectingToMessages": "Redirecting to Messages...",
+    "redirectingToMessagesDesc": "You will be redirected to the messages page to start a conversation.",
+    "redirectingToCalendar": "Redirecting to Calendar...",
+    "redirectingToCalendarDesc": "You will be redirected to the calendar page to view schedules."
+  },
+  "profile": {
+    "title": "Organization Profile",
+    "subtitle": "Manage your organization information and settings",
+    "tabs": {
+      "details": "Organization Details",
+      "settings": "Settings",
+      "billing": "Billing Information",
+      "documents": "Documents"
+    },
+    "sections": {
+      "basicInfo": "Basic Information",
+      "address": "Address",
+      "contact": "Contact Information",
+      "legal": "Legal Information",
+      "organizationSettings": "Organization Settings",
+      "billingInfo": "Billing Information",
+      "billingContact": "Billing Contact",
+      "documents": "Documents"
+    },
+    "fields": {
+      "organizationName": "Organization Name",
+      "organizationType": "Organization Type",
+      "street": "Street",
+      "houseNumber": "House Number",
+      "postalCode": "Postal Code",
+      "city": "City",
+      "canton": "Canton",
+      "email": "Email",
+      "phone": "Phone",
+      "website": "Website",
+      "legalEntityName": "Legal Entity Name",
+      "uidNumber": "UID Number",
+      "commercialRegisterNumber": "Commercial Register Number",
+      "iban": "IBAN",
+      "bankName": "Bank Name",
+      "contactName": "Contact Name",
+      "contactEmail": "Contact Email",
+      "contactPhone": "Contact Phone",
+      "commercialRegisterExtract": "Commercial Register Extract",
+      "proofOfAddress": "Proof of Address"
+    },
+    "settings": {
+      "sharedStaffDescription": "Allow facilities to share staff members across the organization",
+      "crossSchedulingDescription": "Enable scheduling across multiple facilities",
+      "consolidatedBillingDescription": "Consolidate billing for all facilities"
+    },
+    "facilitiesCount": "{{count}} facilities"
+  },
+  "dashboard": {
+    "onboarding": {
+      "phoneVerification": {
+        "phoneRequired": "Phone Required",
+        "sendFailed": "Send Failed",
+        "operationNotAllowed": "Operation Not Allowed",
+        "invalidPhone": "Invalid Phone",
+        "tooManyRequests": "Too Many Requests",
+        "codeRequired": "Code Required",
+        "invalidCode": "Invalid Code",
+        "codeExpired": "Code Expired",
+        "verifyFailed": "Verify Failed",
+        "sending": "Sending",
+        "sendCode": "Send Code",
+        "enterCode": "Enter Code",
+        "codeSent": "Code Sent",
+        "codeLabel": "Code Label",
+        "verifying": "Verifying",
+        "verify": "Verify"
+      }
+    }
+  },
+  "pilot": {
+    "title": "Pilot Program Active",
+    "description": "You're currently enjoying 0% platform fees until February 28, 2025!"
+  },
+  "hiring": {
+    "title": "Hiring Processes",
+    "subtitle": "Manage job postings and review candidates",
+    "create": "Create",
+    "createPosition": "Create Position",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search positions...",
+    "empty": "No positions found",
+    "noApplications": "No applications found",
+    "appliedOn": "Applied on",
+    "applications": "applications",
+    "sortLabel": "Sort",
+    "filters": {
+      "facility": "Facility",
+      "status": "Status",
+      "allFacilities": "All Facilities",
+      "allStatuses": "All Statuses",
+      "open": "Open",
+      "interview": "Interview",
+      "accepted": "Accepted",
+      "closed": "Closed",
+      "clearAll": "Clear",
+      "apply": "Apply"
+    },
+    "sort": {
+      "created": "Date Created",
+      "title": "Title",
+      "facility": "Facility",
+      "applications": "Applications"
+    },
+    "candidates": {
+      "title": "Review Candidates",
+      "empty": "No candidates found",
+      "phone": "Phone",
+      "email": "Email",
+      "yearsExperience": "years experience",
+      "sort": {
+        "experience": "Experience",
+        "name": "Name",
+        "applied": "Date Applied"
+      }
+    },
+    "stats": {
+      "totalPositions": "Total Positions",
+      "open": "Open",
+      "interviews": "Interviews",
+      "accepted": "Accepted"
+    },
+    "errors": {
+      "loadFailed": "Failed to load hiring processes"
+    },
+    "form": {
+      "jobTitle": "Job Title",
+      "jobTitlePlaceholder": "Enter job title",
+      "jobType": "Job Type",
+      "jobTypeGeneral": "General",
+      "jobTypePharmacist": "Pharmacist",
+      "jobTypeTechnician": "Technician",
+      "jobTypeIntern": "Intern",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "location": "Location",
+      "locationPlaceholder": "Enter location (optional)",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter job description (optional)",
+      "compensation": "Compensation",
+      "compensationPlaceholder": "Enter compensation (optional)"
+    }
+  },
+  "admin": {
+    "title": "Organization Administration",
+    "subtitle": "Manage administrators, permissions, and organization settings",
+    "addAdmin": "Add Administrator",
+    "searchPlaceholder": "Search administrators...",
+    "noAdmins": "No administrators found",
+    "role": "Administrator",
+    "views": {
+      "admins": "Administrators",
+      "roles": "Roles & Permissions",
+      "permissions": "Permissions",
+      "settings": "Settings"
+    },
+    "permissions": {
+      "title": "Permission Overview",
+      "manageEmployees": "Manage Employees",
+      "viewEmployees": "View Employees",
+      "inviteUsers": "Invite Users",
+      "manageFacilities": "Manage Facilities",
+      "viewFacilities": "View Facilities",
+      "manageSchedules": "Manage Schedules",
+      "viewSchedules": "View Schedules",
+      "postPositions": "Post Positions",
+      "viewApplications": "View Applications",
+      "manageContracts": "Manage Contracts",
+      "viewContracts": "View Contracts",
+      "manageSettings": "Manage Settings",
+      "viewReports": "View Reports",
+      "viewAnalytics": "View Analytics",
+      "manageOrganization": "Manage Organization",
+      "manageRoles": "Manage Roles",
+      "enabled": "Enabled",
+      "categories": {
+        "employees": "Employees",
+        "facilities": "Facilities",
+        "scheduling": "Scheduling",
+        "hiring": "Hiring",
+        "contracts": "Contracts",
+        "settings": "Settings",
+        "reports": "Reports",
+        "organization": "Organization"
+      }
+    },
+    "roles": {
+      "title": "Custom Roles",
+      "create": "Create Role",
+      "createRole": "Create New Role",
+      "editRole": "Edit Role",
+      "edit": "Edit role",
+      "delete": "Delete role",
+      "empty": "No custom roles created yet",
+      "createFirst": "Create your first role",
+      "created": "Role created successfully",
+      "updated": "Role updated successfully",
+      "deleted": "Role deleted successfully",
+      "selectedCount": "{{count}} permissions selected",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "confirmDelete": "Are you sure you want to delete this role? This action cannot be undone.",
+      "form": {
+        "name": "Role Name",
+        "namePlaceholder": "e.g., HR Manager, Team Lead",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the role and its responsibilities",
+        "permissions": "Permissions"
+      },
+      "errors": {
+        "loadFailed": "Failed to load roles",
+        "saveFailed": "Failed to save role",
+        "deleteFailed": "Failed to delete role",
+        "nameRequired": "Role name is required",
+        "permissionsRequired": "At least one permission is required"
+      }
+    },
+    "settings": {
+      "title": "Organization Settings",
+      "sharedStaff": "Shared Staff Pool",
+      "sharedStaffDesc": "Allow facilities to share staff members",
+      "crossScheduling": "Cross-Facility Scheduling",
+      "crossSchedulingDesc": "Enable scheduling across multiple facilities"
+    },
+    "errors": {
+      "loadFailed": "Failed to load administrators"
+    }
+  },
+  "teams": {
+    "title": "Teams Management",
+    "subtitle": "Organize employees into teams and manage team structures",
+    "createTeam": "Create Team",
+    "searchPlaceholder": "Search teams or members...",
+    "empty": "No teams found",
+    "noMembers": "No members found",
+    "unassigned": "Unassigned",
+    "member": "member",
+    "members": "members",
+    "more": "more",
+    "views": {
+      "overview": "Overview",
+      "teams": "Teams",
+      "members": "Members"
+    },
+    "stats": {
+      "totalMembers": "Total Members",
+      "totalTeams": "Total Teams",
+      "unassigned": "Unassigned",
+      "admins": "Admins"
+    },
+    "errors": {
+      "loadFailed": "Failed to load team data"
+    }
+  },
+  "requests": {
+    "title": "Requests",
+    "subtitle": "Manage vacancy leave requests and clocked hours updates",
+    "vacancyRequests": "Vacancy Requests",
+    "clockedHoursUpdates": "Clocked Hours Updates",
+    "pending": "Pending",
+    "noRequests": "No requests found",
+    "type": "Type",
+    "employee": "Employee",
+    "details": "Details",
+    "date": "Date",
+    "status": "Status",
+    "vacancyRequest": "Vacancy Request",
+    "clockedHoursUpdate": "Clocked Hours Update",
+    "hours": "Hours",
+    "requestApproved": "Request approved",
+    "requestRejected": "Request rejected",
+    "errorApproving": "Error approving request",
+    "errorRejecting": "Error rejecting request",
+    "searchPlaceholder": "Search by employee, job title, or reason...",
+    "filterByStatus": "Filter by Status",
+    "filterByType": "Filter by Type"
+  },
+  "employees": {
+    "title": "Employees",
+    "subtitle": "Manage and track all employees",
+    "searchPlaceholder": "Search employees...",
+    "noEmployees": "No employees found",
+    "filterByStatus": "Filter by Status",
+    "filterByRole": "Filter by Role",
+    "filterByFacility": "Filter by Facility",
+    "unnamedFacility": "Unnamed Facility",
+    "addEmployee": "Add Employee",
+    "addEmployeeDescription": "Add a new employee to your facility",
+    "add": "Add",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "employee@example.com",
+      "facility": "Facility",
+      "role": "Role"
+    },
+    "roles": {
+      "employee": "Employee",
+      "scheduler": "Scheduler",
+      "recruiter": "Recruiter",
+      "admin": "Admin"
+    },
+    "sort": {
+      "name": "Name",
+      "date": "Date",
+      "facility": "Facility"
+    },
+    "table": {
+      "name": "Name",
+      "facility": "Facility",
+      "role": "Role",
+      "status": "Status",
+      "hired": "Hired"
+    }
+  },
+  "hiring": {
+    "title": "Hiring Processes",
+    "subtitle": "Manage and track all hiring processes",
+    "searchPlaceholder": "Search positions...",
+    "noPositions": "No positions found",
+    "applications": "applications",
+    "filterByStatus": "Filter by Status",
+    "filterByFacility": "Filter by Facility",
+    "unnamedFacility": "Unnamed Facility",
+    "sort": {
+      "date": "Date",
+      "name": "Name",
+      "facility": "Facility",
+      "applications": "Applications"
+    },
+    "table": {
+      "title": "Title",
+      "facility": "Facility",
+      "status": "Status",
+      "applications": "Applications",
+      "created": "Created"
+    }
+  },
+  "contracts": {
+    "title": "Contracts",
+    "subtitle": "Manage and track all contracts",
+    "searchPlaceholder": "Search contracts...",
+    "noContracts": "No contracts found",
+    "filterByStatus": "Filter by Status",
+    "filterBySource": "Filter by Source",
+    "team": "Team",
+    "medishift": "Medishift",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "sort": {
+      "date": "Date",
+      "name": "Name"
+    },
+    "table": {
+      "title": "Title",
+      "company": "Company",
+      "status": "Status",
+      "created": "Created"
+    }
+  },
+  "payroll": {
+    "title": "Payroll Management",
+    "subtitle": "Track and manage staff payment requests",
+    "searchPlaceholder": "Search by worker name or role...",
+    "noRequests": "No payroll requests found",
+    "filterByStatus": "Filter by Status",
+    "filterBySource": "Filter by Source",
+    "team": "Team",
+    "medishift": "Medishift",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "sort": {
+      "date": "Date",
+      "name": "Name",
+      "amount": "Amount"
+    },
+    "table": {
+      "worker": "Worker",
+      "shift": "Shift",
+      "hours": "Hours",
+      "amount": "Amount",
+      "status": "Status",
+      "created": "Created"
+    }
+  },
+  "policy": {
+    "filterByStatus": "Filter by Status",
+    "filterByType": "Filter by Type",
+    "filterByRole": "Filter by Role",
+    "filterByFacility": "Filter by Facility",
+    "filterByPriority": "Filter by Priority",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "noPolicies": "No policies found"
+  },
+  "facilityRoles": {
+    "title": "Facility Roles",
+    "createRole": "Create Role",
+    "createRoleTitle": "Create Facility Role",
+    "subtitle": "Create a new role for your facility based on your facility type.",
+    "roleName": "Role Name",
+    "roleNamePlaceholder": "Enter role name",
+    "selectRole": "Select Role",
+    "rolesByFacilityType": {
+      "pharmacy": {
+        "pharmacist": "Pharmacist",
+        "pharmacy_technician": "Pharmacy Technician",
+        "pharmacy_assistant": "Pharmacy Assistant",
+        "intern": "Intern",
+        "cashier": "Cashier",
+        "manager": "Pharmacy Manager"
+      },
+      "medical_center": {
+        "doctor": "Doctor",
+        "nurse": "Nurse",
+        "medical_assistant": "Medical Assistant",
+        "receptionist": "Receptionist",
+        "administrator": "Administrator"
+      },
+      "dental_clinic": {
+        "dentist": "Dentist",
+        "dental_hygienist": "Dental Hygienist",
+        "dental_assistant": "Dental Assistant",
+        "receptionist": "Receptionist"
+      },
+      "hospital": {
+        "doctor": "Doctor",
+        "nurse": "Nurse",
+        "nurse_practitioner": "Nurse Practitioner",
+        "physician_assistant": "Physician Assistant",
+        "medical_technician": "Medical Technician",
+        "administrator": "Administrator"
+      },
+      "clinic": {
+        "doctor": "Doctor",
+        "nurse": "Nurse",
+        "medical_assistant": "Medical Assistant",
+        "receptionist": "Receptionist"
+      },
+      "laboratory": {
+        "lab_technician": "Lab Technician",
+        "lab_assistant": "Lab Assistant",
+        "phlebotomist": "Phlebotomist",
+        "administrator": "Administrator"
+      },
+      "nursing_home": {
+        "nurse": "Nurse",
+        "caregiver": "Caregiver",
+        "nurse_aide": "Nurse Aide",
+        "administrator": "Administrator"
+      },
+      "rehabilitation_center": {
+        "therapist": "Therapist",
+        "physical_therapist": "Physical Therapist",
+        "occupational_therapist": "Occupational Therapist",
+        "nurse": "Nurse",
+        "administrator": "Administrator"
+      },
+      "other": {
+        "employee": "Employee",
+        "administrator": "Administrator",
+        "manager": "Manager"
+      }
+    }
+  },
+  "refresh": "Refresh",
+  "filter": {
+    "title": "Filters",
+    "description": "Filter and search your data",
+    "view": {
+      "grid": "Grid view",
+      "list": "List view"
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+    "title": "Contrats",
+    "subtitle": "Consultez et gérez vos contrats",
+    "new": "Nouveau",
+    "errorTitle": "Erreur lors du chargement des contrats",
+    "errorMessage": "Une erreur s'est produite lors du chargement de vos contrats. Veuillez réessayer.",
+    "retry": "Réessayer",
+    "searchPlaceholder": "Rechercher des contrats...",
+    "status": {
+        "all": "Tous les statuts",
+        "active": "Actif",
+        "pending": "En attente",
+        "signed": "Signé",
+        "completed": "Terminé",
+        "cancelled": "Annulé",
+        "draft": "Brouillon",
+        "sent": "Envoyé"
+    },
+    "dateRange": {
+        "all": "Toutes les dates",
+        "lastWeek": "La semaine dernière",
+        "lastMonth": "Le mois dernier",
+        "last3Months": "Les 3 derniers mois",
+        "lastYear": "L'année dernière"
+    },
+    "clear": "Effacer",
+    "noContracts": "Pas encore de contrats",
+    "startApplying": "Commencez par postuler à des postes",
+    "createContract": "Créer un contrat",
+    "noMatches": "Aucun contrat ne correspond à votre recherche",
+    "noMatches.description": "Essayez d'ajuster vos filtres pour voir plus de résultats",
+    "empty": {
+        "title": "Aucun contrat trouvé",
+        "description": "Aucun contrat disponible pour le moment"
+    },
+    "info": {
+        "title": "Contrats",
+        "description": "Parcourez et recherchez des contrats."
+    },
+    "sortBy": "Trier par",
+    "sort": {
+        "date": "Date",
+        "name": "Nom"
+    },
+    "filter": {
+        "status": "Statut",
+        "source": "Source",
+        "fromDate": "Date de début",
+        "toDate": "Date de fin",
+        "apply": "Appliquer les filtres"
+    },
+    "view": {
+        "grid": "Vue en grille",
+        "list": "Vue en liste"
+    },
+    "adjustFilters": "Essayez d'ajuster vos filtres",
+    "selectContract": "Sélectionnez un contrat",
+    "selectContractDesc": "Sélectionnez un contrat dans la liste à gauche pour voir ses détails complets",
+    "filters": "Filtres",
+    "statusLabel": "Statut",
+    "dateRangeLabel": "Période",
+    "clearAllFilters": "Effacer tous les filtres",
+    "noContractsFound": "Aucun contrat trouvé",
+    "untitledContract": "Contrat sans titre",
+    "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer ce contrat ?",
+    "downloadPdfFailed": "Échec du téléchargement du PDF",
+    "notSpecified": "Non spécifié",
+    "invalidDate": "Date invalide",
+    "created": "Créé",
+    "standardView": "Vue standard",
+    "pdfView": "Vue PDF",
+    "downloadPdf": "Télécharger le PDF",
+    "editContract": "Modifier le contrat",
+    "deleteContract": "Supprimer le contrat",
+    "closeDetails": "Fermer les détails",
+    "contractOverview": "Aperçu du contrat",
+    "compensationAndBenefits": "Rémunération et avantages",
+    "termsAndConditions": "Termes et conditions",
+    "involvedParties": "Parties impliquées",
+    "employer": "Employeur",
+    "professional": "Professionnel",
+    "labels": {
+        "position": "Poste",
+        "type": "Type",
+        "workPercentage": "% de travail",
+        "startDate": "Date de début",
+        "endDate": "Date de fin",
+        "salary": "Salaire",
+        "vacation": "Vacances",
+        "probation": "Période d'essai",
+        "noticePeriod": "Délai de préavis",
+        "workingHours": "Heures de travail",
+        "benefits": "Avantages"
+    },
+    "create": "Créer",
+    "form": {
+        "title": "Titre",
+        "titlePlaceholder": "Entrez le titre du contrat",
+        "status": "Statut",
+        "description": "Description",
+        "descriptionPlaceholder": "Entrez la description du contrat"
+    },
+    "tabs": {
+        "team": "Équipe",
+        "medishift": "Medishift",
+        "all": "Tous"
+    }
+}

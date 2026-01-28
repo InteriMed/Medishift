@@ -1,0 +1,94 @@
+.checkbox-wrapper {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  min-height: 24px;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  height: 24px !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  max-width: 24px !important;
+  max-height: 24px !important;
+  aspect-ratio: 1 !important;
+  border: 2px solid var(--grey-3, #ccc);
+  border-radius: 50% !important;
+  background-color: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0 !important;
+  position: relative;
+  box-sizing: border-box !important;
+  overflow: hidden;
+}
+
+.checkbox-container:hover .checkmark {
+  border-color: var(--color-logo-1);
+  transform: scale(1.05);
+}
+
+.checkmark:after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  /* Centering math: checkmark is 24px. Check is approx 12x6. */
+  margin-top: -2px;
+}
+
+.checkbox-container input:checked~.checkmark {
+  background-color: var(--color-logo-1);
+  border-color: var(--color-logo-1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.checkbox-container input:checked~.checkmark:after {
+  opacity: 1;
+}
+
+.checkbox-label {
+  margin-left: 12px;
+  color: var(--text-color);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+}
+
+/* Error State */
+.checkbox-container--error .checkmark {
+  border-color: var(--red-3, #dc3545);
+}
+
+.checkbox-label--error {
+  color: var(--red-3, #dc3545);
+}
+
+.checkbox-required {
+  color: var(--red-3, #dc3545);
+  margin-left: 2px;
+}

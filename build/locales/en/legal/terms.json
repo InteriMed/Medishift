@@ -1,0 +1,95 @@
+{
+  "terms": {
+    "meta": {
+      "title": "General Terms and Conditions (GTC) | InteriMed",
+      "description": "Terms and Conditions for the InteriMed Platform",
+      "keywords": "terms, conditions, InteriMed, platform, legal, Switzerland"
+    },
+    "title": "General Terms and Conditions (GTC)",
+    "subtitle": "InteriMed",
+    "lastUpdated": "Version 1.2 – Effective as of January 22, 2026",
+    "legalDisclaimer": "This document is a legal agreement. Please read it carefully before using the InteriMed Platform.",
+    "sections": [
+      {
+        "id": "object",
+        "title": "1. Object and Scope of Application",
+        "content": [
+          "These General Terms and Conditions (hereinafter \"GTC\") govern access to and use of the InteriMed digital platform (hereinafter \"the Platform\"), operated by InteriMed, headquartered in Geneva, Switzerland.",
+          "The Platform offers technological services aimed at:",
+          "• Facilitating connections between healthcare facilities (hereinafter \"Facilities\") and qualified healthcare professionals (hereinafter \"Professionals\").",
+          "• Providing a software solution (SaaS) for schedule, personnel, and compliance management.",
+          "By creating an account or accessing the Platform, the User (Facility or Professional) accepts these GTC without reservation."
+        ]
+      },
+      {
+        "id": "nature",
+        "title": "2. Nature of Services and Role of InteriMed",
+        "content": [
+          "2.1. Technological Intermediary — InteriMed acts exclusively as a technical service provider and business introducer. InteriMed is neither a recruitment agency nor the employer of Professionals.",
+          "2.2. Staff Leasing — To ensure compliance with the Employment Services Act (LSE), the administrative and salary management of assignments is delegated to an authorized staff leasing partner.",
+          "Employment contract: Concluded exclusively between the Professional and the Staff Leasing Partner.",
+          "Service leasing: The Facility acts as the hiring company."
+        ]
+      },
+      {
+        "id": "access",
+        "title": "3. Access, Registration, and Data Accuracy",
+        "content": [
+          "3.1. Access Conditions — Access is reserved for Professionals authorized to practice in Switzerland and Facilities with a valid GLN/RCC number.",
+          "3.2. Data Accuracy — The User certifies that all information provided (Identity, Diplomas, Practice Rights, GLN) is accurate and up-to-date. InteriMed reserves the right to request supporting documents or suspend accounts in case of suspected fraud.",
+          "3.3. Beta Phase — During the launch phase, services are provided \"as is\". InteriMed does not guarantee continuous availability and is not responsible for minor bugs inherent to a testing phase."
+        ]
+      },
+      {
+        "id": "financial-conditions",
+        "title": "4. Financial Conditions",
+        "content": [
+          "4.1. Pilot Phase — During the initial phase, use of the Platform may be free at InteriMed's discretion.",
+          "4.2. Pricing — InteriMed reserves the right to introduce subscription or connection fees. Users will be notified 30 days in advance of any pricing changes.",
+          "4.3. Referral Program — Credits or bonuses accumulated during the Pilot phase have no immediate monetary value and are subject to anti-fraud validation."
+        ]
+      },
+      {
+        "id": "non-circumvention",
+        "title": "5. Non-Circumvention",
+        "content": [
+          "5.1. Prohibition of Direct Solicitation — Facilities are prohibited from directly engaging Professionals introduced via the Platform for 12 months following the last connection.",
+          "5.2. Penalty Clause — Violation of the non-circumvention clause may result in a fixed compensation equivalent to three (3) months of gross salary."
+        ]
+      },
+      {
+        "id": "liability",
+        "title": "6. Liability and Warranties",
+        "content": [
+          "6.1. Limitation of Liability — InteriMed is not liable for the quality of work provided by Professionals, assignment cancellations, or payment defaults by the Staff Leasing Partner.",
+          "6.2. Verifications — While InteriMed performs digital verifications, the Facility remains responsible for final verification of a Professional's identity and practice rights."
+        ]
+      },
+      {
+        "id": "data-protection",
+        "title": "7. Data Protection",
+        "content": [
+          "7.1. Hosting — Data is hosted exclusively on secure servers in Switzerland.",
+          "7.2. Legal Archiving — In compliance with Swiss law (Art. 958f CO), transaction and contract data will be retained for 10 years."
+        ]
+      },
+      {
+        "id": "intellectual-property",
+        "title": "8. Intellectual Property",
+        "content": [
+          "All elements of the Platform remain the exclusive property of InteriMed. Users are granted a personal, non-exclusive license to use the service."
+        ]
+      },
+      {
+        "id": "applicable-law",
+        "title": "9. Applicable Law and Jurisdiction",
+        "content": [
+          "These GTC are subject to Swiss Law. Exclusive jurisdiction is established at the competent courts of the Canton of Geneva."
+        ]
+      }
+    ],
+    "tableOfContents": {
+      "title": "Table of Contents"
+    }
+  }
+}

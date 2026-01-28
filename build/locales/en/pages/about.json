@@ -1,0 +1,92 @@
+{
+  "h1meta": {
+    "title": "About InteriMed | Your Healthcare Recruitment Partner",
+    "description": "Discover how InteriMed is revolutionizing healthcare recruitment in Switzerland with innovative solutions for facilities and professionals.",
+    "keywords": "InteriMed, healthcare recruitment, temporary medical staff, Swiss healthcare jobs, healthcare recruitment platform"
+  },
+  "meta": {
+    "title": "About InteriMed",
+    "description": "Discover how InteriMed is revolutionizing healthcare recruitment in Switzerland.",
+    "keywords": "about, interimed, healthcare, recruitment"
+  },
+  "hero": {
+    "title": "About InteriMed",
+    "badge": "Our Story",
+    "features": {
+      "contracts": "Secure Access",
+      "planning": "Easy Planning",
+      "qualifiedStaff": "Qualified Staff"
+    }
+  },
+  "missionVision": {
+    "title": "Our Mission & Vision",
+    "badge": "Our Purpose",
+    "intro": "InteriMed was founded with a clear goal: to revolutionize healthcare recruitment in Switzerland by creating a platform that addresses the specific needs of healthcare facilities and professionals.",
+    "experienceSection": {
+      "title": "Our Experience",
+      "paragraph1": "With over 50 years of combined experience in the healthcare sector, our team understands the unique challenges faced by healthcare facilities in finding qualified staff.",
+      "paragraph2": "This expertise has allowed us to develop a platform that simplifies the recruitment process."
+    },
+    "insightSection": {
+      "title": "Our Insight",
+      "paragraph1": "We believe that the future of work in healthcare will be increasingly flexible."
+    },
+    "commitmentSection": {
+      "title": "Our Commitment",
+      "points": [
+        {
+          "title": "Quality:",
+          "text": "We rigorously verify the qualifications and experience of all professionals on our platform."
+        },
+        {
+          "title": "Innovation:",
+          "text": "We continuously invest in technology to improve user experience and recruitment efficiency."
+        },
+        {
+          "title": "Transparency:",
+          "text": "We believe in clear and honest communication with all our partners."
+        }
+      ]
+    },
+    "conclusion": "By choosing InteriMed, you're selecting a partner who understands the nuances of the Swiss healthcare sector."
+  },
+  "story": {
+    "title": "Our Story",
+    "badge": "History",
+    "imageAlt": "InteriMed Founders",
+    "paragraph1": "InteriMed was founded by two pharmacists with technical expertise and strong industry relationships.",
+    "paragraph2": "After personally experiencing the challenges of finding qualified staff, they set out to create a solution.",
+    "paragraph3": "Starting with the pharmaceutical sector in French-speaking Switzerland, InteriMed aims to become the leading platform."
+  },
+  "values": {
+    "title": "Our Values",
+    "value1": {
+      "title": "Integrity",
+      "description": "We maintain the highest ethical standards in all our interactions."
+    },
+    "value2": {
+      "title": "Excellence",
+      "description": "We continuously strive to improve our services and exceed expectations."
+    },
+    "value3": {
+      "title": "Collaboration",
+      "description": "We work closely with our clients to understand their unique needs."
+    },
+    "value4": {
+      "title": "Respect",
+      "description": "We value diversity and treat every individual with dignity and respect."
+    },
+    "value5": {
+      "title": "Innovation",
+      "description": "We embrace new technologies and ideas to continuously improve our platform."
+    }
+  },
+  "cta": {
+    "title": "Ready to transform your approach to healthcare recruitment?",
+    "description": "Join thousands of healthcare professionals and facilities already using InteriMed.",
+    "forFacilities": "For Healthcare Facilities",
+    "forProfessionals": "For Healthcare Professionals",
+    "cardTitle": "Join the Network",
+    "cardSubtitle": "Connect with the best in the industry"
+  }
+}

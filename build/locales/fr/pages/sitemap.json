@@ -1,0 +1,41 @@
+{
+  "title": "Plan du site",
+  "description": "Plan du site pour InteriMed",
+  "introduction": "Explore the structure of the InteriMed platform and easily navigate to our core pages, resources, and legal information.",
+  "corePages": {
+    "title": "Core Pages",
+    "home": "Home",
+    "forFacilities": "For Facilities",
+    "forProfessionals": "For Professionals",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "blog": "Blog",
+    "faq": "FAQ",
+    "login": "Login",
+    "signup": "Sign Up"
+  },
+  "resources": {
+    "title": "Resources",
+    "blog": "Blog & News",
+    "faq": "Frequently Asked Questions",
+    "help": "Help Center"
+  },
+  "legal": {
+    "title": "Legal & Compliance",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "legalNotice": "Legal Notice",
+    "cookies": "Cookie Policy"
+  },
+  "account": {
+    "title": "Account Access",
+    "dashboard": "Dashboard",
+    "profile": "My Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "thisPage": {
+    "title": "This Page",
+    "sitemap": "Sitemap"
+  }
+}

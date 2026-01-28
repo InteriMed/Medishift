@@ -1,0 +1,103 @@
+{
+    "title": "Payroll Management",
+    "subtitle": "Track and manage staff payment requests",
+    "status": {
+        "pending": "Pending",
+        "sent": "Sent to PayrollPlus",
+        "confirmed": "Confirmed",
+        "paid": "Paid",
+        "failed": "Failed"
+    },
+    "stats": {
+        "total": "Total Requests",
+        "pending": "Pending",
+        "sent": "Sent to PayrollPlus",
+        "confirmed": "Confirmed",
+        "paid": "Paid",
+        "totalAmount": "Total Amount",
+        "allTime": "All time"
+    },
+    "tabs": {
+        "team": "Team",
+        "medishift": "Medishift",
+        "all": "All"
+    },
+    "info": {
+        "title": "Payroll Management",
+        "description": "Track and manage all payments and salaries."
+    },
+    "searchPlaceholder": "Search by worker name or role...",
+    "sortBy": "Sort by",
+    "sort": {
+        "date": "Date",
+        "name": "Name",
+        "amount": "Amount"
+    },
+    "view": {
+        "grid": "Grid view",
+        "list": "List view"
+    },
+    "filter": {
+        "all": "All",
+        "pending": "Pending",
+        "sent": "Sent",
+        "confirmed": "Confirmed",
+        "paid": "Paid",
+        "status": "Status",
+        "source": "Source",
+        "fromDate": "From Date",
+        "toDate": "To Date",
+        "apply": "Apply Filters"
+    },
+    "table": {
+        "worker": "Worker",
+        "shift": "Shift",
+        "hours": "Hours",
+        "amount": "Amount",
+        "status": "Status",
+        "created": "Created"
+    },
+    "details": {
+        "title": "Payroll Request Details",
+        "worker": "Worker",
+        "shift": "Shift Details",
+        "financials": "Financials",
+        "payrollplus": "PayrollPlus Status",
+        "labels": {
+            "date": "Date",
+            "time": "Time",
+            "duration": "Duration",
+            "role": "Role",
+            "hourlyRate": "Hourly Rate",
+            "workerGrossPay": "Worker Gross Pay",
+            "commission": "Commission",
+            "totalCost": "Total Cost",
+            "emailSent": "✓ Email sent to PayrollPlus on",
+            "error": "⚠ Error:"
+        },
+        "suffixes": {
+            "hours": "hours",
+            "perHour": "/h",
+            "pilotFee": "✨ Pilot: 0% fee"
+        }
+    },
+    "placeholders": {
+        "unknown": "Unknown",
+        "pharmacist": "Pharmacist"
+    },
+    "empty": {
+        "title": "No payroll requests found",
+        "description": "No payroll requests available at the moment"
+    },
+    "pilot": {
+        "title": "Pilot Program Active",
+        "description": "You're currently enjoying 0% platform fees until February 28, 2025!"
+    },
+    "errors": {
+        "fetchFailed": "Failed to load payroll requests",
+        "createFailed": "Failed to create payroll request"
+    },
+    "success": {
+        "created": "Payroll request created successfully"
+    }
+}
