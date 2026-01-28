@@ -240,7 +240,7 @@
         "verified_title": "Account Successfully Verified!",
         "professional_redirect": "Your professional profile is now active. Redirecting to complete your profile setup...",
         "facility_redirect": "Your facility profile is now active. Redirecting to complete your profile setup...",
-        "dialog_title": "Profile Verified",
+        "modal_title": "Profile Verified",
         "professional_message": "Your professional profile has been successfully verified. You can now access all platform features.",
         "facility_message": "Your facility profile has been successfully verified. You can now access all platform features."
       },

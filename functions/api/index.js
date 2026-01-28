@@ -3,7 +3,7 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const notificationsFunctions = require('./notifications');
 const bagAdminFunctions = require('./BAG_Admin');
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 // HTTP endpoint for contract operations (for integration with external systems)
 const contractAPI = onCall(FUNCTION_CONFIG, async (request) => {

@@ -123,7 +123,7 @@
     "yes": "Oui",
     "addPicture": "Ajouter une photo de profil",
     "changePicture": "Changer la photo de profil",
-    "deleteAccountDialogTitle": "Confirmation de suppression du compte",
+    "deleteAccountmodalTitle": "Confirmation de suppression du compte",
     "deleteWarningPermanent": "Cette action est permanente et ne peut pas être annulée.",
     "deleteConfirmationDetails": "Veuillez lire attentivement les informations suivantes avant de confirmer :",
     "reauthenticateTitle": "Confirmez votre identité",

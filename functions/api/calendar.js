@@ -7,13 +7,13 @@ const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
 
 // Import centralized database instance configured for medishift
-const db = require('../database/db');
+const db = require('../../../Medishift/functions/database/dbhift/functions/database/db');
 
 // Import centralized configuration
-const { FUNCTION_CONFIG, FUNCTION_CONFIG_REQUEST } = require('../config/keysDatabase');
+const { FUNCTION_CONFIG, FUNCTION_CONFIG_REQUEST } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 // Import scheduler engine
-const { SchedulerEngine, createEmployee, Role } = require('../scheduler');
+const { SchedulerEngine, createEmployee, Role } = require('../../../Medishift/functions/scheduler');
 
 /**
  * EVENT PERMISSION HELPERS

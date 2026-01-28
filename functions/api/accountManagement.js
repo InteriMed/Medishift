@@ -18,7 +18,7 @@ const {
     checkAntifraudHash
 } = require('../services/accountDeletionService');
 const { logAuditEvent } = require('../services/auditLog');
-const { FIRESTORE_DATABASE_NAME } = require('../config/keysDatabase');
+const { FIRESTORE_DATABASE_NAME } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 const db = getFirestore(admin.app(), FIRESTORE_DATABASE_NAME);
 

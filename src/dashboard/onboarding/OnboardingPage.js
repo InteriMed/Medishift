@@ -1,26 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
+import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import { useTutorial } from '../contexts/TutorialContext';
+import { useFlow } from '../../../services/flows/engine';
+import { OnboardingFlow } from '../../../services/flows/catalog/onboarding';
+import { completeOnboarding } from '../../../services/flows/catalog/onboarding/completion';
 import {
     FiBriefcase, FiCheck, FiArrowRight, FiHome,
     FiLoader, FiArrowLeft, FiShield,
     FiLink, FiHelpCircle
 } from 'react-icons/fi';
-import ContactFormPopup from '../../components/ContactFormPopup/ContactFormPopup';
-import ProfessionalGLNVerification from './components/ProfessionalGLNVerification';
-import FacilityGLNVerification from './components/FacilityGLNVerification';
-import CommercialRegistryVerification from './components/CommercialRegistryVerification';
-import PhoneVerificationStep from './components/PhoneVerificationStep';
-import Switch from '../../components/BoxedInputFields/Switch';
-import Button from '../../components/BoxedInputFields/Button';
+import ContactFormPopup from '../../../components/modals/contactFormPopup';
+import ProfessionalGLNVerification from './components/professionalGLNVerification';
+import FacilityGLNVerification from './components/facilityGLNVerification';
+import CommercialRegistryVerification from './components/commercialRegistryVerification';
+import PhoneVerificationStep from './components/phoneVerificationStep';
+import Switch from '../../../components/boxedInputFields/switch';
+import Button from '../../components/colorPicker/button';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import BarsLoader from '../../components/LoadingAnimations/BarsLoader';
-import Dialog from '../../components/Dialog/Dialog';
+import modal from '../../components/basemodal/basemodal';
 import styles from './OnboardingPage.module.css';
 
 const OnboardingPage = () => {
@@ -33,21 +36,28 @@ const OnboardingPage = () => {
     const urlQuery = new URLSearchParams(window.location.search);
     const onboardingType = contextOnboardingType || urlQuery.get('type') || 'professional';
 
-    const [step, setStep] = useState(1);
-    const [isTransitioning, setIsTransitioning] = useState(false);
-    const [role, setRole] = useState(onboardingType === 'facility' ? 'company' : null);
-    const [belongsToFacility, setBelongsToFacility] = useState(false);
-    const [phoneVerified, setPhoneVerified] = useState(false);
-    const [phoneData, setPhoneData] = useState({ phoneNumber: '', verified: false });
-    const [legalConsiderationsConfirmed, setLegalConsiderationsConfirmed] = useState(false);
+    const {
+        step,
+        index: currentStepIndex,
+        totalSteps,
+        isFirst,
+        isLast,
+        data,
+        errors,
+        isTransitioning,
+        next,
+        back,
+        updateField,
+        setFormState,
+        progress
+    } = useFlow(OnboardingFlow);
+
     const [isVerifying, setIsVerifying] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLoadingProgress, setIsLoadingProgress] = useState(true);
     const [showRestrictedServicesModal, setShowRestrictedServicesModal] = useState(false);
     const [isCreatingProfile, setIsCreatingProfile] = useState(false);
     const [showContactForm, setShowContactForm] = useState(false);
-
-    // Internal Phone State
     const [phoneInternalStep, setPhoneInternalStep] = useState(1);
     const [isPhoneValid, setIsPhoneValid] = useState(false);
     const [isPhoneLoading, setIsPhoneLoading] = useState(false);
@@ -55,10 +65,8 @@ const OnboardingPage = () => {
     const glnVerificationRef = useRef(null);
     const phoneVerificationRef = useRef(null);
 
-    // Handle unhandled promise rejections during onboarding
     useEffect(() => {
         const handleUnhandledRejection = (event) => {
-            // Silently handle timeout errors - they're expected during onboarding
             if (event.reason && (
                 event.reason.message === 'Request timed out' ||
                 event.reason.message === 'Quick read timeout' ||
@@ -67,10 +75,9 @@ const OnboardingPage = () => {
                 (typeof event.reason === 'string' && event.reason.includes('timeout'))
             )) {
                 console.debug('[OnboardingPage] Caught expected timeout error:', event.reason.message);
-                event.preventDefault(); // Prevent uncaught error
+                event.preventDefault();
                 return;
             }
-            // Log other unhandled rejections for debugging but don't break the flow
             if (event.reason) {
                 console.debug('[OnboardingPage] Unhandled promise rejection (non-critical):', event.reason);
             }
@@ -103,54 +110,64 @@ const OnboardingPage = () => {
                     const userPhonePrefix = userData.contact?.primaryPhonePrefix || userData.primaryPhonePrefix || '';
                     const userPhoneNumber = userData.contact?.primaryPhone || userData.primaryPhone || '';
 
-                    if (Object.keys(typeProgress).length > 0) {
-                        if (typeProgress.step) setStep(typeProgress.step);
-                        if (typeProgress.role) setRole(typeProgress.role);
-                        if (typeProgress.belongsToFacility !== undefined) setBelongsToFacility(typeProgress.belongsToFacility);
-                        if (typeProgress.legalConsiderationsConfirmed !== undefined) setLegalConsiderationsConfirmed(typeProgress.legalConsiderationsConfirmed);
-                    }
+                    const savedData = {};
+                    if (typeProgress.role) savedData.role = typeProgress.role;
+                    if (typeProgress.belongsToFacility !== undefined) savedData.belongsToFacility = typeProgress.belongsToFacility;
+                    if (typeProgress.legalConsiderationsConfirmed !== undefined) savedData.legalConsiderationsConfirmed = typeProgress.legalConsiderationsConfirmed;
 
                     if (isPhoneVerifiedInUserDoc) {
-                        setPhoneVerified(true);
+                        savedData.phoneVerified = true;
                         setPhoneInternalStep(3);
                         if (userPhonePrefix && userPhoneNumber) {
-                            setPhoneData({
+                            savedData.phoneData = {
                                 phoneNumber: `${userPhonePrefix} ${userPhoneNumber}`,
                                 verified: true
-                            });
+                            };
                         }
                     } else if (typeProgress.phoneVerified !== undefined) {
-                        setPhoneVerified(typeProgress.phoneVerified);
+                        savedData.phoneVerified = typeProgress.phoneVerified;
                         if (typeProgress.phoneVerified) {
                             setPhoneInternalStep(3);
                         }
-                        if (typeProgress.phoneData) setPhoneData(typeProgress.phoneData);
+                        if (typeProgress.phoneData) savedData.phoneData = typeProgress.phoneData;
+                    }
+
+                    if (Object.keys(savedData).length > 0) {
+                        setFormState(savedData);
                     }
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error(err); 
+            }
             setIsLoadingProgress(false);
         };
         loadProgress();
-    }, [currentUser, onboardingType, navigate, lang, urlQuery]);
+    }, [currentUser, onboardingType, navigate, lang, urlQuery, setFormState]);
 
-    const saveProgress = async (data) => {
+    const saveProgress = async (additionalData = {}) => {
         if (!currentUser) return;
         try {
             const userDocRef = doc(db, 'users', currentUser.uid);
             await updateDoc(userDocRef, {
-                [`onboardingProgress.${onboardingType}`]: { ...data, updatedAt: new Date() },
+                [`onboardingProgress.${onboardingType}`]: { 
+                    ...data, 
+                    ...additionalData,
+                    step: step.id,
+                    updatedAt: new Date() 
+                },
                 updatedAt: new Date()
             });
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            console.error(err); 
+        }
     };
 
     const handleNext = async () => {
-        if (step === 3) {
-            if (phoneVerified) {
-                const maxStep = (role === 'company' || role === 'chain') ? 5 : 4;
-                if (step < maxStep) {
-                    transitionToStep(step + 1);
-                    await saveProgress({ step: step + 1, role, belongsToFacility, phoneVerified, phoneData, legalConsiderationsConfirmed });
+        if (step.id === 'phone') {
+            if (data.phoneVerified) {
+                const result = await next();
+                if (!result.complete) {
+                    await saveProgress();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     handleComplete();
@@ -181,57 +198,25 @@ const OnboardingPage = () => {
             }
         }
 
-        const maxStep = (role === 'company' || role === 'chain') ? 5 : 4;
-        if (step < maxStep) {
-            transitionToStep(step + 1);
-            await saveProgress({ step: step + 1, role, belongsToFacility, phoneVerified, phoneData, legalConsiderationsConfirmed });
+        const result = await next();
+        if (!result.complete) {
+            await saveProgress();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
             handleComplete();
         }
     };
 
-    const transitionToStep = (newStep) => {
-        const isResizing = step === 1 || newStep === 1;
-
-        // Phase 1: Fade Out content
-        setIsTransitioning(true);
-
-        // Wait for fade out (300ms)
-        setTimeout(() => {
-            // Phase 2: Change content & trigger container resize
-            setStep(newStep);
-
-            if (isResizing) {
-                // Wait for the 300ms container resize animation
-                setTimeout(() => {
-                    // Phase 3: Fade In new content
-                    setIsTransitioning(false);
-                }, 300);
-            } else {
-                // Short jump for non-resizing steps
-                setTimeout(() => {
-                    setIsTransitioning(false);
-                }, 50);
-            }
-        }, 300);
-    };
-
     const handleBack = async () => {
-        if (step > 1) {
-            if (step === 4 && phoneVerified) {
-                setPhoneInternalStep(3);
-                transitionToStep(3);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
-            }
-            if (step === 3 && phoneInternalStep === 2) {
-                setPhoneInternalStep(1);
-                return;
-            }
-            transitionToStep(step - 1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (step.id === 'gln_professional' && data.phoneVerified) {
+            setPhoneInternalStep(3);
         }
+        if (step.id === 'phone' && phoneInternalStep === 2) {
+            setPhoneInternalStep(1);
+            return;
+        }
+        back();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleComplete = async () => {
@@ -239,12 +224,34 @@ const OnboardingPage = () => {
         setIsProcessing(true);
         try {
             if (currentUser) {
+                const result = await completeOnboarding(
+                    currentUser.uid,
+                    data,
+                    onboardingType
+                );
+
+                if (result.workspaceCreated && result.workspaceId) {
+                    if (result.workspaceId === 'personal') {
+                        navigate(`/${lang}/dashboard/personal/overview`);
+                    } else {
+                        navigate(`/${lang}/dashboard/${result.workspaceId}/overview`);
+                    }
+                } else {
+                    navigate(`/${lang}/dashboard/profile`);
+                }
+
+                return;
+                
                 const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
                 const userDoc = await getDoc(userDocRef);
                 const userData = userDoc.exists() ? userDoc.data() : {};
 
                 await updateDoc(userDocRef, {
-                    [`onboardingProgress.${onboardingType}`]: { completed: true, role, completedAt: new Date() },
+                    [`onboardingProgress.${onboardingType}`]: { 
+                        completed: true, 
+                        role: data.role, 
+                        completedAt: new Date() 
+                    },
                     ...(onboardingType === 'professional' ? { onboardingCompleted: true } : {}),
                     updatedAt: new Date()
                 });
@@ -253,7 +260,7 @@ const OnboardingPage = () => {
                 const profileDocRef = doc(db, profileCollection, currentUser.uid);
                 const profileDoc = await getDoc(profileDocRef);
                 
-                if (!profileDoc.exists() && onboardingType === 'facility' && role === 'company') {
+                if (!profileDoc.exists() && onboardingType === 'facility' && data.role === 'company') {
                     const { httpsCallable } = await import('firebase/functions');
                     const { functions } = await import('../../services/firebase');
                     const updateProfile = httpsCallable(functions, 'updateUserProfile');
@@ -358,14 +365,18 @@ const OnboardingPage = () => {
     if (isLoadingProgress) return <LoadingSpinner />;
 
     const canProceed = () => {
-        if (step === 1) return !!role;
-        if (step === 2) return legalConsiderationsConfirmed;
-        if (step === 3) {
-            if (phoneVerified) return true;
+        if (step.id === 'role') return !!data.role;
+        if (step.id === 'legal') return data.legalConsiderationsConfirmed === true;
+        if (step.id === 'phone') {
+            if (data.phoneVerified) return true;
             const isValid = phoneInternalStep === 1 ? isPhoneValid : true;
             return isValid;
         }
         return true;
+    };
+
+    const getStepNumber = () => {
+        return currentStepIndex + 1;
     };
 
     return (
@@ -395,21 +406,17 @@ const OnboardingPage = () => {
                 onClose={() => setShowContactForm(false)}
             />
 
-            <div className={`${styles.content} ${(step === 2 || step === 4) ? styles.contentWide : ''} ${(step === 1 || step === 3) ? styles.contentNarrow : ''}`}>
+            <div className={`${styles.content} ${(step.id === 'legal' || step.id === 'gln_professional' || step.id === 'gln_facility' || step.id === 'commercial_registry') ? styles.contentWide : ''} ${(step.id === 'role' || step.id === 'phone') ? styles.contentNarrow : ''}`}>
                 <div className={styles.stepIndicator}>
-                    {[1, 2, 3, 4, 5].filter(s => {
-                        if (role === 'chain') return s <= 3;
-                        if (role === 'company') return s <= 5;
-                        return s <= 4;
-                    }).map(s => (
+                    {Array.from({ length: totalSteps }, (_, i) => i + 1).map(s => (
                         <div key={s} className="flex items-center gap-2">
                             <div
-                                className={`${styles.stepCircle} ${step >= s ? styles.stepCircleActive : styles.stepCircleInactive}`}
+                                className={`${styles.stepCircle} ${getStepNumber() >= s ? styles.stepCircleActive : styles.stepCircleInactive}`}
                             >
-                                {step > s ? <FiCheck /> : s}
+                                {getStepNumber() > s ? <FiCheck /> : s}
                             </div>
-                            {s < (role === 'chain' ? 3 : role === 'company' ? 5 : 4) && (
-                                <div className={`${styles.stepConnector} ${step > s ? styles.stepConnectorActive : styles.stepConnectorInactive}`} />
+                            {s < totalSteps && (
+                                <div className={`${styles.stepConnector} ${getStepNumber() > s ? styles.stepConnectorActive : styles.stepConnectorInactive}`} />
                             )}
                         </div>
                     ))}
@@ -424,7 +431,8 @@ const OnboardingPage = () => {
                             </p>
                         </div>
                     )}
-                    {step === 1 && (
+                    
+                    {step.id === 'role' && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
                             <header className={styles.header}>
                                 <h1 className={styles.title}>{t('dashboard.onboarding.step2.title')}</h1>
@@ -439,10 +447,10 @@ const OnboardingPage = () => {
                                 ].filter(r => onboardingType === 'facility' ? r.id !== 'worker' : true).map(r => (
                                     <div
                                         key={r.id}
-                                        onClick={() => setRole(r.id)}
-                                        className={`${styles.roleCard} ${role === r.id ? styles.roleCardSelected : styles.roleCardUnselected}`}
+                                        onClick={() => updateField('role', r.id)}
+                                        className={`${styles.roleCard} ${data.role === r.id ? styles.roleCardSelected : styles.roleCardUnselected}`}
                                     >
-                                        <div className={`${styles.roleIcon} ${role === r.id ? styles.roleIconSelected : styles.roleIconUnselected}`}>
+                                        <div className={`${styles.roleIcon} ${data.role === r.id ? styles.roleIconSelected : styles.roleIconUnselected}`}>
                                             {React.cloneElement(r.icon, { className: "w-8 h-8" })}
                                         </div>
                                         <div className={styles.roleContent}>
@@ -450,7 +458,7 @@ const OnboardingPage = () => {
                                             <p className={styles.roleDescription}>{r.desc}</p>
                                         </div>
                                         <div
-                                            className={`${styles.roleCheckbox} ${role === r.id ? styles.roleCheckboxSelected : styles.roleCheckboxUnselected}`}
+                                            className={`${styles.roleCheckbox} ${data.role === r.id ? styles.roleCheckboxSelected : styles.roleCheckboxUnselected}`}
                                             style={{
                                                 width: '24px',
                                                 height: '24px',
@@ -462,15 +470,16 @@ const OnboardingPage = () => {
                                                 boxSizing: 'border-box'
                                             }}
                                         >
-                                            {role === r.id && <FiCheck className="text-primary-foreground w-4 h-4" />}
+                                            {data.role === r.id && <FiCheck className="text-primary-foreground w-4 h-4" />}
                                         </div>
                                     </div>
                                 ))}
                             </div>
+                            {errors.role && <p className="text-red-500 mt-2">{errors.role}</p>}
                         </div>
                     )}
 
-                    {step === 2 && (
+                    {step.id === 'legal' && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
                             <header className={styles.header}>
                                 <h1 className={styles.title}>{t('dashboard.onboarding.step1.title')}</h1>
@@ -478,7 +487,7 @@ const OnboardingPage = () => {
 
                             <div className={styles.legalGrid}>
                                 <div className={styles.legalInfoCard}>
-                                    {belongsToFacility ? (
+                                    {data.belongsToFacility ? (
                                         <div className="space-y-4 animate-in fade-in duration-300">
                                             <p className={styles.legalInfoTitle}>{t('dashboard.onboarding.step1.facilityLegalNotice')}</p>
                                             <div className={styles.legalInfoText}>
@@ -501,18 +510,18 @@ const OnboardingPage = () => {
                                 </div>
 
                                 <div className={styles.legalOptions}>
-                                    {role === 'worker' && (
+                                    {data.role === 'worker' && (
                                         <div
-                                            className={`${styles.legalOptionCard} ${belongsToFacility ? styles.legalOptionCardSelected : styles.legalOptionCardUnselected}`}
+                                            className={`${styles.legalOptionCard} ${data.belongsToFacility ? styles.legalOptionCardSelected : styles.legalOptionCardUnselected}`}
                                             onClick={(e) => {
                                                 if (!e.target.closest('.switch-wrapper')) {
-                                                    setBelongsToFacility(!belongsToFacility);
+                                                    updateField('belongsToFacility', !data.belongsToFacility);
                                                 }
                                             }}
                                         >
                                             <div className={styles.legalOptionContent}>
                                                 <div 
-                                                    className={`${styles.legalOptionIcon} ${belongsToFacility ? styles.legalOptionIconSelected : styles.legalOptionIconUnselected}`}
+                                                    className={`${styles.legalOptionIcon} ${data.belongsToFacility ? styles.legalOptionIconSelected : styles.legalOptionIconUnselected}`}
                                                 >
                                                     <FiHome className="w-7 h-7" />
                                                 </div>
@@ -522,8 +531,8 @@ const OnboardingPage = () => {
                                                 </div>
                                             </div>
                                             <Switch
-                                                checked={belongsToFacility}
-                                                onChange={(val) => setBelongsToFacility(val)}
+                                                checked={data.belongsToFacility || false}
+                                                onChange={(val) => updateField('belongsToFacility', val)}
                                                 switchColor="var(--color-logo-1)"
                                                 marginBottom="0"
                                             />
@@ -531,16 +540,16 @@ const OnboardingPage = () => {
                                     )}
 
                                     <div
-                                        className={`${styles.legalOptionCard} ${legalConsiderationsConfirmed ? styles.legalOptionCardSelected : styles.legalOptionCardUnselected}`}
+                                        className={`${styles.legalOptionCard} ${data.legalConsiderationsConfirmed ? styles.legalOptionCardSelected : styles.legalOptionCardUnselected}`}
                                         onClick={(e) => {
                                             if (!e.target.closest('.switch-wrapper') && !e.target.closest('a')) {
-                                                setLegalConsiderationsConfirmed(!legalConsiderationsConfirmed);
+                                                updateField('legalConsiderationsConfirmed', !data.legalConsiderationsConfirmed);
                                             }
                                         }}
                                     >
                                         <div className={styles.legalOptionContent}>
                                             <div 
-                                                className={`${styles.legalOptionIcon} ${legalConsiderationsConfirmed ? styles.legalOptionIconSelected : styles.legalOptionIconUnselected}`}
+                                                className={`${styles.legalOptionIcon} ${data.legalConsiderationsConfirmed ? styles.legalOptionIconSelected : styles.legalOptionIconUnselected}`}
                                             >
                                                 <FiShield className="w-7 h-7" />
                                             </div>
@@ -561,8 +570,8 @@ const OnboardingPage = () => {
                                             </div>
                                         </div>
                                         <Switch
-                                            checked={legalConsiderationsConfirmed}
-                                            onChange={(val) => setLegalConsiderationsConfirmed(val)}
+                                            checked={data.legalConsiderationsConfirmed || false}
+                                            onChange={(val) => updateField('legalConsiderationsConfirmed', val)}
                                             switchColor="var(--color-logo-1)"
                                             marginBottom="0"
                                         />
@@ -572,7 +581,7 @@ const OnboardingPage = () => {
                                         {t('dashboard.onboarding.step1.note')}
                                     </div>
 
-                                    {belongsToFacility && role === 'worker' && (
+                                    {data.belongsToFacility && data.role === 'worker' && (
                                         <div 
                                             className={styles.restrictedServicesCard}
                                             onClick={() => setShowRestrictedServicesModal(true)}
@@ -593,49 +602,52 @@ const OnboardingPage = () => {
                         </div>
                     )}
 
-                    {step === 3 && (
+                    {step.id === 'phone' && (
                         <PhoneVerificationStep
-                                ref={phoneVerificationRef}
-                                onComplete={async (data) => {
-                                    const wasAlreadyVerified = phoneVerified;
-                                    setPhoneData(data);
-                                    setPhoneVerified(true);
+                            ref={phoneVerificationRef}
+                            onComplete={async (phoneData) => {
+                                const wasAlreadyVerified = data.phoneVerified;
+                                updateField('phoneData', phoneData);
+                                updateField('phoneVerified', true);
 
-                                    if (currentUser && data.verified) {
-                                        try {
-                                            const phoneParts = data.phoneNumber.split(' ');
-                                            const phonePrefix = phoneParts[0] || '';
-                                            const phoneNumber = phoneParts.slice(1).join(' ') || '';
+                                if (currentUser && phoneData.verified) {
+                                    try {
+                                        const phoneParts = phoneData.phoneNumber.split(' ');
+                                        const phonePrefix = phoneParts[0] || '';
+                                        const phoneNumber = phoneParts.slice(1).join(' ') || '';
 
-                                            const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
-                                            await updateDoc(userDocRef, {
-                                                'contact.primaryPhonePrefix': phonePrefix,
-                                                'contact.primaryPhone': phoneNumber,
-                                                'primaryPhonePrefix': phonePrefix,
-                                                'primaryPhone': phoneNumber,
-                                                isPhoneVerified: true,
-                                                phoneVerifiedAt: new Date(),
-                                                updatedAt: new Date()
-                                            });
-                                        } catch (err) {
-                                            console.error('Error saving phone verification:', err);
-                                        }
+                                        const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
+                                        await updateDoc(userDocRef, {
+                                            'contact.primaryPhonePrefix': phonePrefix,
+                                            'contact.primaryPhone': phoneNumber,
+                                            'primaryPhonePrefix': phonePrefix,
+                                            'primaryPhone': phoneNumber,
+                                            isPhoneVerified: true,
+                                            phoneVerifiedAt: new Date(),
+                                            updatedAt: new Date()
+                                        });
+                                    } catch (err) {
+                                        console.error('Error saving phone verification:', err);
                                     }
+                                }
 
-                                    await saveProgress({ step: 4, role, belongsToFacility, phoneVerified: true, phoneData: data, legalConsiderationsConfirmed });
+                                await saveProgress({ phoneVerified: true, phoneData });
 
-                                    if (!wasAlreadyVerified) {
-                                        transitionToStep(4);
+                                if (!wasAlreadyVerified) {
+                                    const result = await next();
+                                    if (result.complete) {
+                                        handleComplete();
                                     }
-                                }}
-                                onStepChange={setPhoneInternalStep}
-                                onValidationChange={setIsPhoneValid}
-                                initialPhoneNumber={currentUser?.phoneNumber}
-                                isVerified={phoneVerified}
-                            />
+                                }
+                            }}
+                            onStepChange={setPhoneInternalStep}
+                            onValidationChange={setIsPhoneValid}
+                            initialPhoneNumber={currentUser?.phoneNumber}
+                            isVerified={data.phoneVerified || false}
+                        />
                     )}
 
-                    {step === 4 && role !== 'chain' && (
+                    {step.id === 'gln_professional' && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
                             <header className={styles.header}>
                                 <h1 className={styles.title}>{t('dashboard.onboarding.step4.title')}</h1>
@@ -647,11 +659,11 @@ const OnboardingPage = () => {
                                         <p className={styles.verificationInfoTitle}>
                                             {t('dashboard.onboarding.professional_gln.title')}
                                         </p>
-                                        {role === 'company' ? (
+                                        {data.role === 'company' || data.role === 'chain' ? (
                                             <div className={styles.verificationInfoText}>
                                                 <p>{t('dashboard.onboarding.step4.company_description')}</p>
                                             </div>
-                                        ) : role === 'worker' ? (
+                                        ) : data.role === 'worker' ? (
                                             <div className={styles.verificationInfoText}>
                                                 <p>{t('dashboard.onboarding.professional_gln.text_new')}</p>
                                             </div>
@@ -664,47 +676,18 @@ const OnboardingPage = () => {
                                         <ProfessionalGLNVerification
                                             ref={glnVerificationRef}
                                             hideInfo={true}
-                                            onComplete={role === 'company' ? async () => {
-                                                await saveProgress({ step: 5, role, belongsToFacility, phoneVerified, phoneData, legalConsiderationsConfirmed });
-                                                transitionToStep(5);
-                                            } : handleComplete}
-                                            onReadyChange={(isReady) => { /* Optional */ }}
-                                            onProcessingChange={(processing) => setIsVerifying(processing)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 4 && role === 'chain' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <header className={styles.header}>
-                                <h1 className={styles.title}>{t('dashboard.onboarding.step4.title')}</h1>
-                            </header>
-
-                            <div className={styles.verificationGrid}>
-                                <div className={styles.verificationInfoCard}>
-                                    <div className="space-y-4 animate-in fade-in duration-300 text-left">
-                                        <p className={styles.verificationInfoTitle}>
-                                            {t('dashboard.onboarding.professional_gln.title')}
-                                        </p>
-                                        <div className={styles.verificationInfoText}>
-                                            <p>{t('dashboard.onboarding.step4.company_description')}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={styles.verificationForm}>
-                                    <div className="pt-2">
-                                        <ProfessionalGLNVerification
-                                            ref={glnVerificationRef}
-                                            hideInfo={true}
                                             onComplete={async () => {
-                                                await saveProgress({ step: 5, role, belongsToFacility, phoneVerified, phoneData, legalConsiderationsConfirmed });
-                                                transitionToStep(5);
+                                                if (data.role === 'company' || data.role === 'chain') {
+                                                    await saveProgress();
+                                                    const result = await next();
+                                                    if (result.complete) {
+                                                        handleComplete();
+                                                    }
+                                                } else {
+                                                    handleComplete();
+                                                }
                                             }}
-                                            onReadyChange={(isReady) => { /* Optional */ }}
+                                            onReadyChange={(isReady) => {}}
                                             onProcessingChange={(processing) => setIsVerifying(processing)}
                                         />
                                     </div>
@@ -713,7 +696,7 @@ const OnboardingPage = () => {
                         </div>
                     )}
 
-                    {step === 5 && role === 'company' && (
+                    {step.id === 'gln_facility' && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
                             <header className={styles.header}>
                                 <h1 className={styles.title}>{t('dashboard.onboarding.step5.title')}</h1>
@@ -740,7 +723,7 @@ const OnboardingPage = () => {
                                             mode="facilityInfo"
                                             hideInfo={true}
                                             onComplete={handleComplete}
-                                            onReadyChange={(isReady) => { /* Optional */ }}
+                                            onReadyChange={(isReady) => {}}
                                             onProcessingChange={(processing) => setIsVerifying(processing)}
                                         />
                                     </div>
@@ -749,7 +732,7 @@ const OnboardingPage = () => {
                         </div>
                     )}
 
-                    {step === 5 && role === 'chain' && (
+                    {step.id === 'commercial_registry' && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
                             <header className={styles.header}>
                                 <h1 className={styles.title}>{t('dashboard.onboarding.step5.title')}</h1>
@@ -776,7 +759,7 @@ const OnboardingPage = () => {
                                             mode="organizationInfo"
                                             hideInfo={true}
                                             onComplete={handleComplete}
-                                            onReadyChange={(isReady) => { /* Optional */ }}
+                                            onReadyChange={(isReady) => {}}
                                             onProcessingChange={(processing) => setIsVerifying(processing)}
                                         />
                                     </div>
@@ -790,7 +773,7 @@ const OnboardingPage = () => {
                     <Button
                         onClick={handleBack}
                         variant="secondary"
-                        className={`w-full sm:!w-[180px] h-14 rounded-xl font-semibold transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : ''}`}
+                        className={`w-full sm:!w-[180px] h-14 rounded-xl font-semibold transition-all ${isFirst ? 'opacity-0 pointer-events-none' : ''}`}
                     >
                         <div className="flex items-center justify-center gap-2">
                             <FiArrowLeft className="w-5 h-5" /> {t('dashboard.onboarding.buttons.back')}
@@ -798,14 +781,14 @@ const OnboardingPage = () => {
                     </Button>
 
                     <div className="flex items-center w-full sm:w-auto">
-                        {step === 3 ? (
+                        {step.id === 'phone' ? (
                             <Button
                                 id={phoneInternalStep === 1 ? 'send-code-button' : undefined}
                                 onClick={handleNext}
                                 disabled={!canProceed() || isProcessing || isPhoneLoading}
                                 className="w-full sm:!w-[200px] h-14 rounded-xl font-semibold shadow-md flex items-center justify-center gap-2"
                             >
-                                {phoneVerified ? (
+                                {data.phoneVerified ? (
                                     <>
                                         <span>{t('dashboard.onboarding.buttons.nextStep')}</span>
                                         <FiArrowRight className="w-5 h-5" />
@@ -840,7 +823,7 @@ const OnboardingPage = () => {
                                     </>
                                 )}
                             </Button>
-                        ) : (step === 4 || step === 5) ? (
+                        ) : (step.id === 'gln_professional' || step.id === 'gln_facility' || step.id === 'commercial_registry') ? (
                             <Button
                                 onClick={() => {
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -852,7 +835,7 @@ const OnboardingPage = () => {
                                 className="w-full sm:!w-[240px] h-14 rounded-xl font-semibold shadow-md flex items-center justify-center gap-3"
                             >
                                 {isVerifying ? <FiLoader className="animate-spin" /> : <FiCheck />}
-                                {isVerifying ? t('dashboard.onboarding.buttons.verifying') : (step === 5 ? t('dashboard.onboarding.buttons.completeAccount') : t('dashboard.onboarding.buttons.nextStep'))}
+                                {isVerifying ? t('dashboard.onboarding.buttons.verifying') : (isLast ? t('dashboard.onboarding.buttons.completeAccount') : t('dashboard.onboarding.buttons.nextStep'))}
                             </Button>
                         ) : (
                             <Button
@@ -868,7 +851,7 @@ const OnboardingPage = () => {
                 </footer>
             </div>
 
-            <Dialog
+            <modal
                 isOpen={showRestrictedServicesModal}
                 onClose={() => !isCreatingProfile && setShowRestrictedServicesModal(false)}
                 title={t('dashboard.onboarding.step1.restrictedServices.modal.title')}
@@ -915,7 +898,7 @@ const OnboardingPage = () => {
                                     const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
                                     await updateDoc(userDocRef, {
                                         [`onboardingProgress.${onboardingType}`]: {
-                                            step: 3,
+                                            step: 'phone',
                                             role: 'worker',
                                             belongsToFacility: true,
                                             legalConsiderationsConfirmed: true,
@@ -1020,9 +1003,10 @@ const OnboardingPage = () => {
                         </p>
                     </div>
                 </div>
-            </Dialog>
+            </modal>
         </div>
     );
 };
 
 export default OnboardingPage;
+

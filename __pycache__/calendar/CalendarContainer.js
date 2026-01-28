@@ -11,9 +11,9 @@ import CalendarHeader from './components/CalendarHeader';
 import CalendarSidebar from './components/CalendarSidebar';
 import TimeHeaders from './components/TimeHeaders';
 import TimeGrid from './components/TimeGrid';
-import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
+import DeleteConfirmationmodal from './components/DeleteConfirmationmodal';
 import EventPanel from './EventPanel/EventPanel';
-import DialogBox from '../../../components/Dialog/Dialog';
+import modalBox from '../../../components/modal/modal';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import OptimizedEvent from './components/events/OptimizedEvent';
 
@@ -78,12 +78,12 @@ const CalendarContainer = ({ userData }) => {
     newEventStart,
     newEventEnd,
     
-    // Modal/dialog state
+    // Modal/modal state
     showDeleteConfirmation,
     eventToDelete,
     showMoveConfirmation,
     movedEvent,
-    showModificationDialog,
+    showModificationmodal,
     pendingModification,
     
     // Context menu
@@ -117,8 +117,8 @@ const CalendarContainer = ({ userData }) => {
     toggleSidebar,
     addToHistory,
     clearSelectedEvent,
-    hideDeleteDialog,
-    hideMoveDialog,
+    hideDeletemodal,
+    hideMovemodal,
     hideContextMenu,
     toggleCategory,
     setWeekScrollOffset,
@@ -342,7 +342,7 @@ const CalendarContainer = ({ userData }) => {
   // Context menu handlers
   const handleContextMenuDelete = useCallback(() => {
     if (contextMenuEvent) {
-      useCalendarStore.getState().showDeleteDialog(contextMenuEvent);
+      useCalendarStore.getState().showDeletemodal(contextMenuEvent);
       hideContextMenu();
     }
   }, [contextMenuEvent, hideContextMenu]);
@@ -422,8 +422,8 @@ const CalendarContainer = ({ userData }) => {
     // Implementation would go here based on the original Calendar.js logic
     // This is a simplified version
     console.log('Modification confirmed:', modificationType);
-    hideMoveDialog();
-  }, [hideMoveDialog]);
+    hideMovemodal();
+  }, [hideMovemodal]);
 
   // Panel close handler
   const handlePanelClose = useCallback(() => {
@@ -671,7 +671,7 @@ const CalendarContainer = ({ userData }) => {
             onSave={handleEventSave}
             onDelete={() => {
               if (selectedEvent && selectedEvent.id) {
-                useCalendarStore.getState().showDeleteDialog(selectedEvent);
+                useCalendarStore.getState().showDeletemodal(selectedEvent);
               }
             }}
             colorOptions={CALENDAR_COLORS}
@@ -681,20 +681,20 @@ const CalendarContainer = ({ userData }) => {
           />
         )}
 
-        {/* Delete Confirmation Dialog */}
+        {/* Delete Confirmation modal */}
         {showDeleteConfirmation && eventToDelete && (
-          <DeleteConfirmationDialog
+          <DeleteConfirmationmodal
             event={eventToDelete}
             currentDate={new Date(eventToDelete.start)}
             onConfirm={(deleteType) => handleEventDelete(eventToDelete.id, deleteType)}
-            onCancel={hideDeleteDialog}
+            onCancel={hideDeletemodal}
             isRecurring={eventToDelete.isRecurring || String(eventToDelete.id).includes('-')}
           />
         )}
 
-        {/* Move Confirmation Dialog */}
+        {/* Move Confirmation modal */}
         {showMoveConfirmation && movedEvent && (
-          <DialogBox
+          <modalBox
             title={t('dashboard.calendar.moveConfirmation.title')}
             message={
               movedEvent.isRecurring 

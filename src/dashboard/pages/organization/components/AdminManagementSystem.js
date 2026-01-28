@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { useNotification } from '../../../../contexts/NotificationContext';
+import { useAuth } from '../../../../contexts/authContext';
+import { useNotification } from '../../../../contexts/notificationContext';
 import {
     FiShield,
     FiUsers,
@@ -25,9 +25,9 @@ import {
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import EmployeePopup from './EmployeePopup';
-import Dialog from '../../../../components/Dialog/Dialog';
-import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import InputFieldParagraph from '../../../../components/BoxedInputFields/TextareaField';
+import modal from '../../../../components/basemodal/basemodal';
+import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
+import InputFieldParagraph from '../../../../components/boxedInputFields/textareaField';
 
 const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
     const { t } = useTranslation(['organization', 'common']);
@@ -630,7 +630,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                 )}
             </div>
 
-            <Dialog
+            <modal
                 isOpen={showRoleModal}
                 onClose={() => {
                     setShowRoleModal(false);
@@ -733,7 +733,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                         </p>
                     </div>
                 </div>
-            </Dialog>
+            </modal>
 
             <EmployeePopup
                 employee={selectedEmployee}

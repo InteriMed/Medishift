@@ -5,8 +5,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 // Import centralized database instance configured for medishift
-const db = require('../database/db');
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const db = require('../../../Medishift/functions/database/dbhift/functions/database/db');
+const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 const INVITATION_EXPIRY_DAYS = 30;
 

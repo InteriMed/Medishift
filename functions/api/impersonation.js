@@ -2,7 +2,7 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const { logAuditEvent, AUDIT_EVENT_TYPES } = require('../services/auditLog');
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 const IMPERSONATION_SESSION_EXPIRY_MINUTES = 30;
 const IMPERSONATION_COOKIE_NAME = 'medishift_impersonation_session';

@@ -19,7 +19,7 @@ const { getFirestore } = require('firebase-admin/firestore');
 const crypto = require('crypto');
 const config = require('../config');
 const { logAuditEvent } = require('./auditLog');
-const { FIRESTORE_COLLECTIONS, FIRESTORE_DATABASE_NAME } = require('../config/keysDatabase');
+const { FIRESTORE_COLLECTIONS, FIRESTORE_DATABASE_NAME } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 const db = getFirestore(admin.app(), FIRESTORE_DATABASE_NAME);
 const FieldValue = admin.firestore.FieldValue;

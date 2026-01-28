@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const admin = require('firebase-admin');
-const db = require('../database/db');
+const db = require('../../../Medishift/functions/database/db');
 
 const verifyTestData = async () => {
   console.log('=== VERIFICATION DES DONNEES DE TEST ===\n');

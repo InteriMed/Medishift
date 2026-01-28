@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const db = require('../database/db');
+const db = require('../../../Medishift/functions/database/db');
 
 const generateTestData = async () => {
   console.log('Starting test data generation...');

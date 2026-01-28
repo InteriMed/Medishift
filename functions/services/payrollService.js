@@ -13,7 +13,7 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 const config = require('../config');
-const db = require('../database/db');
+const db = require('../../../Medishift/functions/database/dbhift/functions/database/db');
 
 // Email transporter (will be initialized with environment variables)
 let transporter = null;

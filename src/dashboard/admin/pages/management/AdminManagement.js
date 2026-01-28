@@ -7,10 +7,10 @@ import { useAdminPermission } from '../../hooks/useAdminPermission';
 import { RIGHTS, ADMIN_ROLES } from '../../utils/rbac';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
-import Button from '../../../../components/BoxedInputFields/Button';
-import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
-import Dialog from '../../../../components/Dialog/Dialog';
+import Button from '../../../../components/colorPicker/button';
+import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
+import DropdownField from '../../../../components/boxedInputFields/dropdownField';
+import modal from '../../../../components/basemodal/basemodal';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import PageHeader from '../../../components/PageHeader/PageHeader';
 import '../../../../styles/variables.css';
@@ -547,7 +547,7 @@ const AdminManagement = () => {
       )}
 
       {showInviteModal && (
-        <Dialog
+        <modal
           isOpen={showInviteModal}
           onClose={() => { setShowInviteModal(false); setInviteEmail(''); setInviteRole('ops_manager'); }}
           title="Invite Administrator"
@@ -588,11 +588,11 @@ const AdminManagement = () => {
               onChange={(value) => setInviteRole(value)}
             />
           </div>
-        </Dialog>
+        </modal>
       )}
 
       {showRoleModal && (
-        <Dialog
+        <modal
           isOpen={showRoleModal}
           onClose={() => { setShowRoleModal(false); setEditingRole(null); setRoleName(''); setRoleRights([]); }}
           title={editingRole ? 'Edit Role' : 'Create Role'}
@@ -640,7 +640,7 @@ const AdminManagement = () => {
               </div>
             </div>
           </div>
-        </Dialog>
+        </modal>
       )}
         </div>
       </div>

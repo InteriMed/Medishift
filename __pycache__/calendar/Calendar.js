@@ -16,9 +16,9 @@ import CalendarHeader from './components/CalendarHeader';
 import CalendarSidebar from './components/CalendarSidebar';
 import TimeHeaders from './components/TimeHeaders';
 import TimeGrid from './components/TimeGrid';
-import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
+import DeleteConfirmationmodal from './components/DeleteConfirmationmodal';
 import EventPanel from './EventPanel/EventPanel';
-import DialogBox from '../../../components/Dialog/Dialog';
+import modalBox from '../../../components/modal/modal';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import { FaCheck, FaTimes, FaEdit, FaCopy } from 'react-icons/fa';
 
@@ -85,7 +85,7 @@ const Calendar = ({ userData }) => {
   const [movedEvent, setMovedEvent] = useState(null);
   const [originalEventDates, setOriginalEventDates] = useState(null);
   const [newEventDates, setNewEventDates] = useState(null);
-  const [showModificationDialog, setShowModificationDialog] = useState(false);
+  const [showModificationmodal, setShowModificationmodal] = useState(false);
   const [pendingModification, setPendingModification] = useState(null);
   
   // Week scroll state for horizontal scrolling
@@ -1003,7 +1003,7 @@ const Calendar = ({ userData }) => {
       setEventToDelete(selectedEvent);
       setShowDeleteConfirmation(true);
     }
-    // Escape key for closing panels/dialogs
+    // Escape key for closing panels/modals
     else if (e.key === 'Escape') {
       e.preventDefault();
       if (selectedEvent) {
@@ -1101,7 +1101,7 @@ const Calendar = ({ userData }) => {
     // Check if we need to prompt for modification type (only for existing recurring events)
     if (isModifyingRecurring && shouldClose) {
       // Store the updated event temporarily
-      // Set states to prepare for confirmation dialog
+      // Set states to prepare for confirmation modal
       const originalDate = new Date(originalEvent.start);
       const newDate = new Date(updatedEvent.start);
       
@@ -1117,9 +1117,9 @@ const Calendar = ({ userData }) => {
         editType: 'PANEL' // Panel edit type
       });
       
-      // Show the confirmation dialog
+      // Show the confirmation modal
       console.log("Showing modification confirmation for panel edit");
-      setShowModificationDialog(true);
+      setShowModificationmodal(true);
       return;
     }
     
@@ -1469,9 +1469,9 @@ const Calendar = ({ userData }) => {
     const isRecurringEvent = event.isRecurring || originalEvent.recurrence || 
       isRecurringInstance || String(eventId).includes('-') || String(eventId).includes('_');
     
-    // If this is a recurring event, show confirmation dialog
+    // If this is a recurring event, show confirmation modal
     if (isRecurringEvent) {
-      // Store the pending modification for the dialog
+      // Store the pending modification for the modal
       setPendingModification({
         type: MODIFICATION_TYPES.RESIZE,
         eventId: eventId,
@@ -1481,7 +1481,7 @@ const Calendar = ({ userData }) => {
         newEnd: newEnd
       });
       
-      // Store original and new dates for the dialog
+      // Store original and new dates for the modal
       setOriginalEventDates({
         start: event.start instanceof Date ? event.start : new Date(event.start),
         end: event.end instanceof Date ? event.end : new Date(event.end)
@@ -1492,7 +1492,7 @@ const Calendar = ({ userData }) => {
       });
       setMovedEvent(event);
       
-      // Ensure the dialog shows up even with quick mouse movements
+      // Ensure the modal shows up even with quick mouse movements
       // Use requestAnimationFrame to make sure it appears in the next frame
       requestAnimationFrame(() => {
         setShowMoveConfirmation(true);
@@ -1613,7 +1613,7 @@ const Calendar = ({ userData }) => {
       }
     }
     
-    // Create a common structure to store original and new dates for the dialog
+    // Create a common structure to store original and new dates for the modal
     const originalEventDatesObj = {
       start: currentEvent.start instanceof Date ? currentEvent.start : new Date(currentEvent.start),
       end: currentEvent.end instanceof Date ? currentEvent.end : new Date(currentEvent.end)
@@ -1624,9 +1624,9 @@ const Calendar = ({ userData }) => {
       end: newEnd
     };
 
-    // If this is a recurring event, show confirmation dialog
+    // If this is a recurring event, show confirmation modal
     if (isRecurringEvent) {
-      // Store the pending modification for the dialog
+      // Store the pending modification for the modal
       setPendingModification({
         type: isRecurringInstance ? MODIFICATION_TYPES.MOVE_SINGLE : MODIFICATION_TYPES.MOVE,
         eventId: eventId,
@@ -1636,17 +1636,17 @@ const Calendar = ({ userData }) => {
         newEnd: newEnd
       });
       
-      // Store original and new dates for the dialog
+      // Store original and new dates for the modal
       setOriginalEventDates(originalEventDatesObj);
       setNewEventDates(newEventDatesObj);
       
-      // Add isLastOccurrence flag to the moved event for the dialog
+      // Add isLastOccurrence flag to the moved event for the modal
       setMovedEvent({
         ...currentEvent,
         isLastOccurrence: isLastOccurrence
       });
       
-      // Ensure the dialog shows up even with quick mouse movements
+      // Ensure the modal shows up even with quick mouse movements
       // Use requestAnimationFrame to make sure it appears in the next frame
       requestAnimationFrame(() => {
         setShowMoveConfirmation(true);
@@ -1799,7 +1799,7 @@ const Calendar = ({ userData }) => {
       return;
     }
     
-    // Reset dialog states
+    // Reset modal states
     setShowMoveConfirmation(false);
     
     const { type, eventId, event, newStart, newEnd } = pendingModification;
@@ -2793,9 +2793,9 @@ const Calendar = ({ userData }) => {
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation modal */}
       {showDeleteConfirmation && eventToDelete && (
-        <DeleteConfirmationDialog
+        <DeleteConfirmationmodal
           event={eventToDelete}
           currentDate={new Date(eventToDelete.start)}
           onConfirm={(deleteType) => handleEventDelete(eventToDelete.id, deleteType)}
@@ -2807,9 +2807,9 @@ const Calendar = ({ userData }) => {
         />
       )}
 
-      {/* Move Confirmation Dialog */}
+      {/* Move Confirmation modal */}
       {showMoveConfirmation && movedEvent && (
-        <DialogBox
+        <modalBox
           title={t('dashboard.calendar.moveConfirmation.title')}
           message={
             movedEvent.isRecurring 

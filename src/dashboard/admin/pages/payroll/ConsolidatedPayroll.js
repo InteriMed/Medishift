@@ -5,9 +5,9 @@ import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { Download, FileText, FileCode, FileType } from 'lucide-react';
 import { format } from 'date-fns';
-import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
-import Button from '../../../../components/BoxedInputFields/Button';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
+import Button from '../../../../components/colorPicker/button';
+import FilterBar from '../../../../components/dashboard/dashboardFilterBar/FilterBar';
 import PageHeader from '../../../components/PageHeader/PageHeader';
 import '../../../../styles/variables.css';
 

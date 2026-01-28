@@ -113,7 +113,7 @@ The calendar system is a comprehensive React-based scheduling application with F
 ### Event Lifecycle
 1. **Creation**: Panel validation → Database creation → UI update
 2. **Modification**: Immediate UI update → localStorage save → Background sync
-3. **Deletion**: Confirmation dialog → Database removal → UI cleanup
+3. **Deletion**: Confirmation modal → Database removal → UI cleanup
 
 ### Recurring Events
 - Server-side generation using `generateRecurringEventDates()`
@@ -310,7 +310,7 @@ The current implementation violates numerous React and software engineering best
     </EventGrid>
   </CalendarMain>
   <EventPanel />
-  <DialogManager />
+  <modalManager />
 </CalendarContainer>
 ```
 

@@ -6,10 +6,10 @@ import { Search, Filter, Calendar, User, FileText } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import { format } from 'date-fns';
-import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
+import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
+import DropdownField from '../../../../components/boxedInputFields/dropdownField';
 import PageHeader from '../../../components/PageHeader/PageHeader';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import FilterBar from '../../../../components/dashboard/dashboardFilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const AuditLogs = () => {

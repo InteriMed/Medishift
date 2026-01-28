@@ -3,18 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { Search, User, Building2, Eye, X, Filter, Check, Edit2, Save, Calendar, Users, FileText, Plus, ArrowLeft, ShieldCheck, Stethoscope, Trash2, LogOut, UserPlus, BarChart3 } from 'lucide-react';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useAuth } from '../../../../contexts/authContext';
 import { useAdminPermission } from '../../hooks/useAdminPermission';
 import { PERMISSIONS } from '../../utils/rbac';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
 import { useNavigate } from 'react-router-dom';
-import Button from '../../../../components/BoxedInputFields/Button';
-import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
-import Dialog from '../../../../components/Dialog/Dialog';
+import Button from '../../../../components/colorPicker/button';
+import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
+import DropdownField from '../../../../components/boxedInputFields/dropdownField';
+import modal from '../../../../components/basemodal/basemodal';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import PageHeader from '../../../components/PageHeader/PageHeader';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import FilterBar from '../../../../components/dashboard/dashboardFilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const UserCRM = () => {
@@ -78,7 +78,7 @@ const UserCRM = () => {
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userSearchResults, setUserSearchResults] = useState([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
-  const [showAddUserDialog, setShowAddUserDialog] = useState(false);
+  const [showAddUsermodal, setShowAddUsermodal] = useState(false);
   const [selectedUserToAdd, setSelectedUserToAdd] = useState(null);
   const [isAddingUser, setIsAddingUser] = useState(false);
 
@@ -93,9 +93,9 @@ const UserCRM = () => {
   });
   const [loadingStats, setLoadingStats] = useState(false);
 
-  // Facility Management Dialogs
-  const [showDeleteFacilityDialog, setShowDeleteFacilityDialog] = useState(false);
-  const [showLeaveFacilityDialog, setShowLeaveFacilityDialog] = useState(false);
+  // Facility Management modals
+  const [showDeleteFacilitymodal, setShowDeleteFacilitymodal] = useState(false);
+  const [showLeaveFacilitymodal, setShowLeaveFacilitymodal] = useState(false);
   const [facilityActionConfirmText, setFacilityActionConfirmText] = useState('');
   const [facilityActionProcessing, setFacilityActionProcessing] = useState(false);
   const [targetFacilityForAction, setTargetFacilityForAction] = useState(null);
@@ -694,7 +694,7 @@ const UserCRM = () => {
       }
 
       await loadUserDetails(selectedUser.id);
-      setShowDeleteFacilityDialog(false);
+      setShowDeleteFacilitymodal(false);
       setFacilityActionConfirmText('');
       setTargetFacilityForAction(null);
       alert('Facility deleted successfully.');
@@ -857,7 +857,7 @@ const UserCRM = () => {
       });
       
       await loadUserDetails(facilityId, 'facility');
-      setShowAddUserDialog(false);
+      setShowAddUsermodal(false);
       setUserSearchQuery('');
       setUserSearchResults([]);
       setSelectedUserToAdd(null);
@@ -916,7 +916,7 @@ const UserCRM = () => {
       } else {
         await loadUserDetails(userId);
       }
-      setShowLeaveFacilityDialog(false);
+      setShowLeaveFacilitymodal(false);
       setFacilityActionConfirmText('');
       setTargetFacilityForAction(null);
       alert('User removed from facility successfully.');
@@ -1167,7 +1167,7 @@ const UserCRM = () => {
                         )}
                         {activeFilters.accountType === 'facility' && isSuperAdmin && (
                           <Button
-                            onClick={() => { setTargetFacilityForAction({ facilityId: selectedUser.id, facilityName: selectedUser.facilityDetails?.name || selectedUser.legalCompanyName }); setShowDeleteFacilityDialog(true); }}
+                            onClick={() => { setTargetFacilityForAction({ facilityId: selectedUser.id, facilityName: selectedUser.facilityDetails?.name || selectedUser.legalCompanyName }); setShowDeleteFacilitymodal(true); }}
                             variant="danger"
                             size="sm"
                           >
@@ -1305,7 +1305,7 @@ const UserCRM = () => {
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #eee' }}>
                                   <Button
-                                    onClick={() => { setTargetFacilityForAction(f); setShowLeaveFacilityDialog(true); }}
+                                    onClick={() => { setTargetFacilityForAction(f); setShowLeaveFacilitymodal(true); }}
                                     variant="secondary"
                                     size="sm"
                                     style={{ fontSize: '0.85em' }}
@@ -1314,7 +1314,7 @@ const UserCRM = () => {
                                   </Button>
                                   {isSuperAdmin && (
                                     <Button
-                                      onClick={() => { setTargetFacilityForAction(f); setShowDeleteFacilityDialog(true); }}
+                                      onClick={() => { setTargetFacilityForAction(f); setShowDeleteFacilitymodal(true); }}
                                       variant="danger"
                                       size="sm"
                                       style={{ fontSize: '0.85em' }}
@@ -1409,7 +1409,7 @@ const UserCRM = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <span style={{ fontSize: '0.9em', color: 'gray', background: '#f3f4f6', padding: '4px 12px', borderRadius: '12px' }}>{facilityEmployees.length} Total</span>
                         <Button
-                          onClick={() => setShowAddUserDialog(true)}
+                          onClick={() => setShowAddUsermodal(true)}
                           variant="primary"
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
@@ -1428,7 +1428,7 @@ const UserCRM = () => {
                             </div>
                             <div style={{ display: 'flex', gap: '8px' }}>
                               <Button
-                                onClick={() => { setTargetFacilityForAction({ facilityId: selectedUser.id, facilityName: selectedUser.facilityDetails?.name, employeeUid: emp.uid }); setShowLeaveFacilityDialog(true); }}
+                                onClick={() => { setTargetFacilityForAction({ facilityId: selectedUser.id, facilityName: selectedUser.facilityDetails?.name, employeeUid: emp.uid }); setShowLeaveFacilitymodal(true); }}
                                 variant="secondary"
                                 size="sm"
                               >
@@ -1610,16 +1610,16 @@ const UserCRM = () => {
         </div>
       </div>
 
-      {/* Delete Facility Dialog */}
-      <Dialog
-        isOpen={showDeleteFacilityDialog}
-        onClose={() => { setShowDeleteFacilityDialog(false); setFacilityActionConfirmText(''); setTargetFacilityForAction(null); }}
+      {/* Delete Facility modal */}
+      <modal
+        isOpen={showDeleteFacilitymodal}
+        onClose={() => { setShowDeleteFacilitymodal(false); setFacilityActionConfirmText(''); setTargetFacilityForAction(null); }}
         title="Delete Facility"
         size="small"
         messageType="warning"
         actions={
           <>
-            <Button onClick={() => { setShowDeleteFacilityDialog(false); setFacilityActionConfirmText(''); }} variant="secondary" disabled={facilityActionProcessing}>
+            <Button onClick={() => { setShowDeleteFacilitymodal(false); setFacilityActionConfirmText(''); }} variant="secondary" disabled={facilityActionProcessing}>
               Cancel
             </Button>
             <Button onClick={handleDeleteFacility} variant="danger" disabled={facilityActionProcessing || facilityActionConfirmText !== 'DELETE FACILITY'}>
@@ -1638,18 +1638,18 @@ const UserCRM = () => {
             placeholder="DELETE FACILITY"
           />
         </div>
-      </Dialog>
+      </modal>
 
-      {/* Leave/Remove Facility Dialog */}
-      <Dialog
-        isOpen={showLeaveFacilityDialog}
-        onClose={() => { setShowLeaveFacilityDialog(false); setFacilityActionConfirmText(''); setTargetFacilityForAction(null); }}
+      {/* Leave/Remove Facility modal */}
+      <modal
+        isOpen={showLeaveFacilitymodal}
+        onClose={() => { setShowLeaveFacilitymodal(false); setFacilityActionConfirmText(''); setTargetFacilityForAction(null); }}
         title={targetFacilityForAction?.employeeUid ? "Remove Employee" : "Leave Facility"}
         size="small"
         messageType="warning"
         actions={
           <>
-            <Button onClick={() => { setShowLeaveFacilityDialog(false); setFacilityActionConfirmText(''); }} variant="secondary" disabled={facilityActionProcessing}>
+            <Button onClick={() => { setShowLeaveFacilitymodal(false); setFacilityActionConfirmText(''); }} variant="secondary" disabled={facilityActionProcessing}>
               Cancel
             </Button>
             <Button
@@ -1687,17 +1687,17 @@ const UserCRM = () => {
             </>
           )}
         </div>
-      </Dialog>
+      </modal>
 
-      {/* Add User to Facility Dialog */}
-      <Dialog
-        isOpen={showAddUserDialog}
-        onClose={() => { setShowAddUserDialog(false); setUserSearchQuery(''); setUserSearchResults([]); setSelectedUserToAdd(null); }}
+      {/* Add User to Facility modal */}
+      <modal
+        isOpen={showAddUsermodal}
+        onClose={() => { setShowAddUsermodal(false); setUserSearchQuery(''); setUserSearchResults([]); setSelectedUserToAdd(null); }}
         title="Add User to Facility"
         size="medium"
         actions={
           <>
-            <Button onClick={() => { setShowAddUserDialog(false); setUserSearchQuery(''); setUserSearchResults([]); setSelectedUserToAdd(null); }} variant="secondary" disabled={isAddingUser}>
+            <Button onClick={() => { setShowAddUsermodal(false); setUserSearchQuery(''); setUserSearchResults([]); setSelectedUserToAdd(null); }} variant="secondary" disabled={isAddingUser}>
               Cancel
             </Button>
             <Button
@@ -1759,7 +1759,7 @@ const UserCRM = () => {
             </div>
           )}
         </div>
-      </Dialog>
+      </modal>
         </div>
       </div>
     </div>

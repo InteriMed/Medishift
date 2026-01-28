@@ -8,7 +8,7 @@ import { DollarSign, TrendingUp, Percent } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import PageHeader from '../../../components/PageHeader/PageHeader';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import FilterBar from '../../../../components/dashboard/dashboardFilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const RevenueAnalysis = () => {

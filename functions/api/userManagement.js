@@ -1,7 +1,7 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 /**
  * Disables a user in Firebase Auth and updates their Firestore record with ban info.

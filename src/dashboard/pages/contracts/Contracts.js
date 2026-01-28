@@ -2,18 +2,18 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useDashboard } from '../../contexts/DashboardContext';
-import { useAuth } from '../../../contexts/AuthContext';
-import { useNotification } from '../../../contexts/NotificationContext';
-import useContractsData from '../../hooks/useContractsData';
+import { useDashboard } from '../../../dashboard/contexts/DashboardContext';
+import { useAuth } from '../../../contexts/authContext';
+import { useNotification } from '../../../contexts/notificationContext';
+import useContractsData from '../../../dashboard/hooks/useContractsData';
 import ContractDetails from './components/ContractDetails';
 import ContractPdfView from './components/ContractPdfView';
 import ContractStatusBadge from './components/ContractStatusBadge';
-import FilterBar from '../../components/FilterBar/FilterBar';
-import Dialog from '../../../components/Dialog/Dialog';
-import InputField from '../../../components/BoxedInputFields/Personnalized-InputField';
-import InputFieldParagraph from '../../../components/BoxedInputFields/TextareaField';
-import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
+import FilterBar from '../../../components/layout/FilterBar/FilterBar';
+import modal from '../../../components/basemodal/modal';
+import InputField from '../../../components/boxedInputFields/personnalizedInputField';
+import InputFieldParagraph from '../../../components/boxedInputFields/textareaField';
+import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
 import { FiFileText, FiClock } from 'react-icons/fi';
 import { createContract } from '../../../services/cloudFunctions';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
@@ -479,7 +479,7 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                 )}
             </div>
 
-            <Dialog
+            <modal
                 isOpen={isDetailsModalOpen}
                 onClose={handleCloseDetailsWithURL}
                 title={selectedContract ? getContractTitle(selectedContract) : t('contracts:title', 'Contract Details')}
@@ -505,9 +505,9 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                         )}
                     </div>
                 )}
-            </Dialog>
+            </modal>
 
-            <Dialog
+            <modal
                 isOpen={isCreateContractModalOpen}
                 onClose={() => {
                     if (!isCreatingContract) {
@@ -589,7 +589,7 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                         name="description"
                     />
                 </div>
-            </Dialog>
+            </modal>
         </div>
     );
 };

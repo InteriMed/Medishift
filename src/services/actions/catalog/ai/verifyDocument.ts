@@ -1,0 +1,121 @@
+import { z } from "zod";
+import { ActionDefinition } from "../../types";
+
+const VerifyDocumentSchema = z.object({
+  imageUrl: z.string().url("Must be a valid image URL"),
+  expectedData: z.object({
+    name: z.string().optional(),
+    gln: z.string().optional(),
+    uid: z.string().optional(),
+    [z.string()]: z.any()
+  }).optional(),
+  documentType: z.enum(['identity', 'diploma', 'permit', 'billing']),
+});
+
+interface VerificationResult {
+  isValid: boolean;
+  confidence: number;
+  matches: Record<string, boolean>;
+  extractedData: Record<string, any>;
+  discrepancies: string[];
+}
+
+/**
+ * Verify document authenticity and data against expected values using AI
+ */
+export const verifyDocumentAction: ActionDefinition = {
+  id: "ai.verify_document",
+  riskLevel: "MEDIUM",
+  label: "Verify Document (AI)",
+  description: "Verify document authenticity and cross-check data using AI",
+  schema: VerifyDocumentSchema,
+
+  handler: async (input, ctx): Promise<VerificationResult> => {
+    const { imageUrl, expectedData, documentType } = input;
+
+    try {
+      // Parse document to extract data
+      const { executeAction } = await import('../../hook');
+      const parseResult = await executeAction('ai.parse_document', {
+        imageUrl,
+        documentType
+      });
+
+      if (!parseResult.success) {
+        return {
+          isValid: false,
+          confidence: 0,
+          matches: {},
+          extractedData: {},
+          discrepancies: ['Failed to parse document']
+        };
+      }
+
+      const extractedData = parseResult.fields;
+      const matches: Record<string, boolean> = {};
+      const discrepancies: string[] = [];
+
+      // Compare extracted data with expected data
+      if (expectedData) {
+        for (const [key, expectedValue] of Object.entries(expectedData)) {
+          const extractedValue = extractedData[key];
+          const isMatch = compareValues(extractedValue, expectedValue);
+          matches[key] = isMatch;
+
+          if (!isMatch) {
+            discrepancies.push(
+              `${key}: expected "${expectedValue}", found "${extractedValue}"`
+            );
+          }
+        }
+      }
+
+      const isValid = discrepancies.length === 0;
+      const confidence = parseResult.confidence;
+
+      await ctx.auditLogger('ai.verify_document', isValid ? 'SUCCESS' : 'MISMATCH', {
+        documentType,
+        isValid,
+        discrepancies: discrepancies.length
+      });
+
+      return {
+        isValid,
+        confidence,
+        matches,
+        extractedData,
+        discrepancies
+      };
+
+    } catch (error) {
+      await ctx.auditLogger('ai.verify_document', 'ERROR', {
+        documentType,
+        error: (error as Error).message
+      });
+
+      throw error;
+    }
+  }
+};
+
+/**
+ * Compare two values with fuzzy matching
+ */
+function compareValues(value1: any, value2: any): boolean {
+  if (value1 === value2) return true;
+  if (!value1 || !value2) return false;
+
+  // Normalize strings for comparison
+  const str1 = String(value1).toLowerCase().trim();
+  const str2 = String(value2).toLowerCase().trim();
+
+  // Exact match
+  if (str1 === str2) return true;
+
+  // Remove spaces and special characters
+  const clean1 = str1.replace(/[\s\-\.]/g, '');
+  const clean2 = str2.replace(/[\s\-\.]/g, '');
+
+  return clean1 === clean2;
+}
+

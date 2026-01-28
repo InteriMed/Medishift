@@ -3,7 +3,7 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 
 // List notifications for the current user
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 const listNotifications = onCall(FUNCTION_CONFIG, async (request) => {
   // Ensure user is authenticated

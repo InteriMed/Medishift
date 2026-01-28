@@ -1,0 +1,13 @@
+export { default as HomePage } from './Homepage';
+export { default as AboutPage } from './AboutPage';
+export { default as FacilitiesPage } from './FacilitiesPage';
+export { default as ProfessionalsPage } from './ProfessionalsPage';
+export { default as FAQPage } from './FAQPage';
+export { default as ContactPage } from './ContactPage';
+export { default as BlogPage } from './BlogPage';
+export { default as SupportPage } from './Support';
+export { default as PrivacyPolicyPage } from './PrivacyPolicyPage';
+export { default as TermsOfServicePage } from './TermsOfServicePage';
+export { default as SitemapPage } from './SitemapPage';
+export { default as NotFoundPage } from './NotFound';
+export { default as OnboardingPage } from '../dashboard/shared/onboarding/OnboardingPage';

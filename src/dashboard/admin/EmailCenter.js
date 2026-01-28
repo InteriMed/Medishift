@@ -5,7 +5,7 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { functions, db } from '../../services/firebase';
 import { Mail, Send, Users, MessageSquare, Clock, CheckCircle, XCircle, ChevronDown, Inbox, ExternalLink } from 'lucide-react';
 import PageHeader from '../components/PageHeader/PageHeader';
-import Button from '../../components/BoxedInputFields/Button';
+import Button from '../../components/colorPicker/Button';
 
 const EMAIL_TEMPLATES = {
   support_response: {

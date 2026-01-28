@@ -7,7 +7,7 @@ import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import Papa from 'papaparse';
 import PageHeader from '../../../components/PageHeader/PageHeader';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import FilterBar from '../../../../components/dashboard/dashboardFilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const AccountsReceivable = () => {

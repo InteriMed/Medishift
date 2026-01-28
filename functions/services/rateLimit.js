@@ -312,7 +312,7 @@ exports.cleanupRateLimits = onSchedule({
 /**
  * Get rate limit status for current user
  */
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 exports.getRateLimitStatus = onCall(FUNCTION_CONFIG, async (request) => {
     if (!request.auth) {

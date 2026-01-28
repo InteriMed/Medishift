@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, serverTimestamp, addDoc, limit } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { Search, Save, User, Building, AlertCircle, Database, ArrowLeft } from 'lucide-react';
-import Button from '../../components/BoxedInputFields/Button';
-import PersonnalizedInputField from '../../components/BoxedInputFields/Personnalized-InputField';
-import DropdownField from '../../components/BoxedInputFields/Dropdown-Field';
+import Button from '../../components/colorPicker/button';
+import PersonnalizedInputField from '../../components/boxedInputFields/personnalizedInputField';
+import DropdownField from '../../components/boxedInputFields/dropdownField';
 import '../../styles/variables.css';
 
 const DatabaseEditor = () => {

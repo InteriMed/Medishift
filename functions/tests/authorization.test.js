@@ -9,8 +9,8 @@ const test = require('firebase-functions-test')();
 
 // Import services
 const { hasPermission, getUserPermissions, PERMISSIONS, ROLE_PRESETS } = require('../../frontend/src/utils/permissions');
-const { logAuditEvent, AUDIT_EVENT_TYPES } = require('../services/auditLog');
-const { rateLimiter, RATE_LIMITS } = require('../services/rateLimit');
+const { logAuditEvent, AUDIT_EVENT_TYPES } = require('../../../Medishift/functions/services/auditLog');
+const { rateLimiter, RATE_LIMITS } = require('../../../Medishift/functions/services/rateLimit');
 
 describe('Authorization System Tests', () => {
 

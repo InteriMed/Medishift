@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const path = require('path');
 const dotenv = require('dotenv');
-const { CONFIG, DEFAULT_VALUES, ENV_VARS, getEnvVar } = require('./config/keysDatabase');
+const { CONFIG, DEFAULT_VALUES, ENV_VARS, getEnvVar } = require('../../Medishift/functions/config/keysDatabase');
 
 // Load environment variables based on the environment
 const env = process.env.NODE_ENV || 'development';

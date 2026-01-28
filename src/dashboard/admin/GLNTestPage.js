@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { healthRegistryAPI, companySearchAPI, companyDetailsAPI, gesRegAPI, commercialRegistrySearchAPI } from '../../services/cloudFunctions';
-import Button from '../../components/BoxedInputFields/Button';
-import PersonnalizedInputField from '../../components/BoxedInputFields/Personnalized-InputField';
+import Button from '../../components/colorPicker/button';
+import PersonnalizedInputField from '../../components/boxedInputFields/personnalizedInputField';
 import './GLNTestPage.css';
 
 const GLNTestPage = () => {

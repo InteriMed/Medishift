@@ -1,5 +1,11 @@
 import { getRouteById, getRouteByPath } from './appRoutes';
-import { getRouteById as getDashboardRouteById, buildRouteUrl as buildDashboardRouteUrl } from '../dashboard/config/routes';
+import { 
+  getRouteById as getDashboardRouteById, 
+  buildRouteUrl as buildDashboardRouteUrl,
+  getDefaultRoute as getDashboardDefaultRoute,
+  canAccessRoute as canAccessDashboardRoute,
+  getRoutesForWorkspace as getDashboardRoutesForWorkspace
+} from './appRoutes';
 
 export const DEFAULT_LANGUAGE = 'fr';
 export const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'it'];

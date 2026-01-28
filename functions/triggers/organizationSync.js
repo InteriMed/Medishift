@@ -9,7 +9,7 @@ const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require('fir
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
-const config = require('../config');
+const config = require('../../../Medishift/functions/config');
 
 /**
  * When an organization is created, initialize member facilities

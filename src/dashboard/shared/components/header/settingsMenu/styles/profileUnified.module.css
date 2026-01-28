@@ -1,0 +1,234 @@
+/* profileUnified.module.css - Consolidated styles for settings components */
+
+/* Common Container Styles */
+.sectionContainer, .container {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+}
+
+/* Header styling */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.profilePictureContainer {
+  position: relative;
+  cursor: pointer;
+}
+
+.profilePictureWrapper,
+.profileInitialsWrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.profilePicture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profileInitials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-logo-1);
+  color: white;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-xlarge);
+  font-weight: var(--font-weight-medium);
+}
+
+.profilePictureOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  text-align: center;
+  padding: 5px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+}
+
+.profilePictureContainer:hover .profilePictureOverlay {
+  opacity: 1;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.profileEmail,
+.profileRole {
+  margin: 0;
+}
+
+.profileEmail {
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-medium);
+}
+
+.profileRole {
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--grey-3);
+}
+
+/* Form & Section styling */
+.sectionTitle {
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-medium);
+  margin: 0 0 8px;
+}
+
+.sectionSubtitle {
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  color: var(--grey-3);
+  margin: 0 0 24px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.formRow:last-child {
+  margin-bottom: 0;
+}
+
+.formFieldHalf {
+  flex: 1;
+  min-width: 0; /* Prevent flex items from overflowing */
+}
+
+.readOnlyField {
+  padding: 8px 0;
+  margin: 0;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+}
+
+.passwordChangeContainer {
+  margin-top: 16px;
+  padding: 16px;
+  background-color: var(--grey-0, #f5f5f5);
+  border-radius: 8px;
+}
+
+.googleAuthMessage {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: var(--grey-0);
+  border-radius: 8px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+}
+
+.FormGroupNotificationPreferences {
+  margin-top: 16px;
+}
+
+/* Button & Action styling */
+.onboardingActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* Error styling */
+.errorText {
+  color: var(--red-3);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  margin: 4px 0 0;
+}
+
+.uploadingText {
+  color: var(--grey-3);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-small);
+  margin: 4px 0 0;
+}
+
+/* modal content */
+.deletemodalContent,
+.reauthmodalContent {
+  margin-bottom: 16px;
+}
+
+.deleteWarning {
+  color: var(--red-3);
+  font-family: var(--font-family-text);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Section divider */
+.sectionDivider {
+  height: 1px;
+  background-color: var(--grey-1, #e0e0e0);
+  margin: 24px 0;
+}
+
+/* Radio group styling */
+.radioGroup {
+  display: flex;
+  gap: 20px;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* Subsection titles */
+.subsectionTitle {
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-medium);
+  margin: 20px 0 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .formRow {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .radioGroup {
+    flex-direction: column;
+    gap: 12px;
+  }
+} 

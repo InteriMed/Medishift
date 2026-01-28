@@ -4,7 +4,7 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 const config = require('../config');
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 const db = getFirestore();
 
@@ -12,7 +12,7 @@ async function runScheduledScrape(scheduleId, scheduleData) {
   try {
     logger.info(`Running scheduled scrape for schedule ${scheduleId}`, scheduleData);
 
-    const linkedinJobScraper = require('../api/linkedinJobScraper');
+    const linkedinJobScraper = require('../../../Medishift/functions/api/linkedinJobScraper');
     const axios = require('axios');
     const { JSDOM } = require('jsdom');
 

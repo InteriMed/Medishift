@@ -16,10 +16,10 @@ import { format } from 'date-fns';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { hasPermission, PERMISSIONS } from '../../utils/rbac';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
-import Button from '../../../../components/BoxedInputFields/Button';
-import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
+import Button from '../../../../components/colorPicker/Button';
+import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import PageHeader from '../../../components/PageHeader/PageHeader';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import FilterBar from '../../../../components/layout/FilterBar/FilterBar';
 import '../../../../styles/variables.css';
 
 const columnHelper = createColumnHelper();

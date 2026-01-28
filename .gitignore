@@ -72,3 +72,6 @@ frontend/node_modules/
 
 functions/.service-account-key.jsonfunctions/service-account-key.json
 functions/service-account-key.json
+
+service-account.json
+./service-account.json

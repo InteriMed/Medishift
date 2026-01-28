@@ -20,7 +20,7 @@ const visionClient = new vision.ImageAnnotatorClient({
   apiEndpoint: 'eu-vision.googleapis.com'
 });
 
-const { getProjectId, CONFIG } = require('../config/keysDatabase');
+const { getProjectId, CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 // CONFIGURE AI (GEMINI) TO RUN IN EUROPE-WEST1 (Belgium - Better Availability)
 const vertexAI = new VertexAI({

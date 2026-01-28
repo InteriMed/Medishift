@@ -6,9 +6,9 @@ import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
-import Button from '../../../../components/BoxedInputFields/Button';
-import PersonnalizedInputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import DropdownField from '../../../../components/BoxedInputFields/Dropdown-Field';
+import Button from '../../../../components/colorPicker/Button';
+import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
+import DropdownField from '../../../../components/boxedInputFields/dropdownField';
 import '../../../../styles/variables.css';
 
 const LinkedInJobScraper = () => {

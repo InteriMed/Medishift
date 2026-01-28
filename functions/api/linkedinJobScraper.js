@@ -6,8 +6,8 @@ const axios = require('axios');
 const { JSDOM } = require('jsdom');
 
 // Import centralized database instance configured for medishift
-const db = require('../database/db');
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const db = require('../../../Medishift/functions/database/dbhift/functions/database/db');
+const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 const LINKEDIN_JOBS_API = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search';
 

@@ -5,7 +5,7 @@ const { promisify } = require("util");
 const path = require("path");
 const fs = require("fs");
 
-const { FUNCTION_CONFIG } = require("../config/keysDatabase");
+const { FUNCTION_CONFIG } = require("../../../Medishift/functions/config/keysDatabasections/config/keysDatabase");
 
 const execAsync = promisify(exec);
 

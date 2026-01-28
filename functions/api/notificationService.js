@@ -5,7 +5,7 @@ const axios = require('axios');
 const https = require('https');
 const admin = require('firebase-admin');
 
-const db = require('../database/db');
+const db = require('../../../Medishift/functions/database/dbhift/functions/database/db');
 
 const MICROSOFT_CLIENT_ID = defineSecret('MICROSOFT_CLIENT_ID');
 const MICROSOFT_CLIENT_SECRET = defineSecret('MICROSOFT_CLIENT_SECRET');

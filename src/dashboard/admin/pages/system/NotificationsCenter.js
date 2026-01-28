@@ -5,7 +5,7 @@ import { db } from '../../../../services/firebase';
 import { Bell, Send, Users, Calendar, MessageSquare } from 'lucide-react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
-import Button from '../../../../components/BoxedInputFields/Button';
+import Button from '../../../../components/colorPicker/button';
 import '../../../../styles/variables.css';
 
 const NotificationsCenter = () => {

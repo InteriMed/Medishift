@@ -2,20 +2,20 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useMemo } from 're
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../../contexts/AuthContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
-import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
-import Button from '../../../components/BoxedInputFields/Button';
-import SimpleDropdown from '../../../components/BoxedInputFields/Dropdown-Field';
-import PersonnalizedInputField from '../../../components/BoxedInputFields/Personnalized-InputField';
-import { useDropdownOptions } from '../../pages/profile/utils/DropdownListsImports';
-import { useDashboard } from '../../contexts/DashboardContext';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import Button from '../../../components/colorPicker/button';
+import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
+import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
+import { useDropdownOptions } from '../../../pages/profile/utils/DropdownListsImports';
+import { useDashboard } from '../../../contexts/DashboardContext';
 import { useTutorial } from '../../contexts/TutorialContext';
 import { FiBriefcase, FiSearch, FiCheck, FiArrowRight, FiHome, FiAlertTriangle, FiX, FiLink, FiHelpCircle, FiLoader } from 'react-icons/fi';
-import ProfessionalGLNVerification from './ProfessionalGLNVerification';
-import FacilityGLNVerification from './FacilityGLNVerification';
-import PhoneVerificationStep from './PhoneVerificationStep';
+import ProfessionalGLNVerification from './professionalGLNVerification';
+import FacilityGLNVerification from './facilityGLNVerification';
+import PhoneVerificationStep from './phoneVerificationStep';
 
 // Styles
 const styles = {

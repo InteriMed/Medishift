@@ -212,7 +212,7 @@
     "yes": "Yes",
     "addPicture": "Add Profile Picture",
     "changePicture": "Change Profile Picture",
-    "deleteAccountDialogTitle": "Delete Account Confirmation",
+    "deleteAccountmodalTitle": "Delete Account Confirmation",
     "deleteWarningPermanent": "This action is permanent and cannot be undone.",
     "deleteConfirmationDetails": "Please read the following information carefully before confirming:",
     "reauthenticateTitle": "Confirm Your Identity",

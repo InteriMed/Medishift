@@ -8,9 +8,9 @@ import { XCircle, Eye, FileText, Image as ImageIcon, RotateCw, User, Building, H
 import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
 import { Document, Page, pdfjs } from 'react-pdf';
-import Button from '../../components/BoxedInputFields/Button';
-import TextareaField from '../../components/BoxedInputFields/TextareaField';
-import Dialog from '../../components/Dialog/Dialog';
+import Button from '../../components/colorPicker/button';
+import TextareaField from '../../components/boxedInputFields/textareaField';
+import modal from '../../components/basemodal/basemodal';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../utils/auditLogger';
 import { useAuth } from '../../contexts/AuthContext';
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
@@ -32,7 +32,7 @@ const UserVerificationQueue = () => {
   const [activeTab, setActiveTab] = useState('professionals'); // 'professionals', 'facilities', 'history'
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [isApproving, setIsApproving] = useState(false);
-  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [showRejectmodal, setShowRejectmodal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
 
@@ -305,7 +305,7 @@ const UserVerificationQueue = () => {
         });
 
         setSelectedUserId(null);
-        setShowRejectDialog(false);
+        setShowRejectmodal(false);
         setRejectReason('');
         await loadPendingUsers();
         await loadHistoryUsers();
@@ -536,7 +536,7 @@ const UserVerificationQueue = () => {
                 </div>
                 {activeTab !== 'history' ? (
                   <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-                    <Button variant="danger" onClick={() => setShowRejectDialog(true)} style={{ padding: '8px 16px' }} disabled={isApproving || isRejecting}>Reject</Button>
+                    <Button variant="danger" onClick={() => setShowRejectmodal(true)} style={{ padding: '8px 16px' }} disabled={isApproving || isRejecting}>Reject</Button>
                     <Button variant="confirmation" onClick={() => handleApprove(selectedUser.id)} style={{ padding: '8px 24px' }} disabled={isApproving || isRejecting}>
                       {isApproving ? 'Approving...' : 'Approve'}
                     </Button>
@@ -653,15 +653,15 @@ const UserVerificationQueue = () => {
         </div>
       )}
 
-      <Dialog
-        isOpen={showRejectDialog}
-        onClose={() => { setShowRejectDialog(false); setRejectReason(''); }}
+      <modal
+        isOpen={showRejectmodal}
+        onClose={() => { setShowRejectmodal(false); setRejectReason(''); }}
         title="Reject User Verification"
         size="medium"
         messageType="warning"
         actions={
           <>
-            <Button onClick={() => { setShowRejectDialog(false); setRejectReason(''); }} variant="secondary" disabled={isRejecting}>
+            <Button onClick={() => { setShowRejectmodal(false); setRejectReason(''); }} variant="secondary" disabled={isRejecting}>
               Cancel
             </Button>
             <Button
@@ -687,7 +687,7 @@ const UserVerificationQueue = () => {
             rows={4}
           />
         </div>
-      </Dialog>
+      </modal>
     </div>
   );
 };

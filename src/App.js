@@ -10,9 +10,9 @@ import { SidebarProvider } from './dashboard/contexts/SidebarContext';
 import NetworkStatus from './components/NetworkStatus';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
-import Notification from './components/Header/Notification/Notification';
-import Dialog from './components/Dialog/Dialog';
-import Tutorial from './dashboard/tutorial/Tutorial';
+import Notification from './components/Header/Notification';
+import modal from './components/modal/modal';
+import Tutorial from './components/Header/TutorialButton';
 import GhostModeBanner from './components/GhostModeBanner/GhostModeBanner';
 import { useTranslation } from 'react-i18next';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -35,7 +35,6 @@ import {
   PUBLIC_ROUTES,
   AUTH_ROUTES,
   PROTECTED_ROUTES,
-  TEST_ROUTES
 } from './config/appRoutes';
 import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE as DEFAULT_LANG } from './config/routeHelpers';
 
@@ -249,14 +248,6 @@ function AppContent() {
               );
             })}
 
-            {process.env.NODE_ENV === 'development' && TEST_ROUTES.map(route => (
-              <Route
-                key={route.id}
-                path={route.path}
-                element={<route.component />}
-              />
-            ))}
-
             <Route path="*" element={<NotFoundPage />} />
           </Route>
           {/* Unified Dashboard Routing with Workspace Guard */}
@@ -291,7 +282,7 @@ function AppContent() {
         </Routes>
       </main>
       <Notification />
-      <Dialog />
+      <modal />
       {/* Only render the Tutorial component once at the root level */}
       <Tutorial />
       {!isDashboardPage && <Footer />}

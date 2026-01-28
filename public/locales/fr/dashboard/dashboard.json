@@ -167,7 +167,7 @@
         "verified_title": "Compte Vérifié avec Succès !",
         "professional_redirect": "Votre profil professionnel est maintenant actif. Redirection pour compléter la configuration de votre profil...",
         "facility_redirect": "Votre profil d'établissement est maintenant actif. Redirection pour compléter la configuration de votre profil...",
-        "dialog_title": "Profil Vérifié",
+        "modal_title": "Profil Vérifié",
         "professional_message": "Votre profil professionnel a été vérifié avec succès. Vous pouvez maintenant accéder à toutes les fonctionnalités de la plateforme.",
         "facility_message": "Votre profil d'établissement a été vérifié avec succès. Vous pouvez maintenant accéder à toutes les fonctionnalités de la plateforme."
       },

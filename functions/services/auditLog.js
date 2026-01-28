@@ -176,7 +176,7 @@ const extractMetadata = (req, context = null) => {
 /**
  * Callable function to manually log audit events from frontend
  */
-const { FUNCTION_CONFIG } = require('../config/keysDatabase');
+const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
 
 exports.logAudit = onCall(FUNCTION_CONFIG, async (request) => {
     // Only allow authenticated users
