@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import boxedSwitchField from '../../../../../components/boxedInputFields/boxedSwitchField';
+import boxedSwitchField from '../../../../../components/boxedInputFields/BoxedSwitchField';
 import ContentSection from '../../../components/ContentSection';
 
 const MarketplacePreferencesTab = ({ data, errors, updateField }) => {

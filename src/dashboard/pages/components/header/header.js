@@ -13,7 +13,7 @@ import useProfileData from '../../../hooks/useProfileData';
 import { useNotification } from '../../../../contexts/notificationContext';
 import { WORKSPACE_TYPES } from '../../../../config/workspaceDefinitions';
 import { LOCALSTORAGE_KEYS } from '../../../../config/keysDatabase';
-import ColorPicker from '../../../../components/colorPicker/colorPicker';
+import ColorPicker from '../../../../components/colorPicker/ColorPicker';
 import { db } from '../../../../services/services/firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 

@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/authContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
+import { useTutorial } from '../../TutorialContext';
 import { useFlow } from '../../services/flows/engine';
 import { OnboardingFlow } from '../../services/flows/catalog/onboarding';
 import { completeOnboarding } from '../../services/flows/catalog/onboarding/completion';

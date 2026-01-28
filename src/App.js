@@ -32,7 +32,7 @@ import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE as DEFAULT_LANG } from 
 
 // Import header component
 const Header = lazy(() =>
-  import('./components/website/header/header').catch(() => 
+  import('./components/website/header/Header').catch(() => 
     Promise.resolve({ default: () => <div className="header-placeholder">Header Placeholder</div> })
   )
 );

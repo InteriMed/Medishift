@@ -12,7 +12,7 @@ const ProfileRouter = lazy(() => import('./pages/profile/profileRouter'));
 const CommunicationsRouter = lazy(() => import('./pages/communication/CommunicationsRouter'));
 const EntityRouter = lazy(() => import('./pages/entity/EntityRouter'));
 const Marketplace = lazy(() => import('./pages/marketplace/marketplace'));
-const SupportPage = lazy(() => import('./pages/support/supportPage'));
+const SupportPage = lazy(() => import('./pages/support/SupportPage'));
 
 const DashboardNotFound = () => {
   const location = useLocation();

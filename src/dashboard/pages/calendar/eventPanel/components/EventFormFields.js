@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import InputField from '../../../../../components/boxedInputFields/personnalizedInputField';
 import InputFieldParagraph from '../../../../../components/boxedInputFields/textareaField';
 import SimpleDropdown from '../../../../../components/boxedInputFields/dropdownField';
-import dateField from '../../../../../components/boxedInputFields/dateField';
-import boxedSwitchField from '../../../../../components/boxedInputFields/boxedSwitchField';
+import dateField from '../../../../../components/boxedInputFields/DateField';
+import boxedSwitchField from '../../../../../components/boxedInputFields/BoxedSwitchField';
 
 const EventFormFields = ({
   formData,

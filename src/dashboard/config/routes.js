@@ -6,9 +6,9 @@ const Profile = lazy(() => import('../pages/profile/profile'));
 const Marketplace = lazy(() => import('../pages/marketplace/marketplace'));
 const PayrollDashboard = lazy(() => import('../admin/payroll/payrollDashboard'));
 const OrganizationDashboard = lazy(() => import('../pages/organization/OrganizationDashboard'));
-const DashboardSupportPage = lazy(() => import('../pages/support/supportPage'));
+const DashboardSupportPage = lazy(() => import('../pages/support/SupportPage'));
 
-const AdminDashboard = lazy(() => import('../admin/pages/dashboard'));
+const AdminDashboard = lazy(() => import('../admin/pages/Dashboard'));
 const ExecutiveDashboard = lazy(() => import('../admin/pages/executiveDashboard'));
 const VerificationQueue = lazy(() => import('../admin/UserVerificationQueue'));
 const ShiftCommandCenter = lazy(() => import('../admin/pages/operations/shiftCommandCenter'));

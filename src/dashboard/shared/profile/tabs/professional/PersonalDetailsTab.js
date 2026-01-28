@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import PersonalizedInputField from '../../../../../components/boxedInputFields/personnalizedInputField';
 import DropdownField from '../../../../../components/boxedInputFields/dropdownField';
-import dateField from '../../../../../components/boxedInputFields/dateField';
+import dateField from '../../../../../components/boxedInputFields/DateField';
 import FormGrid from '../../../../pages/profile/components/formGrid';
 import ContentSection from '../../../components/ContentSection';
 

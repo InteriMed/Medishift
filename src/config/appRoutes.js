@@ -237,7 +237,7 @@ const Profile = lazy(() => import('../dashboard/pages/profile/profile'));
 const Marketplace = lazy(() => import('../dashboard/pages/marketplace/marketplace'));
 const PayrollDashboard = lazy(() => import('../dashboard/admin/payroll/payrollDashboard'));
 const OrganizationDashboard = lazy(() => import('../dashboard/pages/organization/OrganizationDashboard'));
-const DashboardSupportPage = lazy(() => import('../dashboard/pages/support/supportPage'));
+const DashboardSupportPage = lazy(() => import('../dashboard/pages/support/SupportPage'));
 
 export const DASHBOARD_SHARED_ROUTES = [
   {

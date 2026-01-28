@@ -3,7 +3,7 @@ import { FiUploadCloud, FiEye, FiEdit2, FiTrash2, FiFile } from 'react-icons/fi'
 import './styles/boxedInputFields.css';
 import './styles/UploadFile.css';
 
-function UploadFile({
+const UploadFile = ({
   onChange,
   onUploadComplete,
   accept,
@@ -18,7 +18,7 @@ function UploadFile({
   className = "",
   disabled = false,
   value = null
-}) {
+}) => {
   const [dragActive, setDragActive] = useState(false);
   const [fileName, setFileName] = useState('');
   const [fileObj, setFileObj] = useState(null);
@@ -297,6 +297,6 @@ function UploadFile({
       </form>
     </div>
   );
-}
+};
 
 export default UploadFile;

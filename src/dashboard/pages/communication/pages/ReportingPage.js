@@ -9,7 +9,7 @@ import Modal from '../../../../components/modals/modal';
 import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import TextareaField from '../../../../components/boxedInputFields/textareaField';
 import SimpleDropdown from '../../../../components/boxedInputFields/SimpleDropdown';
-import boxedSwitchField from '../../../../components/boxedInputFields/boxedSwitchField';
+import boxedSwitchField from '../../../../components/boxedInputFields/BoxedSwitchField';
 import Button from '../../../../components/boxedInputFields/button';
 import { cn } from '../../../../utils/cn';
 import { FiMessageSquare, FiBarChart2, FiPlus, FiShield } from 'react-icons/fi';

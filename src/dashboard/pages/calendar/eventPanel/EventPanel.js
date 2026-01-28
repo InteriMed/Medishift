@@ -5,7 +5,7 @@ import { FiTrash2, FiAlertCircle } from 'react-icons/fi';
 import Button from '../../../../components/colorPicker/Button';
 import { useDashboard } from '../../../contexts/dashboardContext';
 import { useAuth } from '../../../../contexts/authContext';
-import boxedSwitchField from '../../../../components/boxedInputFields/boxedSwitchField';
+import boxedSwitchField from '../../../../components/boxedInputFields/BoxedSwitchField';
 import modal from '../../../../components/modals/modals';
 import EventFormFields from './components/EventFormFields';
 import RecurringEventSettings from './components/RecurringEventSettings';
