@@ -8,7 +8,7 @@ import {
 } from '../utils/eventDatabase';
 import { modifyEventInDatabase, handleKeyboardDelete } from '../utils/calendarUtils';
 import useCalendarStore from './useCalendarStore';
-import notificationStore from '../../../../utils/stores/notificationStore';
+// import notificationStore from '../../../../utils/stores/notificationStore';
 
 // Custom hook for event interactions (click, double-click, right-click)
 export const useEventInteractions = (userId, accountType) => {

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { Search, Filter, Calendar, User, FileText } from 'lucide-react';
 import ProtectedRoute from '../../components/protectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import { format } from 'date-fns';
 import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import DropdownField from '../../../../components/boxedInputFields/dropdownField';
-import PageHeader from '../../../components/PageHeader/PageHeader';
+import PageHeader from '../../../shared/components/titles/PageHeader';
 import FilterBar from '../../../../components/dashboard/dashboardFilterBar/FilterBar';
 import '../../../../styles/variables.css';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 import { CALENDAR_COLORS } from '../utils/constants';
 
 /**

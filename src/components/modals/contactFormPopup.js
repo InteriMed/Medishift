@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../services/firebase';
-import Button from '../colorPicker/button';
+import { functions } from '../../services/services/firebase';
+import Button from '../boxedInputFields/button';
 import PersonnalizedInputField from '../boxedInputFields/personnalizedInputField';
 import TextareaField from '../boxedInputFields/textareaField';
 import SimpleDropdown from '../boxedInputFields/dropdownField';

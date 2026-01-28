@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../../services/firebase';
+import { functions } from '../../../services/services/firebase';
 import { useAuth } from '../../../contexts/authContext';
 import { useDashboard } from '../../contexts/dashboardContext';
 import { useNotification } from '../../../contexts/notificationContext';
 import { FiDollarSign, FiClock, FiCheckCircle, FiAlertCircle, FiRefreshCw, FiFileText, FiSend, FiUsers, FiBriefcase } from 'react-icons/fi';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../services/utils/formatting';
 import FilterBar from '../../../dashboards/dashboard/dashboardFilterBar/FilterBar';
 
 const statusConfig = {

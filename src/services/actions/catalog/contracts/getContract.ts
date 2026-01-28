@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db } from '../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { FIRESTORE_COLLECTIONS } from '../../../../../config/keysDatabase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 
 const GetContractSchema = z.object({
   contractId: z.string(),

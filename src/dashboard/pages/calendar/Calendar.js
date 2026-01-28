@@ -8,20 +8,21 @@ import CalendarHeader from './components/CalendarHeader';
 import CalendarSidebar from './components/CalendarSidebar';
 import TimeHeaders from './components/TimeHeaders';
 import TimeGrid from './components/TimeGrid';
-import DeleteConfirmationmodal from './components/DeleteConfirmationmodal';
+import DeleteConfirmationmodal from './components/DeleteConfirmationDialog';
 import EventContextMenu from './components/EventContextMenu';
 import EventPanel from './eventPanel/EventPanel';
 import { useDashboard } from '../../../dashboard/contexts/dashboardContext';
+import { useAuth } from '../../../contexts/authContext';
 import { useSidebar } from '../../onboarding/sidebarContext';
 import { useCalendarState } from './hooks/useCalendarState';
 import { useCalendarEvents } from './utils/eventDatabase';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../services/utils/formatting';
 import { FiX, FiPlus } from 'react-icons/fi';
 import { useSearchParams } from 'react-router-dom';
 import ResourceGrid from './components/ResourceGrid';
-import useProfileData from '../../../dashboard/hooks/useProfileData';
+// import useProfileData from '../../../dashboard/hooks/useProfileData';
 import useCalendarStore from './hooks/useCalendarStore';
-import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { WORKSPACE_TYPES } from '../../../config/workspaceDefinitions';
 import { useAction } from '../../../services/actions/hook';
 
 import PropTypes from 'prop-types';
@@ -63,7 +64,11 @@ const Calendar = ({ userData }) => {
   const processedModalRef = useRef(null);
   const [isOverlayExpanded, setIsOverlayExpanded] = useState(false);
 
-  const { profileData, isLoading: isLoadingProfile, updateProfileData } = useProfileData();
+  // const { profileData, isLoading: isLoadingProfile, updateProfileData } = useProfileData();
+  const { userProfile } = useAuth();
+  const profileData = userProfile;
+  const isLoadingProfile = !userProfile;
+  const updateProfileData = () => {};
 
   useEffect(() => {
     const handleResize = () => {

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import BoxedSwitchField from '../../../../../components/boxedInputFields/BoxedSwitchField';
-import ContentSection from '../../contentSection';
+import ContentSection from '../../../components/contentSection';
 
 const MarketplacePreferencesTab = ({ data, errors, updateField }) => {
   const { t } = useTranslation(['dashboard/profile']);

@@ -7,7 +7,7 @@ import {
   saveRecurringEvents
 } from '../utils/eventDatabase';
 import { handleModificationConfirm as handleModificationConfirmUtil } from '../utils/eventModificationUtils';
-import notificationStore from '../../../../utils/stores/notificationStore';
+// import notificationStore from '../../../../utils/stores/notificationStore';
 
 /**
  * Custom hook for event operations

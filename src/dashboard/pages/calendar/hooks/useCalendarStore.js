@@ -3,7 +3,7 @@ import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { enableMapSet } from 'immer';
 import { CALENDAR_COLORS } from '../utils/constants';
-import notificationStore from '../../../../utils/stores/notificationStore';
+// import notificationStore from '../../../../utils/stores/notificationStore';
 
 enableMapSet();
 
@@ -398,7 +398,7 @@ const useCalendarStore = create(
 
             if (result && result.success) {
               console.log('[useCalendarStore] Event saved successfully, updating state');
-              notificationStore.showNotification('Event saved successfully', 'success');
+              // notificationStore.showNotification('Event saved successfully', 'success');
               set(state => {
                 state.isSaving = false;
                 state.validatedEvents.add(result.id || result.recurrenceId || eventWithDates.id);
@@ -423,12 +423,12 @@ const useCalendarStore = create(
               console.log('[useCalendarStore] State updated, save complete');
             } else {
               console.error('[useCalendarStore] Event save failed', result);
-              notificationStore.showNotification('Failed to save event', 'error');
+              // notificationStore.showNotification('Failed to save event', 'error');
               set(state => { state.isSaving = false; });
             }
           } catch (error) {
             console.error("[useCalendarStore] Save error", error);
-            notificationStore.showNotification('Error saving event: ' + error.message, 'error');
+            // notificationStore.showNotification('Error saving event: ' + error.message, 'error');
             set(state => { state.isSaving = false; });
           }
         },
@@ -471,10 +471,10 @@ const useCalendarStore = create(
                 deleteType,
                 recurrenceId: event.recurrenceId
               });
-              notificationStore.showNotification('Event deleted successfully', 'success');
+              // notificationStore.showNotification('Event deleted successfully', 'success');
             } catch (e) {
               console.error("Delete error", e);
-              notificationStore.showNotification('Error deleting event: ' + e.message, 'error');
+              // notificationStore.showNotification('Error deleting event: ' + e.message, 'error');
             }
           }
         },

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { Bell, Send, Users, Calendar, MessageSquare } from 'lucide-react';
 import ProtectedRoute from '../../components/protectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../../components/boxedInputFields/button';
 import '../../../../styles/variables.css';
 
 const NotificationsCenter = () => {

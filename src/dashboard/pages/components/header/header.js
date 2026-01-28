@@ -1,21 +1,21 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import HeaderWorkspaceSelector from './workspaceSelector';
+import HeaderWorkspaceSelector from './workspaceSelector/workspaceSelector';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FiBell, FiUser, FiChevronDown, FiBriefcase, FiSettings, FiLogOut, FiX, FiMenu, FiArrowLeft, FiHelpCircle, FiRefreshCw, FiGlobe, FiCheck, FiSearch, FiMessageSquare } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 import { getPageConfig } from '../../config/pageConfig';
-import { useDashboard } from '../../../../../dashboard/contexts/DashboardContext';
-import { useAuth } from '../../../contexts/authContext';
-import { normalizePathname, getWorkspaceIdForUrl, buildDashboardUrl } from '../../../config/routeUtils';
-import useProfileData from '../../../dashboard/hooks/useProfileData';
-import { useNotification } from '../../../contexts/notificationContext';
+import { useDashboard } from '../../../../dashboard/contexts/dashboardContext';
+import { useAuth } from '../../../../contexts/authContext';
+import { normalizePathname, getWorkspaceIdForUrl, buildDashboardUrl } from '../../../../config/routeUtils';
+// import useProfileData from '../../../dashboard/hooks/useProfileData';
+import { useNotification } from '../../../../contexts/notificationContext';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
-import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
+import { LOCALSTORAGE_KEYS } from '../../../../config/keysDatabase';
 import { useTutorial } from '../../../../dashboard/contexts/tutorialContext';
 import ColorPicker from '../ColorPicker/ColorPicker';
-import { db } from '../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 
 export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen = false, onBackButtonClick, showBackButton = false }) {

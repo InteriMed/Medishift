@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FiSettings, FiGlobe, FiHelpCircle } from 'react-icons/fi';
-import { useAuth } from '../../../../../../contexts/authContext';
-import Button from '../../../../components/colorPicker/button'; // Import the Button component
-import './UserMenu.css'; // Import the CSS file
+import { useAuth } from '../../../../../contexts/authContext';
+import Button from '../../../../../components/boxedInputFields/button'; // Import the Button component
+import './userMenu.css'; // Import the CSS file
 
 const UserMenu = () => {
   const { t, i18n } = useTranslation(['dashboard']);

@@ -16,7 +16,7 @@ import { useCalendarState } from '../calendar/hooks/useCalendarState';
 import useCalendarStore from '../calendar/hooks/useCalendarStore';
 import { useCalendarEvents } from '../calendar/utils/eventDatabase';
 import useProfessionalStats from '../../../dashboard/hooks/useProfessionalStats';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../services/utils/formatting';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import DashboardMainContent from './components/mainContent';
 import CalendarSidebar from '../calendar/components/CalendarSidebar';

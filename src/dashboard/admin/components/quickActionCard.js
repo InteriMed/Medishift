@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../services/actions/catalog/common/utils';
 import { FiArrowRight } from 'react-icons/fi';
 
 const QuickActionCard = ({ 

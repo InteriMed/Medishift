@@ -9,7 +9,7 @@ import { FiKey, FiMail } from 'react-icons/fi';
 import PasswordChangeModal from '../../modals/passwordChangeModal';
 import AccountDeletion from '../../modals/accountDeletion';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { auth } from '../../../../services/firebase';
+import { auth } from '../../../../../services/services/firebase';
 
 const AccountTab = () => {
   const { t } = useTranslation(['dashboard/profile', 'common']);

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db } from '../../../services/firebase';
 import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { appendAudit } from '../../common/utils';
+import { appendAudit } from '../common/utils';
 
 const ManageCapaWorkflowSchema = z.object({
   ticketId: z.string(),

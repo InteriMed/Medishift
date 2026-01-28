@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../../../contexts/authContext'; // Assuming this is still needed for currentUser details not in props
 import { useNotification } from '../../../../../contexts/notificationContext';
-import { auth } from '../../../../services/firebase';
-import googleAuthLogo from '../../../../assets/pages/auth/googleAuthLogo.png';
+import { auth } from '../../../../../services/services/firebase';
+import googleAuthLogo from '../../../../../assets/pages/auth/googleAuthLogo.png';
 import {
   updatePassword,
   deleteUser,
@@ -12,7 +12,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../../../components/boxedInputFields/button';
 import Switch from '../../../../../components/boxedInputFields/switch';
 import InputFieldHideUnhide from '../../../../../components/boxedInputFields/inputFieldHideUnhide';
 import modal from '../../../../../components/modals/modal';

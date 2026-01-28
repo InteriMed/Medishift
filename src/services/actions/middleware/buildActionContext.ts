@@ -13,7 +13,7 @@
  * Reference: IMPLEMENTATION_GUIDE.md - "Trust the Token" Architecture
  */
 
-import { auth } from '../../firebase';
+import { auth } from '../../services/firebase';
 import { ActionContext } from '../types';
 import { createAuditLogger } from '../../services/audit';
 

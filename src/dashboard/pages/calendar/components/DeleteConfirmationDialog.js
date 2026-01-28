@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiTrash2, FiAlertTriangle } from 'react-icons/fi';
-import modal from '../../../../components/basemodal/modal';
+import modal from '../../../../components/modals/modal';
 
 const DeleteConfirmationmodal = ({ event, currentDate, onConfirm, onCancel }) => {
   const { t } = useTranslation(['calendar', 'common']);

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { FiduciaryClient } from '../types';
+import { FiduciaryClient } from '../../types';
 
 const GetClientDashboardSchema = z.object({});
 

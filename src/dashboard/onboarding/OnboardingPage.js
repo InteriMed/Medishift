@@ -1,26 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../contexts/authContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../services/firebase';
-import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
-import { useTutorial } from '../contexts/TutorialContext';
-import { useFlow } from '../../../services/flows/engine';
-import { OnboardingFlow } from '../../../services/flows/catalog/onboarding';
-import { completeOnboarding } from '../../../services/flows/catalog/onboarding/completion';
+import { db } from '../../services/services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
+import { useTutorial } from '../../TutorialContext/TutorialContext';
+import { useFlow } from '../../services/flows/engine';
+import { OnboardingFlow } from '../../services/flows/catalog/onboarding';
+import { completeOnboarding } from '../../services/flows/catalog/onboarding/completion';
 import {
     FiBriefcase, FiCheck, FiArrowRight, FiHome,
     FiLoader, FiArrowLeft, FiShield,
     FiLink, FiHelpCircle
 } from 'react-icons/fi';
-import ContactFormPopup from '../../../components/modals/contactFormPopup';
+import ContactFormPopup from '../../components/modals/contactFormPopup';
 import ProfessionalGLNVerification from './components/professionalGLNVerification';
 import FacilityGLNVerification from './components/facilityGLNVerification';
 import CommercialRegistryVerification from './components/commercialRegistryVerification';
 import PhoneVerificationStep from './components/phoneVerificationStep';
-import Switch from '../../../components/boxedInputFields/switch';
-import Button from '../../components/colorPicker/button';
+import Switch from '../../components/boxedInputFields/switch';
+import Button from '../../components/boxedInputFields/button';
 import LoadingSpinner from '../../components/loadingSpinner/loadingSpinner';
 import BarsLoader from '../../components/LoadingAnimations/BarsLoader';
 import modal from '../../components/basemodal/basemodal';
@@ -262,7 +262,7 @@ const OnboardingPage = () => {
                 
                 if (!profileDoc.exists() && onboardingType === 'facility' && data.role === 'company') {
                     const { httpsCallable } = await import('firebase/functions');
-                    const { functions } = await import('../../services/firebase');
+                    const { functions } = await import('../../services/services/firebase');
                     const updateProfile = httpsCallable(functions, 'updateUserProfile');
                     
                     const facilityData = {
@@ -874,7 +874,7 @@ const OnboardingPage = () => {
                                 setIsProcessing(true);
                                 try {
                                     const { httpsCallable } = await import('firebase/functions');
-                                    const { functions } = await import('../../services/firebase');
+                                    const { functions } = await import('../../services/services/firebase');
                                     const updateProfile = httpsCallable(functions, 'updateUserProfile');
                                     await updateProfile({
                                         role: 'professional',

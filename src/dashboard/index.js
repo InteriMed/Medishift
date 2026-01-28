@@ -5,10 +5,10 @@ import { SidebarProvider } from './onboarding/sidebarContext';
 import { PageMobileProvider } from './contexts/PageMobileContext';
 import { DashboardLayout } from './layouts/dashboardLayout';
 import LoadingSpinner from '../components/loadingSpinner/loadingSpinner';
-import AdminRoute from '../dashboards/admin/AdminRoute';
+import AdminRoute from './admin/AdminRoute';
 import ProtectedRoute from '../dashboards/admin/components/ProtectedRoute';
 import AdminLayout from '../dashboards/admin/components/AdminLayout';
-import { WORKSPACE_TYPES } from '../utils/sessionAuth';
+import { WORKSPACE_TYPES } from '../config/workspaceDefinitions';
 import { WorkspaceDefaultRedirect } from '../contexts/workspaceAwareNavigate';
 import {
   SHARED_ROUTES,

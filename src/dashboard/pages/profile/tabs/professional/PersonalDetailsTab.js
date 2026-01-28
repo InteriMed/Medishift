@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import PersonalizedInputField from '../../../../../components/boxedInputFields/personnalizedInputField';
 import DropdownField from '../../../../../components/boxedInputFields/dropdownField';
 import DateField from '../../../../../components/boxedInputFields/DateField';
-import FormGrid from '../../formGrid';
-import ContentSection from '../../contentSection';
+import FormGrid from '../../components/formGrid';
+import ContentSection from '../../../components/contentSection';
 
 const PersonalDetailsTab = ({ data, errors, updateField }) => {
   const { t } = useTranslation(['dashboard/profile', 'dropdowns']);

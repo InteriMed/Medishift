@@ -1,6 +1,6 @@
 // scripts/seed-data.ts
 // @ts-ignore
-import { db } from '../src/services/firebase';
+import { db } from '../src/services/services/firebase';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
 

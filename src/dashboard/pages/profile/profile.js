@@ -12,11 +12,11 @@ import { useDashboard } from '../../contexts/dashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 
 import LoadingSpinner from '../../../components/loadingSpinner/loadingSpinner';
-import Button from '../../../components/colorPicker/button';
+import Button from '../../../components/boxedInputFields/button';
 import modal from '../../../components/basemodal/basemodal';
 import UploadFile from '../../../components/boxedInputFields/uploadFile';
 import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
-import PageHeader from '../../components/PageHeader/PageHeader';
+import PageHeader from '../../shared/components/titles/PageHeader';
 import { mergeOnboardingDocuments } from '../../utils/mergeOnboardingDocuments';
 import { getAllMockData, getMockDataForTab } from './utils/mockProfileData';
 import PersonalDetails from './professionals/components/PersonalDetails';
@@ -33,8 +33,8 @@ import OrganizationDetails from './organizations/components/OrganizationDetails'
 import OrganizationBillingInformation from './organizations/components/OrganizationBillingInformation';
 import OrganizationVerification from './organizations/components/OrganizationVerification';
 import OrganizationAccount from './organizations/components/account';
-import { cn } from '../../../utils/cn';
-import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { cn } from '../../../services/utils/formatting';
+import { WORKSPACE_TYPES } from '../../../config/workspaceDefinitions';
 import { isAdminSync } from '../../../config/workspaceDefinitions';
 
 import { useProfileConfig } from './hooks/useProfileConfig';

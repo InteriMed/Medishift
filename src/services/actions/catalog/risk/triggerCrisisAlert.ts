@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { sendNotification } from '../../../../services/notifications';
+import { sendNotification } from '../../../services/notifications';
 
 const TriggerCrisisAlertSchema = z.object({
   message: z.string(),

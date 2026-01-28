@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { useFlow } from '../../../../services/flows/engine';
-import { FacilityProfileFlow } from '../../../../services/flows/catalog/profile';
-import PageHeader from '../../components/titles/PageHeader';
-import SubTabs from '../../components/titles/SubTabs';
+import { useAuth } from '../../../contexts/authContext';
+import { useFlow } from '../../../services/flows/engine';
+import { FacilityProfileFlow } from '../../../services/flows/catalog/profile';
+import PageHeader from '../components/titles/pageHeader';
+import SubTabs from '../components/titles/subTabs';
 import ProfileLayout from '../../components/ProfileLayout';
-import { useResponsive } from '../../../contexts/responsiveContext';
-import FacilityCoreDetailsTab from '../tabs/facility/FacilityCoreDetailsTab';
-import FacilityLegalBillingTab from '../tabs/facility/FacilityLegalBillingTab';
-import MarketplacePreferencesTab from '../tabs/facility/MarketplacePreferencesTab';
+import { useResponsive } from '../../contexts/responsiveContext';
+import FacilityCoreDetailsTab from 'tabs/facility/facilityCoreDetailsTab';
+import FacilityLegalBillingTab from 'tabs/facility/facilityLegalBillingTab';
+import MarketplacePreferencesTab from 'tabs/facility/marketplacePreferencesTab';
 
 const FacilityProfile = () => {
   const { t } = useTranslation(['dashboard/profile', 'tabs']);

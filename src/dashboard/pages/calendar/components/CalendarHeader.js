@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { FiSliders, FiCalendar, FiClock, FiPlus, FiMoon, FiChevronRight, FiChevronLeft, FiGrid } from 'react-icons/fi';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 const CalendarHeader = ({
   currentDate,
   view,

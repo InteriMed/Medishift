@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { ComplianceScore } from '../types';
+import { ComplianceScore } from '../../../../flows/types';
 
 const AuditComplianceScoreSchema = z.object({
   region: z.string().optional(),

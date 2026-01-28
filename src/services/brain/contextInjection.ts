@@ -1,5 +1,5 @@
 import { ActionContext, Permission } from '../types/context';
-import { db } from '../../services/firebase';
+import { db } from '../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 /**

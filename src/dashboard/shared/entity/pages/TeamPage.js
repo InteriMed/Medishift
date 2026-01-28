@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/actions/catalog/common/utils';
 
 import EmployeesPage from './EmployeesPage';
 import HiringPage from './HiringPage';

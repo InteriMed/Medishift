@@ -5,9 +5,9 @@ import SimpleDropdown from '../../../../../components/boxedInputFields/dropdownF
 import PersonnalizedInputField from '../../../../../components/boxedInputFields/personnalizedInputField';
 import InputField from '../../../../../components/boxedInputFields/personnalizedInputField';
 import DateField from '../../../../../components/boxedInputFields/DateField';
-import WeekDaySelector from '../../../../../components/colorPicker/WeekDaySelector';
-import BoxedSwitchField from '../../../../../components/boxedInputFields/BoxedSwitchField';
-import { cn } from '../../../../../utils/cn';
+import WeekDaySelector from '../../../../../components/boxedInputFields/weekDaySelector';
+import BoxedSwitchField from '../../../../../components/boxedInputFields/boxedSwitchField';
+import { cn } from '../../../../../services/utils/formatting';
 
 const Label = ({ children }) => (
   <label className="text-sm font-medium text-muted-foreground mb-1.5">{children}</label>

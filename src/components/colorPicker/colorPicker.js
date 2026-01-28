@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCheck } from 'react-icons/fi';
 import { HexColorPicker } from 'react-colorful';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../services/utils/formatting';
 
 const PRESET_COLORS = [
   { id: 'logo-1', name: 'Logo 1', color: '#2563eb', color1: '#2563eb' },

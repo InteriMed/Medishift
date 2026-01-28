@@ -4,16 +4,16 @@ import { get } from 'lodash';
 import { FiUsers, FiPlus, FiTrash2, FiX, FiAlertTriangle, FiUserPlus, FiExternalLink, FiEdit } from 'react-icons/fi';
 import { CALENDAR_COLORS } from '../utils/constants';
 import { useDashboard } from '../../../contexts/dashboardContext';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
 
 import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import Button from '../../../../components/colorPicker/Button';
+import Button from '../../../../components/boxedInputFields/button';
 import DropdownField from '../../../../components/boxedInputFields/dropdownField';
-import ColorPicker from '../../../components/ColorPicker/ColorPicker';
-import modal from '../../../../components/basemodal/modal';
+import ColorPicker from '../../../../components/colorPicker/colorPicker';
+import modal from '../../../../components/modals/modal';
 
 const styles = {
   headerCard: "bg-card rounded-xl border border-border p-6 pb-4 shadow-md w-full max-w-[1000px] mx-auto",

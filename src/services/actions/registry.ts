@@ -129,6 +129,7 @@ import { broadcastSystemAlertAction } from "./catalog/admin/broadcastSystemAlert
 import { impersonateUserAction } from "./catalog/admin/impersonateUser";
 import { manageBillingAction } from "./catalog/admin/manageBilling";
 import { provisionTenantAction } from "./catalog/admin/provisionTenant";
+import { sendEmailAction } from "./catalog/admin/sendEmail";
 import { bulkExportAction } from "./catalog/fiduciary/bulkExport";
 import { flagDiscrepancyAction } from "./catalog/fiduciary/flagDiscrepancy";
 import { getClientDashboardAction } from "./catalog/fiduciary/getClientDashboard";
@@ -141,8 +142,8 @@ import { triggerCrisisAlertAction } from "./catalog/risk/triggerCrisisAlert";
 import { extractTextAction } from "./catalog/ai/extractText";
 import { parseDocumentAction } from "./catalog/ai/parseDocument";
 import { verifyDocumentAction } from "./catalog/ai/verifyDocument";
-import { verifyGlnAction } from "./catalog/verification/verifyGLN";
-import { verifyUidAction } from "./catalog/verification/verifyUID";
+import { verifyGLNAction } from "./catalog/verification/verifyGLN";
+import { verifyUIDAction } from "./catalog/verification/verifyUID";
 import { manageCertificationAction } from "./catalog/team/compliance/manageCertification";
 import { updateContractTermsAction } from "./catalog/team/compliance/updateContractTerms";
 import { verifyIdentityAction } from "./catalog/team/compliance/verifyIdentity";
@@ -283,6 +284,7 @@ export const ActionRegistry = {
   [impersonateUserAction.id]: impersonateUserAction,
   [manageBillingAction.id]: manageBillingAction,
   [provisionTenantAction.id]: provisionTenantAction,
+  [sendEmailAction.id]: sendEmailAction,
   [bulkExportAction.id]: bulkExportAction,
   [flagDiscrepancyAction.id]: flagDiscrepancyAction,
   [getClientDashboardAction.id]: getClientDashboardAction,
@@ -295,8 +297,8 @@ export const ActionRegistry = {
   [extractTextAction.id]: extractTextAction,
   [parseDocumentAction.id]: parseDocumentAction,
   [verifyDocumentAction.id]: verifyDocumentAction,
-  [verifyGlnAction.id]: verifyGlnAction,
-  [verifyUidAction.id]: verifyUidAction,
+  [verifyGLNAction.id]: verifyGLNAction,
+  [verifyUIDAction.id]: verifyUIDAction,
   [manageCertificationAction.id]: manageCertificationAction,
   [updateContractTermsAction.id]: updateContractTermsAction,
   [verifyIdentityAction.id]: verifyIdentityAction,

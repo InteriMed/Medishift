@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, getDocs } from 'firebase/firestore';
-import { EfficiencyMetric } from '../types';
+import { EfficiencyMetric } from '../../../../flows/types';
 
 const CompareEfficiencySchema = z.object({
   metric: z.enum(['REVENUE_PER_HOUR', 'STAFF_UTILIZATION', 'COST_PER_PATIENT']),

@@ -7,7 +7,7 @@
  */
 
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../services/services/firebase';
 import { FIRESTORE_COLLECTIONS, WORKSPACE_TYPES as KEYS_WORKSPACE_TYPES } from './keysDatabase';
 
 export const WORKSPACE_TYPES = KEYS_WORKSPACE_TYPES;

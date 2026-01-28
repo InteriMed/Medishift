@@ -20,7 +20,7 @@ import { useAuth } from '../../../contexts/authContext';
 import { useDashboard } from '../../contexts/dashboardContext';
 import { useNotification } from '../../../contexts/notificationContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
-import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { WORKSPACE_TYPES } from '../../../config/workspaceDefinitions';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import {
     FiUsers,

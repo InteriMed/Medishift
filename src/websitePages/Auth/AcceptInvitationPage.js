@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/authContext';
 import { getInvitationDetails, acceptFacilityInvitation } from '../../services/cloudFunctions';
 import { useNotification } from '../../contexts/notificationContext';
-import Button from '../../components/colorPicker/Button';
+import Button from '../../components/boxedInputFields/button';
 import './auth.css';
 
 function AcceptInvitationPage() {

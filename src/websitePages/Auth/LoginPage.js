@@ -8,11 +8,11 @@ import InputField from '../../components/boxedInputFields/personnalizedInputFiel
 import InputFieldHideUnhide from '../../components/boxedInputFields/inputFieldHideUnhide';
 import PersonnalizedInputField from '../../components/boxedInputFields/personnalizedInputField';
 import TextareaField from '../../components/boxedInputFields/textareaField';
-import Button from '../../components/colorPicker/button';
+import Button from '../../components/boxedInputFields/button';
 import UnderlinedLink from '../../components/boxedInputFields/links/links';
 import { FcGoogle } from 'react-icons/fc';
 import { ShieldAlert, X } from 'lucide-react';
-import { auth, db, loginWithGoogle, functions } from '../../services/firebase';
+import { auth, db, loginWithGoogle, functions } from '../../services/services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useNotification } from '../../contexts/notificationContext';
 import PasswordResetModal from '../../components/modals/passwordResetModal';

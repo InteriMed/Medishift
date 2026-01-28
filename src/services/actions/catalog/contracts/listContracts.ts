@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { FIRESTORE_COLLECTIONS } from '../../../../../config/keysDatabase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 
 const ListContractsSchema = z.object({
   facilityId: z.string().optional(),

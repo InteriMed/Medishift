@@ -28,16 +28,16 @@ import {
   Building,
   Archive
 } from 'lucide-react';
-import { cn } from '../../../utils/cn';
-import { normalizePathname, buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../../config/routeUtils';
-import { useDashboard } from '../../contexts/DashboardContext';
+import { cn } from '../../../../services/utils/formatting';
+import { normalizePathname, buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../../../config/routeUtils';
+import { useDashboard } from '../../../contexts/dashboardContext';
 import {
   isProfessionalSync,
   isAdminSync
-} from '../../../config/workspaceDefinitions';
-import { useAdminPermission } from '../../admin/hooks/useAdminPermission';
+} from '../../../../config/workspaceDefinitions';
+import { useAdminPermission } from '../../../admin/hooks/useAdminPermission';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
-import { RIGHTS as PERMISSIONS } from '../../admin/utils/rbac';
+import { RIGHTS as PERMISSIONS } from '../../../admin/utils/rbac';
 import LockedMenuItem from './LockedMenuItem';
 // Define regular sidebar items structure
 // Define regular sidebar items structure

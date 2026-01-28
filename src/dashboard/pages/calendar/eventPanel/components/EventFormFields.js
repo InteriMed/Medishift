@@ -4,7 +4,7 @@ import InputField from '../../../../../components/boxedInputFields/personnalized
 import InputFieldParagraph from '../../../../../components/boxedInputFields/textareaField';
 import SimpleDropdown from '../../../../../components/boxedInputFields/dropdownField';
 import DateField from '../../../../../components/boxedInputFields/DateField';
-import BoxedSwitchField from '../../../../../components/boxedInputFields/BoxedSwitchField';
+import BoxedSwitchField from '../../../../../components/boxedInputFields/boxedSwitchField';
 
 const EventFormFields = ({
   formData,

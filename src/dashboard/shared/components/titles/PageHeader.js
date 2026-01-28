@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/actions/catalog/common/utils';
 
 const PageHeader = ({ 
   title, 

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import InputField from '../../components/boxedInputFields/personnalizedInputField';
 import UnderlinedLink from '../../components/boxedInputFields/links/links';
-import { firebaseApp } from '../../services/firebase';
+import { firebaseApp } from '../../services/services/firebase';
 import './auth.css';
 
 function ForgotPassword() {

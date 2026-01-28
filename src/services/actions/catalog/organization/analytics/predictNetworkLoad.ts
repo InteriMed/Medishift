@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { NetworkLoadForecast } from '../types';
+import { NetworkLoadForecast } from '../../../../flows/types';
 
 const PredictNetworkLoadSchema = z.object({
   dates: z.array(z.string()),

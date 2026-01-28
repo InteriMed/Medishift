@@ -2,7 +2,7 @@ import { validateMoveAction } from '../src/services/actions/catalog/calendar/eng
 import { resolveGapAction } from '../src/services/actions/catalog/calendar/engine/resolveGap';
 
 // @ts-ignore
-import { db } from '../src/services/firebase'; 
+import { db } from '../src/services/services/firebase'; 
 // 1. IMPORT AUTH
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; 
 

@@ -1,0 +1,95 @@
+{
+  "name": "medishift-deployment-server",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "/",
+  "dependencies": {
+    "@craco/craco": "^7.1.0",
+    "@sendgrid/mail": "^8.1.6",
+    "@sentry/react": "^7.0.0",
+    "@sentry/tracing": "^7.0.0",
+    "@tanstack/react-table": "^8.20.5",
+    "axios": "^1.13.2",
+    "classnames": "^2.5.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "firebase": "^11.1.0",
+    "firebase-functions": "^7.0.3",
+    "i18next": "^25.0.2",
+    "i18next-browser-languagedetector": "^8.1.0",
+    "i18next-http-backend": "^2.6.2",
+    "immer": "^11.1.3",
+    "js-cookie": "^3.0.5",
+    "logrocket": "^5.0.0",
+    "lucide-react": "^0.562.0",
+    "papaparse": "^5.4.1",
+    "qrcode.react": "^4.2.0",
+    "react": "^18.3.1",
+    "react-colorful": "^5.6.1",
+    "react-dom": "^18.3.1",
+    "react-helmet-async": "^2.0.5",
+    "react-i18next": "^15.5.1",
+    "react-icons": "^5.0.0",
+    "react-pdf": "^10.3.0",
+    "react-phone-number-input": "^3.4.14",
+    "react-router-dom": "^6.0.0",
+    "reactflow": "^11.11.0",
+    "recharts": "^2.12.7",
+    "tailwind-merge": "^3.4.0",
+    "ts-node": "^10.9.2",
+    "web-vitals": "^5.1.0",
+    "webpack-dev-server": "^4.15.1",
+    "yet-another-react-lightbox": "^3.15.0",
+    "zod": "^4.3.6",
+    "zod-to-json-schema": "^3.25.1",
+    "zustand": "^5.0.10"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.6",
+    "@babel/eslint-parser": "^7.28.6",
+    "@babel/preset-react": "^7.28.5",
+    "autoprefixer": "^10.4.23",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.57.1",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "postcss": "^8.5.6",
+    "react-scripts": "^5.0.1",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^4.9.5"
+  },
+  "scripts": {
+    "start": "cross-env PORT=4000 craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject",
+    "remove-legacy-translations": "node remove-legacy-from-report.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "overrides": {
+    "typescript": "^4.9.5",
+    "nth-check": "^2.0.1",
+    "resolve-url-loader": {
+      "postcss": "^8.4.31"
+    }
+  }
+}

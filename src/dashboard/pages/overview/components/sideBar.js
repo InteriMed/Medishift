@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { FiCalendar, FiSearch, FiCheckCircle, FiArrowRight } from 'react-icons/fi';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 
 const DashboardSidebar = ({ stats, navigate }) => {
   return (

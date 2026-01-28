@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { storage, functions } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { storage, functions } from '../../../services/firebase';
 import { ref, uploadBytes } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 

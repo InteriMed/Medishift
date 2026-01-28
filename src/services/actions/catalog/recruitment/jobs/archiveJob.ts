@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, updateDoc, getDoc, collection, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
-import { sendPushNotification } from '../../../../notifications';
+import { sendPushNotification } from '../../../../services/notifications';
 
 const ArchiveJobSchema = z.object({
   jobId: z.string(),

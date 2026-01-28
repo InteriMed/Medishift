@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/authContext';
 import { useDashboard } from '../contexts/dashboardContext';
 import { isAdmin } from '../../utils/adminUtils';
-import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
+import { WORKSPACE_TYPES } from '../../config/workspaceDefinitions';
 import { buildDashboardUrl } from '../../config/routeUtils';
 import LoadingSpinner from '../../components/loadingSpinner/loadingSpinner';
 

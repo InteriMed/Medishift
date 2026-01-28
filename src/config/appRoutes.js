@@ -19,8 +19,6 @@ import {
   NotFoundPage,
   OnboardingPage
 } from '../websitePages';
-import VerificationSentPage from '../websitePages/Auth/VerificationSentPage';
-import LoadingPage from '../websitePages/loadingPage';
 
 /**
  * CENTRALIZED APP ROUTE CONFIGURATION
@@ -232,14 +230,13 @@ export const WORKSPACE_TYPES = {
 };
 
 const PersonalDashboard = lazy(() => import('../dashboard/pages/dashboard/personalDashboard'));
-const Calendar = lazy(() => import('../dashboards/shared/calendar/Calendar'));
+const Calendar = lazy(() => import('../dashboard/pages/calendar/Calendar'));
 const Profile = lazy(() => import('../dashboard/pages/profile/profile'));
 const Marketplace = lazy(() => import('../dashboard/pages/marketplace/marketplace'));
-const PayrollDashboard = lazy(() => import('../dashboards/admin/payroll/PayrollDashboard'));
 const OrganizationDashboard = lazy(() => import('../dashboard/pages/organization/OrganizationDashboard'));
-const PricingPage = lazy(() => import('../dashboard/pages/pricing/PricingPage'));
-const DashboardSupportPage = lazy(() => import('../dashboard/pages/support/supportPage'));
-const ServicesPage = lazy(() => import('../dashboard/pages/services/ServicesPage'));
+const PricingPage = lazy(() => import('../websitePages/pricing/PricingPage'));
+const DashboardSupportPage = lazy(() => import('../dashboard/pages/support/SupportPage'));
+const ServicesPage = lazy(() => import('../dashboard/pages/support/tabs/SupportTicketsTab'));
 
 export const DASHBOARD_SHARED_ROUTES = [
   {

@@ -1,13 +1,13 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiCreditCard, FiStar, FiCheck, FiZap, FiKey, FiUserX, FiSettings } from 'react-icons/fi';
-import { auth } from '../../../../services/firebase';
+import { auth } from '../../../../../services/services/firebase';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { useAuth } from '../../../../../contexts/authContext';
 import { useNotification } from '../../../../../contexts/notificationContext';
 
-import AccountDeletion from '../../components/AccountDeletion';
-import Button from '../../../../../components/colorPicker/Button';
+import AccountDeletion from '../../../../shared/profile/modals/AccountDeletion';
+import Button from '../../../../../components/boxedInputFields/button';
 import InputFieldHideUnhide from '../../../../../components/boxedInputFields/inputFieldHideUnhide';
 
 import useAutoSave from '../../../../hooks/useAutoSave';

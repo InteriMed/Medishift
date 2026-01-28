@@ -15,7 +15,7 @@ import {
   getUserProfile,
   updateUserProfile,
   authStateObserver
-} from '../services/firebase';
+} from '../services/services/firebase';
 
 // Import Firebase functions directly from firebase/auth and firebase/firestore
 import { createUserWithEmailAndPassword } from 'firebase/auth';

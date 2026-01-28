@@ -5,10 +5,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Modal from '../../../../components/modals/modal';
 import Button from '../../../../components/boxedInputFields/button';
 import { FiUsers, FiBriefcase } from 'react-icons/fi';
-import { useTutorial } from '../../../contexts/TutorialContext';
+import { useTutorial } from '../../../../TutorialContext/TutorialContext';
 import { useDashboard } from '../../../contexts/dashboardContext';
-import { getProfileTutorialForType, ONBOARDING_TYPES } from '../../../contexts/TutorialContext/config/tutorialSystem';
-import { WORKSPACE_TYPES } from '../../../../utils/sessionAuth';
+import { getProfileTutorialForType, ONBOARDING_TYPES } from '../../../../TutorialContext/config/tutorialSystem';
+import { WORKSPACE_TYPES } from '../../../../config/workspaceDefinitions';
 
 const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelectTeamAccess, glnVerified = false, allowClose = true }) => {
     const { t, i18n } = useTranslation('dashboardProfile');

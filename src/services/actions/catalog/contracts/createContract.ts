@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db, functions } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db, functions } from '../../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 
 const CreateContractSchema = z.object({

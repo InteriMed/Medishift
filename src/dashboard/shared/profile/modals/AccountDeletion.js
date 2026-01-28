@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiTrash2, FiAlertTriangle } from 'react-icons/fi';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { useNotification } from '../../../../contexts/NotificationContext';
+import { useAuth } from '../../../../contexts/authContext';
+import { useNotification } from '../../../../contexts/notificationContext';
 import Button from '../../../../components/boxedInputFields/button';
-import ContentSection from '../components/contentSection';
+import ContentSection from '../../components/ContentSection';
 import DeleteAccountModal from './DeleteAccountModal';
 import ReauthModal from './ReauthModal';
 import {
@@ -14,7 +14,7 @@ import {
   signInWithPopup,
   deleteUser
 } from 'firebase/auth';
-import { auth } from '../../../../services/firebase';
+import { auth } from '../../../../services/services/firebase';
 
 const AccountDeletion = () => {
   const { t } = useTranslation(['dashboard/profile', 'common']);

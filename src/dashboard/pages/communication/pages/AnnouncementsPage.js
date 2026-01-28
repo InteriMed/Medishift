@@ -7,13 +7,13 @@ import { useNotification } from '../../../../contexts/notificationContext';
 import FilterBar from '../../components/filterBar/filterBar';
 import { AnnouncementDetail } from '../components/AnnouncementDetail';
 import Modal from '../../../../components/modals/modal';
-import BoxedSwitchField from '../../../../components/boxedInputFields/BoxedSwitchField';
-import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import BoxedSwitchField from '../../../../components/boxedInputFields/boxedSwitchField';
+import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import TextareaField from '../../../../components/boxedInputFields/textareaField';
-import SimpleDropdown from '../../../../components/boxedInputFields/SimpleDropdown';
+import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
 import DateField from '../../../../components/boxedInputFields/DateField';
 import Button from '../../../../components/boxedInputFields/button';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/actions/catalog/common/utils';
 import { FiMessageSquare, FiBarChart2, FiHeart, FiPlus, FiX, FiBell } from 'react-icons/fi';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
 

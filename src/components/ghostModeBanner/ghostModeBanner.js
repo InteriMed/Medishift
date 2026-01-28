@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../contexts/authContext';
 import { X, AlertTriangle } from 'lucide-react';
-import './GhostModeBanner.css';
+import './ghostModeBanner.css';
 
 const GhostModeBanner = () => {
   const { isImpersonating, impersonatedUser, impersonationSession, stopImpersonation, originalUserProfile } = useAuth();

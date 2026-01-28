@@ -14,7 +14,7 @@ import {
   signInWithPopup,
   deleteUser
 } from 'firebase/auth';
-import { auth } from '../../../../services/firebase';
+import { auth } from '../../../../services/services/firebase';
 
 const AccountDeletion = () => {
   const { t } = useTranslation(['dashboard/profile', 'common']);

@@ -12,9 +12,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../../../../contexts/notificationContext';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 import { useDashboard } from '../../../contexts/dashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
 

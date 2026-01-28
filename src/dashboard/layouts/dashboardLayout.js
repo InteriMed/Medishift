@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
-import { Sidebar } from '../components/RecentActivityCard/sidebar';
-import { Header } from '../components/Header/Header';
-import { cn } from '../../utils/cn';
+import { Sidebar } from '../pages/components/sidebar/sidebar';
+import { Header } from '../../components/website/header/Header';
+import { cn } from '../../services/actions/catalog/common/utils';
 import { useSidebar } from '../onboarding/sidebarContext';
 import { usePageMobile } from '../contexts/PageMobileContext';
 import { getSidebarLayout } from '../utils/sidebarLayout';

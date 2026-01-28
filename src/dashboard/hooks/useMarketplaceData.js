@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useAction } from '../../../services/actions/hook';
+import { useAction } from '../../services/actions/hook';
 
 export const useMarketplaceData = () => {
   const { execute } = useAction();

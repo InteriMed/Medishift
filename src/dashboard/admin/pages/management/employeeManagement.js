@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { db, firebaseApp } from '../../../../services/firebase';
+import { db, firebaseApp } from '../../../../services/services/firebase';
 import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { UserPlus, Shield, Mail, Search, CheckCircle, XCircle, User, FileCheck, FileText } from 'lucide-react';
@@ -8,7 +8,7 @@ import ProtectedRoute from '../../components/protectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import { useAuth } from '../../../../contexts/authContext';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../../components/boxedInputFields/button';
 import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import DropdownField from '../../../../components/boxedInputFields/dropdownField';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';

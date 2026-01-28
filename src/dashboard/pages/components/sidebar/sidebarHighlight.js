@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { useTutorial } from '../../contexts/TutorialContext';
-import { useDashboard } from '../../contexts/DashboardContext';
-import { TUTORIAL_IDS } from '../../contexts/TutorialContext/config/tutorialSystem';
+import { useTutorial } from '../../../../TutorialContext/TutorialContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
+import { TUTORIAL_IDS } from '../../../../TutorialContext/config/tutorialSystem';
 
 const SIDEBAR_ORDER = ['profile', 'messages', 'contracts', 'calendar', 'marketplace', 'payroll', 'organization', 'settings'];
 

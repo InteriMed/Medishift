@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../../contexts/authContext';
 import { useNotification } from '../../../../contexts/notificationContext';
 import useProfileData from '../../../hooks/useProfileData';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../boxedInputFields/button';
 import modal from '../../../../components/modals/modal';
 import InputFieldHideUnhide from '../../../../components/boxedInputFields/inputFieldHideUnhide';
 import Switch from '../../../../components/boxedInputFields/switch';
@@ -16,9 +16,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import { auth } from '../../../../services/firebase';
-import styles from './styles/settingsPage.module.css';
-import unifiedStyles from './styles/profileUnified.module.css';
+import { auth } from '../../../../services/services/firebase';
+import styles from '../../../../dashboard/pages/components/header/settingsMenu/styles/settingsPage.module';
+import unifiedStyles from '../../../../dashboard/pages/components/header/settingsMenu/styles/profileUnified.module';
 
 const SettingsPage = () => {
   const { t } = useTranslation(['dashboardProfile', 'common']);

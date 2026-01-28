@@ -11,7 +11,7 @@ import {
 import { useNotification } from '../../../../contexts/notificationContext';
 import { useAction } from '../../../../services/actions/hook';
 import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/actions/catalog/common/utils';
 import { useDashboard } from '../../../contexts/dashboardContext';
 
 const categoryLabels = {

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
-import { AgentResponse } from '../types';
+import { AgentResponse } from '../../types';
 import { checkRateLimit, incrementUsage } from '../../../brain/tokenBudgeting';
 import { buildSystemPrompt } from '../../../brain/contextInjection';
 

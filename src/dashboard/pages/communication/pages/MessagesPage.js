@@ -9,10 +9,10 @@ import { useNotification } from '../../../../contexts/notificationContext';
 import ConversationsList from '../components/ConversationsList';
 import ConversationView from '../components/ConversationView';
 import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/actions/catalog/common/utils';
 import { FiMessageSquare, FiSearch, FiX, FiSliders, FiPlus } from 'react-icons/fi';
 import Modal from '../../../../components/modals/modal';
-import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import Button from '../../../../components/boxedInputFields/button';
 
 const MessagesPage = ({ hideHeader }) => {

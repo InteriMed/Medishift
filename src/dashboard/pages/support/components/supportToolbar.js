@@ -8,7 +8,7 @@ import {
     FiSliders,
 } from 'react-icons/fi';
 import { useMobileView } from '../../../hooks/useMobileView';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 import '../../../../components/boxedInputFields/styles/boxedInputFields.css';
 
 const categoryLabels = {

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import MiniCalendar from '../miniCalendar/MiniCalendar';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 import { FiClock, FiMapPin, FiChevronRight } from 'react-icons/fi';
 
 const CalendarSidebar = ({

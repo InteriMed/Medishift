@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
 import { fetchCompleteUserData, getAvailableWorkspaces } from '../config/workspaceDefinitions';
-import { auth, functions } from '../services/firebase';
+import { auth, functions } from '../services/services/firebase';
 import { signInWithCustomToken } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 

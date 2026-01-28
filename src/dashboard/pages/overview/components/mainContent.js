@@ -10,7 +10,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 
 const DashboardMainContent = ({ stats, chartData }) => {
   return (

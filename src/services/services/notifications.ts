@@ -280,3 +280,47 @@ export const getUserNotifications = async (
   }
 };
 
+export const sendNotification = async (
+  notification: {
+    title: string;
+    body: string;
+    priority: 'CRITICAL' | 'HIGH' | 'LOW';
+    target?: NotificationTarget;
+    actionUrl?: string;
+    data?: Record<string, any>;
+  }
+): Promise<void> => {
+  try {
+    if (!notification.target) {
+      throw new Error('Target is required for sendNotification');
+    }
+
+    const userIds = await getTargetUsers(notification.target, notification.data?.facilityId);
+    
+    if (userIds.length === 0) {
+      return;
+    }
+
+    if (userIds.length === 1) {
+      await sendNotificationToUser(userIds[0], {
+        title: notification.title,
+        body: notification.body,
+        priority: notification.priority,
+        actionUrl: notification.actionUrl,
+        data: notification.data,
+      });
+    } else {
+      await fanOutNotifications(userIds, {
+        title: notification.title,
+        body: notification.body,
+        priority: notification.priority,
+        actionUrl: notification.actionUrl,
+        data: notification.data,
+      });
+    }
+  } catch (error) {
+    console.error('Failed to send notification:', error);
+    throw error;
+  }
+};
+

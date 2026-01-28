@@ -1,5 +1,5 @@
 import { ActionContext } from '../types/context';
-import { db } from '../../services/firebase';
+import { db } from '../services/firebase';
 import { doc, getDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 
 /**

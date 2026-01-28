@@ -1,21 +1,21 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useAuth } from '../../../contexts/authContext';
 import { healthRegistryAPI, gesRegAPI } from '../../../services/cloudFunctions';
 import { FiLoader, FiAlertCircle, FiInfo, FiCheck } from 'react-icons/fi';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../services/firebase';
+import { db } from '../../../services/services/firebase';
 import { DOCUMENT_TYPES } from '../constants/documentTypes';
 import { processAndSaveProfessional } from '../services/documentProcessingService';
 import { normalizeGLNData } from '../utils/glnVerificationUtils';
 import { saveGLNVerificationAudit } from '../services/auditService';
-import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
-import UploadFile from '../../../../components/boxedInputFields/uploadFile';
-import modal from '../../../components/basemodal/modal';
-import Button from '../../../components/colorPicker/Button';
+import PersonnalizedInputField from '../../../components/boxedInputFields/personnalizedInputField';
+import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
+import UploadFile from '../../../components/boxedInputFields/uploadFile';
+import modal from '../../../components/modals/modal';
+import Button from '../../../components/boxedInputFields/button';
 import { saveOnboardingData, loadOnboardingData, clearOnboardingData } from '../utils/localStorageUtils';
-import { FIRESTORE_COLLECTIONS, SESSIONSTORAGE_KEYS } from '../../../../config/keysDatabase';
+import { FIRESTORE_COLLECTIONS, SESSIONSTORAGE_KEYS } from '../../../config/keysDatabase';
 
 
 const ProfessionalGLNVerification = React.memo(React.forwardRef(function ProfessionalGLNVerification(props, ref) {
@@ -244,7 +244,7 @@ const ProfessionalGLNVerification = React.memo(React.forwardRef(function Profess
             await updateUserProfile(profileData);
 
             const { doc, updateDoc } = await import('firebase/firestore');
-            const { db } = await import('../../../services/firebase');
+            const { db } = await import('../../../services/services/firebase');
             await updateDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid), {
                 GLN_certified: false,
                 bypassedGLN: true,

@@ -2,9 +2,9 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import useHiringData from '../../../hooks/useHiringData';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import FilterBar from '../../components/filterBar/filterBar';
 import { FiBriefcase, FiClock, FiUser } from 'react-icons/fi';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 import PropTypes from 'prop-types';
 
 const Hiring = ({ hideHeader = false, hideStats = false }) => {

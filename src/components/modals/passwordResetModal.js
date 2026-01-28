@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import modal from '../basemodal/modal';
+import modal from './modal';
 import InputField from '../boxedInputFields/personnalizedInputField';
 import { FiLock, FiMail, FiPhone, FiShield, FiArrowLeft } from 'react-icons/fi';
-import SpinnerLoader from '../LoadingAnimations/SpinnerLoader';
+import SpinnerLoader from '../loadingSpinner/loadingSpinner';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth, db } from '../../services/firebase';
+import { auth, db } from '../../services/services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
 import { LOCALSTORAGE_KEYS } from '../../config/keysDatabase';
@@ -71,7 +71,7 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
 
     try {
       const { httpsCallable } = await import('firebase/functions');
-      const { functions, auth: firebaseAuth } = await import('../../services/firebase');
+      const { functions, auth: firebaseAuth } = await import('../../services/services/firebase');
       
       const currentUser = firebaseAuth.currentUser;
       const emailToUse = resetEmail || userEmail;
@@ -124,7 +124,7 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
 
     try {
       const { httpsCallable } = await import('firebase/functions');
-      const { functions, auth: firebaseAuth } = await import('../../services/firebase');
+      const { functions, auth: firebaseAuth } = await import('../../services/services/firebase');
       
       const currentUser = firebaseAuth.currentUser;
       const emailToUse = resetEmail || userEmail;

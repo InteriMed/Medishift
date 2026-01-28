@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { CrossChargeEntry } from '../types';
+import { CrossChargeEntry } from '../../../../flows/types';
 
 const GenerateCrossChargeReportSchema = z.object({
   month: z.number().min(1).max(12),

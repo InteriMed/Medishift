@@ -8,7 +8,7 @@ import FilterBar from '../../components/filterBar/filterBar';
 import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
 import CreateTicketModal from '../components/createTicketModal';
 import TicketDetail from '../components/ticketDetail';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/actions/catalog/common/utils';
 
 const CATEGORY_OPTIONS = [
   { value: 'all', label: 'All Categories' },

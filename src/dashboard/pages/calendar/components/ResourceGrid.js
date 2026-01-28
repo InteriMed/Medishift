@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { getWeekDates, isSameDay } from '../utils/dateHelpers';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 import { useTranslation } from 'react-i18next';
 import { FiSettings } from 'react-icons/fi';
 import { get } from 'lodash';

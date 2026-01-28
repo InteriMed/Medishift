@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs, writeBatch, serverTimestamp } from 'firebase/firestore';
-import { sendNotificationToUser } from '../../../../services/notifications';
+import { sendNotificationToUser } from '../../../services/notifications';
 
 const PublishPayslipsSchema = z.object({
   month: z.number().min(1).max(12),

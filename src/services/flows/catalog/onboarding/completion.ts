@@ -1,5 +1,5 @@
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 
 export interface OnboardingCompletionData {
@@ -51,7 +51,7 @@ export const completeOnboarding = async (
 
         if (!profileDoc.exists()) {
           const { httpsCallable } = await import('firebase/functions');
-          const { functions } = await import('../../../../services/firebase');
+          const { functions } = await import('../../../services/firebase');
           const updateProfile = httpsCallable(functions, 'updateUserProfile');
 
           await updateProfile({
@@ -81,7 +81,7 @@ export const completeOnboarding = async (
 
         if (!profileDoc.exists()) {
           const { httpsCallable } = await import('firebase/functions');
-          const { functions } = await import('../../../../services/firebase');
+          const { functions } = await import('../../../services/firebase');
           const updateProfile = httpsCallable(functions, 'updateUserProfile');
 
           await updateProfile({
@@ -115,7 +115,7 @@ export const completeOnboarding = async (
 
       if (!profileDoc.exists()) {
         const { httpsCallable } = await import('firebase/functions');
-        const { functions } = await import('../../../../services/firebase');
+        const { functions } = await import('../../../services/firebase');
         const updateProfile = httpsCallable(functions, 'updateUserProfile');
 
         const facilityData = {

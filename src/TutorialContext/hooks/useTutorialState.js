@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { useDashboard } from '../../DashboardContext';
-import { useSidebar } from '../../SidebarContext';
+import { useAuth } from '../../contexts/authContext';
+import { useDashboard } from '../../dashboard/contexts/dashboardContext';
+import { useSidebar } from '../../dashboard/onboarding/sidebarContext';
 import { TUTORIAL_IDS } from '../config/tutorialSystem';
 import { DEFAULT_SIDEBAR_WIDTH } from '../constants';
 import tutorialCache from '../utils/tutorialCache';

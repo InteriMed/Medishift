@@ -1,33 +1,25 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-import { NetworkProvider } from './contexts/NetworkContext';
-import { TutorialProvider } from './dashboard/contexts/TutorialContext';
-import { DashboardProvider } from './dashboard/contexts/DashboardContext';
+import { AuthProvider, useAuth } from './contexts/authContext';
+import { NotificationProvider } from './contexts/notificationContext';
+import { NetworkProvider } from './contexts/networkContext';
+import { DashboardProvider } from './dashboard/contexts/dashboardContext';
 import { SidebarProvider } from './dashboard/onboarding/sidebarContext';
-import NetworkStatus from './components/NetworkStatus';
-import ErrorBoundary from './components/ErrorBoundary';
-import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
-import Notification from './components/Header/Notification';
-import modal from './components/modal/modal';
-import Tutorial from './components/Header/TutorialButton';
-import GhostModeBanner from './components/GhostModeBanner/GhostModeBanner';
+import LoadingSpinner from './components/loadingSpinner/loadingSpinner';
+import GhostModeBanner from './components/ghostModeBanner/ghostModeBanner';
 import { useTranslation } from 'react-i18next';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import ErrorBoundary from './components/modals/errorBoundary';
+import NetworkStatus from './components/modals/networkStatus';
+import { ProtectedRoute } from './components/modals/protectedRoute';
+import Layout from './components/website/layout';
+import CentralizedRoute from './contexts/centralizedRoute';
 
-import Layout from './components/Layout/Layout';
 import './i18n';
-import './styles/app.css';
-import './styles/notifications.css';
 // import './styles/global.css';
 import './styles/variables.css';
 import DashboardRoot from './dashboard/dashboardRoot';
-import CentralizedRoute from './dashboard/components/CentralizedRoute';
-import { testFirestoreConnection } from './utils/testFirestoreConnection';
-import { resetFirestoreCache } from './utils/resetFirestoreCache';
-import Footer from './components/Footer/Footer';
+import Footer from './components/website/footer/footer';
 import { NotFoundPage } from './websitePages';
 import { getLocalizedRoute } from './i18n';
 
@@ -40,7 +32,7 @@ import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE as DEFAULT_LANG } from 
 
 // Import header component
 const Header = lazy(() =>
-  import('./components/Header/Header').catch(() => ({
+  import('./components/website/header/header').catch(() => ({
     default: () => <div className="header-placeholder">Header Placeholder</div>
   }))
 );
@@ -75,12 +67,6 @@ const AppContainer = () => {
     </ErrorBoundary>
   );
 };
-
-// Make test and utility functions available globally in development
-if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-  window.testFirestore = testFirestoreConnection;
-  window.resetFirestoreCache = resetFirestoreCache;
-}
 
 // App content with language handling
 // Helper component for dashboard routing and redirects
@@ -281,10 +267,6 @@ function AppContent() {
           <Route path="*" element={<Navigate to={buildLocalizedPath(ROUTE_IDS.NOT_FOUND, DEFAULT_LANGUAGE)} replace />} />
         </Routes>
       </main>
-      <Notification />
-      <modal />
-      {/* Only render the Tutorial component once at the root level */}
-      <Tutorial />
       {!isDashboardPage && <Footer />}
     </div>
   );

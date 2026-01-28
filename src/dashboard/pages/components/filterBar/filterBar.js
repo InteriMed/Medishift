@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiGrid, FiList, FiSearch, FiSliders, FiArrowDown, FiCheck, FiRefreshCw, FiPlus } from 'react-icons/fi';
-import SimpleDropdown from '../../../components/boxedInputFields/Dropdown-Field';
-import DateField from '../../../components/boxedInputFields/DateField';
-import { cn } from '../../../utils/cn';
+import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
+import DateField from '../../../../components/boxedInputFields/DateField';
+import { cn } from '../../../../services/utils/formatting';
 import styles from './filterBar.module.css';
 
 const FilterBar = ({

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { TrendAnalysis } from '../types';
+import { TrendAnalysis } from '../../types';
 
 const AnalyzeTrendsSchema = z.object({
   dateRange: z.object({

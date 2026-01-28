@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../../flows/types";
+import { db } from '../../../services/firebase';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { appendAudit } from '../../common/utils';
+import { appendAudit } from '../common/utils';
 
 const SignDigitalSchema = z.object({
   contractId: z.string(),
@@ -31,7 +31,7 @@ export const signDigitalAction: ActionDefinition<typeof SignDigitalSchema, void>
   handler: async (input, ctx) => {
     const { contractId, signatureData, confirmPassword } = input;
 
-    const { auth } = await import('../../../../services/firebase');
+    const { auth } = await import('../../../services/firebase');
     const { reauthenticateWithCredential, EmailAuthProvider } = await import('firebase/auth');
     
     const user = auth.currentUser;

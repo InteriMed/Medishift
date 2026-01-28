@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, orderBy, getDocs, where, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { Search, MessageSquare, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import '../../../../styles/variables.css';

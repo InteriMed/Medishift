@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../services/actions/catalog/common/utils';
 
 const AdminPageHeader = ({ 
   title, 

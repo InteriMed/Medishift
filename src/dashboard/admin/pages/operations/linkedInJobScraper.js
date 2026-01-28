@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { firebaseApp } from '../../../../services/firebase';
+import { firebaseApp } from '../../../../services/services/firebase';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { Search, Briefcase, MapPin, Calendar, ExternalLink, Play, Loader, CheckCircle, AlertCircle, Clock, Settings, Plus, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import ProtectedRoute from '../../components/protectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
 import { useAuth } from '../../../../contexts/authContext';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
-import Button from '../../../../components/colorPicker/Button';
+import Button from '../../../../components/boxedInputFields/button';
 import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import DropdownField from '../../../../components/boxedInputFields/dropdownField';
 import '../../../../styles/variables.css';

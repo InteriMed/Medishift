@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useAuth } from '../../../contexts/authContext';
 import { commercialRegistrySearchAPI } from '../../../services/cloudFunctions';
 import { FiLoader, FiAlertCircle, FiFileText, FiInfo, FiCheck, FiExternalLink } from 'react-icons/fi';
 import { DOCUMENT_TYPES } from '../constants/documentTypes';
@@ -8,15 +8,15 @@ import { saveOrganizationProfile } from '../services/profileSavingService';
 import { processDocumentWithAI } from '../../../services/documentProcessingService';
 import { uploadDocument } from '../services/documentUploadService';
 import { getMimeType } from '../utils/glnVerificationUtils';
-import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
-import UploadFile from '../../../../components/boxedInputFields/uploadFile';
-import modal from '../../../components/basemodal/modal';
-import Button from '../../../components/colorPicker/Button';
+import PersonnalizedInputField from '../../../components/boxedInputFields/personnalizedInputField';
+import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
+import UploadFile from '../../../components/boxedInputFields/uploadFile';
+import modal from '../../../components/modals/modal';
+import Button from '../../../components/boxedInputFields/button';
 import { saveOnboardingData, loadOnboardingData, clearOnboardingData } from '../utils/localStorageUtils';
-import { SESSIONSTORAGE_KEYS, FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import { SESSIONSTORAGE_KEYS, FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../services/firebase';
+import { db } from '../../../services/services/firebase';
 
 const normalizeCommercialRegistryData = (source) => {
   if (!source) return null;

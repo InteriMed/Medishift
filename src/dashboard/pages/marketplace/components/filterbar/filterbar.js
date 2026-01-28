@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DropdownFieldAddList from '../../../../../components/boxedInputFields/dropdownFieldAddList';
 import DateField from '../../../../../components/boxedInputFields/DateField';
-import Button from '../../../../../components/colorPicker/button';
+import Button from '../../../../../components/boxedInputFields/button';
 import './filterbar.css';
 import { useTranslation } from 'react-i18next';
 

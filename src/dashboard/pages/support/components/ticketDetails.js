@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiArrowLeft, FiSend } from 'react-icons/fi';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useAuth } from '../../../../contexts/authContext';
 import { useNotification } from '../../../../contexts/notificationContext';
 import { useAction } from '../../../../services/actions/hook';
-import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
-import Button from '../../../../components/boxedInputFields/Button';
-import TextareaField from '../../../../components/boxedInputFields/TextareaField';
-import { cn } from '../../../../utils/cn';
+import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
+import Button from '../../../../components/boxedInputFields/button';
+import TextareaField from '../../../../components/boxedInputFields/textareaField';
+import { cn } from '../../../../services/utils/formatting';
 
 const TicketDetail = ({ ticketId, onBack }) => {
   const { t } = useTranslation(['support', 'messages']);

@@ -10,4 +10,4 @@ export { default as PrivacyPolicyPage } from './PrivacyPolicyPage';
 export { default as TermsOfServicePage } from './TermsOfServicePage';
 export { default as SitemapPage } from './SitemapPage';
 export { default as NotFoundPage } from './NotFound';
-export { default as OnboardingPage } from '../dashboard/shared/onboarding/OnboardingPage';
+export { default as OnboardingPage } from '../dashboard/onboarding/OnboardingPage';

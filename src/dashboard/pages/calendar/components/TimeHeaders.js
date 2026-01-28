@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getMultipleWeeks, getMultipleDays, getShortDays, isSameDay } from '../utils/dateHelpers';
-import { cn } from '../../../../utils/cn';
+import { cn } from '../../../../services/utils/formatting';
 
 const TimeHeaders = ({ currentDate, referenceDate: propReferenceDate, view, handleDayClick, scrollContainerRef, numWeeks = 7, numDays = 30, setView, onEventDropOnDay, nightView = false, isTeamMode = false, isBottom = false }) => {
   const { i18n } = useTranslation();

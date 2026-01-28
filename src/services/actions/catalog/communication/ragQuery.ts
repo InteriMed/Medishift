@@ -43,7 +43,7 @@ export const ragQueryAction: ActionDefinition<typeof RagQuerySchema, RagResult> 
   handler: async (input, ctx) => {
     const { text, request, context } = input;
 
-    const { functions } = await import('../../../../services/firebase');
+    const { functions } = await import('../../../services/firebase');
     const { httpsCallable } = await import('firebase/functions');
     
     const ragQuery = httpsCallable(functions, 'performRagQuery');

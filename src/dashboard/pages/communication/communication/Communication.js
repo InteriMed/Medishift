@@ -17,8 +17,8 @@ import { TopicDetail } from './TopicDetail';
 import ThreadsList from '../components/ThreadsList';
 import ConversationView from '../components/ConversationView';
 import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
-import EmptyState from '../../../components/EmptyState/EmptyState';
-import { cn } from '../../../../utils/cn';
+import EmptyState from '../../../../components/emptyState/emptyState';
+import { cn } from '../../../../services/actions/catalog/common/utils';
 import { useMobileView } from '../../../hooks/useMobileView';
 
 const ANNOUNCEMENT_CATEGORIES = [

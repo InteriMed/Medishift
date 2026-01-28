@@ -21,6 +21,15 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { AuditEntry } from '../../types'; // Ensure this type exists
 
+// --- 0. CLASSNAME UTILITY ---
+/**
+ * Conditionally join classNames together
+ * Similar to classnames or clsx libraries
+ */
+export function cn(...classes: (string | undefined | null | false)[]): string {
+  return classes.filter(Boolean).join(' ');
+}
+
 // --- 1. AUDIT HELPER (Internal) ---
 /**
  * Appends an audit entry to the document's 'auditHistory' array.

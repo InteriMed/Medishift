@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import '../styles/auth.css';
+import './Auth/auth';
 import './styles/NotFound.css';
 
 const NotFound = () => {

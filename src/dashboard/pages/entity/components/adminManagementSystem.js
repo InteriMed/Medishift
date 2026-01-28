@@ -24,7 +24,7 @@ import {
 import { cn } from '../../../../utils/cn';
 import EmployeePopup from './EmployeePopup';
 import Dialog from '../../../../components/Dialog/Dialog';
-import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import InputFieldParagraph from '../../../../components/boxedInputFields/textareaField';
 
 const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {

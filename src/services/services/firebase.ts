@@ -110,6 +110,51 @@ export const getFirebaseAuth = (): Auth => {
   return auth;
 };
 
+// AUTH HELPER FUNCTIONS
+import { 
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  User
+} from 'firebase/auth';
+import { doc as firestoreDoc, getDoc as firestoreGetDoc } from 'firebase/firestore';
+
+export const authStateObserver = (callback: (user: User | null) => void) => {
+  return onAuthStateChanged(auth, callback);
+};
+
+export const loginUser = async (email: string, password: string) => {
+  return signInWithEmailAndPassword(auth, email, password);
+};
+
+export const logoutUser = async () => {
+  return signOut(auth);
+};
+
+export const resetPassword = async (email: string) => {
+  return sendPasswordResetEmail(auth, email);
+};
+
+export const getUserProfile = async (userId: string) => {
+  const userDoc = firestoreDoc(db, 'users', userId);
+  const snapshot = await firestoreGetDoc(userDoc);
+  return snapshot.exists() ? snapshot.data() : null;
+};
+
+export const updateUserProfile = async (userId: string, data: any) => {
+  const { updateDoc } = await import('firebase/firestore');
+  const userDoc = firestoreDoc(db, 'users', userId);
+  return updateDoc(userDoc, data);
+};
+
+export const loginWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth, provider);
+};
+
 export { 
   firebaseApp, 
   auth, 
