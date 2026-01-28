@@ -7,11 +7,11 @@ import { useNotification } from '../../../../contexts/notificationContext';
 import FilterBar from '../../components/filterBar/filterBar';
 import { AnnouncementDetail } from '../components/AnnouncementDetail';
 import Modal from '../../../../components/modals/modal';
-import BoxedSwitchField from '../../../../components/boxedInputFields/BoxedSwitchField';
-import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import boxedSwitchField from '../../../../components/boxedInputFields/boxedSwitchField';
+import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import TextareaField from '../../../../components/boxedInputFields/textareaField';
 import SimpleDropdown from '../../../../components/boxedInputFields/SimpleDropdown';
-import DateField from '../../../../components/boxedInputFields/DateField';
+import dateField from '../../../../components/boxedInputFields/dateField';
 import Button from '../../../../components/boxedInputFields/button';
 import { cn } from '../../../../utils/cn';
 import { FiMessageSquare, FiBarChart2, FiHeart, FiPlus, FiX, FiBell } from 'react-icons/fi';
@@ -459,7 +459,7 @@ const AnnouncementsPage = ({ hideHeader }) => {
 
             <div className="border-t border-border my-4" />
 
-            <BoxedSwitchField
+            <boxedSwitchField
               label={t('messages:includePoll', 'Include a poll')}
               checked={createFormData.hasPoll}
               onChange={(checked) => setCreateFormData({ ...createFormData, hasPoll: checked })}

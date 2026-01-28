@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { NavLink, Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getLocalizedRoute } from '../../i18n';
+import { getLocalizedRoute } from '../../../i18n';
 import { FaBars, FaTimes } from 'react-icons/fa';
 
 

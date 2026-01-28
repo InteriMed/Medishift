@@ -23,10 +23,10 @@ export function useAction() {
       throw new Error(`Action ${actionId} not found`);
     }
 
-    if (!auth.claims.userPermissions?.includes(action.requiredPermission)) {
+    if (!auth.claims.userPermissions?.includes(action.requiredPermission as any)) {
       console.error(`Access Denied: Missing ${action.requiredPermission}`);
       const auditLogger = createAuditLogger(auth.uid, auth.claims.facilityId);
-      await auditLogger(actionId, 'ERROR', { reason: 'Access Denied', user: auth.uid });
+      await auditLogger(actionId as string, 'ERROR', { reason: 'Access Denied', user: auth.uid });
       throw new Error("Unauthorized: Missing required permission");
     }
 
@@ -38,17 +38,17 @@ export function useAction() {
     const context: ActionContext = {
       userId: auth.uid,
       facilityId: auth.claims.facilityId,
-      userPermissions: auth.claims.userPermissions || [],
+      userPermissions: (auth.claims.userPermissions || []) as ActionContext['userPermissions'],
       auditLogger,
       ipAddress: undefined,
     };
 
     try {
-      await auditLogger(actionId, 'START', { input });
+      await auditLogger(actionId as string, 'START', { input });
 
       const result = await action.handler(input as any, context);
 
-      await auditLogger(actionId, 'SUCCESS', { resultId: (result as any)?.id });
+      await auditLogger(actionId as string, 'SUCCESS', { resultId: (result as any)?.id });
       
       return result as TOutput;
 
@@ -56,7 +56,7 @@ export function useAction() {
       const error = err as Error;
       setError(error);
       
-      await auditLogger(actionId, 'ERROR', { error: error.message });
+      await auditLogger(actionId as string, 'ERROR', { error: error.message });
       throw error;
     } finally {
       setLoading(false);
@@ -77,22 +77,22 @@ export async function executeAction<TInput, TOutput>(
   }
 
   if (!context.userPermissions.includes(action.requiredPermission)) {
-    await context.auditLogger(actionId, 'ERROR', { reason: 'Access Denied' });
+    await context.auditLogger(actionId as string, 'ERROR', { reason: 'Access Denied' });
     throw new Error("Unauthorized: Missing required permission");
   }
 
   try {
-    await context.auditLogger(actionId, 'START', { input });
+    await context.auditLogger(actionId as string, 'START', { input });
 
     const result = await action.handler(input as any, context);
 
-    await context.auditLogger(actionId, 'SUCCESS', { resultId: (result as any)?.id });
+    await context.auditLogger(actionId as string, 'SUCCESS', { resultId: (result as any)?.id });
     
     return result as TOutput;
 
   } catch (err) {
     const error = err as Error;
-    await context.auditLogger(actionId, 'ERROR', { error: error.message });
+    await context.auditLogger(actionId as string, 'ERROR', { error: error.message });
     throw error;
   }
 }

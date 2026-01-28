@@ -18,7 +18,7 @@ export const FacilityCoreDetailsSchema = z.object({
       "Invalid phone number"
     ),
     mainEmail: z.string().email("Invalid email address"),
-    website: z.string().url().optional().or(z.literal("")),
+    website: z.union([z.string().url(), z.literal("")]).optional(),
     glnNumber: z.string().optional()
   }).partial(),
   legalRepresentative: z.object({

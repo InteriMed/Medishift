@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react'; // Removed useState, useEffect, useRef for main data
 import { useTranslation } from 'react-i18next';
-import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import DropdownField from '../../../../components/boxedInputFields/dropdownField';
-import Slider from '../../../../components/boxedInputFields/slider'; // Assuming you have this component
-import CheckboxField from '../../../../components/colorPicker/checkboxField';
-import Button from '../../../../components/colorPicker/button';
+import InputField from '../../../../../components/boxedInputFields/personnalizedInputField';
+import DropdownField from '../../../../../components/boxedInputFields/dropdownField';
+import Slider from '../../../../../components/boxedInputFields/slider'; // Assuming you have this component
+import CheckboxField from '../../../../../components/boxedInputFields/checkboxField';
+import Button from '../../../../../components/boxedInputFields/button';
 import styles from './styles/profileUnified.module.css';
 
 // Helper to generate options

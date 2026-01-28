@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db, functions } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db, functions } from '../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 
 const GenerateDraftSchema = z.object({
   userId: z.string(),
   templateId: z.string(),
-  variables: z.record(z.any()),
+  variables: z.record(z.string(), z.any()),
 });
 
 interface GenerateDraftResult {
@@ -34,7 +34,7 @@ export const generateDraftAction: ActionDefinition<typeof GenerateDraftSchema, G
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof GenerateDraftSchema>, ctx: ActionContext) => {
     const { userId, templateId, variables } = input;
 
     const templateRef = doc(db, 'contract_templates', templateId);

@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
-import { sendNotification } from '../../../../services/notifications';
+import { broadcastNotification } from '../../../../services/notifications';
+import { NotificationPayload } from '../../../../types/context';
 
 const BroadcastPolicySchema = z.object({
   policyDocId: z.string(),
@@ -30,10 +31,10 @@ export const broadcastPolicyAction: ActionDefinition<typeof BroadcastPolicySchem
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof BroadcastPolicySchema>, ctx: ActionContext) => {
     const { policyDocId, title, targetFacilities, requiresAcknowledgment } = input;
 
     const usersRef = collection(db, 'users');
@@ -56,7 +57,7 @@ export const broadcastPolicyAction: ActionDefinition<typeof BroadcastPolicySchem
     });
 
     for (const userDoc of usersSnapshot.docs) {
-      await sendNotification({
+      const notificationPayload: NotificationPayload = {
         title: 'New Policy Broadcast',
         body: title,
         priority: 'HIGH',
@@ -65,7 +66,8 @@ export const broadcastPolicyAction: ActionDefinition<typeof BroadcastPolicySchem
           userIds: [userDoc.id],
         },
         actionUrl: `/policies/${policyDoc.id}`,
-      });
+      };
+      await broadcastNotification(notificationPayload, ctx.userId, ctx.facilityId);
     }
 
     await ctx.auditLogger('org.broadcast_policy', 'SUCCESS', {

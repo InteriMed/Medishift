@@ -1,10 +1,12 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
 import { db } from '../../../services/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
+const collectionTypeEnum = ['messages', 'tickets', 'announcements', 'policies', 'hr_reports'] as const;
+
 const CompileUrlMapSchema = z.object({
-  collectionType: z.enum(['messages', 'tickets', 'announcements', 'policies', 'hr_reports']),
+  collectionType: z.enum(collectionTypeEnum),
   threadId: z.string(),
 });
 
@@ -42,7 +44,7 @@ export const compileUrlMapAction: ActionDefinition<typeof CompileUrlMapSchema, U
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CompileUrlMapSchema>, ctx: ActionContext): Promise<UrlMapResult> => {
     const { collectionType, threadId } = input;
 
     const urlRegex = /(https?:\/\/[^\s]+)/g;

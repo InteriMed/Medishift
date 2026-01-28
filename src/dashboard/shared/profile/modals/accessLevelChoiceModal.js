@@ -5,38 +5,21 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Modal from '../../../../components/modals/modal';
 import Button from '../../../../components/boxedInputFields/button';
 import { FiUsers, FiBriefcase } from 'react-icons/fi';
-import { useTutorial } from '../../../contexts/TutorialContext';
 import { useDashboard } from '../../../contexts/DashboardContext';
-import { getProfileTutorialForType, ONBOARDING_TYPES } from '../../../contexts/TutorialContext/config/tutorialSystem';
 import { WORKSPACE_TYPES } from '../../../../utils/sessionAuth';
 
 const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelectTeamAccess, glnVerified = false, allowClose = true }) => {
     const { t, i18n } = useTranslation('dashboardProfile');
     const navigate = useNavigate();
     const location = useLocation();
-    const { isTutorialActive, startTutorial, resetProfileTabAccess, setMaxAccessedProfileTab, stopTutorial } = useTutorial();
     const { user, selectedWorkspace } = useDashboard();
 
     const handleContinueOnboarding = async () => {
         const isOnProfilePage = location.pathname.includes('/profile');
-        const isOnProfileSubTab = isOnProfilePage && location.pathname.split('/profile/')[1];
-        const shouldPreserveTabProgress = isTutorialActive && isOnProfileSubTab;
-
-        if (!shouldPreserveTabProgress) {
-            resetProfileTabAccess();
-            setMaxAccessedProfileTab('personalDetails');
-        }
         
         if (!isOnProfilePage) {
             const workspaceId = selectedWorkspace?.id || 'personal';
             navigate(`/dashboard/${workspaceId}/profile/personalDetails`);
-        }
-        
-        // Start tutorial if not active
-        if (!isTutorialActive && startTutorial) {
-            const onboardingType = selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? ONBOARDING_TYPES.FACILITY : ONBOARDING_TYPES.PROFESSIONAL;
-            const tutorialName = getProfileTutorialForType(onboardingType);
-            startTutorial(tutorialName);
         }
         
         if (onContinueOnboarding) {
@@ -47,16 +30,6 @@ const AccessLevelChoicePopup = ({ isOpen, onClose, onContinueOnboarding, onSelec
     };
 
     const handleSelectTeamAccess = async () => {
-        // ALWAYS stop tutorial and set isTutorialActive = false
-        // Await to ensure tutorial is fully stopped before proceeding
-        if (stopTutorial) {
-            await stopTutorial({ forceStop: true, showAccessPopupForProfile: false });
-        }
-        
-        if (resetProfileTabAccess) {
-            resetProfileTabAccess();
-        }
-        
         if (onSelectTeamAccess) {
             await onSelectTeamAccess();
         }

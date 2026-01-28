@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db, functions } from '../../../../services/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -35,7 +35,7 @@ export const terminateUserAction: ActionDefinition<typeof TerminateUserSchema, T
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof TerminateUserSchema>, ctx: ActionContext) => {
     const { userId, endDate, reason, blockAccessImmediately, notes } = input;
 
     const userRef = doc(db, 'users', userId);

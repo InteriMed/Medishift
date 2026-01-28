@@ -1,0 +1,34 @@
+/* Main app styles */
+:root {
+  --app-max-width: 5000px;
+  --auth-max-width: 600px;
+  --app-margin: 0;
+  --app-padding: 0 20px;
+}
+
+.App {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  width: 100%;
+  max-width: var(--app-max-width);
+  box-sizing: border-box;
+  background-color: var(--background-color);
+  align-self: center;
+}
+
+/* Debug styles */
+.debug-info {
+  padding: 20px;
+  background: var(--background-div-color);
+  margin: 60px 0 20px;
+  text-align: center;
+  font-size: var(--font-size-small);
+  color: var(--grey-3);
+  border-radius: 4px;
+}

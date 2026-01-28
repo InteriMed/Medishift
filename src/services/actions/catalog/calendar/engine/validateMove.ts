@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { ActionDefinition, ValidationResult } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { validateShiftConstraints } from '../constraints';
+import { ValidationResult } from '../types';
 
 const ValidateMoveSchema = z.object({
   userId: z.string(),
@@ -28,7 +29,7 @@ export const validateMoveAction: ActionDefinition<typeof ValidateMoveSchema, Val
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ValidateMoveSchema>, ctx: ActionContext): Promise<ValidationResult> => {
     const { userId, targetDate, targetStartTime, targetEndTime, existingShiftId } = input;
 
     const validation = await validateShiftConstraints(

@@ -13,8 +13,8 @@
  * Reference: IMPLEMENTATION_GUIDE.md - "Trust the Token" Architecture
  */
 
-import { auth } from '../../firebase';
-import { ActionContext } from '../types';
+import { auth } from '../../services/firebase';
+import { ActionContext, Permission } from '../types';
 import { createAuditLogger } from '../../services/audit';
 
 /**
@@ -49,7 +49,7 @@ export async function buildActionContextFromAuth(): Promise<ActionContext | null
   return {
     userId: user.uid,
     facilityId: facilityId || '',
-    userPermissions: permissions || [],
+    userPermissions: (permissions || []) as Permission[],
     auditLogger,
     ipAddress: undefined // Client-side cannot reliably determine IP
   };

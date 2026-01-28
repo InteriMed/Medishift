@@ -1,54 +1,61 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
+import { doc, updateDoc, serverTimestamp, deleteField } from 'firebase/firestore';
 
-const db = getFirestore();
+const billingStatusEnum = ['ACTIVE', 'SUSPENDED', 'OVERDUE', 'CANCELLED'] as const;
 
 const ManageBillingSchema = z.object({
   facilityId: z.string(),
-  status: z.enum(['ACTIVE', 'SUSPENDED', 'OVERDUE', 'CANCELLED']),
+  status: z.enum(billingStatusEnum),
   reason: z.string().optional(),
 });
 
-export const manageBillingAction: ActionDefinition = {
+interface ManageBillingResult {
+  success: boolean;
+}
+
+export const manageBillingAction: ActionDefinition<typeof ManageBillingSchema, ManageBillingResult> = {
   id: "admin.manage_billing",
-  riskLevel: "HIGH",
+  fileLocation: "src/services/actions/catalog/admin/manageBilling.ts",
+  requiredPermission: "admin.access",
   label: "Manage Billing Status",
   description: "Activate, suspend, or cancel facility access.",
+  keywords: ["billing", "suspend", "activate", "facility"],
+  icon: "CreditCard",
   schema: ManageBillingSchema,
+  metadata: {
+    riskLevel: "HIGH",
+  },
   
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ManageBillingSchema>, ctx: ActionContext): Promise<ManageBillingResult> => {
     const { facilityId, status, reason } = input;
 
-    // We store status in the main profile for easy Frontend access
-    const facilityRef = db.collection('facilityProfiles').doc(facilityId);
+    const facilityRef = doc(db, 'facilityProfiles', facilityId);
     
-    // 1. Prepare Updates
     const updates: any = {
       'billingInformation.status': status,
-      'billingInformation.updatedAt': FieldValue.serverTimestamp(),
+      'billingInformation.updatedAt': serverTimestamp(),
       'billingInformation.updatedBy': ctx.userId,
     };
 
     if (status === 'SUSPENDED') {
-      updates['billingInformation.suspendedAt'] = FieldValue.serverTimestamp();
+      updates['billingInformation.suspendedAt'] = serverTimestamp();
       updates['billingInformation.suspensionReason'] = reason;
-      // Also potentially disable all facility admins? 
-      // For now, we rely on the Middleware (hook.ts) to check this status field.
     } else if (status === 'ACTIVE') {
-      updates['billingInformation.suspendedAt'] = FieldValue.delete();
-      updates['billingInformation.suspensionReason'] = FieldValue.delete();
+      updates['billingInformation.suspendedAt'] = deleteField();
+      updates['billingInformation.suspensionReason'] = deleteField();
     }
 
-    // 2. Execute
-    await facilityRef.update(updates);
+    await updateDoc(facilityRef, updates);
 
-    // 3. Audit
     await ctx.auditLogger('admin.manage_billing', 'SUCCESS', {
       facilityId,
       status,
       reason,
       severity: status === 'SUSPENDED' ? 'CRITICAL' : 'HIGH'
     });
+
+    return { success: true };
   }
 };

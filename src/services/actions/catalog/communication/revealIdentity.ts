@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
 import { db } from '../../../services/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../common/utils';
@@ -33,7 +33,7 @@ export const revealIdentityAction: ActionDefinition<typeof RevealIdentitySchema,
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof RevealIdentitySchema>, ctx: ActionContext): Promise<RevealIdentityResult> => {
     const { reportId, reason } = input;
 
     const reportRef = doc(db, 'hr_reports', reportId);
@@ -66,7 +66,7 @@ export const revealIdentityAction: ActionDefinition<typeof RevealIdentitySchema,
       const hash = hashUserId(userDoc.id);
       if (hash === createdByHash) {
         revealedUserId = userDoc.id;
-        revealedEmail = userDoc.data().email;
+        revealedEmail = (userDoc.data() as any).email;
         break;
       }
     }

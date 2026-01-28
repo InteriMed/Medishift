@@ -1,8 +1,17 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { CrossChargeEntry } from '../types';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+
+interface CrossChargeEntry {
+  sourceEntityId: string;
+  targetEntityId: string;
+  userId?: string;
+  hours: number;
+  rate: number;
+  totalAmount: number;
+  period: string;
+}
 
 const GenerateCrossChargeReportSchema = z.object({
   month: z.number().min(1).max(12),
@@ -32,7 +41,7 @@ export const generateCrossChargeReportAction: ActionDefinition<typeof GenerateCr
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof GenerateCrossChargeReportSchema>, ctx: ActionContext) => {
     const { month, year } = input;
     const period = `${year}-${String(month).padStart(2, '0')}`;
 
@@ -50,13 +59,15 @@ export const generateCrossChargeReportAction: ActionDefinition<typeof GenerateCr
     for (const shiftDoc of shiftsSnapshot.docs) {
       const shift = shiftDoc.data();
       
-      const userRef = await db.collection('users').doc(shift.userId).get();
-      const userData = userRef.data();
-      const homeFacilityId = userData.facilityId;
+      const userRef = doc(db, 'users', shift.userId);
+      const userSnap = await getDoc(userRef);
+      const userData = userSnap.data();
+      const homeFacilityId = userData?.facilityId;
 
-      if (homeFacilityId !== shift.facilityId) {
-        const transferPricingRef = await db.collection('organization_transfer_pricing').doc(shift.role).get();
-        const rate = transferPricingRef.exists() ? transferPricingRef.data().internalRate : 85;
+      if (homeFacilityId && homeFacilityId !== shift.facilityId) {
+        const transferPricingRef = doc(db, 'organization_transfer_pricing', shift.role);
+        const transferPricingSnap = await getDoc(transferPricingRef);
+        const rate = transferPricingSnap.exists() ? transferPricingSnap.data()?.internalRate : 85;
 
         const hours = calculateShiftHours(shift.startTime, shift.endTime);
 

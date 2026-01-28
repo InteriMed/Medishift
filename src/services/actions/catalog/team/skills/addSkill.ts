@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -34,7 +34,7 @@ export const addSkillAction: ActionDefinition<typeof AddSkillSchema, AddSkillRes
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof AddSkillSchema>, ctx: ActionContext) => {
     const { userId, skillId, skillName, category, level, verified } = input;
 
     const userSkill = {

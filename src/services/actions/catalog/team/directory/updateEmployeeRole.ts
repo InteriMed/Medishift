@@ -41,7 +41,7 @@ export const updateEmployeeRoleAction: ActionDefinition<typeof UpdateEmployeeRol
 
     const facilityData = facilitySnap.data();
     const employeesList = facilityData.employees || [];
-    const employeeIndex = employeesList.findIndex(emp => (emp.user_uid || emp.uid) === userId);
+    const employeeIndex = employeesList.findIndex((emp: any) => (emp.user_uid || emp.uid) === userId);
 
     if (employeeIndex === -1) {
       throw new Error('Employee not found in facility');
@@ -73,7 +73,7 @@ export const updateEmployeeRoleAction: ActionDefinition<typeof UpdateEmployeeRol
     if (userSnap.exists()) {
       const userData = userSnap.data();
       const existingRoles = userData.roles || [];
-      const updatedRoles = existingRoles.map(roleEntry => {
+      const updatedRoles = existingRoles.map((roleEntry: any) => {
         if (roleEntry.facility_uid === facilityId) {
           return {
             ...roleEntry,

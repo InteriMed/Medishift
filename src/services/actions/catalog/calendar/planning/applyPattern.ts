@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { validateShiftConstraints } from '../constraints';
@@ -32,10 +32,10 @@ export const applyPatternAction: ActionDefinition<typeof ApplyPatternSchema, App
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ApplyPatternSchema>, ctx: ActionContext): Promise<ApplyPatternResult> => {
     const { userId, patternId, startDate, endDate, force } = input;
 
     const patternRef = doc(db, 'shift_patterns', patternId);

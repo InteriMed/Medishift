@@ -62,9 +62,12 @@ export const DashboardProvider = ({ children }) => {
 
   const contextValue = useMemo(() => ({
     currentUser,
+    user: currentUser,
     workspaces,
     currentWorkspace,
+    selectedWorkspace: currentWorkspace,
     workspacesLoading,
+    isLoading: workspacesLoading,
     switchWorkspace,
     refreshWorkspaces,
     userPreferences,

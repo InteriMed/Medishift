@@ -1,11 +1,13 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
 import { db } from '../../../services/firebase';
 import { doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../common/utils';
 
+const collectionTypeEnum = ['messages', 'tickets', 'announcements', 'policies', 'hr_reports'] as const;
+
 const MarkReadSchema = z.object({
-  collectionType: z.enum(['messages', 'tickets', 'announcements', 'policies', 'hr_reports']),
+  collectionType: z.enum(collectionTypeEnum),
   threadId: z.string(),
 });
 
@@ -27,7 +29,7 @@ export const markReadAction: ActionDefinition<typeof MarkReadSchema, void> = {
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof MarkReadSchema>, ctx: ActionContext): Promise<void> => {
     const { collectionType, threadId } = input;
 
     const threadRef = doc(db, collectionType, threadId);

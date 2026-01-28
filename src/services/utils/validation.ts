@@ -89,7 +89,7 @@ export const validateConfirmPassword = (password: string, confirmPassword: strin
 };
 
 export const validatePhoneNumber = (phoneNumber: string): boolean => {
-  return phoneNumber && phoneNumber.length >= 8;
+  return !!phoneNumber && phoneNumber.length >= 8;
 };
 
 export const passwordsMatch = (password: string, confirmPassword: string): boolean => {

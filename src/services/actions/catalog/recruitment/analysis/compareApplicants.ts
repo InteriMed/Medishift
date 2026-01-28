@@ -53,8 +53,8 @@ export const compareApplicantsAction: ActionDefinition<typeof CompareApplicantsS
       }
     }
 
-    const candidates = applications.map(app => {
-      const quizScore = calculateQuizScore(app.answers);
+    const candidates = applications.map((app: any) => {
+      const quizScore = calculateQuizScore(app.answers || {});
       const normalizedExperience = normalizeExperience(app.profileSync?.experience);
       
       return {

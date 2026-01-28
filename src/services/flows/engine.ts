@@ -38,7 +38,7 @@ export function useFlow<T>(flow: FlowDefinition<T>) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
-        error.errors.forEach(err => {
+        error.issues.forEach((err: z.ZodIssue) => {
           if (err.path[0]) {
             fieldErrors[err.path[0].toString()] = err.message;
           }
@@ -94,7 +94,7 @@ export function useFlow<T>(flow: FlowDefinition<T>) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
-        error.errors.forEach(err => {
+        error.issues.forEach((err: z.ZodIssue) => {
           if (err.path[0]) {
             fieldErrors[err.path[0].toString()] = err.message;
           }

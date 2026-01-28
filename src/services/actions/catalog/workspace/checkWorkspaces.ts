@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
+import { functions } from '../../../services/firebase';
+import { httpsCallable } from 'firebase/functions';
 
 const CheckWorkspacesSchema = z.object({});
 
@@ -8,104 +13,48 @@ interface WorkspaceInfo {
   name: string;
   type: 'personal' | 'facility' | 'organization' | 'admin';
   role?: string;
-  hasAccess: boolean;
+  hasAccess?: boolean;
 }
 
-export const checkWorkspacesAction: ActionDefinition = {
+interface CheckWorkspacesResult {
+  workspaces: WorkspaceInfo[];
+  needsOnboarding: boolean;
+  hasAnyWorkspace: boolean;
+}
+
+export const checkWorkspacesAction: ActionDefinition<typeof CheckWorkspacesSchema, CheckWorkspacesResult> = {
   id: "workspace.check_available",
-  riskLevel: "LOW",
+  fileLocation: "src/services/actions/catalog/workspace/checkWorkspaces.ts",
+  requiredPermission: "thread.read", // Base permission for all active users
   label: "Check Available Workspaces",
-  description: "Returns all workspaces the user has access to.",
+  description: "Returns all workspaces the user has access to by verifying membership on the server.",
+  keywords: ["workspace", "check", "available", "access"],
+  icon: "Layout",
   schema: CheckWorkspacesSchema,
-  permissions: [],
+  metadata: {
+    autoToast: false,
+    riskLevel: 'LOW',
+  },
 
-  handler: async (input, ctx) => {
-    const userId = ctx.userId;
-    const workspaces: WorkspaceInfo[] = [];
+  handler: async (input: z.infer<typeof CheckWorkspacesSchema>, ctx: ActionContext): Promise<CheckWorkspacesResult> => {
+    try {
+      // 1. Call backend to discover workspaces user has access to
+      const checkWorkspacesFunction = httpsCallable(functions, 'checkWorkspaces');
+      const result = await checkWorkspacesFunction({}) as { data: CheckWorkspacesResult };
 
-    const [userSnap, professionalSnap, adminSnap] = await Promise.all([
-      ctx.db.collection('users').doc(userId).get(),
-      ctx.db.collection('professionalProfiles').doc(userId).get(),
-      ctx.db.collection('admins').doc(userId).get()
-    ]);
-
-    const userData = userSnap.exists ? userSnap.data() as any : null;
-
-    if (professionalSnap.exists) {
-      workspaces.push({
-        id: 'personal',
-        name: 'Personal Workspace',
-        type: 'personal',
-        hasAccess: true
+      await ctx.auditLogger('workspace.check_available', 'SUCCESS', {
+        workspaceCount: result.data.workspaces.length,
+        needsOnboarding: result.data.needsOnboarding
       });
+
+      return result.data;
+    } catch (error: any) {
+      await ctx.auditLogger('workspace.check_available', 'ERROR', {
+        error: error.message
+      });
+      throw error;
     }
-
-    if (userData) {
-      const roles = userData.roles || [];
-      
-      for (const roleEntry of roles) {
-        if (roleEntry.facility_uid) {
-          const facilitySnap = await ctx.db.collection('facilityProfiles').doc(roleEntry.facility_uid).get();
-          
-          if (facilitySnap.exists) {
-            const facilityData = facilitySnap.data() as any;
-            workspaces.push({
-              id: roleEntry.facility_uid,
-              name: facilityData.facilityDetails?.name || facilityData.facilityName || 'Facility',
-              type: 'facility',
-              role: (roleEntry.roles || [])[0],
-              hasAccess: true
-            });
-          }
-        }
-
-        if (roleEntry.organization_uid) {
-          const isOrgAdmin = (roleEntry.roles || []).includes('org_admin');
-          
-          if (isOrgAdmin) {
-            const orgSnap = await ctx.db.collection('organizations').doc(roleEntry.organization_uid).get();
-            
-            if (orgSnap.exists) {
-              const orgData = orgSnap.data() as any;
-              workspaces.push({
-                id: roleEntry.organization_uid,
-                name: orgData.name || 'Organization',
-                type: 'organization',
-                role: 'org_admin',
-                hasAccess: true
-              });
-            }
-          }
-        }
-      }
-    }
-
-    if (adminSnap.exists) {
-      const adminData = adminSnap.data() as any;
-      
-      if (adminData.isActive !== false) {
-        workspaces.push({
-          id: 'admin',
-          name: 'Admin Workspace',
-          type: 'admin',
-          role: adminData.role || 'admin',
-          hasAccess: true
-        });
-      }
-    }
-
-    const needsOnboarding = workspaces.length === 0;
-
-    await ctx.auditLogger('workspace.check_available', 'SUCCESS', {
-      workspaceCount: workspaces.length,
-      needsOnboarding
-    });
-
-    return {
-      workspaces,
-      needsOnboarding,
-      hasAnyWorkspace: workspaces.length > 0
-    };
   }
 };
+
 

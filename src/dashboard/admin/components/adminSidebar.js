@@ -23,7 +23,7 @@ import { useDashboard } from '../../contexts/dashboardContext';
 import { useAdminPermission } from '../hooks/useAdminPermission';
 import { RIGHTS as PERMISSIONS } from '../utils/rbac';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
-import { db } from '../../../services/firebase';
+import { db } from '../../../services/services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import '../../../styles/variables.css';
 

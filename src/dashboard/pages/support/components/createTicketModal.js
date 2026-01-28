@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiX, FiPlus } from 'react-icons/fi';
-import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
-import Button from '../../../../components/boxedInputFields/Button';
-import PersonalizedInputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import LoadingSpinner from '../../../../components/loadingSpinner';
+import Button from '../../../../components/boxedInputFields/button';
+import PersonalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import SimpleDropdown from '../../../../components/boxedInputFields/Dropdown-Field';
-import TextareaField from '../../../../components/boxedInputFields/TextareaField';
+import TextareaField from '../../../../components/boxedInputFields/textareaField';
 
 const CATEGORIES = [
   { value: 'general', label: 'General' },

@@ -1,9 +1,9 @@
-import React, { useState, useRef, forwardRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { FiUploadCloud, FiEye, FiEdit2, FiTrash2, FiFile } from 'react-icons/fi';
 import './styles/boxedInputFields.css';
 import './styles/UploadFile.css';
 
-const UploadFile = forwardRef(({
+function UploadFile({
   onChange,
   onUploadComplete,
   accept,
@@ -17,8 +17,8 @@ const UploadFile = forwardRef(({
   documentName = "document",
   className = "",
   disabled = false,
-  value = null // Accepted prop for controlled file
-}, ref) => {
+  value = null
+}) {
   const [dragActive, setDragActive] = useState(false);
   const [fileName, setFileName] = useState('');
   const [fileObj, setFileObj] = useState(null);
@@ -39,7 +39,7 @@ const UploadFile = forwardRef(({
     }
   }, [value]);
 
-  const inputRef = ref || internalInputRef;
+  const inputRef = internalInputRef;
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -297,6 +297,6 @@ const UploadFile = forwardRef(({
       </form>
     </div>
   );
-});
+}
 
 export default UploadFile;

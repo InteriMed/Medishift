@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
@@ -30,10 +30,10 @@ export const getProfileFullAction: ActionDefinition<typeof GetProfileFullSchema,
   
   metadata: {
     autoToast: false,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof GetProfileFullSchema>, ctx: ActionContext) => {
     const { userId } = input;
 
     const isSelf = userId === ctx.userId;
@@ -51,7 +51,7 @@ export const getProfileFullAction: ActionDefinition<typeof GetProfileFullSchema,
       throw new Error('User not found');
     }
 
-    const profile = { id: userSnap.id, ...userSnap.data() };
+    const profile: any = { id: userSnap.id, ...userSnap.data() };
 
     const canAccessSensitiveData = isSelf || isHRAdmin;
 
@@ -62,7 +62,7 @@ export const getProfileFullAction: ActionDefinition<typeof GetProfileFullSchema,
       delete profile.bankName;
     }
 
-    let contract = null;
+    let contract: any = null;
     const contractsRef = collection(db, 'contracts');
     const contractQuery = query(
       contractsRef,
@@ -74,8 +74,9 @@ export const getProfileFullAction: ActionDefinition<typeof GetProfileFullSchema,
     if (!contractSnap.empty) {
       contract = { id: contractSnap.docs[0].id, ...contractSnap.docs[0].data() };
       
-      if (!canAccessSensitiveData) {
-        delete contract.salary;
+      if (!canAccessSensitiveData && contract && contract.salary !== undefined) {
+        const { salary, ...contractWithoutSalary } = contract;
+        contract = contractWithoutSalary;
       }
     }
 

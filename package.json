@@ -14,7 +14,9 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "firebase": "^11.1.0",
+    "firebase-admin": "^12.0.0",
     "firebase-functions": "^7.0.3",
+    "uuid": "^10.0.0",
     "i18next": "^25.0.2",
     "i18next-browser-languagedetector": "^8.1.0",
     "i18next-http-backend": "^2.6.2",
@@ -40,14 +42,17 @@
     "web-vitals": "^5.1.0",
     "webpack-dev-server": "^4.15.1",
     "yet-another-react-lightbox": "^3.15.0",
-    "zod": "^4.3.6",
-    "zod-to-json-schema": "^3.25.1",
+    "zod": "3.25.1",
+    "zod-to-json-schema": "3.25.1",
     "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@babel/core": "^7.28.6",
     "@babel/eslint-parser": "^7.28.6",
     "@babel/preset-react": "^7.28.5",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.23",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.1",
@@ -59,14 +64,19 @@
     "postcss": "^8.5.6",
     "react-scripts": "^5.0.1",
     "tailwindcss": "^3.4.19",
-    "typescript": "^4.9.5"
+    "typescript": "^5.3.3"
   },
   "scripts": {
-    "start": "cross-env PORT=4000 craco start",
-    "build": "craco build",
+    "start": "cross-env PORT=4000 NODE_OPTIONS=--max-old-space-size=4096 craco start",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 craco build",
     "test": "craco test",
+    "test:catalog": "tsx scripts/test-catalog.ts",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx --max-warnings 0",
+    "type-check": "tsc --noEmit",
     "eject": "react-scripts eject",
-    "remove-legacy-translations": "node remove-legacy-from-report.js"
+    "remove-legacy-translations": "node remove-legacy-from-report.js",
+    "clean": "rm -rf node_modules build .cache package-lock.json && npm cache clean --force",
+    "clean:win": "if exist node_modules rmdir /s /q node_modules && if exist build rmdir /s /q build && if exist .cache rmdir /s /q .cache && del /f package-lock.json && npm cache clean --force"
   },
   "eslintConfig": {
     "extends": [
@@ -86,7 +96,6 @@
     ]
   },
   "overrides": {
-    "typescript": "^4.9.5",
     "nth-check": "^2.0.1",
     "resolve-url-loader": {
       "postcss": "^8.4.31"

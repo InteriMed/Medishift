@@ -1,12 +1,14 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { functions } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { functions } from '../../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
+
+const formatEnum = ['CSV_ABACUS', 'CSV_GENERIC', 'XML_ELM'] as const;
 
 const ExportDataSchema = z.object({
   month: z.number().min(1).max(12),
   year: z.number(),
-  format: z.enum(['CSV_ABACUS', 'CSV_GENERIC', 'XML_ELM']).default('CSV_ABACUS'),
+  format: z.enum(formatEnum).optional().default('CSV_ABACUS'),
   facilityIds: z.array(z.string()).optional(),
 });
 
@@ -35,7 +37,7 @@ export const exportDataAction: ActionDefinition<typeof ExportDataSchema, ExportD
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ExportDataSchema>, ctx: ActionContext) => {
     const { month, year, format, facilityIds } = input;
 
     const exportPayrollFunction = httpsCallable(functions, 'exportPayrollData');

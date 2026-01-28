@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DropdownFieldAddList from '../../../../../components/boxedInputFields/dropdownFieldAddList';
-import DateField from '../../../../../components/boxedInputFields/DateField';
-import Button from '../../../../../components/colorPicker/button';
+import dateField from '../../../../../components/boxedInputFields/dateField';
+import Button from '../../../../../components/boxedInputFields/button';
 import './filterbar.css';
 import { useTranslation } from 'react-i18next';
 
@@ -159,13 +159,13 @@ const FilterBar = ({ filters, onFilterChange, clearDateFilter, onApplyFilters })
               onChange={(value) => onFilterChange('workAmount', value)}
             />
 
-            <DateField
+            <dateField
               label="From Date"
               value={filters.fromDate}
               onChange={(value) => onFilterChange('fromDate', value)}
             />
             
-            <DateField
+            <dateField
               label="To Date"
               value={filters.toDate}
               onChange={(value) => onFilterChange('toDate', value)}

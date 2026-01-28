@@ -1,13 +1,15 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { CoverageSlot } from '../types';
 
+const granularityEnum = ['DAY', 'HOUR'] as const;
+
 const GetCoverageStatusSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  granularity: z.enum(['DAY', 'HOUR']).default('DAY'),
+  granularity: z.enum(granularityEnum).default('DAY'),
 });
 
 interface CoverageStatusResult {
@@ -34,7 +36,7 @@ export const getCoverageStatusAction: ActionDefinition<typeof GetCoverageStatusS
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof GetCoverageStatusSchema>, ctx: ActionContext): Promise<CoverageStatusResult> => {
     const { startDate, endDate, granularity } = input;
 
     const shiftsRef = collection(db, 'shifts');
@@ -47,7 +49,7 @@ export const getCoverageStatusAction: ActionDefinition<typeof GetCoverageStatusS
     );
 
     const snapshot = await getDocs(q);
-    const shifts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const shifts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
 
     const requirementsRef = collection(db, 'staffing_requirements');
     const reqQuery = query(

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs, orderBy, doc, getDoc, DocumentData } from 'firebase/firestore';
 // ⚠️ Helper function for Distance (Put this in utils later)
@@ -25,18 +25,27 @@ const BrowseMissionsSchema = z.object({
     }).optional(),
     cantons: z.array(z.string()).optional(),
   }).optional(),
-  sortBy: z.enum(['distance', 'rate', 'date']).default('date'),
+  sortBy: z.enum(['distance', 'rate', 'date'] as const).default('date'),
 });
 
-export const browseMissionsAction: ActionDefinition = {
+interface BrowseMissionsResult {
+  missions: any[];
+}
+
+export const browseMissionsAction: ActionDefinition<typeof BrowseMissionsSchema, BrowseMissionsResult> = {
   id: "marketplace.browse_missions",
-  // ⚠️ Ensure your types.ts has 'riskLevel' in the interface
-  riskLevel: 'READ_ONLY', 
+  fileLocation: "src/services/actions/catalog/marketplace/professional/browseMissions.ts",
+  requiredPermission: "marketplace.browse_missions",
   label: "Browse Missions",
   description: "Search available job postings with geo-sorting",
+  keywords: ["marketplace", "browse", "missions", "jobs"],
+  icon: "Search",
   schema: BrowseMissionsSchema,
-
-  handler: async (input, ctx) => {
+  metadata: {
+    autoToast: false,
+    riskLevel: 'LOW',
+  },
+  handler: async (input: z.infer<typeof BrowseMissionsSchema>, ctx: ActionContext) => {
     const { filters, sortBy } = input;
 
     // 1. 🔍 Correct Collection Reference (From your Schema Summary)
@@ -61,9 +70,7 @@ export const browseMissionsAction: ActionDefinition = {
 
     const snapshot = await getDocs(q);
     
-    // 4. 📍 Get User Location (Optimized)
-    // We try to use the context location first if available, otherwise fetch profile
-    let userLocation = null;
+    let userLocation: { lat: number; lng: number } | null = null;
     if (sortBy === 'distance' || filters?.maxDistanceKM) {
       // Fetch specifically the professionalProfile, NOT the sensitive 'users' doc
       const profileSnap = await getDoc(doc(db, 'professionalProfiles', ctx.userId));
@@ -85,7 +92,7 @@ export const browseMissionsAction: ActionDefinition = {
     // B. Calculate Distances & Filter by Radius
     if (userLocation && (filters?.maxDistanceKM || sortBy === 'distance')) {
       missions = missions.map(m => {
-        const dist = m.location?.coordinates ? calculateDistance(
+        const dist = m.location?.coordinates && userLocation ? calculateDistance(
           userLocation.lat, userLocation.lng,
           m.location.coordinates.lat, m.location.coordinates.lng
         ) : Infinity;

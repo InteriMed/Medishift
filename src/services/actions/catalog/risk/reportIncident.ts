@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const ReportIncidentSchema = z.object({
@@ -36,7 +36,7 @@ export const reportIncidentAction: ActionDefinition<typeof ReportIncidentSchema,
     isSwiss: true,
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ReportIncidentSchema>, ctx: ActionContext) => {
     const { type, description, isAnonymous, severity, locationFacilityId, dateOccurred } = input;
 
     const incidentsRef = collection(db, 'cirs_incidents');

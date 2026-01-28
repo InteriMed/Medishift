@@ -43,7 +43,7 @@ export const updateRoleAction: ActionDefinition<typeof UpdateRoleSchema, void> =
     const facilityData = facilitySnap.data();
     const existingRoles = facilityData.customRoles || [];
     
-    const roleIndex = existingRoles.findIndex(r => r.id === roleId);
+    const roleIndex = existingRoles.findIndex((r: any) => r.id === roleId);
     if (roleIndex === -1) {
       throw new Error('Role not found');
     }

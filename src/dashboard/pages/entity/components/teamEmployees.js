@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { useNotification } from '../../../../contexts/notificationContext';
 import useEmployeesData from '../../../hooks/useEmployeesData';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import FilterBar from '../../marketplace/components/filterbar';
 import { FiUser, FiUsers } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import PropTypes from 'prop-types';
 import Dialog from '../../../../components/Dialog/Dialog';
-import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
-import SimpleDropdown from '../../../../components/boxedInputFields/Dropdown-Field';
+import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
+import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
 import { useAction } from '../../../../services/actions/hook';
 
 const Employees = ({ hideHeader = false, hideStats = false, organization, memberFacilities: propMemberFacilities = [] }) => {

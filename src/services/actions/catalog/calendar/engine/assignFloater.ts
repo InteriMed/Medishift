@@ -30,7 +30,7 @@ export const assignFloaterAction: ActionDefinition<typeof AssignFloaterSchema, A
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
   handler: async (input, ctx) => {

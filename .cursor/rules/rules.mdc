@@ -7,6 +7,6 @@ Your overall approach MUST emulate the design philosophy of Claude. You must che
 
 ## STYLING
 Always use the styling variables stored in [variables.css](mdc:src/styles/variables.css).
-Use the components stored in [boxedInputFields](mdc:src/components/boxedInputFields/) folder: Button.js, Personnalized-InputField.js, SimpleDropdown.js, TextareaField.js, etc.
+Use the components stored in [boxedInputFields](mdc:src/components/boxedInputFields/) folder: Button.js, personnalizedInputField.js, SimpleDropdown.js, TextareaField.js, etc.
 
 src/config must centralize all access routes when possible

@@ -40,7 +40,7 @@ export const removeEmployeeFromFacilityAction: ActionDefinition<typeof RemoveEmp
 
     const facilityData = facilitySnap.data();
     const employeesList = facilityData.employees || [];
-    const updatedEmployees = employeesList.filter(emp => (emp.user_uid || emp.uid) !== userId);
+    const updatedEmployees = employeesList.filter((emp: any) => (emp.user_uid || emp.uid) !== userId);
 
     if (employeesList.length === updatedEmployees.length) {
       throw new Error('Employee not found in facility');
@@ -58,7 +58,7 @@ export const removeEmployeeFromFacilityAction: ActionDefinition<typeof RemoveEmp
     if (userSnap.exists()) {
       const userData = userSnap.data();
       const existingRoles = userData.roles || [];
-      const updatedRoles = existingRoles.filter(roleEntry => roleEntry.facility_uid !== facilityId);
+      const updatedRoles = existingRoles.filter((roleEntry: any) => roleEntry.facility_uid !== facilityId);
       
       await updateDoc(userRef, {
         roles: updatedRoles,

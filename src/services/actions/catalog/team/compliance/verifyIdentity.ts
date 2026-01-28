@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { validateAHV, formatAHV } from '../types';
@@ -37,7 +37,7 @@ export const verifyIdentityAction: ActionDefinition<typeof VerifyIdentitySchema,
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof VerifyIdentitySchema>, ctx: ActionContext) => {
     const { userId, ahvNumber, permitType, permitExpiryDate, nationality } = input;
 
     const ahvValid = validateAHV(ahvNumber);

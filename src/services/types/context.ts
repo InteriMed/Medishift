@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export type Permission =
   | 'shift.create' | 'shift.view'
   | 'user.write' | 'docs.read'
@@ -73,6 +75,7 @@ export interface CustomClaims {
   tier: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
   userId: string;
   email: string;
+  userPermissions?: Permission[];
 }
 
 export interface AuthContext {

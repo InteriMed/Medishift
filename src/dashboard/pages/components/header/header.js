@@ -1,21 +1,20 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import HeaderWorkspaceSelector from './workspaceSelector';
+import HeaderWorkspaceSelector from './workspaceSelector/workspaceSelector';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FiBell, FiUser, FiChevronDown, FiBriefcase, FiSettings, FiLogOut, FiX, FiMenu, FiArrowLeft, FiHelpCircle, FiRefreshCw, FiGlobe, FiCheck, FiSearch, FiMessageSquare } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
-import { cn } from '../../../utils/cn';
-import { getPageConfig } from '../../config/pageConfig';
-import { useDashboard } from '../../../../../dashboard/contexts/DashboardContext';
-import { useAuth } from '../../../contexts/authContext';
-import { normalizePathname, getWorkspaceIdForUrl, buildDashboardUrl } from '../../../config/routeUtils';
-import useProfileData from '../../../dashboard/hooks/useProfileData';
-import { useNotification } from '../../../contexts/notificationContext';
-import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
-import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
-import { useTutorial } from '../../../../dashboard/contexts/tutorialContext';
-import ColorPicker from '../ColorPicker/ColorPicker';
-import { db } from '../../../services/firebase';
+import { cn } from '../../../../utils/cn';
+import { getPageConfig } from '../../../config/pageConfig';
+import { useDashboard } from '../../../contexts/dashboardContext';
+import { useAuth } from '../../../../contexts/authContext';
+import { normalizePathname, getWorkspaceIdForUrl, buildDashboardUrl } from '../../../../config/routeUtils';
+import useProfileData from '../../../hooks/useProfileData';
+import { useNotification } from '../../../../contexts/notificationContext';
+import { WORKSPACE_TYPES } from '../../../../config/workspaceDefinitions';
+import { LOCALSTORAGE_KEYS } from '../../../../config/keysDatabase';
+import ColorPicker from '../../../../components/colorPicker/colorPicker';
+import { db } from '../../../../services/services/firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 
 export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen = false, onBackButtonClick, showBackButton = false }) {
@@ -36,7 +35,6 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
 
   const { resetProfile } = useProfileData();
   const { showNotification } = useNotification();
-  const { setShowTutorialSelectionModal } = useTutorial();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
@@ -310,7 +308,6 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   };
 
   const handleTutorialClick = () => {
-    setShowTutorialSelectionModal(true);
     setHelpMenuOpen(false);
   };
 
@@ -321,6 +318,18 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
   };
 
   const headerColor = getHeaderColor();
+
+  const handleWorkspaceSelect = useCallback(async (workspace) => {
+    if (!workspace) return;
+    
+    const workspaceId = workspace.id || workspace;
+    
+    if (typeof workspaceId === 'string') {
+      await switchWorkspace(workspaceId);
+    } else {
+      console.error('Invalid workspace provided to handleWorkspaceSelect:', workspace);
+    }
+  }, [switchWorkspace]);
 
   return (
     <header
@@ -386,7 +395,7 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             <HeaderWorkspaceSelector
               workspaces={sortedWorkspaces}
               selectedWorkspace={selectedWorkspace}
-              onSelectWorkspace={switchWorkspace}
+              onSelectWorkspace={handleWorkspaceSelect}
               onOpenChange={setWorkspaceSelectorOpen}
               headerColor={headerColor}
             >
@@ -544,13 +553,6 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
             <div className="absolute top-full right-0 mt-1.5 w-[calc(100vw-2rem)] max-w-[224px] bg-card rounded-lg border border-border/50 shadow-lg animate-in fade-in zoom-in-95 duration-150 overflow-hidden" style={{ zIndex: 200001, backgroundColor: 'var(--background-div-color, #ffffff)' }}>
               <div className="p-1">
                 <button
-                  onClick={handleTutorialClick}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground transition-colors"
-                >
-                  <FiHelpCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <span className="truncate flex-1 text-left">{t('common:header.help', 'Help')}</span>
-                </button>
-                <button
                   onClick={handleSupportClick}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground transition-colors"
                 >
@@ -645,15 +647,6 @@ export function Header({ collapsed = false, onMobileMenuToggle, isMobileMenuOpen
               <div className="p-1">
 
                 {/* Mobile-only: Help */}
-                <button
-                  onClick={() => { handleTutorialClick(); setProfileMenuOpen(false); }}
-                  className="md:hidden w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/40 text-sm text-foreground"
-                >
-                  <FiHelpCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <span className="truncate">
-                    {t('common:header.help', 'Help')}
-                  </span>
-                </button>
                 {/* Mobile-only: Support */}
                 <button
                   onClick={() => { handleSupportClick(); setProfileMenuOpen(false); }}

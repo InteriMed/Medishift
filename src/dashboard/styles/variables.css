@@ -1,0 +1,166 @@
+/* CSS Variables - Enhanced Design System */
+:root {
+  /* Colors */
+  --background-color: #ffffff;
+  --background-div-color: #ffffff;
+  --background-div-color-2: #ffffff;
+  --text-color: #333333;
+  --text-color-logo-1: #ffffff;
+  --text-color-logo-2: #ffffff;
+  --text-light-color: #666666;
+  --grey-1: #f0f0f0;
+  --grey-1-light: #f8f8f8;
+  --grey-2: #cccccc;
+  --grey-3: #999999;
+  --grey-4: #505050;
+  --grey-5: #3f3f3f;
+  --success-color: #28a745;
+  --danger-color: #f33e50;
+  --info-color: #A3D5FB;
+  --white: #ffffff;
+  --black: #000000;
+
+  /* Brand Colors */
+  --color-logo-1: #2563eb;
+  --color-logo-2: #0f172a;
+  --primary-color: var(--color-logo-1);
+  --secondary-color: var(--color-logo-2);
+
+  /* Alert Colors */
+  --red-1: #e2a9a9;
+  --red-2: #e26c6c;
+  --red-3: #b31e2d;
+  --red-4: #97000f;
+
+  --purple-1: #d3c2eb;
+  --purple-2: #d3c8ff;
+  --purple-3: #a290ff;
+  --purple-4: #6f58ff;
+
+  --green-1: #f2ffe5;
+  --green-2: #d6f5ba88;
+  --green-3: #84d16c;
+  --green-4: #3f8b1b;
+
+  --blue-1: #c2e8fa;
+  --blue-2: #70a4cf;
+  --blue-3: #0B5691;
+  --blue-4: #00284d;
+
+  --yellow-1: #fffae9;
+  --yellow-2: #ffc415;
+  --yellow-3: #ee991a;
+  --yellow-4: #f8b013;
+
+  /* Premium/Subscription Colors */
+  --premium-gold: #D4AF37;
+  --premium-gold-light: rgba(212, 175, 55, 0.15);
+  --premium-gold-bg: rgba(212, 175, 55, 0.05);
+
+  /* Modern Gradients */
+  --gradient-primary: linear-gradient(135deg, #70a4cf 0%, #357abd 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #5a93c4 0%, #2668a8 100%);
+  --gradient-success: linear-gradient(135deg, #84d16c 0%, #3f8b1b 100%);
+  --gradient-warning: linear-gradient(135deg, #ffc415 0%, #ee991a 100%);
+  --gradient-danger: linear-gradient(135deg, #e26c6c 0%, #b31e2d 100%);
+  --gradient-shimmer: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+
+  /* Font Sizes */
+  --font-size-small: 12px;
+  --font-size-medium: 16px;
+  --font-size-default: 18px;
+  --font-size-large: 20px;
+  --font-size-xlarge: 24px;
+  --font-size-xxlarge: 32px;
+  --font-size-xxxlarge: 40px;
+
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-large: 700;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+
+  /* Layout */
+  --border-radius: 50px;
+  --border-radius-sm: 10px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 20px;
+  --border-radius-hero: 2.5rem; /* 40px - matches hero section image */
+  --default-border: none; /* No border by default */
+  --dashboard-bg: #ffffff; /* White background for dashboard */
+  --default-div-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Subtle shadow for divs */
+  --margin-sm: 0 10px 10px 10px;
+  
+  /* Header Control Heights */
+  --header-control-height: 36px; /* h-9 in Tailwind = 36px - consistent across all header inputs */
+  --header-control-height-sm: 32px; /* h-8 in Tailwind = 32px - for compact controls */
+
+  /* Enhanced Shadows - Multi-layered depth */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 15px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.08);
+  --shadow-2xl: 0 20px 40px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(0, 0, 0, 0.12);
+  --shadow-elevated: 0 12px 24px rgba(112, 164, 207, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-floating: 0 16px 32px rgba(112, 164, 207, 0.2), 0 6px 12px rgba(0, 0, 0, 0.12);
+  --shadow-deep: 0 24px 48px rgba(0, 0, 0, 0.25), 0 12px 24px rgba(0, 0, 0, 0.15);
+
+  /* Legacy shadow support */
+  --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --box-shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --box-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.15);
+
+  /* Glassmorphism */
+  --glass-backdrop: blur(12px) saturate(180%);
+  --glass-backdrop-strong: blur(20px) saturate(200%);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-bg-dark: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.3);
+
+  /* Animation Timing Functions */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Transitions - Enhanced */
+  --transition-fast: 0.2s var(--ease-smooth);
+  --transition-normal: 0.3s var(--ease-smooth);
+  --transition-slow: 0.5s var(--ease-smooth);
+  --transition-bounce: 0.4s var(--ease-bounce);
+  --transition-spring: 0.6s var(--ease-spring);
+
+  /* Legacy Layout */
+  --header-height: 75px;
+  --max-width-sidebar-dashboard: 1350px;
+  --max-width-sidebar-dashboard-mobile: 768px;
+
+  /* Font Family */
+  --font-family: 'Roboto', sans-serif;
+  --font-family-headings: 'Roboto', sans-serif;
+  --font-family-text: 'Roboto', sans-serif;
+
+  /* Z-index levels */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+  --z-index-onboarding-overlay: 10000;
+  --z-index-workspace-dropdown: 15000;
+  --z-index-max: 99999;
+  --z-index-popup-above-tutorial: 200000;
+}

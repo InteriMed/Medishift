@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
-import './Event.css';
-import { getMondayBasedDayIndex, getWeekDates, getScrollableDayIndex, getScrollableWeekDates } from '../../utils/dateHelpers';
+import '../Event';
+import { getMondayBasedDayIndex, getWeekDates, getScrollableDayIndex, getScrollableWeekDates } from '../../../utils/dateHelpers';
 
 const Event = ({ start, end, title, color, color1, isSelected, onClick, onResize, onMove, onChangeComplete, isMultiDay, isFirstDay, isLastDay, isRecurring = false, notes, location, employees, id, style, overlapInfo, currentDate, currentDayIndex, weekScrollOffset = 0, onWeekScroll }) => {
   const [isDragging, setIsDragging] = useState(false);

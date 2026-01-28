@@ -6,10 +6,10 @@ import { useDashboard } from '../../../contexts/dashboardContext';
 import { useNotification } from '../../../../contexts/notificationContext';
 import FilterBar from '../../components/filterBar/filterBar';
 import Modal from '../../../../components/modals/modal';
-import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import TextareaField from '../../../../components/boxedInputFields/textareaField';
 import SimpleDropdown from '../../../../components/boxedInputFields/SimpleDropdown';
-import BoxedSwitchField from '../../../../components/boxedInputFields/BoxedSwitchField';
+import boxedSwitchField from '../../../../components/boxedInputFields/boxedSwitchField';
 import Button from '../../../../components/boxedInputFields/button';
 import { cn } from '../../../../utils/cn';
 import { FiMessageSquare, FiBarChart2, FiPlus, FiShield } from 'react-icons/fi';
@@ -389,7 +389,7 @@ const ReportingPage = ({ hideHeader }) => {
             required
           />
 
-          <BoxedSwitchField
+          <boxedSwitchField
             label={t('messages:submitAsAnonymous', 'Submit as Anonymous Report')}
             checked={createFormData.isAnonymous}
             onChange={(checked) => setCreateFormData({ ...createFormData, isAnonymous: checked })}

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { sendNotification } from '../../../../services/notifications';
+import { sendNotificationToUser } from '../../../services/notifications';
 
 const TriggerCrisisAlertSchema = z.object({
   message: z.string(),
@@ -35,7 +35,7 @@ export const triggerCrisisAlertAction: ActionDefinition<typeof TriggerCrisisAler
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof TriggerCrisisAlertSchema>, ctx: ActionContext) => {
     const { message, title, channel, targetAudience, facilityId, role } = input;
 
     const usersRef = collection(db, 'users');
@@ -50,14 +50,10 @@ export const triggerCrisisAlertAction: ActionDefinition<typeof TriggerCrisisAler
     const usersSnapshot = await getDocs(usersQuery);
 
     for (const userDoc of usersSnapshot.docs) {
-      await sendNotification({
+      await sendNotificationToUser(userDoc.id, {
         title,
         body: message,
         priority: 'CRITICAL',
-        target: {
-          type: 'USER',
-          userIds: [userDoc.id],
-        },
         data: {
           bypassDND: true,
           crisisAlert: true,

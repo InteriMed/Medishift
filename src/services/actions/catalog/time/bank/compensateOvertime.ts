@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, updateDoc, getDoc, increment, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../../common/utils';
@@ -29,7 +29,7 @@ export const compensateOvertimeAction: ActionDefinition<typeof CompensateOvertim
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CompensateOvertimeSchema>, ctx: ActionContext) => {
     const { userId, amountHours, method, comment } = input;
 
     const balanceRef = doc(db, 'time_balances', userId);
@@ -72,7 +72,6 @@ export const compensateOvertimeAction: ActionDefinition<typeof CompensateOvertim
       uid: ctx.userId,
       action: `OVERTIME_${method}`,
       metadata: { amountHours },
-      severity: 'HIGH',
     });
 
     await ctx.auditLogger('time.compensate_overtime', 'SUCCESS', {

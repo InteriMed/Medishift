@@ -40,7 +40,7 @@ export const deleteRoleAction: ActionDefinition<typeof DeleteRoleSchema, void> =
     const facilityData = facilitySnap.data();
     const existingRoles = facilityData.customRoles || [];
     
-    const updatedRoles = existingRoles.filter(r => r.id !== roleId);
+    const updatedRoles = existingRoles.filter((r: any) => r.id !== roleId);
 
     if (existingRoles.length === updatedRoles.length) {
       throw new Error('Role not found');

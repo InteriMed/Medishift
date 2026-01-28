@@ -1,14 +1,16 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore';
+
+const fphCategoryEnum = ['CLINICAL_PHARMACY', 'PHARMACEUTICAL_CARE', 'MANAGEMENT', 'OTHER'] as const;
 
 const LogFphCreditsSchema = z.object({
   userId: z.string(),
   points: z.number().positive(),
   date: z.string(),
   topic: z.string(),
-  category: z.enum(['CLINICAL_PHARMACY', 'PHARMACEUTICAL_CARE', 'MANAGEMENT', 'OTHER']),
+  category: z.enum(fphCategoryEnum),
   proofFileUrl: z.string().url(),
 });
 
@@ -28,10 +30,9 @@ export const logFphCreditsAction: ActionDefinition<typeof LogFphCreditsSchema, v
   metadata: {
     autoToast: true,
     riskLevel: 'LOW',
-    isSwiss: true,
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof LogFphCreditsSchema>, ctx: ActionContext) => {
     const { userId, points, date, topic, category, proofFileUrl } = input;
 
     const creditsRef = collection(db, 'fph_credits');

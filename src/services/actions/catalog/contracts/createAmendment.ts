@@ -1,11 +1,13 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { functions } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { functions } from '../../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
+
+const changeTypeEnum = ['RATE_CHANGE', 'PERCENTAGE_CHANGE', 'ROLE_CHANGE', 'FACILITY_CHANGE'] as const;
 
 const CreateAmendmentSchema = z.object({
   originalContractId: z.string(),
-  changeType: z.enum(['RATE_CHANGE', 'PERCENTAGE_CHANGE', 'ROLE_CHANGE', 'FACILITY_CHANGE']),
+  changeType: z.enum(changeTypeEnum),
   newValue: z.any(),
   effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   reason: z.string().min(10),
@@ -34,7 +36,7 @@ export const createAmendmentAction: ActionDefinition<typeof CreateAmendmentSchem
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CreateAmendmentSchema>, ctx: ActionContext): Promise<CreateAmendmentResult> => {
     const { originalContractId, changeType, newValue, effectiveDate, reason } = input;
 
     const createAmendmentFunction = httpsCallable(functions, 'createContractAmendment');

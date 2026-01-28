@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs, or } from 'firebase/firestore';
 
@@ -9,6 +9,16 @@ const ListEmployeesSchema = z.object({
   status: z.enum(['ACTIVE', 'TERMINATED', 'SUSPENDED', 'ON_LEAVE']).optional(),
   includeFloaters: z.boolean().default(true),
 });
+
+interface EmployeeData {
+  firstName: string;
+  lastName: string;
+  photoURL?: string;
+  role: string;
+  facilityId: string;
+  employmentStatus: string;
+  employmentType: string;
+}
 
 interface ListEmployeesResult {
   employees: Array<{
@@ -43,7 +53,7 @@ export const listEmployeesAction: ActionDefinition<typeof ListEmployeesSchema, L
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ListEmployeesSchema>, ctx: ActionContext) => {
     const { facilityId, role, status, includeFloaters } = input;
 
     const usersRef = collection(db, 'users');
@@ -97,7 +107,7 @@ export const listEmployeesAction: ActionDefinition<typeof ListEmployeesSchema, L
       
       snapshot.docs.forEach(doc => {
         if (!seenIds.has(doc.id)) {
-          const data = doc.data();
+          const data = doc.data() as EmployeeData;
           allEmployees.push({
             id: doc.id,
             firstName: data.firstName,

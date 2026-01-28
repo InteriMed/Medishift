@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import InputField from '../../components/boxedInputFields/personnalizedInputField';
-import UnderlinedLink from '../../components/boxedInputFields/links/links';
-import { firebaseApp } from '../../services/firebase';
+import links from '../../components/boxedInputFields/links/links';
+import { firebaseApp } from '../../services/services/firebase';
 import './auth.css';
 
 function ForgotPassword() {
@@ -122,7 +122,7 @@ function ForgotPassword() {
         <div className="auth-footer">
           <p>
             {t('auth.rememberPassword')}
-            <UnderlinedLink
+            <links
               text={t('auth.loginLink')}
               to={`/${lang}/login`}
               color="#000000"

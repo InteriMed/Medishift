@@ -65,8 +65,7 @@ export const validateTimesheetAction: ActionDefinition<typeof ValidateTimesheetS
     await appendAudit('marketplace_timesheets', timesheetRef.id, {
       uid: ctx.userId,
       action: 'TIMESHEET_SUBMITTED',
-      metadata: { totalHours },
-      severity: 'HIGH',
+      metadata: { totalHours, severity: 'HIGH' },
     });
 
     await ctx.auditLogger('marketplace.validate_timesheet', 'SUCCESS', {

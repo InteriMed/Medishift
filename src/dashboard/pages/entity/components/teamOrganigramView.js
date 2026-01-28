@@ -2,15 +2,15 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { db, auth } from '../../../../services/firebase';
+import { db, auth } from '../../../../services/services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { useDashboard } from '../../../contexts/dashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
 import { useAction } from '../../../../services/actions/hook';
 import { FiUsers, FiShield, FiGrid, FiLayers } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
-import EmployeeCard from './EmployeeCard';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import EmployeeCard from './employeeCard';
+import FilterBar from '../../marketplace/components/filterbar';
 import TeamOrganigramFlow from './teamOrganigramFlow';
 
 const ROLE_HIERARCHY = {

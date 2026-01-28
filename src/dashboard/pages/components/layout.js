@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Sidebar from '../Sidebar/Sidebar';
-import { Header } from '../Header/Header';
+import Sidebar from './sidebar/sidebar';
+import { Header } from './header/header';
 import { useLocation } from 'react-router-dom';
-import './DashboardLayout.css';
+import '../../layouts/dashboardLayout';
 
 /**
  * DashboardLayout Component

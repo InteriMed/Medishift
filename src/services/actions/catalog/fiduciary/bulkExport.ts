@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db, storage } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db, storage } from '../../../services/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const BulkExportSchema = z.object({
   facilityIds: z.array(z.string()),
   period: z.string(),
-  format: z.enum(['SWISSDEC', 'ABACUS', 'CSV_GENERIC']),
+  format: z.enum(['SWISSDEC', 'ABACUS', 'CSV_GENERIC'] as const),
 });
 
 interface BulkExportResult {
@@ -33,7 +33,7 @@ export const bulkExportAction: ActionDefinition<typeof BulkExportSchema, BulkExp
     riskLevel: 'MEDIUM',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof BulkExportSchema>, ctx: ActionContext) => {
     const { facilityIds, period, format } = input;
 
     const userRef = doc(db, 'users', ctx.userId);
@@ -46,7 +46,7 @@ export const bulkExportAction: ActionDefinition<typeof BulkExportSchema, BulkExp
     const linkedFacilities = userSnap.data().linkedFacilities || [];
 
     const unauthorizedFacilities = facilityIds.filter(
-      fid => !linkedFacilities.includes(fid)
+      (fid: string) => !linkedFacilities.includes(fid)
     );
 
     if (unauthorizedFacilities.length > 0) {

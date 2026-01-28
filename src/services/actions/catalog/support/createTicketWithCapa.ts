@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ActionDefinition } from "../../types";
+import { db } from '../../../services/firebase';
+import { collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
 
 const CreateTicketWithCapaSchema = z.object({
   description: z.string(),
-  severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
+  severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const),
   isBug: z.boolean().default(false),
   category: z.string().optional(),
   attachments: z.array(z.string().url()).optional(),
@@ -34,7 +34,7 @@ export const createTicketWithCapaAction: ActionDefinition<typeof CreateTicketWit
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CreateTicketWithCapaSchema>, ctx) => {
     const { description, severity, isBug, category, attachments } = input;
 
     const ticketsRef = collection(db, 'support_tickets');
@@ -62,7 +62,7 @@ export const createTicketWithCapaAction: ActionDefinition<typeof CreateTicketWit
       });
       capaId = capaDoc.id;
 
-      await ticketDoc.ref.update({ capaId: capaDoc.id });
+      await updateDoc(doc(db, 'support_tickets', ticketDoc.id), { capaId: capaDoc.id });
     }
 
     await ctx.auditLogger('support.create_ticket_with_capa', 'SUCCESS', {

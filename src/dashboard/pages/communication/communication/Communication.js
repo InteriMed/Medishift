@@ -17,7 +17,7 @@ import { TopicDetail } from './TopicDetail';
 import ThreadsList from '../components/ThreadsList';
 import ConversationView from '../components/ConversationView';
 import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
-import EmptyState from '../../../components/EmptyState/EmptyState';
+import EmptyState from '../../../../components/emptyState';
 import { cn } from '../../../../utils/cn';
 import { useMobileView } from '../../../hooks/useMobileView';
 

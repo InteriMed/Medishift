@@ -4,14 +4,18 @@ import { db } from '../../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../common/utils';
 
+const collectionTypeEnum = ['messages', 'tickets', 'announcements', 'policies', 'hr_reports'] as const;
+const threadStatusEnum = ['OPEN', 'IN_PROGRESS', 'CLOSED'] as const;
+const priorityEnum = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as const;
+
 const CreateThreadSchema = z.object({
-  collectionType: z.enum(['messages', 'tickets', 'announcements', 'policies', 'hr_reports']),
+  collectionType: z.enum(collectionTypeEnum),
   title: z.string().min(1).max(500).optional(),
   content: z.string().min(1),
   participants: z.array(z.string()).optional(),
   
   category: z.string().optional(),
-  status: z.enum(['OPEN', 'IN_PROGRESS', 'CLOSED']).optional(),
+  status: z.enum(threadStatusEnum).optional(),
   
   isAnonymous: z.boolean().optional(),
   offenderName: z.string().optional(),
@@ -33,7 +37,7 @@ const CreateThreadSchema = z.object({
     size: z.number(),
   })).optional(),
   
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
+  priority: z.enum(priorityEnum).optional(),
 });
 
 interface ThreadCreationResult {

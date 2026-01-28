@@ -1,10 +1,12 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
 import { db } from '../../../services/firebase';
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 
+const collectionTypeEnum = ['messages', 'tickets', 'announcements', 'policies', 'hr_reports'] as const;
+
 const CompileTextSchema = z.object({
-  collectionType: z.enum(['messages', 'tickets', 'announcements', 'policies', 'hr_reports']),
+  collectionType: z.enum(collectionTypeEnum),
   threadId: z.string(),
   includeReplies: z.boolean().default(true),
 });
@@ -33,7 +35,7 @@ export const compileTextAction: ActionDefinition<typeof CompileTextSchema, Compi
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CompileTextSchema>, ctx: ActionContext): Promise<CompileTextResult> => {
     const { collectionType, threadId, includeReplies } = input;
 
     const threadRef = doc(db, collectionType, threadId);

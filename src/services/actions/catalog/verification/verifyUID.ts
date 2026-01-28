@@ -26,14 +26,20 @@ interface VerifyUIDResult {
 /**
  * Verify Swiss Commercial Registry UID (CHE number)
  */
-export const verifyUIDAction: ActionDefinition = {
+export const verifyUIDAction: ActionDefinition<typeof VerifyUIDSchema, VerifyUIDResult> = {
   id: "verification.uid",
-  riskLevel: "LOW",
+  fileLocation: "src/services/actions/catalog/verification/verifyUID.ts",
+  requiredPermission: "thread.read",
   label: "Verify UID",
   description: "Verify Swiss Commercial Registry UID",
+  keywords: ["uid", "verify", "registry", "swiss", "che"],
+  icon: "Search",
   schema: VerifyUIDSchema,
-
-  handler: async (input, ctx): Promise<VerifyUIDResult> => {
+  metadata: {
+    autoToast: false,
+    riskLevel: 'LOW',
+  },
+  handler: async (input: z.infer<typeof VerifyUIDSchema>, ctx): Promise<VerifyUIDResult> => {
     const { uid, includeDetails } = input;
 
     try {
@@ -52,7 +58,7 @@ export const verifyUIDAction: ActionDefinition = {
       const data = await response.json();
 
       if (!data || !data.uid) {
-        await ctx.auditLogger('verification.uid', 'NOT_FOUND', { uid });
+        await ctx.auditLogger('verification.uid', 'ERROR', { uid, reason: 'NOT_FOUND' });
         return {
           isValid: false,
           error: "UID not found in registry"

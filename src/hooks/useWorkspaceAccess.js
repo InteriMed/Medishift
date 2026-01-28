@@ -1,20 +1,40 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/authContext';
+import { useSmartAuth } from '../services/services/auth';
 import { fetchCompleteUserData, getAvailableWorkspaces } from '../config/workspaceDefinitions';
-import { auth, functions } from '../services/firebase';
+import { auth, functions } from '../services/services/firebase';
 import { signInWithCustomToken } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
+import { DEFAULT_LANGUAGE } from '../config/routeHelpers';
+import { buildDashboardUrl, getWorkspaceIdForUrl, getDefaultRouteForWorkspace } from '../config/routeUtils';
 
 export const useWorkspaceAccess = () => {
   const { currentUser } = useAuth();
+  const smartAuth = useSmartAuth();
   const navigate = useNavigate();
   const { lang } = useParams();
+  const { i18n } = useTranslation();
   const [workspaces, setWorkspaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState(null);
   const [switching, setSwitching] = useState(false);
+  
+  const currentLang = lang || i18n.language || DEFAULT_LANGUAGE;
+
+  useEffect(() => {
+    if (smartAuth?.claims?.workspaceId && workspaces.length > 0) {
+      const workspaceFromClaims = workspaces.find(w => {
+        const workspaceIdForUrl = getWorkspaceIdForUrl(w);
+        return workspaceIdForUrl === smartAuth.claims.workspaceId;
+      });
+      if (workspaceFromClaims && currentWorkspace?.id !== workspaceFromClaims.id) {
+        setCurrentWorkspace(workspaceFromClaims);
+      }
+    }
+  }, [smartAuth?.claims?.workspaceId, workspaces]);
 
   const checkWorkspaces = useCallback(async () => {
     if (!currentUser) {
@@ -40,7 +60,7 @@ export const useWorkspaceAccess = () => {
       setNeedsOnboarding(availableWorkspaces.length === 0);
       
       if (availableWorkspaces.length === 0) {
-        navigate(`/${lang}/onboarding`);
+        navigate(`/${currentLang}/onboarding`);
       }
       
       setLoading(false);
@@ -48,7 +68,7 @@ export const useWorkspaceAccess = () => {
       console.error('Error checking workspaces:', error);
       setLoading(false);
     }
-  }, [currentUser, lang, navigate]);
+  }, [currentUser, currentLang, navigate]);
 
   useEffect(() => {
     checkWorkspaces();
@@ -60,6 +80,11 @@ export const useWorkspaceAccess = () => {
     if (!workspace) {
       console.error('Workspace not found:', workspaceId);
       return false;
+    }
+
+    // Prevent switching to the same workspace
+    if (currentWorkspace?.id === workspace.id) {
+      return true;
     }
 
     try {
@@ -83,23 +108,23 @@ export const useWorkspaceAccess = () => {
         // Update local state
         setCurrentWorkspace(workspace);
         
-        // Navigate to appropriate dashboard
-        switch (workspace.type) {
-          case 'personal':
-            navigate(`/${lang}/dashboard/personal/overview`);
-            break;
-          case 'facility':
-            navigate(`/${lang}/dashboard/${workspace.id}/overview`);
-            break;
-          case 'organization':
-            navigate(`/${lang}/dashboard/${workspace.id}/organization`);
-            break;
-          case 'admin':
-            navigate(`/${lang}/dashboard/admin/portal`);
-            break;
-          default:
-            navigate(`/${lang}/dashboard/overview`);
+        // Small delay to ensure auth state propagates before navigation
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Navigate to appropriate dashboard using route utilities
+        const workspaceId = getWorkspaceIdForUrl(workspace);
+        const defaultRoute = getDefaultRouteForWorkspace(workspace.type);
+        
+        // Handle special cases for organization workspace
+        let targetRoute = defaultRoute;
+        if (workspace.type === 'organization') {
+          targetRoute = 'organization';
         }
+        
+        const dashboardPath = buildDashboardUrl(targetRoute, workspaceId);
+        const finalPath = `/${currentLang}${dashboardPath}`;
+        
+        navigate(finalPath);
         
         return true;
       } else {
@@ -121,7 +146,7 @@ export const useWorkspaceAccess = () => {
     } finally {
       setSwitching(false);
     }
-  }, [workspaces, lang, navigate]);
+  }, [workspaces, currentWorkspace, currentLang, navigate]);
 
   const refreshWorkspaces = useCallback(() => {
     return checkWorkspaces();

@@ -63,3 +63,63 @@ export const convertPermitTypeToProfileFormat = (permitType: string): string | n
   return `permit_${permitType.toLowerCase()}`;
 };
 
+export type DocumentType = 'identity' | 'work_permit' | 'diploma' | 'billing' | 'commercial_registry' | 'gln_certificate' | 'generic';
+
+export interface DocumentProcessingOptions {
+  documentType: DocumentType;
+  extractFields?: string[];
+  dropdownOptions?: Record<string, any[]>;
+}
+
+export interface ProcessedDocument {
+  success: boolean;
+  documentType: string;
+  fields: Record<string, any>;
+  confidence: number;
+  rawText?: string;
+  error?: string;
+}
+
+export const processDocumentWithAI = async (
+  documentUrl: string,
+  documentType: string,
+  storagePath?: string,
+  mimeType?: string,
+  dropdownOptions?: Record<string, any[]>
+): Promise<ProcessedDocument> => {
+  try {
+    const { functions } = await import('../services/firebase');
+    const { httpsCallable } = await import('firebase/functions');
+    
+    const processDocumentFunction = httpsCallable(functions, 'processDocument');
+    
+    const result = await processDocumentFunction({
+      documentUrl,
+      documentType,
+      storagePath,
+      mimeType,
+      dropdownOptions
+    });
+
+    const data = result.data as any;
+    
+    return {
+      success: data.success || false,
+      documentType,
+      fields: data.fields || {},
+      confidence: data.confidence || 0,
+      rawText: data.rawText,
+      error: data.error
+    };
+  } catch (error: any) {
+    console.error('[DocumentProcessing] Failed to process document:', error);
+    return {
+      success: false,
+      documentType,
+      fields: {},
+      confidence: 0,
+      error: error.message || 'Failed to process document'
+    };
+  }
+};
+

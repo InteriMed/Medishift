@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../../common/utils';
@@ -29,12 +29,12 @@ export const adjustBalanceAction: ActionDefinition<typeof AdjustBalanceSchema, v
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof AdjustBalanceSchema>, ctx: ActionContext) => {
     const { userId, type, delta, reason } = input;
 
     const balanceRef = doc(db, 'time_balances', userId);
     
-    const fieldMap = {
+    const fieldMap: Record<typeof type, string> = {
       'VACATION': 'vacation_balance',
       'OVERTIME': 'overtime_balance',
       'PUBLIC_HOLIDAY': 'public_holiday_balance',
@@ -50,7 +50,6 @@ export const adjustBalanceAction: ActionDefinition<typeof AdjustBalanceSchema, v
       uid: ctx.userId,
       action: 'BALANCE_ADJUSTED',
       metadata: { type, delta, reason },
-      severity: 'CRITICAL',
     });
 
     await ctx.auditLogger('time.adjust_balance', 'SUCCESS', {

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
-import { collection, query, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, query, getDocs, writeBatch, doc } from 'firebase/firestore';
 
 const StandardizeRolesSchema = z.object({
   roleId: z.string(),
@@ -43,8 +43,7 @@ export const standardizeRolesAction: ActionDefinition<typeof StandardizeRolesSch
     const batch = writeBatch(db);
 
     facilitiesSnapshot.forEach((facilityDoc) => {
-      const roleRef = db.collection('facility_profiles').doc(facilityDoc.id)
-        .collection('role_definitions').doc(roleId);
+      const roleRef = doc(db, 'facility_profiles', facilityDoc.id, 'role_definitions', roleId);
       
       batch.set(roleRef, {
         ...roleTemplate,

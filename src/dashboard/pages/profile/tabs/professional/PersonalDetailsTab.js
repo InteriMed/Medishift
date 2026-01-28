@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import PersonalizedInputField from '../../../../../components/boxedInputFields/personnalizedInputField';
 import DropdownField from '../../../../../components/boxedInputFields/dropdownField';
-import DateField from '../../../../../components/boxedInputFields/DateField';
-import FormGrid from '../../formGrid';
-import ContentSection from '../../contentSection';
+import dateField from '../../../../../components/boxedInputFields/dateField';
+import FormGrid from '../../components/formGrid';
+import ContentSection from '../../../../shared/components/ContentSection';
 
 const PersonalDetailsTab = ({ data, errors, updateField }) => {
   const { t } = useTranslation(['dashboard/profile', 'dropdowns']);
@@ -60,7 +60,7 @@ const PersonalDetailsTab = ({ data, errors, updateField }) => {
           })}
         />
 
-        <DateField
+        <dateField
           label={t('personalDetails.dateOfBirth')}
           value={data?.identity?.dateOfBirth || ''}
           onChange={(value) => updateField('identity', {

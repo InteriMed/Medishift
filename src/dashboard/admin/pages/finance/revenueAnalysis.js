@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, Percent } from 'lucide-react';
 import ProtectedRoute from '../../components/protectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
-import PageHeader from '../../../components/PageHeader/PageHeader';
-import FilterBar from '../../../../components/dashboard/dashboardFilterBar/FilterBar';
+import PageHeader from '../../../shared/components/titles/PageHeader';
+import FilterBar from '../../../pages/marketplace/components/filterbar';
 import '../../../../styles/variables.css';
 
 const RevenueAnalysis = () => {

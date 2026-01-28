@@ -1,13 +1,15 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { appendAudit } from '../../common/utils';
-import { sendNotificationToUser } from '../../../../services/notifications';
+import { appendAudit } from '../common/utils';
+import { sendNotificationToUser } from '../../../services/notifications';
+
+const providerEnum = ['INTERNAL', 'SKRIBBLE', 'DOCUSIGN'] as const;
 
 const SendForSignatureSchema = z.object({
   contractId: z.string(),
-  provider: z.enum(['INTERNAL', 'SKRIBBLE', 'DOCUSIGN']).default('INTERNAL'),
+  provider: z.enum(providerEnum).default('INTERNAL' as const),
 });
 
 interface SendForSignatureResult {
@@ -33,7 +35,7 @@ export const sendForSignatureAction: ActionDefinition<typeof SendForSignatureSch
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof SendForSignatureSchema>, ctx: ActionContext) => {
     const { contractId, provider } = input;
 
     const contractRef = doc(db, 'contracts', contractId);

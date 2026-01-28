@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { validateShiftConstraints } from '../constraints';
@@ -29,10 +29,10 @@ export const acceptSwapAction: ActionDefinition<typeof AcceptSwapSchema, AcceptS
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof AcceptSwapSchema>, ctx: ActionContext): Promise<AcceptSwapResult> => {
     const { swapRequestId } = input;
 
     const swapRef = doc(db, 'swap_requests', swapRequestId);

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
-import { sendNotification } from '../../../../services/notifications';
+import { sendNotificationToUser } from '../../../../services/notifications';
 
 const ScheduleInterviewSchema = z.object({
   applicationId: z.string(),
@@ -93,14 +93,16 @@ export const scheduleInterviewAction: ActionDefinition<typeof ScheduleInterviewS
       createdAt: serverTimestamp(),
     });
 
-    await sendNotification({
+    await sendNotificationToUser(application.userId, {
       title: 'Interview Scheduled',
       body: `Interview scheduled for ${scheduledAt}`,
       priority: 'HIGH',
-      target: {
-        type: 'USER',
-        userIds: [application.userId, hostUserId],
-      },
+      actionUrl: `/recruitment/interviews/${interviewDoc.id}`,
+    });
+    await sendNotificationToUser(hostUserId, {
+      title: 'Interview Scheduled',
+      body: `Interview scheduled for ${scheduledAt}`,
+      priority: 'HIGH',
       actionUrl: `/recruitment/interviews/${interviewDoc.id}`,
     });
 

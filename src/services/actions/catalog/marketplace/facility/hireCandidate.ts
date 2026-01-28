@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db, functions } from '../../../../services/firebase';
 import { doc, updateDoc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../../common/utils';
@@ -32,7 +32,7 @@ export const hireCandidateAction: ActionDefinition<typeof HireCandidateSchema, H
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof HireCandidateSchema>, ctx: ActionContext) => {
     const { applicationId } = input;
 
     const applicationRef = doc(db, 'marketplace_applications', applicationId);
@@ -112,7 +112,7 @@ export const hireCandidateAction: ActionDefinition<typeof HireCandidateSchema, H
     await appendAudit('marketplace_applications', applicationId, {
       uid: ctx.userId,
       action: 'APPLICATION_ACCEPTED',
-      severity: 'HIGH',
+      metadata: { severity: 'HIGH' },
     });
 
     await ctx.auditLogger('marketplace.hire_candidate', 'SUCCESS', {

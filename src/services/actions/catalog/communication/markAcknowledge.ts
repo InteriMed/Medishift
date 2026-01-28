@@ -1,11 +1,13 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
 import { db } from '../../../services/firebase';
 import { doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../common/utils';
 
+const acknowledgeCollectionTypeEnum = ['policies', 'announcements'] as const;
+
 const MarkAcknowledgeSchema = z.object({
-  collectionType: z.enum(['policies', 'announcements']),
+  collectionType: z.enum(acknowledgeCollectionTypeEnum),
   threadId: z.string(),
 });
 
@@ -27,7 +29,7 @@ export const markAcknowledgeAction: ActionDefinition<typeof MarkAcknowledgeSchem
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof MarkAcknowledgeSchema>, ctx: ActionContext): Promise<void> => {
     const { collectionType, threadId } = input;
 
     const threadRef = doc(db, collectionType, threadId);

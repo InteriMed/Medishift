@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
-import { WORKSPACE_TYPES } from '../../../../utils/sessionAuth';
-import { LOCALSTORAGE_KEYS } from '../../../../config/keysDatabase';
+import { WORKSPACE_TYPES } from '../../../../../utils/sessionAuth';
+import { LOCALSTORAGE_KEYS } from '../../../../../config/keysDatabase';
 import styles from './workspaceSelector.module.css';
 
 const WorkspaceSelector = ({ workspaces, selectedWorkspace, onSelectWorkspace, onOpenChange, children, headerColor }) => {

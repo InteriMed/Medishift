@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs, updateDoc, doc, writeBatch } from 'firebase/firestore';
 import { sendNotificationToUser } from '../../../../services/notifications';
@@ -34,7 +34,7 @@ export const publishRosterAction: ActionDefinition<typeof PublishRosterSchema, P
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof PublishRosterSchema>, ctx: ActionContext): Promise<PublishRosterResult> => {
     const { month, year, notifyUsers } = input;
 
     const startDate = new Date(year, month - 1, 1);
@@ -53,14 +53,14 @@ export const publishRosterAction: ActionDefinition<typeof PublishRosterSchema, P
     );
 
     const snapshot = await getDocs(q);
-    const shifts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const shifts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
 
     const batch = writeBatch(db);
     const affectedUsers = new Set<string>();
 
     shifts.forEach(shift => {
-      if (shift.userId) {
-        affectedUsers.add(shift.userId);
+      if ((shift as any).userId) {
+        affectedUsers.add((shift as any).userId);
       }
 
       const shiftRef = doc(db, 'shifts', shift.id);
@@ -78,7 +78,7 @@ export const publishRosterAction: ActionDefinition<typeof PublishRosterSchema, P
     if (notifyUsers) {
       const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
       
-      for (const userId of affectedUsers) {
+      for (const userId of Array.from(affectedUsers)) {
         try {
           await sendNotificationToUser(userId, {
             title: `${monthName} Schedule Published`,

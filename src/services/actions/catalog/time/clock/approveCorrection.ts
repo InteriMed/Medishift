@@ -60,7 +60,6 @@ export const approveCorrectionAction: ActionDefinition<typeof ApproveCorrectionS
     await appendAudit('time_correction_requests', correctionRequestId, {
       uid: ctx.userId,
       action: approved ? 'CORRECTION_APPROVED' : 'CORRECTION_REJECTED',
-      severity: 'HIGH',
     });
 
     await ctx.auditLogger('time.approve_correction', 'SUCCESS', {

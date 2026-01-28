@@ -1,10 +1,13 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
+
+const documentTypeEnum = ['identity', 'permit', 'invoice', 'generic'] as const;
+const languageEnum = ['en', 'de', 'fr', 'it'] as const;
 
 const ExtractTextSchema = z.object({
   imageUrl: z.string().url("Must be a valid image URL"),
-  documentType: z.enum(['identity', 'permit', 'invoice', 'generic']).optional(),
-  language: z.enum(['en', 'de', 'fr', 'it']).optional(),
+  documentType: z.enum(documentTypeEnum).optional(),
+  language: z.enum(languageEnum).optional(),
 });
 
 interface ExtractedText {
@@ -18,14 +21,20 @@ interface ExtractedText {
  * Extract text from document image using OCR
  * Supports identity documents, permits, invoices, and generic documents
  */
-export const extractTextAction: ActionDefinition = {
+export const extractTextAction: ActionDefinition<typeof ExtractTextSchema, ExtractedText> = {
   id: "ai.ocr.extract_text",
-  riskLevel: "LOW",
+  fileLocation: "src/services/actions/catalog/ai/extractText.ts",
+  requiredPermission: "admin.access",
   label: "Extract Text (OCR)",
   description: "Extract text from document images using OCR",
+  keywords: ["ocr", "extract", "text", "document"],
+  icon: "FileText",
   schema: ExtractTextSchema,
+  metadata: {
+    riskLevel: "LOW",
+  },
 
-  handler: async (input, ctx): Promise<ExtractedText> => {
+  handler: async (input: z.infer<typeof ExtractTextSchema>, ctx: ActionContext): Promise<ExtractedText> => {
     const { imageUrl, documentType = 'generic', language = 'en' } = input;
 
     try {

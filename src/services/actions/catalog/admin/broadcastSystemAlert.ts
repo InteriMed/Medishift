@@ -1,33 +1,43 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import { getMessaging } from "firebase-admin/messaging";
+import { ActionDefinition, ActionContext } from "../../types";
+import { db, functions } from '../../../services/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 
-const db = getFirestore();
-const messaging = getMessaging();
+const alertTypeEnum = ['INFO', 'WARNING', 'DOWNTIME'] as const;
 
 const BroadcastSystemAlertSchema = z.object({
   message: z.string(),
   title: z.string(),
-  type: z.enum(['INFO', 'WARNING', 'DOWNTIME']),
+  type: z.enum(alertTypeEnum),
   maintenanceWindow: z.object({
     start: z.string(),
     end: z.string(),
   }).optional(),
 });
 
-export const broadcastSystemAlertAction: ActionDefinition = {
+interface BroadcastSystemAlertResult {
+  alertId: string;
+  sentViaTopic: boolean;
+}
+
+export const broadcastSystemAlertAction: ActionDefinition<typeof BroadcastSystemAlertSchema, BroadcastSystemAlertResult> = {
   id: "admin.broadcast_system_alert",
-  riskLevel: "MEDIUM",
+  fileLocation: "src/services/actions/catalog/admin/broadcastSystemAlert.ts",
+  requiredPermission: "admin.access",
   label: "Broadcast System Alert",
   description: "Global banner/push for all facilities via FCM Topics.",
+  keywords: ["broadcast", "alert", "system", "notification"],
+  icon: "Bell",
   schema: BroadcastSystemAlertSchema,
+  metadata: {
+    riskLevel: "MEDIUM",
+  },
   
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof BroadcastSystemAlertSchema>, ctx: ActionContext): Promise<BroadcastSystemAlertResult> => {
     const { message, title, type, maintenanceWindow } = input;
 
-    // 1. Create Alert Document (Frontend pulls this for the Banner)
-    const alertRef = await db.collection('system_alerts').add({
+    const alertRef = await addDoc(collection(db, 'system_alerts'), {
       title,
       message,
       type,
@@ -35,21 +45,22 @@ export const broadcastSystemAlertAction: ActionDefinition = {
       targetAudience: 'ALL',
       active: true,
       createdBy: ctx.userId,
-      createdAt: FieldValue.serverTimestamp(),
+      createdAt: serverTimestamp(),
     });
 
-    // 2. 🚀 Send Push via Topic (Scalable Fan-Out)
-    // Users subscribe to 'system_alerts' topic on login
-    await messaging.sendToTopic('system_alerts', {
-      notification: {
+    const broadcastNotification = httpsCallable(functions, 'broadcastNotification');
+    await broadcastNotification({
+      target: 'ALL',
+      announcement: {
         title: title,
         body: message,
-      },
-      data: {
-        type: 'SYSTEM_ALERT',
-        alertId: alertRef.id,
-        severity: type,
-        click_action: '/alerts'
+        priority: type === 'DOWNTIME' ? 'CRITICAL' : type === 'WARNING' ? 'HIGH' : 'LOW',
+        actionUrl: '/alerts',
+        data: {
+          type: 'SYSTEM_ALERT',
+          alertId: alertRef.id,
+          severity: type,
+        }
       }
     });
 

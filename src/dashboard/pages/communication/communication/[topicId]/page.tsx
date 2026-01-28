@@ -1,37 +1,50 @@
-'use client';
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { useParams, useNavigate } from 'react-router-dom';
+import Button from '../../../../../components/boxedInputFields/button';
+import TextareaField from '../../../../../components/boxedInputFields/textareaField';
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-    Trash2,
-    Send,
-    Heart,
-    Shield,
-    Pin,
-    Megaphone,
-    MessageSquare,
-    ArrowLeft,
-    ChevronRight,
-} from 'lucide-react';
-import {
-    topicService,
-    Topic,
-    Reply,
-    TopicCategory,
-} from '@/lib/api/topics';
-import { useAuth } from '@/contexts/auth-context';
-import { useToast } from '@/hooks/ui/use-toast';
-import { ClipizyLoadingOverlay } from '@/components/ui/clipizy-loading';
-import { cn } from '@/lib/utils';
+    FiTrash2 as Trash2,
+    FiSend as Send,
+    FiHeart as Heart,
+    FiShield as Shield,
+    FiPaperclip as Pin,
+    FiBell as Megaphone,
+    FiMessageSquare as MessageSquare,
+    FiArrowLeft as ArrowLeft,
+    FiChevronRight as ChevronRight,
+} from 'react-icons/fi';
+import { useAuth } from '../../../../../contexts/authContext';
+import { useNotification } from '../../../../../contexts/notificationContext';
+import { useAction } from '../../../../../services/actions/hook';
+import { cn } from '../../../../../services/utils/formatting';
+
+// Define missing types
+export type TopicCategory = 'feedback' | 'bug_report' | 'feature_request' | 'support' | 'question' | 'general';
+
+export interface Reply {
+    id: string;
+    content: string;
+    user_username?: string;
+    user_email?: string;
+    created_at: string;
+    upvotes: number;
+    parent_id?: string;
+    is_admin_reply?: boolean;
+    replies?: Reply[];
+}
+
+export interface Topic {
+    id: string;
+    title: string;
+    content: string;
+    category: TopicCategory;
+    user_username?: string;
+    user_email?: string;
+    created_at: string;
+    upvotes: number;
+    is_pinned?: boolean;
+    replies?: Reply[];
+}
 
 const categoryLabels: Record<TopicCategory, string> = {
     feedback: 'Feedback',
@@ -68,9 +81,10 @@ function buildReplyTree(replies: Reply[]): Reply[] {
 
 export default function TopicDetailPage() {
     const params = useParams();
-    const router = useRouter();
-    const { user } = useAuth();
-    const { toast } = useToast();
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const { showError, showSuccess } = useNotification();
+    const { execute } = useAction();
     const topicId = params.topicId as string;
 
     const [topic, setTopic] = useState<Topic | null>(null);
@@ -86,20 +100,27 @@ export default function TopicDetailPage() {
     const loadTopic = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await topicService.getTopic(topicId);
-            setTopic(data);
+            const result: any = await execute('thread.fetch', {
+                collectionType: 'tickets',
+                threadId: topicId,
+                includeReplies: true
+            });
+
+            if (result && result.thread) {
+                const topicData: Topic = {
+                    ...result.thread,
+                    replies: result.replies || []
+                };
+                setTopic(topicData);
+            }
         } catch (error: any) {
             console.error('Error loading topic:', error);
-            toast({
-                title: 'Error',
-                description: error.message || 'Failed to load topic',
-                variant: 'destructive',
-            });
-            router.push('/dashboard/communication');
+            showError(error.message || 'Failed to load topic');
+            navigate('/dashboard/communication');
         } finally {
             setLoading(false);
         }
-    }, [topicId, toast, router]);
+    }, [topicId, showError, navigate, execute]);
 
     useEffect(() => {
         if (topicId) {
@@ -110,8 +131,10 @@ export default function TopicDetailPage() {
     const handleUpvoteTopic = async () => {
         if (!topic) return;
         try {
-            await topicService.upvoteTopic(topic.id);
-            loadTopic();
+            // Mapping upvote to a flag priority or similar action if applicable
+            // For now just a placeholder if action doesn't exist
+            // await execute('thread.upvote', { threadId: topic.id });
+            await loadTopic();
         } catch (error) {
             console.error('Failed to upvote topic:', error);
         }
@@ -120,8 +143,8 @@ export default function TopicDetailPage() {
     const handleUpvoteReply = async (replyId: string) => {
         if (!topic) return;
         try {
-            await topicService.upvoteReply(topic.id, replyId);
-            loadTopic();
+            // await execute('thread.upvote_reply', { threadId: topic.id, replyId });
+            await loadTopic();
         } catch (error) {
             console.error('Failed to upvote reply:', error);
         }
@@ -132,36 +155,33 @@ export default function TopicDetailPage() {
         const key = parentId || topic.id;
         const content = replyData[key]?.trim();
         if (!content) {
-            toast({
-                title: 'Validation Error',
-                description: 'Please enter a reply',
-                variant: 'destructive',
-            });
+            showError('Please enter a reply');
             return;
         }
 
         try {
             setReplying(key);
-            await topicService.createReply(topic.id, { content, parent_id: parentId });
-            toast({
-                title: 'Success!',
-                description: 'Your reply has been posted',
+            await execute('thread.reply', {
+                threadId: topic.id,
+                content,
+                parentId,
+                collectionType: 'tickets'
             });
+
+            showSuccess('Your reply has been posted');
             setReplyData({ ...replyData, [key]: '' });
             loadTopic();
         } catch (error: any) {
-            toast({
-                title: 'Error',
-                description: error.message || 'Failed to post reply',
-                variant: 'destructive',
-            });
+            showError(error.message || 'Failed to post reply');
         } finally {
             setReplying(null);
         }
     };
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
+    const formatDate = (dateString: any) => {
+        if (!dateString) return '';
+        // Handle Firestore Timestamp or string
+        const date = dateString.toDate ? dateString.toDate() : new Date(dateString);
         return date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
@@ -185,12 +205,6 @@ export default function TopicDetailPage() {
                             "group relative",
                             level > 0 && "ml-6"
                         )}>
-                            {/* Connection curve for nested replies - optional detail
-                            {level > 0 && (
-                                <div className="absolute -left-6 top-6 w-4 h-px bg-border" />
-                            )}
-                            */}
-
                             <div className="flex gap-4">
                                 <div className="flex-shrink-0 relative">
                                     <div className="w-10 h-10 rounded-full bg-secondary/80 border border-white/5 flex items-center justify-center font-bold text-sm text-foreground shadow-sm">
@@ -222,7 +236,7 @@ export default function TopicDetailPage() {
 
                                     <div className="flex items-center gap-4 pt-1">
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); handleUpvoteReply(reply.id); }}
+                                            onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleUpvoteReply(reply.id); }}
                                             className={cn(
                                                 "flex items-center gap-1.5 text-xs transition-colors p-1 -ml-1 rounded-md hover:bg-muted",
                                                 reply.upvotes ? "text-rose-500" : "text-muted-foreground hover:text-foreground"
@@ -232,7 +246,7 @@ export default function TopicDetailPage() {
                                             <span>{reply.upvotes || 0}</span>
                                         </button>
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); setReplying(reply.id); }}
+                                            onClick={(e: React.MouseEvent) => { e.stopPropagation(); setReplying(reply.id); }}
                                             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
                                         >
                                             <MessageSquare className="w-3.5 h-3.5" />
@@ -243,27 +257,31 @@ export default function TopicDetailPage() {
                                     {replying === reply.id && (
                                         <div className="mt-4 animate-in fade-in slide-in-from-top-2">
                                             <div className="relative">
-                                                <Textarea
-                                                    placeholder="Write a reply..."
-                                                    value={replyData[reply.id] || ''}
-                                                    onChange={e => {
-                                                        e.target.style.height = 'auto';
-                                                        e.target.style.height = e.target.scrollHeight + 'px';
-                                                        setReplyData({ ...replyData, [reply.id]: e.target.value });
-                                                    }}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    rows={1}
-                                                    autoFocus
-                                                    className="w-full bg-secondary/50 border-dashed border-border/50 hover:bg-secondary/80 focus:bg-secondary focus:border-border/50 focus-visible:ring-0 transition-all rounded-xl placeholder:text-muted-foreground/50 resize-none min-h-[60px] py-3 pr-12 text-sm"
-                                                />
+                                                <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                                                    <TextareaField
+                                                        label=""
+                                                        placeholder="Write a reply..."
+                                                        value={replyData[reply.id] || ''}
+                                                        onChange={(e: any) => {
+                                                            setReplyData({ ...replyData, [reply.id]: e.target.value });
+                                                        }}
+                                                        name={`reply-${reply.id}`}
+                                                        rows={1}
+                                                        maxLength={undefined}
+                                                        marginBottom={undefined}
+                                                        marginTop={undefined}
+                                                        marginLeft={undefined}
+                                                        marginRight={undefined}
+                                                        error={null}
+                                                        onErrorReset={() => {}}
+                                                    />
+                                                </div>
                                                 <Button
-                                                    size="icon"
-                                                    variant="ghost"
                                                     className={cn(
-                                                        "absolute right-2 bottom-2 h-8 w-8 transition-all hover:bg-primary hover:text-primary-foreground",
+                                                        "absolute right-2 bottom-2 h-8 w-8",
                                                         replyData[reply.id]?.trim() ? "text-primary opacity-100" : "text-muted-foreground opacity-50"
                                                     )}
-                                                    onClick={(e) => { e.stopPropagation(); handleReply(reply.id); }}
+                                                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleReply(reply.id); }}
                                                     disabled={!replyData[reply.id]?.trim()}
                                                 >
                                                     <Send className="w-4 h-4" />
@@ -287,7 +305,11 @@ export default function TopicDetailPage() {
     };
 
     if (loading) {
-        return <ClipizyLoadingOverlay message="Loading discussion..." />;
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+                <p>Loading discussion...</p>
+            </div>
+        );
     }
 
     if (!topic) {
@@ -305,8 +327,7 @@ export default function TopicDetailPage() {
                     <div className="flex items-center gap-4">
                         <Button
                             variant="ghost"
-                            size="icon"
-                            onClick={() => router.push('/dashboard/communication')}
+                            onClick={() => navigate('/dashboard/communication')}
                             className="hover:bg-muted -ml-2 text-muted-foreground hover:text-foreground"
                         >
                             <ArrowLeft className="w-5 h-5" />
@@ -315,15 +336,15 @@ export default function TopicDetailPage() {
 
                     {/* Center: Category Badge */}
                     <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-                        <Badge variant="outline" className="border-border/50 bg-secondary/50 text-muted-foreground text-xs px-3 py-1 rounded-full capitalize hover:bg-secondary">
+                        <span className="border-border/50 bg-secondary/50 text-muted-foreground text-xs px-3 py-1 rounded-full capitalize hover:bg-secondary border">
                             {categoryLabels[topic.category] || topic.category}
-                        </Badge>
+                        </span>
                     </div>
 
                 </div>
             </header>
 
-            <main className="mx-auto w-full max-w-6xl py-8 md:py-12">
+            <main className="mx-auto w-full max-w-6xl py-8 md:py-12 px-6">
                 <div className="space-y-6">
                     {/* Topic Main Content */}
                     <div className="bg-secondary rounded-3xl p-6 md:p-10">
@@ -345,9 +366,9 @@ export default function TopicDetailPage() {
                                         </div>
                                         <div className="flex items-center gap-2 mt-1">
                                             {topic.is_pinned && (
-                                                <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 text-[10px] px-2 h-5 rounded-full border-0">
+                                                <span className="bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 text-[10px] px-2 h-5 rounded-full border-0 flex items-center">
                                                     <Pin className="w-3 h-3 mr-1" /> Pinned
-                                                </Badge>
+                                                </span>
                                             )}
                                         </div>
                                     </div>
@@ -368,7 +389,6 @@ export default function TopicDetailPage() {
                             <div className="flex items-center gap-2 pt-2">
                                 <Button
                                     variant="outline"
-                                    size="sm"
                                     onClick={handleUpvoteTopic}
                                     className={cn(
                                         "rounded-full border-border/50 bg-background hover:bg-background/80 gap-2 transition-all h-9 px-4",
@@ -380,7 +400,6 @@ export default function TopicDetailPage() {
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    size="sm"
                                     onClick={handleFocusReply}
                                     className="rounded-full border-border/50 bg-background hover:bg-background/80 gap-2 transition-all h-9 px-4 text-muted-foreground hover:text-foreground"
                                 >
@@ -406,31 +425,35 @@ export default function TopicDetailPage() {
                             {/* Comment Input */}
                             <div className="flex gap-4">
                                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-sm text-primary flex-shrink-0">
-                                    {(user?.username || user?.email || 'Me').charAt(0).toUpperCase()}
+                                    {(currentUser?.firstName || currentUser?.email || 'Me').charAt(0).toUpperCase()}
                                 </div>
                                 <div className="flex-1 relative group/input">
-                                    <Textarea
-                                        ref={replyInputRef}
+                                    <TextareaField
+                                        label=""
                                         placeholder="Add to the discussion..."
                                         value={replyData[topic.id] || ''}
-                                        onChange={e => {
-                                            e.target.style.height = 'auto';
-                                            e.target.style.height = e.target.scrollHeight + 'px';
+                                        onChange={(e: any) => {
                                             setReplyData({
                                                 ...replyData,
                                                 [topic.id]: e.target.value,
                                             });
                                         }}
+                                        name={`reply-topic-${topic.id}`}
                                         rows={1}
-                                        className="w-full bg-background/50 border-dashed border-border/50 hover:bg-background/80 focus:bg-background focus:border-border/50 focus-visible:ring-0 transition-all rounded-2xl placeholder:text-muted-foreground/50 resize-none min-h-[56px] py-4 px-5 text-sm"
+                                        maxLength={undefined}
+                                        marginBottom={undefined}
+                                        marginTop={undefined}
+                                        marginLeft={undefined}
+                                        marginRight={undefined}
+                                        error={null}
+                                        onErrorReset={() => {}}
                                     />
                                     <div className={cn(
                                         "absolute right-2 bottom-2 transition-all duration-200",
                                         replyData[topic.id]?.trim() ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
                                     )}>
                                         <Button
-                                            size="icon"
-                                            className="h-10 w-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                                            className="h-10 w-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md flex items-center justify-center"
                                             onClick={() => handleReply()}
                                             disabled={replying === topic.id}
                                         >

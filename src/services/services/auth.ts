@@ -25,15 +25,16 @@ export const getCustomClaims = async (): Promise<CustomClaims | null> => {
 
 export const useSmartAuth = (): AuthContext | null => {
   const user = auth.currentUser;
-  
-  if (!user) {
-    return null;
-  }
-
   const [claims, setClaims] = React.useState<CustomClaims | null>(null);
   const [token, setToken] = React.useState<string>('');
 
   React.useEffect(() => {
+    if (!user) {
+      setClaims(null);
+      setToken('');
+      return;
+    }
+
     let unsubscribe: (() => void) | undefined;
 
     const loadClaims = async () => {
@@ -61,7 +62,7 @@ export const useSmartAuth = (): AuthContext | null => {
     };
   }, [user?.uid]);
 
-  if (!claims) return null;
+  if (!user || !claims) return null;
 
   return {
     uid: user.uid,
@@ -124,8 +125,8 @@ export const hasPermission = (claims: CustomClaims | null, requiredRole: string)
     professional: 1,
   };
 
-  const userLevel = roleHierarchy[claims.role] || 0;
-  const requiredLevel = roleHierarchy[requiredRole] || 0;
+  const userLevel = roleHierarchy[claims.role as keyof typeof roleHierarchy] || 0;
+  const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy] || 0;
 
   return userLevel >= requiredLevel;
 };
@@ -140,8 +141,8 @@ export const isTierAllowed = (claims: CustomClaims | null, minTier: string): boo
     FREE: 1,
   };
 
-  const userTierLevel = tierHierarchy[claims.tier] || 0;
-  const requiredTierLevel = tierHierarchy[minTier] || 0;
+  const userTierLevel = tierHierarchy[claims.tier as keyof typeof tierHierarchy] || 0;
+  const requiredTierLevel = tierHierarchy[minTier as keyof typeof tierHierarchy] || 0;
 
   return userTierLevel >= requiredTierLevel;
 };

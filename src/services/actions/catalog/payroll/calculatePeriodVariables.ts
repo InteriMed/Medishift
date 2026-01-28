@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { PayrollVariables } from '../contracts/types';
+import { Shift } from '../calendar/types';
 
 const CalculatePeriodVariablesSchema = z.object({
   facilityId: z.string(),
@@ -33,10 +34,10 @@ export const calculatePeriodVariablesAction: ActionDefinition<typeof CalculatePe
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CalculatePeriodVariablesSchema>, ctx: ActionContext) => {
     const { facilityId, month, year } = input;
 
     const startDate = new Date(year, month - 1, 1);
@@ -55,7 +56,7 @@ export const calculatePeriodVariablesAction: ActionDefinition<typeof CalculatePe
     );
 
     const snapshot = await getDocs(q);
-    const shifts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const shifts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Shift));
 
     const userVariables: Record<string, PayrollVariables> = {};
     const warnings: string[] = [];

@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { sendNotification } from '../../../../services/notifications';
+import { broadcastNotification } from '../../../services/notifications';
+import { NotificationPayload } from '../../../../services/types/context';
 
 const FlagDiscrepancySchema = z.object({
   facilityId: z.string(),
@@ -34,7 +35,7 @@ export const flagDiscrepancyAction: ActionDefinition<typeof FlagDiscrepancySchem
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof FlagDiscrepancySchema>, ctx: ActionContext) => {
     const { facilityId, userId, period, note } = input;
 
     const discrepanciesRef = collection(db, 'payroll_discrepancies');
@@ -71,10 +72,11 @@ export const flagDiscrepancyAction: ActionDefinition<typeof FlagDiscrepancySchem
       createdAt: serverTimestamp(),
     });
 
-    const facilityRef = await db.collection('facility_profiles').doc(facilityId).get();
-    const managerEmail = facilityRef.data()?.ownerEmail;
+    const facilityRef = doc(db, 'facility_profiles', facilityId);
+    const facilitySnap = await getDoc(facilityRef);
+    const managerEmail = facilitySnap.data()?.ownerEmail;
 
-    await sendNotification({
+    await broadcastNotification({
       title: 'Payroll Correction Requested',
       body: `Fiduciary flagged issue: ${note}`,
       priority: 'HIGH',
@@ -83,7 +85,7 @@ export const flagDiscrepancyAction: ActionDefinition<typeof FlagDiscrepancySchem
         facilityIds: [facilityId],
       },
       actionUrl: `/payroll/${period}`,
-    });
+    }, ctx.userId, facilityId);
 
     await ctx.auditLogger('fiduciary.flag_discrepancy', 'SUCCESS', {
       discrepancyId: discrepancyDoc.id,

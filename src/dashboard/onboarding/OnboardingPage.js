@@ -1,40 +1,36 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../contexts/authContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../services/firebase';
-import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
-import { useTutorial } from '../contexts/TutorialContext';
-import { useFlow } from '../../../services/flows/engine';
-import { OnboardingFlow } from '../../../services/flows/catalog/onboarding';
-import { completeOnboarding } from '../../../services/flows/catalog/onboarding/completion';
+import { db } from '../../services/services/firebase';
+import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
+import { useFlow } from '../../services/flows/engine';
+import { OnboardingFlow } from '../../services/flows/catalog/onboarding';
+import { completeOnboarding } from '../../services/flows/catalog/onboarding/completion';
 import {
     FiBriefcase, FiCheck, FiArrowRight, FiHome,
     FiLoader, FiArrowLeft, FiShield,
     FiLink, FiHelpCircle
 } from 'react-icons/fi';
-import ContactFormPopup from '../../../components/modals/contactFormPopup';
+import ContactFormPopup from '../../components/modals/contactFormPopup';
 import ProfessionalGLNVerification from './components/professionalGLNVerification';
 import FacilityGLNVerification from './components/facilityGLNVerification';
 import CommercialRegistryVerification from './components/commercialRegistryVerification';
 import PhoneVerificationStep from './components/phoneVerificationStep';
-import Switch from '../../../components/boxedInputFields/switch';
-import Button from '../../components/colorPicker/button';
+import Switch from '../../components/boxedInputFields/switch';
+import Button from '../../components/boxedInputFields/button';
 import LoadingSpinner from '../../components/loadingSpinner/loadingSpinner';
-import BarsLoader from '../../components/LoadingAnimations/BarsLoader';
-import modal from '../../components/basemodal/basemodal';
-import styles from './OnboardingPage.module.css';
+import Modal from '../../components/modals/modals';
+import styles from './onboardingPage.module.css';
 
 const OnboardingPage = () => {
     const navigate = useNavigate();
     const { lang } = useParams();
     const { t } = useTranslation(['dashboard', 'common', 'auth']);
     const { currentUser } = useAuth();
-    const { onboardingType: contextOnboardingType } = useTutorial();
-
     const urlQuery = new URLSearchParams(window.location.search);
-    const onboardingType = contextOnboardingType || urlQuery.get('type') || 'professional';
+    const onboardingType = urlQuery.get('type') || 'professional';
 
     const {
         step,
@@ -55,12 +51,12 @@ const OnboardingPage = () => {
     const [isVerifying, setIsVerifying] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLoadingProgress, setIsLoadingProgress] = useState(true);
-    const [showRestrictedServicesModal, setShowRestrictedServicesModal] = useState(false);
     const [isCreatingProfile, setIsCreatingProfile] = useState(false);
     const [showContactForm, setShowContactForm] = useState(false);
     const [phoneInternalStep, setPhoneInternalStep] = useState(1);
     const [isPhoneValid, setIsPhoneValid] = useState(false);
     const [isPhoneLoading, setIsPhoneLoading] = useState(false);
+    const [hasLoadedProgress, setHasLoadedProgress] = useState(false);
 
     const glnVerificationRef = useRef(null);
     const phoneVerificationRef = useRef(null);
@@ -91,7 +87,7 @@ const OnboardingPage = () => {
 
     useEffect(() => {
         const loadProgress = async () => {
-            if (!currentUser) return;
+            if (!currentUser || hasLoadedProgress) return;
             try {
                 const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
                 const userDoc = await getDoc(userDocRef);
@@ -136,13 +132,14 @@ const OnboardingPage = () => {
                         setFormState(savedData);
                     }
                 }
+                setHasLoadedProgress(true);
             } catch (err) { 
                 console.error(err); 
             }
             setIsLoadingProgress(false);
         };
         loadProgress();
-    }, [currentUser, onboardingType, navigate, lang, urlQuery, setFormState]);
+    }, [currentUser, onboardingType, navigate, lang]);
 
     const saveProgress = async (additionalData = {}) => {
         if (!currentUser) return;
@@ -350,7 +347,6 @@ const OnboardingPage = () => {
                 const finalProfileDoc = await getDoc(profileDocRef);
                 if (finalProfileDoc.exists()) {
                     await updateDoc(profileDocRef, {
-                        shouldStartTutorial: true,
                         updatedAt: new Date()
                     });
                 }
@@ -384,7 +380,7 @@ const OnboardingPage = () => {
             {isCreatingProfile && (
                 <div className={styles.loadingOverlay}>
                     <div className={styles.loadingContent}>
-                        <BarsLoader size="medium" color="primary" />
+                        <LoadingSpinner size="medium" color="primary" />
                         <p className={styles.loadingText}>
                             Creating your profile...
                         </p>
@@ -447,7 +443,10 @@ const OnboardingPage = () => {
                                 ].filter(r => onboardingType === 'facility' ? r.id !== 'worker' : true).map(r => (
                                     <div
                                         key={r.id}
-                                        onClick={() => updateField('role', r.id)}
+                                        onClick={async () => {
+                                            updateField('role', r.id);
+                                            await saveProgress({ role: r.id });
+                                        }}
                                         className={`${styles.roleCard} ${data.role === r.id ? styles.roleCardSelected : styles.roleCardUnselected}`}
                                     >
                                         <div className={`${styles.roleIcon} ${data.role === r.id ? styles.roleIconSelected : styles.roleIconUnselected}`}>
@@ -580,23 +579,6 @@ const OnboardingPage = () => {
                                     <div className={styles.legalNote}>
                                         {t('dashboard.onboarding.step1.note')}
                                     </div>
-
-                                    {data.belongsToFacility && data.role === 'worker' && (
-                                        <div 
-                                            className={styles.restrictedServicesCard}
-                                            onClick={() => setShowRestrictedServicesModal(true)}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex-1">
-                                                    <h4 className={styles.restrictedServicesTitle}>{t('dashboard.onboarding.step1.restrictedServices.title')}</h4>
-                                                    <p className={styles.restrictedServicesDescription}>
-                                                        {t('dashboard.onboarding.step1.restrictedServices.description')}
-                                                    </p>
-                                                </div>
-                                                <FiArrowRight className="w-6 h-6 text-destructive flex-shrink-0" />
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
@@ -850,160 +832,6 @@ const OnboardingPage = () => {
                     </div>
                 </footer>
             </div>
-
-            <modal
-                isOpen={showRestrictedServicesModal}
-                onClose={() => !isCreatingProfile && setShowRestrictedServicesModal(false)}
-                title={t('dashboard.onboarding.step1.restrictedServices.modal.title')}
-                size="medium"
-                messageType="error"
-                actions={
-                    <>
-                        <Button
-                            variant="secondary"
-                            onClick={() => setShowRestrictedServicesModal(false)}
-                            disabled={isCreatingProfile}
-                            className="!w-auto rounded-xl font-semibold"
-                        >
-                            {t('dashboard.onboarding.step1.restrictedServices.modal.cancel')}
-                        </Button>
-                        <Button
-                            onClick={async () => {
-                                if (!currentUser || isCreatingProfile) return;
-                                setIsCreatingProfile(true);
-                                setIsProcessing(true);
-                                try {
-                                    const { httpsCallable } = await import('firebase/functions');
-                                    const { functions } = await import('../../services/firebase');
-                                    const updateProfile = httpsCallable(functions, 'updateUserProfile');
-                                    await updateProfile({
-                                        role: 'professional',
-                                        profileType: 'doctor',
-                                        tutorialAccessMode: 'team',
-                                        profileCompleted: true,
-                                        email: currentUser.email,
-                                        contact: {
-                                            primaryEmail: currentUser.email
-                                        },
-                                        identity: {
-                                            email: currentUser.email
-                                        },
-                                        verification: {
-                                            identityStatus: 'not_verified',
-                                            qualificationsStatus: 'not_verified',
-                                            workEligibilityStatus: 'not_verified',
-                                            overallVerificationStatus: 'not_verified'
-                                        }
-                                    });
-                                    const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
-                                    await updateDoc(userDocRef, {
-                                        [`onboardingProgress.${onboardingType}`]: {
-                                            step: 'phone',
-                                            role: 'worker',
-                                            belongsToFacility: true,
-                                            legalConsiderationsConfirmed: true,
-                                            completed: true,
-                                            completedAt: new Date(),
-                                            updatedAt: new Date()
-                                        },
-                                        onboardingCompleted: true,
-                                        updatedAt: new Date()
-                                    });
-
-                                    const profileCollection = onboardingType === 'facility' ? 'facilityProfiles' : 'professionalProfiles';
-                                    const profileDocRef = doc(db, profileCollection, currentUser.uid);
-                                    const profileDoc = await getDoc(profileDocRef);
-                                    
-                                    if (profileDoc.exists()) {
-                                        await updateDoc(profileDocRef, {
-                                            shouldStartTutorial: true,
-                                            updatedAt: new Date()
-                                        });
-                                    }
-                                    navigate(`/${lang}/dashboard/profile`);
-                                } catch (err) {
-                                    console.error('Error creating profile:', err);
-                                    setIsCreatingProfile(false);
-                                    setIsProcessing(false);
-                                }
-                            }}
-                            disabled={isProcessing || isCreatingProfile}
-                            variant="danger"
-                            className="!w-auto rounded-xl font-semibold"
-                        >
-                            {isProcessing || isCreatingProfile ? <FiLoader className="animate-spin mr-2" /> : null}
-                            {t('dashboard.onboarding.step1.restrictedServices.modal.createProfile')}
-                        </Button>
-                    </>
-                }
-            >
-                <div className={`space-y-6 ${isCreatingProfile ? 'pointer-events-none opacity-50' : ''}`}>
-                    <p className="text-foreground leading-relaxed">
-                        {(() => {
-                            const introText = t('dashboard.onboarding.step1.restrictedServices.modal.intro');
-                            const parts = introText.split('__NOT__');
-                            const boldWord = lang === 'fr' ? 'PAS' : 'NOT';
-                            return parts.map((part, i, arr) => 
-                                i === arr.length - 1 ? part : (
-                                    <React.Fragment key={i}>
-                                        {part}
-                                        <strong className="text-red-600">{boldWord}</strong>
-                                    </React.Fragment>
-                                )
-                            );
-                        })()}
-                    </p>
-                    
-                    <div className="bg-destructive/10 border-l-4 border-destructive p-4 rounded-r-lg">
-                        <ul className="space-y-3 text-foreground">
-                            <li className="flex items-start gap-2">
-                                <span className="text-destructive font-bold mt-0.5">•</span>
-                                <div>
-                                    {t('dashboard.onboarding.step1.restrictedServices.modal.interimServices')}
-                                </div>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-destructive font-bold mt-0.5">•</span>
-                                <div>
-                                    {t('dashboard.onboarding.step1.restrictedServices.modal.jobPostulations')}
-                                </div>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-destructive font-bold mt-0.5">•</span>
-                                <div>
-                                    {t('dashboard.onboarding.step1.restrictedServices.modal.marketplaceAccess')}
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div className="border-t border-border pt-4">
-                        <p className="text-foreground font-semibold mb-3">
-                            {t('dashboard.onboarding.step1.restrictedServices.modal.willHaveAccess')}
-                        </p>
-                        <ul className="space-y-2 text-muted-foreground ml-4">
-                            <li className="flex items-start gap-2">
-                                <span className="text-green-600 dark:text-green-500 mt-1.5">•</span>
-                                <span>{t('dashboard.onboarding.step1.restrictedServices.modal.facilityInternal')}</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-green-600 mt-1.5">•</span>
-                                <span>{t('dashboard.onboarding.step1.restrictedServices.modal.teamCollaboration')}</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-green-600 mt-1.5">•</span>
-                                <span>{t('dashboard.onboarding.step1.restrictedServices.modal.internalScheduling')}</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div className="bg-muted/50 border border-border rounded-lg p-4">
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                            {t('dashboard.onboarding.step1.restrictedServices.modal.note')}
-                        </p>
-                    </div>
-                </div>
-            </modal>
         </div>
     );
 };

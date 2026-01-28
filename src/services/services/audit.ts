@@ -87,7 +87,7 @@ export const createAuditLogger = (userId: string, facilityId: string) => {
 };
 
 export const logSecurityEvent = async (
-  eventType: 'LOGIN' | 'LOGOUT' | 'FAILED_LOGIN' | 'PERMISSION_DENIED' | 'TOKEN_REFRESH',
+  eventType: 'LOGIN' | 'LOGOUT' | 'FAILED_LOGIN' | 'PERMISSION_DENIED' | 'TOKEN_REFRESH' | 'IDENTITY_REVEALED',
   userId: string,
   metadata?: Record<string, any>
 ): Promise<void> => {

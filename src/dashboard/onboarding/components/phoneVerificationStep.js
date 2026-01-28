@@ -7,15 +7,15 @@ import {
     linkWithCredential
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../../../services/firebase';
-import { useAuth } from '../../../../contexts/AuthContext';
-import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
-import { useDropdownOptions } from '../../../pages/profile/utils/DropdownListsImports';
+import { auth, db } from '../../../services/services/firebase';
+import { useAuth } from '../../../contexts/authContext';
+import PersonnalizedInputField from '../../../components/boxedInputFields/personnalizedInputField';
+import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
+import { useDropdownOptions } from '../../pages/profile/utils/DropdownListsImports';
 import { FiCheck, FiRefreshCw, FiMessageSquare } from 'react-icons/fi';
-import { useNotification } from '../../../../contexts/NotificationContext';
-import { formatPhoneNumber } from '../utils/glnVerificationUtils';
-import { LOCALSTORAGE_KEYS } from '../../../../config/keysDatabase';
+import { useNotification } from '../../../contexts/notificationContext';
+import { formatPhoneNumber } from '../../../services/utils/phone';
+import { LOCALSTORAGE_KEYS } from '../../../config/keysDatabase';
 
 const PHONE_VERIFICATION_STORAGE_KEY = LOCALSTORAGE_KEYS.PHONE_VERIFICATION;
 const RECAPTCHA_VERIFICATION_STORAGE_KEY = LOCALSTORAGE_KEYS.RECAPTCHA_VERIFICATION;

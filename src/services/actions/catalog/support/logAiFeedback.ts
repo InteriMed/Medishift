@@ -1,14 +1,14 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const LogAiFeedbackSchema = z.object({
   messageId: z.string(),
   conversationId: z.string(),
-  rating: z.enum(['thumbs_up', 'thumbs_down']),
+  rating: z.enum(['thumbs_up', 'thumbs_down'] as const),
   correction: z.string().optional(),
-  category: z.enum(['INCORRECT', 'UNHELPFUL', 'INAPPROPRIATE', 'SLOW', 'EXCELLENT']).optional(),
+  category: z.enum(['INCORRECT', 'UNHELPFUL', 'INAPPROPRIATE', 'SLOW', 'EXCELLENT'] as const).optional(),
 });
 
 export const logAiFeedbackAction: ActionDefinition<typeof LogAiFeedbackSchema, void> = {
@@ -29,7 +29,7 @@ export const logAiFeedbackAction: ActionDefinition<typeof LogAiFeedbackSchema, v
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof LogAiFeedbackSchema>, ctx) => {
     const { messageId, conversationId, rating, correction, category } = input;
 
     const feedbackRef = collection(db, 'ai_feedback');

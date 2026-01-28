@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import useHiringData from '../../../hooks/useHiringData';
-import FilterBar from '../../../components/FilterBar/FilterBar';
+import FilterBar from '../../marketplace/components/filterbar';
 import { FiBriefcase, FiClock, FiUser } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import PropTypes from 'prop-types';

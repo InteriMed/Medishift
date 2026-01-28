@@ -1,33 +1,25 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate, useParams, Outlet } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-import { NetworkProvider } from './contexts/NetworkContext';
-import { TutorialProvider } from './dashboard/contexts/TutorialContext';
-import { DashboardProvider } from './dashboard/contexts/DashboardContext';
+import { AuthProvider, useAuth } from './contexts/authContext';
+import { NotificationProvider } from './contexts/notificationContext';
+import { NetworkProvider } from './contexts/networkContext';
+import { DashboardProvider } from './dashboard/contexts/dashboardContext';
 import { SidebarProvider } from './dashboard/onboarding/sidebarContext';
-import NetworkStatus from './components/NetworkStatus';
-import ErrorBoundary from './components/ErrorBoundary';
-import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
-import Notification from './components/Header/Notification';
-import modal from './components/modal/modal';
-import Tutorial from './components/Header/TutorialButton';
-import GhostModeBanner from './components/GhostModeBanner/GhostModeBanner';
+import LoadingSpinner from './components/loadingSpinner/loadingSpinner';
+import GhostModeBanner from './components/ghostModeBanner/ghostModeBanner';
 import { useTranslation } from 'react-i18next';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import ErrorBoundary from './components/modals/errorBoundary';
+import NetworkStatus from './components/modals/networkStatus';
+import { ProtectedRoute } from './components/modals/protectedRoute';
+import Layout from './components/website/layout';
+import CentralizedRoute from './contexts/centralizedRoute';
 
-import Layout from './components/Layout/Layout';
 import './i18n';
-import './styles/app.css';
-import './styles/notifications.css';
 // import './styles/global.css';
 import './styles/variables.css';
 import DashboardRoot from './dashboard/dashboardRoot';
-import CentralizedRoute from './dashboard/components/CentralizedRoute';
-import { testFirestoreConnection } from './utils/testFirestoreConnection';
-import { resetFirestoreCache } from './utils/resetFirestoreCache';
-import Footer from './components/Footer/Footer';
+import Footer from './components/website/footer/Footer';
 import { NotFoundPage } from './websitePages';
 import { getLocalizedRoute } from './i18n';
 
@@ -40,13 +32,27 @@ import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE as DEFAULT_LANG } from 
 
 // Import header component
 const Header = lazy(() =>
-  import('./components/Header/Header').catch(() => ({
-    default: () => <div className="header-placeholder">Header Placeholder</div>
-  }))
+  import('./components/website/header/header').catch(() => 
+    Promise.resolve({ default: () => <div className="header-placeholder">Header Placeholder</div> })
+  )
 );
 
 // Supported languages
 const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'it'];
+
+// Language guard component to redirect invalid language codes
+const LanguageGuard = ({ children }) => {
+  const location = useLocation();
+  const { lang } = useParams();
+  
+  if (lang && !SUPPORTED_LANGUAGES.includes(lang)) {
+    const search = location.search;
+    const pathWithoutLang = location.pathname.replace(`/${lang}`, '');
+    return <Navigate to={`/${DEFAULT_LANG}${pathWithoutLang}${search}`} replace />;
+  }
+  
+  return children;
+};
 
 // App container with router
 const AppContainer = () => {
@@ -59,12 +65,10 @@ const AppContainer = () => {
               <NetworkProvider>
                 <DashboardProvider>
                   <SidebarProvider>
-                    <TutorialProvider>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <NetworkStatus />
-                        <AppContent />
-                      </Suspense>
-                    </TutorialProvider>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <NetworkStatus />
+                      <AppContent />
+                    </Suspense>
                   </SidebarProvider>
                 </DashboardProvider>
               </NetworkProvider>
@@ -76,12 +80,6 @@ const AppContainer = () => {
   );
 };
 
-// Make test and utility functions available globally in development
-if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-  window.testFirestore = testFirestoreConnection;
-  window.resetFirestoreCache = resetFirestoreCache;
-}
-
 // App content with language handling
 // Helper component for dashboard routing and redirects
 const DashboardGuard = () => {
@@ -89,8 +87,11 @@ const DashboardGuard = () => {
   const segments = location.pathname.split('/').filter(Boolean);
   const dashboardIndex = segments.indexOf('dashboard');
 
+  console.log('[DashboardGuard] Checking route', { pathname: location.pathname, segments, dashboardIndex });
+
   // Handle /dashboard with no trailing slash or subpath
   if (segments.length === dashboardIndex + 1) {
+    console.log('[DashboardGuard] No subpath, using CentralizedRoute');
     return <CentralizedRoute />;
   }
 
@@ -102,13 +103,17 @@ const DashboardGuard = () => {
     firstSegmentAfterDashboard === 'marketplace' ||
     firstSegmentAfterDashboard.length > 15; // Firestore IDs are ~20 chars
 
+  console.log('[DashboardGuard] First segment after dashboard', { firstSegmentAfterDashboard, isWorkspaceId });
+
   // If it's a valid workspace URL, allow Outlet to render children
   if (isWorkspaceId) {
+    console.log('[DashboardGuard] Valid workspace ID, rendering Outlet');
     return <Outlet />;
   }
 
   // If it's a legacy URL (e.g., /dashboard/profile/...), check if user has workspaces
   // If no workspaces available, redirect to onboarding via CentralizedRoute
+  console.log('[DashboardGuard] Legacy URL without workspace, using CentralizedRoute');
   return <CentralizedRoute />;
 };
 
@@ -121,6 +126,20 @@ function AppContent() {
   const [showHeader, setShowHeader] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isLanguageSetup, setIsLanguageSetup] = useState(false);
+
+  // Validate route components on mount
+  useEffect(() => {
+    console.log('=== Validating Route Components ===');
+    [...PUBLIC_ROUTES, ...AUTH_ROUTES, ...PROTECTED_ROUTES].forEach(route => {
+      const Component = route.component;
+      const type = typeof Component;
+      const isLazy = Component && Component.$$typeof;
+      console.log(`Route ${route.id}: type=${type}, isLazy=${!!isLazy}, valid=${!!(Component && (type === 'function' || isLazy))}`);
+      if (!Component || (type !== 'function' && !isLazy)) {
+        console.error(`❌ INVALID COMPONENT for route "${route.id}":`, Component);
+      }
+    });
+  }, []);
 
   // Dashboard access flag
   const DASHBOARD_DISABLED = false;
@@ -211,26 +230,45 @@ function AppContent() {
       {showHeader && <Header />}
       <main className="content">
         <Routes>
-          <Route path="/:lang" element={<Layout />}>
+          <Route path="/:lang" element={<LanguageGuard><Layout /></LanguageGuard>}>
             <Route index element={<Navigate to={buildLocalizedPath(ROUTE_IDS.HOME, DEFAULT_LANGUAGE)} replace />} />
 
-            {PUBLIC_ROUTES.map(route => (
-              <Route
-                key={route.id}
-                path={route.path}
-                element={<route.component />}
-              />
-            ))}
+            {PUBLIC_ROUTES.map(route => {
+              const Component = route.component;
+              if (!Component || (typeof Component !== 'function' && !Component.$$typeof)) {
+                console.error(`Invalid component for route ${route.id}:`, Component);
+                return null;
+              }
+              return (
+                <Route
+                  key={route.id}
+                  path={route.path}
+                  element={<Component />}
+                />
+              );
+            })}
 
-            {AUTH_ROUTES.map(route => (
-              <Route
-                key={route.id}
-                path={route.path}
-                element={<route.component />}
-              />
-            ))}
+            {AUTH_ROUTES.map(route => {
+              const Component = route.component;
+              if (!Component || (typeof Component !== 'function' && !Component.$$typeof)) {
+                console.error(`Invalid component for route ${route.id}:`, Component);
+                return null;
+              }
+              return (
+                <Route
+                  key={route.id}
+                  path={route.path}
+                  element={<Component />}
+                />
+              );
+            })}
 
             {PROTECTED_ROUTES.filter(r => r.id !== 'dashboard').map(route => {
+              const Component = route.component;
+              if (!Component || (typeof Component !== 'function' && !Component.$$typeof)) {
+                console.error(`Invalid component for route ${route.id}:`, Component);
+                return null;
+              }
               return (
                 <Route
                   key={route.id}
@@ -238,10 +276,10 @@ function AppContent() {
                   element={
                     route.requiresAuth ? (
                       <ProtectedRoute>
-                        <route.component />
+                        <Component />
                       </ProtectedRoute>
                     ) : (
-                      <route.component />
+                      <Component />
                     )
                   }
                 />
@@ -281,10 +319,6 @@ function AppContent() {
           <Route path="*" element={<Navigate to={buildLocalizedPath(ROUTE_IDS.NOT_FOUND, DEFAULT_LANGUAGE)} replace />} />
         </Routes>
       </main>
-      <Notification />
-      <modal />
-      {/* Only render the Tutorial component once at the root level */}
-      <Tutorial />
       {!isDashboardPage && <Footer />}
     </div>
   );

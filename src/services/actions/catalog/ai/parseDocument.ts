@@ -1,9 +1,11 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
+
+const parseDocumentTypeEnum = ['identity', 'work_permit', 'diploma', 'billing', 'generic'] as const;
 
 const ParseDocumentSchema = z.object({
   imageUrl: z.string().url("Must be a valid image URL"),
-  documentType: z.enum(['identity', 'work_permit', 'diploma', 'billing', 'generic']),
+  documentType: z.enum(parseDocumentTypeEnum),
   extractFields: z.array(z.string()).optional(),
 });
 
@@ -20,23 +22,29 @@ interface ParsedDocument {
  * Parse document and extract structured data using AI
  * Intelligently extracts fields based on document type
  */
-export const parseDocumentAction: ActionDefinition = {
+export const parseDocumentAction: ActionDefinition<typeof ParseDocumentSchema, ParsedDocument> = {
   id: "ai.parse_document",
-  riskLevel: "LOW",
+  fileLocation: "src/services/actions/catalog/ai/parseDocument.ts",
+  requiredPermission: "admin.access",
   label: "Parse Document (AI)",
   description: "Parse document and extract structured data using AI",
+  keywords: ["parse", "document", "ai", "extract"],
+  icon: "FileSearch",
   schema: ParseDocumentSchema,
+  metadata: {
+    riskLevel: "LOW",
+  },
 
-  handler: async (input, ctx): Promise<ParsedDocument> => {
+  handler: async (input: z.infer<typeof ParseDocumentSchema>, ctx: ActionContext): Promise<ParsedDocument> => {
     const { imageUrl, documentType, extractFields } = input;
 
     try {
       // First extract text via OCR
       const { executeAction } = await import('../../hook');
-      const ocrResult = await executeAction('ai.ocr.extract_text', {
+      const ocrResult = await executeAction<z.infer<typeof ParseDocumentSchema>, { text: string; confidence: number }>('ai.ocr.extract_text', {
         imageUrl,
         documentType
-      });
+      }, ctx);
 
       if (!ocrResult || !ocrResult.text) {
         return {

@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../../common/utils';
-import { sendNotification } from '../../../../services/notifications';
+import { broadcastNotification } from '../../../../services/notifications';
+import { NotificationPayload } from '../../../../types/context';
 
 const NegotiateOfferSchema = z.object({
   applicationId: z.string(),
@@ -29,7 +30,7 @@ export const negotiateOfferAction: ActionDefinition<typeof NegotiateOfferSchema,
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof NegotiateOfferSchema>, ctx: ActionContext) => {
     const { applicationId, counterOffer, message } = input;
 
     const applicationRef = doc(db, 'marketplace_applications', applicationId);
@@ -56,7 +57,11 @@ export const negotiateOfferAction: ActionDefinition<typeof NegotiateOfferSchema,
     const missionSnap = await getDoc(missionRef);
     const mission = missionSnap.data();
 
-    await sendNotification({
+    if (!mission) {
+      throw new Error('Mission not found');
+    }
+
+    const notificationPayload: NotificationPayload = {
       title: 'Counter-offer received',
       body: `${application.professionalName} proposed ${counterOffer} CHF/hr`,
       priority: 'HIGH',
@@ -65,7 +70,9 @@ export const negotiateOfferAction: ActionDefinition<typeof NegotiateOfferSchema,
         userIds: [mission.createdBy],
       },
       actionUrl: `/marketplace/applications/${applicationId}`,
-    });
+    };
+
+    await broadcastNotification(notificationPayload, ctx.userId, ctx.facilityId);
 
     await appendAudit('marketplace_applications', applicationId, {
       uid: ctx.userId,

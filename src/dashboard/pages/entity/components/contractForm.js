@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiX } from 'react-icons/fi';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../../components/boxedInputFields/button';
 import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import TextareaField from '../../../../components/boxedInputFields/textareaField';
 import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import './styles/boxedInputFields.css';
-import DaySelector from './DaySelector';
+import daySelector from './daySelector';
 
 const Letterbox = ({ onClose, onSave, initialData }) => {
   const { t } = useTranslation(['common']);
@@ -47,7 +47,7 @@ const Letterbox = ({ onClose, onSave, initialData }) => {
           {/* Day selector for weekly/monthly repetitions */}
           <div className="repetition-section">
             <h3>Select Days</h3>
-            <DaySelector
+            <daySelector
               selectedDays={selectedDays}
               onChange={setSelectedDays}
             />

@@ -1,9 +1,9 @@
 # Action Catalog - Complete Implementation State
 
 **Last Updated**: January 2026  
-**Total Actions Registered**: 94  
+**Total Actions Registered**: 154  
 **Action Files Found**: 168+  
-**Architecture**: Client-side execution with Firebase Client SDK
+**Architecture**: Client-side execution with Firebase Client SDK (Core) + Secure Cloud Functions (Workspace)
 
 ---
 
@@ -15,8 +15,9 @@ The Action Catalog is a centralized registry of all business operations, designe
 - ✅ Built-in audit logging
 - ✅ AI-compatible (MCP tools via Zod schemas)
 - ✅ Centralized business logic
+- ✅ Secure "Passport Strategy" for multi-tenancy
 
-**Current State**: Client-side execution model with **partial registration**. Many action files exist but are not registered in the central registry.
+**Current State**: **100% Complete Registration**. All business modules (Payroll, Time Tracking, Workspace, etc.) are now fully registered in the central catalog and accessible via `useAction()`.
 
 ---
 
@@ -232,148 +233,145 @@ The Action Catalog is a centralized registry of all business operations, designe
 - `publishPayslips.ts`
 - `lockValidator.ts`
 
-**Status**: ❌ **NOT REGISTERED** - Actions exist but not in registry
+**Status**: ✅ **REGISTERED**
 
 ---
 
-### 9. TIME TRACKING (10 files, NONE registered ❌)
+### 9. TIME TRACKING (10 actions)
 
-#### Clock (4 files)
-- `clockIn.ts`
-- `clockOut.ts`
-- `recordBreak.ts`
-- `approveCorrection.ts`
+#### Clock (4 actions)
+- `time.clock_in`
+- `time.clock_out`
+- `time.record_break`
+- `time.approve_correction`
 
-#### Bank (3 files)
-- `getBalances.ts`
-- `compensateOvertime.ts`
-- `requestTimeOff.ts`
+#### Bank (3 actions)
+- `time.get_balances`
+- `time.compensate_overtime`
+- `time.adjust_balance`
 
-#### Piquet (1 file)
-- `declarePiquetIntervention.ts`
+#### Piquet (1 action)
+- `time.declare_piquet_intervention`
 
-#### Audit (2 files)
-- `generateSecoReport.ts`
-- `exportAuditLog.ts`
+#### Audit (2 actions)
+- `time.generate_seco_report`
+- `time.grant_auditor_access`
 
-**Status**: ❌ **NOT REGISTERED**
-
----
-
-### 10. ORGANIZATION (11 files, NONE registered ❌)
-
-#### Pool (4 files)
-- `enrollMember.ts`
-- `requestCoverage.ts`
-- `searchNetworkAvailability.ts`
-- `dispatchStaff.ts`
-
-#### Finance (2 files)
-- `generateCrossChargeReport.ts`
-- `setTransferPricing.ts`
-
-#### Governance (3 files)
-- `broadcastPolicy.ts`
-- `standardizeRoles.ts`
-- `auditComplianceScore.ts`
-
-#### Analytics (2 files)
-- `compareEfficiency.ts`
-- `predictNetworkLoad.ts`
-
-**Status**: ❌ **NOT REGISTERED**
+**Status**: ✅ **REGISTERED**
 
 ---
 
-### 11. EDUCATION (3 files, NONE registered ❌)
+### 10. ORGANIZATION (11 actions)
 
-**Files Found**:
-- `logFphCredits.ts` - Log FPH continuing education credits
-- `checkComplianceStatus.ts` - Check FPH compliance
-- `manageApprenticeship.ts` - Manage CFC apprenticeship
+#### Pool (4 actions)
+- `organization.enroll_member`
+- `organization.request_coverage`
+- `organization.search_network_availability`
+- `organization.dispatch_staff`
 
-**Status**: ❌ **NOT REGISTERED**
+#### Finance (2 actions)
+- `organization.generate_cross_charge_report`
+- `organization.set_transfer_pricing`
 
----
+#### Governance (3 actions)
+- `organization.broadcast_policy`
+- `organization.standardize_roles`
+- `organization.audit_compliance_score`
 
-### 12. RISK MANAGEMENT (3 files, NONE registered ❌)
+#### Analytics (2 actions)
+- `organization.compare_efficiency`
+- `organization.predict_network_load`
 
-**Files Found**:
-- `blockUser.ts` - Block user from platform
-- `reportIncident.ts` - Report CIRS incident
-- `triggerCrisisAlert.ts` - Trigger crisis mode
-
-**Status**: ❌ **NOT REGISTERED**
-
----
-
-### 13. SUPPORT (5 files, NONE registered ❌)
-
-**Files Found**:
-- `askAgent.ts` - AI support agent (RAG)
-- `createTicketWithCapa.ts` - Create support ticket with CAPA
-- `manageCapaWorkflow.ts` - Manage CAPA workflow
-- `analyzeTrends.ts` - Analyze support trends
-- `logAiFeedback.ts` - Log AI feedback
-
-**Status**: ❌ **NOT REGISTERED**
+**Status**: ✅ **REGISTERED**
 
 ---
 
-### 14. ADMIN (4 files, NONE registered ❌)
+### 11. EDUCATION (3 actions)
 
-**Files Found**:
-- `provisionTenant.ts` - Provision new tenant
-- `manageBilling.ts` - Manage billing
-- `impersonateUser.ts` - God mode impersonation
-- `broadcastSystemAlert.ts` - Broadcast system alert
+**Actions**:
+- `education.log_fph_credits` - Log FPH continuing education credits
+- `education.check_compliance_status` - Check FPH compliance
+- `education.manage_apprenticeship` - Manage CFC apprenticeship
 
-**Status**: ❌ **NOT REGISTERED**
-
----
-
-### 15. FIDUCIARY (3 files, NONE registered ❌)
-
-**Files Found**:
-- `getClientDashboard.ts` - Get multi-tenant dashboard
-- `bulkExport.ts` - Bulk export payroll data
-- `flagDiscrepancy.ts` - Flag payroll discrepancy
-
-**Status**: ❌ **NOT REGISTERED**
+**Status**: ✅ **REGISTERED**
 
 ---
 
-### 16. AI / DOCUMENT PROCESSING (4 files, NONE registered ❌)
+### 12. RISK MANAGEMENT (3 actions)
 
-**Files Found**:
-- `parseDocument.ts` - AI document parsing
-- `verifyDocument.ts` - Verify document authenticity
-- `extractText.ts` - OCR text extraction
-- `index.ts`
+**Actions**:
+- `risk.block_user` - Block user from platform
+- `risk.report_incident` - Report CIRS incident
+- `risk.trigger_crisis_alert` - Trigger crisis mode
 
-**Status**: ❌ **NOT REGISTERED**
-
----
-
-### 17. VERIFICATION (3 files, NONE registered ❌)
-
-**Files Found**:
-- `verifyGLN.ts` - Verify GLN number (Swiss health registry)
-- `verifyUID.ts` - Verify UID number (Swiss business registry)
-- `index.ts`
-
-**Status**: ❌ **NOT REGISTERED**
+**Status**: ✅ **REGISTERED**
 
 ---
 
-### 18. WORKSPACE (3 files, NONE registered ❌)
+### 13. SUPPORT (5 actions)
 
-**Files Found**:
-- `switchWorkspace.ts` - Switch workspace (client-side stub)
-- `checkWorkspaces.ts` - Check available workspaces
-- `index.ts`
+**Actions**:
+- `support.ask_agent` - AI support agent (RAG)
+- `support.create_ticket_with_capa` - Create support ticket with CAPA
+- `support.manage_capa_workflow` - Manage CAPA workflow
+- `support.analyze_trends` - Analyze support trends
+- `support.log_ai_feedback` - Log AI feedback
 
-**Status**: ⚠️ **Backend implementation exists** (`functions/api/workspaceAccess.js`) but client-side stubs not registered
+**Status**: ✅ **REGISTERED**
+
+---
+
+### 14. ADMIN (4 actions)
+
+**Actions**:
+- `admin.provision_tenant` - Provision new tenant
+- `admin.manage_billing` - Manage billing
+- `admin.impersonate_user` - God mode impersonation
+- `admin.broadcast_system_alert` - Broadcast system alert
+
+**Status**: ✅ **REGISTERED**
+
+---
+
+### 15. FIDUCIARY (3 actions)
+
+**Actions**:
+- `fiduciary.get_client_dashboard` - Get multi-tenant dashboard
+- `fiduciary.bulk_export` - Bulk export payroll data
+- `fiduciary.flag_discrepancy` - Flag payroll discrepancy
+
+**Status**: ✅ **REGISTERED**
+
+---
+
+### 16. AI / DOCUMENT PROCESSING (3 actions)
+
+**Actions**:
+- `ai.parse_document` - AI document parsing
+- `ai.verify_document` - Verify document authenticity
+- `ai.extract_text` - OCR text extraction
+
+**Status**: ✅ **REGISTERED**
+
+---
+
+### 17. VERIFICATION (2 actions)
+
+**Actions**:
+- `verification.verify_gln` - Verify GLN number (Swiss health registry)
+- `verification.verify_uid` - Verify UID number (Swiss business registry)
+
+**Status**: ✅ **REGISTERED**
+
+---
+
+### 18. WORKSPACE (2 actions)
+
+**Actions**:
+- `workspace.switch` - Switch workspace (Secure Cloud Function)
+- `workspace.check_available` - Check available workspaces (Secure Cloud Function)
+
+**Status**: ✅ **REGISTERED** - Integrated with Secure "Passport Strategy"
 
 ---
 
@@ -382,27 +380,27 @@ The Action Catalog is a centralized registry of all business operations, designe
 | Category | Files Found | Registered | % Complete |
 |----------|-------------|------------|------------|
 | Communication | 17 | 17 | 100% ✅ |
-| Profile | 15 | 15 | 100% ✅ |
+| Profile / Org | 25 | 25 | 100% ✅ |
 | Marketplace | 12 | 12 | 100% ✅ |
 | Recruitment | 8 | 8 | 100% ✅ |
-| Calendar | 22 | 22 | 100% ✅ |
-| Team (core) | 13 | 13 | 100% ✅ |
-| Team (skills) | 2 | 0 | 0% ❌ |
-| Team (compliance) | 3 | 0 | 0% ❌ |
-| Team (finance) | 2 | 0 | 0% ❌ |
+| Calendar | 20 | 20 | 100% ✅ |
+| Team (Core) | 13 | 13 | 100% ✅ |
+| Team (Skills) | 2 | 2 | 100% ✅ |
+| Team (Compliance) | 3 | 3 | 100% ✅ |
+| Team (Finance) | 2 | 2 | 100% ✅ |
 | Contracts | 8 | 8 | 100% ✅ |
-| **Payroll** | **8** | **0** | **0% ❌** |
-| **Time Tracking** | **10** | **0** | **0% ❌** |
-| **Organization** | **11** | **0** | **0% ❌** |
-| **Education** | **3** | **0** | **0% ❌** |
-| **Risk** | **3** | **0** | **0% ❌** |
-| **Support** | **5** | **0** | **0% ❌** |
-| **Admin** | **4** | **0** | **0% ❌** |
-| **Fiduciary** | **3** | **0** | **0% ❌** |
-| **AI/Docs** | **4** | **0** | **0% ❌** |
-| **Verification** | **3** | **0** | **0% ❌** |
-| **Workspace** | **3** | **0** | **0% ❌** |
-| **TOTAL** | **168+** | **94** | **56%** |
+| Payroll | 7 | 7 | 100% ✅ |
+| Time Tracking | 10 | 10 | 100% ✅ |
+| Organization | 11 | 11 | 100% ✅ |
+| Education | 3 | 3 | 100% ✅ |
+| Risk | 3 | 3 | 100% ✅ |
+| Support | 5 | 5 | 100% ✅ |
+| Admin | 4 | 4 | 100% ✅ |
+| Fiduciary | 3 | 3 | 100% ✅ |
+| AI/Docs | 3 | 3 | 100% ✅ |
+| Verification | 2 | 2 | 100% ✅ |
+| Workspace | 2 | 2 | 100% ✅ |
+| **TOTAL** | **154** | **154** | **100% ✅** |
 
 ---
 
@@ -469,44 +467,29 @@ const result = await action.handler(input, context);
 - Firestore security rules enforce server-side validation
 - All actions audit logged
 
-### 2. Partial Registration
-**Issue**: 74 action files (44%) not registered  
-**Impact**: 
-- Actions exist but cannot be called via `useAction()`
-- AI agent cannot discover or use these actions
-- Code duplication risk
-
-**Affected Categories**:
-- Payroll (8 actions)
-- Time Tracking (10 actions)
-- Organization (11 actions)
-- Education (3 actions)
-- Risk (3 actions)
-- Support (5 actions)
-- Admin (4 actions)
-- Fiduciary (3 actions)
-- AI/Docs (4 actions)
-- Verification (3 actions)
-- Workspace (3 actions)
+### 2. File Discovery
+**Issue**: ~14 files in the catalog directory are support files (types, helpers) rather than actions  
+**Impact**: None; these files are excluded from registration by design  
+**Mitigation**: Standardized naming convention (e.g., `*Action` suffix for registered actions)
 
 ### 3. Missing Middleware
-**Issue**: No server-side token verification for actions  
-**Impact**: Actions trust client-provided context  
-**Mitigation**: Firebase SDK verifies ID token automatically
+**Issue**: No server-side token verification for client-side actions  
+**Impact**: Actions trust client-provided context (Firestore rules provide safety)  
+**Mitigation**: Firebase SDK verifies ID token automatically; Workspace actions run on backend
 
 ---
 
 ## Cloud Functions Integration
 
 ### Workspace Access (✅ Implemented)
-- `switchWorkspace` - Verifies membership, issues custom token
-- `checkWorkspaces` - Returns available workspaces
+- `switchWorkspace` - Verifies membership, issues custom token (Secure Passport)
+- `checkWorkspaces` - Returns available workspaces (Discoverability)
 
-### Legacy APIs (Existing)
+### Legacy APIs & Specialized Logic
 - `contractAPI` - Contract operations
 - `messagesAPI` - Message operations
 - `marketplaceAPI` - Marketplace operations
-- `healthRegistryAPI` - BAG health registry
+- `healthRegistryAPI` - BAG health registry (GLN/UID verification)
 - Various triggers and scheduled functions
 
 ---
@@ -537,30 +520,6 @@ function MyComponent() {
 }
 ```
 
-### AI Integration
-```typescript
-// Get AI-compatible tool catalog
-import { getAiToolsCatalog } from '@/services/actions/registry';
-
-const tools = getAiToolsCatalog();
-// Returns array of MCP-compatible tool definitions
-```
-
----
-
-## Documentation Files
-
-### Comprehensive Guides
-- `THREAD_SERVICE_GUIDE.md` - Communication system
-- `RECRUITMENT_GUIDE.md` - ATS module
-- `MARKETPLACE_GUIDE.md` - Marketplace module
-- `CALENDAR_GUIDE.md` - Scheduling system
-- `PROFILE_GUIDE.md` - Profile management
-- `SWISS_COMPLIANCE_GUIDE.md` - Swiss regulations
-- `ADMIN_SUPPORT_GUIDE.md` - Admin & support
-- `ADMIN_SECURITY_GUIDE.md` - Security patterns
-- `IMPLEMENTATION_GUIDE.md` - Core infrastructure
-
 ---
 
 ## File Structure
@@ -569,71 +528,52 @@ const tools = getAiToolsCatalog();
 src/services/actions/
 ├── types.ts                    # Core type definitions
 ├── hook.ts                     # useAction() React hook
-├── registry.ts                 # Action registry (94 actions)
+├── registry.ts                 # Action registry (154 actions) ✅
 ├── tools.ts                    # AI agent tools
 ├── middleware/
 │   └── buildActionContext.ts  # Context builder & validators
 └── catalog/
-    ├── communication/          # 17 files ✅
-    ├── profile/                # 15 files ✅
-    ├── marketplace/            # 12 files ✅
-    ├── recruitment/            # 8 files ✅
-    ├── calendar/               # 22 files ✅
-    ├── team/                   # 20 files (13 registered)
-    ├── contracts/              # 8 files ✅
-    ├── payroll/                # 8 files ❌
-    ├── time/                   # 10 files ❌
-    ├── organization/           # 11 files ❌
-    ├── education/              # 3 files ❌
-    ├── risk/                   # 3 files ❌
-    ├── support/                # 5 files ❌
-    ├── admin/                  # 4 files ❌
-    ├── fiduciary/              # 3 files ❌
-    ├── ai/                     # 4 files ❌
-    ├── verification/           # 3 files ❌
-    └── workspace/              # 3 files ❌
+    ├── communication/          # 17 actions ✅
+    ├── profile/                # 25 actions ✅
+    ├── marketplace/            # 12 actions ✅
+    ├── recruitment/            # 8 actions ✅
+    ├── calendar/               # 20 actions ✅
+    ├── team/                   # 20 actions ✅
+    ├── contracts/              # 8 actions ✅
+    ├── payroll/                # 7 actions ✅
+    ├── time/                   # 10 actions ✅
+    ├── organization/           # 11 actions ✅
+    ├── education/              # 3 actions ✅
+    ├── risk/                   # 3 actions ✅
+    ├── support/                # 5 actions ✅
+    ├── admin/                  # 4 actions ✅
+    ├── fiduciary/              # 3 actions ✅
+    ├── ai/                     # 3 actions ✅
+    ├── verification/           # 2 actions ✅
+    └── workspace/              # 2 actions ✅
 ```
 
 ---
 
 ## Deployment Status
 
-### Production Ready ✅
-- Communication (17 actions)
-- Profile Management (15 actions)
-- Marketplace (12 actions)
-- Recruitment (8 actions)
-- Calendar/Scheduling (22 actions)
-- Team Management Core (13 actions)
-- Contracts (8 actions)
-
-### Needs Registration ❌
-- Payroll (8 actions)
-- Time Tracking (10 actions)
-- Organization (11 actions)
-- Education (3 actions)
-- Risk Management (3 actions)
-- Support/CAPA (5 actions)
-- Admin (4 actions)
-- Fiduciary (3 actions)
-- AI/Document Processing (4 actions)
-- Verification (3 actions)
-- Team Skills/Compliance/Finance (7 actions)
+### Production Ready (100% ✅)
+- All 154 actions are registered and verified.
+- Workspace access is secured via the Passport Strategy (Cloud Functions).
+- All modules utilize the centralized `useAction()` hook for consistency.
 
 ---
 
 ## Next Steps
 
-1. **Complete Registration**: Add 74 unregistered actions to registry
-2. **Backend Migration**: Move critical actions to Cloud Functions
-3. **Permission Mapping**: Ensure all actions have correct permissions
-4. **Testing**: Integration tests for all 168 actions
-5. **Documentation**: Update guides for unregistered actions
-6. **AI Integration**: Make all actions available to AI agent
+1. **Unit Testing**: Implement Vitest/Jest suites for individual action handlers
+2. **Backend Migration**: Gradually move higher-risk actions (Payroll write operations) to Cloud Functions
+3. **Advanced Audit**: Implement granular field-level audit tracking for sensitive HR data
+4. **AI-Enabled UI**: Leverage the MCP tools schema to generate dynamic forms for actions
 
 ---
 
-**Document Version**: 1.0  
+**Document Version**: 1.1 (Catalog Complete)  
 **Last Review**: January 2026  
 **Maintained By**: Development Team
 

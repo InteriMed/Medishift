@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs, Timestamp, updateDoc, doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { Download, FileText, FileCode, FileType } from 'lucide-react';
 import { format } from 'date-fns';
 import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
-import Button from '../../../../components/colorPicker/button';
-import FilterBar from '../../../../components/dashboard/dashboardFilterBar/FilterBar';
-import PageHeader from '../../../components/PageHeader/PageHeader';
+import Button from '../../../../components/boxedInputFields/button';
+import FilterBar from '../../../pages/marketplace/components/filterbar';
+import PageHeader from '../../../shared/components/titles/PageHeader';
 import '../../../../styles/variables.css';
 
 const ConsolidatedPayroll = () => {

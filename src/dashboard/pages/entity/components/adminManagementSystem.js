@@ -22,9 +22,9 @@ import {
     FiBriefcase
 } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
-import EmployeePopup from './EmployeePopup';
+import EmployeePopup from './employeePopup';
 import Dialog from '../../../../components/Dialog/Dialog';
-import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import InputFieldParagraph from '../../../../components/boxedInputFields/textareaField';
 
 const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
@@ -32,7 +32,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
     const { currentUser } = useAuth();
     const { showNotification } = useNotification();
     const { execute } = useAction();
-    
+
     const [admins, setAdmins] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [roles, setRoles] = useState([]);
@@ -88,15 +88,14 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
 
             for (const adminId of adminIds) {
                 try {
-                    const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, adminId);
-                    const userSnap = await getDoc(userRef);
-                    
-                    if (userSnap.exists()) {
-                        const userData = userSnap.data();
+                    const result = await execute('team.get_profile_full', { userId: adminId });
+
+                    if (result && result.profile) {
+                        const userData = result.profile;
                         adminList.push({
                             id: adminId,
                             email: userData.email || '',
-                            displayName: userData.displayName || userData.firstName + ' ' + userData.lastName || 'Unknown',
+                            displayName: userData.displayName || (userData.firstName && userData.lastName ? `${userData.firstName} ${userData.lastName}` : (userData.name || 'Unknown')),
                             photoURL: userData.photoURL || '',
                             isOrgAdmin: true
                         });
@@ -113,7 +112,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
         } finally {
             setLoading(false);
         }
-    }, [organization, showNotification, t]);
+    }, [organization, execute, showNotification, t]);
 
     const loadRoles = useCallback(async () => {
         if (!organization) {
@@ -140,12 +139,12 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
 
             for (const facility of memberFacilities) {
                 try {
-                    const result = await execute('profile.facility.get_team_members', { 
-                        facilityId: facility.id 
+                    const result = await execute('profile.facility.get_team_members', {
+                        facilityId: facility.id
                     });
-                    
+
                     const teamMembers = result.members || [];
-                    
+
                     teamMembers.forEach(member => {
                         allEmployees.push({
                             id: member.id || member.userId,
@@ -256,7 +255,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
             }
 
             showNotification(
-                editingRole 
+                editingRole
                     ? t('organization:admin.roles.updated', 'Role updated successfully')
                     : t('organization:admin.roles.created', 'Role created successfully'),
                 'success'
@@ -284,9 +283,9 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
         const categoryPermissions = availablePermissions
             .filter(p => p.category === category)
             .map(p => p.key);
-        
+
         const allSelected = categoryPermissions.every(p => roleForm.permissions.includes(p));
-        
+
         setRoleForm(prev => ({
             ...prev,
             permissions: allSelected
@@ -377,9 +376,9 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                             }).map((employee) => {
                                 const fullName = `${employee.firstName} ${employee.lastName}`.trim() || 'Unknown';
                                 const initials = `${employee.firstName?.[0] || ''}${employee.lastName?.[0] || ''}`.toUpperCase() || '?';
-                                
+
                                 return (
-                                    <div 
+                                    <div
                                         key={employee.id}
                                         className="bg-card border border-border rounded-lg p-4 hover:bg-muted/10 transition-colors cursor-pointer"
                                         onClick={() => {
@@ -390,8 +389,8 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                                         <div className="flex items-center gap-4">
                                             <div className="shrink-0">
                                                 {employee.photoURL ? (
-                                                    <img 
-                                                        src={employee.photoURL} 
+                                                    <img
+                                                        src={employee.photoURL}
                                                         alt={fullName}
                                                         className="w-12 h-12 rounded-full object-cover"
                                                     />
@@ -411,11 +410,11 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                                                     )}
                                                     <span className={cn(
                                                         "shrink-0 px-2 py-0.5 text-xs font-medium rounded-full",
-                                                        employee.status === 'active' 
+                                                        employee.status === 'active'
                                                             ? "bg-green-100 text-green-700"
                                                             : employee.status === 'inactive'
-                                                            ? "bg-gray-100 text-gray-700"
-                                                            : "bg-yellow-100 text-yellow-700"
+                                                                ? "bg-gray-100 text-gray-700"
+                                                                : "bg-yellow-100 text-yellow-700"
                                                     )}>
                                                         {employee.status || 'active'}
                                                     </span>
@@ -429,7 +428,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                                                     {employee.roles && employee.roles.length > 0 && (
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {employee.roles.slice(0, 3).map((role, idx) => (
-                                                                <span 
+                                                                <span
                                                                     key={idx}
                                                                     className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded"
                                                                 >
@@ -597,7 +596,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                     setShowRoleModal(false);
                     setRoleForm({ name: '', description: '', permissions: [] });
                 }}
-                title={editingRole 
+                title={editingRole
                     ? t('organization:admin.roles.editRole', 'Edit Role')
                     : t('organization:admin.roles.createRole', 'Create New Role')
                 }
@@ -618,7 +617,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                             disabled={!roleForm.name.trim() || roleForm.permissions.length === 0}
                             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {editingRole 
+                            {editingRole
                                 ? t('common:save', 'Save Changes')
                                 : t('common:create', 'Create Role')
                             }
@@ -663,7 +662,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
                                                 onClick={() => toggleAllPermissionsInCategory(category.key)}
                                                 className="text-xs text-primary hover:underline"
                                             >
-                                                {allSelected 
+                                                {allSelected
                                                     ? t('organization:admin.roles.deselectAll', 'Deselect All')
                                                     : t('organization:admin.roles.selectAll', 'Select All')
                                                 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { FiFileText, FiX } from 'react-icons/fi';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../../components/boxedInputFields/button';
 
 const ContractPdfView = ({ contract, onClose }) => {
   const formatDate = (date) => {

@@ -1,13 +1,15 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { doc, getDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+
+const entryTypeEnum = ['BONUS', 'DEDUCTION', 'EXPENSE', 'REIMBURSEMENT'] as const;
 
 const AddManualEntrySchema = z.object({
   userId: z.string(),
   month: z.number().min(1).max(12),
   year: z.number(),
-  type: z.enum(['BONUS', 'DEDUCTION', 'EXPENSE', 'REIMBURSEMENT']),
+  type: z.enum(entryTypeEnum),
   amount: z.number(),
   comment: z.string().min(5),
 });
@@ -30,7 +32,7 @@ export const addManualEntryAction: ActionDefinition<typeof AddManualEntrySchema,
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof AddManualEntrySchema>, ctx: ActionContext) => {
     const { userId, month, year, type, amount, comment } = input;
 
     const periodId = `${ctx.facilityId}_${year}_${String(month).padStart(2, '0')}`;

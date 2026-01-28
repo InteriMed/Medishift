@@ -1,9 +1,9 @@
 import React from 'react';
 import { useAuth } from '../../../contexts/authContext';
 import { useWorkspaceAccess } from '../../../hooks/useWorkspaceAccess';
-import ProfessionalProfile from './pages/ProfessionalProfile';
-import FacilityProfile from './pages/facilityProfile';
-import OrganizationProfile from './pages/OrganizationProfile';
+import ProfessionalProfile from '../../shared/profile/ProfessionalProfile';
+import FacilityProfile from '../../shared/profile/FacilityProfile';
+import OrganizationProfile from '../../shared/profile/OrganizationProfile';
 
 const ProfileRouter = () => {
   const { currentUser } = useAuth();

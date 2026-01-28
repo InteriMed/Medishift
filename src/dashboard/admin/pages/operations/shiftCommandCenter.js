@@ -10,16 +10,16 @@ import {
   createColumnHelper
 } from '@tanstack/react-table';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { MoreVertical, Edit, UserPlus, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '../../../../contexts/authContext';
 import { hasPermission, PERMISSIONS } from '../../utils/rbac';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
-import Button from '../../../../components/colorPicker/Button';
+import Button from '../../../../components/boxedInputFields/button';
 import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import PageHeader from '../../../components/PageHeader/PageHeader';
-import FilterBar from '../../../../components/layout/FilterBar/FilterBar';
+import PageHeader from '../../../shared/components/titles/PageHeader';
+import FilterBar from '../../../pages/marketplace/components/filterbar';
 import '../../../../styles/variables.css';
 
 const columnHelper = createColumnHelper();

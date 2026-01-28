@@ -43,7 +43,7 @@ export const leaveFacilityAction: ActionDefinition<typeof LeaveFacilitySchema, v
 
     const userData = userSnap.data();
     const updatedMemberships = (userData.facilityMemberships || []).filter(
-      m => m.facilityId !== facilityId && m.facilityProfileId !== facilityId
+      (m: any) => m.facilityId !== facilityId && m.facilityProfileId !== facilityId
     );
 
     await updateDoc(userRef, {
@@ -57,7 +57,7 @@ export const leaveFacilityAction: ActionDefinition<typeof LeaveFacilitySchema, v
     if (facilitySnap.exists()) {
       const facilityData = facilitySnap.data();
       const updatedEmployees = (facilityData.employees || []).filter(
-        e => (e.user_uid || e.uid) !== userId
+        (e: any) => (e.user_uid || e.uid) !== userId
       );
       
       await updateDoc(facilityRef, {

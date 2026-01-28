@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs, writeBatch, serverTimestamp } from 'firebase/firestore';
-import { sendNotificationToUser } from '../../../../services/notifications';
+import { sendNotificationToUser } from '../../../services/notifications';
 
 const PublishPayslipsSchema = z.object({
   month: z.number().min(1).max(12),
@@ -31,10 +31,10 @@ export const publishPayslipsAction: ActionDefinition<typeof PublishPayslipsSchem
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof PublishPayslipsSchema>, ctx: ActionContext) => {
     const { month, year, facilityIds } = input;
 
     const payslipsRef = collection(db, 'payslips');
@@ -69,7 +69,7 @@ export const publishPayslipsAction: ActionDefinition<typeof PublishPayslipsSchem
     let notificationsSent = 0;
     const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
 
-    for (const userId of affectedUsers) {
+    for (const userId of Array.from(affectedUsers)) {
       try {
         await sendNotificationToUser(userId, {
           title: 'New Payslip Available',

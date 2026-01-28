@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const ManageApprenticeshipSchema = z.object({
@@ -30,7 +30,7 @@ export const manageApprenticeshipAction: ActionDefinition<typeof ManageApprentic
     isSwiss: true,
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ManageApprenticeshipSchema>, ctx: ActionContext) => {
     const { userId, schoolDays, schoolName, cfcStartDate, cfcEndDate } = input;
 
     const apprenticeshipRef = doc(db, 'apprenticeships', userId);

@@ -1,20 +1,20 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { companySearchAPI, companyDetailsAPI } from '../../../services/cloudFunctions';
+import { useAuth } from '../../../contexts/authContext';
+import { companySearchAPI, companyDetailsAPI } from '../../../services/utils/gln';
 import { FiLoader, FiAlertCircle, FiFileText, FiCheckCircle, FiInfo, FiCheck } from 'react-icons/fi';
 import { DOCUMENT_TYPES } from '../constants/documentTypes';
-import { processAndSaveFacility } from '../services/documentProcessingService';
-import { normalizeGLNData } from '../utils/glnVerificationUtils';
-import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
-import UploadFile from '../../../../components/boxedInputFields/uploadFile';
-import modal from '../../../components/basemodal/basemodal';
-import Button from '../../../components/colorPicker/button';
-import { saveOnboardingData, loadOnboardingData, clearOnboardingData } from '../utils/localStorageUtils';
-import { SESSIONSTORAGE_KEYS, FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import { processAndSaveFacility } from '../../../services/utils/profile';
+import { normalizeGLNData } from '../../../services/utils/gln';
+import PersonnalizedInputField from '../../../components/boxedInputFields/personnalizedInputField';
+import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
+import UploadFile from '../../../components/boxedInputFields/uploadFile';
+import modal from '../../../components/modals/modals';
+import Button from '../../../components/boxedInputFields/button';
+import { saveToStorage as saveOnboardingData, loadFromStorage as loadOnboardingData, removeFromStorage as clearOnboardingData } from '../../../services/utils/storage';
+import { SESSIONSTORAGE_KEYS, FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../services/firebase';
+import { db } from '../../../services/services/firebase';
 
 
 const FacilityGLNVerification = React.memo(React.forwardRef(function FacilityGLNVerification(props, ref) {

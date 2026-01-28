@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { appendAudit } from '../../common/utils';
@@ -23,7 +23,7 @@ const PostMissionSchema = z.object({
     certifications: z.array(z.string()),
     minExperience: z.number().optional(),
   }),
-  targeting: z.enum(['PUBLIC', 'POOL_ONLY', 'FAVORITES']),
+  targeting: z.enum(['PUBLIC', 'POOL_ONLY', 'FAVORITES'] as const),
   description: z.string(),
   aiDraft: z.boolean().optional(),
 });
@@ -51,7 +51,7 @@ export const postMissionAction: ActionDefinition<typeof PostMissionSchema, PostM
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof PostMissionSchema>, ctx: ActionContext) => {
     const { ratePerHour, dates, ...missionData } = input;
 
     const legalMinimumRate = await getLegalMinimumRate(input.role, ctx.facilityId);

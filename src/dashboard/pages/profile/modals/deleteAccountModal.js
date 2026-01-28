@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import Modal from '../../../../components/modals/modal';
+import Modal from '../../../../components/modals/modals';
 import Button from '../../../../components/boxedInputFields/button';
 import PersonalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 

@@ -28,17 +28,17 @@ import {
   Building,
   Archive
 } from 'lucide-react';
-import { cn } from '../../../utils/cn';
-import { normalizePathname, buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../../config/routeUtils';
-import { useDashboard } from '../../contexts/DashboardContext';
+import { cn } from '../../../../utils/cn';
+import { normalizePathname, buildDashboardUrl, getWorkspaceIdForUrl, getOrganizationBasePath } from '../../../../config/routeUtils';
+import { useDashboard } from '../../../contexts/dashboardContext';
 import {
   isProfessionalSync,
   isAdminSync
-} from '../../../config/workspaceDefinitions';
-import { useAdminPermission } from '../../admin/hooks/useAdminPermission';
-import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
-import { RIGHTS as PERMISSIONS } from '../../admin/utils/rbac';
-import LockedMenuItem from './LockedMenuItem';
+} from '../../../../config/workspaceDefinitions';
+import { useAdminPermission } from '../../../admin/hooks/useAdminPermission';
+import { WORKSPACE_TYPES } from '../../../../config/workspaceDefinitions';
+import { RIGHTS as PERMISSIONS } from '../../../admin/utils/rbac';
+import LockedMenuItem from './sockedMenuItem';
 // Define regular sidebar items structure
 // Define regular sidebar items structure
 const REGULAR_SIDEBAR_ITEMS = [
@@ -469,3 +469,5 @@ Sidebar.propTypes = {
   isOverlayMode: PropTypes.bool,
   isOverlayExpanded: PropTypes.bool
 };
+
+export default Sidebar;

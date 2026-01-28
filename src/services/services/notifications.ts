@@ -57,7 +57,7 @@ export const createAnnouncement = async (
     await logAudit('notification.create_announcement', 'ERROR', {
       userId: createdBy,
       facilityId,
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
     });
     throw error;
   }
@@ -259,14 +259,14 @@ export const markNotificationAsRead = async (
 
 export const getUserNotifications = async (
   userId: string,
-  limit: number = 50
+  limitCount: number = 50
 ): Promise<any[]> => {
   try {
     const notificationsRef = collection(db, `${USERS_COLLECTION}/${userId}/notifications`);
     const notificationsQuery = query(
       notificationsRef,
       orderBy('createdAt', 'desc'),
-      limit(limit)
+      limit(limitCount)
     );
 
     const snapshot = await getDocs(notificationsQuery);

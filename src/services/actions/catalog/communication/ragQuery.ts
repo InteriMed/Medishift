@@ -1,13 +1,16 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
+
+const collectionTypeEnum = ['messages', 'tickets', 'announcements', 'policies', 'hr_reports'] as const;
+const scopeEnum = ['thread', 'collection', 'facility'] as const;
 
 const RagQuerySchema = z.object({
   text: z.string().min(1),
   request: z.string().min(1),
   context: z.object({
-    collectionType: z.enum(['messages', 'tickets', 'announcements', 'policies', 'hr_reports']).optional(),
+    collectionType: z.enum(collectionTypeEnum).optional(),
     threadId: z.string().optional(),
-    scope: z.enum(['thread', 'collection', 'facility']).optional(),
+    scope: z.enum(scopeEnum).optional(),
   }).optional(),
 });
 
@@ -40,10 +43,10 @@ export const ragQueryAction: ActionDefinition<typeof RagQuerySchema, RagResult> 
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof RagQuerySchema>, ctx: ActionContext): Promise<RagResult> => {
     const { text, request, context } = input;
 
-    const { functions } = await import('../../../../services/firebase');
+    const { functions } = await import('../../../services/firebase');
     const { httpsCallable } = await import('firebase/functions');
     
     const ragQuery = httpsCallable(functions, 'performRagQuery');

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../../services/services/firebase';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
-import { AgentResponse } from '../types';
+import { AgentResponse } from '../admin/types';
 import { checkRateLimit, incrementUsage } from '../../../brain/tokenBudgeting';
 import { buildSystemPrompt } from '../../../brain/contextInjection';
 
@@ -13,7 +13,7 @@ const AskAgentSchema = z.object({
     currentPage: z.string().optional(),
   }).optional(),
   conversationHistory: z.array(z.object({
-    role: z.enum(['user', 'assistant']),
+    role: z.enum(['user', 'assistant'] as const),
     content: z.string(),
   })).optional(),
 });
@@ -50,18 +50,25 @@ export const askAgentAction: ActionDefinition<typeof AskAgentSchema, AskAgentRes
     isRAG: true,
   },
 
-  handler: async (input, ctx) => {
-    const { query, context, conversationHistory } = input;
+  handler: async (input: z.infer<typeof AskAgentSchema>, ctx: ActionContext) => {
+    const { query: userQuery, context, conversationHistory } = input;
+
+    const contextForBrain = {
+      userId: ctx.userId,
+      facilityId: ctx.facilityId,
+      userPermissions: ctx.userPermissions as any,
+      auditLogger: ctx.auditLogger,
+    } as any;
 
     // Check rate limit
-    const rateLimit = await checkRateLimit(ctx);
+    const rateLimit = await checkRateLimit(contextForBrain);
     if (!rateLimit.allowed) {
       throw new Error(rateLimit.message || 'Rate limit exceeded');
     }
 
     // Build system prompt with context injection
     const basePrompt = await loadBasePrompt();
-    const systemPrompt = await buildSystemPrompt(basePrompt, ctx);
+    const systemPrompt = await buildSystemPrompt(basePrompt, contextForBrain);
 
     // Context-aware document search
     const docsRef = collection(db, 'documentation');
@@ -81,7 +88,7 @@ export const askAgentAction: ActionDefinition<typeof AskAgentSchema, AskAgentRes
     const sources: any[] = [];
     
     docsSnapshot.forEach(doc => {
-      const docData = doc.data();
+      const docData = doc.data() as { content: string; title: string; url?: string; page?: number };
       relevantDocs.push(docData.content);
       sources.push({
         title: docData.title,
@@ -93,7 +100,7 @@ export const askAgentAction: ActionDefinition<typeof AskAgentSchema, AskAgentRes
     // Generate AI response (placeholder for actual LLM call)
     const answer = await generateAIResponse(
       systemPrompt,
-      query,
+      userQuery,
       relevantDocs,
       conversationHistory || []
     );
@@ -107,13 +114,13 @@ export const askAgentAction: ActionDefinition<typeof AskAgentSchema, AskAgentRes
           label: 'Open Support Ticket',
           description: 'Let our team help you directly'
         }]
-      : findRelevantActions(query);
+      : findRelevantActions(userQuery);
 
     // Increment usage counter
     await incrementUsage(ctx.userId);
 
     await ctx.auditLogger('support.ask_agent', 'SUCCESS', {
-      query,
+      query: userQuery,
       confidence,
       sourcesFound: sources.length,
       suggestedActionsCount: suggestedActions.length,

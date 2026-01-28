@@ -1,10 +1,12 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
 import { db } from '../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
+const collectionTypeEnum = ['messages', 'tickets', 'announcements', 'policies', 'hr_reports'] as const;
+
 const GetStatsSchema = z.object({
-  collectionType: z.enum(['messages', 'tickets', 'announcements', 'policies', 'hr_reports']),
+  collectionType: z.enum(collectionTypeEnum),
   threadId: z.string(),
 });
 
@@ -35,7 +37,7 @@ export const getStatsAction: ActionDefinition<typeof GetStatsSchema, StatsResult
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof GetStatsSchema>, ctx: ActionContext): Promise<StatsResult> => {
     const { collectionType, threadId } = input;
 
     const threadRef = doc(db, collectionType, threadId);

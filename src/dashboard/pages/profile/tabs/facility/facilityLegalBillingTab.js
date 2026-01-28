@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import PersonalizedInputField from '../../../../../components/boxedInputFields/personnalizedInputField';
-import FormGrid from '../../formGrid';
-import ContentSection from '../../contentSection';
+import FormGrid from '../../components/formGrid';
+import ContentSection from '../../../../shared/components/ContentSection';
 
 const FacilityLegalBillingTab = ({ data, errors, updateField }) => {
   const { t } = useTranslation(['dashboard/profile']);

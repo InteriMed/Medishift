@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { TrendAnalysis } from '../types';
+import { TrendAnalysis } from '../admin/types';
 
 const AnalyzeTrendsSchema = z.object({
   dateRange: z.object({
@@ -33,7 +33,7 @@ export const analyzeTrendsAction: ActionDefinition<typeof AnalyzeTrendsSchema, A
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof AnalyzeTrendsSchema>, ctx) => {
     const { dateRange } = input;
 
     const ticketsRef = collection(db, 'support_tickets');

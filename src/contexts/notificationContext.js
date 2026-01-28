@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
-import '../components/websiteHeader/Notification.css'; // Update path to use the correct CSS
 
 // Create notification context
 const NotificationContext = createContext();

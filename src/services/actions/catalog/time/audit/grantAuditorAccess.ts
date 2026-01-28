@@ -61,7 +61,6 @@ export const grantAuditorAccessAction: ActionDefinition<typeof GrantAuditorAcces
     await ctx.auditLogger('time.grant_auditor_access', 'SUCCESS', {
       auditorEmail: email,
       expiresAt: expiresAt.toISOString(),
-      severity: 'CRITICAL',
     });
 
     return {

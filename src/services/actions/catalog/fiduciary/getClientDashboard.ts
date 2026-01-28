@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { FiduciaryClient } from '../types';
+import { FiduciaryClient } from '../admin/types';
 
 const GetClientDashboardSchema = z.object({});
 
@@ -29,7 +29,7 @@ export const getClientDashboardAction: ActionDefinition<typeof GetClientDashboar
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof GetClientDashboardSchema>, ctx: ActionContext) => {
     const userRef = doc(db, 'users', ctx.userId);
     const userSnap = await getDoc(userRef);
 

@@ -10,10 +10,10 @@ import {
   linkWithCredential
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { db, auth, loginWithGoogle } from '../../services/firebase';
+import { db, auth, loginWithGoogle } from '../../services/services/firebase';
 import InputField from '../../components/boxedInputFields/personnalizedInputField';
 import PhoneInput from 'react-phone-number-input';
-import { validatePassword } from '../../utils/validation';
+import { validatePassword } from '../../services/utils/validation';
 import 'react-phone-number-input/style.css';
 import { FcGoogle } from 'react-icons/fc';
 import { useNotification } from '../../contexts/notificationContext';

@@ -7,3 +7,6 @@ export * from './gln';
 export * from './document';
 export * from './phone';
 export * from './storage';
+export * from './upload';
+export * from './profile';
+export * from './audit';

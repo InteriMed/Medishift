@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, writeBatch, serverTimestamp } from 'firebase/firestore';
-import { appendAudit } from '../../common/utils';
+import { appendAudit } from '../common/utils';
 
 const LockPeriodSchema = z.object({
   facilityId: z.string(),
@@ -34,7 +34,7 @@ export const lockPeriodAction: ActionDefinition<typeof LockPeriodSchema, LockPer
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof LockPeriodSchema>, ctx: ActionContext) => {
     const { facilityId, month, year } = input;
 
     const startDate = new Date(year, month - 1, 1);

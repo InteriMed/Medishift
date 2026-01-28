@@ -87,3 +87,17 @@ export const updateStorageField = <T extends Record<string, any>>(
   return saveToStorage(key, data);
 };
 
+const ONBOARDING_STORAGE_KEY = 'onboarding_data';
+
+export const saveOnboardingData = (data: any): boolean => {
+  return saveToStorage(ONBOARDING_STORAGE_KEY, data);
+};
+
+export const loadOnboardingData = (): any => {
+  return loadFromStorage(ONBOARDING_STORAGE_KEY);
+};
+
+export const clearOnboardingData = (): boolean => {
+  return removeFromStorage(ONBOARDING_STORAGE_KEY);
+};
+

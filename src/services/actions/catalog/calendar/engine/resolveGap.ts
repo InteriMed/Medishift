@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { validateShiftConstraints } from '../constraints';
@@ -35,7 +35,7 @@ export const resolveGapAction: ActionDefinition<typeof ResolveGapSchema, Resolve
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ResolveGapSchema>, ctx: ActionContext): Promise<ResolveGapResult> => {
     const { date, missingRole, startTime, endTime } = input;
 
     const usersRef = collection(db, 'users');
@@ -47,7 +47,7 @@ export const resolveGapAction: ActionDefinition<typeof ResolveGapSchema, Resolve
     );
 
     const snapshot = await getDocs(q);
-    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
 
     const candidates: CandidateScore[] = [];
 
@@ -106,13 +106,13 @@ export const resolveGapAction: ActionDefinition<typeof ResolveGapSchema, Resolve
           reason = 'Below typical weekly hours';
         }
 
-        if (user.employmentType === 'FLOATER') {
+        if ((user as any).employmentType === 'FLOATER') {
           category = 'FLOATER';
           score += 10;
           reason = 'Floater (flexible)';
         }
 
-        if (user.employmentType === 'EXTERNAL') {
+        if ((user as any).employmentType === 'EXTERNAL') {
           category = 'EXTERNAL';
           score -= 25;
           reason = 'External contractor (higher cost)';

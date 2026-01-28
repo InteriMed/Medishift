@@ -1,12 +1,14 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
+
+const leaveTypeEnum = ['VACATION', 'UNPAID', 'EDUCATION', 'SICK', 'MATERNITY'] as const;
 
 const RequestLeaveSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  type: z.enum(['VACATION', 'UNPAID', 'EDUCATION', 'SICK', 'MATERNITY']),
+  type: z.enum(leaveTypeEnum),
   comment: z.string().optional(),
   force: z.boolean().optional(),
 });
@@ -35,7 +37,7 @@ export const requestLeaveAction: ActionDefinition<typeof RequestLeaveSchema, Req
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof RequestLeaveSchema>, ctx: ActionContext): Promise<RequestLeaveResult> => {
     const { startDate, endDate, type, comment, force } = input;
 
     const start = new Date(startDate);

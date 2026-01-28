@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, limit, doc, getDoc } from 'firebase/firestore';
 import { appendAudit } from '../../common/utils';
 
 const ClockOutSchema = z.object({
@@ -74,9 +74,10 @@ export const clockOutAction: ActionDefinition<typeof ClockOutSchema, ClockOutRes
 
     let overtimeMinutes: number | undefined;
     if (clockInData.linkedShiftId) {
-      const shiftRef = await db.collection('calendar_shifts').doc(clockInData.linkedShiftId).get();
-      if (shiftRef.exists) {
-        const shiftData = shiftRef.data();
+      const shiftRef = doc(db, 'calendar_shifts', clockInData.linkedShiftId);
+      const shiftSnap = await getDoc(shiftRef);
+      if (shiftSnap.exists()) {
+        const shiftData = shiftSnap.data();
         const plannedEnd = new Date(`${shiftData.date}T${shiftData.endTime}`);
         const overtimeMs = now.getTime() - plannedEnd.getTime();
         overtimeMinutes = Math.max(0, overtimeMs / 60000);

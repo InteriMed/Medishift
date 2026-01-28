@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db, firebaseApp } from '../../../../services/firebase';
+import { db, firebaseApp } from '../../../../services/services/firebase';
 import { collection, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { UserPlus, Shield, Search, Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
@@ -7,12 +7,12 @@ import { useAdminPermission } from '../../hooks/useAdminPermission';
 import { RIGHTS, ADMIN_ROLES } from '../../utils/rbac';
 import { useAuth } from '../../../../contexts/authContext';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../../components/boxedInputFields/button';
 import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import DropdownField from '../../../../components/boxedInputFields/dropdownField';
-import modal from '../../../../components/basemodal/basemodal';
+import modal from '../../../../components/basemodal';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import PageHeader from '../../../components/PageHeader/PageHeader';
+import PageHeader from '../../../shared/components/titles/PageHeader';
 import '../../../../styles/variables.css';
 
 const AdminManagement = () => {

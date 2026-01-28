@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { Search, User, Building2, Eye, X, Filter, Check, Edit2, Save, Calendar, Users, FileText, Plus, ArrowLeft, ShieldCheck, Stethoscope, Trash2, LogOut, UserPlus, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../../../contexts/authContext';
 import { useAdminPermission } from '../../hooks/useAdminPermission';
 import { PERMISSIONS } from '../../utils/rbac';
 import { logAdminAction, ADMIN_AUDIT_EVENTS } from '../../../../utils/auditLogger';
 import { useNavigate } from 'react-router-dom';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../../components/boxedInputFields/button';
 import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import DropdownField from '../../../../components/boxedInputFields/dropdownField';
-import modal from '../../../../components/basemodal/basemodal';
+import modal from '../../../../components/basemodal';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import PageHeader from '../../../components/PageHeader/PageHeader';
-import FilterBar from '../../../../components/dashboard/dashboardFilterBar/FilterBar';
+import PageHeader from '../../../shared/components/titles/PageHeader';
+import FilterBar from '../../../pages/marketplace/components/filterbar';
 import '../../../../styles/variables.css';
 
 const UserCRM = () => {

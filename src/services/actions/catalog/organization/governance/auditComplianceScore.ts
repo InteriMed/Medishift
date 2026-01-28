@@ -1,8 +1,15 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { ComplianceScore } from '../types';
+
+interface ComplianceScore {
+  facilityId: string;
+  facilityName: string;
+  score: number;
+  violations: any[];
+  lastAuditDate: Date;
+}
 
 const AuditComplianceScoreSchema = z.object({
   region: z.string().optional(),
@@ -31,7 +38,7 @@ export const auditComplianceScoreAction: ActionDefinition<typeof AuditCompliance
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof AuditComplianceScoreSchema>, ctx: ActionContext) => {
     const { region } = input;
 
     const facilitiesRef = collection(db, 'facility_profiles');

@@ -1,8 +1,15 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { NetworkLoadForecast } from '../types';
+
+interface NetworkLoadForecast {
+  date: string;
+  totalDemand: number;
+  totalSupply: number;
+  gap: number;
+  roleBreakdown: { role: string; shortage: number; }[];
+}
 
 const PredictNetworkLoadSchema = z.object({
   dates: z.array(z.string()),
@@ -30,7 +37,7 @@ export const predictNetworkLoadAction: ActionDefinition<typeof PredictNetworkLoa
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof PredictNetworkLoadSchema>, ctx: ActionContext) => {
     const { dates } = input;
 
     const forecasts: NetworkLoadForecast[] = [];

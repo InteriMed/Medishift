@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { useNotification } from '../../../../contexts/notificationContext';
 import PropTypes from 'prop-types';
 import { cn } from '../../../../utils/cn';

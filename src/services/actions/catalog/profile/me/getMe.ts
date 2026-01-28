@@ -37,17 +37,18 @@ export const getMeAction: ActionDefinition<typeof GetMeSchema, GetMeResult> = {
       throw new Error('User profile not found');
     }
 
-    const profile = { id: userSnap.id, ...userSnap.data() };
+    const userData = userSnap.data();
+    const profile: any = { id: userSnap.id, ...userData };
 
-    const basePermissions = profile.permissions || [];
-    const rolePermissions = await getRolePermissions(profile.role);
+    const basePermissions = (profile.permissions || userData.permissions || []) as string[];
+    const rolePermissions = await getRolePermissions(profile.role || userData.role || '');
     const facilityPermissions = await getFacilityPermissions(ctx.facilityId);
 
     const mergedPermissions = Array.from(
       new Set([...basePermissions, ...rolePermissions, ...facilityPermissions])
     );
 
-    const activeFacilityId = profile.activeFacilityId || ctx.facilityId;
+    const activeFacilityId = (profile.activeFacilityId || userData.activeFacilityId || ctx.facilityId) as string;
 
     await ctx.auditLogger('profile.get_me', 'SUCCESS', {
       userId: ctx.userId,

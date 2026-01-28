@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Contracts from '../components/Contracts';
+import Contracts from '../../../../schemas/contracts';
 
 const ContractsPage = ({ hideHeader = false }) => {
   return (

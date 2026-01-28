@@ -1,8 +1,12 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp, Timestamp, writeBatch, doc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+
+const endRepeatValueEnum = ['After', 'On Date', 'Never'] as const;
+const monthlyTypeEnum = ['day', 'weekday'] as const;
+const monthlyWeekEnum = ['first', 'second', 'third', 'fourth', 'last'] as const;
 
 const CreateRecurringEventsSchema = z.object({
   title: z.string().optional(),
@@ -16,13 +20,13 @@ const CreateRecurringEventsSchema = z.object({
   isAvailability: z.boolean().default(true),
   isValidated: z.boolean().default(true),
   repeatValue: z.string(),
-  endRepeatValue: z.enum(['After', 'On Date', 'Never']),
+  endRepeatValue: z.enum(endRepeatValueEnum),
   endRepeatCount: z.number().optional(),
   endRepeatDate: z.string().datetime().optional(),
   weeklyDays: z.array(z.boolean()).optional(),
-  monthlyType: z.enum(['day', 'weekday']).optional(),
+  monthlyType: z.enum(monthlyTypeEnum).optional(),
   monthlyDay: z.number().optional(),
-  monthlyWeek: z.enum(['first', 'second', 'third', 'fourth', 'last']).optional(),
+  monthlyWeek: z.enum(monthlyWeekEnum).optional(),
   monthlyDayOfWeek: z.number().optional(),
   canton: z.array(z.string()).optional(),
   area: z.array(z.string()).optional(),
@@ -57,7 +61,7 @@ export const createRecurringEventsAction: ActionDefinition<typeof CreateRecurrin
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CreateRecurringEventsSchema>, ctx: ActionContext): Promise<CreateRecurringEventsResult> => {
     const recurrenceId = uuidv4();
     const startDate = new Date(input.start);
     const endDate = new Date(input.end);

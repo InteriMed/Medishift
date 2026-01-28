@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../../services/services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../../config/keysDatabase';
 
 export const useEmployees = (facilityId, organizationId, selectedWorkspace) => {

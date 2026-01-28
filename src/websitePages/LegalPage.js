@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import './styles/LegalPage.css';
-import './styles/homepage.css'; // Import homepage styles
+import './Homepage'; // Import homepage styles
 
 const LegalPage = ({ type }) => {
   const { t } = useTranslation(['legal', 'common']);

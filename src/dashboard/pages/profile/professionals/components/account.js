@@ -6,11 +6,11 @@ import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 
 import { useAuth } from '../../../../../contexts/authContext';
 import { useNotification } from '../../../../../contexts/notificationContext';
 
-import AccountDeletion from '../../components/AccountDeletion';
-import Button from '../../../../../components/colorPicker/button';
+import AccountDeletion from '../../../../shared/profile/modals/AccountDeletion';
+import Button from '../../../../../components/boxedInputFields/button';
 import InputFieldHideUnhide from '../../../../../components/boxedInputFields/inputFieldHideUnhide';
 
-import useAutoSave from '../../../../hooks/useAutoSave';
+import useAutoSave from '../../../../../hooks/useAutoSave';
 
 const GOLDEN_COLOR = '#FFD700';
 

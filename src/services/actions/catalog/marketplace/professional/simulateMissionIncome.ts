@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { IncomeSimulation } from '../types';
 
 const SimulateMissionIncomeSchema = z.object({
@@ -31,7 +31,7 @@ export const simulateMissionIncomeAction: ActionDefinition<typeof SimulateMissio
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof SimulateMissionIncomeSchema>, ctx: ActionContext) => {
     const { hourlyRate, hours, canton, isMarried } = input;
 
     const grossAmount = hourlyRate * hours;

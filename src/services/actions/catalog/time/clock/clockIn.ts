@@ -11,7 +11,7 @@ const ClockInSchema = z.object({
     longitude: z.number(),
     ipAddress: z.string(),
   }).optional(),
-  method: z.enum(['APP', 'BADGE', 'WEB']),
+  method: z.enum(['APP', 'BADGE', 'WEB'] as const),
 });
 
 interface ClockInResult {

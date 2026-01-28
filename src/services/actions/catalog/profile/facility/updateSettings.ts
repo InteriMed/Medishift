@@ -6,7 +6,7 @@ import { appendAudit } from '../../common/utils';
 
 const UpdateSettingsSchema = z.object({
   facilityId: z.string(),
-  openingHours: z.record(z.object({
+  openingHours: z.record(z.string(), z.object({
     open: z.string(),
     close: z.string(),
     closed: z.boolean(),

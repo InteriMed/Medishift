@@ -59,7 +59,8 @@ export const getTeamMembersAction: ActionDefinition<typeof GetTeamMembersSchema,
       .filter((emp: any) => emp.rights !== 'admin')
       .map((emp: any) => emp.uid);
     
-    const allMemberIds = [...new Set([...admins, ...employees])];
+    const allMemberIdsSet = new Set([...admins, ...employees]);
+    const allMemberIds = Array.from(allMemberIdsSet);
 
     const memberPromises = allMemberIds.map(async (userId: string) => {
       try {

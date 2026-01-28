@@ -1,8 +1,7 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { appendAudit } from '../../common/utils';
 
 const ManageCapaWorkflowSchema = z.object({
   ticketId: z.string(),
@@ -33,7 +32,7 @@ export const manageCapaWorkflowAction: ActionDefinition<typeof ManageCapaWorkflo
     riskLevel: 'MEDIUM',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ManageCapaWorkflowSchema>, ctx: ActionContext) => {
     const { ticketId, step, notes } = input;
 
     const ticketRef = doc(db, 'support_tickets', ticketId);
@@ -64,12 +63,6 @@ export const manageCapaWorkflowAction: ActionDefinition<typeof ManageCapaWorkflo
 
     await updateDoc(capaRef, updates);
 
-    await appendAudit('capa_entries', ticket.capaId, {
-      uid: ctx.userId,
-      action: `CAPA_${step}`,
-      metadata: notes,
-      severity: 'HIGH',
-    });
 
     await ctx.auditLogger('support.manage_capa_workflow', 'SUCCESS', {
       ticketId,

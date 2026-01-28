@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Employees from '../components/TeamEmployees';
+import Employees from '../../../pages/entity/components/teamEmployees';
 
 const EmployeesPage = ({ hideHeader = false }) => {
   return (

@@ -87,3 +87,119 @@ export const extractHouseNumber = (fullStreet: string): string => {
   return match ? match[1] : '';
 };
 
+export interface CloudFunctionResult<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export const commercialRegistrySearchAPI = async (criteria: string): Promise<CloudFunctionResult> => {
+  try {
+    const { functions } = await import('../services/firebase');
+    const { httpsCallable } = await import('firebase/functions');
+    
+    const searchFunction = httpsCallable(functions, 'commercialRegistrySearchAPI');
+    const result = await searchFunction({ criteria });
+    
+    const data = result.data as any;
+    return {
+      success: data.success || true,
+      data: data.data || data
+    };
+  } catch (error: any) {
+    console.error('[CloudFunctions] Commercial registry search failed:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to search commercial registry'
+    };
+  }
+};
+
+export const companySearchAPI = async (gln: string): Promise<CloudFunctionResult> => {
+  try {
+    const { functions } = await import('../services/firebase');
+    const { httpsCallable } = await import('firebase/functions');
+    
+    const searchFunction = httpsCallable(functions, 'companySearchAPI');
+    const result = await searchFunction({ gln });
+    
+    const data = result.data as any;
+    return {
+      success: data.success || true,
+      data: data.data || data
+    };
+  } catch (error: any) {
+    console.error('[CloudFunctions] Company search failed:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to search company'
+    };
+  }
+};
+
+export const companyDetailsAPI = async (gln: string): Promise<CloudFunctionResult> => {
+  try {
+    const { functions } = await import('../services/firebase');
+    const { httpsCallable } = await import('firebase/functions');
+    
+    const detailsFunction = httpsCallable(functions, 'companyDetailsAPI');
+    const result = await detailsFunction({ gln });
+    
+    const data = result.data as any;
+    return {
+      success: data.success || true,
+      data: data.data || data
+    };
+  } catch (error: any) {
+    console.error('[CloudFunctions] Company details failed:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to get company details'
+    };
+  }
+};
+
+export const healthRegistryAPI = async (gln: string): Promise<CloudFunctionResult> => {
+  try {
+    const { functions } = await import('../services/firebase');
+    const { httpsCallable } = await import('firebase/functions');
+    
+    const registryFunction = httpsCallable(functions, 'healthRegistryAPI');
+    const result = await registryFunction({ gln });
+    
+    const data = result.data as any;
+    return {
+      success: data.success || true,
+      data: data.data || data
+    };
+  } catch (error: any) {
+    console.error('[CloudFunctions] Health registry lookup failed:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to lookup health registry'
+    };
+  }
+};
+
+export const gesRegAPI = async (gln: string): Promise<CloudFunctionResult> => {
+  try {
+    const { functions } = await import('../services/firebase');
+    const { httpsCallable } = await import('firebase/functions');
+    
+    const gesRegFunction = httpsCallable(functions, 'gesRegAPI');
+    const result = await gesRegFunction({ gln });
+    
+    const data = result.data as any;
+    return {
+      success: data.success || true,
+      data: data.data || data
+    };
+  } catch (error: any) {
+    console.error('[CloudFunctions] GesReg API failed:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to query GesReg'
+    };
+  }
+};
+

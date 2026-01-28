@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, serverTimestamp, arrayUnion } from 'firebase/firestore';
 import { FIRESTORE_COLLECTIONS } from '../../../../../config/keysDatabase';
@@ -31,10 +31,10 @@ export const addEmployeeToFacilityAction: ActionDefinition<typeof AddEmployeeToF
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof AddEmployeeToFacilitySchema>, ctx: ActionContext) => {
     const { email, facilityId, role, isAdmin } = input;
 
     const userQuery = query(
@@ -57,7 +57,7 @@ export const addEmployeeToFacilityAction: ActionDefinition<typeof AddEmployeeToF
 
     const facilityData = facilitySnap.data();
     const employeesList = facilityData.employees || [];
-    const isAlreadyEmployee = employeesList.some(emp => (emp.user_uid || emp.uid) === userId);
+    const isAlreadyEmployee = employeesList.some((emp: any) => (emp.user_uid || emp.uid) === userId);
 
     if (isAlreadyEmployee) {
       throw new Error('This user is already an employee');

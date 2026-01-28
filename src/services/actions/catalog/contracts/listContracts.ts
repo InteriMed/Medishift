@@ -1,13 +1,15 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { FIRESTORE_COLLECTIONS } from '../../../../../config/keysDatabase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+
+const contractStatusEnum = ['DRAFT', 'PENDING_SIGNATURE', 'ACTIVE', 'EXPIRED', 'TERMINATED'] as const;
 
 const ListContractsSchema = z.object({
   facilityId: z.string().optional(),
   userId: z.string().optional(),
-  status: z.enum(['DRAFT', 'PENDING_SIGNATURE', 'ACTIVE', 'EXPIRED', 'TERMINATED']).optional(),
+  status: z.enum(contractStatusEnum).optional(),
 });
 
 interface ListContractsResult {
@@ -41,7 +43,7 @@ export const listContractsAction: ActionDefinition<typeof ListContractsSchema, L
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ListContractsSchema>, ctx: ActionContext) => {
     const { facilityId, userId, status } = input;
 
     let contractsQuery = query(collection(db, FIRESTORE_COLLECTIONS.CONTRACTS));

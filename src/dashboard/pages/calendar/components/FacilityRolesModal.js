@@ -5,7 +5,7 @@ import { useNotification } from '../../../../contexts/notificationContext';
 import { useAction } from '../../../../services/actions/hook';
 import modal from '../../../../components/modals/modal';
 import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../../components/boxedInputFields/button';
 import { FiTrash2, FiEdit } from 'react-icons/fi';
 
 const AVAILABLE_PERMISSIONS = [

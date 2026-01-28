@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { collection, query, where, getDocs, writeBatch, serverTimestamp } from 'firebase/firestore';
 
 const ApproveGlobalSchema = z.object({
@@ -32,7 +32,7 @@ export const approveGlobalAction: ActionDefinition<typeof ApproveGlobalSchema, A
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ApproveGlobalSchema>, ctx: ActionContext) => {
     const { month, year } = input;
 
     const periodsRef = collection(db, 'payroll_periods');

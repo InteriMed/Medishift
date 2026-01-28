@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { doc, setDoc, serverTimestamp, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
-import { appendAudit } from '../../common/utils';
+import { appendAudit } from '../common/utils';
 
 const BlockUserSchema = z.object({
   targetUserId: z.string(),
@@ -29,7 +29,7 @@ export const blockUserAction: ActionDefinition<typeof BlockUserSchema, void> = {
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof BlockUserSchema>, ctx: ActionContext) => {
     const { targetUserId, scope, reason, severity } = input;
 
     const blocklistRef = doc(db, 'user_blocklist', targetUserId);

@@ -1,14 +1,12 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import modal from '../basemodal/modal';
+import Modal from './modals';
 import InputField from '../boxedInputFields/personnalizedInputField';
-import { FiLock, FiMail, FiPhone, FiShield, FiArrowLeft } from 'react-icons/fi';
-import SpinnerLoader from '../LoadingAnimations/SpinnerLoader';
+import { FiLock, FiMail, FiShield, FiArrowLeft } from 'react-icons/fi';
+import LoadingSpinner from '../loadingSpinner/loadingSpinner';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth, db } from '../../services/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { FIRESTORE_COLLECTIONS } from '../../config/keysDatabase';
+import { auth } from '../../services/services/firebase';
 import { LOCALSTORAGE_KEYS } from '../../config/keysDatabase';
 
 const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePrefix }) => {
@@ -16,100 +14,35 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
   const [accessCode, setAccessCode] = useState('');
   const [error, setError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationMethod, setVerificationMethod] = useState('email');
   const [codeSent, setCodeSent] = useState(false);
   const [sendingCode, setSendingCode] = useState(false);
   const [resetEmail, setResetEmail] = useState(userEmail || '');
-  const [foundPhone, setFoundPhone] = useState(userPhone || '');
-  const [foundPhonePrefix, setFoundPhonePrefix] = useState(userPhonePrefix || '');
-  const [isLookingUpPhone, setIsLookingUpPhone] = useState(false);
 
-  const formattedPhone = useMemo(() => {
-    if (!foundPhone) return null;
-    const prefix = foundPhonePrefix || '';
-    return `${prefix} ${foundPhone}`.trim();
-  }, [foundPhone, foundPhonePrefix]);
 
-  const lookupUserPhone = async (email) => {
-    if (!email || !db) return;
-    
-    setIsLookingUpPhone(true);
-    try {
-      const usersQuery = query(
-        collection(db, FIRESTORE_COLLECTIONS.USERS),
-        where('email', '==', email)
-      );
-      const usersSnapshot = await getDocs(usersQuery);
-      
-      if (!usersSnapshot.empty) {
-        const userData = usersSnapshot.docs[0].data();
-        const phone = userData.contactPhone || userData.phoneNumber || userData.primaryPhone || '';
-        const phonePrefix = userData.contactPhonePrefix || userData.phonePrefix || userData.primaryPhonePrefix || '+41';
-        
-        if (phone) {
-          setFoundPhone(phone);
-          setFoundPhonePrefix(phonePrefix);
-        }
-      }
-    } catch (err) {
-      console.error('Error looking up user phone:', err);
-    } finally {
-      setIsLookingUpPhone(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen && resetEmail && !foundPhone && !isLookingUpPhone) {
-      lookupUserPhone(resetEmail);
-    }
-  }, [isOpen, resetEmail, foundPhone, isLookingUpPhone]);
-
-  const handleSendCode = async (method) => {
-    const selectedMethod = method || verificationMethod;
+  const handleSendCode = async () => {
     setError('');
     setSendingCode(true);
 
     try {
       const { httpsCallable } = await import('firebase/functions');
-      const { functions, auth: firebaseAuth } = await import('../../services/firebase');
+      const { functions, auth: firebaseAuth } = await import('../../services/services/firebase');
       
       const currentUser = firebaseAuth.currentUser;
       const emailToUse = resetEmail || userEmail;
       
-      if (selectedMethod === 'email') {
-        if (!emailToUse) {
-          throw new Error(t('auth.errors.emailRequired'));
-        }
-        
-        if (currentUser) {
-          await currentUser.getIdToken(true);
-          const requestBankingAccessCode = httpsCallable(functions, 'requestBankingAccessCode');
-          await requestBankingAccessCode({ method: 'email' });
-        } else {
-          const requestPasswordResetWithBankingAccess = httpsCallable(functions, 'requestPasswordResetWithBankingAccess');
-          await requestPasswordResetWithBankingAccess({ method: 'email', email: emailToUse });
-        }
-        setCodeSent(true);
-      } else if (selectedMethod === 'phone') {
-        if (!foundPhone) {
-          throw new Error(t('auth.errors.phoneNotAvailable', 'Phone number not available for this account'));
-        }
-        
-        if (currentUser) {
-          await currentUser.getIdToken(true);
-          const requestBankingAccessCode = httpsCallable(functions, 'requestBankingAccessCode');
-          await requestBankingAccessCode({ method: 'phone' });
-        } else {
-          const requestPasswordResetWithBankingAccess = httpsCallable(functions, 'requestPasswordResetWithBankingAccess');
-          await requestPasswordResetWithBankingAccess({ 
-            method: 'phone', 
-            phone: foundPhone,
-            phonePrefix: foundPhonePrefix,
-            email: emailToUse
-          });
-        }
-        setCodeSent(true);
+      if (!emailToUse) {
+        throw new Error(t('auth.errors.emailRequired'));
       }
+      
+      if (currentUser) {
+        await currentUser.getIdToken(true);
+        const requestBankingAccessCode = httpsCallable(functions, 'requestBankingAccessCode');
+        await requestBankingAccessCode({ method: 'email' });
+      } else {
+        const requestPasswordResetWithBankingAccess = httpsCallable(functions, 'requestPasswordResetWithBankingAccess');
+        await requestPasswordResetWithBankingAccess({ method: 'email', email: emailToUse });
+      }
+      setCodeSent(true);
     } catch (err) {
       const errorMessage = err.message || t('auth.errors.resetFailed');
       setError(errorMessage);
@@ -124,7 +57,7 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
 
     try {
       const { httpsCallable } = await import('firebase/functions');
-      const { functions, auth: firebaseAuth } = await import('../../services/firebase');
+      const { functions, auth: firebaseAuth } = await import('../../services/services/firebase');
       
       const currentUser = firebaseAuth.currentUser;
       const emailToUse = resetEmail || userEmail;
@@ -142,10 +75,10 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
           localStorage.setItem(LOCALSTORAGE_KEYS.BANKING_ACCESS_GRANTED, expiresAt.toString());
         }
       } else {
-        const verifyPasswordResetWithBankingAccess = httpsCallable(functions, 'verifyPasswordResetWithBankingAccess');
+          const verifyPasswordResetWithBankingAccess = httpsCallable(functions, 'verifyPasswordResetWithBankingAccess');
         result = await verifyPasswordResetWithBankingAccess({ 
           code: accessCode,
-          method: verificationMethod,
+          method: 'email',
           email: emailToUse
         });
       }
@@ -187,17 +120,14 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
   useEffect(() => {
     if (isOpen) {
       setResetEmail(userEmail || '');
-      setFoundPhone(userPhone || '');
-      setFoundPhonePrefix(userPhonePrefix || '');
       setCodeSent(false);
       setAccessCode('');
       setError('');
-      setVerificationMethod('email');
     }
-  }, [isOpen, userEmail, userPhone, userPhonePrefix]);
+  }, [isOpen, userEmail]);
 
   return (
-    <modal
+    <Modal
       isOpen={isOpen}
       onClose={handleCancel}
       title={t('dashboardProfile:billingInformation.bankingAccessTitle', 'Secure Banking Access')}
@@ -219,33 +149,20 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
           <div className="relative">
             {sendingCode && (
               <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
-                <SpinnerLoader size="small" />
+                <LoadingSpinner size="small" />
               </div>
             )}
             <div className="space-y-4">
               <p className="text-sm font-medium text-center text-foreground">
                 {t('dashboardProfile:billingInformation.verificationMethod', 'Choose verification method')}
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative">
-                  <button
-                    onClick={() => {
-                      setVerificationMethod('email');
-                    }}
-                    className={`border-2 rounded-xl p-6 hover:border-blue-600 transition-colors flex flex-col items-center text-center w-full ${
-                      verificationMethod === 'email'
-                        ? 'border-blue-600 bg-blue-500/5'
-                        : 'border-border'
-                    }`}
-                  >
-                    <div className={`p-3 rounded-lg mb-3 ${
-                      verificationMethod === 'email' 
-                        ? 'bg-blue-500/10 text-blue-600' 
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
+              <div className="flex justify-center">
+                <div className="relative w-full max-w-md">
+                  <div className="border-2 border-blue-600 bg-blue-500/5 rounded-xl p-6 flex flex-col items-center text-center">
+                    <div className="p-3 rounded-lg mb-3 bg-blue-500/10 text-blue-600">
                       <FiMail size={24} />
                     </div>
-                    <div className={`font-semibold mb-1 ${verificationMethod === 'email' ? 'text-blue-600' : 'text-foreground'}`}>
+                    <div className="font-semibold mb-1 text-blue-600">
                       {t('common:email', 'Email')}
                     </div>
                     <div className="text-xs text-muted-foreground mb-2">
@@ -259,9 +176,6 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
                           value={resetEmail}
                           onChange={(e) => {
                             setResetEmail(e.target.value);
-                            if (e.target.value && !foundPhone) {
-                              lookupUserPhone(e.target.value);
-                            }
                           }}
                           placeholder={t('auth.login.email', 'Email address')}
                           marginBottom="0"
@@ -269,67 +183,13 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
                       </div>
                     )}
                     {(userEmail || resetEmail) && (
-                      <div className={`text-xs font-mono px-2 py-1 rounded ${
-                        verificationMethod === 'email' 
-                          ? 'bg-blue-100 dark:bg-blue-900/30 text-foreground' 
-                          : 'bg-muted/50 text-foreground'
-                      }`}>
+                      <div className="text-xs font-mono px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-foreground">
                         {resetEmail || userEmail}
                       </div>
                     )}
-                  </button>
-                  {error && verificationMethod === 'email' && (
-                    <div className="absolute inset-0 bg-background/90 backdrop-blur-sm rounded-xl border-2 flex items-center justify-center p-4" style={{ borderColor: 'var(--boxed-inputfield-error-color, #ef4444)' }}>
-                      <p className="text-sm text-center font-medium" style={{ color: 'var(--boxed-inputfield-error-color, #ef4444)' }}>{error}</p>
-                    </div>
-                  )}
-                </div>
-                <div className="relative">
-                  <button
-                    onClick={() => {
-                      setVerificationMethod('phone');
-                    }}
-                    className={`border-2 rounded-xl p-6 hover:border-green-600 transition-colors flex flex-col items-center text-center w-full ${
-                      verificationMethod === 'phone'
-                        ? 'border-green-600 bg-green-500/5'
-                        : 'border-border'
-                    }`}
-                  >
-                    <div className={`p-3 rounded-lg mb-3 ${
-                      verificationMethod === 'phone' 
-                        ? 'bg-green-500/10 text-green-600' 
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
-                      <FiPhone size={24} />
-                    </div>
-                    <div className={`font-semibold mb-1 ${verificationMethod === 'phone' ? 'text-green-600' : 'text-foreground'}`}>
-                      {t('common:phone', 'Phone')}
-                    </div>
-                    <div className="text-xs text-muted-foreground mb-2">
-                      {t('dashboardProfile:billingInformation.sendToPhone', 'Send code via SMS')}
-                    </div>
-                    {formattedPhone && (
-                      <div className={`text-xs font-mono px-2 py-1 rounded ${
-                        verificationMethod === 'phone' 
-                          ? 'bg-green-100 dark:bg-green-900/30 text-foreground' 
-                          : 'bg-muted/50 text-foreground'
-                      }`}>
-                        {formattedPhone}
-                      </div>
-                    )}
-                    {isLookingUpPhone && (
-                      <div className="text-xs text-muted-foreground mt-2">
-                        {t('auth.login.passwordReset.lookingUpPhone', 'Looking up phone number...')}
-                      </div>
-                    )}
-                    {!formattedPhone && !isLookingUpPhone && (
-                      <div className="text-xs text-muted-foreground mt-2">
-                        {t('auth.login.passwordReset.noPhone', 'Phone number not available')}
-                      </div>
-                    )}
-                  </button>
-                  {error && verificationMethod === 'phone' && (
-                    <div className="absolute inset-0 bg-background/90 backdrop-blur-sm rounded-xl border-2 flex items-center justify-center p-4" style={{ borderColor: 'var(--boxed-inputfield-error-color, #ef4444)' }}>
+                  </div>
+                  {error && (
+                    <div className="mt-4 p-4 rounded-xl border-2 flex items-center justify-center" style={{ borderColor: 'var(--boxed-inputfield-error-color, #ef4444)' }}>
                       <p className="text-sm text-center font-medium" style={{ color: 'var(--boxed-inputfield-error-color, #ef4444)' }}>{error}</p>
                     </div>
                   )}
@@ -346,8 +206,8 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
                 {t('common.cancel', 'Cancel')}
               </button>
               <button
-                onClick={() => handleSendCode(verificationMethod)}
-                disabled={sendingCode || !verificationMethod || (verificationMethod === 'email' && !userEmail && !resetEmail)}
+                onClick={handleSendCode}
+                disabled={sendingCode || (!userEmail && !resetEmail)}
                 className="px-6 py-2 rounded-lg border-2 border-blue-600 bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sendingCode ? t('dashboardProfile:billingInformation.sendingCode', 'Sending code...') : t('dashboardProfile:billingInformation.sendCode', 'Send Code')}
@@ -366,28 +226,15 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
               </button>
             </div>
 
-            <div className={`border-2 rounded-xl p-6 flex flex-col items-center text-center mb-4 ${
-              verificationMethod === 'email'
-                ? 'border-blue-600 bg-blue-500/5'
-                : 'border-green-600 bg-green-500/5'
-            }`}>
-              <div className={`p-3 rounded-lg mb-3 ${
-                verificationMethod === 'email' 
-                  ? 'bg-blue-500/10 text-blue-600' 
-                  : 'bg-green-500/10 text-green-600'
-              }`}>
-                {verificationMethod === 'email' ? <FiMail size={24} /> : <FiPhone size={24} />}
+            <div className="border-2 border-blue-600 bg-blue-500/5 rounded-xl p-6 flex flex-col items-center text-center mb-4">
+              <div className="p-3 rounded-lg mb-3 bg-blue-500/10 text-blue-600">
+                <FiMail size={24} />
               </div>
-              <div className={`font-semibold mb-1 ${
-                verificationMethod === 'email' ? 'text-blue-600' : 'text-green-600'
-              }`}>
+              <div className="font-semibold mb-1 text-blue-600">
                 {t('dashboardProfile:billingInformation.codeSentTo', 'Code sent to')}
               </div>
               <div className="text-sm text-foreground font-mono">
-                {verificationMethod === 'email' 
-                  ? (resetEmail || userEmail || t('dashboardProfile:billingInformation.yourEmail', 'your email'))
-                  : (formattedPhone || t('dashboardProfile:billingInformation.yourPhone', 'your phone'))
-                }
+                {resetEmail || userEmail || t('dashboardProfile:billingInformation.yourEmail', 'your email')}
               </div>
             </div>
 
@@ -441,7 +288,7 @@ const PasswordResetModal = ({ isOpen, onClose, userEmail, userPhone, userPhonePr
           </>
         )}
       </div>
-    </modal>
+    </Modal>
   );
 };
 

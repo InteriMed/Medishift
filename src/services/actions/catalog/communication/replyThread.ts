@@ -1,11 +1,14 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
 import { db } from '../../../services/firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import { appendAudit } from '../common/utils';
 
+const collectionTypeEnum = ['messages', 'tickets', 'announcements', 'policies', 'hr_reports'] as const;
+const visibilityEnum = ['public', 'internal_only'] as const;
+
 const ReplyThreadSchema = z.object({
-  collectionType: z.enum(['messages', 'tickets', 'announcements', 'policies', 'hr_reports']),
+  collectionType: z.enum(collectionTypeEnum),
   threadId: z.string(),
   content: z.string().min(1),
   attachments: z.array(z.object({
@@ -14,7 +17,7 @@ const ReplyThreadSchema = z.object({
     type: z.string(),
     size: z.number(),
   })).optional(),
-  visibility: z.enum(['public', 'internal_only']).optional(),
+  visibility: z.enum(visibilityEnum).optional(),
 });
 
 interface ReplyResult {
@@ -39,7 +42,7 @@ export const replyThreadAction: ActionDefinition<typeof ReplyThreadSchema, Reply
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ReplyThreadSchema>, ctx: ActionContext): Promise<ReplyResult> => {
     const { collectionType, threadId, visibility, ...replyData } = input;
 
     if (visibility === 'internal_only' && !ctx.userPermissions.includes('reporting.add_private_note')) {
@@ -69,7 +72,7 @@ export const replyThreadAction: ActionDefinition<typeof ReplyThreadSchema, Reply
     await updateDoc(threadRef, {
       lastReplyAt: serverTimestamp(),
       lastReplyBy: ctx.userId,
-      replyCount: arrayUnion(replyRef.id).length,
+      replyCount: increment(1),
     });
 
     await appendAudit(collectionType, threadId, {

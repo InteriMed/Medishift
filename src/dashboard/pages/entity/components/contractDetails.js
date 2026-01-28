@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 import { FiEdit, FiTrash2, FiDownload, FiClock, FiUser, FiBriefcase, FiMapPin, FiDollarSign, FiFileText, FiX, FiMail, FiGrid, FiFile } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
-import ContractStatusBadge from './ContractStatusBadge';
+import ContractStatusBadge from './contractStatusBadge';
 import { cn } from '../../../../utils/cn';
 
 const ContractDetails = ({ contract, onEdit, onDelete, onClose, isMobile = false, workspaceContext, userPermissions, onToggleView, isPdfView }) => {

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiGrid, FiList, FiSearch, FiSliders, FiArrowDown, FiCheck, FiRefreshCw, FiPlus } from 'react-icons/fi';
-import SimpleDropdown from '../../../components/boxedInputFields/Dropdown-Field';
-import DateField from '../../../components/boxedInputFields/DateField';
-import { cn } from '../../../utils/cn';
+import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
+import dateField from '../../../../components/boxedInputFields/DateField';
+import { cn } from '../../../../utils/cn';
 import styles from './filterBar.module.css';
 
 const FilterBar = ({
@@ -190,7 +190,7 @@ const FilterBar = ({
           }
           return (
             <div key={field.key} className={styles.dateFieldContainer}>
-              <DateField
+              <dateField
                 label={label}
                 value={filters[field.key] ? new Date(filters[field.key]) : null}
                 onChange={(date) => onFilterChange && onFilterChange(field.key, date ? date.toISOString().split('T')[0] : null)}

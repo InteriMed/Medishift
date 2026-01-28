@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import { TrendingUp, TrendingDown, Calculator, Calendar } from 'lucide-react';
 import ProtectedRoute from '../../components/protectedRoute';
 import { PERMISSIONS } from '../../utils/rbac';
-import DateField from '../../../../components/boxedInputFields/DateField';
+import dateField from '../../../../components/boxedInputFields/dateField';
 import { format } from 'date-fns';
 import '../../../../styles/variables.css';
 
@@ -278,13 +278,13 @@ const BalanceSheet = () => {
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
             gap: 'var(--spacing-lg)'
           }}>
-            <DateField
+            <dateField
               label={t('admin:finance.from', 'From')}
               value={dateFrom}
               onChange={(date) => setDateFrom(date)}
               max={dateTo ? format(dateTo, 'yyyy-MM-dd') : undefined}
             />
-            <DateField
+            <dateField
               label={t('admin:finance.to', 'To')}
               value={dateTo}
               onChange={(date) => setDateTo(date)}

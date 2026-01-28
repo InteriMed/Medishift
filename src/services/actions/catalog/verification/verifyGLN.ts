@@ -25,14 +25,20 @@ interface VerifyGLNResult {
  * Verify GLN against Swiss healthcare registries
  * Checks medReg (professionals), gesReg (health professionals), betReg (facilities)
  */
-export const verifyGLNAction: ActionDefinition = {
+export const verifyGLNAction: ActionDefinition<typeof VerifyGLNSchema, VerifyGLNResult> = {
   id: "verification.gln",
-  riskLevel: "LOW",
+  fileLocation: "src/services/actions/catalog/verification/verifyGLN.ts",
+  requiredPermission: "thread.read",
   label: "Verify GLN",
   description: "Verify Global Location Number against Swiss registries",
+  keywords: ["gln", "verify", "registry", "swiss"],
+  icon: "Search",
   schema: VerifyGLNSchema,
-
-  handler: async (input, ctx): Promise<VerifyGLNResult> => {
+  metadata: {
+    autoToast: false,
+    riskLevel: 'LOW',
+  },
+  handler: async (input: z.infer<typeof VerifyGLNSchema>, ctx): Promise<VerifyGLNResult> => {
     const { gln, registry } = input;
 
     // Basic validation
@@ -63,7 +69,7 @@ export const verifyGLNAction: ActionDefinition = {
       }
 
       // No match found
-      await ctx.auditLogger('verification.gln', 'NOT_FOUND', { gln });
+      await ctx.auditLogger('verification.gln', 'ERROR', { gln, reason: 'NOT_FOUND' });
       return {
         isValid: false,
         source: null,

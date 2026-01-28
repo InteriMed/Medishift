@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './UnderlinedLink.css';
+import './links.css';
 
-const UnderlinedLink = ({ to, children, className, onClick }) => {
+const links = ({ to, children, className, onClick }) => {
   return (
     <Link 
       to={to} 
@@ -14,4 +14,4 @@ const UnderlinedLink = ({ to, children, className, onClick }) => {
   );
 };
 
-export default UnderlinedLink; 
+export default links; 

@@ -5,7 +5,7 @@ import { cn } from '../../../../utils/cn';
 
 import EmployeesPage from './EmployeesPage';
 import HiringPage from './HiringPage';
-import OrganigramPage from './OrganigramPage';
+import OrganigramPage from '../../../pages/entity/pages/organigramPage';
 import AdminManagementPage from './AdminManagementPage';
 import FloatPoolPage from './FloatPoolPage';
 

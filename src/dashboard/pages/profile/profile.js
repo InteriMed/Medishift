@@ -12,11 +12,11 @@ import { useDashboard } from '../../contexts/dashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 
 import LoadingSpinner from '../../../components/loadingSpinner/loadingSpinner';
-import Button from '../../../components/colorPicker/button';
-import modal from '../../../components/basemodal/basemodal';
+import Button from '../../../components/boxedInputFields/button';
+import modal from '../../../components/basemodal';
 import UploadFile from '../../../components/boxedInputFields/uploadFile';
 import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
-import PageHeader from '../../components/PageHeader/PageHeader';
+import PageHeader from '../../shared/components/titles/PageHeader';
 import { mergeOnboardingDocuments } from '../../utils/mergeOnboardingDocuments';
 import { getAllMockData, getMockDataForTab } from './utils/mockProfileData';
 import PersonalDetails from './professionals/components/PersonalDetails';

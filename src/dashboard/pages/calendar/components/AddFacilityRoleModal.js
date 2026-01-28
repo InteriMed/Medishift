@@ -12,8 +12,8 @@ import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/rout
 import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import Button from '../../../../components/colorPicker/Button';
 import DropdownField from '../../../../components/boxedInputFields/dropdownField';
-import ColorPicker from '../../../components/ColorPicker/ColorPicker';
-import modal from '../../../../components/basemodal/modal';
+import ColorPicker from '../../../../components/colorPicker/ColorPicker';
+import modal from '../../../../components/modals/modals';
 
 const styles = {
   headerCard: "bg-card rounded-xl border border-border p-6 pb-4 shadow-md w-full max-w-[1000px] mx-auto",

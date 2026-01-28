@@ -15,12 +15,12 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc } from 'firebase/firestore';
-import { functions, db } from '../../../services/firebase';
+import { functions, db } from '../../../services/services/firebase';
 import { useAuth } from '../../../contexts/authContext';
 import { useDashboard } from '../../contexts/dashboardContext';
 import { useNotification } from '../../../contexts/notificationContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
-import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { WORKSPACE_TYPES } from '../../../config/workspaceDefinitions';
 import { FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import {
     FiUsers,
@@ -40,12 +40,12 @@ import {
 import { cn } from '../../../utils/cn';
 
 import OrganigramView from './tabs/OrganigramView';
-import PayrollDashboard from '../payroll/PayrollDashboard';
+import PayrollDashboard from '../../admin/payroll/payrollDashboard';
 import Profile from '../profile/profile';
-import Contracts from '../../shared/entity/components/Contracts';
-import TeamOrganigramView from './components/TeamOrganigramView';
-import TeamEmployees from './components/TeamEmployees';
-import TeamHiring from './components/TeamHiring';
+import Contracts from '../../../schemas/contracts';
+import TeamOrganigramView from '../entity/components/teamOrganigramView';
+import TeamEmployees from '../entity/components/teamEmployees';
+import TeamHiring from '../entity/components/teamHiring';
 
 
 const OrganizationDashboard = () => {

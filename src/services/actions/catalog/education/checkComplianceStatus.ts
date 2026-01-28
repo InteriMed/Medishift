@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 const CheckComplianceStatusSchema = z.object({
@@ -31,10 +31,9 @@ export const checkComplianceStatusAction: ActionDefinition<typeof CheckComplianc
   metadata: {
     autoToast: false,
     riskLevel: 'LOW',
-    isSwiss: true,
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CheckComplianceStatusSchema>, ctx: ActionContext) => {
     const { userId } = input;
 
     const walletRef = doc(db, 'fph_wallets', userId);

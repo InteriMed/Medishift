@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import BoxedSwitchField from '../../../../../components/boxedInputFields/BoxedSwitchField';
-import ContentSection from '../../contentSection';
+import boxedSwitchField from '../../../../../components/boxedInputFields/boxedSwitchField';
+import ContentSection from '../../../../shared/components/ContentSection';
 
 const MarketplacePreferencesTab = ({ data, errors, updateField }) => {
   const { t } = useTranslation(['dashboard/profile']);
@@ -13,7 +13,7 @@ const MarketplacePreferencesTab = ({ data, errors, updateField }) => {
       subtitle={t('marketplace.subtitle')}
     >
       <div className="space-y-4">
-        <BoxedSwitchField
+        <boxedSwitchField
           label={t('settings.autoRenewal')}
           checked={data?.contractSettings?.autoRenewal || false}
           onChange={(checked) => updateField('contractSettings', {
@@ -22,7 +22,7 @@ const MarketplacePreferencesTab = ({ data, errors, updateField }) => {
           })}
         />
 
-        <BoxedSwitchField
+        <boxedSwitchField
           label={t('settings.requiresApproval')}
           checked={data?.contractSettings?.requiresApproval || false}
           onChange={(checked) => updateField('contractSettings', {

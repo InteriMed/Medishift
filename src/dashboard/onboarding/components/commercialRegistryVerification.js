@@ -1,22 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { commercialRegistrySearchAPI } from '../../../services/cloudFunctions';
+import { useAuth } from '../../../contexts/authContext';
+import { commercialRegistrySearchAPI } from '../../../services/utils/gln';
 import { FiLoader, FiAlertCircle, FiFileText, FiInfo, FiCheck, FiExternalLink } from 'react-icons/fi';
 import { DOCUMENT_TYPES } from '../constants/documentTypes';
-import { saveOrganizationProfile } from '../services/profileSavingService';
-import { processDocumentWithAI } from '../../../services/documentProcessingService';
-import { uploadDocument } from '../services/documentUploadService';
-import { getMimeType } from '../utils/glnVerificationUtils';
-import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
-import UploadFile from '../../../../components/boxedInputFields/uploadFile';
-import modal from '../../../components/basemodal/modal';
-import Button from '../../../components/colorPicker/Button';
-import { saveOnboardingData, loadOnboardingData, clearOnboardingData } from '../utils/localStorageUtils';
-import { SESSIONSTORAGE_KEYS, FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import { saveOrganizationProfile } from '../../../services/utils/profile';
+import { processDocumentWithAI } from '../../../services/utils/document';
+import { uploadDocument } from '../../../services/utils/upload';
+import { getMimeType } from '../../../services/utils/document';
+import PersonnalizedInputField from '../../../components/boxedInputFields/personnalizedInputField';
+import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
+import UploadFile from '../../../components/boxedInputFields/uploadFile';
+import modal from '../../../components/modals/modals';
+import Button from '../../../components/boxedInputFields/button';
+import { saveOnboardingData, loadOnboardingData, clearOnboardingData } from '../../../services/utils/storage';
+import { SESSIONSTORAGE_KEYS, FIRESTORE_COLLECTIONS } from '../../../config/keysDatabase';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../services/firebase';
+import { db } from '../../../services/services/firebase';
 
 const normalizeCommercialRegistryData = (source) => {
   if (!source) return null;

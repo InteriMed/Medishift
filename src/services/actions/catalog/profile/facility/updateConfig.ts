@@ -6,7 +6,7 @@ import { appendAudit } from '../../common/utils';
 
 const UpdateConfigSchema = z.object({
   facilityId: z.string(),
-  minStaffRules: z.record(z.number()).optional(),
+  minStaffRules: z.record(z.string(), z.number()).optional(),
   breakRules: z.object({
     lunchDuration: z.number(),
     breakFrequency: z.number(),

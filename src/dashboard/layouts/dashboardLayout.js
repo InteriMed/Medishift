@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
-import { Sidebar } from '../components/RecentActivityCard/sidebar';
-import { Header } from '../components/Header/Header';
+import { Sidebar } from '../pages/components/sidebar/sidebar';
+import { Header } from '../pages/components/header/header';
 import { cn } from '../../utils/cn';
 import { useSidebar } from '../onboarding/sidebarContext';
-import { usePageMobile } from '../contexts/PageMobileContext';
+import { usePageMobile } from '../contexts/responsiveContext';
 import { getSidebarLayout } from '../utils/sidebarLayout';
-import './DashboardLayout.css';
+import './dashboardLayout';
 
 export function DashboardLayout({ children }) {
     const location = useLocation();

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 
 const GenerateSecoReportSchema = z.object({
   userId: z.string().optional(),
@@ -56,8 +56,9 @@ export const generateSecoReportAction: ActionDefinition<typeof GenerateSecoRepor
     for (const clockDoc of clocksSnapshot.docs) {
       const clock = clockDoc.data();
 
-      const userRef = await db.collection('users').doc(clock.userId).get();
-      const userData = userRef.data();
+      const userRef = doc(db, 'users', clock.userId);
+      const userSnap = await getDoc(userRef);
+      const userData = userSnap.data();
 
       reportData.push({
         employeeId: clock.userId,

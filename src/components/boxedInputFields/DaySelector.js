@@ -1,7 +1,7 @@
 import React from 'react';
 import './styles/boxedInputFields.css';
 
-const DaySelector = ({ selectedDays, onChange, error, onErrorReset }) => {
+const daySelector = ({ selectedDays, onChange, error, onErrorReset }) => {
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   
   const toggleDay = (index) => {
@@ -31,4 +31,4 @@ const DaySelector = ({ selectedDays, onChange, error, onErrorReset }) => {
   );
 };
 
-export default DaySelector; 
+export default daySelector; 

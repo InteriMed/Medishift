@@ -1,9 +1,11 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { validateShiftConstraints } from '../constraints';
 import { appendAudit } from '../../common/utils';
+
+const shiftTypeEnum = ['STANDARD', 'NIGHT', 'ON_CALL', 'OVERTIME'] as const;
 
 const CreateShiftSchema = z.object({
   userId: z.string().optional().nullable(),
@@ -11,7 +13,7 @@ const CreateShiftSchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
   role: z.string(),
-  type: z.enum(['STANDARD', 'NIGHT', 'ON_CALL', 'OVERTIME']).default('STANDARD'),
+  type: z.enum(shiftTypeEnum).default('STANDARD'),
   force: z.boolean().optional(),
 });
 
@@ -39,7 +41,7 @@ export const createShiftAction: ActionDefinition<typeof CreateShiftSchema, Creat
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CreateShiftSchema>, ctx: ActionContext): Promise<CreateShiftResult> => {
     const { userId, force, ...shiftData } = input;
     const isOpen = !userId;
 

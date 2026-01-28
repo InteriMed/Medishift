@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiX, FiEdit } from 'react-icons/fi';
-import WeekDaySelector from '../../../../components/colorPicker/weekDaySelector';
+import WeekDaySelector from '../../../../components/boxedInputFields/weekDaySelector';
 import '../../../../styles/variables.css';
 
 const EditOptionsmodal = ({ event, onConfirm, onCancel }) => {

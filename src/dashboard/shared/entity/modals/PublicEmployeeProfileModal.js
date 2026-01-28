@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
+import { db } from '../../../../services/services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import Modal from '../../../../components/modals/modal';
 import Button from '../../../../components/boxedInputFields/button';

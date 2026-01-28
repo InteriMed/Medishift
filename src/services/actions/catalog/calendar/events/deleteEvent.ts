@@ -1,11 +1,13 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, getDoc, deleteDoc, query, collection, where, getDocs, writeBatch } from 'firebase/firestore';
 
+const deleteTypeEnum = ['single', 'all', 'future'] as const;
+
 const DeleteEventSchema = z.object({
   eventId: z.string(),
-  deleteType: z.enum(['single', 'all', 'future']).default('single'),
+  deleteType: z.enum(deleteTypeEnum).default('single'),
   recurrenceId: z.string().optional(),
 });
 
@@ -29,10 +31,10 @@ export const deleteEventAction: ActionDefinition<typeof DeleteEventSchema, Delet
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof DeleteEventSchema>, ctx: ActionContext): Promise<DeleteEventResult> => {
     const { eventId, deleteType, recurrenceId } = input;
 
     // Try availability collection first

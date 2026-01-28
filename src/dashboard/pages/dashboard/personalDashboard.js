@@ -12,14 +12,14 @@ import {
 } from 'react-icons/fi';
 import { useDashboard } from '../../contexts/dashboardContext';
 import { useSidebar } from '../../onboarding/sidebarContext';
-import { useCalendarState } from '../../../dashboards/shared/calendar/hooks/useCalendarState';
-import useCalendarStore from '../../../dashboards/shared/calendar/hooks/useCalendarStore';
-import { useCalendarEvents } from '../../../dashboards/shared/calendar/utils/eventDatabase';
+import { useCalendarState } from '../calendar/hooks/useCalendarState';
+import useCalendarStore from '../calendar/hooks/useCalendarStore';
+import { useCalendarEvents } from '../calendar/utils/eventDatabase';
 import useProfessionalStats from '../../hooks/useProfessionalStats';
 import { cn } from '../../../utils/cn';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
-import DashboardMainContent from './components/DashboardMainContent';
-import CalendarSidebar from '../../../dashboards/shared/calendar/components/CalendarSidebar';
+import DashboardMainContent from '../overview/components/DashboardMainContent';
+import CalendarSidebar from '../calendar/components/CalendarSidebar';
 
 const PersonalDashboard = () => {
   const { t } = useTranslation('dashboardPersonal');

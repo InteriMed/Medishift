@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import AgencySpendDashboard from '../components/AgencySpendDashboard';
+import AgencySpendDashboard from '../../../pages/entity/components/agencySpendDashboard';
 
 const AgencySpendPage = ({ hideHeader = false }) => {
   return (

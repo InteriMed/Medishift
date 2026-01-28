@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { COOKIE_KEYS, COOKIE_CONFIG } from '../../../config/keysDatabase';
-import newsletterService from '../../services/newsletterService';
+import newsletterService from '../../../services/newsletterService';
 import { FaLinkedin, FaTwitter, FaFacebook } from 'react-icons/fa';
 
 function Footer() {
@@ -197,3 +197,4 @@ function Footer() {
 }
 
 export default Footer;
+

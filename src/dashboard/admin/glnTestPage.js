@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { healthRegistryAPI, companySearchAPI, companyDetailsAPI, gesRegAPI, commercialRegistrySearchAPI } from '../../services/cloudFunctions';
-import Button from '../../components/colorPicker/button';
+import Button from '../../components/boxedInputFields/button';
 import PersonnalizedInputField from '../../components/boxedInputFields/personnalizedInputField';
-import './GLNTestPage.css';
+import './glnTestPage';
 
 const GLNTestPage = () => {
   const [gln, setGln] = useState('7601001676183');

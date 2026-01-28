@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db, storage } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -42,10 +42,10 @@ export const manageCertificationAction: ActionDefinition<typeof ManageCertificat
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ManageCertificationSchema>, ctx: ActionContext) => {
     const { userId, type, issuer, issueDate, expiryDate, fileData, fileName } = input;
 
     let fileUrl: string | undefined;

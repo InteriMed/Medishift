@@ -5,7 +5,7 @@ import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/fires
 
 const SubmitApplicationSchema = z.object({
   jobId: z.string(),
-  answers: z.record(z.any()),
+  answers: z.record(z.string(), z.any()),
   cvFileUrl: z.string().url().optional(),
 });
 

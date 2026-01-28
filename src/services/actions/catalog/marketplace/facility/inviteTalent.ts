@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
-import { sendNotification } from '../../../../services/notifications';
+import { broadcastNotification } from '../../../../services/notifications';
+import { NotificationPayload } from '../../../../types/context';
 
 const InviteTalentSchema = z.object({
   missionId: z.string(),
@@ -28,7 +29,7 @@ export const inviteTalentAction: ActionDefinition<typeof InviteTalentSchema, voi
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof InviteTalentSchema>, ctx: ActionContext) => {
     const { missionId, userId, personalMessage } = input;
 
     const missionRef = doc(db, 'marketplace_missions', missionId);
@@ -51,7 +52,7 @@ export const inviteTalentAction: ActionDefinition<typeof InviteTalentSchema, voi
       createdAt: serverTimestamp(),
     });
 
-    await sendNotification({
+    const notificationPayload: NotificationPayload = {
       title: `${missionData.facilityName} invited you to a mission`,
       body: personalMessage || `${missionData.role} position available on ${missionData.dates[0]}`,
       priority: 'HIGH',
@@ -60,7 +61,9 @@ export const inviteTalentAction: ActionDefinition<typeof InviteTalentSchema, voi
         userIds: [userId],
       },
       actionUrl: `/marketplace/missions/${missionId}`,
-    });
+    };
+
+    await broadcastNotification(notificationPayload, ctx.userId, ctx.facilityId);
 
     await ctx.auditLogger('marketplace.invite_talent', 'SUCCESS', {
       missionId,

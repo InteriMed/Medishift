@@ -1,9 +1,11 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
 import { moveToArchive } from '../common/utils';
 
+const collectionTypeEnum = ['messages', 'tickets', 'announcements', 'policies', 'hr_reports'] as const;
+
 const ArchiveThreadSchema = z.object({
-  collectionType: z.enum(['messages', 'tickets', 'announcements', 'policies', 'hr_reports']),
+  collectionType: z.enum(collectionTypeEnum),
   threadId: z.string(),
 });
 
@@ -27,10 +29,10 @@ export const archiveThreadAction: ActionDefinition<typeof ArchiveThreadSchema, A
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof ArchiveThreadSchema>, ctx: ActionContext): Promise<ArchiveResult> => {
     const { collectionType, threadId } = input;
 
     const archiveId = await moveToArchive(collectionType, threadId, ctx.userId);

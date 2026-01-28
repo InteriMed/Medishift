@@ -1,11 +1,21 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, query, getDocs } from 'firebase/firestore';
-import { EfficiencyMetric } from '../types';
+
+interface EfficiencyMetric {
+  facilityId: string;
+  facilityName: string;
+  metric: string;
+  value: number;
+  rank: number;
+  networkAverage: number;
+}
+
+const metricEnum = ['REVENUE_PER_HOUR', 'STAFF_UTILIZATION', 'COST_PER_PATIENT'] as const;
 
 const CompareEfficiencySchema = z.object({
-  metric: z.enum(['REVENUE_PER_HOUR', 'STAFF_UTILIZATION', 'COST_PER_PATIENT']),
+  metric: z.enum(metricEnum),
 });
 
 interface CompareEfficiencyResult {
@@ -31,7 +41,7 @@ export const compareEfficiencyAction: ActionDefinition<typeof CompareEfficiencyS
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CompareEfficiencySchema>, ctx: ActionContext) => {
     const { metric } = input;
 
     const facilitiesRef = collection(db, 'facility_profiles');

@@ -74,7 +74,7 @@ console.error = (...args) => {
 console.log('Loading Firebase services...');
 try {
   // Ensure Firebase services are loaded
-  require('./services/firebase');
+  require('./services/services/firebase');
   console.log('Firebase services loaded successfully!');
 } catch (error) {
   console.error('Error loading Firebase services:', error);

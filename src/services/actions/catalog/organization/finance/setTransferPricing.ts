@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -23,10 +23,10 @@ export const setTransferPricingAction: ActionDefinition<typeof SetTransferPricin
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof SetTransferPricingSchema>, ctx: ActionContext) => {
     const { role, internalRate } = input;
 
     const pricingRef = doc(db, 'organization_transfer_pricing', role);

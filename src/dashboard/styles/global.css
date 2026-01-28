@@ -1,0 +1,268 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family-text, Roboto, sans-serif);
+  color: var(--text-color, var(--grey-4));
+  background-color: var(--background-color, var(--background-div-color));
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+textarea,
+select {
+  font-family: var(--font-family-text, 'Roboto', sans-serif);
+  color: #000000 !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+}
+
+button {
+  font-family: var(--font-family-text, 'Roboto', sans-serif);
+}
+
+button {
+  cursor: pointer;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-family-headings, Roboto, sans-serif);
+  color: var(--text-primary);
+}
+
+h1 {
+  font-size: var(--font-size-xxlarge);
+  /* Adjust font size as needed */
+  font-weight: bold;
+  justify-self: center;
+}
+
+h2 {
+  font-size: 16px;
+  /* Set to 16px */
+  font-weight: bold;
+}
+
+h3 {
+  font-size: var(--font-size-large);
+  /* Adjust as needed */
+  font-weight: bold;
+}
+
+h4 {
+  font-size: var(--font-size-medium);
+  /* Adjust as needed */
+  font-weight: bold;
+}
+
+p {
+  font-family: var(--font-family-text, Roboto, sans-serif);
+  font-size: var(--font-size-small);
+  /* Space between paragraphs */
+}
+
+span {
+  font-family: var(--font-family-text, Roboto, sans-serif);
+}
+
+li {
+  font-family: var(--font-family-text, Roboto, sans-serif);
+  font-size: var(--font-size-small);
+  /* Adjust as needed */
+  color: var(--text-secondary);
+  list-style-type: disc;
+  /* Add bullet points for unordered lists */
+}
+
+a {
+  font-family: var(--font-family-text, Roboto, sans-serif);
+  padding-left: .5rem;
+  color: var(--link-color, var(--color-logo-2));
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-size: var(--font-size-small);
+}
+
+a:hover {
+  color: var(--link-hover-color, var(--color-logo-1));
+  cursor: pointer;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--app-max-width);
+  padding: 0 3rem;
+  box-sizing: border-box;
+}
+
+.main-layout {
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-light-grey-centered {
+  color: var(--grey-3, var(--grey-3));
+  text-align: center;
+}
+
+/* Flex utilities */
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+/* Hide scrollbar but keep scrollbar gutter for alignment */
+.calendar-scroll-container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.calendar-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-gutter: stable;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.loading-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+}
+
+.two-column-grid-950 {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 950px) {
+  .two-column-grid-950 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.btn-yellow {
+  background-color: var(--yellow-3);
+  color: var(--white);
+  transition: background-color var(--transition-fast);
+}
+
+.btn-yellow:hover {
+  background-color: var(--yellow-4);
+}
+
+/* Global border, radius, and shadow style for auth and dashboard pages */
+/* Apply to divs in auth pages */
+.auth-page-container div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.auth-container div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.auth-card div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.auth-content div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form) {
+  border-radius: var(--border-radius-hero, 2.5rem);
+  border: var(--default-border, none);
+  box-shadow: var(--default-div-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
+}
+
+/* Apply to divs in dashboard pages */
+main[data-dashboard="true"] div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.dashboard-container div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form),
+.dashboard-content div:not(input):not(button):not(textarea):not(select):not(img):not(svg):not(a):not(span):not(p):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(label):not(ul):not(ol):not(li):not(table):not(tr):not(td):not(th):not(form) {
+  border-radius: var(--border-radius-hero, 2.5rem);
+  border: var(--default-border, none);
+  box-shadow: var(--default-div-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
+}

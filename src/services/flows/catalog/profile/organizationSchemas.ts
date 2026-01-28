@@ -16,7 +16,7 @@ export const OrganizationCoreDetailsSchema = z.object({
     "Invalid phone number"
   ).optional(),
   mainEmail: z.string().email("Invalid email address").optional(),
-  website: z.string().url().optional().or(z.literal(""))
+  website: z.union([z.string().url(), z.literal("")]).optional()
 }).partial();
 
 export const OrganizationLegalBillingSchema = z.object({

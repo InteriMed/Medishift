@@ -1,10 +1,13 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { validateShiftConstraints } from '../constraints';
 import { appendAudit } from '../../common/utils';
 import { sendNotificationToUser } from '../../../../services/notifications';
+
+const shiftTypeEnum = ['STANDARD', 'NIGHT', 'ON_CALL', 'OVERTIME'] as const;
+const shiftStatusEnum = ['DRAFT', 'PUBLISHED', 'COMPLETED', 'CANCELLED'] as const;
 
 const UpdateShiftSchema = z.object({
   shiftId: z.string(),
@@ -14,8 +17,8 @@ const UpdateShiftSchema = z.object({
     startTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
     endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
     role: z.string().optional(),
-    type: z.enum(['STANDARD', 'NIGHT', 'ON_CALL', 'OVERTIME']).optional(),
-    status: z.enum(['DRAFT', 'PUBLISHED', 'COMPLETED', 'CANCELLED']).optional(),
+    type: z.enum(shiftTypeEnum).optional(),
+    status: z.enum(shiftStatusEnum).optional(),
   }),
   force: z.boolean().optional(),
   reason: z.string().optional(),
@@ -36,10 +39,10 @@ export const updateShiftAction: ActionDefinition<typeof UpdateShiftSchema, void>
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof UpdateShiftSchema>, ctx: ActionContext): Promise<void> => {
     const { shiftId, updates, force, reason } = input;
 
     const shiftRef = doc(db, 'shifts', shiftId);

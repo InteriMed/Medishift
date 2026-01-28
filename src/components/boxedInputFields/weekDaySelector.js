@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '../../utils/cn';
+import { cn } from '../../services/utils/formatting';
 
 const WeekDaySelector = ({ selectedDays, onChange }) => {
   const { i18n } = useTranslation();

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../../contexts/authContext';
 import { useNotification } from '../../../../contexts/notificationContext';
-import { auth } from '../../../../services/firebase';
+import { auth } from '../../../../services/services/firebase';
 import { useAction } from '../../../../services/actions/hook';
 import googleAuthLogo from '../../../../assets/pages/auth/googleAuthLogo.png';
 import {
@@ -14,12 +14,12 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import Button from '../../../../components/colorPicker/button';
+import Button from '../../../../components/boxedInputFields/button';
 import InputFieldHideUnhide from '../../../../components/boxedInputFields/inputFieldHideUnhide';
 import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import modal from '../../../../components/modals/modal';
 import useProfileData from '../../../hooks/useProfileData';
-import AccountDeletion from '../components/AccountDeletion';
+import AccountDeletion from '../../../shared/profile/modals/AccountDeletion';
 import { FiLogOut } from 'react-icons/fi';
 
 const AccountManagement = ({

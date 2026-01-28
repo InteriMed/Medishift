@@ -56,15 +56,15 @@ const SimpleDropdown = ({
   const [isOptionHovered, setIsOptionHovered] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Get the display value
-  const selectedOption = options.find(opt => String(opt.value) === String(value));
+  const safeOptions = Array.isArray(options) ? options : [];
+  
+  const selectedOption = safeOptions.find(opt => opt && String(opt.value) === String(value));
 
-  // Filter options based on search query
   const filteredOptions = searchable
-    ? options.filter(opt =>
-      opt.label.toLowerCase().includes(searchQuery.toLowerCase())
+    ? safeOptions.filter(opt =>
+      opt && opt.label && opt.label.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    : options;
+    : safeOptions;
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -93,10 +93,13 @@ const SimpleDropdown = ({
     }
   }, [isOpen]);
 
-  // Debug options loading in development
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production' && options.length === 0) {
-      console.warn(`SimpleDropdown: No options available for dropdown with label: ${typeof label === 'string' ? label : 'unknown'}`);
+    if (process.env.NODE_ENV !== 'production') {
+      if (!Array.isArray(options)) {
+        console.error(`SimpleDropdown: options prop must be an array, received: ${typeof options}. Label: ${typeof label === 'string' ? label : 'unknown'}`);
+      } else if (options.length === 0) {
+        console.warn(`SimpleDropdown: No options available for dropdown with label: ${typeof label === 'string' ? label : 'unknown'}`);
+      }
     }
   }, [options, label]);
 

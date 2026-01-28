@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { storage, functions } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { storage, functions } from '../../../services/firebase';
 import { ref, uploadBytes } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 
@@ -36,7 +36,7 @@ export const uploadPayslipBundleAction: ActionDefinition<typeof UploadPayslipBun
     riskLevel: 'MEDIUM',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof UploadPayslipBundleSchema>, ctx: ActionContext) => {
     const { month, year, pdfFileBase64, fileName, useAISplitter } = input;
 
     const storagePath = `payslip_bundles/${year}/${String(month).padStart(2, '0')}/${fileName}`;

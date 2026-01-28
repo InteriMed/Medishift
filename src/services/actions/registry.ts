@@ -141,8 +141,8 @@ import { triggerCrisisAlertAction } from "./catalog/risk/triggerCrisisAlert";
 import { extractTextAction } from "./catalog/ai/extractText";
 import { parseDocumentAction } from "./catalog/ai/parseDocument";
 import { verifyDocumentAction } from "./catalog/ai/verifyDocument";
-import { verifyGlnAction } from "./catalog/verification/verifyGLN";
-import { verifyUidAction } from "./catalog/verification/verifyUID";
+import { verifyGLNAction } from "./catalog/verification/verifyGLN";
+import { verifyUIDAction } from "./catalog/verification/verifyUID";
 import { manageCertificationAction } from "./catalog/team/compliance/manageCertification";
 import { updateContractTermsAction } from "./catalog/team/compliance/updateContractTerms";
 import { verifyIdentityAction } from "./catalog/team/compliance/verifyIdentity";
@@ -150,6 +150,8 @@ import { downloadPayslipAction } from "./catalog/team/finance/downloadPayslip";
 import { updateIbanAction } from "./catalog/team/finance/updateIban";
 import { addSkillAction } from "./catalog/team/skills/addSkill";
 import { searchBySkillAction } from "./catalog/team/skills/searchBySkill";
+import { switchWorkspaceAction } from "./catalog/workspace/switchWorkspace";
+import { checkWorkspacesAction } from "./catalog/workspace/checkWorkspaces";
 
 export const ActionRegistry = {
   [createThreadAction.id]: createThreadAction,
@@ -295,8 +297,8 @@ export const ActionRegistry = {
   [extractTextAction.id]: extractTextAction,
   [parseDocumentAction.id]: parseDocumentAction,
   [verifyDocumentAction.id]: verifyDocumentAction,
-  [verifyGlnAction.id]: verifyGlnAction,
-  [verifyUidAction.id]: verifyUidAction,
+  [verifyGLNAction.id]: verifyGLNAction,
+  [verifyUIDAction.id]: verifyUIDAction,
   [manageCertificationAction.id]: manageCertificationAction,
   [updateContractTermsAction.id]: updateContractTermsAction,
   [verifyIdentityAction.id]: verifyIdentityAction,
@@ -304,11 +306,13 @@ export const ActionRegistry = {
   [updateIbanAction.id]: updateIbanAction,
   [addSkillAction.id]: addSkillAction,
   [searchBySkillAction.id]: searchBySkillAction,
-} as const;
+  [switchWorkspaceAction.id]: switchWorkspaceAction,
+  [checkWorkspacesAction.id]: checkWorkspacesAction,
+};
 
 export function getAiToolsCatalog() {
   const { zodToJsonSchema } = require("zod-to-json-schema");
-  
+
   return Object.values(ActionRegistry).map(action => ({
     name: action.id,
     description: action.description,

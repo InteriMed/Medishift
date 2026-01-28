@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db, functions } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db, functions } from '../../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 
 const CreateContractSchema = z.object({
@@ -12,8 +12,8 @@ const CreateContractSchema = z.object({
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   workPercentage: z.number().min(10).max(100).default(100),
   jobTitle: z.string(),
-  status: z.enum(['draft', 'pending', 'active']).default('draft'),
-  terms: z.record(z.any()).optional(),
+  status: z.enum(['draft', 'pending', 'active'] as const).default('draft'),
+  terms: z.record(z.string(), z.any()).optional(),
 });
 
 interface CreateContractResult {
@@ -38,7 +38,7 @@ export const createContractAction: ActionDefinition<typeof CreateContractSchema,
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof CreateContractSchema>, ctx: ActionContext): Promise<CreateContractResult> => {
     const createContractFunction = httpsCallable(functions, 'createContract');
     
     const result = await createContractFunction({

@@ -234,3 +234,13 @@ export const removeAttribute = async (
     throw error;
   }
 };
+
+export function hashUserId(userId: string): string {
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    const char = userId.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return `HASH_${Math.abs(hash).toString(36)}`;
+}

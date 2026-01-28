@@ -1,33 +1,22 @@
-'use client';
+import React, { useState, useEffect } from 'react';
+import Button from '../../../../../components/boxedInputFields/button';
+import PersonnalizedInputField from '../../../../../components/boxedInputFields/personnalizedInputField';
+import {
+    FiSearch as Search,
+    FiPlus as Plus,
+    FiMessageCircle as MessageCircle,
+    FiAlertCircle as Bug,
+    FiZap as Lightbulb,
+    FiHelpCircle as HelpCircle,
+    FiShield as Shield,
+    FiMessageSquare as MessageSquare,
+    FiGlobe as Globe,
+    FiUser as User,
+    FiMenu as Menu,
+    FiSliders as SlidersHorizontal,
+} from 'react-icons/fi';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-    Search,
-    Plus,
-    MessageCircle,
-    Bug,
-    Lightbulb,
-    HelpCircle,
-    Shield,
-    MessageSquare,
-    Globe,
-    User,
-    Menu,
-    SlidersHorizontal,
-} from 'lucide-react';
-import { useResponsive } from '@/hooks/ui/use-responsive';
-import { TopicCategory } from '@/lib/api/topics';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClipizySelect } from '@/components/ui/clipizy-select';
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet';
+export type TopicCategory = 'feedback' | 'bug_report' | 'feature_request' | 'support' | 'question' | 'general';
 
 const categoryIcons: Record<TopicCategory, any> = {
     feedback: MessageCircle,
@@ -68,43 +57,61 @@ export function CommunicationToolbar({
     setActiveTab,
     onCreateTopic,
 }: CommunicationToolbarProps) {
-    const { width, isSmall } = useResponsive();
-    const [searchmodalOpen, setSearchmodalOpen] = useState(false);
-    const [filtersSheetOpen, setFiltersSheetOpen] = useState(false);
+    const [isSmall, setIsSmall] = useState(window.innerWidth < 768);
+    
+    React.useEffect(() => {
+        const handleResize = () => setIsSmall(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const renderFilters = (isFullWidth: boolean = false) => (
         <div className={`flex ${isFullWidth ? 'flex-col space-y-6' : 'items-center gap-4'}`}>
             {!isFullWidth && (
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="grid grid-cols-2">
-                        <TabsTrigger value="community" className="flex items-center gap-2">
+                <div className="flex gap-2 border-b border-border/40">
+                    <button
+                        onClick={() => setActiveTab('community')}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeTab === 'community'
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        <div className="flex items-center gap-2">
                             <Globe className="w-4 h-4" />
                             Community
-                        </TabsTrigger>
-                        <TabsTrigger value="my-topics" className="flex items-center gap-2">
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('my-topics')}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeTab === 'my-topics'
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        <div className="flex items-center gap-2">
                             <User className="w-4 h-4" />
                             Support
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
+                        </div>
+                    </button>
+                </div>
             )}
 
             <div className={isFullWidth ? 'space-y-2' : ''}>
                 {isFullWidth && <label className="text-sm font-medium text-muted-foreground ml-1">Category</label>}
-                <ClipizySelect
+                <select
                     value={selectedCategory}
-                    onValueChange={setSelectedCategory}
-                    placeholder="Category"
-                    triggerClassName={isFullWidth ? "w-full !bg-background border-dashed border-white/20" : "w-[200px]"}
-                    options={[
-                        { value: 'all', label: 'All Categories' },
-                        ...categories.map(cat => ({
-                            value: cat,
-                            label: categoryLabels[cat as TopicCategory] || cat,
-                            icon: categoryIcons[cat as TopicCategory]
-                        }))
-                    ]}
-                />
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="px-4 py-2 rounded-xl bg-background border border-white/10 text-foreground"
+                >
+                    <option value="all">All Categories</option>
+                    {categories.map(cat => (
+                        <option key={cat} value={cat}>
+                            {categoryLabels[cat as TopicCategory] || cat}
+                        </option>
+                    ))}
+                </select>
             </div>
         </div>
     );
@@ -116,94 +123,56 @@ export function CommunicationToolbar({
                     {isSmall ? (
                         <>
                             <div className="flex items-center gap-2">
-                                {width < 768 && (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => {
-                                            window.dispatchEvent(new CustomEvent('openSidebar'));
-                                        }}
-                                        className="h-9 w-9 hover:bg-secondary/50"
-                                    >
-                                        <Menu className="w-4 h-4" />
-                                    </Button>
-                                )}
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        window.dispatchEvent(new CustomEvent('openSidebar'));
+                                    }}
+                                    className="h-9 w-9"
+                                >
+                                    <Menu className="w-4 h-4" />
+                                </Button>
                             </div>
 
-                            {/* Centered Tabs on mobile */}
                             <div className="absolute left-1/2 -translate-x-1/2">
-                                <Tabs value={activeTab} onValueChange={setActiveTab} className="scale-90 sm:scale-100">
-                                    <TabsList className="bg-secondary/30">
-                                        <TabsTrigger value="community" className="px-3 gap-2">
+                                <div className="flex gap-2 border-b border-border/40">
+                                    <button
+                                        onClick={() => setActiveTab('community')}
+                                        className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                                            activeTab === 'community'
+                                                ? 'border-primary text-primary'
+                                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2">
                                             <Globe className="w-4 h-4" />
                                             Community
-                                        </TabsTrigger>
-                                        <TabsTrigger value="my-topics" className="px-3 gap-2">
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('my-topics')}
+                                        className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                                            activeTab === 'my-topics'
+                                                ? 'border-primary text-primary'
+                                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2">
                                             <User className="w-4 h-4" />
                                             Support
-                                        </TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-1.5 ml-auto">
                                 <Button
                                     onClick={onCreateTopic}
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-9 w-9 hover:bg-secondary/50"
+                                    variant="secondary"
+                                    className="h-9 w-9"
                                 >
                                     <Plus className="w-4 h-4" />
                                 </Button>
-
-                                <Sheet open={filtersSheetOpen} onOpenChange={setFiltersSheetOpen}>
-                                    <SheetTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-9 w-9 hover:bg-secondary/50"
-                                        >
-                                            <SlidersHorizontal className="w-4 h-4" />
-                                        </Button>
-                                    </SheetTrigger>
-                                    <SheetContent side="left" className="w-[300px] border-none bg-background/95 backdrop-blur-md">
-                                        <SheetHeader className="mb-6">
-                                            <SheetTitle>Parameters</SheetTitle>
-                                        </SheetHeader>
-                                        <div className="mt-4">
-                                            {renderFilters(true)}
-                                        </div>
-                                    </SheetContent>
-                                </Sheet>
-
-                                <Sheet open={searchmodalOpen} onOpenChange={setSearchmodalOpen}>
-                                    <SheetTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-9 w-9 hover:bg-secondary/50"
-                                        >
-                                            <Search className="w-4 h-4" />
-                                        </Button>
-                                    </SheetTrigger>
-                                    <SheetContent side="top" className="h-auto border-none bg-background/95 backdrop-blur-md">
-                                        <SheetHeader>
-                                            <SheetTitle>Search Topics</SheetTitle>
-                                        </SheetHeader>
-                                        <div className="mt-4 pb-4">
-                                            <div className="relative group">
-                                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 transition-colors group-focus-within:text-primary" />
-                                                <Input
-                                                    placeholder="Search..."
-                                                    value={searchQuery}
-                                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                                    className="pl-10 h-11 bg-secondary/50 border-white/5 focus:border-primary/50 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all rounded-xl"
-                                                    autoFocus
-                                                />
-                                            </div>
-                                        </div>
-                                    </SheetContent>
-                                </Sheet>
                             </div>
                         </>
                     ) : (
@@ -214,18 +183,28 @@ export function CommunicationToolbar({
 
                             <div className="relative flex-1 max-w-[460px] mx-auto group">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 transition-colors group-focus-within:text-white/70" />
-                                <Input
+                                <PersonnalizedInputField
+                                    label=""
                                     placeholder="Search topics..."
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10 h-10 bg-secondary/40 border-white/5 hover:border-white/10 focus:border-white/20 focus:bg-secondary/60 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300 rounded-xl placeholder:text-muted-foreground/40"
+                                    onChange={(e: any) => setSearchQuery(e.target.value)}
+                                    name="searchTopics"
+                                    required={false}
+                                    marginBottom={undefined}
+                                    marginLeft={undefined}
+                                    marginRight={undefined}
+                                    error={null}
+                                    onErrorReset={() => {}}
+                                    verification={undefined}
+                                    clearFilter={undefined}
                                 />
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <Button
                                     onClick={onCreateTopic}
-                                    className="btn-tertiary-gradient h-10 flex items-center gap-2 text-white px-6 shadow-lg hover:shadow-primary/20 transition-all"
+                                    variant="primary"
+                                    className="h-10 flex items-center gap-2 px-6"
                                 >
                                     <Plus className="w-4 h-4" />
                                     New Topic

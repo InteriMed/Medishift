@@ -1,6 +1,6 @@
 import { ActionContext } from '../types/context';
-import { db } from '../../services/firebase';
-import { doc, getDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { db } from '../services/firebase';
+import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 
 /**
  * TOKEN BUDGETING & RATE LIMITING
@@ -39,7 +39,7 @@ export async function getTokenBudget(userId: string): Promise<TokenBudget> {
       lastResetDate: new Date().toISOString().split('T')[0],
     };
     
-    await updateDoc(budgetRef, defaultBudget);
+    await setDoc(budgetRef, defaultBudget);
     return defaultBudget;
   }
 

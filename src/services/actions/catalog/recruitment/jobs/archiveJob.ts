@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, updateDoc, getDoc, collection, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
-import { sendPushNotification } from '../../../../notifications';
+import { sendNotificationToUser } from '../../../../services/notifications';
 
 const ArchiveJobSchema = z.object({
   jobId: z.string(),
@@ -14,7 +14,7 @@ export const archiveJobAction: ActionDefinition<typeof ArchiveJobSchema, void> =
   id: "recruitment.archive_job",
   fileLocation: "src/services/actions/catalog/recruitment/jobs/archiveJob.ts",
   
-  requiredPermission: "recruitment.archive_job",
+  requiredPermission: "recruitment.create_job",
   
   label: "Archive Job Posting",
   description: "Close job and notify pending applicants",
@@ -59,14 +59,10 @@ export const archiveJobAction: ActionDefinition<typeof ArchiveJobSchema, void> =
     for (const appDoc of pendingSnapshot.docs) {
       const application = appDoc.data();
       
-      await sendNotification({
+      await sendNotificationToUser(application.userId, {
         title: 'Position Closed',
         body: `The ${jobData.title} position has been ${reason.toLowerCase()}. Thank you for your interest.`,
         priority: 'LOW',
-        target: {
-          type: 'USER',
-          userIds: [application.userId],
-        },
       });
 
       await updateDoc(appDoc.ref, {

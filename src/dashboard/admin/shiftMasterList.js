@@ -10,7 +10,7 @@ import {
   createColumnHelper
 } from '@tanstack/react-table';
 import { collection, query, getDocs, doc, updateDoc, where } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { db } from '../../services/services/firebase';
 import { MoreVertical, Edit, Ban, Download, CheckCircle, XCircle, Search, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { exportShiftsToCSV } from '../../utils/adminUtils';

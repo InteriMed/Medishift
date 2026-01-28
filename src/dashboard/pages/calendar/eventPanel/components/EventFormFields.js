@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import InputField from '../../../../../components/boxedInputFields/personnalizedInputField';
 import InputFieldParagraph from '../../../../../components/boxedInputFields/textareaField';
 import SimpleDropdown from '../../../../../components/boxedInputFields/dropdownField';
-import DateField from '../../../../../components/boxedInputFields/DateField';
-import BoxedSwitchField from '../../../../../components/boxedInputFields/BoxedSwitchField';
+import dateField from '../../../../../components/boxedInputFields/dateField';
+import boxedSwitchField from '../../../../../components/boxedInputFields/boxedSwitchField';
 
 const EventFormFields = ({
   formData,
@@ -108,7 +108,7 @@ const EventFormFields = ({
       />
 
       {formData.facilityId && selectedWorkspace?.type !== 'personal' && (
-        <BoxedSwitchField
+        <boxedSwitchField
           label="Match Facility Opening Hours"
           checked={formData.matchFacilityHours}
           onChange={(checked) => onFormDataChange(p => ({ ...p, matchFacilityHours: checked }))}
@@ -118,7 +118,7 @@ const EventFormFields = ({
       <div className="space-y-4">
         <div className="">
           <div className="grid grid-cols-[1fr_1fr] gap-2">
-            <DateField
+            <dateField
               label={t('startDate', 'Start Date')}
               value={formData.start}
               onChange={(value) => handleDateChange('startDate', value)}
@@ -137,7 +137,7 @@ const EventFormFields = ({
         </div>
         <div className="">
           <div className="grid grid-cols-[1fr_1fr] gap-2">
-            <DateField
+            <dateField
               label={t('endDate', 'End Date')}
               value={formData.end}
               onChange={(value) => handleDateChange('endDate', value)}

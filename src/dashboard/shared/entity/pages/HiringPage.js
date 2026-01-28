@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Hiring from '../components/TeamHiring';
+import Hiring from '../../../pages/entity/components/teamHiring';
 
 const HiringPage = ({ hideHeader = false }) => {
   return (

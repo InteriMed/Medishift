@@ -1,21 +1,20 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { healthRegistryAPI, gesRegAPI } from '../../../services/cloudFunctions';
+import { useAuth } from '../../../contexts/authContext';
+import { healthRegistryAPI, gesRegAPI, normalizeGLNData } from '../../../services/utils/gln';
 import { FiLoader, FiAlertCircle, FiInfo, FiCheck } from 'react-icons/fi';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../services/firebase';
+import { db } from '../../../services/services/firebase';
 import { DOCUMENT_TYPES } from '../constants/documentTypes';
-import { processAndSaveProfessional } from '../services/documentProcessingService';
-import { normalizeGLNData } from '../utils/glnVerificationUtils';
-import { saveGLNVerificationAudit } from '../services/auditService';
-import PersonnalizedInputField from '../../../../components/boxedInputFields/personnalizedInputField';
-import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
-import UploadFile from '../../../../components/boxedInputFields/uploadFile';
-import modal from '../../../components/basemodal/modal';
-import Button from '../../../components/colorPicker/Button';
-import { saveOnboardingData, loadOnboardingData, clearOnboardingData } from '../utils/localStorageUtils';
-import { FIRESTORE_COLLECTIONS, SESSIONSTORAGE_KEYS } from '../../../../config/keysDatabase';
+import { processAndSaveProfessional } from '../../../services/utils/profile';
+import { saveGLNVerificationAudit } from '../../../services/utils/audit';
+import PersonnalizedInputField from '../../../components/boxedInputFields/personnalizedInputField';
+import SimpleDropdown from '../../../components/boxedInputFields/dropdownField';
+import UploadFile from '../../../components/boxedInputFields/uploadFile';
+import modal from '../../../components/modals/modals';
+import Button from '../../../components/boxedInputFields/button';
+import { saveOnboardingData, loadOnboardingData, clearOnboardingData } from '../../../services/utils/storage';
+import { FIRESTORE_COLLECTIONS, SESSIONSTORAGE_KEYS } from '../../../config/keysDatabase';
 
 
 const ProfessionalGLNVerification = React.memo(React.forwardRef(function ProfessionalGLNVerification(props, ref) {

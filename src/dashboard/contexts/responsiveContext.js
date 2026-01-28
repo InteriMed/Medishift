@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import '../styles/dashboard-layout.css';
 
 const BREAKPOINTS = {
   mobile: 480,

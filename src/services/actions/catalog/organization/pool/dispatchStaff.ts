@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ActionDefinition } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
-import { sendNotification } from '../../../../services/notifications';
+import { sendNotificationToUser } from '../../../../services/notifications';
 import { appendAudit } from '../../common/utils';
 
 const DispatchStaffSchema = z.object({
@@ -52,22 +52,17 @@ export const dispatchStaffAction: ActionDefinition<typeof DispatchStaffSchema, v
       createdAt: serverTimestamp(),
     });
 
-    await sendNotification({
+    await sendNotificationToUser(userId, {
       title: 'You have been assigned to a mission',
       body: `You are scheduled at ${targetFacilityId} on ${shift.date}`,
       priority: 'HIGH',
-      target: {
-        type: 'USER',
-        userIds: [userId],
-      },
       actionUrl: `/calendar?date=${shift.date}`,
     });
 
     await appendAudit('calendar_shifts', shiftId, {
       uid: ctx.userId,
       action: 'STAFF_DISPATCHED',
-      metadata: { userId, targetFacilityId },
-      severity: 'HIGH',
+      metadata: { userId, targetFacilityId, severity: 'HIGH' },
     });
 
     await ctx.auditLogger('pool.dispatch_staff', 'SUCCESS', {

@@ -20,7 +20,7 @@ import {
   OnboardingPage
 } from '../websitePages';
 import VerificationSentPage from '../websitePages/Auth/VerificationSentPage';
-import LoadingPage from '../websitePages/loadingPage';
+import LoadingPage from '../websitePages/LoadingPage';
 
 /**
  * CENTRALIZED APP ROUTE CONFIGURATION
@@ -97,7 +97,7 @@ export const PUBLIC_ROUTES = [
   {
     id: 'blog-post',
     path: 'blog/:slug',
-    component: lazy(() => import('../websitePages/Blog/BlogPost').catch(() => ({ default: () => <div>Blog post not found</div> }))),
+    component: lazy(() => import('../websitePages/Blog/BlogPost').catch(() => Promise.resolve({ default: () => <div>Blog post not found</div> }))),
     type: ROUTE_TYPES.PUBLIC,
     label: 'Blog Post',
     hidden: true
@@ -232,14 +232,12 @@ export const WORKSPACE_TYPES = {
 };
 
 const PersonalDashboard = lazy(() => import('../dashboard/pages/dashboard/personalDashboard'));
-const Calendar = lazy(() => import('../dashboards/shared/calendar/Calendar'));
+const Calendar = lazy(() => import('../dashboard/pages/calendar'));
 const Profile = lazy(() => import('../dashboard/pages/profile/profile'));
 const Marketplace = lazy(() => import('../dashboard/pages/marketplace/marketplace'));
-const PayrollDashboard = lazy(() => import('../dashboards/admin/payroll/PayrollDashboard'));
+const PayrollDashboard = lazy(() => import('../dashboard/admin/payroll/payrollDashboard'));
 const OrganizationDashboard = lazy(() => import('../dashboard/pages/organization/OrganizationDashboard'));
-const PricingPage = lazy(() => import('../dashboard/pages/pricing/PricingPage'));
 const DashboardSupportPage = lazy(() => import('../dashboard/pages/support/supportPage'));
-const ServicesPage = lazy(() => import('../dashboard/pages/services/ServicesPage'));
 
 export const DASHBOARD_SHARED_ROUTES = [
   {
@@ -267,14 +265,6 @@ export const DASHBOARD_SHARED_ROUTES = [
     icon: 'User',
   },
   {
-    id: 'pricing',
-    path: 'pricing',
-    component: PricingPage,
-    access: ACCESS_TYPES.ALL,
-    label: 'Pricing',
-    icon: 'DollarSign',
-  },
-  {
     id: 'marketplace',
     path: 'marketplace',
     component: Marketplace,
@@ -290,14 +280,6 @@ export const DASHBOARD_SHARED_ROUTES = [
     access: ACCESS_TYPES.ALL,
     label: 'Support',
     icon: 'HelpCircle',
-  },
-  {
-    id: 'services',
-    path: 'services',
-    component: ServicesPage,
-    access: ACCESS_TYPES.PERSONAL_OR_FACILITY,
-    label: 'Services',
-    icon: 'Briefcase',
   },
 ];
 

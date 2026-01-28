@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTutorial } from '../../../../../dashboard/contexts/tutorialContext';
+import { useTutorial } from '../../../../../TutorialContext';
 import { FiHelpCircle } from 'react-icons/fi';
 import styles from './tutorialHelp.module.css';
 

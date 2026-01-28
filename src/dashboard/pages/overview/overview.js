@@ -11,11 +11,11 @@ import {
   FiCheckCircle
 } from 'react-icons/fi';
 import { useDashboard } from '../../contexts/dashboardContext';
-import { useSidebar } from '../../contexts/SidebarContext';
+import { useSidebar } from '../../onboarding/sidebarContext';
 import { useCalendarState } from '../calendar/hooks/useCalendarState';
 import useCalendarStore from '../calendar/hooks/useCalendarStore';
 import { useCalendarEvents } from '../calendar/utils/eventDatabase';
-import useProfessionalStats from '../../../dashboard/hooks/useProfessionalStats';
+import useProfessionalStats from '../../hooks/useProfessionalStats';
 import { cn } from '../../../utils/cn';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../config/routeUtils';
 import DashboardMainContent from './components/mainContent';

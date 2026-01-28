@@ -1,16 +1,28 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { 
+  getAuth, 
+  connectAuthEmulator,
+  signInWithEmailAndPassword, 
+  signOut, 
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth';
 import {
   getFirestore,
   connectFirestoreEmulator,
   initializeFirestore,
   memoryLocalCache,
-  Firestore
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp
 } from 'firebase/firestore';
-import { getStorage, connectStorageEmulator, FirebaseStorage } from 'firebase/storage';
-import { getFunctions, connectFunctionsEmulator, Functions } from 'firebase/functions';
-import { getAnalytics, Analytics } from 'firebase/analytics';
-import { ENV_VARS, DEFAULT_VALUES, FIRESTORE_DATABASE_NAME, getEnvVar } from '../../config/keysDatabase';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { getAnalytics } from 'firebase/analytics';
+import { ENV_VARS, DEFAULT_VALUES, FIRESTORE_DATABASE_NAME, FIRESTORE_COLLECTIONS, getEnvVar } from '../../config/keysDatabase';
 
 interface FirebaseConfig {
   apiKey: string;
@@ -52,6 +64,7 @@ const emulatorConfig: EmulatorConfig = {
   storage: getEnvVar('FIREBASE_STORAGE_EMULATOR_URL') || DEFAULT_VALUES.EMULATOR_STORAGE_URL
 };
 
+type FirebaseApp = ReturnType<typeof initializeApp>;
 let firebaseApp: FirebaseApp;
 
 if (getApps().length === 0) {
@@ -60,9 +73,10 @@ if (getApps().length === 0) {
   firebaseApp = getApp();
 }
 
-const auth: Auth = getAuth(firebaseApp);
+const auth = getAuth(firebaseApp);
+type Auth = typeof auth;
 
-let db: Firestore;
+let db: ReturnType<typeof getFirestore>;
 try {
   db = getFirestore(firebaseApp, FIRESTORE_DATABASE_NAME);
 } catch (error) {
@@ -70,11 +84,16 @@ try {
     localCache: memoryLocalCache()
   }, FIRESTORE_DATABASE_NAME);
 }
+type Firestore = typeof db;
 
-const storage: FirebaseStorage = getStorage(firebaseApp);
-const functions: Functions = getFunctions(firebaseApp, DEFAULT_VALUES.FIREBASE_REGION);
+const storage = getStorage(firebaseApp);
+type FirebaseStorage = typeof storage;
 
-let analytics: Analytics | null = null;
+const functions = getFunctions(firebaseApp, DEFAULT_VALUES.FIREBASE_REGION);
+type Functions = typeof functions;
+
+let analytics: ReturnType<typeof getAnalytics> | null = null;
+type Analytics = ReturnType<typeof getAnalytics>;
 
 if (typeof window !== 'undefined') {
   try {
@@ -110,13 +129,56 @@ export const getFirebaseAuth = (): Auth => {
   return auth;
 };
 
+export const loginUser = async (email: string, password: string) => {
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  return userCredential.user;
+};
+
+export const logoutUser = async () => {
+  await signOut(auth);
+};
+
+export const resetPassword = async (email: string) => {
+  await sendPasswordResetEmail(auth, email);
+};
+
+export const loginWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  const result = await signInWithPopup(auth, provider);
+  return result.user;
+};
+
+export const getUserProfile = async (userId: string) => {
+  const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
+  const userDoc = await getDoc(userDocRef);
+  if (userDoc.exists()) {
+    return { id: userDoc.id, ...userDoc.data() };
+  }
+  return null;
+};
+
+export const updateUserProfile = async (userId: string, updates: any) => {
+  const userDocRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
+  await setDoc(userDocRef, {
+    ...updates,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
+
+export const authStateObserver = (callback: (user: any) => void) => {
+  return onAuthStateChanged(auth, callback);
+};
+
 export { 
   firebaseApp, 
   auth, 
   db, 
   storage, 
   functions, 
-  analytics,
+  analytics
+};
+
+export type {
   FirebaseApp,
   Auth,
   Firestore,

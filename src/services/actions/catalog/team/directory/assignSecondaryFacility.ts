@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../../common/utils';
@@ -25,10 +25,10 @@ export const assignSecondaryFacilityAction: ActionDefinition<typeof AssignSecond
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof AssignSecondaryFacilitySchema>, ctx: ActionContext) => {
     const { userId, targetFacilityId, accessLevel } = input;
 
     const userRef = doc(db, 'users', userId);

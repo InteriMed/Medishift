@@ -1,12 +1,14 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { functions } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { functions } from '../../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
+
+const terminationReasonEnum = ['RESIGNATION', 'DISMISSAL', 'CONTRACT_END', 'RETIREMENT'] as const;
 
 const TerminateEmploymentSchema = z.object({
   userId: z.string(),
   lastWorkingDay: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  reason: z.enum(['RESIGNATION', 'DISMISSAL', 'CONTRACT_END', 'RETIREMENT']),
+  reason: z.enum(terminationReasonEnum),
   noticeGiven: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   additionalNotes: z.string().optional(),
 });
@@ -35,7 +37,7 @@ export const terminateEmploymentAction: ActionDefinition<typeof TerminateEmploym
     riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof TerminateEmploymentSchema>, ctx: ActionContext) => {
     const { userId, lastWorkingDay, reason, noticeGiven, additionalNotes } = input;
 
     const terminateFunction = httpsCallable(functions, 'terminateEmploymentContract');

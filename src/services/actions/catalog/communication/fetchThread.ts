@@ -1,10 +1,13 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../types";
+import { ActionDefinition, ActionContext } from "../../types";
 import { db } from '../../../services/firebase';
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { hashUserId } from '../common/utils';
+
+const collectionTypeEnum = ['messages', 'tickets', 'announcements', 'policies', 'hr_reports'] as const;
 
 const FetchThreadSchema = z.object({
-  collectionType: z.enum(['messages', 'tickets', 'announcements', 'policies', 'hr_reports']),
+  collectionType: z.enum(collectionTypeEnum),
   threadId: z.string(),
   includeReplies: z.boolean().optional(),
 });
@@ -33,7 +36,7 @@ export const fetchThreadAction: ActionDefinition<typeof FetchThreadSchema, Fetch
     riskLevel: 'LOW',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof FetchThreadSchema>, ctx: ActionContext): Promise<FetchThreadResult> => {
     const { collectionType, threadId, includeReplies } = input;
 
     const threadRef = doc(db, collectionType, threadId);
@@ -43,7 +46,7 @@ export const fetchThreadAction: ActionDefinition<typeof FetchThreadSchema, Fetch
       throw new Error('Thread not found');
     }
 
-    const threadData = { id: threadSnap.id, ...threadSnap.data() };
+    const threadData = { id: threadSnap.id, ...threadSnap.data() } as any;
 
     let canAccess = true;
 
@@ -81,7 +84,7 @@ export const fetchThreadAction: ActionDefinition<typeof FetchThreadSchema, Fetch
       delete threadData.createdByHash;
     }
 
-    let replies = [];
+    let replies: any[] = [];
     if (includeReplies) {
       const repliesCollection = `${collectionType}_replies`;
       const repliesQuery = query(
@@ -92,8 +95,8 @@ export const fetchThreadAction: ActionDefinition<typeof FetchThreadSchema, Fetch
 
       const repliesSnap = await getDocs(repliesQuery);
       replies = repliesSnap.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(reply => {
+        .map(doc => ({ id: doc.id, ...doc.data() } as any))
+        .filter((reply: any) => {
           if (reply.visibility === 'internal_only') {
             return ctx.userPermissions.includes('reporting.add_private_note');
           }
@@ -113,14 +116,4 @@ export const fetchThreadAction: ActionDefinition<typeof FetchThreadSchema, Fetch
     };
   }
 };
-
-function hashUserId(userId: string): string {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    const char = userId.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return `HASH_${Math.abs(hash).toString(36)}`;
-}
 

@@ -4,9 +4,9 @@ import { FiCalendar } from 'react-icons/fi';
 import SimpleDropdown from '../../../../../components/boxedInputFields/dropdownField';
 import PersonnalizedInputField from '../../../../../components/boxedInputFields/personnalizedInputField';
 import InputField from '../../../../../components/boxedInputFields/personnalizedInputField';
-import DateField from '../../../../../components/boxedInputFields/DateField';
-import WeekDaySelector from '../../../../../components/colorPicker/WeekDaySelector';
-import BoxedSwitchField from '../../../../../components/boxedInputFields/BoxedSwitchField';
+import dateField from '../../../../../components/boxedInputFields/dateField';
+import WeekDaySelector from '../../../../../components/boxedInputFields/weekDaySelector';
+import boxedSwitchField from '../../../../../components/boxedInputFields/boxedSwitchField';
 import { cn } from '../../../../../utils/cn';
 
 const Label = ({ children }) => (
@@ -77,7 +77,7 @@ const RecurringEventSettings = ({
           />
           
           {!isCompact && formData.weeklyDays.some(day => day) && (
-            <BoxedSwitchField
+            <boxedSwitchField
               label={selectedWorkspace?.type === 'personal' 
                 ? t('matchPreferences', 'Match schedule to preferences for each day')
                 : t('matchOpeningHours', 'Match schedule to opening hours for each day')}
@@ -222,7 +222,7 @@ const RecurringEventSettings = ({
           )}
 
           {formData.endRepeatValue === 'On Date' && (
-            <DateField
+            <dateField
               label="End Date"
               value={formData.endRepeatDate}
               onChange={(value) => onFormDataChange(prev => ({ ...prev, endRepeatDate: value }))}

@@ -5,11 +5,13 @@ import { SidebarProvider } from './onboarding/sidebarContext';
 import { PageMobileProvider } from './contexts/PageMobileContext';
 import { DashboardLayout } from './layouts/dashboardLayout';
 import LoadingSpinner from '../components/loadingSpinner/loadingSpinner';
-import AdminRoute from '../dashboards/admin/AdminRoute';
-import ProtectedRoute from '../dashboards/admin/components/ProtectedRoute';
-import AdminLayout from '../dashboards/admin/components/AdminLayout';
+import AdminRoute from './admin/AdminRoute';
+import ProtectedRoute from './admin/components/protectedRoute';
+import AdminLayout from './admin/components/adminLayout';
 import { WORKSPACE_TYPES } from '../utils/sessionAuth';
 import { WorkspaceDefaultRedirect } from '../contexts/workspaceAwareNavigate';
+import { buildLocalizedPath, ROUTE_IDS, SUPPORTED_LANGUAGES } from '../config/routeHelpers';
+import { useTranslation } from 'react-i18next';
 import {
   SHARED_ROUTES,
   PROFESSIONAL_ROUTES,
@@ -20,6 +22,17 @@ import {
 const RouteElement = ({ route, userData }) => {
   const Component = route.component;
   return route.passUserData ? <Component userData={userData} /> : <Component />;
+};
+
+const DashboardNotFound = () => {
+  const location = useLocation();
+  const { i18n } = useTranslation();
+  
+  const segments = location.pathname.split('/').filter(Boolean);
+  const langFromUrl = segments[0] && SUPPORTED_LANGUAGES.includes(segments[0]) ? segments[0] : null;
+  const currentLang = langFromUrl || i18n.language || 'fr';
+  
+  return <Navigate to={buildLocalizedPath(ROUTE_IDS.NOT_FOUND, currentLang)} replace />;
 };
 
 const Dashboard = () => {
@@ -137,19 +150,7 @@ const Dashboard = () => {
                 ))}
 
                 {/* Catch-all for unknown paths - exclude profile paths */}
-                <Route path="*" element={
-                  location.pathname.includes('/profile') ? (
-                    null
-                  ) : (isAdminWorkspace || isAdminUrl) ? (
-                    <Navigate to={`/dashboard/admin/portal${location.search}`} replace />
-                  ) : isAdminPathOnly ? (
-                    <Navigate to={`/dashboard/admin/portal${location.search}`} replace />
-                  ) : isWaitingForAdminWorkspace ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <div>Path not found: {location.pathname}</div>
-                  )
-                } />
+                <Route path="*" element={<DashboardNotFound />} />
               </Routes>
             )}
           </Suspense>

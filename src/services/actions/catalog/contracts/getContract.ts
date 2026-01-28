@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
-import { db } from '../../../../services/firebase';
+import { ActionDefinition, ActionContext } from "../../types";
+import { db } from '../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { FIRESTORE_COLLECTIONS } from '../../../../../config/keysDatabase';
+import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 
 const GetContractSchema = z.object({
   contractId: z.string(),
@@ -28,10 +28,10 @@ export const getContractAction: ActionDefinition<typeof GetContractSchema, GetCo
   
   metadata: {
     autoToast: false,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof GetContractSchema>, ctx: ActionContext) => {
     const { contractId } = input;
 
     const contractRef = doc(db, FIRESTORE_COLLECTIONS.CONTRACTS, contractId);
@@ -53,7 +53,7 @@ export const getContractAction: ActionDefinition<typeof GetContractSchema, GetCo
 
     const canAccessSensitiveData = isSelf || isHRAdmin;
 
-    const contract = {
+    const contract: any = {
       id: contractSnap.id,
       ...contractData
     };

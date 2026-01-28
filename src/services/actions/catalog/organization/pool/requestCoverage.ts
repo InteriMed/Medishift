@@ -1,14 +1,17 @@
 import { z } from "zod";
-import { ActionDefinition } from "../../../types";
+import { ActionDefinition, ActionContext } from "../../../types";
 import { db } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
+const reasonEnum = ['SICK_LEAVE', 'PEAK', 'VACATION', 'EMERGENCY'] as const;
+const urgencyEnum = ['LOW', 'MEDIUM', 'HIGH'] as const;
 
 const RequestCoverageSchema = z.object({
   facilityId: z.string(),
   date: z.string(),
   role: z.string(),
-  reason: z.enum(['SICK_LEAVE', 'PEAK', 'VACATION', 'EMERGENCY']),
-  urgency: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
+  reason: z.enum(reasonEnum),
+  urgency: z.enum(urgencyEnum).default('MEDIUM'),
 });
 
 interface RequestCoverageResult {
@@ -30,10 +33,10 @@ export const requestCoverageAction: ActionDefinition<typeof RequestCoverageSchem
   
   metadata: {
     autoToast: true,
-    riskLevel: 'MEDIUM',
+    riskLevel: 'HIGH',
   },
 
-  handler: async (input, ctx) => {
+  handler: async (input: z.infer<typeof RequestCoverageSchema>, ctx: ActionContext) => {
     const { facilityId, date, role, reason, urgency } = input;
 
     const internalMissionsRef = collection(db, 'internal_missions');
