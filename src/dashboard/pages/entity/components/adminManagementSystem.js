@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
-import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { useNotification } from '../../../../contexts/NotificationContext';
+import { useAuth } from '../../../../contexts/authContext';
+import { useNotification } from '../../../../contexts/notificationContext';
+import { useAction } from '../../../../services/actions/hook';
 import {
     FiShield,
     FiUsers,
@@ -26,13 +24,14 @@ import {
 import { cn } from '../../../../utils/cn';
 import EmployeePopup from './EmployeePopup';
 import Dialog from '../../../../components/Dialog/Dialog';
-import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import InputFieldParagraph from '../../../../components/BoxedInputFields/TextareaField';
+import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import InputFieldParagraph from '../../../../components/boxedInputFields/textareaField';
 
 const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
     const { t } = useTranslation(['organization', 'common']);
     const { currentUser } = useAuth();
     const { showNotification } = useNotification();
+    const { execute } = useAction();
     
     const [admins, setAdmins] = useState([]);
     const [employees, setEmployees] = useState([]);
@@ -123,13 +122,13 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
         }
 
         try {
-            const orgRoles = organization.customRoles || [];
-            setRoles(orgRoles);
+            const result = await execute('team.list_roles', { facilityId: organization.id });
+            setRoles(result.roles);
         } catch (error) {
             console.error('Error loading roles:', error);
             showNotification(t('organization:admin.roles.errors.loadFailed', 'Failed to load roles'), 'error');
         }
-    }, [organization, showNotification, t]);
+    }, [organization, execute, showNotification, t]);
 
     const loadEmployees = useCallback(async () => {
         if (!organization || !memberFacilities || memberFacilities.length === 0) {
@@ -138,63 +137,34 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
 
         try {
             const allEmployees = [];
-            const processedUserIds = new Set();
 
             for (const facility of memberFacilities) {
-                const facilityId = facility.id;
                 try {
-                    const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facilityId);
-                    const facilitySnap = await getDoc(facilityRef);
-
-                    if (facilitySnap.exists()) {
-                        const facilityData = facilitySnap.data();
-                        const employeesList = facilityData.employees || [];
-                        const adminsList = facilityData.admins || [];
-
-                        for (const emp of employeesList) {
-                            const userId = emp.user_uid || emp.uid;
-                            if (!userId || processedUserIds.has(userId)) continue;
-                            processedUserIds.add(userId);
-
-                            try {
-                                const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
-                                const userSnap = await getDoc(userRef);
-                                const professionalRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
-                                const professionalSnap = await getDoc(professionalRef);
-
-                                let userData = {};
-                                if (userSnap.exists()) {
-                                    userData = userSnap.data();
-                                }
-                                if (professionalSnap.exists()) {
-                                    userData = { ...userData, ...professionalSnap.data() };
-                                }
-
-                                const roles = emp.roles || ['employee'];
-                                const isAdmin = adminsList.includes(userId) || roles.includes('admin');
-
-                                allEmployees.push({
-                                    id: userId,
-                                    email: userData.email || '',
-                                    firstName: userData.firstName || userData.identity?.firstName || '',
-                                    lastName: userData.lastName || userData.identity?.lastName || '',
-                                    photoURL: userData.photoURL || userData.profileDisplay?.profilePictureUrl || '',
-                                    roles: roles,
-                                    isAdmin: isAdmin,
-                                    rights: emp.rights || [],
-                                    facilityId: facilityId,
-                                    facilityName: facility.facilityName || facility.companyName || 'Unknown Facility',
-                                    hireDate: emp.hireDate?.toDate?.() || emp.hireDate || null,
-                                    contractId: emp.contractId || null,
-                                    status: emp.status || 'active'
-                                });
-                            } catch (error) {
-                                console.error(`Error loading employee ${userId}:`, error);
-                            }
-                        }
-                    }
+                    const result = await execute('profile.facility.get_team_members', { 
+                        facilityId: facility.id 
+                    });
+                    
+                    const teamMembers = result.members || [];
+                    
+                    teamMembers.forEach(member => {
+                        allEmployees.push({
+                            id: member.id || member.userId,
+                            email: member.email || '',
+                            firstName: member.firstName || '',
+                            lastName: member.lastName || '',
+                            photoURL: member.photoURL || '',
+                            roles: member.roles || ['employee'],
+                            isAdmin: member.isAdmin || false,
+                            rights: member.rights || [],
+                            facilityId: facility.id,
+                            facilityName: facility.facilityName || facility.companyName || 'Unknown Facility',
+                            hireDate: member.hireDate || null,
+                            contractId: member.contractId || null,
+                            status: member.status || 'active'
+                        });
+                    });
                 } catch (error) {
-                    console.error(`Error loading facility ${facilityId}:`, error);
+                    console.error(`Error loading facility ${facility.id}:`, error);
                 }
             }
 
@@ -202,7 +172,7 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
         } catch (error) {
             console.error('Error loading employees:', error);
         }
-    }, [organization, memberFacilities]);
+    }, [organization, memberFacilities, execute]);
 
     useEffect(() => {
         loadAdmins();
@@ -243,11 +213,9 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
         }
 
         try {
-            const updatedRoles = roles.filter(r => r.id !== roleId);
-            const orgRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, organization.id);
-            await updateDoc(orgRef, {
-                customRoles: updatedRoles,
-                updatedAt: serverTimestamp()
+            await execute('team.delete_role', {
+                facilityId: organization.id,
+                roleId
             });
 
             showNotification(t('organization:admin.roles.deleted', 'Role deleted successfully'), 'success');
@@ -270,29 +238,22 @@ const OrganizationAdmin = ({ organization, memberFacilities = [] }) => {
         }
 
         try {
-            const orgRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, organization.id);
-            let updatedRoles;
-
             if (editingRole) {
-                updatedRoles = roles.map(r => 
-                    r.id === editingRole.id 
-                        ? { ...r, ...roleForm, updatedAt: new Date().toISOString() }
-                        : r
-                );
+                await execute('team.update_role', {
+                    facilityId: organization.id,
+                    roleId: editingRole.id,
+                    name: roleForm.name,
+                    description: roleForm.description,
+                    permissions: roleForm.permissions
+                });
             } else {
-                const newRole = {
-                    id: `role_${Date.now()}`,
-                    ...roleForm,
-                    createdAt: new Date().toISOString(),
-                    createdBy: currentUser?.uid
-                };
-                updatedRoles = [...roles, newRole];
+                await execute('team.create_role', {
+                    facilityId: organization.id,
+                    name: roleForm.name,
+                    description: roleForm.description,
+                    permissions: roleForm.permissions
+                });
             }
-
-            await updateDoc(orgRef, {
-                customRoles: updatedRoles,
-                updatedAt: serverTimestamp()
-            });
 
             showNotification(
                 editingRole 

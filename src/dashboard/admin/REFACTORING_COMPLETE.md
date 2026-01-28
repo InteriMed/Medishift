@@ -232,3 +232,5 @@ All legacy root-level files have been removed. The admin section is now organize
 - Organized pages in `pages/` subdirectories
 - Consistent styling and UX patterns
 
+
+

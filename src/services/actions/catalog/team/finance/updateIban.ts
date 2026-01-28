@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
-import { db } from '../../../../../services/firebase';
+import { db } from '../../../../services/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { sendNotificationToUser } from '../../../../services/notifications';
 import { appendAudit } from '../../common/utils';
@@ -32,7 +32,7 @@ export const updateIbanAction: ActionDefinition<typeof UpdateIbanSchema, void> =
   handler: async (input, ctx) => {
     const { iban, bankName, confirmPassword } = input;
 
-    const { auth } = await import('../../../../../services/firebase');
+    const { auth } = await import('../../../../services/firebase');
     const { reauthenticateWithCredential, EmailAuthProvider } = await import('firebase/auth');
     
     const user = auth.currentUser;

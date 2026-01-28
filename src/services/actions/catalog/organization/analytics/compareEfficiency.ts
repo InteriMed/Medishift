@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
-import { db } from '../../../../../services/firebase';
+import { db } from '../../../../services/firebase';
 import { collection, query, getDocs } from 'firebase/firestore';
 import { EfficiencyMetric } from '../types';
 

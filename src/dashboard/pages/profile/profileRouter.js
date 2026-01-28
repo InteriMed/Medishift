@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../contexts/authContext';
 import { useWorkspaceAccess } from '../../../hooks/useWorkspaceAccess';
 import ProfessionalProfile from './pages/ProfessionalProfile';
 import FacilityProfile from './pages/facilityProfile';

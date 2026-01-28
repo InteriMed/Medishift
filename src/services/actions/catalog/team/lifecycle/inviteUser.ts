@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
-import { functions } from '../../../../../services/firebase';
+import { functions } from '../../../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 
 const InviteUserSchema = z.object({

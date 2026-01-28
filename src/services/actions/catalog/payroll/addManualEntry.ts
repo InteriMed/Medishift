@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
-import { db } from '../../../../../services/firebase';
+import { db } from '../../../../services/firebase';
 import { doc, getDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 
 const AddManualEntrySchema = z.object({

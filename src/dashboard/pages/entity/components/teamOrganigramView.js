@@ -4,8 +4,9 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import { useDashboard } from '../../../contexts/DashboardContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
+import { useAction } from '../../../../services/actions/hook';
 import { FiUsers, FiShield, FiGrid, FiLayers } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import EmployeeCard from './EmployeeCard';
@@ -27,6 +28,7 @@ const TeamOrganigram = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { execute } = useAction();
   const isOrganizationWorkspace = selectedWorkspace?.type === 'organization';
   
   console.log('TeamOrganigram - Workspace Info:', {

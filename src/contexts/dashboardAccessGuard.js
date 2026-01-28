@@ -1,8 +1,8 @@
 import React from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from './authContext';
 import { useWorkspaceAccess } from '../hooks/useWorkspaceAccess';
-import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../components/loadingSpinner/loadingSpinner';
 import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE } from '../config/routeHelpers';
 import { useTranslation } from 'react-i18next';
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
-import { db, functions } from '../../../../../services/firebase';
+import { db, functions } from '../../../../services/firebase';
 import { doc, updateDoc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { appendAudit } from '../../common/utils';
 import { httpsCallable } from 'firebase/functions';

@@ -79,7 +79,7 @@ The following components are still used by the pages:
 
 4. **Styling**
    - All components use `variables.css` styling variables
-   - Consistent use of BoxedInputFields components
+   - Consistent use of boxedInputFields components
 
 ### Navigation Structure
 
@@ -138,4 +138,6 @@ Entity Management
 - Add proper error handling and loading states
 - Implement missing translation keys
 - Add unit tests for new components
+
+
 

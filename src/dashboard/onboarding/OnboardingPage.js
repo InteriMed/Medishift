@@ -21,7 +21,7 @@ import CommercialRegistryVerification from './components/commercialRegistryVerif
 import PhoneVerificationStep from './components/phoneVerificationStep';
 import Switch from '../../../components/boxedInputFields/switch';
 import Button from '../../components/colorPicker/button';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../../components/loadingSpinner/loadingSpinner';
 import BarsLoader from '../../components/LoadingAnimations/BarsLoader';
 import modal from '../../components/basemodal/basemodal';
 import styles from './OnboardingPage.module.css';

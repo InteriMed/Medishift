@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 // Only import these if you're actually using them
 // import { useNavigate, useLocation } from 'react-router-dom';
 
-import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../components/loadingSpinner/loadingSpinner';
 
 // Import all firebase services from our firebase.js service file
 import {

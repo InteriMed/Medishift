@@ -25,12 +25,7 @@ import {
   Users,
   Home,
 } from 'lucide-react';
-import {
-  topicService,
-  Topic,
-  TopicCreate,
-  TopicCategory,
-} from '@/lib/api/topics';
+import { useAction } from '@/services/actions/hook';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/ui/use-toast';
 import { ClipizyLoadingOverlay } from '@/components/ui/clipizy-loading';
@@ -53,10 +48,19 @@ import {
 } from '@/components/ui/alert-modal';
 import { CommunicationToolbar } from './components/CommunicationToolbar';
 import { cn } from '@/lib/utils';
-import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/services/firebase';
 import ThreadsList from '../components/ThreadsList';
 import ConversationView from '../components/ConversationView';
+
+type TopicCategory = 'feedback' | 'bug_report' | 'feature_request' | 'support' | 'question' | 'general';
+
+const ANNOUNCEMENT_CATEGORIES: TopicCategory[] = [
+  'general',
+  'support',
+  'feedback',
+  'feature_request',
+  'bug_report',
+  'question'
+];
 
 const categoryLabels: Record<TopicCategory, string> = {
   feedback: 'Feedback',
@@ -93,161 +97,125 @@ interface Thread {
   isGroupThread?: boolean;
 }
 
+interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  category: TopicCategory;
+  createdAt?: any;
+  createdBy?: string;
+  publishedBy?: string;
+  metadata?: {
+    isPinned?: boolean;
+    [key: string]: any;
+  };
+}
+
+interface AnnouncementCreate {
+  title: string;
+  content: string;
+  category: TopicCategory;
+}
+
 export default function CommunicationPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { execute } = useAction();
   const router = useRouter();
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [myTopics, setMyTopics] = useState<Topic[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [myAnnouncements, setMyAnnouncements] = useState<Announcement[]>([]);
   const [threads, setThreads] = useState<Thread[]>([]);
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
-  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingThreads, setLoadingThreads] = useState(true);
   const [creating, setCreating] = useState(false);
   const [activeTab, setActiveTab] = useState('community');
-  const [viewMode, setViewMode] = useState<'topics' | 'threads'>('topics');
+  const [viewMode, setViewMode] = useState<'announcements' | 'threads'>('announcements');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreatemodalOpen, setIsCreatemodalOpen] = useState(false);
   const [isCreateThreadmodalOpen, setIsCreateThreadmodalOpen] = useState(false);
   const [isDeletemodalOpen, setIsDeletemodalOpen] = useState(false);
-  const [topicToDelete, setTopicToDelete] = useState<string | null>(null);
-  const threadsListener = useRef<(() => void) | null>(null);
+  const [announcementToDelete, setAnnouncementToDelete] = useState<string | null>(null);
   
   const [threadFormData, setThreadFormData] = useState({
     title: '',
     description: '',
   });
 
-  const [formData, setFormData] = useState<TopicCreate>({
+  const [formData, setFormData] = useState<AnnouncementCreate>({
     title: '',
     content: '',
     category: 'general',
-    is_open: true,
   });
 
   const canAccessThreads = useMemo(() => {
     return user?.hasFacilityProfile === true;
   }, [user]);
 
-  const loadCategories = async () => {
+  // LOAD ANNOUNCEMENTS
+  const loadAnnouncements = useCallback(async () => {
     try {
-      const cats = await topicService.getCategories();
-      setCategories(cats);
-    } catch (error: any) {
-      console.error('Failed to load categories:', error);
-    }
-  };
+      setLoading(true);
+      
+      const result = await execute('thread.list', {
+        collectionType: 'announcements',
+        filters: selectedCategory !== 'all' ? { category: selectedCategory } : {},
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        pagination: { limit: 50 }
+      });
 
-  const loadThreads = useCallback(() => {
+      if (activeTab === 'community') {
+        setAnnouncements(result.threads);
+      } else {
+        const userAnnouncements = result.threads.filter(
+          (a: any) => a.createdBy === user?.uid || a.publishedBy === user?.uid
+        );
+        setMyAnnouncements(userAnnouncements);
+      }
+    } catch (error: any) {
+      console.error('Error loading announcements:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to load announcements',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, selectedCategory, user?.uid, execute, toast]);
+
+  // LOAD THREADS using action catalog
+  const loadThreads = useCallback(async () => {
     if (!user || !canAccessThreads) {
       setThreads([]);
       setLoadingThreads(false);
-      if (threadsListener.current) {
-        threadsListener.current();
-        threadsListener.current = null;
-      }
       return;
     }
 
-    setLoadingThreads(true);
-
     try {
-      const threadsRef = collection(db, 'threads');
-      const threadsQuery = query(
-        threadsRef,
-        where('participantIds', 'array-contains', user.uid),
-        orderBy('lastMessageTimestamp', 'desc')
-      );
-
-      if (threadsListener.current) {
-        threadsListener.current();
-      }
-
-      threadsListener.current = onSnapshot(
-        threadsQuery,
-        async (snapshot) => {
-          const threadsList: Thread[] = [];
-          snapshot.docs.forEach(doc => {
-            const threadData = doc.data();
-            const otherParticipant = threadData.participantInfo?.find((p: any) => p.userId !== user.uid);
-            let displayInfo: any = {};
-
-            if (otherParticipant) {
-              displayInfo = {
-                displayName: otherParticipant.displayName,
-                photoURL: otherParticipant.photoURL,
-                role: otherParticipant.roleInConversation
-              };
-            } else if (threadData.title) {
-              displayInfo = {
-                displayName: threadData.title,
-                photoURL: threadData.photoURL
-              };
-            } else {
-              displayInfo = {
-                displayName: 'Thread',
-                photoURL: null
-              };
-            }
-
-            threadsList.push({
-              id: doc.id,
-              ...threadData,
-              ...displayInfo,
-              isGroupThread: (threadData.participantIds?.length || 0) > 2,
-              participantCount: threadData.participantIds?.length || 0
-            } as Thread);
-          });
-
-          threadsList.sort((a, b) => {
-            const aTime = a.lastMessageTimestamp?.toDate?.() || new Date(0);
-            const bTime = b.lastMessageTimestamp?.toDate?.() || new Date(0);
-            return bTime.getTime() - aTime.getTime();
-          });
-
-          setThreads(threadsList);
-          setLoadingThreads(false);
-        },
-        (err: any) => {
-          console.error('Error listening to threads:', err);
-          if (err.code === 'permission-denied' || err.message?.includes('permission')) {
-            toast({
-              title: 'Access Denied',
-              description: 'You do not have permission to access threads. Please contact your administrator.',
-              variant: 'destructive',
-            });
-          } else {
-            toast({
-              title: 'Error',
-              description: err.message || 'Failed to load threads',
-              variant: 'destructive',
-            });
-          }
-          setThreads([]);
-          setLoadingThreads(false);
-        }
-      );
-    } catch (err: any) {
-      console.error('Error setting up threads listener:', err);
-      if (err.code === 'permission-denied' || err.message?.includes('permission')) {
-        toast({
-          title: 'Access Denied',
-          description: 'You do not have permission to access threads. Please contact your administrator.',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: err.message || 'Failed to load threads',
-          variant: 'destructive',
-        });
-      }
+      setLoadingThreads(true);
+      const result = await execute('thread.list', {
+        collectionType: 'messages',
+        sortBy: 'updatedAt',
+        sortOrder: 'desc',
+        pagination: { limit: 50 }
+      });
+      
+      setThreads(result.threads);
+    } catch (error: any) {
+      console.error('Error loading threads:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to load threads',
+        variant: 'destructive',
+      });
       setThreads([]);
+    } finally {
       setLoadingThreads(false);
     }
-  }, [user, canAccessThreads, toast]);
+  }, [user, canAccessThreads, execute, toast]);
 
   const handleCreateThread = async () => {
     if (!threadFormData.title.trim()) {
@@ -263,28 +231,14 @@ export default function CommunicationPage() {
 
     try {
       setCreating(true);
-      const threadData = {
+      
+      await execute('thread.create', {
+        collectionType: 'messages',
         title: threadFormData.title,
-        description: threadFormData.description || '',
-        participantIds: [user.uid],
-        participantInfo: [{
-          userId: user.uid,
-          displayName: user.displayName || user.email || 'User',
-          photoURL: user.photoURL || null,
-          roleInConversation: 'creator'
-        }],
-        lastMessage: {
-          text: threadFormData.description || '',
-          senderId: user.uid,
-          timestamp: serverTimestamp()
-        },
-        lastMessageTimestamp: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        createdBy: user.uid
-      };
-
-      await addDoc(collection(db, 'threads'), threadData);
+        content: threadFormData.description || threadFormData.title,
+        participants: [user.uid],
+        priority: 'MEDIUM'
+      });
       
       toast({
         title: 'Success!',
@@ -295,6 +249,7 @@ export default function CommunicationPage() {
         title: '',
         description: '',
       });
+      loadThreads();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -314,56 +269,8 @@ export default function CommunicationPage() {
   };
 
   const loadTopics = useCallback(async () => {
-    try {
-      setLoading(true);
-      if (activeTab === 'community') {
-        const openTopics = await topicService.listTopics(
-          selectedCategory !== 'all' ? selectedCategory : undefined,
-          true
-        );
-        setTopics(openTopics);
-      } else {
-        const myTopicsData = await topicService.listMyTopics();
-        setMyTopics(myTopicsData);
-      }
-    } catch (error: any) {
-      console.error('Error loading topics:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to load topics',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab, selectedCategory, toast]);
-
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
-  useEffect(() => {
-    loadTopics();
-  }, [loadTopics]);
-
-  useEffect(() => {
-    if (viewMode === 'threads') {
-      loadThreads();
-    }
-    return () => {
-      if (threadsListener.current) {
-        threadsListener.current();
-        threadsListener.current = null;
-      }
-    };
-  }, [viewMode, loadThreads]);
-
-  useEffect(() => {
-    if (!canAccessThreads && viewMode === 'threads') {
-      setViewMode('topics');
-      setSelectedThread(null);
-    }
-  }, [canAccessThreads, viewMode]);
+    await loadAnnouncements();
+  }, [loadAnnouncements]);
 
   const handleCreateTopic = async () => {
     if (!formData.title.trim() || !formData.content.trim()) {
@@ -377,23 +284,30 @@ export default function CommunicationPage() {
 
     try {
       setCreating(true);
-      await topicService.createTopic(formData);
+      await execute('thread.create', {
+        collectionType: 'announcements',
+        title: formData.title,
+        content: formData.content,
+        category: formData.category,
+        allowComments: true,
+        priority: 'MEDIUM'
+      });
+      
       toast({
         title: 'Success!',
-        description: 'Your topic has been created successfully',
+        description: 'Your announcement has been created successfully',
       });
       setIsCreatemodalOpen(false);
       setFormData({
         title: '',
         content: '',
         category: 'general',
-        is_open: activeTab === 'community'
       });
-      loadTopics();
+      loadAnnouncements();
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create topic',
+        description: error.message || 'Failed to create announcement',
         variant: 'destructive',
       });
     } finally {
@@ -402,25 +316,45 @@ export default function CommunicationPage() {
   };
 
   const handleDeleteTopic = async () => {
-    if (!topicToDelete) return;
+    if (!announcementToDelete) return;
 
     try {
-      await topicService.deleteTopic(topicToDelete);
+      await execute('thread.archive', {
+        collectionType: 'announcements',
+        threadId: announcementToDelete
+      });
       toast({
         title: 'Success',
-        description: 'Topic deleted successfully',
+        description: 'Announcement deleted successfully',
       });
       setIsDeletemodalOpen(false);
-      setTopicToDelete(null);
-      loadTopics();
+      setAnnouncementToDelete(null);
+      loadAnnouncements();
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete topic',
+        description: error.message || 'Failed to delete announcement',
         variant: 'destructive',
       });
     }
   };
+
+  useEffect(() => {
+    loadAnnouncements();
+  }, [loadAnnouncements]);
+
+  useEffect(() => {
+    if (viewMode === 'threads') {
+      loadThreads();
+    }
+  }, [viewMode, loadThreads]);
+
+  useEffect(() => {
+    if (!canAccessThreads && viewMode === 'threads') {
+      setViewMode('announcements');
+      setSelectedThread(null);
+    }
+  }, [canAccessThreads, viewMode]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -431,7 +365,7 @@ export default function CommunicationPage() {
     });
   };
 
-  const displayTopics = activeTab === 'community' ? topics : myTopics;
+  const displayTopics = activeTab === 'community' ? announcements : myAnnouncements;
 
   const filteredTopics = useMemo(() => {
     let filtered = displayTopics;
@@ -624,13 +558,12 @@ export default function CommunicationPage() {
             setSearchQuery={setSearchQuery}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
-            categories={categories}
+            categories={ANNOUNCEMENT_CATEGORIES}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onCreateTopic={() => {
               setFormData({
                 ...formData,
-                is_open: activeTab === 'community'
               });
               setIsCreatemodalOpen(true);
             }}
@@ -640,17 +573,17 @@ export default function CommunicationPage() {
             <div className="container max-w-4xl mx-auto px-6 pt-4">
               <div className="flex gap-2 border-b border-border/40">
                 <button
-                  onClick={() => setViewMode('topics')}
+                  onClick={() => setViewMode('announcements')}
                   className={cn(
                     "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                    viewMode === 'topics'
+                    viewMode === 'announcements'
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <div className="flex items-center justify-center gap-2">
                     <MessageSquare className="w-4 h-4" />
-                    <span>Topics</span>
+                    <span>Announcements</span>
                   </div>
                 </button>
                 <button
@@ -810,25 +743,25 @@ export default function CommunicationPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground/70 ml-1">Category</label>
-              <div className="flex flex-wrap gap-2">
-                {categories.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setFormData({ ...formData, category: cat as TopicCategory })}
-                    className={cn(
-                      "px-4 py-2 rounded-xl text-xs font-medium transition-all duration-200 border capitalize",
-                      formData.category === cat
-                        ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                        : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10"
-                    )}
-                  >
-                    {categoryLabels[cat as TopicCategory] || cat}
-                  </button>
-                ))}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground/70 ml-1">Category</label>
+                <div className="flex flex-wrap gap-2">
+                  {ANNOUNCEMENT_CATEGORIES.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setFormData({ ...formData, category: cat })}
+                      className={cn(
+                        "px-4 py-2 rounded-xl text-xs font-medium transition-all duration-200 border capitalize",
+                        formData.category === cat
+                          ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
+                          : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10"
+                      )}
+                    >
+                      {categoryLabels[cat as TopicCategory] || cat}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground/70 ml-1">Message</label>
@@ -854,7 +787,7 @@ export default function CommunicationPage() {
               disabled={creating}
               className="btn-tertiary-gradient rounded-2xl h-12 px-10 text-white font-bold shadow-lg shadow-primary/10"
             >
-              {creating ? 'Creating...' : 'Post Topic'}
+              {creating ? 'Creating...' : 'Post Announcement'}
             </Button>
           </div>
         </modalContent>
@@ -863,9 +796,9 @@ export default function CommunicationPage() {
       <Alertmodal open={isDeletemodalOpen} onOpenChange={setIsDeletemodalOpen}>
         <AlertmodalContent className="bg-secondary border-white/10 text-foreground rounded-[32px] p-8">
           <AlertmodalHeader>
-            <AlertmodalTitle className="text-2xl font-bold">Remove Topic?</AlertmodalTitle>
+            <AlertmodalTitle className="text-2xl font-bold">Remove Announcement?</AlertmodalTitle>
             <AlertmodalDescription className="text-muted-foreground text-base">
-              This will permanently delete this discussion and all associated replies. This action cannot be undone.
+              This will archive this announcement. This action cannot be undone.
             </AlertmodalDescription>
           </AlertmodalHeader>
           <AlertmodalFooter className="mt-8 gap-3">

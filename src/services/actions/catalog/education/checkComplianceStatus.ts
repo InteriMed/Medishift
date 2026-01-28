@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
-import { db } from '../../../../../services/firebase';
+import { db } from '../../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 const CheckComplianceStatusSchema = z.object({

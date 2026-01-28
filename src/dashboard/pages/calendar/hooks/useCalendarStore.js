@@ -3,15 +3,13 @@ import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { enableMapSet } from 'immer';
 import { CALENDAR_COLORS } from '../utils/constants';
-import {
-  saveEvent,
-  updateEvent as updateEventInDb,
-  deleteEvent as deleteEventFromDb,
-  saveRecurringEvents
-} from '../utils/eventDatabase';
 import notificationStore from '../../../../utils/stores/notificationStore';
 
 enableMapSet();
+
+// NOTE: This store now ONLY manages UI state and local optimistic updates
+// All database operations MUST go through the action catalog via useAction hook
+// The actual database operations are injected via setExecute()
 
 // Calendar state store with Zustand
 const useCalendarStore = create(
@@ -22,6 +20,9 @@ const useCalendarStore = create(
         userId: null,
         accountType: 'worker',
         workspaceContext: null,
+        
+        // Action executor (injected from component using useAction)
+        execute: null,
 
         // Core state
         events: [],
@@ -95,6 +96,11 @@ const useCalendarStore = create(
           state.userId = userId;
           state.accountType = accountType;
           state.workspaceContext = workspaceContext;
+        }),
+        
+        // Set execute function from useAction hook
+        setExecute: (execute) => set((state) => {
+          state.execute = execute;
         }),
 
         // Core Actions
@@ -249,7 +255,14 @@ const useCalendarStore = create(
             fromDatabase: eventWithDates.fromDatabase
           });
 
-          const { userId, accountType, events } = get();
+          const { userId, accountType, events, execute } = get();
+          
+          if (!execute) {
+            console.error('[useCalendarStore] No execute function set. Call setExecute() first.');
+            notificationStore.showNotification('Action catalog not initialized', 'error');
+            return;
+          }
+          
           console.log('[useCalendarStore] Current state', { userId, accountType, eventsCount: events.length });
 
           // Optimistic Update
@@ -285,46 +298,105 @@ const useCalendarStore = create(
             return;
           }
 
-          // Database Sync
+          // Database Sync via Action Catalog
           try {
-            console.log('[useCalendarStore] Starting database sync');
-            const eventToSave = {
-              ...eventWithDates,
-              userId,
-              isAvailability: accountType === 'worker' ? true : eventWithDates.isAvailability,
-              isValidated: true
-            };
-
-            // Recurring vs Single
+            console.log('[useCalendarStore] Starting database sync via action catalog');
+            
             let result;
             const isTempEvent = typeof eventWithDates.id === 'string' && eventWithDates.id.startsWith('temp-');
             
             console.log('[useCalendarStore] Determining save strategy', {
-              isRecurring: eventToSave.isRecurring,
-              repeatValue: eventToSave.repeatValue,
+              isRecurring: eventWithDates.isRecurring,
+              repeatValue: eventWithDates.repeatValue,
               fromDatabase: eventWithDates.fromDatabase,
               isTempEvent
             });
             
-            if (eventToSave.isRecurring && eventToSave.repeatValue && eventToSave.repeatValue !== 'None') {
+            if (eventWithDates.isRecurring && eventWithDates.repeatValue && eventWithDates.repeatValue !== 'None') {
               console.log('[useCalendarStore] Saving as recurring event');
-              result = await saveRecurringEvents(eventToSave, userId);
+              result = await execute('calendar.create_recurring_events', {
+                title: eventWithDates.title || 'Available',
+                start: eventWithDates.start instanceof Date ? eventWithDates.start.toISOString() : eventWithDates.start,
+                end: eventWithDates.end instanceof Date ? eventWithDates.end.toISOString() : eventWithDates.end,
+                color: eventWithDates.color,
+                color1: eventWithDates.color1,
+                color2: eventWithDates.color2,
+                notes: eventWithDates.notes || '',
+                location: eventWithDates.location || '',
+                isAvailability: accountType === 'worker' ? true : eventWithDates.isAvailability,
+                isValidated: true,
+                repeatValue: eventWithDates.repeatValue,
+                endRepeatValue: eventWithDates.endRepeatValue || 'After',
+                endRepeatCount: eventWithDates.endRepeatCount || 10,
+                endRepeatDate: eventWithDates.endRepeatDate ?
+                  (eventWithDates.endRepeatDate instanceof Date ? eventWithDates.endRepeatDate.toISOString() : eventWithDates.endRepeatDate) : undefined,
+                weeklyDays: eventWithDates.weeklyDays,
+                monthlyType: eventWithDates.monthlyType,
+                monthlyDay: eventWithDates.monthlyDay,
+                monthlyWeek: eventWithDates.monthlyWeek,
+                monthlyDayOfWeek: eventWithDates.monthlyDayOfWeek,
+                canton: eventWithDates.canton || [],
+                area: eventWithDates.area || [],
+                languages: eventWithDates.languages || [],
+                experience: eventWithDates.experience || '',
+                software: eventWithDates.software || [],
+                certifications: eventWithDates.certifications || [],
+                workAmount: eventWithDates.workAmount || ''
+              });
               console.log('[useCalendarStore] Recurring event save result', result);
             } else if (!eventWithDates.fromDatabase || isTempEvent) {
-              // New event or temp event - save it
-              console.log('[useCalendarStore] Saving as new event (saveEvent)', { eventId: eventToSave.id });
-              result = await saveEvent(eventToSave, userId);
+              // New event or temp event - create it
+              console.log('[useCalendarStore] Saving as new event', { eventId: eventWithDates.id });
+              result = await execute('calendar.create_event', {
+                title: eventWithDates.title || 'Available',
+                start: eventWithDates.start instanceof Date ? eventWithDates.start.toISOString() : eventWithDates.start,
+                end: eventWithDates.end instanceof Date ? eventWithDates.end.toISOString() : eventWithDates.end,
+                color: eventWithDates.color,
+                color1: eventWithDates.color1,
+                color2: eventWithDates.color2,
+                notes: eventWithDates.notes || '',
+                location: eventWithDates.location || '',
+                isAvailability: accountType === 'worker' ? true : eventWithDates.isAvailability,
+                isValidated: true,
+                canton: eventWithDates.canton || [],
+                area: eventWithDates.area || [],
+                languages: eventWithDates.languages || [],
+                experience: eventWithDates.experience || '',
+                software: eventWithDates.software || [],
+                certifications: eventWithDates.certifications || [],
+                workAmount: eventWithDates.workAmount || ''
+              });
               console.log('[useCalendarStore] New event save result', result);
             } else {
               // Existing event from database - update it
-              console.log('[useCalendarStore] Updating existing event (updateEvent)', { eventId: eventToSave.id });
-              result = await updateEventInDb(eventToSave.id, eventToSave, userId, accountType);
+              console.log('[useCalendarStore] Updating existing event', { eventId: eventWithDates.id });
+              result = await execute('calendar.update_event', {
+                eventId: eventWithDates.id,
+                title: eventWithDates.title,
+                start: eventWithDates.start instanceof Date ? eventWithDates.start.toISOString() : eventWithDates.start,
+                end: eventWithDates.end instanceof Date ? eventWithDates.end.toISOString() : eventWithDates.end,
+                color: eventWithDates.color,
+                color1: eventWithDates.color1,
+                color2: eventWithDates.color2,
+                notes: eventWithDates.notes,
+                location: eventWithDates.location,
+                isValidated: eventWithDates.isValidated,
+                isRecurring: eventWithDates.isRecurring,
+                recurrenceId: eventWithDates.recurrenceId,
+                canton: eventWithDates.canton,
+                area: eventWithDates.area,
+                experience: eventWithDates.experience,
+                software: eventWithDates.software,
+                certifications: eventWithDates.certifications,
+                workAmount: eventWithDates.workAmount,
+                isAvailability: eventWithDates.isAvailability
+              });
               console.log('[useCalendarStore] Update event result', result);
             }
 
             console.log('[useCalendarStore] Database operation completed', { success: result?.success, result });
 
-            if (result.success) {
+            if (result && result.success) {
               console.log('[useCalendarStore] Event saved successfully, updating state');
               notificationStore.showNotification('Event saved successfully', 'success');
               set(state => {
@@ -356,14 +428,21 @@ const useCalendarStore = create(
             }
           } catch (error) {
             console.error("[useCalendarStore] Save error", error);
-            notificationStore.showNotification('Error saving event', 'error');
+            notificationStore.showNotification('Error saving event: ' + error.message, 'error');
             set(state => { state.isSaving = false; });
           }
         },
 
         // Delete Event Logic
         deleteEvent: async (eventId, deleteType = 'single') => {
-          const { userId, accountType, events } = get();
+          const { userId, accountType, events, execute } = get();
+          
+          if (!execute) {
+            console.error('[useCalendarStore] No execute function set. Call setExecute() first.');
+            notificationStore.showNotification('Action catalog not initialized', 'error');
+            return;
+          }
+          
           const event = events.find(e => e.id === eventId);
 
           if (!event) return;
@@ -387,9 +466,15 @@ const useCalendarStore = create(
 
           if (userId) {
             try {
-              await deleteEventFromDb(eventId, userId, accountType, deleteType, event.recurrenceId);
+              await execute('calendar.delete_event', {
+                eventId,
+                deleteType,
+                recurrenceId: event.recurrenceId
+              });
+              notificationStore.showNotification('Event deleted successfully', 'success');
             } catch (e) {
               console.error("Delete error", e);
+              notificationStore.showNotification('Error deleting event: ' + e.message, 'error');
             }
           }
         },
@@ -428,7 +513,13 @@ const useCalendarStore = create(
         }),
 
         syncPendingChanges: async () => {
-          const { pendingChanges, userId, accountType, events } = get();
+          const { pendingChanges, userId, accountType, events, execute } = get();
+          
+          if (!execute) {
+            console.error('[useCalendarStore] No execute function set for sync');
+            return;
+          }
+          
           if (pendingChanges.size === 0 || !userId) return;
 
           const changesToSync = Array.from(pendingChanges);
@@ -436,7 +527,27 @@ const useCalendarStore = create(
             const event = events.find(e => e.id === eventId);
             if (event) {
               try {
-                await updateEventInDb(eventId, event, userId, accountType, true);
+                await execute('calendar.update_event', {
+                  eventId,
+                  title: event.title,
+                  start: event.start instanceof Date ? event.start.toISOString() : event.start,
+                  end: event.end instanceof Date ? event.end.toISOString() : event.end,
+                  color: event.color,
+                  color1: event.color1,
+                  color2: event.color2,
+                  notes: event.notes,
+                  location: event.location,
+                  isValidated: event.isValidated,
+                  isRecurring: event.isRecurring,
+                  recurrenceId: event.recurrenceId,
+                  canton: event.canton,
+                  area: event.area,
+                  experience: event.experience,
+                  software: event.software,
+                  certifications: event.certifications,
+                  workAmount: event.workAmount,
+                  isAvailability: event.isAvailability
+                });
                 set(state => { state.pendingChanges.delete(eventId); });
               } catch (e) {
                 console.error("Sync error", e);

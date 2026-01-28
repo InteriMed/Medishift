@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiChevronDown, FiChevronUp, FiHelpCircle } from 'react-icons/fi';
-import FilterBar from '../../components/filterBar/FilterBar';
+import FilterBar from '../../components/filterBar/filterBar';
 import { cn } from '../../../../utils/cn';
 
 const FAQTab = () => {

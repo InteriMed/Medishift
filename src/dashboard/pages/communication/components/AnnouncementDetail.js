@@ -13,9 +13,9 @@ import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../../../../contexts/notificationContext';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
-import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
 import { cn } from '../../../../utils/cn';
-import { useDashboard } from '../../../contexts/DashboardContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
 
 function buildReplyTree(messages) {

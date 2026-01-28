@@ -2,18 +2,18 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useAction } from '../../../../services/actions/hook';
-import { useDashboard } from '../../../contexts/DashboardContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
 import { useMobileView } from '../../../hooks/useMobileView';
 import { usePageMobile } from '../../../contexts/PageMobileContext';
 import { useNotification } from '../../../../contexts/notificationContext';
 import ConversationsList from '../components/ConversationsList';
 import ConversationView from '../components/ConversationView';
-import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
 import { cn } from '../../../../utils/cn';
 import { FiMessageSquare, FiSearch, FiX, FiSliders, FiPlus } from 'react-icons/fi';
 import Modal from '../../../../components/modals/modal';
-import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import Button from '../../../../components/BoxedInputFields/Button';
+import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import Button from '../../../../components/boxedInputFields/button';
 
 const MessagesPage = ({ hideHeader }) => {
   const { t } = useTranslation(['messages']);
@@ -336,4 +336,6 @@ const MessagesPage = ({ hideHeader }) => {
 };
 
 export default MessagesPage;
+
+
 

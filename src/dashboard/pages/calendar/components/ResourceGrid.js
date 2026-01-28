@@ -5,10 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { FiSettings } from 'react-icons/fi';
 import { get } from 'lodash';
 import AddFacilityRoleModal from './AddFacilityRoleModal';
-import { useDashboard } from '../../../contexts/DashboardContext';
-import { db } from '../../../../services/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import { useDashboard } from '../../../contexts/dashboardContext';
+import { useAction } from '../../../../services/actions/hook';
 
 const ResourceGrid = ({
     currentDate,
@@ -30,6 +28,7 @@ const ResourceGrid = ({
 }) => {
     const { t } = useTranslation(['calendar', 'dashboard', 'dashboardProfile']);
     const { selectedWorkspace } = useDashboard();
+    const { execute } = useAction();
     const [showAddRoleModal, setShowAddRoleModal] = useState(false);
     const [editingRole, setEditingRole] = useState(null);
     const [teamMembers, setTeamMembers] = useState([]);
@@ -115,65 +114,20 @@ const ResourceGrid = ({
             if (!selectedWorkspace?.facilityId) return;
 
             try {
-                const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, selectedWorkspace.facilityId);
-                const facilitySnap = await getDoc(facilityRef);
+                const result = await execute('profile.facility.get_team_members', {
+                    facilityId: selectedWorkspace.facilityId
+                });
 
-                if (facilitySnap.exists()) {
-                    const facilityData = facilitySnap.data();
-                    const employeesList = facilityData.employees || [];
-                    const admins = employeesList.filter(emp => emp.rights === 'admin').map(emp => emp.uid);
-                    const employees = employeesList.filter(emp => emp.rights !== 'admin').map(emp => emp.uid);
-                    const allMemberIds = [...new Set([...admins, ...employees])];
-
-                    const memberPromises = allMemberIds.map(async (userId) => {
-                        try {
-                            const professionalProfileRef = doc(db, FIRESTORE_COLLECTIONS.PROFESSIONAL_PROFILES, userId);
-                            const professionalProfileSnap = await getDoc(professionalProfileRef);
-
-                            if (professionalProfileSnap.exists()) {
-                                const professionalData = professionalProfileSnap.data();
-                                const identity = professionalData.identity || {};
-                                const firstName = identity.legalFirstName || identity.firstName || '';
-                                const lastName = identity.legalLastName || identity.lastName || '';
-
-                                return {
-                                    uid: userId,
-                                    id: userId,
-                                    firstName: firstName,
-                                    lastName: lastName,
-                                    email: professionalData.contact?.primaryEmail || ''
-                                };
-                            } else {
-                                const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
-                                const userSnap = await getDoc(userRef);
-
-                                if (userSnap.exists()) {
-                                    const userData = userSnap.data();
-                                    return {
-                                        uid: userId,
-                                        id: userId,
-                                        firstName: userData.firstName || '',
-                                        lastName: userData.lastName || '',
-                                        email: userData.email || ''
-                                    };
-                                }
-                            }
-                        } catch (error) {
-                            // Error fetching profile for user
-                        }
-                        return null;
-                    });
-
-                    const members = (await Promise.all(memberPromises)).filter(m => m !== null);
-                    setTeamMembers(members);
+                if (result && result.members) {
+                    setTeamMembers(result.members);
                 }
             } catch (error) {
-                // Error fetching team members
+                console.error('Error fetching team members:', error);
             }
         };
 
         fetchTeamMembers();
-    }, [selectedWorkspace?.facilityId]);
+    }, [selectedWorkspace?.facilityId, execute]);
 
     const getWorkerTypeLabel = (workerType, workerTypeOther) => {
         if (workerType === 'other' && workerTypeOther) {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
+import { useAuth } from '../../contexts/authContext';
+import LoadingSpinner from '../loadingSpinner/loadingSpinner';
 import { buildLocalizedPath, ROUTE_IDS, DEFAULT_LANGUAGE } from '../../config/routeHelpers';
 import { useTranslation } from 'react-i18next';
 

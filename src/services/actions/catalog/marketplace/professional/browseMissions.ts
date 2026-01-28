@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
-import { db } from '../../../../../services/firebase';
+import { db } from '../../../../services/firebase';
 import { collection, query, where, getDocs, orderBy, doc, getDoc, DocumentData } from 'firebase/firestore';
 // ⚠️ Helper function for Distance (Put this in utils later)
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {

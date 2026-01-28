@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiMessageSquare, FiPlus, FiFileText } from 'react-icons/fi';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useAuth } from '../../../../contexts/authContext';
 import { useNotification } from '../../../../contexts/notificationContext';
 import { useAction } from '../../../../services/actions/hook';
-import FilterBar from '../../components/filterBar/FilterBar';
-import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
-import CreateTicketModal from '../components/CreateTicketModal';
-import TicketDetail from '../components/TicketDetail';
+import FilterBar from '../../components/filterBar/filterBar';
+import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
+import CreateTicketModal from '../components/createTicketModal';
+import TicketDetail from '../components/ticketDetail';
 import { cn } from '../../../../utils/cn';
 
 const CATEGORY_OPTIONS = [

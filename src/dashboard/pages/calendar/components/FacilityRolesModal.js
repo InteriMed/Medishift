@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
-import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
-import { useDashboard } from '../../../contexts/DashboardContext';
-import { useNotification } from '../../../../contexts/NotificationContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
+import { useNotification } from '../../../../contexts/notificationContext';
+import { useAction } from '../../../../services/actions/hook';
 import modal from '../../../../components/modals/modal';
 import InputField from '../../../../components/boxedInputFields/personnalizedInputField';
 import Button from '../../../../components/colorPicker/button';
@@ -27,6 +25,7 @@ const FacilityRolesModal = ({ isOpen, onClose }) => {
   const { t } = useTranslation(['organization', 'common']);
   const { selectedWorkspace } = useDashboard();
   const { showNotification } = useNotification();
+  const { execute } = useAction();
   const [customRoles, setCustomRoles] = useState([]);
   const [roleName, setRoleName] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState([]);
@@ -44,11 +43,11 @@ const FacilityRolesModal = ({ isOpen, onClose }) => {
 
     setIsLoading(true);
     try {
-      const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facilityId);
-      const facilitySnap = await getDoc(facilityRef);
+      const facilityData = await execute('profile.facility.get_data', {
+        facilityId
+      });
 
-      if (facilitySnap.exists()) {
-        const facilityData = facilitySnap.data();
+      if (facilityData) {
         setCustomRoles(facilityData.customRoles || []);
       }
     } catch (error) {
@@ -57,7 +56,7 @@ const FacilityRolesModal = ({ isOpen, onClose }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [facilityId, showNotification, t]);
+  }, [facilityId, execute, showNotification, t]);
 
   useEffect(() => {
     if (isOpen && facilityId) {
@@ -78,25 +77,25 @@ const FacilityRolesModal = ({ isOpen, onClose }) => {
 
     setIsProcessing(true);
     try {
-      const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facilityId);
-      const facilitySnap = await getDoc(facilityRef);
+      const facilityData = await execute('profile.facility.get_data', {
+        facilityId
+      });
 
-      if (facilitySnap.exists()) {
-        const facilityData = facilitySnap.data();
+      if (facilityData) {
         const existingRoles = facilityData.customRoles || [];
 
         const newRole = {
           id: Date.now().toString(),
           name: roleName.trim(),
           permissions: selectedPermissions,
-          createdAt: serverTimestamp()
+          createdAt: new Date().toISOString()
         };
 
         const updatedRoles = [...existingRoles, newRole];
 
-        await updateDoc(facilityRef, {
-          customRoles: updatedRoles,
-          updatedAt: serverTimestamp()
+        await execute('profile.facility.update_settings', {
+          facilityId,
+          customRoles: updatedRoles
         });
 
         showNotification(t('organization:admin.roles.created', 'Role created successfully'), 'success');
@@ -122,21 +121,21 @@ const FacilityRolesModal = ({ isOpen, onClose }) => {
 
     setIsProcessing(true);
     try {
-      const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, facilityId);
-      const facilitySnap = await getDoc(facilityRef);
+      const facilityData = await execute('profile.facility.get_data', {
+        facilityId
+      });
 
-      if (facilitySnap.exists()) {
-        const facilityData = facilitySnap.data();
+      if (facilityData) {
         const customRoles = facilityData.customRoles || [];
         const updatedCustomRoles = customRoles.map(role =>
           role.id === editingRole.id
-            ? { ...role, permissions: selectedPermissions, updatedAt: serverTimestamp() }
+            ? { ...role, permissions: selectedPermissions, updatedAt: new Date().toISOString() }
             : role
         );
 
-        await updateDoc(facilityRef, {
-          customRoles: updatedCustomRoles,
-          updatedAt: serverTimestamp()
+        await execute('profile.facility.update_settings', {
+          facilityId,
+          customRoles: updatedCustomRoles
         });
 
         showNotification(t('organization:admin.roles.updated', 'Role updated successfully'), 'success');

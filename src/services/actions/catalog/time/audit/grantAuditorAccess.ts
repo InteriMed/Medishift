@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
-import { db, auth } from '../../../../../services/firebase';
+import { db, auth } from '../../../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 

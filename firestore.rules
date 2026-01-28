@@ -36,25 +36,78 @@ service cloud.firestore {
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superAdmin' ||
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin')) ||
         (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive == true)
+         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive != false)
       );
     }
     
     function isSuperAdminUser() {
       return isAuthenticated() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles != null &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['superAdmin', 'super_admin']);
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive != false &&
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.roles != null &&
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.roles.hasAny(['superAdmin', 'super_admin']);
     }
     
     function canReadAllProfiles() {
       return isAdmin() || isSuperAdminUser();
     }
     
-    // Admins collection
+    // Admins collection - STRICT ACCESS CONTROL
     match /admins/{adminId} {
-      allow read: if isAuthenticated() && (request.auth.uid == adminId || isAdmin());
+      allow read: if isAuthenticated() && (request.auth.uid == adminId || isSuperAdminUser());
+      allow create, update, delete: if isSuperAdminUser();
+    }
+    
+    // Admin audit logs - IMMUTABLE
+    match /adminAuditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+    
+    // System logs - IMMUTABLE  
+    match /system_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+    
+    // Impersonation sessions
+    match /impersonation_sessions/{sessionId} {
+      allow read: if isAuthenticated() && (resource.data.adminId == request.auth.uid || isSuperAdminUser());
+      allow create: if isAdmin();
+      allow update: if isAuthenticated() && resource.data.adminId == request.auth.uid;
+      allow delete: if isSuperAdminUser();
+    }
+    
+    // Rate limits
+    match /rate_limits/{limitId} {
+      allow read: if isAuthenticated() && limitId.matches('^' + request.auth.uid + '_.*');
       allow write: if false;
+    }
+    
+    // Payroll periods - Admin only for modifications
+    match /payroll_periods/{periodId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Payroll exports - Admin only
+    match /payroll_exports/{exportId} {
+      allow read: if isAuthenticated() && (resource.data.exportedBy == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+    
+    // Fiduciary exports - Restricted access
+    match /fiduciary_exports/{exportId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAuthenticated();
+    }
+    
+    // Payroll discrepancies
+    match /payroll_discrepancies/{discrepancyId} {
+      allow read: if isAuthenticated() && (resource.data.facilityId in request.auth.token.facilities || isAdmin());
+      allow write: if isAdmin();
     }
     
     // Admin roles collection

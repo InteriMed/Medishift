@@ -141,7 +141,7 @@ All modals now use the base modal component from `components/modals/modal.js`:
 - No internal layouts
 - Clean props-based configuration
 - Consistent styling and behavior
-- Uses standard form components from `BoxedInputFields`
+- Uses standard form components from `boxedInputFields`
 
 ### ✅ FilterBar
 Consistent use of the centralized `FilterBar` component:
@@ -156,7 +156,7 @@ Consistent use of the centralized `FilterBar` component:
 - `PageHeader` for tab navigation
 - `FilterBar` for filtering and actions
 - `Modal` for all dialogs
-- `BoxedInputFields` components for forms
+- `boxedInputFields` components for forms
 - Existing conversation components (ConversationsList, ConversationView)
 
 ### ✅ Centralized Config
@@ -220,4 +220,6 @@ Consistent use of the centralized `FilterBar` component:
 4. Update any routing configurations that reference old files
 5. Check for any remaining imports of deleted files
 6. Update documentation to reflect new structure
+
+
 

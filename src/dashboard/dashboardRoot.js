@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from './pages/components/layout';
-import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../components/loadingSpinner/loadingSpinner';
 import { ResponsiveProvider } from './contexts/responsiveContext';
 
 const Overview = lazy(() => import('./pages/overview/overview'));

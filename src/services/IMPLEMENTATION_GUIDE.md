@@ -381,3 +381,157 @@ If upgrading from existing auth system:
 - [ ] Advanced audit log querying UI
 - [ ] A/B testing framework integration
 
+---
+
+## Workspace Access - Multi-Tenancy "Passport Strategy"
+
+### Overview
+
+The workspace access system implements a "Passport Strategy" for multi-tenancy, where users receive a custom token with workspace claims embedded when they switch workspaces.
+
+### Architecture: "Trust the Token"
+
+1. **User logs in**: Gets a "Global Token" (No workspace access yet, or default)
+2. **User selects Workspace**: Calls `workspace.switch` Cloud Function
+3. **Action verifies**: Checks `facilityProfiles` for membership
+4. **Action returns**: A new Custom Token with `facilityId` embedded in claims
+5. **Frontend re-auths**: Uses the new token. All subsequent API calls carry the `facilityId`
+
+### Key Benefits
+
+- **Security**: User cannot spoof `facilityId` because it's in the signed JWT token
+- **Performance**: No DB read on every action - workspace verified once at entry
+- **Simplicity**: Actions assume `ctx.facilityId` exists and is valid
+
+### Implementation Files
+
+**Backend (Cloud Functions):**
+- `functions/api/workspaceAccess.js` - Contains `switchWorkspace` and `checkWorkspaces` functions
+- Exported in `functions/index.js`
+
+**Frontend:**
+- `src/hooks/useWorkspaceAccess.js` - React hook that calls backend and re-authenticates
+- `src/services/actions/middleware/buildActionContext.ts` - Client-side context builder (see note below)
+
+### Custom Claims Structure
+
+```typescript
+// After workspace.switch
+{
+  workspaceId: string;          // 'personal' | facilityId | orgId | 'admin'
+  workspaceType: string;        // 'personal' | 'facility' | 'organization' | 'admin'
+  facilityId?: string;          // Set for facility workspaces
+  organizationId?: string;      // Set for organization workspaces
+  roles?: string[];             // User's roles in this workspace
+  permissions: string[];        // Derived from roles (RBAC)
+}
+```
+
+### Facility Membership Verification
+
+The backend verifies membership by checking the facility profile:
+
+```typescript
+// Source of Truth: facilityProfiles/{facilityId}
+const facilityData = facilitySnap.data();
+const employees = facilityData.employees || [];
+const employeeRecord = employees.find(emp => emp.user_uid === userId);
+
+// Security Checks:
+if (!employeeRecord) {
+  throw new HttpsError('permission-denied', 'Not a member of this facility');
+}
+
+if (employeeRecord.status && employeeRecord.status !== 'ACTIVE') {
+  throw new HttpsError('permission-denied', 'Account status is not ACTIVE');
+}
+```
+
+### Frontend Usage
+
+```typescript
+import { useWorkspaceAccess } from '@/hooks/useWorkspaceAccess';
+
+function WorkspaceSwitcher() {
+  const { workspaces, switchWorkspace, switching } = useWorkspaceAccess();
+
+  const handleSwitch = async (facilityId) => {
+    const success = await switchWorkspace(facilityId);
+    if (success) {
+      // User is now re-authenticated with facility passport
+      // Navigate to facility dashboard
+    }
+  };
+
+  return (
+    <select onChange={(e) => handleSwitch(e.target.value)} disabled={switching}>
+      {workspaces.map(ws => (
+        <option key={ws.id} value={ws.id}>{ws.name}</option>
+      ))}
+    </select>
+  );
+}
+```
+
+### Tenant Isolation
+
+Actions automatically enforce tenant isolation through the `facilityId` in claims:
+
+```typescript
+// In any action handler
+import { validateTenantIsolation } from '@/services/actions/middleware/buildActionContext';
+
+export const myAction = {
+  handler: async (input, ctx) => {
+    // Ensure user can only access their own facility's data
+    validateTenantIsolation(ctx, input.targetFacilityId, 'my.action');
+    
+    // Proceed with action...
+  }
+};
+```
+
+### Important Notes
+
+**Current Architecture:**
+- Most actions run **client-side** using Firebase Client SDK
+- `switchWorkspace` runs **server-side** (Cloud Function) because `createCustomToken()` requires Admin SDK
+- Client-side context is built from Firebase auth state (trusted because Firebase SDK verifies tokens)
+
+**Future Migration:**
+- When actions move to backend, implement server-side `buildActionContextFromToken()` (see middleware file for example)
+- Server-side should verify ID token with Admin SDK
+- Extract claims and enforce workspace requirements
+
+### Deployment
+
+```bash
+# Deploy workspace access functions
+firebase deploy --only functions:switchWorkspace,functions:checkWorkspaces
+```
+
+### Testing
+
+```typescript
+// Call from frontend
+const { switchWorkspace } = useWorkspaceAccess();
+await switchWorkspace('fac_123');
+
+// Verify claims updated
+const user = auth.currentUser;
+const token = await user.getIdTokenResult();
+console.log(token.claims.facilityId); // Should be 'fac_123'
+```
+
+### Troubleshooting
+
+**Workspace switch fails:**
+- Check user is in `facilityProfiles/{facilityId}/employees` array
+- Verify `status` field is 'ACTIVE' or missing
+- Check Cloud Function logs in Firebase Console
+
+**Claims not updating after switch:**
+- Frontend must call `getIdToken(true)` to force refresh
+- Check that `signInWithCustomToken()` completed successfully
+- Verify no errors in browser console
+

@@ -1,10 +1,10 @@
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useDashboard } from './contexts/DashboardContext';
+import { useDashboard } from './contexts/dashboardContext';
 import { SidebarProvider } from './onboarding/sidebarContext';
 import { PageMobileProvider } from './contexts/PageMobileContext';
 import { DashboardLayout } from './layouts/dashboardLayout';
-import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../components/loadingSpinner/loadingSpinner';
 import AdminRoute from '../dashboards/admin/AdminRoute';
 import ProtectedRoute from '../dashboards/admin/components/ProtectedRoute';
 import AdminLayout from '../dashboards/admin/components/AdminLayout';

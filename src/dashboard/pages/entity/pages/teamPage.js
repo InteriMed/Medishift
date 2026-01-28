@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import { cn } from '../../../../utils/cn';
 
-import EmployeesPage from './EmployeesPage';
-import HiringPage from './HiringPage';
-import OrganigramPage from './OrganigramPage';
-import AdminManagementPage from './AdminManagementPage';
-import FloatPoolPage from './FloatPoolPage';
+import EmployeesPage from './employeesPage';
+import HiringPage from './hiringPage';
+import OrganigramPage from './organigramPage';
+import AdminManagementPage from './adminManagementPage';
+import FloatPoolPage from './floatPoolPage';
 
 const TeamPage = () => {
   const { t } = useTranslation(['organization']);

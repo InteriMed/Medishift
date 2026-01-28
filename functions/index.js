@@ -16,31 +16,31 @@ admin.initializeApp({
 });
 
 // Import calendar functions
-const calendarFunctions = require('../../Medishift/functions/api/calendar');
+const calendarFunctions = require('./api/calendar');
 
 // Import database functions (profile functions)
-const databaseFunctions = require('../../Medishift/functions/database/index');
+const databaseFunctions = require('./database/index');
 
 // Import API functions (contract functions)
-const apiFunctions = require('../../Medishift/functions/api/index');
+const apiFunctions = require('./api/index');
 
 // Import BAG Admin functions
-const bagAdminFunctions = require('../../Medishift/functions/api/BAG_Admin');
+const bagAdminFunctions = require('./api/BAG_Admin');
 
 // Import document processing function
-const documentProcessing = require('../../Medishift/functions/api/processDocument');
+const documentProcessing = require('./api/processDocument');
 
 // Import invitation functions
-const invitationFunctions = require('../../Medishift/functions/api/invitations');
+const invitationFunctions = require('./api/invitations');
 
 // Import banking functions
-const bankingFunctions = require('../../Medishift/functions/banking/index');
+const bankingFunctions = require('./banking/index');
 
 // Import auth custom claims functions
-const customClaimsFunctions = require('../../Medishift/functions/auth/customClaims');
+const customClaimsFunctions = require('./auth/customClaims');
 
 // Import notification fanout triggers
-const notificationTriggers = require('../../Medishift/functions/triggers/notificationFanout');
+const notificationTriggers = require('./triggers/notificationFanout');
 
 // Simplified functions - create basic endpoints
 
@@ -113,17 +113,17 @@ module.exports.autoScheduleShift = calendarFunctions.autoScheduleShift;
 module.exports.validateShiftAssignment = calendarFunctions.validateShiftAssignment;
 
 // ROLE SYNCHRONIZATION TRIGGERS - Export from triggers/roleSync.js
-const roleSyncTriggers = require('../../Medishift/functions/triggers/roleSync');
+const roleSyncTriggers = require('./triggers/roleSync');
 module.exports.syncAdminRoles = roleSyncTriggers.syncAdminRoles;
 module.exports.cleanupRolesOnFacilityDelete = roleSyncTriggers.cleanupRolesOnFacilityDelete;
 
 // AUDIT LOGGING - Export from services/auditLog.js
-const auditLogService = require('../../Medishift/functions/services/auditLog');
+const auditLogService = require('./services/auditLog');
 module.exports.logAudit = auditLogService.logAudit;
 module.exports.getAuditLogs = auditLogService.getAuditLogs;
 
 // RATE LIMITING - Export from services/rateLimit.js
-const rateLimitService = require('../../Medishift/functions/services/rateLimit');
+const rateLimitService = require('./services/rateLimit');
 module.exports.cleanupRateLimits = rateLimitService.cleanupRateLimits;
 module.exports.getRateLimitStatus = rateLimitService.getRateLimitStatus;
 
@@ -137,17 +137,17 @@ module.exports.requestBankingAccessCode = bankingFunctions.requestBankingAccessC
 // =========================================================================
 
 // DOCUMENT VERIFICATION (Safe OCR) - Export from api/verifyDocument.js
-const documentVerification = require('../../Medishift/functions/api/verifyDocument');
+const documentVerification = require('./api/verifyDocument');
 module.exports.verifyPharmacyDocument = documentVerification.verifyPharmacyDocument;
 
 // PAYROLL INTEGRATION (PayrollPlus) - Export from services/payrollService.js
-const payrollService = require('../../Medishift/functions/services/payrollService');
+const payrollService = require('./services/payrollService');
 module.exports.onPayrollRequestCreated = payrollService.onPayrollRequestCreated;
 module.exports.createPayrollRequest = payrollService.createPayrollRequest;
 module.exports.getPayrollRequests = payrollService.getPayrollRequests;
 
 // EMPLOYEE LIFECYCLE (Termination/Deletion) - Export from services/employeeLifecycle.js
-const employeeLifecycle = require('../../Medishift/functions/services/employeeLifecycle');
+const employeeLifecycle = require('./services/employeeLifecycle');
 module.exports.terminateEmployee = employeeLifecycle.terminateEmployee;
 module.exports.deleteAccount = employeeLifecycle.deleteAccount;
 module.exports.cleanupExpiredRecords = employeeLifecycle.cleanupExpiredRecords;
@@ -158,7 +158,7 @@ module.exports.restoreAccount = employeeLifecycle.restoreAccount;
 // =========================================================================
 
 // ORGANIZATION MANAGEMENT - Export from triggers/organizationSync.js
-const organizationSync = require('../../Medishift/functions/triggers/organizationSync');
+const organizationSync = require('./triggers/organizationSync');
 module.exports.onOrganizationCreated = organizationSync.onOrganizationCreated;
 module.exports.onOrganizationUpdated = organizationSync.onOrganizationUpdated;
 module.exports.onOrganizationDeleted = organizationSync.onOrganizationDeleted;
@@ -171,18 +171,18 @@ module.exports.removeFacilityFromOrganization = organizationSync.removeFacilityF
 // =========================================================================
 
 // ACCOUNT MANAGEMENT - Export from api/accountManagement.js
-const accountManagement = require('../../Medishift/functions/api/accountManagement');
+const accountManagement = require('./api/accountManagement');
 module.exports.accountDeletionPreview = accountManagement.deletionPreview;     // GET preview of deletion
 module.exports.accountDelete = accountManagement.deleteAccount;                 // POST delete account
 module.exports.accountBonusEligibility = accountManagement.checkBonusEligibility; // Anti-fraud check
 module.exports.accountDataExport = accountManagement.dataExport;                // GDPR data export
 
 // USER MANAGEMENT - Export from api/userManagement.js
-const userManagement = require('../../Medishift/functions/api/userManagement');
+const userManagement = require('./api/userManagement');
 module.exports.disableUser = userManagement.disableUser;
 
 // IMPERSONATION - Export from api/impersonation.js
-const impersonationFunctions = require('../../Medishift/functions/api/impersonation');
+const impersonationFunctions = require('./api/impersonation');
 module.exports.startImpersonation = impersonationFunctions.startImpersonation;
 module.exports.stopImpersonation = impersonationFunctions.stopImpersonation;
 module.exports.getImpersonationSession = impersonationFunctions.getImpersonationSession;
@@ -201,7 +201,7 @@ module.exports.acceptAdminInvitation = invitationFunctions.acceptAdminInvitation
 module.exports.getAdminInvitationDetails = invitationFunctions.getAdminInvitationDetails;
 
 // LINKEDIN JOB SCRAPER - Export from api/linkedinJobScraper.js
-const linkedinJobScraper = require('../../Medishift/functions/api/linkedinJobScraper');
+const linkedinJobScraper = require('./api/linkedinJobScraper');
 module.exports.scrapeLinkedInJobs = linkedinJobScraper.scrapeLinkedInJobs;
 module.exports.getLinkedInJobs = linkedinJobScraper.getLinkedInJobs;
 
@@ -210,10 +210,9 @@ module.exports.getLinkedInJobs = linkedinJobScraper.getLinkedInJobs;
 // =========================================================================
 
 // EMAIL SERVICE - Export from api/emailService.js
-const emailService = require('../../Medishift/functions/api/emailService');
+const emailService = require('./api/emailService');
 module.exports.sendAdminEmail = emailService.sendAdminEmail;
 module.exports.sendSupportResponse = emailService.sendSupportResponse;
-module.exports.sendTeamInvitation = emailService.sendTeamInvitation;
 module.exports.sendTeamInvitation = emailService.sendTeamInvitation;
 module.exports.sendContactFormEmail = emailService.sendContactFormEmail;
 module.exports.getAdminInbox = emailService.getAdminInbox;
@@ -223,14 +222,14 @@ module.exports.getAdminInbox = emailService.getAdminInbox;
 // =========================================================================
 
 // NOTIFICATION SERVICE - Export from api/notificationService.js
-const notificationService = require('../../Medishift/functions/api/notificationService');
+const notificationService = require('./api/notificationService');
 module.exports.sendNotification = notificationService.sendNotification;
 module.exports.sendBulkNotification = notificationService.sendBulkNotification;
 module.exports.notifyShiftAssignment = notificationService.notifyShiftAssignment;
 module.exports.notifyBankingUpdate = notificationService.notifyBankingUpdate;
 
 // JOB SCRAPER SCHEDULER - Export from services/jobScraperScheduler.js
-const jobScraperScheduler = require('../../Medishift/functions/services/jobScraperScheduler');
+const jobScraperScheduler = require('./services/jobScraperScheduler');
 module.exports.createScraperSchedule = jobScraperScheduler.createScraperSchedule;
 module.exports.updateScraperSchedule = jobScraperScheduler.updateScraperSchedule;
 module.exports.deleteScraperSchedule = jobScraperScheduler.deleteScraperSchedule;
@@ -239,7 +238,7 @@ module.exports.getScraperStatus = jobScraperScheduler.getScraperStatus;
 module.exports.runScheduledScraper = jobScraperScheduler.runScheduledScraper;
 
 // TEAM ORGANIGRAM ANALYZER - Export from api/teamOrganigram.js
-const teamOrganigram = require('../../Medishift/functions/api/teamOrganigram');
+const teamOrganigram = require('./api/teamOrganigram');
 module.exports.analyzeTeamOrganigram = teamOrganigram.analyzeTeamOrganigram;
 
 // =========================================================================
@@ -260,4 +259,29 @@ module.exports.refreshUserToken = customClaimsFunctions.refreshUserToken;
 module.exports.onAnnouncementCreated = notificationTriggers.onAnnouncementCreated;
 module.exports.broadcastNotification = notificationTriggers.broadcastNotification;
 module.exports.sendPushNotification = notificationTriggers.sendPushNotification;
+
+// =========================================================================
+//  🔄 WORKSPACE ACCESS - Multi-tenancy "Passport Strategy"
+// =========================================================================
+
+// WORKSPACE ACCESS - Export from api/workspaceAccess.js
+const workspaceAccess = require('./api/workspaceAccess');
+module.exports.switchWorkspace = workspaceAccess.switchWorkspace;
+module.exports.checkWorkspaces = workspaceAccess.checkWorkspaces;
+
+// =========================================================================
+//  🛡️ ADMIN PORTAL - Secure Admin-Only Actions
+// =========================================================================
+
+// ADMIN ACTIONS - Export from api/adminActions.js
+const adminActions = require('./api/adminActions');
+module.exports.executeAdminAction = adminActions.executeAdminAction;
+
+// PAYROLL ACTIONS - Export from api/payrollActions.js
+const payrollActions = require('./api/payrollActions');
+module.exports.executePayrollAction = payrollActions.executePayrollAction;
+
+// FIDUCIARY ACTIONS - Export from api/fiduciaryActions.js
+const fiduciaryActions = require('./api/fiduciaryActions');
+module.exports.executeFiduciaryAction = fiduciaryActions.executeFiduciaryAction;
 

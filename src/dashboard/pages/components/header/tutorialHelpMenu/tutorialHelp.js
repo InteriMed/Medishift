@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTutorial } from '../../../../../dashboard/contexts/tutorialContext';
 import { FiHelpCircle } from 'react-icons/fi';
-import styles from './TutorialHelp.module.css';
+import styles from './tutorialHelp.module.css';
 
 /**
  * TutorialHelp Component

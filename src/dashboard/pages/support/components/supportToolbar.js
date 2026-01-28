@@ -9,7 +9,7 @@ import {
 } from 'react-icons/fi';
 import { useMobileView } from '../../../hooks/useMobileView';
 import { cn } from '../../../../utils/cn';
-import '../../../../components/BoxedInputFields/styles/boxedInputFields.css';
+import '../../../../components/boxedInputFields/styles/boxedInputFields.css';
 
 const categoryLabels = {
     feedback: 'Feedback',

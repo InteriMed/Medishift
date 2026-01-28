@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './styles/SwitchField.css';
-import { useNotification } from '../../contexts/NotificationContext';
+import { useNotification } from '../../contexts/notificationContext';
 
 const hasRequiredIndicator = (label) => {
     if (!label) return false;

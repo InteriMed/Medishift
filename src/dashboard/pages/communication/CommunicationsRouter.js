@@ -6,7 +6,7 @@ import MessagesPage from './pages/MessagesPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
 import InternalTicketPage from './pages/InternalTicketPage';
 import ReportingPage from './pages/ReportingPage';
-import { useDashboard } from '../../contexts/DashboardContext';
+import { useDashboard } from '../../contexts/dashboardContext';
 
 const CommunicationsRouter = () => {
   const { t } = useTranslation(['messages']);

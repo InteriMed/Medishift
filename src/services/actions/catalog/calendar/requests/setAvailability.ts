@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ActionDefinition } from "../../../types";
-import { db } from '../../../../../services/firebase';
+import { db } from '../../../../services/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const SetAvailabilitySchema = z.object({

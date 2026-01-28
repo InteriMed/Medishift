@@ -2,38 +2,11 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 const { logAuditEvent, AUDIT_EVENT_TYPES } = require('../services/auditLog');
-const { FUNCTION_CONFIG } = require('../../../Medishift/functions/config/keysDatabasections/config/keysDatabase');
+const { verifyAdminAccess, ADMIN_PERMISSIONS } = require('../middleware/verifyAdminAccess');
+const { checkRateLimit } = require('../middleware/rateLimit');
 
 const IMPERSONATION_SESSION_EXPIRY_MINUTES = 30;
 const IMPERSONATION_COOKIE_NAME = 'medishift_impersonation_session';
-
-const ADMIN_ROLES = {
-  SUPER_ADMIN: 'super_admin',
-  OPS_MANAGER: 'ops_manager',
-  SUPPORT: 'support'
-};
-
-const PERMISSIONS = {
-  IMPERSONATE_USERS: 'impersonate_users'
-};
-
-const ROLE_PERMISSIONS = {
-  [ADMIN_ROLES.SUPER_ADMIN]: [PERMISSIONS.IMPERSONATE_USERS],
-  [ADMIN_ROLES.OPS_MANAGER]: [PERMISSIONS.IMPERSONATE_USERS],
-  [ADMIN_ROLES.SUPPORT]: [PERMISSIONS.IMPERSONATE_USERS]
-};
-
-const hasPermission = (adminRoles, permission) => {
-  if (!adminRoles || !Array.isArray(adminRoles)) return false;
-  const validAdminRoles = adminRoles.filter(role => Object.values(ADMIN_ROLES).includes(role));
-  for (const role of validAdminRoles) {
-    const rolePermissions = ROLE_PERMISSIONS[role] || [];
-    if (rolePermissions.includes(permission)) {
-      return true;
-    }
-  }
-  return false;
-};
 
 const extractMetadata = (req) => {
   const metadata = {};
@@ -45,12 +18,14 @@ const extractMetadata = (req) => {
   return metadata;
 };
 
-exports.startImpersonation = onCall(FUNCTION_CONFIG, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'You must be signed in to impersonate users');
-  }
-
-  const adminId = request.auth.uid;
+exports.startImpersonation = onCall(async (request) => {
+  const adminVerification = await verifyAdminAccess(request, ADMIN_PERMISSIONS.IMPERSONATE_USERS);
+  
+  await checkRateLimit(adminVerification.userId, 'admin.impersonate_user', {
+    ipAddress: request.rawRequest?.ip || 'unknown'
+  });
+  
+  const adminId = adminVerification.userId;
   const { targetUserId } = request.data;
 
   if (!targetUserId) {
@@ -63,18 +38,7 @@ exports.startImpersonation = onCall(FUNCTION_CONFIG, async (request) => {
 
   try {
     const db = admin.firestore();
-
-    const adminDoc = await db.collection('admins').doc(adminId).get();
-    if (!adminDoc.exists || adminDoc.data().isActive === false) {
-      throw new HttpsError('permission-denied', 'You do not have permission to impersonate users');
-    }
-
-    const adminData = adminDoc.data();
-    const adminRoles = adminData.roles || [];
-
-    if (!hasPermission(adminRoles, PERMISSIONS.IMPERSONATE_USERS)) {
-      throw new HttpsError('permission-denied', 'You do not have permission to impersonate users');
-    }
+    const adminData = adminVerification.adminData;
 
     const targetUserDoc = await db.collection('users').doc(targetUserId).get();
     if (!targetUserDoc.exists) {
@@ -147,11 +111,9 @@ exports.startImpersonation = onCall(FUNCTION_CONFIG, async (request) => {
   }
 });
 
-exports.stopImpersonation = onCall(FUNCTION_CONFIG, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'You must be signed in');
-  }
-
+exports.stopImpersonation = onCall(async (request) => {
+  await verifyAdminAccess(request, ADMIN_PERMISSIONS.IMPERSONATE_USERS);
+  
   const { sessionId } = request.data;
 
   if (!sessionId) {
@@ -215,11 +177,9 @@ exports.stopImpersonation = onCall(FUNCTION_CONFIG, async (request) => {
   }
 });
 
-exports.getImpersonationSession = onCall(FUNCTION_CONFIG, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'You must be signed in');
-  }
-
+exports.getImpersonationSession = onCall(async (request) => {
+  await verifyAdminAccess(request, ADMIN_PERMISSIONS.IMPERSONATE_USERS);
+  
   const { sessionId } = request.data;
 
   if (!sessionId) {
@@ -289,11 +249,13 @@ exports.getImpersonationSession = onCall(FUNCTION_CONFIG, async (request) => {
   }
 });
 
-exports.validateImpersonationSession = onCall(FUNCTION_CONFIG, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'You must be signed in');
+exports.validateImpersonationSession = onCall(async (request) => {
+  try {
+    await verifyAdminAccess(request, ADMIN_PERMISSIONS.IMPERSONATE_USERS);
+  } catch (error) {
+    return { isValid: false, reason: 'Not authorized' };
   }
-
+  
   const { sessionId } = request.data;
 
   if (!sessionId) {

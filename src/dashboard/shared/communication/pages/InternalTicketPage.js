@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAction } from '../../../../services/actions/hook';
-import { useDashboard } from '../../../contexts/DashboardContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
 import { useNotification } from '../../../../contexts/notificationContext';
 import FilterBar from '../../components/filterBar/FilterBar';
 import Modal from '../../../../components/modals/modal';
-import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import TextareaField from '../../../../components/BoxedInputFields/TextareaField';
-import SimpleDropdown from '../../../../components/BoxedInputFields/SimpleDropdown';
-import Button from '../../../../components/BoxedInputFields/Button';
+import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import TextareaField from '../../../../components/boxedInputFields/textareaField';
+import SimpleDropdown from '../../../../components/boxedInputFields/SimpleDropdown';
+import Button from '../../../../components/boxedInputFields/button';
 import { cn } from '../../../../utils/cn';
 import { FiMessageSquare, FiBarChart2, FiPlus, FiFileText } from 'react-icons/fi';
 import { buildDashboardUrl, getWorkspaceIdForUrl } from '../../../../config/routeUtils';
@@ -348,4 +348,6 @@ const InternalTicketPage = ({ hideHeader }) => {
 };
 
 export default InternalTicketPage;
+
+
 

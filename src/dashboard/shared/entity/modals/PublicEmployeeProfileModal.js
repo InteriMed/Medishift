@@ -3,7 +3,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../services/firebase';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
 import Modal from '../../../../components/modals/modal';
-import Button from '../../../../components/BoxedInputFields/Button';
+import Button from '../../../../components/boxedInputFields/button';
 import {
     FiMapPin, FiBriefcase, FiCheckCircle, FiStar,
     FiClock, FiGlobe, FiAward
@@ -232,4 +232,6 @@ PublicEmployeeProfileModal.propTypes = {
 };
 
 export default PublicEmployeeProfileModal;
+
+
 

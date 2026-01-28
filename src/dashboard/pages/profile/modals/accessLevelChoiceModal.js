@@ -6,7 +6,7 @@ import Modal from '../../../../components/modals/modal';
 import Button from '../../../../components/boxedInputFields/button';
 import { FiUsers, FiBriefcase } from 'react-icons/fi';
 import { useTutorial } from '../../../contexts/TutorialContext';
-import { useDashboard } from '../../../contexts/DashboardContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
 import { getProfileTutorialForType, ONBOARDING_TYPES } from '../../../contexts/TutorialContext/config/tutorialSystem';
 import { WORKSPACE_TYPES } from '../../../../utils/sessionAuth';
 

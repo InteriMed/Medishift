@@ -36,6 +36,7 @@
     "reactflow": "^11.11.0",
     "recharts": "^2.12.7",
     "tailwind-merge": "^3.4.0",
+    "ts-node": "^10.9.2",
     "web-vitals": "^5.1.0",
     "webpack-dev-server": "^4.15.1",
     "yet-another-react-lightbox": "^3.15.0",

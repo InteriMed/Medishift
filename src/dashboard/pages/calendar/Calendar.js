@@ -11,7 +11,7 @@ import TimeGrid from './components/TimeGrid';
 import DeleteConfirmationmodal from './components/DeleteConfirmationmodal';
 import EventContextMenu from './components/EventContextMenu';
 import EventPanel from './eventPanel/EventPanel';
-import { useDashboard } from '../../../dashboard/contexts/DashboardContext';
+import { useDashboard } from '../../../dashboard/contexts/dashboardContext';
 import { useSidebar } from '../../onboarding/sidebarContext';
 import { useCalendarState } from './hooks/useCalendarState';
 import { useCalendarEvents } from './utils/eventDatabase';
@@ -22,6 +22,7 @@ import ResourceGrid from './components/ResourceGrid';
 import useProfileData from '../../../dashboard/hooks/useProfileData';
 import useCalendarStore from './hooks/useCalendarStore';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { useAction } from '../../../services/actions/hook';
 
 import PropTypes from 'prop-types';
 
@@ -29,6 +30,7 @@ const Calendar = ({ userData }) => {
   const { t } = useTranslation(['dashboard', 'calendar', 'dashboardProfile']);
   const { selectedWorkspace } = useDashboard();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { execute } = useAction();
 
   const accountType = getUserTypeFromData(userData);
   const userId = getUserIdFromData(userData);
@@ -151,10 +153,11 @@ const Calendar = ({ userData }) => {
     return { type: selectedWorkspace.type, role: role };
   }, [selectedWorkspace]);
 
-  // Initialize Store Context
+  // Initialize Store Context and inject execute function
   useEffect(() => {
     useCalendarStore.getState().setContext(userId, accountType, workspaceContext);
-  }, [userId, accountType, workspaceContext]);
+    useCalendarStore.getState().setExecute(execute);
+  }, [userId, accountType, workspaceContext, execute]);
 
   // Connect to Zustand Store
   const events = useCalendarStore(state => state.events);

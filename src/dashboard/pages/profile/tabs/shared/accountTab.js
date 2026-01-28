@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../../contexts/AuthContext';
-import { useNotification } from '../../../../../contexts/NotificationContext';
+import { useAuth } from '../../../../../contexts/authContext';
+import { useNotification } from '../../../../../contexts/notificationContext';
 import ContentSection from '../../../components/contentSection';
 import Button from '../../../../../components/boxedInputFields/button';
 import { FiKey, FiMail } from 'react-icons/fi';
 import PasswordChangeModal from '../../modals/passwordChangeModal';
-import AccountDeletion from '../../modals/AccountDeletion';
+import AccountDeletion from '../../modals/accountDeletion';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { auth } from '../../../../../services/firebase';
+import { auth } from '../../../../services/firebase';
 
 const AccountTab = () => {
   const { t } = useTranslation(['dashboard/profile', 'common']);

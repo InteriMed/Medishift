@@ -19,8 +19,8 @@ import { useTutorialUI } from './hooks/useTutorialUI';
 import { useSidebarAccess } from './hooks/useSidebarAccess';
 
 // Sections
-import { useProfileSection } from './sections/ProfileSection';
-import { useDashboardSection } from './sections/DashboardSection';
+import { useProfileSection } from './sections/profileSection';
+import { useDashboardSection } from './sections/dashboardSection';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 

@@ -13,7 +13,7 @@ import {
   Eye
 } from 'lucide-react';
 import FilterBar from '../../../components/layout/FilterBar/FilterBar';
-import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../../../components/loadingSpinner/loadingSpinner';
 import DetailedCard from './components/detailed_card/detailedCard';
 import { useMarketplaceData } from '../../hooks/useMarketplaceData';
 

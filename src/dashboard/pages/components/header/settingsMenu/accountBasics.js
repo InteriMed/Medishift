@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../../contexts/AuthContext'; // Assuming this is still needed for currentUser details not in props
-import { useNotification } from '../../../../../contexts/NotificationContext';
+import { useAuth } from '../../../../../contexts/authContext'; // Assuming this is still needed for currentUser details not in props
+import { useNotification } from '../../../../../contexts/notificationContext';
 import { auth } from '../../../../services/firebase';
 import googleAuthLogo from '../../../../assets/pages/auth/googleAuthLogo.png';
 import {

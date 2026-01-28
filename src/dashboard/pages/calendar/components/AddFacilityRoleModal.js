@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { get } from 'lodash';
 import { FiUsers, FiPlus, FiTrash2, FiX, FiAlertTriangle, FiUserPlus, FiExternalLink, FiEdit } from 'react-icons/fi';
 import { CALENDAR_COLORS } from '../utils/constants';
-import { useDashboard } from '../../../contexts/DashboardContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
 import { db } from '../../../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';

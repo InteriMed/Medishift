@@ -8,11 +8,11 @@ import {
     FiMoreVertical,
     FiShare2
 } from 'react-icons/fi';
-import { useNotification } from '../../../../contexts/NotificationContext';
-import { topicService } from '../../../../services/topicService';
-import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
+import { useNotification } from '../../../../contexts/notificationContext';
+import { useAction } from '../../../../services/actions/hook';
+import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
 import { cn } from '../../../../utils/cn';
-import { useDashboard } from '../../../contexts/DashboardContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
 
 const categoryLabels = {
     feedback: 'Feedback',
@@ -47,59 +47,43 @@ function buildReplyTree(replies) {
     return roots;
 }
 
-export const TopicDetail = ({ topicId, onBack }) => {
+export const TopicDetail = ({ announcementId, onBack }) => {
     const { user } = useDashboard();
     const { showError, showSuccess } = useNotification();
+    const { execute } = useAction();
 
-    const [topic, setTopic] = useState(null);
+    const [announcement, setAnnouncement] = useState(null);
     const [loading, setLoading] = useState(true);
     const [replying, setReplying] = useState(null);
     const [replyData, setReplyData] = useState({});
     const replyInputRef = useRef(null);
 
-    const loadTopic = useCallback(async () => {
+    const loadAnnouncement = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await topicService.getTopic(topicId);
-            setTopic(data);
+            const result = await execute('thread.fetch', {
+                collectionType: 'announcements',
+                threadId: announcementId
+            });
+            setAnnouncement(result);
         } catch (error) {
-            console.error('Error loading topic:', error);
-            showError('Failed to load topic');
+            console.error('Error loading announcement:', error);
+            showError(error.message || 'Failed to load announcement');
             onBack();
         } finally {
             setLoading(false);
         }
-    }, [topicId, showError, onBack]);
+    }, [announcementId, execute, showError, onBack]);
 
     useEffect(() => {
-        if (topicId) {
-            loadTopic();
+        if (announcementId) {
+            loadAnnouncement();
         }
-    }, [topicId, loadTopic]);
-
-    const handleUpvoteTopic = async () => {
-        if (!topic || !user) return;
-        try {
-            await topicService.upvoteTopic(topic.id, user.uid);
-            loadTopic();
-        } catch (error) {
-            console.error('Failed to upvote topic:', error);
-        }
-    };
-
-    const handleUpvoteReply = async (replyId) => {
-        if (!topic || !user) return;
-        try {
-            await topicService.upvoteReply(topic.id, replyId, user.uid);
-            loadTopic();
-        } catch (error) {
-            console.error('Failed to upvote reply:', error);
-        }
-    };
+    }, [announcementId, loadAnnouncement]);
 
     const handleReply = async (parentId = null) => {
-        if (!topic || !user) return;
-        const key = parentId || topic.id;
+        if (!announcement || !user) return;
+        const key = parentId || announcement.id;
         const content = replyData[key]?.trim();
 
         if (!content) {
@@ -109,10 +93,15 @@ export const TopicDetail = ({ topicId, onBack }) => {
 
         try {
             setReplying(key);
-            await topicService.createReply(topic.id, { content, parent_id: parentId }, user);
+            await execute('thread.reply', {
+                collectionType: 'announcements',
+                threadId: announcement.id,
+                content: content,
+                parentId: parentId
+            });
             showSuccess('Reply posted');
             setReplyData(prev => ({ ...prev, [key]: '' }));
-            loadTopic();
+            loadAnnouncement();
         } catch (error) {
             showError(error.message || 'Failed to post reply');
         } finally {
@@ -170,16 +159,6 @@ export const TopicDetail = ({ topicId, onBack }) => {
 
                                     <div className="flex items-center gap-4 pt-1">
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); handleUpvoteReply(reply.id); }}
-                                            className={cn(
-                                                "flex items-center gap-1.5 text-xs transition-colors p-1 -ml-1 rounded-md hover:bg-muted",
-                                                (reply.upvoters || []).includes(user?.uid) ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                        >
-                                            <FiChevronUp className={cn("w-3.5 h-3.5", (reply.upvoters || []).includes(user?.uid) ? "fill-current" : "")} />
-                                            <span>{reply.upvotes || 0}</span>
-                                        </button>
-                                        <button
                                             onClick={(e) => { e.stopPropagation(); setReplying(reply.id); }}
                                             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
                                         >
@@ -233,9 +212,10 @@ export const TopicDetail = ({ topicId, onBack }) => {
     };
 
     if (loading) return <LoadingSpinner />;
-    if (!topic) return null;
+    if (!announcement) return null;
 
-    const nestedReplies = buildReplyTree(topic.replies || []);
+    const replies = announcement.replies || [];
+    const nestedReplies = buildReplyTree(replies);
 
     return (
         <div className="flex flex-col h-full bg-background overflow-y-auto">
@@ -251,7 +231,7 @@ export const TopicDetail = ({ topicId, onBack }) => {
 
                     <div className="flex items-center gap-2">
                         <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-secondary text-muted-foreground border border-border capitalize">
-                            {categoryLabels[topic.category] || topic.category}
+                            {categoryLabels[announcement.category] || announcement.category}
                         </span>
                     </div>
 
@@ -260,48 +240,36 @@ export const TopicDetail = ({ topicId, onBack }) => {
             </div>
 
             <main className="w-full max-w-4xl mx-auto p-4 md:p-8 space-y-8 flex-1">
-                {/* Topic Content */}
+                {/* Announcement Content */}
                 <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
                     <div className="flex items-center gap-4 mb-6">
                         <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-lg font-bold">
-                            {(topic.user_username || topic.user_email || 'A').charAt(0).toUpperCase()}
+                            A
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
                                 <span className="font-bold text-foreground">
-                                    {topic.user_username || topic.user_email || 'Anonymous'}
+                                    Announcement
                                 </span>
                                 <span className="text-muted-foreground/30">•</span>
                                 <span className="text-sm text-muted-foreground">
-                                    {formatDate(topic.created_at)}
+                                    {formatDate(announcement.createdAt?.toDate ? announcement.createdAt.toDate().toISOString() : new Date().toISOString())}
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     <h1 className="text-2xl md:text-3xl font-bold mb-4 text-foreground leading-tight">
-                        {topic.title}
+                        {announcement.title}
                     </h1>
 
                     <div className="prose prose-invert max-w-none mb-6">
                         <p className="text-base text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                            {topic.content}
+                            {announcement.content}
                         </p>
                     </div>
 
                     <div className="flex items-center gap-3 pt-4 border-t border-border/50">
-                        <button
-                            onClick={handleUpvoteTopic}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-full border transition-all text-sm font-medium",
-                                (topic.upvoters || []).includes(user?.uid)
-                                    ? "bg-primary/10 border-primary/20 text-primary"
-                                    : "bg-background border-border hover:bg-muted text-muted-foreground"
-                            )}
-                        >
-                            <FiChevronUp className={cn("w-4 h-4", (topic.upvoters || []).includes(user?.uid) ? "fill-current" : "")} />
-                            <span>{topic.upvotes || 'Upvote'}</span>
-                        </button>
                         <button
                             onClick={() => {
                                 replyInputRef.current?.focus();
@@ -319,7 +287,7 @@ export const TopicDetail = ({ topicId, onBack }) => {
                     <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
                         Discussion
                         <span className="text-sm font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                            {topic.replies?.length || 0}
+                            {replies.length || 0}
                         </span>
                     </h2>
 
@@ -332,11 +300,11 @@ export const TopicDetail = ({ topicId, onBack }) => {
                             <textarea
                                 ref={replyInputRef}
                                 placeholder="Add to the discussion..."
-                                value={replyData[topic.id] || ''}
+                                value={replyData[announcement.id] || ''}
                                 onChange={e => {
                                     e.target.style.height = 'auto';
                                     e.target.style.height = e.target.scrollHeight + 'px';
-                                    setReplyData(prev => ({ ...prev, [topic.id]: e.target.value }));
+                                    setReplyData(prev => ({ ...prev, [announcement.id]: e.target.value }));
                                 }}
                                 rows={1}
                                 className="w-full bg-white border border-input hover:bg-white focus:bg-white focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all rounded-xl placeholder:text-muted-foreground/50 resize-none min-h-[56px] py-4 px-5 text-sm outline-none"
@@ -344,12 +312,12 @@ export const TopicDetail = ({ topicId, onBack }) => {
                             />
                             <div className={cn(
                                 "absolute right-2 bottom-2 transition-all duration-200",
-                                replyData[topic.id]?.trim() ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+                                replyData[announcement.id]?.trim() ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
                             )}>
                                 <button
                                     className="h-9 w-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center shadow-md transition-colors"
                                     onClick={() => handleReply()}
-                                    disabled={replying === topic.id}
+                                    disabled={replying === announcement.id}
                                 >
                                     <FiSend className="w-4 h-4" />
                                 </button>

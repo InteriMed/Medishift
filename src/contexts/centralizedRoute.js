@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-import { useDashboard } from '../dashboard/contexts/DashboardContext';
+import { useDashboard } from '../dashboard/contexts/dashboardContext';
 import { getAvailableWorkspaces, isAdminSync } from '../config/workspaceDefinitions';
 import { buildDashboardUrl, getWorkspaceIdForUrl, getDefaultRouteForWorkspace } from '../config/routeUtils';
 import { WORKSPACE_TYPES } from '../config/keysDatabase';
-import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../components/loadingSpinner/loadingSpinner';
 import { useTranslation } from 'react-i18next';
 
 const CentralizedRoute = () => {

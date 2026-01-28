@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useNotification } from '../../contexts/NotificationContext';
-import { useNetwork } from '../../contexts/NetworkContext';
+import { useNotification } from '../../contexts/notificationContext';
+import { useNetwork } from '../../contexts/networkContext';
 
 const NetworkStatus = () => {
   const { showInfo } = useNotification();

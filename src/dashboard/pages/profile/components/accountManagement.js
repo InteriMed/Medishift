@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { useNotification } from '../../../../contexts/NotificationContext';
-import { auth, db } from '../../../../services/firebase';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../../../../contexts/authContext';
+import { useNotification } from '../../../../contexts/notificationContext';
+import { auth } from '../../../../services/firebase';
+import { useAction } from '../../../../services/actions/hook';
 import googleAuthLogo from '../../../../assets/pages/auth/googleAuthLogo.png';
 import {
   updatePassword,
@@ -37,6 +37,7 @@ const AccountManagement = ({
   const { currentUser: authCurrentUser } = useAuth();
   const { showNotification } = useNotification();
   const { uploadImageAndRetrieveURL } = useProfileData();
+  const { execute } = useAction();
 
   const currentUser = propCurrentUser || authCurrentUser;
 
@@ -70,18 +71,16 @@ const AccountManagement = ({
     const loadFacilityMemberships = async () => {
       if (!currentUser?.uid) return;
       try {
-        const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          setFacilityMemberships(userData.facilityMemberships || []);
-        }
+        const result = await execute('profile.get_facility_memberships', {
+          userId: currentUser.uid
+        });
+        setFacilityMemberships(result.memberships || []);
       } catch (error) {
         console.error('Error loading facility memberships:', error);
       }
     };
     loadFacilityMemberships();
-  }, [currentUser?.uid]);
+  }, [currentUser?.uid, execute]);
 
   useEffect(() => {
     if (currentUser) {
@@ -244,34 +243,16 @@ const AccountManagement = ({
     setIsLeavingFacility(true);
     try {
       const facilityId = targetFacility.facilityId || targetFacility.facilityProfileId;
-      const userId = currentUser.uid;
 
-      const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        const updatedMemberships = (userData.facilityMemberships || []).filter(
-          m => m.facilityId !== facilityId && m.facilityProfileId !== facilityId
-        );
-        await updateDoc(userRef, {
-          facilityMemberships: updatedMemberships,
-          updatedAt: serverTimestamp()
-        });
-        setFacilityMemberships(updatedMemberships);
-      }
+      await execute('profile.leave_facility', {
+        userId: currentUser.uid,
+        facilityId
+      });
 
-      const facilityRef = doc(db, 'facilityProfiles', facilityId);
-      const facilitySnap = await getDoc(facilityRef);
-      if (facilitySnap.exists()) {
-        const facilityData = facilitySnap.data();
-        const updatedEmployees = (facilityData.employees || []).filter(e => e.uid !== userId);
-        const updatedAdmins = (facilityData.admins || []).filter(a => a !== userId);
-        await updateDoc(facilityRef, {
-          employees: updatedEmployees,
-          admins: updatedAdmins,
-          updatedAt: serverTimestamp()
-        });
-      }
+      const result = await execute('profile.get_facility_memberships', {
+        userId: currentUser.uid
+      });
+      setFacilityMemberships(result.memberships || []);
 
       showNotification(t('settings.leaveFacility.success', 'Successfully left the facility'), 'success');
       setShowLeaveFacilitymodal(false);
@@ -279,7 +260,7 @@ const AccountManagement = ({
       setTargetFacility(null);
     } catch (error) {
       console.error('Error leaving facility:', error);
-      showNotification(t('settings.leaveFacility.error', 'Failed to leave facility'), 'error');
+      showNotification(error.message || t('settings.leaveFacility.error', 'Failed to leave facility'), 'error');
     } finally {
       setIsLeavingFacility(false);
     }

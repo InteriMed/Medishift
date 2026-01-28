@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import './styles/boxedInputFields.css';
-import { useNotification } from '../../contexts/NotificationContext';
+import { useNotification } from '../../contexts/notificationContext';
 
 /**
  * Premium Checkbox component

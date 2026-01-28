@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { useWorkspaceAccess } from '../../hooks/useWorkspaceAccess';
-import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../loadingSpinner/loadingSpinner';
 
 const WorkspaceGuard = ({ children, requiredWorkspaceType = null }) => {
   const { lang } = useParams();

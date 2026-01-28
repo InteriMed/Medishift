@@ -9,17 +9,26 @@ import {
     FiBell
 } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
-import { useDashboard } from '../../../contexts/DashboardContext';
-import { useNotification } from '../../../../contexts/NotificationContext';
-import { topicService } from '../../../../services/topicService';
+import { useDashboard } from '../../../contexts/dashboardContext';
+import { useNotification } from '../../../../contexts/notificationContext';
+import { useAction } from '../../../../services/actions/hook';
 import { CommunicationToolbar } from './components/CommunicationToolbar';
 import { TopicDetail } from './TopicDetail';
 import ThreadsList from '../components/ThreadsList';
 import ConversationView from '../components/ConversationView';
-import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../../../../components/loadingSpinner/loadingSpinner';
 import EmptyState from '../../../components/EmptyState/EmptyState';
 import { cn } from '../../../../utils/cn';
 import { useMobileView } from '../../../hooks/useMobileView';
+
+const ANNOUNCEMENT_CATEGORIES = [
+    'general',
+    'support',
+    'feedback',
+    'feature_request',
+    'bug_report',
+    'question'
+];
 
 const categoryLabels = {
     feedback: 'Feedback',
@@ -41,19 +50,20 @@ export const Communication = ({
     const { t } = useTranslation(['messages']);
     const { user, selectedWorkspace } = useDashboard();
     const { showError, showSuccess } = useNotification();
+    const { execute } = useAction();
     const isMobile = useMobileView();
 
-    const [viewMode, setViewMode] = useState('topics'); // 'topics' or 'threads'
-    const [activeTab, setActiveTab] = useState('community'); // 'community' or 'my-topics'
-    const [topics, setTopics] = useState([]);
-    const [myTopics, setMyTopics] = useState([]);
+    const [viewMode, setViewMode] = useState('announcements'); // 'announcements' or 'threads'
+    const [activeTab, setActiveTab] = useState('community'); // 'community' or 'my-announcements'
+    const [announcements, setAnnouncements] = useState([]);
+    const [myAnnouncements, setMyAnnouncements] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedTopicId, setSelectedTopicId] = useState(null);
+    const [selectedAnnouncementId, setSelectedAnnouncementId] = useState(null);
 
-    // Create Topic State
-    const [isCreateTopicOpen, setIsCreateTopicOpen] = useState(false);
+    // Create Announcement State
+    const [isCreateAnnouncementOpen, setIsCreateAnnouncementOpen] = useState(false);
     const [createFormData, setCreateFormData] = useState({
         title: '',
         content: '',
@@ -61,34 +71,41 @@ export const Communication = ({
     });
     const [isCreating, setIsCreating] = useState(false);
 
-    // Load topics...
-    const loadTopics = useCallback(async () => {
+    // LOAD ANNOUNCEMENTS
+    const loadAnnouncements = useCallback(async () => {
         try {
             setIsLoading(true);
+            
+            const result = await execute('thread.list', {
+                collectionType: 'announcements',
+                filters: selectedCategory !== 'all' ? { category: selectedCategory } : {},
+                sortBy: 'createdAt',
+                sortOrder: 'desc',
+                pagination: { limit: 50 }
+            });
+
             if (activeTab === 'community') {
-                const data = await topicService.listTopics(
-                    selectedCategory !== 'all' ? selectedCategory : undefined
-                );
-                setTopics(data);
+                setAnnouncements(result.threads);
             } else {
-                if (user?.uid) {
-                    const data = await topicService.listMyTopics(user.uid);
-                    setMyTopics(data);
-                }
+                // Filter to only show user's own announcements
+                const userAnnouncements = result.threads.filter(
+                    a => a.createdBy === user?.uid || a.publishedBy === user?.uid
+                );
+                setMyAnnouncements(userAnnouncements);
             }
         } catch (error) {
-            console.error('Error loading topics:', error);
-            showError('Failed to load topics');
+            console.error('Error loading announcements:', error);
+            showError(error.message || 'Failed to load announcements');
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, selectedCategory, user, showError]);
+    }, [activeTab, selectedCategory, user?.uid, execute, showError]);
 
     useEffect(() => {
-        loadTopics();
-    }, [loadTopics]);
+        loadAnnouncements();
+    }, [loadAnnouncements]);
 
-    const handleCreateTopic = async () => {
+    const handleCreateAnnouncement = async () => {
         if (!createFormData.title.trim() || !createFormData.content.trim()) {
             showError('Please fill in all fields');
             return;
@@ -96,37 +113,45 @@ export const Communication = ({
 
         try {
             setIsCreating(true);
-            await topicService.createTopic(createFormData, user);
-            showSuccess('Topic created successfully');
-            setIsCreateTopicOpen(false);
+            
+            await execute('thread.create', {
+                collectionType: 'announcements',
+                title: createFormData.title,
+                content: createFormData.content,
+                category: createFormData.category,
+                allowComments: true,
+                priority: 'MEDIUM'
+            });
+
+            showSuccess('Announcement created successfully');
+            setIsCreateAnnouncementOpen(false);
             setCreateFormData({ title: '', content: '', category: 'general' });
-            loadTopics();
+            loadAnnouncements();
         } catch (error) {
-            console.error('Error creating topic:', error);
-            showError('Failed to create topic');
+            console.error('Error creating announcement:', error);
+            showError(error.message || 'Failed to create announcement');
         } finally {
             setIsCreating(false);
         }
     };
 
-    const filteredTopics = useMemo(() => {
-        let currentTopics = activeTab === 'community' ? topics : myTopics;
+    const filteredAnnouncements = useMemo(() => {
+        let currentAnnouncements = activeTab === 'community' ? announcements : myAnnouncements;
 
         if (selectedCategory !== 'all') {
-            currentTopics = currentTopics.filter(t => t.category === selectedCategory);
+            currentAnnouncements = currentAnnouncements.filter(a => a.category === selectedCategory);
         }
 
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
-            currentTopics = currentTopics.filter(t =>
-                t.title.toLowerCase().includes(query) ||
-                t.content.toLowerCase().includes(query) ||
-                (t.user_username || '').toLowerCase().includes(query)
+            currentAnnouncements = currentAnnouncements.filter(a =>
+                (a.title || '').toLowerCase().includes(query) ||
+                (a.content || '').toLowerCase().includes(query)
             );
         }
 
-        return currentTopics;
-    }, [topics, myTopics, activeTab, selectedCategory, searchQuery]);
+        return currentAnnouncements;
+    }, [announcements, myAnnouncements, activeTab, selectedCategory, searchQuery]);
 
     const renderTopTabs = () => (
         <div className="grid grid-cols-2 gap-2 mb-3 border-b border-border w-full max-w-md px-4 mt-4">
@@ -150,11 +175,11 @@ export const Communication = ({
         </div>
     );
 
-    if (selectedTopicId) {
+    if (selectedAnnouncementId) {
         return (
             <TopicDetail
-                topicId={selectedTopicId}
-                onBack={() => setSelectedTopicId(null)}
+                announcementId={selectedAnnouncementId}
+                onBack={() => setSelectedAnnouncementId(null)}
             />
         );
     }
@@ -178,7 +203,7 @@ export const Communication = ({
                         {/* View Mode Toggle */}
                         <div className="px-4 pb-2 border-b border-border/40 mb-2">
                             <div className="flex gap-2">
-                                <button onClick={() => setViewMode('topics')} className="flex-1 py-1 text-xs font-medium text-muted-foreground hover:text-foreground">Topics</button>
+                                <button onClick={() => setViewMode('announcements')} className="flex-1 py-1 text-xs font-medium text-muted-foreground hover:text-foreground">Announcements</button>
                                 <button className="flex-1 py-1 text-xs font-medium bg-primary/10 text-primary rounded-md">Threads</button>
                             </div>
                         </div>
@@ -224,15 +249,15 @@ export const Communication = ({
                             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                                 {renderTopTabs()}
 
-                                {/* View Mode Toggle (Topics vs Threads) */}
-                                {canAccessThreads && (
-                                    <div className="flex gap-2 px-4 pb-2 md:pb-0">
-                                        <button className="px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-lg transition-colors">Topics</button>
-                                        <button onClick={() => setViewMode('threads')} className="px-4 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors">
-                                            Threads
-                                        </button>
-                                    </div>
-                                )}
+                        {/* View Mode Toggle (Announcements vs Threads) */}
+                        {canAccessThreads && (
+                            <div className="flex gap-2 px-4 pb-2 md:pb-0">
+                                <button className="px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-lg transition-colors">Announcements</button>
+                                <button onClick={() => setViewMode('threads')} className="px-4 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors">
+                                    Threads
+                                </button>
+                            </div>
+                        )}
                             </div>
                         </div>
                     </div>
@@ -242,10 +267,10 @@ export const Communication = ({
                         setSearchQuery={setSearchQuery}
                         selectedCategory={selectedCategory}
                         setSelectedCategory={setSelectedCategory}
-                        categories={topicService.getCategories()}
+                        categories={ANNOUNCEMENT_CATEGORIES}
                         activeTab={activeTab}
                         setActiveTab={setActiveTab}
-                        onCreateTopic={() => setIsCreateTopicOpen(true)}
+                        onCreateTopic={() => setIsCreateAnnouncementOpen(true)}
                         viewMode={viewMode}
                         setViewMode={setViewMode}
                         canAccessThreads={canAccessThreads}
@@ -255,60 +280,56 @@ export const Communication = ({
                         <div className="max-w-[1400px] mx-auto space-y-4 mt-4">
                             {isLoading ? (
                                 <LoadingSpinner />
-                            ) : filteredTopics.length === 0 ? (
+                            ) : filteredAnnouncements.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-20 text-center">
                                     <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                                         <FiMessageSquare className="w-8 h-8 text-muted-foreground/50" />
                                     </div>
-                                    <h3 className="text-lg font-semibold text-foreground mb-2">No topics found</h3>
-                                    <p className="text-muted-foreground mb-6">get started by creating a new topic.</p>
+                                    <h3 className="text-lg font-semibold text-foreground mb-2">No announcements found</h3>
+                                    <p className="text-muted-foreground mb-6">Get started by creating a new announcement.</p>
                                     <button
-                                        onClick={() => setIsCreateTopicOpen(true)}
+                                        onClick={() => setIsCreateAnnouncementOpen(true)}
                                         className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
                                     >
                                         <FiPlus className="w-5 h-5" />
-                                        Create Topic
+                                        Create Announcement
                                     </button>
                                 </div>
                             ) : (
-                                filteredTopics.map(topic => (
+                                filteredAnnouncements.map(announcement => (
                                     <div
-                                        key={topic.id}
-                                        onClick={() => setSelectedTopicId(topic.id)}
+                                        key={announcement.id}
+                                        onClick={() => setSelectedAnnouncementId(announcement.id)}
                                         className="group bg-card hover:bg-card/80 border border-border/50 hover:border-primary/20 rounded-2xl p-6 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
                                     >
                                         <div className="flex items-start justify-between gap-4 mb-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-bold border border-border">
-                                                    {(topic.user_username || topic.user_email || 'A').charAt(0).toUpperCase()}
+                                                    A
                                                 </div>
                                                 <div>
                                                     <div className="font-semibold text-foreground flex items-center gap-2">
-                                                        {topic.user_username || 'Anonymous'}
-                                                        {topic.is_pinned && (
+                                                        Announcement
+                                                        {announcement.metadata?.isPinned && (
                                                             <span className="bg-yellow-500/10 text-yellow-600 text-[10px] px-2 py-0.5 rounded-full border border-yellow-500/20 flex items-center gap-1">
                                                                 <FiBarChart2 className="w-3 h-3 rotate-90" /> Pinned
                                                             </span>
                                                         )}
                                                     </div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        {topic.created_at ? new Date(topic.created_at).toLocaleDateString() : 'Just now'} · {categoryLabels[topic.category] || topic.category}
+                                                        {announcement.createdAt?.toDate ? new Date(announcement.createdAt.toDate()).toLocaleDateString() : 'Just now'} · {categoryLabels[announcement.category] || announcement.category}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">{topic.title}</h3>
-                                        <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed mb-4">{topic.content}</p>
+                                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">{announcement.title}</h3>
+                                        <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed mb-4">{announcement.content}</p>
 
                                         <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
-                                            <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/50", topic.upvotes > 0 && "text-rose-500 bg-rose-500/10")}>
-                                                <FiHeart className={cn("w-3.5 h-3.5", topic.upvotes > 0 && "fill-current")} />
-                                                <span>{topic.upvotes || 0}</span>
-                                            </div>
                                             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/50">
                                                 <FiMessageSquare className="w-3.5 h-3.5" />
-                                                <span>{topic.replies?.length || 0} replies</span>
+                                                <span>View Details</span>
                                             </div>
                                         </div>
                                     </div>
@@ -319,8 +340,8 @@ export const Communication = ({
                 </>
             )}
 
-            {/* Create Topic Modal - Simple Overlay */}
-            {isCreateTopicOpen && (
+            {/* Create Announcement Modal - Simple Overlay */}
+            {isCreateAnnouncementOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
                     <div
                         className="bg-card w-full max-w-lg rounded-3xl border border-border shadow-2xl overflow-hidden animate-in zoom-in-95"
@@ -328,15 +349,15 @@ export const Communication = ({
                     >
                         <div className="p-6 border-b border-border">
                             <div className="flex items-center justify-between mb-1">
-                                <h2 className="text-xl font-bold">New Discussion</h2>
+                                <h2 className="text-xl font-bold">New Announcement</h2>
                                 <button
-                                    onClick={() => setIsCreateTopicOpen(false)}
+                                    onClick={() => setIsCreateAnnouncementOpen(false)}
                                     className="p-2 hover:bg-muted rounded-full transition-colors"
                                 >
                                     <FiX className="w-5 h-5 text-muted-foreground" />
                                 </button>
                             </div>
-                            <p className="text-sm text-muted-foreground">Share your thoughts with the community.</p>
+                            <p className="text-sm text-muted-foreground">Share information with the community.</p>
                         </div>
 
                         <div className="p-6 space-y-4">
@@ -344,7 +365,7 @@ export const Communication = ({
                                 <label className="text-sm font-medium">Title</label>
                                 <input
                                     type="text"
-                                    placeholder="What's on your mind?"
+                                    placeholder="Announcement title..."
                                     className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-input focus:border-primary/50 focus:bg-background transition-all outline-none"
                                     value={createFormData.title}
                                     onChange={e => setCreateFormData({ ...createFormData, title: e.target.value })}
@@ -359,7 +380,7 @@ export const Communication = ({
                                         value={createFormData.category}
                                         onChange={e => setCreateFormData({ ...createFormData, category: e.target.value })}
                                     >
-                                        {topicService.getCategories().map(cat => (
+                                        {ANNOUNCEMENT_CATEGORIES.map(cat => (
                                             <option key={cat} value={cat}>{categoryLabels[cat] || cat}</option>
                                         ))}
                                     </select>
@@ -369,7 +390,7 @@ export const Communication = ({
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Content</label>
                                 <textarea
-                                    placeholder="Elaborate on your topic..."
+                                    placeholder="Write your announcement..."
                                     rows={5}
                                     className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-input focus:border-primary/50 focus:bg-background transition-all outline-none resize-none"
                                     value={createFormData.content}
@@ -380,18 +401,18 @@ export const Communication = ({
 
                         <div className="p-6 border-t border-border bg-muted/20 flex justify-end gap-3">
                             <button
-                                onClick={() => setIsCreateTopicOpen(false)}
+                                onClick={() => setIsCreateAnnouncementOpen(false)}
                                 className="px-6 py-2.5 rounded-xl font-medium text-muted-foreground hover:bg-muted transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 disabled={isCreating}
-                                onClick={handleCreateTopic}
+                                onClick={handleCreateAnnouncement}
                                 className="px-6 py-2.5 rounded-xl font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center gap-2"
                             >
                                 {isCreating && <LoadingSpinner size="sm" color="white" />}
-                                Create Topic
+                                Create Announcement
                             </button>
                         </div>
                     </div>

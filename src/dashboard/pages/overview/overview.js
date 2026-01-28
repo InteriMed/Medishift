@@ -10,7 +10,7 @@ import {
   FiAlertCircle,
   FiCheckCircle
 } from 'react-icons/fi';
-import { useDashboard } from '../../contexts/DashboardContext';
+import { useDashboard } from '../../contexts/dashboardContext';
 import { useSidebar } from '../../contexts/SidebarContext';
 import { useCalendarState } from '../calendar/hooks/useCalendarState';
 import useCalendarStore from '../calendar/hooks/useCalendarStore';

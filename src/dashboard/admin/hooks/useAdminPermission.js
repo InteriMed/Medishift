@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useAuth } from '../../../contexts/AuthContext';
-import { useDashboard } from '../../contexts/DashboardContext';
+import { useAuth } from '../../../contexts/authContext';
+import { useDashboard } from '../../contexts/dashboardContext';
 import { hasRight, hasAnyRight, hasAllRights, isSuperAdmin, isAdmin, getAdminRights, getAdminRole, RIGHTS } from '../utils/rbac';
 
 export const useAdminPermission = () => {

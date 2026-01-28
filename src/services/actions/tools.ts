@@ -51,8 +51,8 @@ export async function executeToolCall(toolName: string, toolArgs: any, context: 
     const validatedInput = action.schema.parse(toolArgs);
 
     // 2. Execute Handler
-    // Note: ensure your handler doesn't rely on 'this' context
-    const result = await action.handler(validatedInput, context);
+    // Type assertion is safe here because Zod validation ensures the input matches the schema
+    const result = await (action.handler as (input: any, context: any) => Promise<any>)(validatedInput, context);
     
     return JSON.stringify({ status: "success", data: result });
   } catch (error: any) {

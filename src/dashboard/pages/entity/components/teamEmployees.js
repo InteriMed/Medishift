@@ -1,22 +1,21 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { useNotification } from '../../../../contexts/NotificationContext';
+import { useNotification } from '../../../../contexts/notificationContext';
 import useEmployeesData from '../../../hooks/useEmployeesData';
 import FilterBar from '../../../components/FilterBar/FilterBar';
 import { FiUser, FiUsers } from 'react-icons/fi';
 import { cn } from '../../../../utils/cn';
 import PropTypes from 'prop-types';
 import Dialog from '../../../../components/Dialog/Dialog';
-import InputField from '../../../../components/BoxedInputFields/Personnalized-InputField';
-import SimpleDropdown from '../../../../components/BoxedInputFields/Dropdown-Field';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../services/firebase';
-import { FIRESTORE_COLLECTIONS } from '../../../../config/keysDatabase';
+import InputField from '../../../../components/boxedInputFields/Personnalized-InputField';
+import SimpleDropdown from '../../../../components/boxedInputFields/Dropdown-Field';
+import { useAction } from '../../../../services/actions/hook';
 
 const Employees = ({ hideHeader = false, hideStats = false, organization, memberFacilities: propMemberFacilities = [] }) => {
     const { t } = useTranslation(['dashboard', 'employees', 'common']);
     const { showNotification } = useNotification();
+    const { execute } = useAction();
     const {
         employees,
         filteredEmployees,
@@ -89,77 +88,20 @@ const Employees = ({ hideHeader = false, hideStats = false, organization, member
 
         setIsInviting(true);
         try {
-            // Find user by email
-            const userQuery = query(
-                collection(db, FIRESTORE_COLLECTIONS.USERS),
-                where('email', '==', inviteData.email.trim().toLowerCase())
-            );
-            const userSnapshot = await getDocs(userQuery);
+            await execute('team.add_employee_to_facility', {
+                email: inviteData.email.trim().toLowerCase(),
+                facilityId: inviteData.facilityId,
+                role: inviteData.role,
+                isAdmin: inviteData.role === 'admin'
+            });
 
-            if (userSnapshot.empty) {
-                showNotification(t('organization:employees.error.userNotFound', 'User not found. They must have an account first.'), 'error');
-                setIsInviting(false);
-                return;
-            }
-
-            const userId = userSnapshot.docs[0].id;
-            const facilityRef = doc(db, FIRESTORE_COLLECTIONS.FACILITY_PROFILES, inviteData.facilityId);
-            const facilitySnap = await getDoc(facilityRef);
-
-            if (facilitySnap.exists()) {
-                const facilityData = facilitySnap.data();
-                const employeesList = facilityData.employees || [];
-                const isAlreadyEmployee = employeesList.some(emp => (emp.user_uid || emp.uid) === userId);
-
-                if (isAlreadyEmployee) {
-                    showNotification(t('organization:employees.error.alreadyEmployee', 'This user is already an employee'), 'warning');
-                    setIsInviting(false);
-                    return;
-                }
-
-                const newEmployee = {
-                    user_uid: userId,
-                    roles: [inviteData.role],
-                    rights: [inviteData.role], // Default rights same as role
-                    hireDate: serverTimestamp(),
-                    status: 'active'
-                };
-
-                const updatedEmployees = [...employeesList, newEmployee];
-                const updatedAdmins = inviteData.role === 'admin'
-                    ? [...(facilityData.admins || []), userId]
-                    : facilityData.admins || [];
-
-                await updateDoc(facilityRef, {
-                    employees: updatedEmployees,
-                    admins: updatedAdmins,
-                    updatedAt: serverTimestamp()
-                });
-
-                // Update user roles as well
-                const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, userId);
-                const userSnap = await getDoc(userRef);
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    const existingRoles = userData.roles || [];
-                    const newRoleEntry = {
-                        facility_uid: inviteData.facilityId,
-                        roles: [inviteData.role]
-                    };
-                    await updateDoc(userRef, {
-                        roles: [...existingRoles, newRoleEntry],
-                        updatedAt: serverTimestamp()
-                    });
-                }
-
-                showNotification(t('organization:employees.success.invited', 'Employee added successfully'), 'success');
-                setShowAddModal(false);
-                setInviteData({ email: '', role: 'employee', facilityId: memberFacilities[0]?.id || '' });
-                refreshEmployees();
-            }
+            showNotification(t('organization:employees.success.invited', 'Employee added successfully'), 'success');
+            setShowAddModal(false);
+            setInviteData({ email: '', role: 'employee', facilityId: memberFacilities[0]?.id || '' });
+            refreshEmployees();
         } catch (error) {
             console.error('Error adding employee:', error);
-            showNotification(t('organization:employees.error.addFailed', 'Failed to add employee'), 'error');
+            showNotification(error.message || t('organization:employees.error.addFailed', 'Failed to add employee'), 'error');
         } finally {
             setIsInviting(false);
         }

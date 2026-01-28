@@ -1,11 +1,11 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { useDashboard } from '../contexts/DashboardContext';
+import { useAuth } from '../../contexts/authContext';
+import { useDashboard } from '../contexts/dashboardContext';
 import { isAdmin } from '../../utils/adminUtils';
 import { WORKSPACE_TYPES } from '../../utils/sessionAuth';
 import { buildDashboardUrl } from '../../config/routeUtils';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../../components/loadingSpinner/loadingSpinner';
 
 const AdminRoute = ({ children }) => {
   const { currentUser, userProfile, loading } = useAuth();

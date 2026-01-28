@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { FiPlay, FiTarget } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import modal from '../components/modals/modal';
-import Button from '../../../components/BoxedInputFields/Button';
+import Button from '../../../components/boxedInputFields/Button';
 
 const TutorialSelectionModal = ({
     isOpen,

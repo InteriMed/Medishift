@@ -4,9 +4,9 @@ import { FiCalendar } from 'react-icons/fi';
 import SimpleDropdown from '../../../../../components/boxedInputFields/dropdownField';
 import PersonnalizedInputField from '../../../../../components/boxedInputFields/personnalizedInputField';
 import InputField from '../../../../../components/boxedInputFields/personnalizedInputField';
-import DateField from '../../../../../components/BoxedInputFields/DateField';
+import DateField from '../../../../../components/boxedInputFields/DateField';
 import WeekDaySelector from '../../../../../components/colorPicker/WeekDaySelector';
-import BoxedSwitchField from '../../../../../components/BoxedInputFields/BoxedSwitchField';
+import BoxedSwitchField from '../../../../../components/boxedInputFields/BoxedSwitchField';
 import { cn } from '../../../../../utils/cn';
 
 const Label = ({ children }) => (

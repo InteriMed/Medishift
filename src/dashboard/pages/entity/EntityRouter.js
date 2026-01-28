@@ -5,7 +5,7 @@ import PageHeader from '../components/titles/pageHeader';
 import TeamPage from './pages/teamPage';
 import ContractsPage from './pages/contractsPage';
 import AgencySpendPage from './pages/agencySpendPage';
-import { useDashboard } from '../../contexts/DashboardContext';
+import { useDashboard } from '../../contexts/dashboardContext';
 
 const EntityRouter = () => {
   const { t } = useTranslation(['organization', 'common']);

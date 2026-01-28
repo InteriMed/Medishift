@@ -5,8 +5,8 @@ import { useAuth } from '../../../../contexts/AuthContext';
 import { useNotification } from '../../../../contexts/notificationContext';
 import { useAction } from '../../../../services/actions/hook';
 import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
-import Button from '../../../../components/BoxedInputFields/Button';
-import TextareaField from '../../../../components/BoxedInputFields/TextareaField';
+import Button from '../../../../components/boxedInputFields/Button';
+import TextareaField from '../../../../components/boxedInputFields/TextareaField';
 import { cn } from '../../../../utils/cn';
 
 const TicketDetail = ({ ticketId, onBack }) => {

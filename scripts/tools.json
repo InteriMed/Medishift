@@ -1,0 +1,472 @@
+[
+  {
+    "name": "createThread",
+    "description": "Create a new thread (message, ticket, announcement, policy, or report)",
+    "source_file": "src/services/actions/catalog/communication/createThread.ts"
+  },
+  {
+    "name": "replyThread",
+    "description": "Add a reply to an existing thread",
+    "source_file": "src/services/actions/catalog/communication/replyThread.ts"
+  },
+  {
+    "name": "fetchThread",
+    "description": "Retrieve a thread with optional replies",
+    "source_file": "src/services/actions/catalog/communication/fetchThread.ts"
+  },
+  {
+    "name": "listThreads",
+    "description": "Retrieve a list of threads with filters",
+    "source_file": "src/services/actions/catalog/communication/listThreads.ts"
+  },
+  {
+    "name": "markRead",
+    "description": "Mark a thread as read",
+    "source_file": "src/services/actions/catalog/communication/markRead.ts"
+  },
+  {
+    "name": "markAcknowledge",
+    "description": "Acknowledge a policy or announcement",
+    "source_file": "src/services/actions/catalog/communication/markAcknowledge.ts"
+  },
+  {
+    "name": "getStats",
+    "description": "Retrieve metadata stats (seen, acknowledged, reactions)",
+    "source_file": "src/services/actions/catalog/communication/getStats.ts"
+  },
+  {
+    "name": "archiveThread",
+    "description": "Move thread to archive collection",
+    "source_file": "src/services/actions/catalog/communication/archiveThread.ts"
+  },
+  {
+    "name": "flagPriority",
+    "description": "Update thread priority level",
+    "source_file": "src/services/actions/catalog/communication/flagPriority.ts"
+  },
+  {
+    "name": "compileText",
+    "description": "Extract all text content from thread and replies",
+    "source_file": "src/services/actions/catalog/communication/compileText.ts"
+  },
+  {
+    "name": "compileUrlMap",
+    "description": "Extract all URLs from thread and replies with metadata",
+    "source_file": "src/services/actions/catalog/communication/compileUrlMap.ts"
+  },
+  {
+    "name": "pinThread",
+    "description": "Toggle thread pin status",
+    "source_file": "src/services/actions/catalog/communication/pinThread.ts"
+  },
+  {
+    "name": "getPollResults",
+    "description": "Retrieve poll voting results for an announcement",
+    "source_file": "src/services/actions/catalog/communication/getPollResults.ts"
+  },
+  {
+    "name": "votePoll",
+    "description": "Submit or remove vote in announcement poll",
+    "source_file": "src/services/actions/catalog/communication/votePoll.ts"
+  },
+  {
+    "name": "revealIdentity",
+    "description": "Break glass: Reveal identity of anonymous reporter (HR Admin only)",
+    "source_file": "src/services/actions/catalog/communication/revealIdentity.ts"
+  },
+  {
+    "name": "addPrivateNote",
+    "description": "Add internal HR note that reporter cannot see",
+    "source_file": "src/services/actions/catalog/communication/addPrivateNote.ts"
+  },
+  {
+    "name": "ragQuery",
+    "description": "Perform semantic search across thread content",
+    "source_file": "src/services/actions/catalog/communication/ragQuery.ts"
+  },
+  {
+    "name": "getMe",
+    "description": "Retrieve current user profile with merged permissions",
+    "source_file": "src/services/actions/catalog/profile/me/getMe.ts"
+  },
+  {
+    "name": "updateMe",
+    "description": "Update personal details (email/legalName require HR)",
+    "source_file": "src/services/actions/catalog/profile/me/updateMe.ts"
+  },
+  {
+    "name": "setPreferences",
+    "description": "Update notification settings and UI preferences",
+    "source_file": "src/services/actions/catalog/profile/me/setPreferences.ts"
+  },
+  {
+    "name": "uploadAvatar",
+    "description": "Upload profile photo (public read allowed)",
+    "source_file": "src/services/actions/catalog/profile/me/uploadAvatar.ts"
+  },
+  {
+    "name": "leaveFacility",
+    "description": "Remove yourself from a facility",
+    "source_file": "src/services/actions/catalog/profile/me/leaveFacility.ts"
+  },
+  {
+    "name": "getFacilityMemberships",
+    "description": "Get list of facilities user is a member of",
+    "source_file": "src/services/actions/catalog/profile/me/getFacilityMemberships.ts"
+  },
+  {
+    "name": "updateSettings",
+    "description": "Update workplace settings (hours, address, contact)",
+    "source_file": "src/services/actions/catalog/profile/facility/updateSettings.ts"
+  },
+  {
+    "name": "updateConfig",
+    "description": "Update scheduling rules (min staff, breaks, overtime)",
+    "source_file": "src/services/actions/catalog/profile/facility/updateConfig.ts"
+  },
+  {
+    "name": "manageWhitelist",
+    "description": "Update security whitelist (IPs, MACs, geofencing for Time Clock)",
+    "source_file": "src/services/actions/catalog/profile/facility/manageWhitelist.ts"
+  },
+  {
+    "name": "getFacilityData",
+    "description": "Get complete facility profile data",
+    "source_file": "src/services/actions/catalog/profile/facility/getFacilityData.ts"
+  },
+  {
+    "name": "getTeamMembers",
+    "description": "Get all team members for a facility",
+    "source_file": "src/services/actions/catalog/profile/facility/getTeamMembers.ts"
+  },
+  {
+    "name": "updateBranding",
+    "description": "White-label the PWA (logo, colors, app name)",
+    "source_file": "src/services/actions/catalog/profile/org/updateBranding.ts"
+  },
+  {
+    "name": "manageSubscription",
+    "description": "Update plan type, billing, and seat count",
+    "source_file": "src/services/actions/catalog/profile/org/manageSubscription.ts"
+  },
+  {
+    "name": "configureSso",
+    "description": "Connect to Azure AD / Google Workspace / OKTA",
+    "source_file": "src/services/actions/catalog/profile/org/configureSso.ts"
+  },
+  {
+    "name": "getHierarchy",
+    "description": "Retrieve parent/child tree (for Floating Pool logic)",
+    "source_file": "src/services/actions/catalog/profile/org/getHierarchy.ts"
+  },
+  {
+    "name": "postMission",
+    "description": "Create a job posting to fill a gap with qualified talent",
+    "source_file": "src/services/actions/catalog/marketplace/facility/postMission.ts"
+  },
+  {
+    "name": "searchTalentPool",
+    "description": "Find qualified professionals (anonymized to prevent poaching)",
+    "source_file": "src/services/actions/catalog/marketplace/facility/searchTalentPool.ts"
+  },
+  {
+    "name": "inviteTalent",
+    "description": "Send direct invitation to a professional",
+    "source_file": "src/services/actions/catalog/marketplace/facility/inviteTalent.ts"
+  },
+  {
+    "name": "hireCandidate",
+    "description": "Accept application and onboard (contract, roster, access)",
+    "source_file": "src/services/actions/catalog/marketplace/facility/hireCandidate.ts"
+  },
+  {
+    "name": "browseMissions",
+    "description": "Search available job postings with geo-sorting",
+    "source_file": "src/services/actions/catalog/marketplace/professional/browseMissions.ts"
+  },
+  {
+    "name": "applyMission",
+    "description": "Submit application with conflict & certification validation",
+    "source_file": "src/services/actions/catalog/marketplace/professional/applyMission.ts"
+  },
+  {
+    "name": "negotiateOffer",
+    "description": "Counter-offer on mission rate",
+    "source_file": "src/services/actions/catalog/marketplace/professional/negotiateOffer.ts"
+  },
+  {
+    "name": "setAlert",
+    "description": "Get notified when matching missions appear",
+    "source_file": "src/services/actions/catalog/marketplace/professional/setAlert.ts"
+  },
+  {
+    "name": "validateTimesheet",
+    "description": "Submit actual hours worked for manager approval",
+    "source_file": "src/services/actions/catalog/marketplace/transaction/validateTimesheet.ts"
+  },
+  {
+    "name": "rateParty",
+    "description": "Rate facility or professional after mission completion (dual-sided)",
+    "source_file": "src/services/actions/catalog/marketplace/transaction/rateParty.ts"
+  },
+  {
+    "name": "generateShareableCv",
+    "description": "Create verified digital passport with stats and ratings",
+    "source_file": "src/services/actions/catalog/marketplace/professional/generateShareableCv.ts"
+  },
+  {
+    "name": "simulateMissionIncome",
+    "description": "Calculate net take-home after tax/social security",
+    "source_file": "src/services/actions/catalog/marketplace/professional/simulateMissionIncome.ts"
+  },
+  {
+    "name": "toggleOpenToWork",
+    "description": "Broadcast availability to recruiters (passive income mode)",
+    "source_file": "src/services/actions/catalog/marketplace/professional/toggleOpenToWork.ts"
+  },
+  {
+    "name": "createJobPosting",
+    "description": "Build structured job ad with custom screening questions",
+    "source_file": "src/services/actions/catalog/recruitment/jobs/createJobPosting.ts"
+  },
+  {
+    "name": "archiveJob",
+    "description": "Close job and notify pending applicants",
+    "source_file": "src/services/actions/catalog/recruitment/jobs/archiveJob.ts"
+  },
+  {
+    "name": "submitApplication",
+    "description": "Apply to job with custom quiz answers and auto-reject validation",
+    "source_file": "src/services/actions/catalog/recruitment/applications/submitApplication.ts"
+  },
+  {
+    "name": "parseCvAi",
+    "description": "Extract skills, software, and experience from CV automatically",
+    "source_file": "src/services/actions/catalog/recruitment/applications/parseCvAi.ts"
+  },
+  {
+    "name": "compareApplicants",
+    "description": "Side-by-side comparison with AI recommendations",
+    "source_file": "src/services/actions/catalog/recruitment/analysis/compareApplicants.ts"
+  },
+  {
+    "name": "scoreOpenQuestions",
+    "description": "Analyze open text answers for relevance and sentiment",
+    "source_file": "src/services/actions/catalog/recruitment/analysis/scoreOpenQuestions.ts"
+  },
+  {
+    "name": "scheduleInterview",
+    "description": "Book interview with calendar overlay and auto-invite",
+    "source_file": "src/services/actions/catalog/recruitment/interviews/scheduleInterview.ts"
+  },
+  {
+    "name": "logInterviewFeedback",
+    "description": "Record interview notes and hiring decision (hidden from candidate)",
+    "source_file": "src/services/actions/catalog/recruitment/interviews/logInterviewFeedback.ts"
+  },
+  {
+    "name": "createShift",
+    "description": "Create a new shift (assigned or open/ghost slot)",
+    "source_file": "src/services/actions/catalog/calendar/planning/createShift.ts"
+  },
+  {
+    "name": "updateShift",
+    "description": "Modify an existing shift (notifies user if published)",
+    "source_file": "src/services/actions/catalog/calendar/planning/updateShift.ts"
+  },
+  {
+    "name": "deleteShift",
+    "description": "Soft delete a shift (notifies user if published)",
+    "source_file": "src/services/actions/catalog/calendar/planning/deleteShift.ts"
+  },
+  {
+    "name": "publishRoster",
+    "description": "Publish monthly schedule and notify all staff",
+    "source_file": "src/services/actions/catalog/calendar/planning/publishRoster.ts"
+  },
+  {
+    "name": "applyPattern",
+    "description": "Bulk-create shifts based on employee",
+    "source_file": "src/services/actions/catalog/calendar/planning/applyPattern.ts"
+  },
+  {
+    "name": "setAvailability",
+    "description": "Set preferred/impossible dates for AI scheduler",
+    "source_file": "src/services/actions/catalog/calendar/requests/setAvailability.ts"
+  },
+  {
+    "name": "requestLeave",
+    "description": "Submit leave request with automatic balance checking",
+    "source_file": "src/services/actions/catalog/calendar/requests/requestLeave.ts"
+  },
+  {
+    "name": "postSwapRequest",
+    "description": "Offer shift for trade on marketplace",
+    "source_file": "src/services/actions/catalog/calendar/requests/postSwapRequest.ts"
+  },
+  {
+    "name": "acceptSwap",
+    "description": "Accept shift swap with constraint validation",
+    "source_file": "src/services/actions/catalog/calendar/requests/acceptSwap.ts"
+  },
+  {
+    "name": "resolveGap",
+    "description": "Find best candidate to cover shift using fairness algorithm",
+    "source_file": "src/services/actions/catalog/calendar/engine/resolveGap.ts"
+  },
+  {
+    "name": "getCoverageStatus",
+    "description": "Analyze schedule coverage gaps (heatmap data)",
+    "source_file": "src/services/actions/catalog/calendar/engine/getCoverageStatus.ts"
+  },
+  {
+    "name": "assignFloater",
+    "description": "Assign floater from another facility with cross-charging",
+    "source_file": "src/services/actions/catalog/calendar/engine/assignFloater.ts"
+  },
+  {
+    "name": "validateMove",
+    "description": "Check if shift assignment is valid without committing",
+    "source_file": "src/services/actions/catalog/calendar/engine/validateMove.ts"
+  },
+  {
+    "name": "exportTimesheet",
+    "description": "Generate PDF timesheet for hours worked vs. planned",
+    "source_file": "src/services/actions/catalog/calendar/export/exportTimesheet.ts"
+  },
+  {
+    "name": "exportIcalLink",
+    "description": "Generate secure iCal feed URL for calendar sync",
+    "source_file": "src/services/actions/catalog/calendar/export/exportIcalLink.ts"
+  },
+  {
+    "name": "createEvent",
+    "description": "Create a new calendar event or availability slot",
+    "source_file": "src/services/actions/catalog/calendar/events/createEvent.ts"
+  },
+  {
+    "name": "updateEvent",
+    "description": "Update an existing calendar event or availability slot",
+    "source_file": "src/services/actions/catalog/calendar/events/updateEvent.ts"
+  },
+  {
+    "name": "deleteEvent",
+    "description": "Delete a calendar event or availability slot",
+    "source_file": "src/services/actions/catalog/calendar/events/deleteEvent.ts"
+  },
+  {
+    "name": "listEvents",
+    "description": "Get all calendar events for current user",
+    "source_file": "src/services/actions/catalog/calendar/events/listEvents.ts"
+  },
+  {
+    "name": "createRecurringEvents",
+    "description": "Create recurring calendar events with pattern",
+    "source_file": "src/services/actions/catalog/calendar/events/createRecurringEvents.ts"
+  },
+  {
+    "name": "addEmployeeToFacility",
+    "description": "Add existing user to facility staff",
+    "source_file": "src/services/actions/catalog/team/directory/addEmployeeToFacility.ts"
+  },
+  {
+    "name": "updateEmployeeRole",
+    "description": "Update employee roles and permissions within facility",
+    "source_file": "src/services/actions/catalog/team/directory/updateEmployeeRole.ts"
+  },
+  {
+    "name": "removeEmployeeFromFacility",
+    "description": "Remove employee from facility staff",
+    "source_file": "src/services/actions/catalog/team/directory/removeEmployeeFromFacility.ts"
+  },
+  {
+    "name": "listEmployees",
+    "description": "Get employee directory with optional filters",
+    "source_file": "src/services/actions/catalog/team/directory/listEmployees.ts"
+  },
+  {
+    "name": "getProfileFull",
+    "description": "Retrieve complete employee profile with access control",
+    "source_file": "src/services/actions/catalog/team/directory/getProfileFull.ts"
+  },
+  {
+    "name": "assignSecondaryFacility",
+    "description": "Grant floater badge access to another facility",
+    "source_file": "src/services/actions/catalog/team/directory/assignSecondaryFacility.ts"
+  },
+  {
+    "name": "inviteUser",
+    "description": "Create new employee account and send welcome email",
+    "source_file": "src/services/actions/catalog/team/lifecycle/inviteUser.ts"
+  },
+  {
+    "name": "terminateUser",
+    "description": "End employment and trigger offboarding checklist",
+    "source_file": "src/services/actions/catalog/team/lifecycle/terminateUser.ts"
+  },
+  {
+    "name": "reactivateUser",
+    "description": "Reactivate seasonal or returning employee",
+    "source_file": "src/services/actions/catalog/team/lifecycle/reactivateUser.ts"
+  },
+  {
+    "name": "createRole",
+    "description": "Create custom role with specific permissions",
+    "source_file": "src/services/actions/catalog/team/roles/createRole.ts"
+  },
+  {
+    "name": "updateRole",
+    "description": "Update custom role details and permissions",
+    "source_file": "src/services/actions/catalog/team/roles/updateRole.ts"
+  },
+  {
+    "name": "deleteRole",
+    "description": "Delete custom role (cannot be undone)",
+    "source_file": "src/services/actions/catalog/team/roles/deleteRole.ts"
+  },
+  {
+    "name": "listRoles",
+    "description": "Get all custom roles for facility",
+    "source_file": "src/services/actions/catalog/team/roles/listRoles.ts"
+  },
+  {
+    "name": "createContract",
+    "description": "Create new employment contract",
+    "source_file": "src/services/actions/catalog/contracts/createContract.ts"
+  },
+  {
+    "name": "listContracts",
+    "description": "Get contracts with optional filters",
+    "source_file": "src/services/actions/catalog/contracts/listContracts.ts"
+  },
+  {
+    "name": "getContract",
+    "description": "Retrieve contract details with access control",
+    "source_file": "src/services/actions/catalog/contracts/getContract.ts"
+  },
+  {
+    "name": "generateDraft",
+    "description": "Create contract PDF from template with variables",
+    "source_file": "src/services/actions/catalog/contracts/generateDraft.ts"
+  },
+  {
+    "name": "sendForSignature",
+    "description": "Lock draft and send signature request to employee",
+    "source_file": "src/services/actions/catalog/contracts/sendForSignature.ts"
+  },
+  {
+    "name": "signDigital",
+    "description": "Sign contract with SES (Simple Electronic Signature) and re-auth",
+    "source_file": "src/services/actions/catalog/contracts/signDigital.ts"
+  },
+  {
+    "name": "createAmendment",
+    "description": "Generate one-page addendum linked to original contract",
+    "source_file": "src/services/actions/catalog/contracts/createAmendment.ts"
+  },
+  {
+    "name": "terminateEmployment",
+    "description": "Generate termination letter and trigger offboarding",
+    "source_file": "src/services/actions/catalog/contracts/terminateEmployment.ts"
+  }
+]

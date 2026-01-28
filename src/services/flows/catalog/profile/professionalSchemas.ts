@@ -86,3 +86,5 @@ export const ProfessionalProfileCombinedSchema = PersonalDetailsSchema
 
 export type ProfessionalProfileData = z.infer<typeof ProfessionalProfileCombinedSchema>;
 
+
+

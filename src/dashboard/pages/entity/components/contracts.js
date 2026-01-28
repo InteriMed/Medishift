@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useDashboard } from '../../../contexts/DashboardContext';
+import { useDashboard } from '../../../contexts/dashboardContext';
 import { useAuth } from '../../../../contexts/authContext';
 import { useNotification } from '../../../../contexts/notificationContext';
 import useContractsData from '../../../dashboard/hooks/useContractsData';
@@ -15,8 +15,8 @@ import InputField from '../../../../components/boxedInputFields/personnalizedInp
 import InputFieldParagraph from '../../../../components/boxedInputFields/textareaField';
 import SimpleDropdown from '../../../../components/boxedInputFields/dropdownField';
 import { FiFileText, FiClock } from 'react-icons/fi';
-import { createContract } from '../../../services/cloudFunctions';
 import { WORKSPACE_TYPES } from '../../../utils/sessionAuth';
+import { useAction } from '../../../../services/actions/hook';
 import PropTypes from 'prop-types';
 
 const Contracts = ({ hideHeader = false, hideStats = false }) => {
@@ -24,6 +24,7 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
     const { selectedWorkspace } = useDashboard();
     const { currentUser } = useAuth();
     const { showNotification } = useNotification();
+    const { execute } = useAction();
     const [searchParams, setSearchParams] = useSearchParams();
     const {
         contracts,
@@ -259,13 +260,14 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                 throw new Error('No facility selected');
             }
 
-            const contractData = {
+            await execute('contracts.create', {
+                userId: currentUser?.uid,
+                facilityId: selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? facilityId : currentUser?.uid,
                 title: contractFormData.title.trim(),
                 description: contractFormData.description.trim() || '',
-                statusLifecycle: {
-                    currentStatus: contractFormData.status || 'draft'
-                },
-                parties: {
+                status: contractFormData.status || 'draft',
+                jobTitle: contractFormData.title.trim(),
+                terms: {
                     employer: {
                         profileId: selectedWorkspace?.type === WORKSPACE_TYPES.TEAM ? facilityId : currentUser?.uid,
                         legalCompanyName: selectedWorkspace?.facilityName || selectedWorkspace?.companyName || ''
@@ -273,13 +275,8 @@ const Contracts = ({ hideHeader = false, hideStats = false }) => {
                     professional: {
                         profileId: currentUser?.uid
                     }
-                },
-                terms: {
-                    jobTitle: contractFormData.title.trim()
                 }
-            };
-
-            await createContract(contractData);
+            });
 
             setContractFormData({
                 title: '',

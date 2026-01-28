@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiTrash2, FiAlertTriangle } from 'react-icons/fi';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { useNotification } from '../../../../contexts/NotificationContext';
+import { useAuth } from '../../../../contexts/authContext';
+import { useNotification } from '../../../../contexts/notificationContext';
 import Button from '../../../../components/boxedInputFields/button';
-import ContentSection from '../../components/ContentSection';
-import DeleteAccountModal from '../modals/DeleteAccountModal';
-import ReauthModal from '../modals/ReauthModal';
+import ContentSection from '../../components/contentSection';
+import DeleteAccountModal from '../modals/deleteAccountModal';
+import ReauthModal from '../modals/reauthModal';
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,
